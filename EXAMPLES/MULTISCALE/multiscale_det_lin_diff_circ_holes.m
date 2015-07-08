@@ -1,0 +1,312 @@
+%% Multiscale deterministic linear diffusion circular holes %%
+%%----------------------------------------------------------%%
+
+% clc
+clear all
+close all
+
+%% Input data
+n = 4; % number of patches n = 1, 2, 4
+FileName = ['multiscale_det_lin_diff_' num2str(n) '_circ_holes'];
+PathName = [getfemobjectoptions('path') 'MYCODE/RESULTS/' FileName '/'];
+if ~exist(PathName,'dir')
+    dos(['mkdir ' PathName]);
+end
+set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
+renderer = 'opengl';
+
+% Reference solution - Direct resolution of initial problem based on non-overlapping domain decomposition
+solve_reference = true;
+save_reference = true;
+load_reference = true;
+
+% Reconstructed solution - Reformulated global-local iterative algorithm based on overlapping domain decomposition
+save_reconstructed = true;
+
+% Parallel computing
+% myparallel('start');
+
+%% Domain and mesh definition
+
+% Global
+glob = GLOBAL();
+glob_out = GLOBALOUT();
+
+D = DOMAIN(2,[0.0,0.0],[5.0,5.0]);
+nbelem = [20,20];
+glob.S = build_model(D,'nbelem',nbelem);
+% cl = 0.25;
+% glob.S = build_model(D,'cl',cl);
+
+% Patches
+patches = PATCHES(n);
+
+D_patch = cell(1,n);
+switch n
+    case 1
+        D_patch{1} = DOMAIN(2,[2.0,2.0],[3.0,3.0]);
+    case 2
+        D_patch{1} = DOMAIN(2,[1.0,2.0],[2.0,3.0]);
+        D_patch{2} = DOMAIN(2,[3.0,2.0],[4.0,3.0]);
+    case 4
+        D_patch{1} = DOMAIN(2,[1.0,1.0],[2.0,2.0]);
+        D_patch{2} = DOMAIN(2,[1.0,3.0],[2.0,4.0]);
+        D_patch{3} = DOMAIN(2,[3.0,3.0],[4.0,4.0]);
+        D_patch{4} = DOMAIN(2,[3.0,1.0],[4.0,2.0]);
+    otherwise
+        error('Wrong number of patches')
+end
+
+r = 0.1;
+B_patch = cell(1,n);
+c_patch = cell(1,n);
+for k=1:n
+    c_patch{k} = double(getcenter(D_patch{k}));
+    B_patch{k} = CIRCLE(c_patch{k}(1),c_patch{k}(2),r);
+end
+
+cl_patch_D = 0.1;
+cl_patch_B = 0.01;
+for k=1:n
+    patches.PATCH{k}.S = gmshdomainwithhole(D_patch{k},B_patch{k},cl_patch_D,cl_patch_B,[PathName 'gmsh_patch_' num2str(k) '_circular_hole']);
+end
+
+% Partition of global mesh glob.S
+glob = partition(glob,D_patch);
+
+%% Materials associated to initial problem
+
+% Linear diffusion coefficients K_out, K_patch and K_in
+K_out = 1;
+K_patch = cell(1,n);
+K_in = cell(1,n);
+for k=1:n
+    patch = patches.PATCH{k};
+    % K_patch(x) = 1 + f(x)
+    % K_in(x)    = 1
+    % with f(x) = 1 if ||x-c||_Inf < L
+    %           = 0 if ||x-c||_Inf >= L
+    L = norm(getsize(D_patch{k}),Inf)/4;
+    c = getcenter(D_patch{k});
+    f = @(x) distance(x,c,Inf)<L;
+    P = POINT(patch.S.node);
+    K_patch{k} = ones(getnbnode(patch.S),1) + double(squeeze(f(P)));
+    
+    K_in{k} = 1;
+end
+
+% Material mat_out associated to outside subdomain
+% a(u,v) = int( K.grad(u).grad(v) )
+mat_out = FOUR_ISOT('k',K_out); % uniform value
+mat_out = setnumber(mat_out,0);
+glob.S = setmaterial(glob.S,mat_out,getnumgroupelemwithparam(glob.S,'partition',0));
+
+% Material mat_patch associated to patch
+% a(u,v) = int( K.grad(u).grad(v) )
+for k=1:n
+    % mat_patch = FOUR_ISOT('k',K_patch{k}); % uniform value
+    mat_patch = FOUR_ISOT('k',FENODEFIELD(K_patch{k})); % nodal values
+    mat_patch = setnumber(mat_patch,k);
+    patches.PATCH{k}.S = setmaterial(patches.PATCH{k}.S,mat_patch);
+end
+
+% Material mat_in associated to fictitious patch
+% a(u,v) = int( K.grad(u).grad(v) )
+for k=1:n
+    mat_in = FOUR_ISOT('k',K_in{k}); % uniform value
+    % mat_in = FOUR_ISOT('k',FENODEFIELD(K_in{k})); % nodal values
+    mat_in = setnumber(mat_in,k);
+    glob.S = setmaterial(glob.S,mat_in,getnumgroupelemwithparam(glob.S,'partition',k));
+end
+
+%% Finalization and application of Dirichlet boundary conditions
+
+% Global
+glob.S = final(glob.S);
+glob.S = addcl(glob.S,[]);
+glob.S_out = get_final_model_part(glob.S,0);
+glob_out.S_out = glob.S_out;
+% S_in = cell(1,n);
+% for k=1:n
+%     S_in{k} = get_final_model_part(glob.S,k);
+% end
+
+% Patches
+for k=1:n
+    patches.PATCH{k}.S = final(patches.PATCH{k}.S);
+end
+
+% Interfaces
+interfaces = INTERFACES(patches,glob);
+
+%% Stiffness matrices and sollicitation vectors
+
+% Source term f
+f = 1;
+
+% Stiffness matrix glob_out.A_out and sollicitation vector glob_out.b_out associated to mesh glob_out.S_out
+glob_out.A_out = calc_rigi(glob_out.S_out);
+glob_out.b_out = bodyload(glob_out.S_out,[],'QN',f);
+
+% Stiffness matrices glob.A and glob.A_in and sollicitation vector glob.b_out associated to mesh glob.S
+glob.A = calc_rigi(glob.S);
+for k=1:n
+    glob.A_in{k} = calc_rigi(glob.S,'selgroup',getnumgroupelemwithparam(glob.S,'partition',k));
+end
+glob.b_out = bodyload(keepgroupelem(glob.S,getnumgroupelemwithparam(glob.S,'partition',0)),[],'QN',f);
+
+% Stiffness matrix patch.A and sollicitation vector patch.b associated to mesh patch.S
+for k=1:n
+    patches.PATCH{k}.A = calc_rigi(patches.PATCH{k}.S);
+    patches.PATCH{k}.b = bodyload(patches.PATCH{k}.S,[],'QN',f);
+end
+
+%% Mass matrices
+
+% Mass matrix interface.M associated to boundary mesh interface.S
+for k=1:n
+    interfaces.INTERFACE{k}.M = calc_massgeom(interfaces.INTERFACE{k}.S);
+end
+
+%% Projection operators
+
+% Projection operator glob.P_out from mesh glob.S to mesh glob.S_out
+glob.P_out = calc_P_free(glob.S,glob.S_out);
+
+% Projection operator interface.P_glob from mesh glob.S to boundary mesh interface.S
+for k=1:n
+    [interfaces.INTERFACE{k}.P_glob] = calc_projection(interfaces.INTERFACE{k},glob);
+    [interfaces.INTERFACE{k}.P_glob_out,numnode] = calc_projection(interfaces.INTERFACE{k},glob_out);
+    interfaces.INTERFACE{k}.P_patch = calc_P_free(patches.PATCH{k}.S,interfaces.INTERFACE{k}.S);
+    % plot_projection_operator(glob,patches.PATCH{k},numnode);
+end
+
+%% Parameters for global and local problems
+
+% Global problem
+glob.param = setparam(glob.param,'increment',true);
+glob.param = setparam(glob.param,'inittype','zero');
+
+% Local problems
+for k=1:n
+    patches.PATCH{k}.param = setparam(patches.PATCH{k}.param,'change_of_variable',false);
+    patches.PATCH{k}.param = setparam(patches.PATCH{k}.param,'increment',true);
+    patches.PATCH{k}.param = setparam(patches.PATCH{k}.param,'inittype','zero');
+end
+
+%% Direct resolution of initial problem based on non-overlapping domain decomposition
+
+R = REFERENCESOLVER('display',true,'change_of_variable',false,'inittype','zero');
+if solve_reference
+    [U_ref,w_ref,lambda_ref] = solve(R,glob_out,patches,interfaces);
+    if save_reference
+        % Save reference solution (U_ref,w_ref,lambda_ref)
+        save(fullfile(PathName,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
+    end
+elseif load_reference
+    if ~exist(fullfile(PathName,'reference_solution.mat'),'file')
+        error(['File reference_solution.mat does not exist in folder ' PathName]);
+    else
+        % Load reference solution (U_ref,w_ref,lambda_ref)
+        load(fullfile(PathName,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
+    end
+else
+    U_ref = [];
+    w_ref = repmat([],[1,n]);
+    lambda_ref = repmat([],[1,n]);
+end
+
+%% Reformulated global-local iterative algorithm based on overlapping domain decomposition
+
+I = ITERATIVESOLVER('display',true,'displayiter',true,...
+    'maxiter',50,'tol',eps,'rho','Aitken',...
+    'errorindicator','reference','reference',{{U_ref,w_ref,lambda_ref}});
+[U,w,lambda,result] = solve(I,glob,patches,interfaces);
+if save_reconstructed
+    % Save reconstructed solution (U,w,lambda)
+    save(fullfile(PathName,'solution.mat'),'U','w','lambda','result');
+end
+fprintf('\n');
+
+%% Save all variables
+
+save(fullfile(PathName,'all.mat'));
+
+%% Display domain, partition and mesh
+
+% Display global domain and patches
+% plot_domain(D,D_patch);
+% mysaveas(PathName,'domain_global_patches',{'fig','epsc2','pdf'},renderer);
+% mysaveaspdf(PathName,'domain_global_patches',renderer);
+% mymatlab2tikz(PathName,'domain_global_patches.tex');
+
+% Display partition of global mesh glob.S
+plot_partition(glob);
+mysaveas(PathName,'mesh_partition',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(PathName,'mesh_partition',renderer);
+
+% Display global mesh glob.S_out and local meshes patch.S
+plot_model(glob,patches,'nolegend');
+mysaveas(PathName,'mesh_global_patches',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(PathName,'mesh_global_patches',renderer);
+
+% Display all parts of global mesh glob.S
+% plot_model(glob);
+
+% Display local meshes patch.S
+% plot_model(patches);
+
+% Display boundary meshes interface.S
+% plot_model(interfaces);
+
+%% Display evolution of error indicator, stagnation indicator and CPU time w.r.t. number of iterations
+
+plot_error_indicator_deterministic(result);
+mysaveas(PathName,'error_indicator','fig');
+mymatlab2tikz(PathName,'error_indicator.tex');
+
+plot_stagnation_indicator_deterministic(result);
+mysaveas(PathName,'stagnation_indicator','fig');
+mymatlab2tikz(PathName,'stagnation_indicator.tex');
+
+plot_error_indicator_U_deterministic(result);
+mysaveas(PathName,'error_indicator_U','fig');
+mymatlab2tikz(PathName,'error_indicator_U.tex');
+
+plot_stagnation_indicator_U_deterministic(result);
+mysaveas(PathName,'stagnation_indicator_U','fig');
+mymatlab2tikz(PathName,'stagnation_indicator_U.tex');
+
+plot_cpu_time(result,'nolegend');
+mysaveas(PathName,'cpu_time','fig');
+mymatlab2tikz(PathName,'cpu_time.tex');
+
+plot_relaxation_parameter(result,'nolegend');
+mysaveas(PathName,'relaxation_parameter','fig');
+mymatlab2tikz(PathName,'relaxation_parameter.tex');
+
+%% Display reference solution u_ref=(U_ref,w_ref) and reconstructed solution u=(U,w) at final iteration
+
+% if exist('U_ref','var') && exist('w_ref','var') && exist('lambda_ref','var')
+%     plot_sols_ref(glob,patches,interfaces,U_ref,w_ref,lambda_ref);
+% end
+% 
+% plot_sols(glob,patches,interfaces,U,w,lambda);
+
+plot_U(glob,U);
+mysaveas(PathName,'U',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(PathName,'U',renderer);
+
+plot_sol(glob,patches,interfaces,U,w);
+mysaveas(PathName,'sol',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(PathName,'sol',renderer);
+
+plot_U_w(glob,patches,interfaces,U,w);
+mysaveas(PathName,'U_w',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(PathName,'U_w',renderer);
+
+plot_U_w(glob,patches,interfaces,U,w,'surface');
+mysaveas(PathName,'U_w_surf',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(PathName,'U_w_surf',renderer);
+
+% myparallel('stop');
