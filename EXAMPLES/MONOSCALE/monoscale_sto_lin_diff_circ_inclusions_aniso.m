@@ -8,10 +8,10 @@ close all
 
 %% Input data
 M = 4; % number of random variables
-FileName = ['monoscale_sto_lin_diff_' num2str(M) '_circ_inclusions_aniso'];
-PathName = [getfemobjectoptions('path') 'MYCODE/RESULTS/' FileName '/'];
-if ~exist(PathName,'dir')
-    dos(['mkdir ' PathName]);
+filename = ['monoscale_sto_lin_diff_' num2str(M) '_circ_inclusions_aniso'];
+pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+if ~exist(pathname,'dir')
+    mkdir(pathname);
 end
 set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 renderer = 'opengl';
@@ -21,10 +21,10 @@ renderer = 'opengl';
 
 %% Domain and mesh definition
 
-if exist([PathName 'gmsh_circular_inclusions.msh'],'file')
-    system.S = gmsh2femobject(2,[PathName 'gmsh_circular_inclusions.msh'],2);
-elseif exist([PathName 'gmsh_circular_inclusions.geo'],'file')
-    system.S = gmsh2femobject(2,[PathName 'gmsh_circular_inclusions.geo'],2);
+if exist([pathname 'gmsh_circular_inclusions.msh'],'file')
+    system.S = gmsh2femobject(2,[pathname 'gmsh_circular_inclusions.msh'],2);
+elseif exist([pathname 'gmsh_circular_inclusions.geo'],'file')
+    system.S = gmsh2femobject(2,[pathname 'gmsh_circular_inclusions.geo'],2);
 else
     D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
     r = 0.13;
@@ -39,7 +39,7 @@ else
     B{8} = CIRCLE(0.5,0.2,r);
     B{9} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
     cl = 0.02;
-    system.S = gmshdomainwithinclusion(D,B,cl,cl,[PathName 'gmsh_circular_inclusions']);
+    system.S = gmshdomainwithinclusion(D,B,cl,cl,[pathname 'gmsh_circular_inclusions']);
 end
 
 %% Random variables
@@ -123,33 +123,33 @@ PC = getPC(u);
 
 %% Save all variables
 
-save(fullfile(PathName,'all.mat'));
+save(fullfile(pathname,'all.mat'));
 
 %% Display domain, partition and mesh
 
 % Display partition of mesh system.S
 plot_partition(system.S);
-mysaveas(PathName,'mesh_partition',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'mesh_partition',renderer);
+mysaveas(pathname,'mesh_partition',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'mesh_partition',renderer);
 
 % Display mesh system.S
 plot_model(system.S,'nolegend');
-mysaveas(PathName,'mesh',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'mesh',renderer);
+mysaveas(pathname,'mesh',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'mesh',renderer);
 
 %% Display multi-index set
 
 for m=1:2:M
     plot_multi_index_set(PC,'dim',[m m+1],'nolegend')
-    mysaveas(PathName,['multi_index_set_dim_' num2str(m) '_' num2str(m+1)],'fig');
-    mymatlab2tikz(PathName,['multi_index_set_dim_' num2str(m) '_' num2str(m+1) '.tex']);
+    mysaveas(pathname,['multi_index_set_dim_' num2str(m) '_' num2str(m+1)],'fig');
+    mymatlab2tikz(pathname,['multi_index_set_dim_' num2str(m) '_' num2str(m+1) '.tex']);
 end
 
 %% Display evolution of multi-index set
 
 % if isfield(result,'PC_seq')
 %     for m=1:2:M
-%         video_indices(result.PC_seq,'dim',[m m+1],'filename','multi_index_set','pathname',PathName)
+%         video_indices(result.PC_seq,'dim',[m m+1],'filename','multi_index_set','pathname',pathname)
 %     end
 % end
 
@@ -157,8 +157,8 @@ end
 
 if isfield(result,{'cv_error_indicator_seq','PC_seq','N_seq'})
     plot_adaptive_algorithm(result.cv_error_indicator_seq,result.PC_seq,result.N_seq);
-    mysaveas(PathName,'adaptive_algorithm.fig','fig');
-    mymatlab2tikz(PathName,'adaptive_algorithm.tex');
+    mysaveas(pathname,'adaptive_algorithm.fig','fig');
+    mymatlab2tikz(pathname,'adaptive_algorithm.tex');
 end
 
 %% Display statistical outputs : mean, variance, standard deviation, Sobol and other sensitivity indices
@@ -166,27 +166,27 @@ end
 % plot_stats(system.S,u);
 
 plot_mean(system.S,u);
-mysaveas(PathName,'mean_sol',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'mean_sol',renderer);
+mysaveas(pathname,'mean_sol',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'mean_sol',renderer);
 
 plot_var(system.S,u);
-mysaveas(PathName,'var_sol',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'var_sol',renderer);
+mysaveas(pathname,'var_sol',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'var_sol',renderer);
 
 plot_std(system.S,u);
-mysaveas(PathName,'std_sol',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'std_sol',renderer);
+mysaveas(pathname,'std_sol',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'std_sol',renderer);
 
 M = getM(PC);
 for m=1:M
     plot_sobol_indices(system.S,u,m);
-    mysaveas(PathName,['sobol_indices_sol_var_' num2str(m)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,['sobol_indices_sol_var_' num2str(m)],renderer);
+    mysaveas(pathname,['sobol_indices_sol_var_' num2str(m)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,['sobol_indices_sol_var_' num2str(m)],renderer);
 end
 for m=1:M
     plot_sensitivity_indices_max_var(system.S,u,m);
-    mysaveas(PathName,['sensitivity_indices_sol_var_' num2str(m)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,['sensitivity_indices_sol_var_' num2str(m)],renderer);
+    mysaveas(pathname,['sensitivity_indices_sol_var_' num2str(m)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,['sensitivity_indices_sol_var_' num2str(m)],renderer);
 end
 
 %% Display random evaluations of solution u

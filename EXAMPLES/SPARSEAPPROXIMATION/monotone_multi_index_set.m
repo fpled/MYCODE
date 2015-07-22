@@ -6,10 +6,10 @@ clear all
 close all
 
 %% Input data
-FileName = 'sparse_approx_monotone_multi_index_set';
-PathName = [getfemobjectoptions('path') 'MYCODE/RESULTS/' FileName '/'];
-if ~exist(PathName,'dir')
-    dos(['mkdir ' PathName]);
+filename = 'sparse_approx_monotone_multi_index_set';
+pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+if ~exist(pathname,'dir')
+    mkdir(pathname);
 end
 set(0,'DefaultFigureVisible','on'); % change the default figure properties of the MATLAB root object
 
@@ -36,5 +36,5 @@ PC = setindices(PC,indices,'sort','update');
 figure('Name','Multi-index set')
 clf
 plot_indices(PC,'dim',1:2,'max','marg','marg_red')
-mysaveas(PathName,FileName,'fig');
-mymatlab2tikz(PathName,[FileName '.tex']);
+mysaveas(pathname,filename,'fig');
+mymatlab2tikz(pathname,[filename '.tex']);

@@ -7,13 +7,13 @@ clear all
 close all
 
 %% Filename and Pathname
-FileName = ['sparse_approx_anisotropic_function_nbvar_' num2str(M) '_algorithm_' opts.algorithm];
+filename = ['sparse_approx_anisotropic_function_nbvar_' num2str(M) '_algorithm_' opts.algorithm];
 if strcmp(opts.algorithm,'MS') || strcmp(opts.algorithm,'RMS')
-    FileName = [FileName '_bulkparam_' num2str(opts.bulkparam)];
+    filename = [filename '_bulkparam_' num2str(opts.bulkparam)];
 end
-PathName = [getfemobjectoptions('path') 'MYCODE/RESULTS/' FileName '/'];
-if ~exist(PathName,'dir')
-    dos(['mkdir ' PathName]);
+pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+if ~exist(pathname,'dir')
+    mkdir(pathname);
 end
 set(0,'DefaultFigureVisible','on'); % change the default figure properties of the MATLAB root object
 
@@ -100,31 +100,31 @@ fprintf('elapsed time = %f s\n',time);
 disp(' ')
 
 %% Display evolution of multi-index set
-% video_indices(PC_seq,'dim',[3 4 16],'filename','multi_index_set','pathname',PathName)
-% video_indices(PC_seq,'dim',[1 2 4],'filename','multi_index_set','pathname',PathName)
+% video_indices(PC_seq,'dim',[3 4 16],'filename','multi_index_set','pathname',pathname)
+% video_indices(PC_seq,'dim',[1 2 4],'filename','multi_index_set','pathname',pathname)
 
 %% Display evolution of cross-validation error indicator, dimension of stochastic space and number of samples w.r.t. number of iterations
 plot_adaptive_algorithm(err_seq,PC_seq,N_seq);
-mysaveas(PathName,'adaptive_algorithm.fig','fig');
-mymatlab2tikz(PathName,'adaptive_algorithm.tex');
+mysaveas(pathname,'adaptive_algorithm.fig','fig');
+mymatlab2tikz(pathname,'adaptive_algorithm.tex');
 
 %% Display evolution of cross-validation error indicator w.r.t. number of samples
 plot_cv_error_indicator_vs_nb_samples(err_seq,N_seq);
-mysaveas(PathName,'cv_error_indicator_vs_nb_samples.fig','fig');
-mymatlab2tikz(PathName,'cv_error_indicator_vs_nb_samples.tex');
+mysaveas(pathname,'cv_error_indicator_vs_nb_samples.fig','fig');
+mymatlab2tikz(pathname,'cv_error_indicator_vs_nb_samples.tex');
 
 %% Display evolution of cross-validation error indicator w.r.t. dimension of stochastic space
 plot_cv_error_indicator_vs_dim_stochastic_space(err_seq,PC_seq);
-mysaveas(PathName,'cv_error_indicator_vs_dim_stochastic_space.fig','fig');
-mymatlab2tikz(PathName,'cv_error_indicator_vs_dim_stochastic_space.tex');
+mysaveas(pathname,'cv_error_indicator_vs_dim_stochastic_space.fig','fig');
+mymatlab2tikz(pathname,'cv_error_indicator_vs_dim_stochastic_space.tex');
 
 %% Display multi-index set
 dim = [3 4 16];
 plot_multi_index_set(PC,'dim',dim,'nolegend')
-mysaveas(PathName,['multi_index_set_dim' sprintf('_%d',dim(1:end))],'fig');
-mymatlab2tikz(PathName,['multi_index_set_dim' sprintf('_%d',dim(1:end)) '.tex']);
+mysaveas(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end))],'fig');
+mymatlab2tikz(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end)) '.tex']);
 
 dim = [1 2 4];
 plot_multi_index_set(PC,'dim',dim,'nolegend')
-mysaveas(PathName,['multi_index_set_dim' sprintf('_%d',dim(1:end))],'fig');
-mymatlab2tikz(PathName,['multi_index_set_dim' sprintf('_%d',dim(1:end)) '.tex']);
+mysaveas(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end))],'fig');
+mymatlab2tikz(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end)) '.tex']);

@@ -6,11 +6,11 @@ clear all
 close all
 
 %% Input data
-FileName = 'multiscale_det_lin_diff_form_old';
-PathName = [getfemobjectoptions('path') 'MYCODE/RESULTS/' FileName '/'];
-% PathName = '/Users/Op/Dropbox/ANTHONY-FLORENT-MATHILDE/PATCH_NONLINEAR/figures/';
-if ~exist(PathName,'dir')
-    dos(['mkdir ' PathName]);
+filename = 'multiscale_det_lin_diff_form_old';
+pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+% pathname = '/Users/Op/Dropbox/ANTHONY-FLORENT-MATHILDE/PATCH_NONLINEAR/figures/';
+if ~exist(pathname,'dir')
+    mkdir(pathname);
 end
 set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 fontsize = 16;
@@ -520,8 +520,7 @@ for k=1:nbpatch
 end
 
 %% Direct resolution of initial problem based on domain decomposition
-filename = 'reference_solution.mat';
-fullfilename = fullfile(PathName,filename);
+fullfilename = fullfile(pathname,'reference_solution.mat');
 if solve_reference
     fprintf('\n --------------------------------------------------------------');
     fprintf('\n ------------ Direct resolution of initial problem ------------')
@@ -714,7 +713,7 @@ if solve_reference
     end
 elseif load_reference
     if ~exist(filename,'file')
-        error(['File ' filename ' does not exist in folder' PathName]);
+        error(['File reference_solution.mat does not exist in folder' pathname]);
     else
         % Load reference solution (U_ref,w_ref{k},lambda_ref{k})
         load(fullfilename,'U_ref','w_ref','lambda_ref');

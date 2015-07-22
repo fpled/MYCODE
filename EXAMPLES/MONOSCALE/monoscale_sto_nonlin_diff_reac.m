@@ -6,10 +6,10 @@ clear all
 close all
 
 %% Input data
-FileName = 'monoscale_sto_nonlin_diff_reac';
-PathName = [getfemobjectoptions('path') 'MYCODE/RESULTS/' FileName '/'];
-if ~exist(PathName,'dir')
-    dos(['mkdir ' PathName]);
+filename = 'monoscale_sto_nonlin_diff_reac';
+pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+if ~exist(pathname,'dir')
+    mkdir(pathname);
 end
 set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 renderer = 'opengl';
@@ -95,44 +95,44 @@ PC = getPC(u);
 
 %% Save all variables
 
-save(fullfile(PathName,'all.mat'));
+save(fullfile(pathname,'all.mat'));
 
 %% Display domain, partition and mesh
 
 % Display domain
 plot_domain(D);
-mysaveas(PathName,'domain',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'domain',renderer);
-mymatlab2tikz(PathName,'domain.tex');
+mysaveas(pathname,'domain',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'domain',renderer);
+mymatlab2tikz(pathname,'domain.tex');
 
 % Display partition of mesh system.S
 % plot_partition(system.S);
-% mysaveas(PathName,'mesh_partition',{'fig','epsc2','pdf'},renderer);
-% mysaveaspdf(PathName,'mesh_partition',renderer);
+% mysaveas(pathname,'mesh_partition',{'fig','epsc2','pdf'},renderer);
+% mysaveaspdf(pathname,'mesh_partition',renderer);
 
 % Display mesh system.S
 plot_model(system.S,'nolegend');
-mysaveas(PathName,'mesh',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'mesh',renderer);
+mysaveas(pathname,'mesh',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'mesh',renderer);
 
 %% Display multi-index set
 
 plot_multi_index_set(PC,'nolegend')
-mysaveas(PathName,'multi_index_set','fig');
-mymatlab2tikz(PathName,'multi_index_set.tex');
+mysaveas(pathname,'multi_index_set','fig');
+mymatlab2tikz(pathname,'multi_index_set.tex');
 
 %% Display evolution of multi-index set
 
 % if isfield(result,'PC_seq')
-%     video_indices(result.PC_seq,'filename','multi_index_set','pathname',PathName)
+%     video_indices(result.PC_seq,'filename','multi_index_set','pathname',pathname)
 % end
 
 %% Display evolution of cross-validation error indicator, dimension of stochastic space and number of samples w.r.t. number of iterations
 
 if isfield(result,{'cv_error_indicator_seq','PC_seq','N_seq'})
     plot_adaptive_algorithm(result.cv_error_indicator_seq,result.PC_seq,result.N_seq);
-    mysaveas(PathName,'adaptive_algorithm.fig','fig');
-    mymatlab2tikz(PathName,'adaptive_algorithm.tex');
+    mysaveas(pathname,'adaptive_algorithm.fig','fig');
+    mymatlab2tikz(pathname,'adaptive_algorithm.tex');
 end
 
 %% Display statistical outputs : mean, variance, standard deviation, Sobol and other sensitivity indices
@@ -140,27 +140,27 @@ end
 % plot_stats(system.S,u);
 
 plot_mean(system.S,u);
-mysaveas(PathName,'mean_sol',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'mean_sol',renderer);
+mysaveas(pathname,'mean_sol',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'mean_sol',renderer);
 
 plot_var(system.S,u);
-mysaveas(PathName,'var_sol',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'var_sol',renderer);
+mysaveas(pathname,'var_sol',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'var_sol',renderer);
 
 plot_std(system.S,u);
-mysaveas(PathName,'std_sol',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'std_sol',renderer);
+mysaveas(pathname,'std_sol',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'std_sol',renderer);
 
 M = getM(PC);
 for m=1:M
     plot_sobol_indices(system.S,u,m);
-    mysaveas(PathName,['sobol_indices_sol_var_' num2str(m)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,['sobol_indices_sol_var_' num2str(m)],renderer);
+    mysaveas(pathname,['sobol_indices_sol_var_' num2str(m)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,['sobol_indices_sol_var_' num2str(m)],renderer);
 end
 for m=1:M
     plot_sensitivity_indices_max_var(system.S,u,m);
-    mysaveas(PathName,['sensitivity_indices_sol_var_' num2str(m)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,['sensitivity_indices_sol_var_' num2str(m)],renderer);
+    mysaveas(pathname,['sensitivity_indices_sol_var_' num2str(m)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,['sensitivity_indices_sol_var_' num2str(m)],renderer);
 end
 
 %% Display random evaluations of solution u

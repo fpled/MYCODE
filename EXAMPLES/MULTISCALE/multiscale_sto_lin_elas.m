@@ -7,10 +7,10 @@ close all
 
 %% Input data
 n = 4; % number of patches n = 1, 2, 4
-FileName = ['multiscale_sto_lin_elas_' num2str(n) '_patches'];
-PathName = [getfemobjectoptions('path') 'MYCODE/RESULTS/' FileName '/'];
-if ~exist(PathName,'dir')
-    dos(['mkdir ' PathName]);
+filename = ['multiscale_sto_lin_elas_' num2str(n) '_patches'];
+pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+if ~exist(pathname,'dir')
+    mkdir(pathname);
 end
 set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 renderer = 'opengl';
@@ -251,14 +251,14 @@ if solve_reference
     [U_ref,w_ref,lambda_ref,result_ref] = solve_random(R,glob_out,patches,interfaces,method_ref);
     if save_reference
         % Save reference solution (U_ref,w_ref,lambda_ref)
-        save(fullfile(PathName,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
+        save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
     end
 elseif load_reference
-    if ~exist(fullfile(PathName,'reference_solution.mat'),'file')
-        error(['File reference_solution.mat does not exist in folder ' PathName]);
+    if ~exist(fullfile(pathname,'reference_solution.mat'),'file')
+        error(['File reference_solution.mat does not exist in folder ' pathname]);
     else
         % Load reference solution (U_ref,w_ref,lambda_ref)
-        load(fullfile(PathName,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
+        load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
     end
 else
     U_ref = [];
@@ -284,7 +284,7 @@ I = ITERATIVESOLVER('display',true,'displayiter',true,...
 [U,w,lambda,result] = solve_random(I,glob,patches,interfaces,method);
 if save_reconstructed
     % Save reconstructed solution (U,w,lambda)
-    save(fullfile(PathName,'solution.mat'),'U','w','lambda','result');
+    save(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
 end
 fprintf('\n');
 
@@ -300,25 +300,25 @@ end
 
 %% Save all variables
 
-save(fullfile(PathName,'all.mat'));
+save(fullfile(pathname,'all.mat'));
 
 %% Display domain, partition and mesh
 
 % Display global domain and patches
 plot_domain(D,D_patch);
-mysaveas(PathName,'domain_global_patches',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'domain_global_patches',renderer);
-mymatlab2tikz(PathName,'domain_global_patches.tex');
+mysaveas(pathname,'domain_global_patches',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'domain_global_patches',renderer);
+mymatlab2tikz(pathname,'domain_global_patches.tex');
 
 % Display partition of global mesh glob.S
 % plot_partition(glob);
-% mysaveas(PathName,'mesh_partition',{'fig','epsc2','pdf'},renderer);
-% mysaveaspdf(PathName,'mesh_partition',renderer);
+% mysaveas(pathname,'mesh_partition',{'fig','epsc2','pdf'},renderer);
+% mysaveaspdf(pathname,'mesh_partition',renderer);
 
 % Display global mesh glob.S_out and local meshes patch.S
 plot_model(glob,patches,'nolegend');
-mysaveas(PathName,'mesh_global_patches',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'mesh_global_patches',renderer);
+mysaveas(pathname,'mesh_global_patches',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'mesh_global_patches',renderer);
 
 % Display all parts of global mesh glob.S
 % plot_model(glob);
@@ -332,78 +332,78 @@ mysaveaspdf(PathName,'mesh_global_patches',renderer);
 %% Display evolution of error indicator, stagnation indicator, CPU time, sparsity ratio, number of samples, dimension of stochastic space, cross-validation error indicator w.r.t. number of iterations
 
 plot_error_indicator(result);
-mysaveas(PathName,'error_indicator','fig');
-mymatlab2tikz(PathName,'error_indicator.tex');
+mysaveas(pathname,'error_indicator','fig');
+mymatlab2tikz(pathname,'error_indicator.tex');
 
 plot_stagnation_indicator(result);
-mysaveas(PathName,'stagnation_indicator','fig');
-mymatlab2tikz(PathName,'stagnation_indicator.tex');
+mysaveas(pathname,'stagnation_indicator','fig');
+mymatlab2tikz(pathname,'stagnation_indicator.tex');
 
 plot_error_indicator_U(result);
-mysaveas(PathName,'error_indicator_U','fig');
-mymatlab2tikz(PathName,'error_indicator_U.tex');
+mysaveas(pathname,'error_indicator_U','fig');
+mymatlab2tikz(pathname,'error_indicator_U.tex');
 
 plot_stagnation_indicator_U(result);
-mysaveas(PathName,'stagnation_indicator_U','fig');
-mymatlab2tikz(PathName,'stagnation_indicator_U.tex');
+mysaveas(pathname,'stagnation_indicator_U','fig');
+mymatlab2tikz(pathname,'stagnation_indicator_U.tex');
 
 plot_cpu_time(result,'nolegend');
-mysaveas(PathName,'cpu_time','fig');
-mymatlab2tikz(PathName,'cpu_time.tex');
+mysaveas(pathname,'cpu_time','fig');
+mymatlab2tikz(pathname,'cpu_time.tex');
 
 plot_relaxation_parameter(result,'nolegend');
-mysaveas(PathName,'relaxation_parameter','fig');
-mymatlab2tikz(PathName,'relaxation_parameter.tex');
+mysaveas(pathname,'relaxation_parameter','fig');
+mymatlab2tikz(pathname,'relaxation_parameter.tex');
 
 plot_sparsity_ratio(result);
-mysaveas(PathName,'sparsity_ratio','fig');
-mymatlab2tikz(PathName,'sparsity_ratio.tex');
+mysaveas(pathname,'sparsity_ratio','fig');
+mymatlab2tikz(pathname,'sparsity_ratio.tex');
 
 plot_nb_samples(result);
-mysaveas(PathName,'nb_samples','fig');
-mymatlab2tikz(PathName,'nb_samples.tex');
+mysaveas(pathname,'nb_samples','fig');
+mymatlab2tikz(pathname,'nb_samples.tex');
 
 plot_dim_stochastic_space(result);
-mysaveas(PathName,'dim_stochastic_space','fig');
-mymatlab2tikz(PathName,'dim_stochastic_space.tex');
+mysaveas(pathname,'dim_stochastic_space','fig');
+mymatlab2tikz(pathname,'dim_stochastic_space.tex');
 
 plot_cv_error_indicator(result);
-mysaveas(PathName,'cv_error_indicator','fig');
-mymatlab2tikz(PathName,'cv_error_indicator.tex');
+mysaveas(pathname,'cv_error_indicator','fig');
+mymatlab2tikz(pathname,'cv_error_indicator.tex');
 
 %% Display multi-index set
 
 PC_U = getPC(U);
 plot_multi_index_set(PC_U,'nolegend')
-mysaveas(PathName,'multi_index_set_U','fig');
-mymatlab2tikz(PathName,'multi_index_set_U.tex');
+mysaveas(pathname,'multi_index_set_U','fig');
+mymatlab2tikz(pathname,'multi_index_set_U.tex');
 
 for k=1:n
     PC_w = getPC(w{k});
     plot_multi_index_set(PC_w,'nolegend')
-    mysaveas(PathName,['multi_index_set_w_' num2str(k)],'fig');
-    mymatlab2tikz(PathName,['multi_index_set_w_' num2str(k) '.tex']);
+    mysaveas(pathname,['multi_index_set_w_' num2str(k)],'fig');
+    mymatlab2tikz(pathname,['multi_index_set_w_' num2str(k) '.tex']);
     
     PC_lambda = getPC(lambda{k});
     plot_multi_index_set(PC_lambda,'nolegend')
-    mysaveas(PathName,['multi_index_set_lambda_' num2str(k)],'fig');
-    mymatlab2tikz(PathName,['multi_index_set_lambda_' num2str(k) '.tex']);
+    mysaveas(pathname,['multi_index_set_lambda_' num2str(k)],'fig');
+    mymatlab2tikz(pathname,['multi_index_set_lambda_' num2str(k) '.tex']);
 end
 
 %% Display evolution of multi-index set
 
 % if isfield(result_ref,{'PC_seq_U','PC_seq_w','PC_seq_lambda'})
-%     video_indices(result_ref.PC_seq_U,'filename','multi_index_set_U_ref','pathname',PathName)
+%     video_indices(result_ref.PC_seq_U,'filename','multi_index_set_U_ref','pathname',pathname)
 %     for k=1:n
-%         video_indices(result_ref.PC_seq_w{k},'filename',['multi_index_set_w_ref_' num2str(k)],'pathname',PathName)
-%         video_indices(result_ref.PC_seq_lambda{k},'filename',['multi_index_set_lambda_ref_' num2str(k)],'pathname',PathName)
+%         video_indices(result_ref.PC_seq_w{k},'filename',['multi_index_set_w_ref_' num2str(k)],'pathname',pathname)
+%         video_indices(result_ref.PC_seq_lambda{k},'filename',['multi_index_set_lambda_ref_' num2str(k)],'pathname',pathname)
 %     end
 % end
 
 % if isfield(result,{'PC_seq_w','PC_seq_lambda'})
 %     for k=1:n
-%         video_indices(result.PC_seq_w{k}{end},'filename',['multi_index_set_w_' num2str(k)],'pathname',PathName)
-%         video_indices(result.PC_seq_lambda{k}{end},'filename',['multi_index_set_lambda_' num2str(k)],'pathname',PathName)
+%         video_indices(result.PC_seq_w{k}{end},'filename',['multi_index_set_w_' num2str(k)],'pathname',pathname)
+%         video_indices(result.PC_seq_lambda{k}{end},'filename',['multi_index_set_lambda_' num2str(k)],'pathname',pathname)
 %     end
 % end
 
@@ -411,48 +411,48 @@ end
 
 % if isfield(result_ref,{'cv_error_indicator_seq_U','cv_error_indicator_seq_w','cv_error_indicator_seq_lambda','PC_seq_U','PC_seq_w','PC_seq_lambda','N_seq'})
 %     plot_adaptive_algorithm(result_ref.cv_error_indicator_seq_U,result_ref.PC_seq_U,result_ref.N_seq);
-%     mysaveas(PathName,'adaptive_algorithm_U_ref.fig','fig');
-%     mymatlab2tikz(PathName,'adaptive_algorithm_U_ref.tex');
+%     mysaveas(pathname,'adaptive_algorithm_U_ref.fig','fig');
+%     mymatlab2tikz(pathname,'adaptive_algorithm_U_ref.tex');
 %     for k=1:n
 %         plot_adaptive_algorithm(result_ref.cv_error_indicator_seq_w{k},result_ref.PC_seq_w{k},result_ref.N_seq);
-%         mysaveas(PathName,['adaptive_algorithm_w_ref_' num2str(k) '.fig'],'fig');
-%         mymatlab2tikz(PathName,['adaptive_algorithm_w_ref_' num2str(k) '.tex']);
+%         mysaveas(pathname,['adaptive_algorithm_w_ref_' num2str(k) '.fig'],'fig');
+%         mymatlab2tikz(pathname,['adaptive_algorithm_w_ref_' num2str(k) '.tex']);
 %         plot_adaptive_algorithm(result_ref.cv_error_indicator_seq_lambda{k},result_ref.PC_seq_lambda{k},result_ref.N_seq);
-%         mysaveas(PathName,['adaptive_algorithm_lambda_ref_' num2str(k) '.fig'],'fig');
-%         mymatlab2tikz(PathName,['adaptive_algorithm_lambda_ref_' num2str(k) '.tex']);
+%         mysaveas(pathname,['adaptive_algorithm_lambda_ref_' num2str(k) '.fig'],'fig');
+%         mymatlab2tikz(pathname,['adaptive_algorithm_lambda_ref_' num2str(k) '.tex']);
 %     end
 % end
 
 % if isfield(result,{'cv_error_indicator_seq_w','cv_error_indicator_seq_lambda','PC_seq_w','PC_seq_lambda','N_seq'})
 %     for k=1:n
 %         plot_adaptive_algorithm(result.cv_error_indicator_seq_w{k}{end},result.PC_seq_w{k}{end},result.N_seq{k}{end});
-%         mysaveas(PathName,['adaptive_algorithm_w_' num2str(k) '.fig'],'fig');
-%         mymatlab2tikz(PathName,['adaptive_algorithm_w_' num2str(k) '.tex']);
+%         mysaveas(pathname,['adaptive_algorithm_w_' num2str(k) '.fig'],'fig');
+%         mymatlab2tikz(pathname,['adaptive_algorithm_w_' num2str(k) '.tex']);
 %         plot_adaptive_algorithm(result.cv_error_indicator_seq_lambda{k}{end},result.PC_seq_lambda{k}{end},result.N_seq{k}{end});
-%         mysaveas(PathName,['adaptive_algorithm_lambda_' num2str(k) '.fig'],'fig');
-%         mymatlab2tikz(PathName,['adaptive_algorithm_lambda_' num2str(k) '.tex']);
+%         mysaveas(pathname,['adaptive_algorithm_lambda_' num2str(k) '.fig'],'fig');
+%         mymatlab2tikz(pathname,['adaptive_algorithm_lambda_' num2str(k) '.tex']);
 %     end
 % end
 
 %% Display statistical outputs : mean, variance, standard deviation, Sobol and other sensitivity indices
 
 plot_mean_U(glob,U);
-mysaveas(PathName,'mean_U',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'mean_U',renderer);
+mysaveas(pathname,'mean_U',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'mean_U',renderer);
 
 plot_mean_sol(glob,patches,interfaces,U,w);
-mysaveas(PathName,'mean_sol',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'mean_sol',renderer);
+mysaveas(pathname,'mean_sol',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'mean_sol',renderer);
 
 
 
 plot_var_U(glob,U);
-mysaveas(PathName,'var_U',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'var_U',renderer);
+mysaveas(pathname,'var_U',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'var_U',renderer);
 
 plot_var_sol(glob,patches,interfaces,U,w);
-mysaveas(PathName,'var_sol',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'var_sol',renderer);
+mysaveas(pathname,'var_sol',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'var_sol',renderer);
 
 
 
@@ -461,63 +461,63 @@ for i=1:2
     % plot_stats_sols(glob,patches,interfaces,U,w,lambda,'displ',i);
     
     plot_mean_U(glob,U,'displ',i);
-    mysaveas(PathName,['mean_U_' num2str(i)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,['mean_U_' num2str(i)],renderer);
+    mysaveas(pathname,['mean_U_' num2str(i)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,['mean_U_' num2str(i)],renderer);
     
     plot_mean_sol(glob,patches,interfaces,U,w,'displ',i);
-    mysaveas(PathName,['mean_sol_' num2str(i)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,['mean_sol_' num2str(i)],renderer);
+    mysaveas(pathname,['mean_sol_' num2str(i)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,['mean_sol_' num2str(i)],renderer);
     
     plot_mean_U_w(glob,patches,interfaces,U,w,'displ',i);
-    mysaveas(PathName,['mean_U_w' num2str(i)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,'mean_U_w',renderer);
+    mysaveas(pathname,['mean_U_w' num2str(i)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,'mean_U_w',renderer);
     
     plot_mean_U_w(glob,patches,interfaces,U,w,'displ',i,'surface');
-    mysaveas(PathName,['mean_U_w_surf' num2str(i)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,'mean_U_w_surf',renderer);
+    mysaveas(pathname,['mean_U_w_surf' num2str(i)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,'mean_U_w_surf',renderer);
     
     plot_var_U(glob,U,'displ',i);
-    mysaveas(PathName,['var_U_' num2str(i)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,['var_U_' num2str(i)],renderer);
+    mysaveas(pathname,['var_U_' num2str(i)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,['var_U_' num2str(i)],renderer);
     
     plot_var_sol(glob,patches,interfaces,U,w,'displ',i);
-    mysaveas(PathName,['var_sol_' num2str(i)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,['var_sol_' num2str(i)],renderer);
+    mysaveas(pathname,['var_sol_' num2str(i)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,['var_sol_' num2str(i)],renderer);
     
     plot_var_U_w(glob,patches,interfaces,U,w,'displ',i);
-    mysaveas(PathName,['var_U_w' num2str(i)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,['var_U_w' num2str(i)],renderer);
+    mysaveas(pathname,['var_U_w' num2str(i)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,['var_U_w' num2str(i)],renderer);
     
     plot_var_U_w(glob,patches,interfaces,U,w,'displ',i,'surface');
-    mysaveas(PathName,['var_U_w_surf' num2str(i)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,['var_U_w_surf' num2str(i)],renderer);
+    mysaveas(pathname,['var_U_w_surf' num2str(i)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,['var_U_w_surf' num2str(i)],renderer);
 
     plot_std_U(glob,U,'displ',i);
-    mysaveas(PathName,['std_U_' num2str(i)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,['std_U_' num2str(i)],renderer);
+    mysaveas(pathname,['std_U_' num2str(i)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,['std_U_' num2str(i)],renderer);
     
     plot_std_sol(glob,patches,interfaces,U,w,'displ',i);
-    mysaveas(PathName,['std_sol_' num2str(i)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,['std_sol_' num2str(i)],renderer);
+    mysaveas(pathname,['std_sol_' num2str(i)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,['std_sol_' num2str(i)],renderer);
     
     plot_std_U_w(glob,patches,interfaces,U,w,'displ',i);
-    mysaveas(PathName,['std_U_w' num2str(i)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,['std_U_w' num2str(i)],renderer);
+    mysaveas(pathname,['std_U_w' num2str(i)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,['std_U_w' num2str(i)],renderer);
     
     plot_std_U_w(glob,patches,interfaces,U,w,'displ',i,'surface');
-    mysaveas(PathName,['std_U_w_surf' num2str(i)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(PathName,['std_U_w_surf' num2str(i)],renderer);
+    mysaveas(pathname,['std_U_w_surf' num2str(i)],{'fig','epsc2','pdf'},renderer);
+    mysaveaspdf(pathname,['std_U_w_surf' num2str(i)],renderer);
     
     M = getM(PC);
     for m=1:M
         plot_sobol_indices_sol(glob,patches,interfaces,U,w,m,'displ',i);
-        mysaveas(PathName,['sobol_indices_sol_' num2str(i) '_var_' num2str(m)],{'fig','epsc2','pdf'},renderer);
-        mysaveaspdf(PathName,['sobol_indices_sol_' num2str(i) '_var_' num2str(m)],renderer);
+        mysaveas(pathname,['sobol_indices_sol_' num2str(i) '_var_' num2str(m)],{'fig','epsc2','pdf'},renderer);
+        mysaveaspdf(pathname,['sobol_indices_sol_' num2str(i) '_var_' num2str(m)],renderer);
     end
     for m=1:M
         plot_sensitivity_indices_max_var_sol(glob,patches,interfaces,U,w,m,'displ',i);
-        mysaveas(PathName,['sensitivity_indices_sol_' num2str(i) '_var_' num2str(m)],{'fig','epsc2','pdf'},renderer);
-        mysaveaspdf(PathName,['sensitivity_indices_sol_' num2str(i) '_var_' num2str(m)],renderer);
+        mysaveas(pathname,['sensitivity_indices_sol_' num2str(i) '_var_' num2str(m)],{'fig','epsc2','pdf'},renderer);
+        mysaveaspdf(pathname,['sensitivity_indices_sol_' num2str(i) '_var_' num2str(m)],renderer);
     end
 end
 
@@ -528,16 +528,16 @@ if exist('U_ref','var') && exist('w_ref','var') && exist('lambda_ref','var')
         % plot_error_stats_sols(glob,patches,interfaces,U,w,lambda,U_ref,w_ref,lambda_ref,'displ',i);
         
         plot_error_mean_sol(glob,patches,interfaces,U,w,U_ref,w_ref,'displ',i);
-        mysaveas(PathName,['error_mean_sol_' num2str(i)],{'fig','epsc2','pdf'},renderer);
-        mysaveaspdf(PathName,['error_mean_sol_' num2str(i)],renderer);
+        mysaveas(pathname,['error_mean_sol_' num2str(i)],{'fig','epsc2','pdf'},renderer);
+        mysaveaspdf(pathname,['error_mean_sol_' num2str(i)],renderer);
         
         plot_error_var_sol(glob,patches,interfaces,U,w,U_ref,w_ref,'displ',i);
-        mysaveas(PathName,['error_var_sol_' num2str(i)],{'fig','epsc2','pdf'},renderer);
-        mysaveaspdf(PathName,['error_var_sol_' num2str(i)],renderer);
+        mysaveas(pathname,['error_var_sol_' num2str(i)],{'fig','epsc2','pdf'},renderer);
+        mysaveaspdf(pathname,['error_var_sol_' num2str(i)],renderer);
         
         plot_error_std_sol(glob,patches,interfaces,U,w,U_ref,w_ref,'displ',i);
-        mysaveas(PathName,['error_std_sol_' num2str(i)],{'fig','epsc2','pdf'},renderer);
-        mysaveaspdf(PathName,['error_std_sol_' num2str(i)],renderer);
+        mysaveas(pathname,['error_std_sol_' num2str(i)],{'fig','epsc2','pdf'},renderer);
+        mysaveaspdf(pathname,['error_std_sol_' num2str(i)],renderer);
     end
 end
 

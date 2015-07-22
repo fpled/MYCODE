@@ -7,10 +7,10 @@ close all
 
 %% Input data
 n = 4; % number of patches n = 1, 2, 4
-FileName = ['multiscale_det_nonlin_diff_reac_' num2str(n) '_patches'];
-PathName = [getfemobjectoptions('path') 'MYCODE/RESULTS/' FileName '/'];
-if ~exist(PathName,'dir')
-    dos(['mkdir ' PathName]);
+filename = ['multiscale_det_nonlin_diff_reac_' num2str(n) '_patches'];
+pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+if ~exist(pathname,'dir')
+    mkdir(pathname);
 end
 set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 renderer = 'opengl';
@@ -226,14 +226,14 @@ if solve_reference
     [U_ref,w_ref,lambda_ref] = solve(R,glob_out,patches,interfaces);
     if save_reference
         % Save reference solution (U_ref,w_ref,lambda_ref)
-        save(fullfile(PathName,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
+        save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
     end
 elseif load_reference
-    if ~exist(fullfile(PathName,'reference_solution.mat'),'file')
-        error(['File reference_solution.mat does not exist in folder ' PathName]);
+    if ~exist(fullfile(pathname,'reference_solution.mat'),'file')
+        error(['File reference_solution.mat does not exist in folder ' pathname]);
     else
         % Load reference solution (U_ref,w_ref,lambda_ref)
-        load(fullfile(PathName,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
+        load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
     end
 else
     U_ref = [];
@@ -249,31 +249,31 @@ I = ITERATIVESOLVER('display',true,'displayiter',true,...
 [U,w,lambda,result] = solve(I,glob,patches,interfaces);
 if save_reconstructed
     % Save reconstructed solution (U,w,lambda)
-    save(fullfile(PathName,'solution.mat'),'U','w','lambda','result');
+    save(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
 end
 fprintf('\n');
 
 %% Save all variables
 
-save(fullfile(PathName,'all.mat'));
+save(fullfile(pathname,'all.mat'));
 
 %% Display domain, partition and mesh
 
 % Display global domain and patches
 plot_domain(D,D_patch);
-mysaveas(PathName,'domain_global_patches',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'domain_global_patches',renderer);
-mymatlab2tikz(PathName,'domain_global_patches.tex');
+mysaveas(pathname,'domain_global_patches',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'domain_global_patches',renderer);
+mymatlab2tikz(pathname,'domain_global_patches.tex');
 
 % Display partition of global mesh glob.S
 % plot_partition(glob);
-% mysaveas(PathName,'mesh_partition',{'fig','epsc2','pdf'},renderer);
-% mysaveaspdf(PathName,'mesh_partition',renderer);
+% mysaveas(pathname,'mesh_partition',{'fig','epsc2','pdf'},renderer);
+% mysaveaspdf(pathname,'mesh_partition',renderer);
 
 % Display global mesh glob.S_out and local meshes patch.S
 plot_model(glob,patches,'nolegend');
-mysaveas(PathName,'mesh_global_patches',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'mesh_global_patches',renderer);
+mysaveas(pathname,'mesh_global_patches',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'mesh_global_patches',renderer);
 
 % Display all parts of global mesh glob.S
 % plot_model(glob);
@@ -287,28 +287,28 @@ mysaveaspdf(PathName,'mesh_global_patches',renderer);
 %% Display evolution of error indicator, stagnation indicator and CPU time w.r.t. number of iterations
 
 plot_error_indicator_deterministic(result);
-mysaveas(PathName,'error_indicator','fig');
-mymatlab2tikz(PathName,'error_indicator.tex');
+mysaveas(pathname,'error_indicator','fig');
+mymatlab2tikz(pathname,'error_indicator.tex');
 
 plot_stagnation_indicator_deterministic(result);
-mysaveas(PathName,'stagnation_indicator','fig');
-mymatlab2tikz(PathName,'stagnation_indicator.tex');
+mysaveas(pathname,'stagnation_indicator','fig');
+mymatlab2tikz(pathname,'stagnation_indicator.tex');
 
 plot_error_indicator_U_deterministic(result);
-mysaveas(PathName,'error_indicator_U','fig');
-mymatlab2tikz(PathName,'error_indicator_U.tex');
+mysaveas(pathname,'error_indicator_U','fig');
+mymatlab2tikz(pathname,'error_indicator_U.tex');
 
 plot_stagnation_indicator_U_deterministic(result);
-mysaveas(PathName,'stagnation_indicator_U','fig');
-mymatlab2tikz(PathName,'stagnation_indicator_U.tex');
+mysaveas(pathname,'stagnation_indicator_U','fig');
+mymatlab2tikz(pathname,'stagnation_indicator_U.tex');
 
 plot_cpu_time(result,'nolegend');
-mysaveas(PathName,'cpu_time','fig');
-mymatlab2tikz(PathName,'cpu_time.tex');
+mysaveas(pathname,'cpu_time','fig');
+mymatlab2tikz(pathname,'cpu_time.tex');
 
 plot_relaxation_parameter(result,'nolegend');
-mysaveas(PathName,'relaxation_parameter','fig');
-mymatlab2tikz(PathName,'relaxation_parameter.tex');
+mysaveas(pathname,'relaxation_parameter','fig');
+mymatlab2tikz(pathname,'relaxation_parameter.tex');
 
 %% Display reference solution u_ref=(U_ref,w_ref) and reconstructed solution u=(U,w) at final iteration
 
@@ -319,19 +319,19 @@ mymatlab2tikz(PathName,'relaxation_parameter.tex');
 % plot_sols(glob,patches,interfaces,U,w,lambda);
 
 plot_U(glob,U);
-mysaveas(PathName,'U',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'U',renderer);
+mysaveas(pathname,'U',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'U',renderer);
 
 plot_sol(glob,patches,interfaces,U,w);
-mysaveas(PathName,'sol',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'sol',renderer);
+mysaveas(pathname,'sol',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'sol',renderer);
 
 plot_U_w(glob,patches,interfaces,U,w);
-mysaveas(PathName,'U_w',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'U_w',renderer);
+mysaveas(pathname,'U_w',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'U_w',renderer);
 
 plot_U_w(glob,patches,interfaces,U,w,'surface');
-mysaveas(PathName,'U_w_surf',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(PathName,'U_w_surf',renderer);
+mysaveas(pathname,'U_w_surf',{'fig','epsc2','pdf'},renderer);
+mysaveaspdf(pathname,'U_w_surf',renderer);
 
 % myparallel('stop');
