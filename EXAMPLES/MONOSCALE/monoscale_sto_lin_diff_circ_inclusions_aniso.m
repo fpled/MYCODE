@@ -14,7 +14,7 @@ if ~exist(pathname,'dir')
     mkdir(pathname);
 end
 set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
-renderer = 'opengl';
+renderer = 'OpenGL';
 
 % Parallel computing
 % myparallel('start');
