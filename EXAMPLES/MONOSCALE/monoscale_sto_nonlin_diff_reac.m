@@ -82,8 +82,8 @@ method = METHOD('type','leastsquares','display',true,'displayiter',true,...
 
 %% Resolution of problem
 
-system.solver = NEWTONSOLVER('type','full','increment',true,...
-    'maxiter',100,'tol',1e-12,'tolreact',1e-1,'display',false,'stopini',true);
+system.solver = NEWTONSOLVER('type','tangent','increment',true,...
+    'maxiter',100,'tol',1e-12,'display',false,'stopini',true);
 
 % u0 = solve_system(calc_system(randomeval(system,mean(RANDVARS(PC)))));
 % fun = @(xi) solve_system(calc_system(randomeval(system,xi)),'inittype',u0);

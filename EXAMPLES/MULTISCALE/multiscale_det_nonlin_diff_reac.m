@@ -213,15 +213,15 @@ for k=1:n
     patches.PATCH{k}.param = setparam(patches.PATCH{k}.param,'change_of_variable',false);
     patches.PATCH{k}.param = setparam(patches.PATCH{k}.param,'increment',true);
     patches.PATCH{k}.param = setparam(patches.PATCH{k}.param,'inittype','zero');
-    patches.PATCH{k}.solver = NEWTONSOLVER('type','full','increment',getparam(patches.PATCH{k}.param,'increment'),...
-        'maxiter',100,'tol',1e-12,'tolreact',1e-1,'display',false,'stopini',true);
+    patches.PATCH{k}.solver = NEWTONSOLVER('type','tangent','increment',getparam(patches.PATCH{k}.param,'increment'),...
+        'maxiter',100,'tol',1e-12,'display',false,'stopini',true);
 end
 
 %% Direct resolution of initial problem based on non-overlapping domain decomposition
 
 R = REFERENCESOLVER('display',true,'change_of_variable',false,'inittype','zero');
-R.solver = NEWTONSOLVER('type','full','increment',true,...
-    'maxiter',100,'tol',1e-12,'tolreact',1e-1,'display',false,'stopini',true);
+R.solver = NEWTONSOLVER('type','tangent','increment',true,...
+    'maxiter',100,'tol',1e-12,'display',false,'stopini',true);
 if solve_reference
     [U_ref,w_ref,lambda_ref] = solve(R,glob_out,patches,interfaces);
     if save_reference
