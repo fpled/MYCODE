@@ -75,7 +75,7 @@ multisto:
 #	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_circ_inclusions_aniso; exit" -logfile RESULTS/multiscale_sto_lin_diff_circ_inclusions_aniso.log
 
 # Monoscale Stochastic ---------------------------
-mono:
+monosto:
 	matlab -nodesktop -nosplash -noFigureWindows -r "monoscale_sto_lin_diff; exit" -logfile RESULTS/monoscale_sto_lin_diff.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "monoscale_sto_nonlin_diff_reac; exit" -logfile RESULTS/monoscale_sto_nonlin_diff_reac.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "monoscale_sto_lin_diff_circ_inclusions_iso; exit" -logfile RESULTS/monoscale_sto_lin_diff_circ_inclusions_iso.log
