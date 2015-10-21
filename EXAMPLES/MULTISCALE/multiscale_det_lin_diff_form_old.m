@@ -79,7 +79,7 @@ restart_initial_solver = []; % restarts gmres solver every restart inner iterati
 % Global-local iterative algorithm
 display = true; % display error and stagnation indicators at each step
 maxiter = 20; % maximum number of iterations
-tol = 1e-13; % prescibed tolerance
+tol = 1e-13; % prescribed tolerance
 optimal_rho = 1; % compute optimal relaxation parameter rho_opt and set rho = rho_opt
 optimal_rho_approximation = 0; % compute approximation of optimal relaxation parameter rho_opt_approx and set rho = rho_opt_approx (unless optimal_rho = 1)
 rho = 1; % relaxation parameter (unless optimal_rho_approximation = 1 or optimal_rho = 1)
