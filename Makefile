@@ -13,7 +13,7 @@ Dir_qsub = /usr/local/pbs/default/bin
 Cluster_Name = cluster
 # Problem name
 #Pb_Name = multiscale_det_lin_diff_form
-Pb_Name = multiscale_det_lin_diff
+#Pb_Name = multiscale_det_lin_diff
 #Pb_Name = multiscale_det_lin_diff_circ_holes
 #Pb_Name = multiscale_det_lin_elas
 #Pb_Name = multiscale_det_lin_elas_circ_holes
@@ -28,6 +28,8 @@ Pb_Name = multiscale_det_lin_diff
 #Pb_Name = multiscale_sto_lin_diff_align_inclusions
 #Pb_Name = multiscale_sto_lin_diff_square_inclusions_iso
 #Pb_Name = multiscale_sto_lin_diff_square_inclusions_aniso
+Pb_Name = multiscale_sto_nonlin_diff_square_inclusions_iso
+#Pb_Name = multiscale_sto_nonlin_diff_square_inclusions_aniso
 
 #Pb_Name = multiscale_sto_lin_diff_circ_inclusions_iso
 #Pb_Name = multiscale_sto_lin_diff_circ_inclusions_aniso
@@ -71,6 +73,8 @@ multisto:
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_align_inclusions; exit" -logfile RESULTS/multiscale_sto_lin_diff_align_inclusions.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_square_inclusions_iso; exit" -logfile RESULTS/multiscale_sto_lin_diff_square_inclusions_iso.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_square_inclusions_aniso; exit" -logfile RESULTS/multiscale_sto_lin_diff_square_inclusions_aniso.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac_square_inclusions_iso; exit" -logfile RESULTS/multiscale_sto_nonlin_diff_reac_square_inclusions_iso.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac_square_inclusions_aniso; exit" -logfile RESULTS/multiscale_sto_nonlin_diff_reac_square_inclusions_aniso.log
 #	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_circ_inclusions_iso; exit" -logfile RESULTS/multiscale_sto_lin_diff_circ_inclusions_iso.log
 #	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_circ_inclusions_aniso; exit" -logfile RESULTS/multiscale_sto_lin_diff_circ_inclusions_aniso.log
 
