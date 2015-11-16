@@ -28,8 +28,8 @@ Cluster_Name = cluster
 #Pb_Name = multiscale_sto_lin_diff_align_inclusions
 #Pb_Name = multiscale_sto_lin_diff_square_inclusions_iso
 #Pb_Name = multiscale_sto_lin_diff_square_inclusions_aniso
-Pb_Name = multiscale_sto_nonlin_diff_square_inclusions_iso
-#Pb_Name = multiscale_sto_nonlin_diff_square_inclusions_aniso
+Pb_Name = multiscale_sto_nonlin_diff_reac_square_inclusions_iso
+#Pb_Name = multiscale_sto_nonlin_diff_reac_square_inclusions_aniso
 
 #Pb_Name = multiscale_sto_lin_diff_circ_inclusions_iso
 #Pb_Name = multiscale_sto_lin_diff_circ_inclusions_aniso
