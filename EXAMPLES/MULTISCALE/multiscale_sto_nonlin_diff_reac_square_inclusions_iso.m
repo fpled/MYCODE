@@ -16,8 +16,8 @@ set(0,'DefaultFigureVisible','off'); % change the default figure properties of t
 renderer = 'OpenGL';
 
 % Reference solution - Direct resolution of initial problem based on non-overlapping domain decomposition
-solve_reference = false;
-save_reference = false;
+solve_reference = true;
+save_reference = true;
 load_reference = true;
 calc_MC_error_estimate_ref = false;
 
