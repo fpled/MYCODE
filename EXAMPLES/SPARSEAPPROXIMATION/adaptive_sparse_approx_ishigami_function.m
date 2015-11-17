@@ -7,10 +7,12 @@ clear all
 close all
 
 %% Filename and Pathname
-filename = ['sparse_approx_ishigami_function_nbvar_' num2str(M) '_algorithm_' opts.algorithm];
-if strcmp(opts.algorithm,'MS') || strcmp(opts.algorithm,'RMS')
-    filename = [filename '_bulkparam_' num2str(opts.bulkparam)];
-end
+M = 3; % number of random variables
+filename = ['sparse_approx_ishigami_function_nbvar_' num2str(M)];
+% filename = ['sparse_approx_ishigami_function_nbvar_' num2str(M) '_algorithm_' opts.algorithm];
+% if strcmp(opts.algorithm,'MS') || strcmp(opts.algorithm,'RMS')
+%     filename = [filename '_bulkparam_' num2str(opts.bulkparam)];
+% end
 pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -18,7 +20,6 @@ end
 set(0,'DefaultFigureVisible','on'); % change the default figure properties of the MATLAB root object
 
 %% Random variables
-M = 3; % number of random variables
 rv = RVUNIFORM(-pi,pi);
 RV = RANDVARS(repmat({rv},1,M));
 

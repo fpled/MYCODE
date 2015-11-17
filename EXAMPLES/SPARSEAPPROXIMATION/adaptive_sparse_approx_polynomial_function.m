@@ -7,10 +7,13 @@ clear all
 close all
 
 %% Filename and Pathname
-filename = ['sparse_approx_polynomial_function_partial_degree_' num2str(q) '_nbvar_' num2str(M) '_algorithm_' opts.algorithm];
-if strcmp(opts.algorithm,'MS') || strcmp(opts.algorithm,'RMS')
-    filename = [filename '_bulkparam_' num2str(opts.bulkparam)];
-end
+M = 3; % number of random variables
+q = 2;
+filename = ['sparse_approx_polynomial_function_partial_degree_' num2str(q) '_nbvar_' num2str(M)];
+% filename = ['sparse_approx_polynomial_function_partial_degree_' num2str(q) '_nbvar_' num2str(M) '_algorithm_' opts.algorithm];
+% if strcmp(opts.algorithm,'MS') || strcmp(opts.algorithm,'RMS')
+%     filename = [filename '_bulkparam_' num2str(opts.bulkparam)];
+% end
 pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -18,13 +21,11 @@ end
 set(0,'DefaultFigureVisible','on'); % change the default figure properties of the MATLAB root object
 
 %% Random variables
-M = 3; % number of random variables
 rv = RVUNIFORM(0,1);
 RV = RANDVARS(repmat({rv},1,M));
 
 %% Polynomial function of total degree q*M = 2*3 = 6
-% y = 1/(2^M) * prod_{j=1}^{M}(3*(x_j)^p+1)
-q = 2;
+% y = 1/(2^M) * prod_{j=1}^{M}(3*(x_j)^q+1)
 fun = @(x) (1/(2^(size(x,2)))*prod(3*x.^q+1,2))';
 
 % Polynomial chaos basis

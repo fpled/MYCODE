@@ -6,7 +6,7 @@
 clear all
 close all
 
-% Input data
+%% Input data
 M = 8; % number of random variables M = 2, 4, 8
 filename = ['monoscale_sto_lin_diff_' num2str(M) '_circ_inclusions_iso'];
 pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];

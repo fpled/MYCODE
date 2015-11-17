@@ -35,10 +35,10 @@ myparallel('start');
 glob = GLOBAL();
 glob_out = GLOBALOUT();
 
-if exist([pathname 'gmsh_circular_inclusions.msh'],'file')
-    glob.S = gmsh2femobject(2,[pathname 'gmsh_circular_inclusions.msh'],2);
+if exist([pathname 'gmsh_circular_' num2str(n) '_inclusions.msh'],'file')
+    glob.S = gmsh2femobject(2,[pathname 'gmsh_circular_' num2str(n) '_inclusions.msh'],2);
 elseif exist([pathname 'gmsh_circular_inclusions.geo'],'file')
-    glob.S = gmsh2femobject(2,[pathname 'gmsh_circular_inclusions.geo'],2);
+    glob.S = gmsh2femobject(2,[pathname 'gmsh_circular_' num2str(n) '_inclusions.geo'],2);
 else
     D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
     r = 0.13;
@@ -53,7 +53,7 @@ else
     B{8} = CIRCLE(0.5,0.2,r);
     B{9} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
     cl = 0.02;
-    glob.S = gmshdomainwithinclusion(D,B,cl,cl,[pathname 'gmsh_circular_inclusions']);
+    glob.S = gmshdomainwithinclusion(D,B,cl,cl,[pathname 'gmsh_circular_' num2str(n) '_inclusions']);
 end
 
 % Patches
@@ -370,6 +370,7 @@ for m=1:2:M
     mysaveas(pathname,['multi_index_set_U_dim_' num2str(m) '_' num2str(m+1)],'fig');
     mymatlab2tikz(pathname,['multi_index_set_U_dim_' num2str(m) '_' num2str(m+1) '.tex']);
 end
+
 for k=1:n
     PC_w = getPC(w{k});
     for m=1:2:M
@@ -388,20 +389,26 @@ end
 
 %% Display evolution of multi-index set
 
-% if isfield(result_ref,{'PC_seq_U','PC_seq_w','PC_seq_lambda'})
-%     video_indices(result_ref.PC_seq_U,'filename','multi_index_set_U_ref','pathname',pathname)
-%     for k=1:n
-%         video_indices(result_ref.PC_seq_w{k},'filename',['multi_index_set_w_ref_' num2str(k)],'pathname',pathname)
-%         video_indices(result_ref.PC_seq_lambda{k},'filename',['multi_index_set_lambda_ref_' num2str(k)],'pathname',pathname)
-%     end
-% end
+if isfield(result_ref,{'PC_seq_U','PC_seq_w','PC_seq_lambda'})
+    for m=1:2:M
+        video_indices(result_ref.PC_seq_U,'dim',[m m+1],'filename','multi_index_set_U_ref','pathname',pathname)
+    end
+    for k=1:n
+        for m=1:2:M
+            video_indices(result_ref.PC_seq_w{k},'dim',[m m+1],'filename',['multi_index_set_w_ref_' num2str(k)],'pathname',pathname)
+            video_indices(result_ref.PC_seq_lambda{k},'dim',[m m+1],'filename',['multi_index_set_lambda_ref_' num2str(k)],'pathname',pathname)
+        end
+    end
+end
 
-% if isfield(result,{'PC_seq_w','PC_seq_lambda'})
-%     for k=1:n
-%         video_indices(result.PC_seq_w{k}{end},'filename',['multi_index_set_w_' num2str(k)],'pathname',pathname)
-%         video_indices(result.PC_seq_lambda{k}{end},'filename',['multi_index_set_lambda_' num2str(k)],'pathname',pathname)
-%     end
-% end
+if isfield(result,{'PC_seq_w','PC_seq_lambda'})
+    for k=1:n
+        for m=1:2:M
+            video_indices(result.PC_seq_w{k}{end},'dim',[m m+1],'filename',['multi_index_set_w_' num2str(k)],'pathname',pathname)
+            video_indices(result.PC_seq_lambda{k}{end},'dim',[m m+1],'filename',['multi_index_set_lambda_' num2str(k)],'pathname',pathname)
+        end
+    end
+end
 
 %% Display evolution of cross-validation error indicator, dimension of stochastic space and number of samples w.r.t. number of iterations
 

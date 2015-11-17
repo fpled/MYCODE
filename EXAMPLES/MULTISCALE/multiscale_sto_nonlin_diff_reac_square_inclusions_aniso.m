@@ -362,39 +362,52 @@ mymatlab2tikz(pathname,'cv_error_indicator.tex');
 
 %% Display multi-index set
 
+M = getM(PC);
 PC_U = getPC(U);
-plot_multi_index_set(PC_U,'nolegend')
-mysaveas(pathname,'multi_index_set_U','fig');
-mymatlab2tikz(pathname,'multi_index_set_U.tex');
+for m=1:2:M
+    plot_multi_index_set(PC_U,'dim',[m m+1],'nolegend')
+    mysaveas(pathname,['multi_index_set_U_dim_' num2str(m) '_' num2str(m+1)],'fig');
+    mymatlab2tikz(pathname,['multi_index_set_U_dim_' num2str(m) '_' num2str(m+1) '.tex']);
+end
 
 for k=1:n
     PC_w = getPC(w{k});
-    plot_multi_index_set(PC_w,'nolegend')
-    mysaveas(pathname,['multi_index_set_w_' num2str(k)],'fig');
-    mymatlab2tikz(pathname,['multi_index_set_w_' num2str(k) '.tex']);
+    for m=1:2:M
+        plot_multi_index_set(PC_w,'dim',[m m+1],'nolegend')
+        mysaveas(pathname,['multi_index_set_w_' num2str(k) '_dim_' num2str(m) '_' num2str(m+1)],'fig');
+        mymatlab2tikz(pathname,['multi_index_set_w_' num2str(k) '_dim_' num2str(m) '_' num2str(m+1) '.tex']);
+    end
     
     PC_lambda = getPC(lambda{k});
-    plot_multi_index_set(PC_lambda,'nolegend')
-    mysaveas(pathname,['multi_index_set_lambda_' num2str(k)],'fig');
-    mymatlab2tikz(pathname,['multi_index_set_lambda_' num2str(k) '.tex']);
+    for m=1:2:M
+        plot_multi_index_set(PC_lambda,'dim',[m m+1],'nolegend')
+        mysaveas(pathname,['multi_index_set_lambda_' num2str(k) '_dim_' num2str(m) '_' num2str(m+1)],'fig');
+        mymatlab2tikz(pathname,['multi_index_set_lambda_' num2str(k) '_dim_' num2str(m) '_' num2str(m+1) '.tex']);
+    end
 end
 
 %% Display evolution of multi-index set
 
-% if isfield(result_ref,{'PC_seq_U','PC_seq_w','PC_seq_lambda'})
-%     video_indices(result_ref.PC_seq_U,'filename','multi_index_set_U_ref','pathname',pathname)
-%     for k=1:n
-%         video_indices(result_ref.PC_seq_w{k},'filename',['multi_index_set_w_ref_' num2str(k)],'pathname',pathname)
-%         video_indices(result_ref.PC_seq_lambda{k},'filename',['multi_index_set_lambda_ref_' num2str(k)],'pathname',pathname)
-%     end
-% end
+if isfield(result_ref,{'PC_seq_U','PC_seq_w','PC_seq_lambda'})
+    for m=1:2:M
+        video_indices(result_ref.PC_seq_U,'dim',[m m+1],'filename','multi_index_set_U_ref','pathname',pathname)
+    end
+    for k=1:n
+        for m=1:2:M
+            video_indices(result_ref.PC_seq_w{k},'dim',[m m+1],'filename',['multi_index_set_w_ref_' num2str(k)],'pathname',pathname)
+            video_indices(result_ref.PC_seq_lambda{k},'dim',[m m+1],'filename',['multi_index_set_lambda_ref_' num2str(k)],'pathname',pathname)
+        end
+    end
+end
 
-% if isfield(result,{'PC_seq_w','PC_seq_lambda'})
-%     for k=1:n
-%         video_indices(result.PC_seq_w{k}{end},'filename',['multi_index_set_w_' num2str(k)],'pathname',pathname)
-%         video_indices(result.PC_seq_lambda{k}{end},'filename',['multi_index_set_lambda_' num2str(k)],'pathname',pathname)
-%     end
-% end
+if isfield(result,{'PC_seq_w','PC_seq_lambda'})
+    for k=1:n
+        for m=1:2:M
+            video_indices(result.PC_seq_w{k}{end},'dim',[m m+1],'filename',['multi_index_set_w_' num2str(k)],'pathname',pathname)
+            video_indices(result.PC_seq_lambda{k}{end},'dim',[m m+1],'filename',['multi_index_set_lambda_' num2str(k)],'pathname',pathname)
+        end
+    end
+end
 
 %% Display evolution of cross-validation error indicator, dimension of stochastic space and number of samples w.r.t. number of iterations
 

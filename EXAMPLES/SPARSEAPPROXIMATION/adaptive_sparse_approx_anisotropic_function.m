@@ -7,10 +7,12 @@ clear all
 close all
 
 %% Filename and Pathname
-filename = ['sparse_approx_anisotropic_function_nbvar_' num2str(M) '_algorithm_' opts.algorithm];
-if strcmp(opts.algorithm,'MS') || strcmp(opts.algorithm,'RMS')
-    filename = [filename '_bulkparam_' num2str(opts.bulkparam)];
-end
+M = 16; % number of random variables
+filename = ['sparse_approx_anisotropic_function_nbvar_' num2str(M)];
+% filename = ['sparse_approx_anisotropic_function_nbvar_' num2str(M) '_algorithm_' opts.algorithm];
+% if strcmp(opts.algorithm,'MS') || strcmp(opts.algorithm,'RMS')
+%     filename = [filename '_bulkparam_' num2str(opts.bulkparam)];
+% end
 pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -18,7 +20,6 @@ end
 set(0,'DefaultFigureVisible','on'); % change the default figure properties of the MATLAB root object
 
 %% Random variables
-M = 16; % number of random variables
 rv = RVUNIFORM(0,1);
 RV = RANDVARS(repmat({rv},1,M));
 
@@ -100,7 +101,7 @@ fprintf('elapsed time = %f s\n',time);
 disp(' ')
 
 %% Display evolution of multi-index set
-% video_indices(PC_seq,'dim',[3 4 16],'filename','multi_index_set','pathname',pathname)
+video_indices(PC_seq,'dim',[3 4 16],'filename','multi_index_set','pathname',pathname)
 % video_indices(PC_seq,'dim',[1 2 4],'filename','multi_index_set','pathname',pathname)
 
 %% Display evolution of cross-validation error indicator, dimension of stochastic space and number of samples w.r.t. number of iterations
