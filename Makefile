@@ -39,10 +39,10 @@ Pb_Name = multiscale_sto_nonlin_diff_reac_square_inclusions_iso
 #Pb_Name = monoscale_sto_lin_diff_circ_inclusions_iso
 #Pb_Name = monoscale_sto_lin_diff_circ_inclusions_aniso
 
-#Pb_Name = adaptive_sparse_approx_polynomial_function
-#Pb_Name = adaptive_sparse_approx_ishigami_function
-#Pb_Name = adaptive_sparse_approx_anisotropic_function
-#Pb_Name = adaptive_sparse_approx_geometric_brownian
+#Pb_Name = sparse_approx_polynomial_function
+#Pb_Name = sparse_approx_ishigami_function
+#Pb_Name = sparse_approx_anisotropic_function
+#Pb_Name = sparse_approx_geometric_brownian
 
 # Default ---------------------------
 default:
@@ -87,10 +87,10 @@ monosto:
 
 # Sparse approximation ---------------------------
 sparseapprox:
-	matlab -nodesktop -nosplash -noFigureWindows -r "adaptive_sparse_approx_polynomial_function; exit" -logfile RESULTS/adaptive_sparse_approx_polynomial_function.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "adaptive_sparse_approx_ishigami_function; exit" -logfile RESULTS/adaptive_sparse_approx_ishigami_function.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "adaptive_sparse_approx_anisotropic_function; exit" -logfile RESULTS/adaptive_sparse_approx_anisotropic_function.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "adaptive_sparse_approx_geometric_brownian; exit" -logfile RESULTS/adaptive_sparse_approx_geometric_brownian.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "sparse_approx_polynomial_function; exit" -logfile RESULTS/sparse_approx_polynomial_function.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "sparse_approx_ishigami_function; exit" -logfile RESULTS/sparse_approx_ishigami_function.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "sparse_approx_anisotropic_function; exit" -logfile RESULTS/sparse_approx_anisotropic_function.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "sparse_approx_geometric_brownian; exit" -logfile RESULTS/sparse_approx_geometric_brownian.log
 
 # Clean ---------------------------
 clean:

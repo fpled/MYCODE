@@ -1,15 +1,16 @@
-%% Adaptive sparse polynomial approximation - Anisotropic function %%
-%%-----------------------------------------------------------------%%
-% [Chkifa Cohen Schwab 2014]
+%% Adaptive sparse polynomial approximation - Polynomial function %%
+%%----------------------------------------------------------------%%
+% [Sudret 2008]
 
 % clc
 clear all
 close all
 
 %% Filename and Pathname
-M = 16; % number of random variables
-filename = ['sparse_approx_anisotropic_function_nbvar_' num2str(M)];
-% filename = ['sparse_approx_anisotropic_function_nbvar_' num2str(M) '_algorithm_' opts.algorithm];
+M = 3; % number of random variables
+q = 2; % power of random variables
+filename = ['sparse_approx_polynomial_function_partial_degree_' num2str(q) '_nbvar_' num2str(M)];
+% filename = ['sparse_approx_polynomial_function_partial_degree_' num2str(q) '_nbvar_' num2str(M) '_algorithm_' opts.algorithm];
 % if strcmp(opts.algorithm,'MS') || strcmp(opts.algorithm,'RMS')
 %     filename = [filename '_bulkparam_' num2str(opts.bulkparam)];
 % end
@@ -17,24 +18,15 @@ pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-set(0,'DefaultFigureVisible','on'); % change the default figure properties of the MATLAB root object
+set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 
 %% Random variables
 rv = RVUNIFORM(0,1);
 RV = RANDVARS(repmat({rv},1,M));
 
-%% Anisotropic function
-% y = x_3*sin(x_4+x_16)
-fun = @(x) (x(:,3).*sin(x(:,4)+x(:,16)))';
-
-% y = 1/(1 + sum_{j=1}^{M}(g_j*x_j)) with g_j = 3/(5*j^3)
-% fun = @(x) (1./(ones(1,size(x,1))+3./(5.*(1:size(x,2)).^3)*x'));
-
-% y = 1/(1 + (sum_{j=1}^{M}(g_j*x_j))^2) with g_j = 5/(j^3)
-% fun = @(x) (1./(ones(1,size(x,1))+(5./((1:size(x,2)).^3)*x').^2));
-
-% y = 1/(1 + sum_{j=1}^{M}(g_j*x_j)) with g_j = 10^(-j)
-% fun = @(x) (1./(ones(1,size(x,1))+(10.^(-(1:size(x,2))))*x'));
+%% Polynomial function of total degree q*M = 2*3 = 6
+% y = 1/(2^M) * prod_{j=1}^{M}(3*(x_j)^q+1)
+fun = @(x) (1/(2^(size(x,2)))*prod(3*x.^q+1,2))';
 
 % Polynomial chaos basis
 p = 0; % (initial) order of PC expansion
@@ -74,7 +66,7 @@ regul = ''; % type of regularization ('' or 'l0' or 'l1')
 % Cross-validation
 cv = 'leaveout'; % type of cross-validation procedure ('leaveout' or 'kfold')
 k = 10; % number of folds (only for k-fold cross-validation procedure)
-opts.tol = 1e-6; % prescribed tolerance for cross-validation error
+opts.tol = 1e-12; % prescribed tolerance for cross-validation error
 opts.tolstagn = 1e-1; % prescribed stagnation tolerance for cross-validation error
 opts.toloverfit = 1.1; % prescribed tolerance to detect overfitting for cross-validation error such that err>=toloverfit*err_old
 opts.correction = false; % correction for cross-validation error
@@ -101,8 +93,8 @@ fprintf('elapsed time = %f s\n',time);
 disp(' ')
 
 %% Display evolution of multi-index set
-video_indices(PC_seq,'dim',[3 4 16],'filename','multi_index_set','pathname',pathname)
-% video_indices(PC_seq,'dim',[1 2 4],'filename','multi_index_set','pathname',pathname)
+dim = 1:3;
+video_indices(PC_seq,'dim',dim,'filename','multi_index_set','pathname',pathname)
 
 %% Display evolution of cross-validation error indicator, dimension of stochastic space and number of samples w.r.t. number of iterations
 plot_adaptive_algorithm(err_seq,PC_seq,N_seq);
@@ -110,22 +102,67 @@ mysaveas(pathname,'adaptive_algorithm.fig','fig');
 mymatlab2tikz(pathname,'adaptive_algorithm.tex');
 
 %% Display evolution of cross-validation error indicator w.r.t. number of samples
-plot_cv_error_indicator_vs_nb_samples(err_seq,N_seq);
+plot_cv_error_indicator_vs_nb_samples(err_seq,N_seq,'nolegend');
 mysaveas(pathname,'cv_error_indicator_vs_nb_samples.fig','fig');
 mymatlab2tikz(pathname,'cv_error_indicator_vs_nb_samples.tex');
 
 %% Display evolution of cross-validation error indicator w.r.t. dimension of stochastic space
-plot_cv_error_indicator_vs_dim_stochastic_space(err_seq,PC_seq);
+plot_cv_error_indicator_vs_dim_stochastic_space(err_seq,PC_seq,'nolegend');
 mysaveas(pathname,'cv_error_indicator_vs_dim_stochastic_space.fig','fig');
 mymatlab2tikz(pathname,'cv_error_indicator_vs_dim_stochastic_space.tex');
 
 %% Display multi-index set
-dim = [3 4 16];
+dim = 1:3;
 plot_multi_index_set(PC,'dim',dim,'nolegend')
 mysaveas(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end))],'fig');
 mymatlab2tikz(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end)) '.tex']);
 
-dim = [1 2 4];
-plot_multi_index_set(PC,'dim',dim,'nolegend')
-mysaveas(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end))],'fig');
-mymatlab2tikz(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end)) '.tex']);
+%% Quantities of interest : mean, variance, Sobol indices
+if q==2
+    % Analytical exact values
+    anal.mean = 1;
+    anal.var = (6/5)^M - 1;
+    anal.S1 = 5^(-1)/anal.var;
+    anal.S2 = anal.S1;
+    anal.S3 = anal.S1;
+    anal.S12 = 5^(-2)/anal.var;
+    anal.S13 = anal.S12;
+    anal.S23 = anal.S12;
+    anal.S123 = 5^(-3)/anal.var;
+    anal.S1T = anal.S1 + anal.S12 + anal.S13 + anal.S123;
+    anal.S2T = anal.S2 + anal.S12 + anal.S23 + anal.S123;
+    anal.S3T = anal.S3 + anal.S13 + anal.S23 + anal.S123;
+    % Numerical approximate values
+    num.mean = mean(u);
+    num.var = variance(u);
+    num.S1 = sobol_indices(u,1);
+    num.S2 = sobol_indices(u,2);
+    num.S3 = sobol_indices(u,3);
+    num.S12 = sobol_indices_group(u,[1,2]) - num.S1 - num.S2;
+    num.S13 = sobol_indices_group(u,[1,3]) - num.S1 - num.S3;
+    num.S23 = sobol_indices_group(u,[2,3]) - num.S2 - num.S3;
+    num.S123 = sobol_indices_group(u,[1,2,3]) - num.S1 - num.S2 - num.S3 - num.S12 - num.S13 - num.S23;
+    num.S1T = num.S1 + num.S12 + num.S13 + num.S123;
+    num.S2T = num.S2 + num.S12 + num.S23 + num.S123;
+    num.S3T = num.S3 + num.S13 + num.S23 + num.S123;
+    % Comparative table
+    fanal = '%10.5f';
+    fnum = '%9.5f';
+    ferr = '%14.4e';
+    disp('+-------------------+------------+-----------+----------------+')
+    disp('| Quantity \ Value  | Analytical | Numerical | Relative error |')
+    disp('+-------------------+------------+-----------+----------------+')
+    fprintf(['| Mean  E           | ' fanal ' | ' fnum ' | ' ferr ' |\n'],anal.mean,num.mean,abs((anal.mean-num.mean)/anal.mean))
+    fprintf(['| Variance V        | ' fanal ' | ' fnum ' | ' ferr ' |\n'],anal.var,num.var,abs((anal.var-num.var)/anal.var))
+    fprintf(['| Sobol index S_1   | ' fanal ' | ' fnum ' | ' ferr ' |\n'],anal.S1,num.S1,abs((anal.S1-num.S1)/anal.S1))
+    fprintf(['| Sobol index S_2   | ' fanal ' | ' fnum ' | ' ferr ' |\n'],anal.S2,num.S2,abs((anal.S2-num.S2)/anal.S2))
+    fprintf(['| Sobol index S_3   | ' fanal ' | ' fnum ' | ' ferr ' |\n'],anal.S3,num.S3,abs((anal.S3-num.S3)/anal.S3))
+    fprintf(['| Sobol index S_12  | ' fanal ' | ' fnum ' | ' ferr ' |\n'],anal.S12,num.S12,abs((anal.S12-num.S12)/anal.S12))
+    fprintf(['| Sobol index S_13  | ' fanal ' | ' fnum ' | ' ferr ' |\n'],anal.S13,num.S13,abs((anal.S13-num.S13)/anal.S13))
+    fprintf(['| Sobol index S_23  | ' fanal ' | ' fnum ' | ' ferr ' |\n'],anal.S23,num.S23,abs((anal.S23-num.S23)/anal.S23))
+    fprintf(['| Sobol index S_123 | ' fanal ' | ' fnum ' | ' ferr ' |\n'],anal.S123,num.S123,abs((anal.S123-num.S123)/anal.S123))
+    fprintf(['| Sobol index S_1^T | ' fanal ' | ' fnum ' | ' ferr ' |\n'],anal.S1T,num.S1T,abs((anal.S1T-num.S1T)/anal.S1T))
+    fprintf(['| Sobol index S_2^T | ' fanal ' | ' fnum ' | ' ferr ' |\n'],anal.S2T,num.S2T,abs((anal.S2T-num.S2T)/anal.S2T))
+    fprintf(['| Sobol index S_3^T | ' fanal ' | ' fnum ' | ' ferr ' |\n'],anal.S3T,num.S3T,abs((anal.S3T-num.S3T)/anal.S3T))
+    disp('+-------------------+------------+-----------+----------------+')
+end

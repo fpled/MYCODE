@@ -16,7 +16,7 @@ pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-set(0,'DefaultFigureVisible','on'); % change the default figure properties of the MATLAB root object
+set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 
 %% Random variables
 rv = RVNORMAL(0,1);
@@ -98,8 +98,8 @@ mysaveas(pathname,'geometric_brownian_kl.fig','fig');
 mymatlab2tikz(pathname,'geometric_brownian_kl.tex');
 
 %% Display evolution of multi-index set
-% video_indices(PC_seq,'dim',[1 3 5],'filename','multi_index_set','pathname',pathname)
-% video_indices(PC_seq,'dim',[1 7 10],'filename','multi_index_set','pathname',pathname)
+video_indices(PC_seq,'dim',[1 3 5],'filename','multi_index_set','pathname',pathname)
+video_indices(PC_seq,'dim',[1 7 10],'filename','multi_index_set','pathname',pathname)
 
 %% Display evolution of cross-validation error indicator, dimension of stochastic space and number of samples w.r.t. number of iterations
 plot_adaptive_algorithm(err_seq,PC_seq,N_seq);

@@ -17,7 +17,7 @@ pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-set(0,'DefaultFigureVisible','on'); % change the default figure properties of the MATLAB root object
+set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 
 %% Random variables
 rv = RVUNIFORM(-pi,pi);
@@ -94,8 +94,8 @@ fprintf('elapsed time = %f s\n',time);
 disp(' ')
 
 %% Display evolution of multi-index set
-% dim = 1:3;
-% video_indices(PC_seq,'dim',dim,'filename','multi_index_set','pathname',pathname)
+dim = 1:3;
+video_indices(PC_seq,'dim',dim,'filename','multi_index_set','pathname',pathname)
 
 %% Display evolution of cross-validation error indicator, dimension of stochastic space and number of samples w.r.t. number of iterations
 plot_adaptive_algorithm(err_seq,PC_seq,N_seq);

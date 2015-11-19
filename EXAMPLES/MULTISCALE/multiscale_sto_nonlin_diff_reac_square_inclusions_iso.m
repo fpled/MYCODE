@@ -9,6 +9,7 @@ close all
 n = 8; % number of patches
 filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_iso'];
 pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+%pathname = '/Users/Op/Documents/Recherche/Conferences/2015_Seminaire_MSSMaT/Seminaire_MSSMaT_2015_Presentation/figures/iso/';
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -16,8 +17,8 @@ set(0,'DefaultFigureVisible','off'); % change the default figure properties of t
 renderer = 'OpenGL';
 
 % Reference solution - Direct resolution of initial problem based on non-overlapping domain decomposition
-solve_reference = true;
-save_reference = true;
+solve_reference = false;
+save_reference = false;
 load_reference = true;
 calc_MC_error_estimate_ref = false;
 
@@ -387,17 +388,17 @@ end
 
 %% Display evolution of multi-index set
 
-if isfield(result_ref,{'PC_seq_U','PC_seq_w','PC_seq_lambda'})
-    for m=1:2:M
-        video_indices(result_ref.PC_seq_U,'dim',[m m+1],'filename','multi_index_set_U_ref','pathname',pathname)
-    end
-    for k=1:n
-        for m=1:2:M
-            video_indices(result_ref.PC_seq_w{k},'dim',[m m+1],'filename',['multi_index_set_w_ref_' num2str(k)],'pathname',pathname)
-            video_indices(result_ref.PC_seq_lambda{k},'dim',[m m+1],'filename',['multi_index_set_lambda_ref_' num2str(k)],'pathname',pathname)
-        end
-    end
-end
+% if isfield(result_ref,{'PC_seq_U','PC_seq_w','PC_seq_lambda'})
+%     for m=1:2:M
+%         video_indices(result_ref.PC_seq_U,'dim',[m m+1],'filename','multi_index_set_U_ref','pathname',pathname)
+%     end
+%     for k=1:n
+%         for m=1:2:M
+%             video_indices(result_ref.PC_seq_w{k},'dim',[m m+1],'filename',['multi_index_set_w_ref_' num2str(k)],'pathname',pathname)
+%             video_indices(result_ref.PC_seq_lambda{k},'dim',[m m+1],'filename',['multi_index_set_lambda_ref_' num2str(k)],'pathname',pathname)
+%         end
+%     end
+% end
 
 if isfield(result,{'PC_seq_w','PC_seq_lambda'})
     for k=1:n

@@ -11,7 +11,7 @@ pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-set(0,'DefaultFigureVisible','on'); % change the default figure properties of the MATLAB root object
+set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 
 %% Random variables
 M = 2; % number of random variables

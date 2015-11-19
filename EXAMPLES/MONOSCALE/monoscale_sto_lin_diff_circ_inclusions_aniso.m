@@ -155,11 +155,11 @@ end
 
 %% Display evolution of cross-validation error indicator, dimension of stochastic space and number of samples w.r.t. number of iterations
 
-if isfield(result,{'cv_error_indicator_seq','PC_seq','N_seq'})
-    plot_adaptive_algorithm(result.cv_error_indicator_seq,result.PC_seq,result.N_seq);
-    mysaveas(pathname,'adaptive_algorithm.fig','fig');
-    mymatlab2tikz(pathname,'adaptive_algorithm.tex');
-end
+% if isfield(result,{'cv_error_indicator_seq','PC_seq','N_seq'})
+%     plot_adaptive_algorithm(result.cv_error_indicator_seq,result.PC_seq,result.N_seq);
+%     mysaveas(pathname,'adaptive_algorithm.fig','fig');
+%     mymatlab2tikz(pathname,'adaptive_algorithm.tex');
+% end
 
 %% Display statistical outputs : mean, variance, standard deviation, Sobol and other sensitivity indices
 
