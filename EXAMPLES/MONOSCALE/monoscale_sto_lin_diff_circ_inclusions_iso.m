@@ -146,13 +146,11 @@ save(fullfile(pathname,'all.mat'));
 
 % Display partition of mesh system.S
 plot_partition(system.S);
-mysaveas(pathname,'mesh_partition',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(pathname,'mesh_partition',renderer);
+mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
 
 % Display mesh system.S
 plot_model(system.S,'nolegend');
-mysaveas(pathname,'mesh',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(pathname,'mesh',renderer);
+mysaveas(pathname,'mesh',{'fig','epsc2'},renderer);
 
 %% Display multi-index set
 
@@ -183,27 +181,21 @@ end
 % plot_stats(system.S,u);
 
 plot_mean(system.S,u);
-mysaveas(pathname,'mean_sol',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(pathname,'mean_sol',renderer);
+mysaveas(pathname,'mean_sol',{'fig','epsc2'},renderer);
 
 plot_var(system.S,u);
-mysaveas(pathname,'var_sol',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(pathname,'var_sol',renderer);
+mysaveas(pathname,'var_sol',{'fig','epsc2'},renderer);
 
 plot_std(system.S,u);
-mysaveas(pathname,'std_sol',{'fig','epsc2','pdf'},renderer);
-mysaveaspdf(pathname,'std_sol',renderer);
+mysaveas(pathname,'std_sol',{'fig','epsc2'},renderer);
 
 M = getM(PC);
 for m=1:M
     plot_sobol_indices(system.S,u,m);
-    mysaveas(pathname,['sobol_indices_sol_var_' num2str(m)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(pathname,['sobol_indices_sol_var_' num2str(m)],renderer);
-end
-for m=1:M
+    mysaveas(pathname,['sobol_indices_sol_var_' num2str(m)],{'fig','epsc2'},renderer);
+    
     plot_sensitivity_indices_max_var(system.S,u,m);
-    mysaveas(pathname,['sensitivity_indices_sol_var_' num2str(m)],{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(pathname,['sensitivity_indices_sol_var_' num2str(m)],renderer);
+    mysaveas(pathname,['sensitivity_indices_sol_var_' num2str(m)],{'fig','epsc2'},renderer);
 end
 
 %% Display random evaluations of solution u

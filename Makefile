@@ -49,7 +49,7 @@ default:
 	matlab -nodesktop -nosplash -noFigureWindows -r "$(Pb_Name); exit" -logfile RESULTS/$(Pb_Name).log
 
 # All ---------------------------
-all: multidet multisto monosto
+all: sparseapprox monosto multidet multisto
 
 # Multiscale ---------------------------
 multi: multidet multisto
