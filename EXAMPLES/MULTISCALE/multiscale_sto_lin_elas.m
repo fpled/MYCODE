@@ -438,7 +438,7 @@ plot_var_U(glob,U);
 mysaveas(pathname,'var_U',{'fig','epsc2'},renderer);
 
 plot_var_sol(glob,patches,interfaces,U,w);
-mysaveas(pathname,'var_sol',{'fig','epsc2'},renderer);g
+mysaveas(pathname,'var_sol',{'fig','epsc2'},renderer);
 
 for i=1:2
     % plot_stats_sols(glob,patches,interfaces,U,w,lambda,'displ',i);
