@@ -19,7 +19,7 @@ renderer = 'OpenGL';
 solve_reference = true;
 
 % Multscale solution - Reformulated global-local iterative algorithm based on overlapping domain decomposition
-solve_multscale = true;
+solve_multiscale = true;
 
 % Parallel computing
 % myparallel('start');
