@@ -17,13 +17,11 @@ set(0,'DefaultFigureVisible','off'); % change the default figure properties of t
 renderer = 'OpenGL';
 
 % Reference solution - Direct resolution of initial problem based on non-overlapping domain decomposition
-solve_reference = false;
-save_reference = false;
-load_reference = true;
+solve_reference = true;
 calc_MC_error_estimate_ref = false;
 
-% Reconstructed solution - Reformulated global-local iterative algorithm based on overlapping domain decomposition
-save_reconstructed = true;
+% Multiscale solution - Reformulated global-local iterative algorithm based on overlapping domain decomposition
+solve_multiscale = true;
 calc_MC_error_estimate = false;
 
 % Parallel computing
@@ -35,7 +33,7 @@ myparallel('start');
 glob = GLOBAL();
 glob_out = GLOBALOUT();
 
-D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
+D = DOMAIN(2,[0.0,0.0],[5.0,5.0]);
 nbelem = [20,20];
 glob.S = build_model(D,'nbelem',nbelem);
 % cl = 0.25;
@@ -45,14 +43,14 @@ glob.S = build_model(D,'nbelem',nbelem);
 patches = PATCHES(n);
 
 D_patch = cell(1,n);
-D_patch{1} = DOMAIN(2,[0.1,0.1],[0.3,0.3]);
-D_patch{2} = DOMAIN(2,[0.1,0.4],[0.3,0.6]);
-D_patch{3} = DOMAIN(2,[0.1,0.7],[0.3,0.9]);
-D_patch{4} = DOMAIN(2,[0.4,0.7],[0.6,0.9]);
-D_patch{5} = DOMAIN(2,[0.7,0.7],[0.9,0.9]);
-D_patch{6} = DOMAIN(2,[0.7,0.4],[0.9,0.6]);
-D_patch{7} = DOMAIN(2,[0.7,0.1],[0.9,0.3]);
-D_patch{8} = DOMAIN(2,[0.4,0.1],[0.6,0.3]);
+D_patch{1} = DOMAIN(2,[0.5,0.5],[1.5,1.5]);
+D_patch{2} = DOMAIN(2,[0.5,2.0],[1.5,3.0]);
+D_patch{3} = DOMAIN(2,[0.1,0.7],[1.5,4.5]);
+D_patch{4} = DOMAIN(2,[0.4,0.7],[3.0,4.5]);
+D_patch{5} = DOMAIN(2,[0.7,0.7],[4.5,4.5]);
+D_patch{6} = DOMAIN(2,[0.7,0.4],[4.5,0.6]);
+D_patch{7} = DOMAIN(2,[0.7,0.1],[4.5,1.5]);
+D_patch{8} = DOMAIN(2,[0.4,0.1],[3.0,1.5]);
 nbelem_patch = [40,40];
 % cl_patch = 0.025;
 for k=1:n
@@ -239,21 +237,13 @@ R.solver = NEWTONSOLVER('type','tangent','increment',true,...
     'maxiter',100,'tol',1e-12,'display',false,'stopini',true);
 if solve_reference
     [U_ref,w_ref,lambda_ref,result_ref] = solve_random(R,glob_out,patches,interfaces,method_ref);
-    if save_reference
-        % Save reference solution (U_ref,w_ref,lambda_ref)
-        save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
-    end
-elseif load_reference
+    save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
+else
     if ~exist(fullfile(pathname,'reference_solution.mat'),'file')
         error(['File reference_solution.mat does not exist in folder ' pathname]);
     else
-        % Load reference solution (U_ref,w_ref,lambda_ref)
         load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
     end
-else
-    U_ref = [];
-    w_ref = repmat([],[1,n]);
-    lambda_ref = repmat([],[1,n]);
 end
 
 %% Monte Carlo error estimation of reference solution u_ref=(U_ref,w_ref)
@@ -271,14 +261,19 @@ end
 I = ITERATIVESOLVER('display',true,'displayiter',true,...
     'maxiter',20,'tol',eps,'rho','Aitken',...
     'errorindicator','reference','reference',{{U_ref,w_ref,lambda_ref}});
-[U,w,lambda,result] = solve_random(I,glob,patches,interfaces,method);
-if save_reconstructed
-    % Save reconstructed solution (U,w,lambda)
+if solve_multiscale
+    [U,w,lambda,result] = solve_random(I,glob,patches,interfaces,method);
     save(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
+else
+    if ~exist(fullfile(pathname,'solution.mat'),'file')
+        error(['File solution.mat does not exist in folder ' pathname]);
+    else
+        load(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
+    end
 end
 fprintf('\n');
 
-%% Monte Carlo error estimation of reconstructed solution u=(U,w) at final iteration
+%% Monte Carlo error estimation of multiscale solution u=(U,w) at final iteration
 
 if calc_MC_error_estimate
     nbsamples = 100;
@@ -503,23 +498,23 @@ end
 
 %% Display relative error in statistical outputs : mean, variance, standard deviation
 
-if exist('U_ref','var') && exist('w_ref','var') && exist('lambda_ref','var')
-    % plot_error_stats_sols(glob,patches,interfaces,U,w,lambda,U_ref,w_ref,lambda_ref);
-    
-    plot_error_mean_sol(glob,patches,interfaces,U,w,U_ref,w_ref);
-    mysaveas(pathname,'error_mean_sol',{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(pathname,'error_mean_sol',renderer);
-    
-    plot_error_var_sol(glob,patches,interfaces,U,w,U_ref,w_ref);
-    mysaveas(pathname,'error_var_sol',{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(pathname,'error_var_sol',renderer);
-    
-    plot_error_std_sol(glob,patches,interfaces,U,w,U_ref,w_ref);
-    mysaveas(pathname,'error_std_sol',{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(pathname,'error_std_sol',renderer);
-end
+% if exist('U_ref','var') && exist('w_ref','var') && exist('lambda_ref','var')
+%     % plot_error_stats_sols(glob,patches,interfaces,U,w,lambda,U_ref,w_ref,lambda_ref);
+%     
+%     plot_error_mean_sol(glob,patches,interfaces,U,w,U_ref,w_ref);
+%     mysaveas(pathname,'error_mean_sol',{'fig','epsc2','pdf'},renderer);
+%     mysaveaspdf(pathname,'error_mean_sol',renderer);
+%     
+%     plot_error_var_sol(glob,patches,interfaces,U,w,U_ref,w_ref);
+%     mysaveas(pathname,'error_var_sol',{'fig','epsc2','pdf'},renderer);
+%     mysaveaspdf(pathname,'error_var_sol',renderer);
+%     
+%     plot_error_std_sol(glob,patches,interfaces,U,w,U_ref,w_ref);
+%     mysaveas(pathname,'error_std_sol',{'fig','epsc2','pdf'},renderer);
+%     mysaveaspdf(pathname,'error_std_sol',renderer);
+% end
 
-%% Display random evaluations of reference solution u_ref=(U_ref,w_ref) and reconstructed solution u=(U,w) at final iteration
+%% Display random evaluations of reference solution u_ref=(U_ref,w_ref) and multiscale solution u=(U,w) at final iteration
 
 % nbsamples = 3;
 % for s=1:nbsamples

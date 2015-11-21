@@ -18,12 +18,10 @@ renderer = 'OpenGL';
 
 % Reference solution - Direct resolution of initial problem based on non-overlapping domain decomposition
 solve_reference = true;
-save_reference = true;
-load_reference = true;
 calc_MC_error_estimate_ref = false;
 
-% Reconstructed solution - Reformulated global-local iterative algorithm based on overlapping domain decomposition
-save_reconstructed = true;
+% Multiscale solution - Reformulated global-local iterative algorithm based on overlapping domain decomposition
+solve_multiscale = true;
 calc_MC_error_estimate = false;
 
 % Parallel computing
@@ -218,21 +216,13 @@ end
 R = REFERENCESOLVER('display',true,'change_of_variable',false,'inittype','zero');
 if solve_reference
     [U_ref,w_ref,lambda_ref,result_ref] = solve_random(R,glob_out,patches,interfaces,method_ref);
-    if save_reference
-        % Save reference solution (U_ref,w_ref,lambda_ref)
-        save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
-    end
-elseif load_reference
+    save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
+else
     if ~exist(fullfile(pathname,'reference_solution.mat'),'file')
         error(['File reference_solution.mat does not exist in folder ' pathname]);
     else
-        % Load reference solution (U_ref,w_ref,lambda_ref)
         load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
     end
-else
-    U_ref = [];
-    w_ref = repmat([],[1,n]);
-    lambda_ref = repmat([],[1,n]);
 end
 
 %% Monte Carlo error estimation of reference solution u_ref=(U_ref,w_ref)
@@ -250,14 +240,19 @@ end
 I = ITERATIVESOLVER('display',true,'displayiter',true,...
     'maxiter',20,'tol',eps,'rho','Aitken',...
     'errorindicator','reference','reference',{{U_ref,w_ref,lambda_ref}});
-[U,w,lambda,result] = solve_random(I,glob,patches,interfaces,method);
-if save_reconstructed
-    % Save reconstructed solution (U,w,lambda)
+if solve_multiscale
+    [U,w,lambda,result] = solve_random(I,glob,patches,interfaces,method);
     save(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
+else
+    if ~exist(fullfile(pathname,'solution.mat'),'file')
+        error(['File solution.mat does not exist in folder ' pathname]);
+    else
+        load(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
+    end
 end
 fprintf('\n');
 
-%% Monte Carlo error estimation of reconstructed solution u=(U,w) at final iteration
+%% Monte Carlo error estimation of multiscale solution u=(U,w) at final iteration
 
 if calc_MC_error_estimate
     nbsamples = 100;
@@ -476,28 +471,28 @@ end
 
 %% Display relative error in statistical outputs : mean, variance, standard deviation
 
-if exist('U_ref','var') && exist('w_ref','var') && exist('lambda_ref','var')
-    % plot_error_stats_sols(glob,patches,interfaces,U,w,lambda,U_ref,w_ref,lambda_ref);
-    
-    plot_error_mean_sol(glob,patches,interfaces,U,w,U_ref,w_ref);
-    mysaveas(pathname,'error_mean_sol',{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(pathname,'error_mean_sol',renderer);
-    
-    plot_error_var_sol(glob,patches,interfaces,U,w,U_ref,w_ref);
-    mysaveas(pathname,'error_var_sol',{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(pathname,'error_var_sol',renderer);
-    
-    plot_error_std_sol(glob,patches,interfaces,U,w,U_ref,w_ref);
-    mysaveas(pathname,'error_std_sol',{'fig','epsc2','pdf'},renderer);
-    mysaveaspdf(pathname,'error_std_sol',renderer);
-end
+% if exist('U_ref','var') && exist('w_ref','var') && exist('lambda_ref','var')
+%     % plot_error_stats_sols(glob,patches,interfaces,U,w,lambda,U_ref,w_ref,lambda_ref);
+%     
+%     plot_error_mean_sol(glob,patches,interfaces,U,w,U_ref,w_ref);
+%     mysaveas(pathname,'error_mean_sol',{'fig','epsc2','pdf'},renderer);
+%     mysaveaspdf(pathname,'error_mean_sol',renderer);
+%     
+%     plot_error_var_sol(glob,patches,interfaces,U,w,U_ref,w_ref);
+%     mysaveas(pathname,'error_var_sol',{'fig','epsc2','pdf'},renderer);
+%     mysaveaspdf(pathname,'error_var_sol',renderer);
+%     
+%     plot_error_std_sol(glob,patches,interfaces,U,w,U_ref,w_ref);
+%     mysaveas(pathname,'error_std_sol',{'fig','epsc2','pdf'},renderer);
+%     mysaveaspdf(pathname,'error_std_sol',renderer);
+% end
 
 %% Quantities of interest
 % I_1 : mean value of U over square subdomain I{9}
 % I_2 : mean value of u over domain D
 % I_3 : mean value of the gradient of u over domain D
 
-%% Display random evaluations of reference solution u_ref=(U_ref,w_ref) and reconstructed solution u=(U,w) at final iteration
+%% Display random evaluations of reference solution u_ref=(U_ref,w_ref) and multiscale solution u=(U,w) at final iteration
 
 % nbsamples = 3;
 % for s=1:nbsamples

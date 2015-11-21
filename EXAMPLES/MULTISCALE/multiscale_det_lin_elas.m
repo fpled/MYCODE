@@ -17,11 +17,9 @@ renderer = 'OpenGL';
 
 % Reference solution - Direct resolution of initial problem based on non-overlapping domain decomposition
 solve_reference = true;
-save_reference = true;
-load_reference = true;
 
-% Reconstructed solution - Reformulated global-local iterative algorithm based on overlapping domain decomposition
-save_reconstructed = true;
+% Multscale solution - Reformulated global-local iterative algorithm based on overlapping domain decomposition
+solve_multscale = true;
 
 % Parallel computing
 % myparallel('start');
@@ -215,21 +213,13 @@ end
 R = REFERENCESOLVER('display',true,'change_of_variable',false,'inittype','zero');
 if solve_reference
     [U_ref,w_ref,lambda_ref] = solve(R,glob_out,patches,interfaces);
-    if save_reference
-        % Save reference solution (U_ref,w_ref,lambda_ref)
-        save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
-    end
-elseif load_reference
+    save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
+else
     if ~exist(fullfile(pathname,'reference_solution.mat'),'file')
         error(['File reference_solution.mat does not exist in folder ' pathname]);
     else
-        % Load reference solution (U_ref,w_ref,lambda_ref)
         load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
     end
-else
-    U_ref = [];
-    w_ref = repmat([],[1,n]);
-    lambda_ref = repmat([],[1,n]);
 end
 
 %% Reformulated global-local iterative algorithm based on overlapping domain decomposition
@@ -237,10 +227,15 @@ end
 I = ITERATIVESOLVER('display',true,'displayiter',true,...
     'maxiter',50,'tol',eps,'rho','Aitken',...
     'errorindicator','reference','reference',{{U_ref,w_ref,lambda_ref}});
-[U,w,lambda,result] = solve(I,glob,patches,interfaces);
-if save_reconstructed
-    % Save reconstructed solution (U,w,lambda)
+if solve_multiscale
+    [U,w,lambda,result] = solve(I,glob,patches,interfaces);
     save(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
+else
+    if ~exist(fullfile(pathname,'solution.mat'),'file')
+        error(['File solution.mat does not exist in folder ' pathname]);
+    else
+        load(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
+    end
 end
 fprintf('\n');
 
@@ -301,7 +296,7 @@ plot_relaxation_parameter(result,'nolegend');
 mysaveas(pathname,'relaxation_parameter','fig');
 mymatlab2tikz(pathname,'relaxation_parameter.tex');
 
-%% Display reference solution u_ref=(U_ref,w_ref) and reconstructed solution u=(U,w) at final iteration
+%% Display reference solution u_ref=(U_ref,w_ref) and multscale solution u=(U,w) at final iteration
 
 % if exist('U_ref','var') && exist('w_ref','var') && exist('lambda_ref','var')
 %     for i=1:2

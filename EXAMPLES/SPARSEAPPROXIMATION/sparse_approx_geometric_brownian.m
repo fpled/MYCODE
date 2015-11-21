@@ -63,7 +63,7 @@ regul = ''; % type of regularization ('' or 'l0' or 'l1')
 % Cross-validation
 cv = 'leaveout'; % type of cross-validation procedure ('leaveout' or 'kfold')
 k = 10; % number of folds (only for k-fold cross-validation procedure)
-opts.tol = 1e-3; % prescribed tolerance for cross-validation error
+opts.tol = 1e-2; % prescribed tolerance for cross-validation error
 opts.tolstagn = 1e-2; % prescribed stagnation tolerance for cross-validation error
 opts.toloverfit = 1.1; % prescribed tolerance to detect overfitting for cross-validation error such that err>=toloverfit*err_old
 opts.correction = false; % correction for cross-validation error

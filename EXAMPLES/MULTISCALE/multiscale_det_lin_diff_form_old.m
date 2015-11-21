@@ -578,7 +578,7 @@ if solve_reference
         end
         b = cell2mat(b);
         
-        % Total reconstructed solution vector sol_ref=[U_ref;w_ref{k};lambda_ref{k}] associated to initial problem
+        % Total multscale solution vector sol_ref=[U_ref;w_ref{k};lambda_ref{k}] associated to initial problem
         if strcmp(initial_solver,'direct')
             sol_ref = solve(A,b);
         else
@@ -656,7 +656,7 @@ if solve_reference
         end
         b = cell2mat(b);
         
-        % Total reconstructed solution vector sol_ref=[U_ref;z_ref{k}] associated to initial problem
+        % Total multscale solution vector sol_ref=[U_ref;z_ref{k}] associated to initial problem
         if strcmp(initial_solver,'direct')
             sol_ref = solve(A,b);
         else
@@ -710,13 +710,13 @@ if solve_reference
     if save_reference
         % Save reference solution (U_ref,w_ref{k},lambda_ref{k})
         save(fullfilename,'U_ref','w_ref','lambda_ref');
-    end
-elseif load_reference
-    if ~exist(filename,'file')
-        error(['File reference_solution.mat does not exist in folder' pathname]);
-    else
-        % Load reference solution (U_ref,w_ref{k},lambda_ref{k})
-        load(fullfilename,'U_ref','w_ref','lambda_ref');
+    elseif load_reference
+        if ~exist(filename,'file')
+            error(['File reference_solution.mat does not exist in folder' pathname]);
+        else
+            % Load reference solution (U_ref,w_ref{k},lambda_ref{k})
+            load(fullfilename,'U_ref','w_ref','lambda_ref');
+        end
     end
 end
 
@@ -1255,9 +1255,9 @@ else
 end
 fprintf('\nElapsed time = %f s\n',toc);
 
-%% Display reconstructed solution u=(U,w) at final iteration
-figure('Name',['Reconstructed solution u=(U,w) at final iteration #' num2str(iter)])
-% set(gcf,'Name',['Reconstructed solution u=(U,w) at final iteration #' num2str(iter)])
+%% Display multscale solution u=(U,w) at final iteration
+figure('Name',['Multscale solution u=(U,w) at final iteration #' num2str(iter)])
+% set(gcf,'Name',['Multscale solution u=(U,w) at final iteration #' num2str(iter)])
 clf
 
 subplot(1+nbpatch,2,1)
@@ -1276,7 +1276,7 @@ colorbar
 ax=axis;
 cax=caxis;
 set(gca,'FontSize',fontsize)
-title(['Reconstructed solution u=(U,w) at final iteration #' num2str(iter) ' over domain \Omega'])
+title(['Multscale solution u=(U,w) at final iteration #' num2str(iter) ' over domain \Omega'])
 
 subplot(1+nbpatch,2,2)
 if overlapping_domains
