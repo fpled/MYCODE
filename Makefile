@@ -67,10 +67,10 @@ multidet:
 
 # Multiscale Stochastic ---------------------------
 multisto:
-	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff; exit" -logfile RESULTS/multiscale_sto_lin_diff.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_elas; exit" -logfile RESULTS/multiscale_sto_lin_elas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac; exit" -logfile RESULTS/multiscale_sto_nonlin_diff_reac.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_align_inclusions; exit" -logfile RESULTS/multiscale_sto_lin_diff_align_inclusions.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff; exit" -logfile RESULTS/multiscale_sto_lin_diff.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_elas; exit" -logfile RESULTS/multiscale_sto_lin_elas.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac; exit" -logfile RESULTS/multiscale_sto_nonlin_diff_reac.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_align_inclusions; exit" -logfile RESULTS/multiscale_sto_lin_diff_align_inclusions.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_square_inclusions_iso; exit" -logfile RESULTS/multiscale_sto_lin_diff_square_inclusions_iso.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_square_inclusions_aniso; exit" -logfile RESULTS/multiscale_sto_lin_diff_square_inclusions_aniso.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac_square_inclusions_iso; exit" -logfile RESULTS/multiscale_sto_nonlin_diff_reac_square_inclusions_iso.log
