@@ -241,7 +241,6 @@ end
 I = ITERATIVESOLVER('display',true,'displayiter',true,...
     'maxiter',20,'tol',eps,'rho','Aitken',...
     'errorindicator','reference','reference',{{U_ref,w_ref,lambda_ref}});
-[U,w,lambda,result] = solve_random(I,glob,patches,interfaces,method);
 if solve_multiscale
     [U,w,lambda,result] = solve_random(I,glob,patches,interfaces,method);
     save(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
