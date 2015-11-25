@@ -367,14 +367,14 @@ end
 %     end
 % end
 
-if isfield(result,{'PC_seq_w','PC_seq_lambda'})
-    for k=1:n
-        for m=1:2:M
-            video_indices(result.PC_seq_w{k}{end},'dim',[m m+1],'filename',['multi_index_set_w_' num2str(k)],'pathname',pathname)
-            video_indices(result.PC_seq_lambda{k}{end},'dim',[m m+1],'filename',['multi_index_set_lambda_' num2str(k)],'pathname',pathname)
-        end
-    end
-end
+% if isfield(result,{'PC_seq_w','PC_seq_lambda'})
+%     for k=1:n
+%         for m=1:2:M
+%             video_indices(result.PC_seq_w{k}{end},'dim',[m m+1],'filename',['multi_index_set_w_' num2str(k)],'pathname',pathname)
+%             video_indices(result.PC_seq_lambda{k}{end},'dim',[m m+1],'filename',['multi_index_set_lambda_' num2str(k)],'pathname',pathname)
+%         end
+%     end
+% end
 
 %% Display evolution of cross-validation error indicator, dimension of stochastic space and number of samples w.r.t. number of iterations
 

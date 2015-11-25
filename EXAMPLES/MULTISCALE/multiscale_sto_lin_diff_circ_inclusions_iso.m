@@ -382,26 +382,26 @@ end
 
 %% Display evolution of multi-index set
 
-if isfield(result_ref,{'PC_seq_U','PC_seq_w','PC_seq_lambda'})
-    for m=1:2:M
-        video_indices(result_ref.PC_seq_U,'dim',[m m+1],'filename','multi_index_set_U_ref','pathname',pathname)
-    end
-    for k=1:n
-        for m=1:2:M
-            video_indices(result_ref.PC_seq_w{k},'dim',[m m+1],'filename',['multi_index_set_w_ref_' num2str(k)],'pathname',pathname)
-            video_indices(result_ref.PC_seq_lambda{k},'dim',[m m+1],'filename',['multi_index_set_lambda_ref_' num2str(k)],'pathname',pathname)
-        end
-    end
-end
+% if isfield(result_ref,{'PC_seq_U','PC_seq_w','PC_seq_lambda'})
+%     for m=1:2:M
+%         video_indices(result_ref.PC_seq_U,'dim',[m m+1],'filename','multi_index_set_U_ref','pathname',pathname)
+%     end
+%     for k=1:n
+%         for m=1:2:M
+%             video_indices(result_ref.PC_seq_w{k},'dim',[m m+1],'filename',['multi_index_set_w_ref_' num2str(k)],'pathname',pathname)
+%             video_indices(result_ref.PC_seq_lambda{k},'dim',[m m+1],'filename',['multi_index_set_lambda_ref_' num2str(k)],'pathname',pathname)
+%         end
+%     end
+% end
 
-if isfield(result,{'PC_seq_w','PC_seq_lambda'})
-    for k=1:n
-        for m=1:2:M
-            video_indices(result.PC_seq_w{k}{end},'dim',[m m+1],'filename',['multi_index_set_w_' num2str(k)],'pathname',pathname)
-            video_indices(result.PC_seq_lambda{k}{end},'dim',[m m+1],'filename',['multi_index_set_lambda_' num2str(k)],'pathname',pathname)
-        end
-    end
-end
+% if isfield(result,{'PC_seq_w','PC_seq_lambda'})
+%     for k=1:n
+%         for m=1:2:M
+%             video_indices(result.PC_seq_w{k}{end},'dim',[m m+1],'filename',['multi_index_set_w_' num2str(k)],'pathname',pathname)
+%             video_indices(result.PC_seq_lambda{k}{end},'dim',[m m+1],'filename',['multi_index_set_lambda_' num2str(k)],'pathname',pathname)
+%         end
+%     end
+% end
 
 %% Display evolution of cross-validation error indicator, dimension of stochastic space and number of samples w.r.t. number of iterations
 
