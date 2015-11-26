@@ -30,10 +30,10 @@ solve_multiscale = true;
 glob = GLOBAL();
 glob_out = GLOBALOUT();
 
-D = DOMAIN(2,[0.0,0.0],[5.0,5.0]);
+D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
 nbelem = [20,20];
 glob.S = build_model(D,'nbelem',nbelem);
-% cl = 0.25;
+% cl = 0.05;
 % glob.S = build_model(D,'cl',cl);
 
 % Patches
@@ -42,20 +42,20 @@ patches = PATCHES(n);
 D_patch = cell(1,n);
 switch n
     case 1
-        D_patch{1} = DOMAIN(2,[2.0,2.0],[3.0,3.0]);
+        D_patch{1} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
     case 2
-        D_patch{1} = DOMAIN(2,[1.0,2.0],[2.0,3.0]);
-        D_patch{2} = DOMAIN(2,[3.0,2.0],[4.0,3.0]);
+        D_patch{1} = DOMAIN(2,[0.2,0.4],[0.4,0.6]);
+        D_patch{2} = DOMAIN(2,[0.6,0.4],[0.8,0.6]);
     case 4
-        D_patch{1} = DOMAIN(2,[1.0,1.0],[2.0,2.0]);
-        D_patch{2} = DOMAIN(2,[1.0,3.0],[2.0,4.0]);
-        D_patch{3} = DOMAIN(2,[3.0,3.0],[4.0,4.0]);
-        D_patch{4} = DOMAIN(2,[3.0,1.0],[4.0,2.0]);
+        D_patch{1} = DOMAIN(2,[0.2,0.2],[0.4,0.4]);
+        D_patch{2} = DOMAIN(2,[0.2,0.6],[0.4,0.8]);
+        D_patch{3} = DOMAIN(2,[0.6,0.6],[0.8,0.8]);
+        D_patch{4} = DOMAIN(2,[0.6,0.2],[0.8,0.4]);
     otherwise
         error('Wrong number of patches')
 end
 
-r = 0.1;
+r = 0.05;
 B_patch = cell(1,n);
 c_patch = cell(1,n);
 for k=1:n
@@ -63,8 +63,8 @@ for k=1:n
     B_patch{k} = CIRCLE(c_patch{k}(1),c_patch{k}(2),r);
 end
 
-cl_patch_D = 0.1;
-cl_patch_B = 0.01;
+cl_patch_D = 0.02;
+cl_patch_B = 0.002;
 for k=1:n
     patches.PATCH{k}.S = gmshdomainwithhole(D_patch{k},B_patch{k},cl_patch_D,cl_patch_B,[pathname 'gmsh_patch_' num2str(k) '_circular_hole']);
 end
@@ -140,7 +140,7 @@ interfaces = INTERFACES(patches,glob);
 %% Stiffness matrices and sollicitation vectors
 
 % Source term f
-f = 1;
+f = 10;
 
 % Stiffness matrix glob_out.A_out and sollicitation vector glob_out.b_out associated to mesh glob_out.S_out
 glob_out.A_out = calc_rigi(glob_out.S_out);

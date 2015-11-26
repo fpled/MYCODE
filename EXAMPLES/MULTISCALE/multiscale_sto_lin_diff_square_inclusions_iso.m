@@ -32,26 +32,26 @@ myparallel('start');
 glob = GLOBAL();
 glob_out = GLOBALOUT();
 
-D = DOMAIN(2,[0.0,0.0],[5.0,5.0]);
+D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
 nbelem = [20,20];
 glob.S = build_model(D,'nbelem',nbelem);
-% cl = 0.25;
+% cl = 0.05;
 % glob.S = build_model(D,'cl',cl);
 
 % Patches
 patches = PATCHES(n);
 
 D_patch = cell(1,n);
-D_patch{1} = DOMAIN(2,[0.5,0.5],[1.5,1.5]);
-D_patch{2} = DOMAIN(2,[0.5,2.0],[1.5,3.0]);
-D_patch{3} = DOMAIN(2,[0.5,3.5],[1.5,4.5]);
-D_patch{4} = DOMAIN(2,[2.0,3.5],[3.0,4.5]);
-D_patch{5} = DOMAIN(2,[3.5,3.5],[4.5,4.5]);
-D_patch{6} = DOMAIN(2,[3.5,2.0],[4.5,3.0]);
-D_patch{7} = DOMAIN(2,[3.5,0.5],[4.5,1.5]);
-D_patch{8} = DOMAIN(2,[2.0,0.5],[3.0,1.5]);
+D_patch{1} = DOMAIN(2,[0.1,0.1],[0.3,0.3]);
+D_patch{2} = DOMAIN(2,[0.1,0.4],[0.3,0.6]);
+D_patch{3} = DOMAIN(2,[0.1,0.7],[0.3,0.9]);
+D_patch{4} = DOMAIN(2,[0.4,0.7],[0.6,0.9]);
+D_patch{5} = DOMAIN(2,[0.7,0.7],[0.9,0.9]);
+D_patch{6} = DOMAIN(2,[0.7,0.4],[0.9,0.6]);
+D_patch{7} = DOMAIN(2,[0.7,0.1],[0.9,0.3]);
+D_patch{8} = DOMAIN(2,[0.4,0.1],[0.6,0.3]);
 nbelem_patch = [40,40];
-% cl_patch = 0.025;
+% cl_patch = 0.005;
 for k=1:n
     patches.PATCH{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
     % patches.PATCH{k}.S = build_model(D_patch{k},'cl',cl_patch);
@@ -156,7 +156,7 @@ interfaces = INTERFACES(patches);
 %% Stiffness matrices and sollicitation vectors
 
 % Source term f
-f = 1;
+f = 100;
 
 % Stiffness matrix glob_out.A_out and sollicitation vector glob_out.b_out associated to mesh glob_out.S_out
 glob_out.A_out = calc_rigi(glob_out.S_out);

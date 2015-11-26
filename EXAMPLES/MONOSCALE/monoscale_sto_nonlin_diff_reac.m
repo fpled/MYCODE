@@ -19,27 +19,29 @@ myparallel('start');
 
 %% Domain and mesh definition
 
-D = DOMAIN(2,[0.0,0.0],[5.0,5.0]);
+D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
 nbelem = [20,20];
 system.S = build_model(D,'nbelem',nbelem);
-% cl = 0.25;
+% cl = 0.05;
 % system.S = build_model(D,'cl',cl);
 
 %% Random variables
 
-rv1 = RVUNIFORM(1,2);
-rv2 = RVUNIFORM(0,1);
-RV = RANDVARS(rv1,rv2);
+rv = RVUNIFORM(0,1);
+RV = RANDVARS(rv,rv);
 [X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
-K = X{1};
-R = X{2};
+% K(xi)  = 1 + xi
+% K2(xi) = xi
+% R(xi)  = xi
+K = ones(1,1,PC) + X{1};
 % K2 = X{2};
+R = X{2};
 
 %% Materials
 
 % a(u,v) = int( (K+K2.u^2).grad(u).grad(v) + R.u^3.v )
-mat = FOUR_ISOT('k',K,'r',R); % uniform value
 % mat = FOUR_ISOT('k',K,'k2',K2); % uniform value
+mat = FOUR_ISOT('k',K,'r',R); % uniform value
 mat = setnumber(mat,1);
 system.S = setmaterial(system.S,mat);
 
@@ -51,7 +53,7 @@ system.S = addcl(system.S,[]);
 %% Stiffness matrices and sollicitation vectors
 
 % Source term f
-f = 1;
+f = 100;
 
 % Stiffness operator system.A, tangent stiffness operator system.Atang and sollicitation vector system.b associated to mesh system.S
 if israndom(system.S)

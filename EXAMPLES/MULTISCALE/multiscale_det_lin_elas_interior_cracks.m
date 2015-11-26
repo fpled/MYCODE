@@ -31,11 +31,11 @@ solve_multiscale = true;
 glob = GLOBAL();
 glob_out = GLOBALOUT();
 
-L = 5;
+L = 1;
 D = DOMAIN(2,[0.0,0.0],[L,L]);
 nbelem = [20,20];
 glob.S = build_model(D,'nbelem',nbelem);
-% cl = 0.25;
+% cl = 0.05;
 % glob.S = build_model(D,'cl',cl);
 
 % Patches
@@ -44,20 +44,20 @@ patches = PATCHES(n);
 D_patch = cell(1,n);
 switch n
     case 1
-        D_patch{1} = DOMAIN(2,[2.0,2.0],[3.0,3.0]);
+        D_patch{1} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
     case 2
-        D_patch{1} = DOMAIN(2,[1.0,2.0],[2.0,3.0]);
-        D_patch{2} = DOMAIN(2,[3.0,2.0],[4.0,3.0]);
+        D_patch{1} = DOMAIN(2,[0.2,0.4],[0.4,0.6]);
+        D_patch{2} = DOMAIN(2,[0.6,0.4],[0.8,0.6]);
     case 4
-        D_patch{1} = DOMAIN(2,[1.0,1.0],[2.0,2.0]);
-        D_patch{2} = DOMAIN(2,[1.0,3.0],[2.0,4.0]);
-        D_patch{3} = DOMAIN(2,[3.0,3.0],[4.0,4.0]);
-        D_patch{4} = DOMAIN(2,[3.0,1.0],[4.0,2.0]);
+        D_patch{1} = DOMAIN(2,[0.2,0.2],[0.4,0.4]);
+        D_patch{2} = DOMAIN(2,[0.2,0.6],[0.4,0.8]);
+        D_patch{3} = DOMAIN(2,[0.6,0.6],[0.8,0.8]);
+        D_patch{4} = DOMAIN(2,[0.6,0.2],[0.8,0.4]);
     otherwise
         error('Wrong number of patches')
 end
 
-a = 0.5;
+a = 0.1;
 B_patch = cell(1,n);
 c_patch = cell(1,n);
 for k=1:n
@@ -65,8 +65,8 @@ for k=1:n
     B_patch{k} = LIGNE(c_patch{k}-[a/2,0.0],c_patch{k}+[a/2,0.0]);
 end
 
-cl_patch_D = 0.1;
-cl_patch_B = 0.01;
+cl_patch_D = 0.02;
+cl_patch_B = 0.002;
 for k=1:n
     patches.PATCH{k}.S = gmshdomainwithinteriorcrack(D_patch{k},B_patch{k},cl_patch_D,cl_patch_B,[pathname 'gmsh_patch_' num2str(k) '_interior_crack']);
 end

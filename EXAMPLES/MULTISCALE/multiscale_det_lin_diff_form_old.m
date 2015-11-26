@@ -18,11 +18,10 @@ fontsize = 16;
 dim = 2; % dimension
 
 % Data of domain D and mesh S
-% P = POINT([0.0,0.0;1.0,1.0]); % size of domain D defined from point P
-P = POINT([0.0,0.0;5.0,5.0]);
+P = POINT([0.0,0.0;1.0,1.0]); % size of domain D defined from point P
 % nbelem = [50,50]; % number of elements for mesh S
 nbelem = [20,20];
-cl = 0.25; % characteristic length for mesh S
+cl = 0.05; % characteristic length for mesh S
 regular_mesh = 1;
 
 % Data of domain D_patch{k} and mesh S_patch{k}
@@ -30,26 +29,39 @@ nbpatch = 4;
 P_patch = cell(1,nbpatch);
 nbelem_patch = cell(1,nbpatch);
 cl_patch = cell(1,nbpatch);
+
+switch n
+    case 1
+        D_patch{1} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
+    case 2
+        D_patch{1} = DOMAIN(2,[0.2,0.4],[0.4,0.6]);
+        D_patch{2} = DOMAIN(2,[0.6,0.4],[0.8,0.6]);
+    case 4
+        D_patch{1} = DOMAIN(2,[0.2,0.2],[0.4,0.4]);
+        D_patch{2} = DOMAIN(2,[0.2,0.6],[0.4,0.8]);
+        D_patch{3} = DOMAIN(2,[0.6,0.6],[0.8,0.8]);
+        D_patch{4} = DOMAIN(2,[0.6,0.2],[0.8,0.4]);
+    otherwise
+        error('Wrong number of patches')
+end
+
 for k=1:nbpatch
     if k == 1
-%         P_patch{k} = POINT([0.5,0.5;0.9,0.9]); % size of domain D_patch{k} defined from point P_patch{k}
-%         nbelem_patch{k} = [20,20]; % number of elements for mesh S_patch{k}
-%         cl_patch{k} = 0.1; % characteristic length for mesh s_patch{k}
-        P_patch{k} = POINT([3.0,3.0;4.0,4.0]);
-        nbelem_patch{k} = [40,40];
-        cl_patch{k} = 0.025;
+        P_patch{k} = POINT([0.2,0.2;0.4,0.4]); % size of domain D_patch{k} defined from point P_patch{k}
+        nbelem_patch{k} = [40,40]; % number of elements for mesh S_patch{k}
+        cl_patch{k} = 0.005; % characteristic length for mesh s_patch{k}
     elseif k ==2
-        P_patch{k} = POINT([1.0,0.5;2.0,1.5]);
+        P_patch{k} = POINT([0.2,0.6;0.4,0.8]);
         nbelem_patch{k} = [40,40];
-        cl_patch{k} = 0.025;
+        cl_patch{k} = 0.005;
     elseif k ==3
-        P_patch{k} = POINT([1.0,2.0;2.0,3.0]);
+        P_patch{k} = POINT([0.6,0.6;0.8,0.8]);
         nbelem_patch{k} = [40,40];
-        cl_patch{k} = 0.025;
+        cl_patch{k} = 0.005;
     elseif k ==4
-        P_patch{k} = POINT([3.0,0.5;4.0,1.5]);
+        P_patch{k} = POINT([0.6,0.2;0.8,0.8]);
         nbelem_patch{k} = [40,40];
-        cl_patch{k} = 0.025;
+        cl_patch{k} = 0.005;
     end
 end
 regular_mesh_patch = 1;
@@ -78,8 +90,8 @@ restart_initial_solver = []; % restarts gmres solver every restart inner iterati
 
 % Global-local iterative algorithm
 display = true; % display error and stagnation indicators at each step
-maxiter = 20; % maximum number of iterations
-tol = 1e-13; % prescribed tolerance
+maxiter = 50; % maximum number of iterations
+tol = eps; % prescribed tolerance
 optimal_rho = 1; % compute optimal relaxation parameter rho_opt and set rho = rho_opt
 optimal_rho_approximation = 0; % compute approximation of optimal relaxation parameter rho_opt_approx and set rho = rho_opt_approx (unless optimal_rho = 1)
 rho = 1; % relaxation parameter (unless optimal_rho_approximation = 1 or optimal_rho = 1)
@@ -91,7 +103,7 @@ global_solver = 'direct'; % 'direct' : direct resolution of global problem
                           % 'pcg'    : iterative resolution of global problem (Preconditioned conjugate gradients method)
                           % 'cgs'    : iterative resolution of global problem (Conjugate gradients squared method)
                           % 'gmres'  : iterative resolution of global problem (Generalized minimum residual method)
-tol_global_solver = 1e-15; % tolerance for iterative (pcg or cgs or gmres) solver of global problem
+tol_global_solver = eps; % tolerance for iterative (pcg or cgs or gmres) solver of global problem
 maxiter_global_solver = 100; % maximum number of iterations for iterative (pcg or cgs or gmres) solver of global problem
 precond_global_solver = []; % (symmetric positive definite if pcg solver) preconditioner for solving global problem
                             % []      : no preconditioner
@@ -110,7 +122,7 @@ local_solver = 'direct'; % 'direct' : direct resolution of local problems
                          % 'pcg'   : iterative resolution of local problems (Preconditioned conjugate gradients method) (if change_of_variable_local_problem ~= 0)
                          % 'cgs'   : iterative resolution of local problems (Conjugate gradients squared method)
                          % 'gmres' : iterative resolution of local problems (Generalized minimum residual method)
-tol_local_solver = 1e-15; % tolerance for iterative (pcg or cgs or gmres) solver of local problems
+tol_local_solver = eps; % tolerance for iterative (pcg or cgs or gmres) solver of local problems
 maxiter_local_solver = 100; % maximum number of iterations for iterative (pcg or cgs or gmres) solver of local problems
 precond_local_solver = []; % (symmetric positive definite if pcg solver) preconditioner for solving local problems
                            % []      : no preconditioner
@@ -369,7 +381,7 @@ a = DIFFUSIONFORM(K);
 a = setfree(a,1);
 
 % Linear form l
-f = 1;
+f = 100;
 % l_out_1 = LINFORM(0,f);
 % l_out_1 = setfree(l_out_1,1);
 % l_out_2 = LINFORM(0,-f);
