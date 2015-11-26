@@ -15,7 +15,7 @@ set(0,'DefaultFigureVisible','off'); % change the default figure properties of t
 renderer = 'OpenGL';
 
 % Parallel computing
-% myparallel('start');
+myparallel('start');
 
 %% Domain and mesh definition
 
@@ -153,4 +153,4 @@ end
 %     plot_solution(S_xi,u_xi);
 % end
 
-% myparallel('stop');
+myparallel('stop');
