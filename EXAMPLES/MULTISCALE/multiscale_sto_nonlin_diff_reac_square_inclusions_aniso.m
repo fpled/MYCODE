@@ -171,7 +171,7 @@ interfaces = INTERFACES(patches);
 %% Stiffness matrices and sollicitation vectors
 
 % Source term f
-f = 1;
+f = 100;
 
 % Stiffness matrix glob_out.A_out and sollicitation vector glob_out.b_out associated to mesh glob_out.S_out
 glob_out.A_out = calc_rigi(glob_out.S_out);
