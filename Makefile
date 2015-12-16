@@ -46,7 +46,9 @@ Pb_Name = multiscale_sto_nonlin_diff_reac_square_inclusions_iso
 
 # Default ---------------------------
 default:
-	matlab -nodesktop -nosplash -noFigureWindows -r "$(Pb_Name); exit" -logfile RESULTS/$(Pb_Name).log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "$(Pb_Name); exit" -logfile RESULTS/$(Pb_Name).log
+	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac_square_inclusions_iso; exit" -logfile RESULTS/multiscale_sto_nonlin_diff_reac_square_inclusions_iso.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac_square_inclusions_aniso; exit" -logfile RESULTS/multiscale_sto_nonlin_diff_reac_square_inclusions_aniso.log
 
 # All ---------------------------
 all: sparseapprox monosto multidet multisto
