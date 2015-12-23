@@ -13,7 +13,7 @@ filename = ['sparse_approx_ishigami_function_nbvar_' num2str(M)];
 % if strcmp(opts.algorithm,'MS') || strcmp(opts.algorithm,'RMS')
 %     filename = [filename '_bulkparam_' num2str(opts.bulkparam)];
 % end
-pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

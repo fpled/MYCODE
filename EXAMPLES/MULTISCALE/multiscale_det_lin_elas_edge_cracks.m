@@ -9,7 +9,7 @@ close all
 n = 1; % number of patches n = 1, 2
 loading = 'pull';% 'pull' or 'shear'
 filename = ['multiscale_det_lin_elas_' num2str(n) '_edge_cracks_' loading];
-pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -249,11 +249,7 @@ if solve_reference
     [U_ref,w_ref,lambda_ref] = solve(R,glob_out,patches,interfaces);
     save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
 else
-    if ~exist(fullfile(pathname,'reference_solution.mat'),'file')
-        error(['File reference_solution.mat does not exist in folder ' pathname]);
-    else
-        load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
-    end
+    load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
 end
 
 %% Reformulated global-local iterative algorithm based on overlapping domain decomposition
@@ -265,11 +261,7 @@ if solve_multiscale
     [U,w,lambda,result] = solve(I,glob,patches,interfaces);
     save(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
 else
-    if ~exist(fullfile(pathname,'solution.mat'),'file')
-        error(['File solution.mat does not exist in folder ' pathname]);
-    else
-        load(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
-    end
+    load(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
 end
 fprintf('\n');
 

@@ -9,7 +9,7 @@ close all
 %% Input data
 M = 4; % number of random variables
 filename = ['monoscale_sto_lin_diff_' num2str(M) '_circ_inclusions_aniso'];
-pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

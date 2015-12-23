@@ -8,8 +8,7 @@ close all
 %% Input data
 n = 8; % number of patches
 filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_iso'];
-pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
-%pathname = '/Users/Op/Documents/Recherche/Conferences/2015_Seminaire_MSSMaT/Seminaire_MSSMaT_2015_Presentation/figures/iso/';
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -117,7 +116,6 @@ for k=1:n
     K_patch{k} = ones(getnbnode(patch.S),1,PC) + double(squeeze(f(P))) * X_K{patch.number};
     % K2_patch{k} = double(squeeze(f(P))) * X_K2{patch.number};
     R_patch{k} = double(squeeze(f(P))) * X_R{patch.number};
-    
     K_in{k} = 1;
 end
 
@@ -238,11 +236,7 @@ if solve_reference
     [U_ref,w_ref,lambda_ref,result_ref] = solve_random(R,glob_out,patches,interfaces,method_ref);
     save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
 else
-    if ~exist(fullfile(pathname,'reference_solution.mat'),'file')
-        error(['File reference_solution.mat does not exist in folder ' pathname]);
-    else
-        load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
-    end
+    load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
 end
 
 %% Monte Carlo error estimation of reference solution u_ref=(U_ref,w_ref)
@@ -264,11 +258,7 @@ if solve_multiscale
     [U,w,lambda,result] = solve_random(I,glob,patches,interfaces,method);
     save(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
 else
-    if ~exist(fullfile(pathname,'solution.mat'),'file')
-        error(['File solution.mat does not exist in folder ' pathname]);
-    else
-        load(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
-    end
+    load(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
 end
 fprintf('\n');
 

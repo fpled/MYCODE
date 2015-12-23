@@ -8,7 +8,7 @@ close all
 %% Input data
 n = 4; % number of patches n = 1, 2, 4
 filename = ['multiscale_det_nonlin_diff_reac_' num2str(n) '_patches'];
-pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -107,7 +107,6 @@ for k=1:n
     K_patch{k} = ones(getnbnode(patch.S),1) + double(squeeze(f(P)));
     % K2_patch{k} = double(squeeze(f(P)));
     R_patch{k} = double(squeeze(f(P)));
-    
     K_in{k} = 1;
 end
 
@@ -224,11 +223,7 @@ if solve_reference
     [U_ref,w_ref,lambda_ref] = solve(R,glob_out,patches,interfaces);
     save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
 else
-    if ~exist(fullfile(pathname,'reference_solution.mat'),'file')
-        error(['File reference_solution.mat does not exist in folder ' pathname]);
-    else
-        load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
-    end
+    load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
 end
 
 %% Reformulated global-local iterative algorithm based on overlapping domain decomposition
@@ -240,11 +235,7 @@ if solve_multiscale
     [U,w,lambda,result] = solve(I,glob,patches,interfaces);
     save(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
 else
-    if ~exist(fullfile(pathname,'solution.mat'),'file')
-        error(['File solution.mat does not exist in folder ' pathname]);
-    else
-        load(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
-    end
+    load(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
 end
 fprintf('\n');
 

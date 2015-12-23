@@ -14,7 +14,7 @@ filename = ['sparse_approx_polynomial_function_partial_degree_' num2str(q) '_nbv
 % if strcmp(opts.algorithm,'MS') || strcmp(opts.algorithm,'RMS')
 %     filename = [filename '_bulkparam_' num2str(opts.bulkparam)];
 % end
-pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

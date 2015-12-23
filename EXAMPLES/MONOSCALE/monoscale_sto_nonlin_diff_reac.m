@@ -7,7 +7,7 @@ close all
 
 %% Input data
 filename = 'monoscale_sto_nonlin_diff_reac';
-pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

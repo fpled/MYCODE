@@ -7,7 +7,7 @@ close all
 
 %% Input data
 filename = 'multiscale_det_lin_diff_form_old';
-pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 % pathname = '/Users/Op/Dropbox/ANTHONY-FLORENT-MATHILDE/PATCH_NONLINEAR/figures/';
 if ~exist(pathname,'dir')
     mkdir(pathname);
