@@ -9,7 +9,7 @@ close all
 n = 8; % number of patches
 filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_aniso'];
 %pathname = '/Users/Op/Documents/Recherche/Conferences/2015_Seminaire_MSSMaT/Seminaire_MSSMaT_2015_Presentation/figures/aniso/';
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE','RESULTS',filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

@@ -9,7 +9,7 @@ close all
 n = 4; % number of patches n = 1, 2, 4
 loading = 'pull';% 'pull' or 'shear'
 filename = ['multiscale_det_lin_elas_' num2str(n) '_circ_holes_' loading];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE','RESULTS',filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

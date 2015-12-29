@@ -9,7 +9,7 @@ close all
 %% Input data
 n = 4; % number of patches
 filename = ['multiscale_sto_lin_diff_' num2str(n) '_circ_inclusions_aniso'];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE','RESULTS',filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

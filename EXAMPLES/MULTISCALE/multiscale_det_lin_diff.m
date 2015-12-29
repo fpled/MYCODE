@@ -8,7 +8,7 @@ close all
 %% Input data
 n = 4; % number of patches n = 1, 2, 4
 filename = ['multiscale_det_lin_diff_' num2str(n) '_patches'];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE','RESULTS',filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
