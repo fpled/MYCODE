@@ -6,13 +6,14 @@ clear all
 close all
 
 %% Input data
+
 n = 4; % number of patches n = 1, 2, 4
 filename = ['multiscale_det_lin_diff_' num2str(n) '_circ_holes'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE','RESULTS',filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
+set(0,'DefaultFigureVisible','on'); % change the default figure properties of the MATLAB root object
 renderer = 'OpenGL';
 
 % Reference solution - Direct resolution of initial problem based on non-overlapping domain decomposition
@@ -34,7 +35,7 @@ D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
 nbelem = [20,20];
 glob.S = build_model(D,'nbelem',nbelem);
 % cl = 0.05;
-% glob.S = build_model(D,'cl',cl);
+% system.S = build_model(D,'cl',cl,'filename','gmsh_domain');
 
 % Patches
 patches = PATCHES(n);
@@ -57,10 +58,9 @@ end
 
 r = 0.05;
 B_patch = cell(1,n);
-c_patch = cell(1,n);
 for k=1:n
-    c_patch{k} = double(getcenter(D_patch{k}));
-    B_patch{k} = CIRCLE(c_patch{k}(1),c_patch{k}(2),r);
+    c_patch = double(getcenter(D_patch{k}));
+    B_patch{k} = CIRCLE(c_patch(1),c_patch(2),r);
 end
 
 cl_patch_D = 0.02;
@@ -116,7 +116,7 @@ for k=1:n
     glob.S = setmaterial(glob.S,mat_in,getnumgroupelemwithparam(glob.S,'partition',k));
 end
 
-%% Finalization and application of Dirichlet boundary conditions
+%% Dirichlet boundary conditions
 
 % Global
 glob.S = final(glob.S);
@@ -191,7 +191,7 @@ for k=1:n
     patches.PATCH{k}.param = setparam(patches.PATCH{k}.param,'inittype','zero');
 end
 
-%% Direct resolution of initial problem based on non-overlapping domain decomposition
+%% Monoscale resolution
 
 R = REFERENCESOLVER('display',true,'change_of_variable',false,'inittype','zero');
 if solve_reference
@@ -201,7 +201,7 @@ else
     load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
 end
 
-%% Reformulated global-local iterative algorithm based on overlapping domain decomposition
+%% Multiscale resolution using global-local iterative algorithm based on overlapping domain decomposition
 
 I = ITERATIVESOLVER('display',true,'displayiter',true,...
     'maxiter',50,'tol',eps,'rho','Aitken',...
@@ -285,7 +285,7 @@ mysaveas(pathname,'sol',{'fig','epsc2'},renderer);
 plot_U_w(glob,patches,interfaces,U,w);
 mysaveas(pathname,'U_w',{'fig','epsc2'},renderer);
 
-plot_U_w(glob,patches,interfaces,U,w,'surface');
+plot_U_w(glob,patches,interfaces,U,w,'view3');
 mysaveas(pathname,'U_w_surf',{'fig','epsc2'},renderer);
 
 % myparallel('stop');

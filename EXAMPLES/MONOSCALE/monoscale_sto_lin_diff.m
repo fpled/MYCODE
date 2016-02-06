@@ -6,6 +6,7 @@ clear all
 close all
 
 %% Input data
+
 filename = 'monoscale_sto_lin_diff';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
@@ -20,10 +21,10 @@ myparallel('start');
 %% Domain and mesh definition
 
 D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
-nbelem = [20,20];
-system.S = build_model(D,'nbelem',nbelem);
-% cl = 0.05;
-% system.S = build_model(D,'cl',cl);
+% nbelem = [20,20];
+% system.S = build_model(D,'nbelem',nbelem);
+cl = 0.05;
+system.S = build_model(D,'cl',cl,'filename','gmsh_domain');
 
 %% Random variables
 
@@ -40,7 +41,7 @@ mat = FOUR_ISOT('k',K); % uniform value
 mat = setnumber(mat,1);
 system.S = setmaterial(system.S,mat);
 
-%% Finalization and application of Dirichlet boundary conditions
+%% Dirichlet boundary conditions
 
 system.S = final(system.S);
 system.S = addcl(system.S,[]);
@@ -63,7 +64,7 @@ else
     system.b = bodyload(system.S,[],'QN',f);
 end
 
-%% Sampling-based approach/method: L2 Projection, Least-squares minimization/Regression, Interpolation/Collocation
+%% Sampling-based method: L2 Projection, Least-squares minimization/Regression, Interpolation/Collocation
 
 initPC = POLYCHAOS(RV,0,'typebase',1);
 
@@ -75,7 +76,7 @@ method = METHOD('type','leastsquares','display',true,'displayiter',true,...
     'tol',1e-12,'tolstagn',1e-1,'toloverfit',1.1,'correction',false,...
     'decompKL',false,'tolKL',1e-12,'cvKL','leaveout','kKL',10);
 
-%% Resolution of problem
+%% Resolution
 
 fun = @(xi) solve_system(calc_system(randomeval_system(system,xi)));
 

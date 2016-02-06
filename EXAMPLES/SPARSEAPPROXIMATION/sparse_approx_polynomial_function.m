@@ -28,6 +28,8 @@ RV = RANDVARS(repmat({rv},1,M));
 % y = 1/(2^M) * prod_{j=1}^{M}(3*(x_j)^q+1)
 fun = @(x) (1/(2^(size(x,2)))*prod(3*x.^q+1,2))';
 
+%% Resolution using adaptive sparse approximation and least-squares minimization
+
 % Polynomial chaos basis
 p = 0; % (initial) order of PC expansion
 PC = POLYCHAOS(RV,p,'typebase',1); % (initial) PC basis

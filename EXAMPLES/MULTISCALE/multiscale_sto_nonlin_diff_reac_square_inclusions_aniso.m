@@ -6,6 +6,7 @@ clear all
 close all
 
 %% Input data
+
 n = 8; % number of patches
 filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_aniso'];
 %pathname = '/Users/Op/Documents/Recherche/Conferences/2015_Seminaire_MSSMaT/Seminaire_MSSMaT_2015_Presentation/figures/aniso/';
@@ -37,7 +38,7 @@ D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
 nbelem = [20,20];
 glob.S = build_model(D,'nbelem',nbelem);
 % cl = 0.05;
-% glob.S = build_model(D,'cl',cl);
+% system.S = build_model(D,'cl',cl,'filename','gmsh_domain');
 
 % Patches
 patches = PATCHES(n);
@@ -52,11 +53,13 @@ D_patch{6} = DOMAIN(2,[0.7,0.4],[0.9,0.6]);
 D_patch{7} = DOMAIN(2,[0.7,0.1],[0.9,0.3]);
 D_patch{8} = DOMAIN(2,[0.4,0.1],[0.6,0.3]);
 nbelem_patch = [40,40];
-% cl_patch = 0.005;
 for k=1:n
     patches.PATCH{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
-    % patches.PATCH{k}.S = build_model(D_patch{k},'cl',cl_patch);
 end
+% cl_patch = 0.005;
+% for k=1:n
+%     patches.PATCH{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',[pathname 'gmsh_patch_' num2str(k)]);
+% end
 
 % Partition of global mesh glob.S
 glob = partition(glob,patches);
@@ -70,7 +73,7 @@ X_K = cellfun(@(patch) X{2*patch.number-1},patches.PATCH,'UniformOutput',false);
 % X_K2 = cellfun(@(patch) X{2*patch.number},patches.PATCH,'UniformOutput',false);
 X_R = cellfun(@(patch) X{2*patch.number},patches.PATCH,'UniformOutput',false);
 
-%% Sampling-based approach/method: L2 Projection, Least-squares minimization/Regression, Interpolation/Collocation
+%% Sampling-based method: L2 Projection, Least-squares minimization/Regression, Interpolation/Collocation
 
 initPC = POLYCHAOS(RV,0,'typebase',1);
 
@@ -147,7 +150,7 @@ for k=1:n
     glob.S = setmaterial(glob.S,mat_in,getnumgroupelemwithparam(glob.S,'partition',k));
 end
 
-%% Finalization and application of Dirichlet boundary conditions
+%% Dirichlet boundary conditions
 
 % Global
 glob.S = final(glob.S);
@@ -229,7 +232,7 @@ for k=1:n
         'maxiter',100,'tol',1e-12,'display',false,'stopini',true);
 end
 
-%% Direct resolution of initial problem based on non-overlapping domain decomposition
+%% Monoscale resolution
 
 R = REFERENCESOLVER('display',true,'change_of_variable',false,'inittype','zero');
 R.solver = NEWTONSOLVER('type','tangent','increment',true,...
@@ -251,7 +254,7 @@ if calc_MC_error_estimate_ref && exist('U_ref','var') && exist('w_ref','var') &&
         = calc_Monte_Carlo_error_estimates(R,glob_out,patches,interfaces,U_ref,w_ref,lambda_ref,nbsamples);
 end
 
-%% Reformulated global-local iterative algorithm based on overlapping domain decomposition
+%% Multiscale resolution using global-local iterative algorithm based on overlapping domain decomposition
 
 I = ITERATIVESOLVER('display',true,'displayiter',true,...
     'maxiter',20,'tol',eps,'rho','Aitken',...
@@ -433,7 +436,7 @@ mysaveas(pathname,'mean_sol',{'fig','epsc2'},renderer);
 plot_mean_U_w(glob,patches,interfaces,U,w);
 mysaveas(pathname,'mean_U_w',{'fig','epsc2'},renderer);
 
-plot_mean_U_w(glob,patches,interfaces,U,w,'surface');
+plot_mean_U_w(glob,patches,interfaces,U,w,'view3');
 mysaveas(pathname,'mean_U_w_surf',{'fig','epsc2'},renderer);
 
 plot_var_U(glob,U);
@@ -445,7 +448,7 @@ mysaveas(pathname,'var_sol',{'fig','epsc2'},renderer);
 plot_var_U_w(glob,patches,interfaces,U,w);
 mysaveas(pathname,'var_U_w',{'fig','epsc2'},renderer);
 
-plot_var_U_w(glob,patches,interfaces,U,w,'surface');
+plot_var_U_w(glob,patches,interfaces,U,w,'view3');
 mysaveas(pathname,'var_U_w_surf',{'fig','epsc2'},renderer);
 
 plot_std_U(glob,U);
@@ -457,7 +460,7 @@ mysaveas(pathname,'std_sol',{'fig','epsc2'},renderer);
 plot_std_U_w(glob,patches,interfaces,U,w);
 mysaveas(pathname,'std_U_w',{'fig','epsc2'},renderer);
 
-plot_std_U_w(glob,patches,interfaces,U,w,'surface');
+plot_std_U_w(glob,patches,interfaces,U,w,'view3');
 mysaveas(pathname,'std_U_w_surf',{'fig','epsc2'},renderer);
 
 M = getM(PC);

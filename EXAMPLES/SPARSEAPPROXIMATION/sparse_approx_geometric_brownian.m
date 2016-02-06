@@ -25,6 +25,8 @@ RV = RANDVARS(repmat({rv},1,M));
 %% Geometric brownian
 fun = @(x) geometric_brownian_kl(x,-1,0.5,1,100);
 
+%% Resolution using adaptive sparse approximation and least-squares minimization
+
 % Polynomial chaos basis
 p = 0; % (initial) order of PC expansion
 PC = POLYCHAOS(RV,p,'typebase',1); % (initial) PC basis

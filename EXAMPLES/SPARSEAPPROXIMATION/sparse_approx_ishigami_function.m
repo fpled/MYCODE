@@ -17,7 +17,7 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',files
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
+set(0,'DefaultFigureVisible','on'); % change the default figure properties of the MATLAB root object
 
 %% Random variables
 rv = RVUNIFORM(-pi,pi);
@@ -28,6 +28,8 @@ RV = RANDVARS(repmat({rv},1,M));
 a = 7;
 b = 0.1;
 fun = @(x) (sin(x(:,1)) + a.*sin(x(:,2)).^2 + b.*x(:,3).^4.*sin(x(:,1)))';
+
+%% Resolution using adaptive sparse approximation and least-squares minimization
 
 % Polynomial chaos basis
 p = 0; % (initial) order of PC expansion

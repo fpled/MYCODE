@@ -6,6 +6,7 @@ clear all
 close all
 
 %% Input data
+
 n = 4; % number of patches n = 1, 2, 4
 filename = ['multiscale_det_lin_diff_' num2str(n) '_patches'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE','RESULTS',filename,filesep);
@@ -34,7 +35,7 @@ D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
 nbelem = [20,20];
 glob.S = build_model(D,'nbelem',nbelem);
 % cl = 0.05;
-% glob.S = build_model(D,'cl',cl);
+% system.S = build_model(D,'cl',cl,'filename','gmsh_domain');
 
 % Patches
 patches = PATCHES(n);
@@ -54,12 +55,15 @@ switch n
     otherwise
         error('Wrong number of patches')
 end
+
 nbelem_patch = [40,40];
-% cl_patch = 0.005;
 for k=1:n
     patches.PATCH{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
-    % patches.PATCH{k}.S = build_model(D_patch{k},'cl',cl_patch);
 end
+% cl_patch = 0.005;
+% for k=1:n
+%     patches.PATCH{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',[pathname 'gmsh_patch_' num2str(k)]);
+% end
 
 % Partition of global mesh glob.S
 glob = partition(glob,patches);
@@ -126,7 +130,7 @@ for k=1:n
     glob.S = setmaterial(glob.S,mat_in,getnumgroupelemwithparam(glob.S,'partition',k));
 end
 
-%% Finalization and application of Dirichlet boundary conditions
+%% Dirichlet boundary conditions
 
 % Global
 glob.S = final(glob.S);
@@ -201,7 +205,7 @@ for k=1:n
     patches.PATCH{k}.param = setparam(patches.PATCH{k}.param,'inittype','zero');
 end
 
-%% Direct resolution of initial problem based on non-overlapping domain decomposition
+%% Monoscale resolution
 
 R = REFERENCESOLVER('display',true,'change_of_variable',false,'inittype','zero');
 if solve_reference
@@ -211,7 +215,7 @@ else
     load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
 end
 
-%% Reformulated global-local iterative algorithm based on overlapping domain decomposition
+%% Multiscale resolution using global-local iterative algorithm based on overlapping domain decomposition
 
 I = ITERATIVESOLVER('display',true,'displayiter',true,...
     'maxiter',50,'tol',eps,'rho','Aitken',...
@@ -295,7 +299,7 @@ mysaveas(pathname,'sol',{'fig','epsc2'},renderer);
 plot_U_w(glob,patches,interfaces,U,w);
 mysaveas(pathname,'U_w',{'fig','epsc2'},renderer);
 
-plot_U_w(glob,patches,interfaces,U,w,'surface');
+plot_U_w(glob,patches,interfaces,U,w,'view3');
 mysaveas(pathname,'U_w_surf',{'fig','epsc2'},renderer);
 
 % myparallel('stop');

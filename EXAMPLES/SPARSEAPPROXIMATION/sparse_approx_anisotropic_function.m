@@ -36,6 +36,8 @@ fun = @(x) (x(:,3).*sin(x(:,4)+x(:,16)))';
 % y = 1/(1 + sum_{j=1}^{M}(g_j*x_j)) with g_j = 10^(-j)
 % fun = @(x) (1./(ones(1,size(x,1))+(10.^(-(1:size(x,2))))*x'));
 
+%% Resolution using adaptive sparse approximation and least-squares minimization
+
 % Polynomial chaos basis
 p = 0; % (initial) order of PC expansion
 PC = POLYCHAOS(RV,p,'typebase',1); % (initial) PC basis

@@ -7,6 +7,7 @@ clear all
 close all
 
 %% Input data
+
 M = 8; % number of random variables M = 2, 4, 8
 filename = ['monoscale_sto_lin_diff_' num2str(M) '_circ_inclusions_iso'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
@@ -21,20 +22,26 @@ myparallel('start');
 
 %% Domain and mesh definition
 
-D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
-r = 0.13;
-B = cell(1,9);
-B{1} = CIRCLE(0.2,0.2,r);
-B{2} = CIRCLE(0.2,0.5,r);
-B{3} = CIRCLE(0.2,0.8,r);
-B{4} = CIRCLE(0.5,0.8,r);
-B{5} = CIRCLE(0.8,0.8,r);
-B{6} = CIRCLE(0.8,0.5,r);
-B{7} = CIRCLE(0.8,0.2,r);
-B{8} = CIRCLE(0.5,0.2,r);
-B{9} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
-cl = 0.02;
-system.S = gmshdomainwithinclusion(D,B,cl,cl,[pathname 'gmsh_circular_inclusions']);
+if exist([pathname 'gmsh_circular_inclusions.msh'],'file')
+    system.S = gmsh2femobject(2,[pathname 'gmsh_circular_inclusions.msh'],2);
+elseif exist([pathname 'gmsh_circular_inclusions.geo'],'file')
+    system.S = gmsh2femobject(2,[pathname 'gmsh_circular_inclusions.geo'],2);
+else
+    D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
+    r = 0.13;
+    B = cell(1,9);
+    B{1} = CIRCLE(0.2,0.2,r);
+    B{2} = CIRCLE(0.2,0.5,r);
+    B{3} = CIRCLE(0.2,0.8,r);
+    B{4} = CIRCLE(0.5,0.8,r);
+    B{5} = CIRCLE(0.8,0.8,r);
+    B{6} = CIRCLE(0.8,0.5,r);
+    B{7} = CIRCLE(0.8,0.2,r);
+    B{8} = CIRCLE(0.5,0.2,r);
+    B{9} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
+    cl = 0.02;
+    system.S = gmshdomainwithinclusion(D,B,cl,cl,[pathname 'gmsh_circular_inclusions']);
+end
 
 %% Random variables
 
@@ -89,7 +96,7 @@ switch M
         error('Wrong number of variables')
 end
 
-%% Finalization and application of Dirichlet boundary conditions
+%% Dirichlet boundary conditions
 
 system.S = final(system.S);
 system.S = addcl(system.S,[]);
@@ -112,7 +119,7 @@ else
     system.b = bodyload(keepgroupelem(system.S,10),[],'QN',f);
 end
 
-%% Sampling-based approach/method: L2 Projection, Least-squares minimization/Regression, Interpolation/Collocation
+%% Sampling-based method: L2 Projection, Least-squares minimization/Regression, Interpolation/Collocation
 
 initPC = POLYCHAOS(RV,0,'typebase',1);
 
@@ -124,7 +131,7 @@ method = METHOD('type','leastsquares','display',true,'displayiter',true,...
     'tol',1e-2,'tolstagn',1e-1,'toloverfit',1.1,'correction',false,...
     'decompKL',false,'tolKL',1e-12,'cvKL','leaveout','kKL',10);
 
-%% Resolution of problem
+%% Resolution
 
 fun = @(xi) solve_system(calc_system(randomeval_system(system,xi)));
 

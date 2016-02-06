@@ -6,6 +6,7 @@ clear all
 close all
 
 %% Input data
+
 n = 1; % number of patches n = 1, 2
 loading = 'pull';% 'pull' or 'shear'
 filename = ['multiscale_det_lin_elas_' num2str(n) '_edge_cracks_' loading];
@@ -38,7 +39,7 @@ D = DOMAIN(2,[0.0,-L/2],[w,L/2]);
 nbelem = [w*2,L*2];
 glob.S = build_model(D,'nbelem',nbelem);
 % cl = 0.25;
-% glob.S = build_model(D,'cl',cl);
+% system.S = build_model(D,'cl',cl,'filename','gmsh_domain');
 
 % Patches
 patches = PATCHES(n);
@@ -110,15 +111,15 @@ end
 
 % Material mat_out associated to outside subdomain
 % a(u,v) = int( epsilon(u) : K : epsilon(v) )
-mat_out = ELAS_ISOT('E',E_out,'NU',NU,'DIM3',DIM3,'RHO',RHO,'S',1);
+mat_out = ELAS_ISOT('E',E_out,'NU',NU,'RHO',RHO,'DIM3',DIM3);
 mat_out = setnumber(mat_out,0);
 glob.S = setmaterial(glob.S,mat_out,getnumgroupelemwithparam(glob.S,'partition',0));
 
 % Material mat_patch associated to patch
 % a(u,v) = int( epsilon(u) : K : epsilon(v) )
 for k=1:n
-    mat_patch = ELAS_ISOT('E',E_patch{k},'NU',NU,'DIM3',DIM3,'RHO',RHO,'S',1); % uniform value
-    % mat_patch = ELAS_ISOT('E',FENODEFIELD(E_patch{k}),'NU',NU,'DIM3',DIM3,'RHO',RHO,'S',1); % nodal values
+    mat_patch = ELAS_ISOT('E',E_patch{k},'NU',NU,'RHO',RHO,'DIM3',DIM3); % uniform value
+    % mat_patch = ELAS_ISOT('E',FENODEFIELD(E_patch{k}),'NU',NU,'RHO',RHO,'DIM3',DIM3); % nodal values
     mat_patch = setnumber(mat_patch,k);
     patches.PATCH{k}.S = setmaterial(patches.PATCH{k}.S,mat_patch);
 end
@@ -126,13 +127,13 @@ end
 % Material mat_in associated to fictitious patch
 % a(u,v) = int( epsilon(u) : K : epsilon(v) )
 for k=1:n
-    mat_in = ELAS_ISOT('E',E_in{k},'NU',NU,'DIM3',DIM3,'RHO',RHO,'S',1); % uniform value
-    % mat_in = ELAS_ISOT('E',FENODEFIELD(E_in{k}),'NU',NU,'DIM3',DIM3,'RHO',RHO,'S',1); % nodal values
+    mat_in = ELAS_ISOT('E',E_in{k},'NU',NU,'RHO',RHO,'DIM3',DIM3); % uniform value
+    % mat_in = ELAS_ISOT('E',FENODEFIELD(E_in{k}),'NU',NU,'RHO',RHO,'DIM3',DIM3); % nodal values
     mat_in = setnumber(mat_in,k);
     glob.S = setmaterial(glob.S,mat_in,getnumgroupelemwithparam(glob.S,'partition',k));
 end
 
-%% Finalization and application of Dirichlet boundary conditions
+%% Dirichlet boundary conditions
 
 % Global
 glob.S = final(glob.S);
@@ -242,7 +243,7 @@ for k=1:n
     patches.PATCH{k}.param = setparam(patches.PATCH{k}.param,'inittype','zero');
 end
 
-%% Direct resolution of initial problem based on non-overlapping domain decomposition
+%% Monoscale resolution
 
 R = REFERENCESOLVER('display',true,'change_of_variable',false,'inittype','zero');
 if solve_reference
@@ -252,7 +253,7 @@ else
     load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
 end
 
-%% Reformulated global-local iterative algorithm based on overlapping domain decomposition
+%% Multiscale resolution using global-local iterative algorithm based on overlapping domain decomposition
 
 I = ITERATIVESOLVER('display',true,'displayiter',true,...
     'maxiter',50,'tol',eps,'rho','Aitken',...
@@ -341,7 +342,7 @@ for i=1:2
     plot_U_w(glob,patches,interfaces,U,w,'displ',i);
     mysaveas(pathname,['U_w' num2str(i)],{'fig','epsc2'},renderer);
     
-    plot_U_w(glob,patches,interfaces,U,w,'displ',i,'surface');
+    plot_U_w(glob,patches,interfaces,U,w,'displ',i,'view3');
     mysaveas(pathname,['U_w_surf' num2str(i)],{'fig','epsc2'},renderer);
 end
 

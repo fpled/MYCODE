@@ -7,6 +7,7 @@ clear all
 close all
 
 %% Input data
+
 n = 4; % number of patches
 filename = ['multiscale_sto_lin_diff_' num2str(n) '_circ_inclusions_aniso'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE','RESULTS',filename,filesep);
@@ -74,7 +75,7 @@ rv = RVUNIFORM(-0.99,0);
 RV = RANDVARS(repmat({rv},1,n));
 [X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
 
-%% Sampling-based approach/method: L2 Projection, Least-squares minimization/Regression, Interpolation/Collocation
+%% Sampling-based method: L2 Projection, Least-squares minimization/Regression, Interpolation/Collocation
 
 initPC = POLYCHAOS(RV,0,'typebase',1);
 
@@ -132,7 +133,7 @@ for k=1:n
     glob.S = setmaterial(glob.S,mat_in,getnumgroupelemwithparam(glob.S,'partition',k));
 end
 
-%% Finalization and application of Dirichlet boundary conditions
+%% Dirichlet boundary conditions
 
 % Global
 glob.S = final(glob.S);
@@ -211,7 +212,7 @@ for k=1:n
     patches.PATCH{k}.param = setparam(patches.PATCH{k}.param,'inittype','zero');
 end
 
-%% Direct resolution of initial problem based on non-overlapping domain decomposition
+%% Monoscale resolution
 
 R = REFERENCESOLVER('display',true,'change_of_variable',false,'inittype','zero');
 if solve_reference
@@ -231,7 +232,7 @@ if calc_MC_error_estimate_ref && exist('U_ref','var') && exist('w_ref','var') &&
         = calc_Monte_Carlo_error_estimates(R,glob_out,patches,interfaces,U_ref,w_ref,lambda_ref,nbsamples);
 end
 
-%% Reformulated global-local iterative algorithm based on overlapping domain decomposition
+%% Multiscale resolution using global-local iterative algorithm based on overlapping domain decomposition
 
 I = ITERATIVESOLVER('display',true,'displayiter',true,...
     'maxiter',20,'tol',eps,'rho','Aitken',...
@@ -408,7 +409,7 @@ mysaveas(pathname,'mean_sol',{'fig','epsc2'},renderer);
 plot_mean_U_w(glob,patches,interfaces,U,w);
 mysaveas(pathname,'mean_U_w',{'fig','epsc2'},renderer);
 
-plot_mean_U_w(glob,patches,interfaces,U,w,'surface');
+plot_mean_U_w(glob,patches,interfaces,U,w,'view3');
 mysaveas(pathname,'mean_U_w_surf',{'fig','epsc2'},renderer);
 
 plot_var_U(glob,U);
@@ -420,7 +421,7 @@ mysaveas(pathname,'var_sol',{'fig','epsc2'},renderer);
 plot_var_U_w(glob,patches,interfaces,U,w);
 mysaveas(pathname,'var_U_w',{'fig','epsc2'},renderer);
 
-plot_var_U_w(glob,patches,interfaces,U,w,'surface');
+plot_var_U_w(glob,patches,interfaces,U,w,'view3');
 mysaveas(pathname,'var_U_w_surf',{'fig','epsc2'},renderer);
 
 plot_std_U(glob,U);
@@ -432,7 +433,7 @@ mysaveas(pathname,'std_sol',{'fig','epsc2'},renderer);
 plot_std_U_w(glob,patches,interfaces,U,w);
 mysaveas(pathname,'std_U_w',{'fig','epsc2'},renderer);
 
-plot_std_U_w(glob,patches,interfaces,U,w,'surface');
+plot_std_U_w(glob,patches,interfaces,U,w,'view3');
 mysaveas(pathname,'std_U_w_surf',{'fig','epsc2'},renderer);
 
 M = getM(PC);
