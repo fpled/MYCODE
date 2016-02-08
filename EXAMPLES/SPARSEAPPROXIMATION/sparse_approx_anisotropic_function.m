@@ -98,7 +98,7 @@ disp(['I = ' num2str(size(getindices(PC),1)) ' multi-indices']);
 % disp('Set of multi-indices = '); % P-by-(M+1) matrix
 % disp(num2str(getindices(PC)));
 disp(['eta = ' num2str(get_sparsity_ratio(u)) ' (sparsity index or ratio)'])
-fprintf('error = %1.4e (cross-validation error)\n',err)
+fprintf('error = %.4e (cross-validation error)\n',err)
 fprintf('elapsed time = %f s\n',time);
 disp(' ')
 

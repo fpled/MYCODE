@@ -404,13 +404,11 @@ for k=1:nbpatch
     % Amp = 2;
     % L = norm(getsize(D_patch{k}),Inf)/4;
     % k_patch = @(x) (distance(x,C,Inf)<L) * alpha * exp(-Amp*distance(x,C,2).^2/L^2);
-    % P_patch = POINT(S_patch{k}.node);
-    % K_patch{k} = K + k_patch(P_patch);
+    % K_patch{k} = K + k_patch(S_patch{k}.node);
     % K_patch{k} = squeeze(K_patch{k});
     % 
     % beta = 0;
-    % P_in = POINT(S_in{k}.node);
-    % K_in{k} = K + beta * k_patch(P_in);
+    % K_in{k} = K + beta * k_patch(S_in{k}.node);
     % K_in{k} = squeeze(K_in{k});
     
     % k_patch{k} = 1 if ||x-C{k}||_Inf < L
@@ -420,8 +418,7 @@ for k=1:nbpatch
     C = getcenter(D_patch{k});
     L = norm(getsize(D_patch{k}),Inf)/4;
     k_patch = @(x) distance(x,C,Inf)<L;
-    P_patch = POINT(S_patch{k}.node);
-    K_patch{k} = ones(getnbnode(S_patch{k}),1) + double(squeeze(k_patch(P_patch)));
+    K_patch{k} = ones(S_patch{k}.nbnode,1) + double(squeeze(k_patch(S_patch{k}.node)));
     
     K_in{k} = 1;
 end

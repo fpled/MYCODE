@@ -13,7 +13,7 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE','RESULTS',filename,file
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-set(0,'DefaultFigureVisible','on'); % change the default figure properties of the MATLAB root object
+set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 renderer = 'OpenGL';
 
 % Reference solution - Direct resolution of initial problem based on non-overlapping domain decomposition
@@ -87,8 +87,7 @@ for k=1:n
     L = norm(getsize(D_patch{k}),Inf)/4;
     c = getcenter(D_patch{k});
     f = @(x) distance(x,c,Inf)<L;
-    P = POINT(patch.S.node);
-    K_patch{k} = ones(getnbnode(patch.S),1) + double(squeeze(f(P)));
+    K_patch{k} = ones(patch.S.nbnode,1) + double(squeeze(f(patch.S.node)));
     K_in{k} = 1;
 end
 

@@ -107,8 +107,7 @@ for k=1:n
     L = norm(getsize(D_patch{k}),Inf)/4;
     c = getcenter(D_patch{k});
     f = @(x) distance(x,c,Inf)<L;
-    P = POINT(patch.S.node);
-    K_patch{k} = ones(getnbnode(patch.S),1,PC) + double(squeeze(f(P))) * g(k) * X{k};
+    K_patch{k} = ones(patch.S.nbnode,1,PC) + double(squeeze(f(patch.S.node))) * g(k) * X{k};
     K_in{k} = 1;
 end
 

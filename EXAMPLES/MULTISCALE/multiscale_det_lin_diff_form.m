@@ -99,12 +99,10 @@ for k=1:n
     % f = @(x) (distance(x,c,Inf)<L) * alpha * exp(-Amp*distance(x,c,2).^2/L^2);
     % 
     % beta_patch = 1;
-    % P = POINT(patch.S.node);
-    % K_patch{k} = 1 + beta_patch * squeeze(f(P));
+    % K_patch{k} = 1 + beta_patch * squeeze(f(patch.S.node));
     % 
     % beta_in = 0;
-    % P = POINT(glob.S.node);
-    % K_in{k} = 1 + beta_in * squeeze(f(P));
+    % K_in{k} = 1 + beta_in * squeeze(f(glob.S.node));
     
     % K_patch(x) = 1 + f(x)
     % K_in(x)    = 1
@@ -113,8 +111,7 @@ for k=1:n
     L = norm(getsize(D_patch{k}),Inf)/4;
     c = getcenter(D_patch{k});
     f = @(x) distance(x,c,Inf)<L;
-    P = POINT(patch.S.node);
-    K_patch{k} = ones(getnbnode(patch.S),1) + double(squeeze(f(P)));
+    K_patch{k} = ones(patch.S.nbnode,1) + double(squeeze(f(patch.S.node)));
     K_in{k} = 1;
 end
 
