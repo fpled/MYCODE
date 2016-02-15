@@ -8,7 +8,7 @@ close all
 %% Input data
 
 n = 4; % number of patches n = 1, 2, 4
-loading = 'pull';% 'pull' or 'shear'
+loading = 'pull'; % 'pull' or 'shear'
 filename = ['multiscale_det_lin_elas_' num2str(n) '_interior_cracks_' loading];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE','RESULTS',filename,filesep);
 if ~exist(pathname,'dir')
@@ -34,6 +34,7 @@ glob_out = GLOBALOUT();
 
 L = 1;
 D = DOMAIN(2,[0.0,0.0],[L,L]);
+
 nbelem = [20,20];
 glob.S = build_model(D,'nbelem',nbelem);
 % cl = 0.05;
@@ -60,10 +61,9 @@ end
 
 a = 0.1;
 B_patch = cell(1,n);
-c_patch = cell(1,n);
 for k=1:n
-    c_patch{k} = double(getcenter(D_patch{k}));
-    B_patch{k} = LIGNE(c_patch{k}-[a/2,0.0],c_patch{k}+[a/2,0.0]);
+    c_patch = double(getcenter(D_patch{k}));
+    B_patch{k} = LIGNE(c_patch-[a/2,0.0],c_patch+[a/2,0.0]);
 end
 
 cl_patch_D = 0.02;
@@ -282,13 +282,13 @@ save(fullfile(pathname,'all.mat'));
 %% Display domain, partition and mesh
 
 % Display global domain and patches
-% plot_domain(D,D_patch);
-% mysaveas(pathname,'domain_global_patches',{'fig','epsc2'},renderer);
-% mymatlab2tikz(pathname,'domain_global_patches.tex');
+plot_domain(D,cellfun(@(x,y) {x,y},D_patch,B_patch,'UniformOutput',false));
+mysaveas(pathname,'domain_global_patches',{'fig','epsc2'},renderer);
+mymatlab2tikz(pathname,'domain_global_patches.tex');
 
 % Display partition of global mesh glob.S
-plot_partition(glob);
-mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
+% plot_partition(glob);
+% mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
 
 % Display global mesh glob.S_out and local meshes patch.S
 plot_model(glob,patches,'nolegend');

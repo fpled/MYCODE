@@ -1,4 +1,4 @@
-%% Shell deterministic linear elasticity disk %%
+%% Shell deterministic linear elasticity rect %%
 %%--------------------------------------------%%
 
 % clc
@@ -6,7 +6,7 @@ clear all
 close all
 
 %% Input data
-filename = 'shell_det_lin_elas_disk';
+filename = 'shell_det_lin_elas_rect';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -19,12 +19,15 @@ renderer = 'OpenGL';
 
 %% Domain and mesh definition
 
-r = 0.5;
-C = CIRCLE(0.0,0.0,0.0,r);
+a = 1;
+b = 1;
+Q = QUADRANGLE([0.0,0.0,0.0],[a,0.0,0.0],[a,b,0.0],[0.0,b,0.0]);
 
 elemtype = 'DKT'; % DKT, DKQ, COQ4
-cl = 0.1;
-system.S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_disk_' elemtype]);
+nbelem = [20,20];
+system.S = build_model(Q,'nbelem',nbelem,'elemtype',elemtype);
+% cl = 0.01;
+% system.S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_rect_' elemtype]);
 
 %% Materials
 
@@ -61,17 +64,10 @@ system.S = addcl(system.S,[],'U',0); % system.S = addcl(system.S,[],{'UX','UY','
 % Body force field q
 q = -RHO*H*g;
 forcedof = 'FZ'; % FX, FY, FZ
-% Moment per unit length c
-% c = -100;
-% momentdof = {'MX','MY'}; % MX, MY, MZ
 
 % Stiffness matrix system.A and sollicitation vector system.b associated to mesh system.S
 system.A = calc_rigi(system.S);
 system.b = bodyload(system.S,[],forcedof,q);
-if exist('momentdof','var')
-    fun = @(x,c) c*[-x(:,2) x(:,1)]'/norm(x);
-    system.b = system.b + surfload(system.S,[],momentdof,fun,c);
-end
 
 %% Resolution
 
@@ -86,10 +82,13 @@ Ux = u(findddl(system.S,'UX'),:); % Ux = double(squeeze(eval_sol(system.S,u,syst
 Uy = u(findddl(system.S,'UY'),:); % Uy = double(squeeze(eval_sol(system.S,u,system.S.node,'UY')));
 Uz = u(findddl(system.S,'UZ'),:); % Uz = double(squeeze(eval_sol(system.S,u,system.S.node,'UZ')));
 
-if ~exist('momentdof','var')
-    w = @(x) q/(64*D) * ((x(:,1).^2+x(:,2).^2) - r^2) .* (x(:,1).^2+x(:,2).^2 - (5+NU)/(1+NU)*r^2);
-else
-    w = @(x) q/(64*D) * ((x(:,1).^2+x(:,2).^2).^2 - r^4) - ((x(:,1).^2+x(:,2).^2) - r^2) .* (c + q*r^2*(3+NU)/8) / (2*D*(1+NU));
+w = @(x) 0;
+m_max = 10;
+n_max = 10;
+for m=1:m_max
+    for n=1:n_max
+        w = @(x) w(x) + 16*q/(D*pi^6*m*n)/(m^2/a^2+n^2/b^2)^2 * sin(m*pi/2)^2 * sin(n*pi/2)^2 .* sin(m*pi*x(:,1)/a) .* sin(n*pi*x(:,2)/b);
+    end
 end
 x = getcoord(system.S.node);
 Uz_ex = w(x);
@@ -102,7 +101,7 @@ Rx = u(findddl(system.S,'RX'),:); % Rx = double(squeeze(eval_sol(system.S,u,syst
 Ry = u(findddl(system.S,'RY'),:); % Ry = double(squeeze(eval_sol(system.S,u,system.S.node,'RY'))));
 Rz = u(findddl(system.S,'RZ'),:); % Rz = double(squeeze(eval_sol(system.S,u,system.S.node,'RZ'))));
 
-P = getcenter(C);
+P = getcenter(Q);
 
 disp('Displacement u at point');
 disp(P);
@@ -137,7 +136,7 @@ save(fullfile(pathname,'all.mat'));
 %% Display domain, partition and mesh
 
 % Display domain
-plot_domain(C,'solid');
+plot_domain(Q,'solid');
 mysaveas(pathname,'domain',{'fig','epsc2'},renderer);
 mymatlab2tikz(pathname,'domain.tex');
 

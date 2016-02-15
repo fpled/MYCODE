@@ -34,44 +34,40 @@ myparallel('start');
 glob = GLOBAL();
 glob_out = GLOBALOUT();
 
-if exist([pathname 'gmsh_circular_' num2str(n) '_inclusions.msh'],'file')
-    glob.S = gmsh2femobject(2,[pathname 'gmsh_circular_' num2str(n) '_inclusions.msh'],2);
-elseif exist([pathname 'gmsh_circular_inclusions.geo'],'file')
-    glob.S = gmsh2femobject(2,[pathname 'gmsh_circular_' num2str(n) '_inclusions.geo'],2);
-else
-    D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
-    r = 0.13;
-    B = cell(1,9);
-    B{1} = CIRCLE(0.2,0.2,r);
-    B{2} = CIRCLE(0.2,0.5,r);
-    B{3} = CIRCLE(0.2,0.8,r);
-    B{4} = CIRCLE(0.5,0.8,r);
-    B{5} = CIRCLE(0.8,0.8,r);
-    B{6} = CIRCLE(0.8,0.5,r);
-    B{7} = CIRCLE(0.8,0.2,r);
-    B{8} = CIRCLE(0.5,0.2,r);
-    B{9} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
-    cl = 0.02;
-    glob.S = gmshdomainwithinclusion(D,B,cl,cl,[pathname 'gmsh_circular_' num2str(n) '_inclusions']);
-end
+D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
+
+r = 0.13;
+B = cell(1,9);
+B{1} = CIRCLE(0.2,0.2,r);
+B{2} = CIRCLE(0.2,0.5,r);
+B{3} = CIRCLE(0.2,0.8,r);
+B{4} = CIRCLE(0.5,0.8,r);
+B{5} = CIRCLE(0.8,0.8,r);
+B{6} = CIRCLE(0.8,0.5,r);
+B{7} = CIRCLE(0.8,0.2,r);
+B{8} = CIRCLE(0.5,0.2,r);
+B{9} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
+
+cl = 0.02;
+glob.S = gmshdomainwithinclusion(D,B,cl,cl,[pathname 'gmsh_circular_' num2str(n) '_inclusions']);
 
 % Patches
 patches = PATCHES(n);
 
-% D_patch = cell(1,n);
+D_patch = cell(1,n);
 switch n
     case 2
-        % D_patch{1} = union(B{2},B{4},B{6},B{8});
-        % D_patch{2} = union(B{1},B{3},B{5},B{7});
+        D_patch{1} = {B{2},B{4},B{6},B{8}};
+        D_patch{2} = {B{1},B{3},B{5},B{7}};
         k = [2 4 6 8];
         patches.PATCH{1}.S = keepgroupelem(glob.S,k+1);
         k = [1 3 5 7];
         patches.PATCH{2}.S = keepgroupelem(glob.S,k+1);
     case 4
-        % D_patch{1} = union(B{1},B{5});
-        % D_patch{2} = union(B{2},B{6});
-        % D_patch{3} = union(B{3},B{7});
-        % D_patch{4} = union(B{4},B{8});
+        D_patch{1} = {B{1},B{5}};
+        D_patch{2} = {B{2},B{6}};
+        D_patch{3} = {B{3},B{7}};
+        D_patch{4} = {B{4},B{8}};
         k = [1 5];
         patches.PATCH{1}.S = keepgroupelem(glob.S,k+1);
         k = [2 6];
@@ -82,7 +78,7 @@ switch n
         patches.PATCH{4}.S = keepgroupelem(glob.S,k+1);
     case 8
         for k=1:n
-            % D_patch{k} = B{k};
+            D_patch{k} = B{k};
             patches.PATCH{k}.S = keepgroupelem(glob.S,k+1);
         end
     otherwise
@@ -288,9 +284,14 @@ save(fullfile(pathname,'all.mat'));
 
 %% Display domain, partition and mesh
 
+% Display global domain and patches
+plot_domain(D,D_patch);
+mysaveas(pathname,'domain_global_patches',{'fig','epsc2'},renderer);
+mymatlab2tikz(pathname,'domain_global_patches.tex');
+
 % Display partition of global mesh glob.S
-plot_partition(glob);
-mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
+% plot_partition(glob,'nolegend');
+% mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
 
 % Display global mesh glob.S_out and local meshes patch.S
 plot_model(glob,patches,'nolegend');

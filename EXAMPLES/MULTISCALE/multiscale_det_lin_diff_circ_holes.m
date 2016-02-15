@@ -32,6 +32,7 @@ glob = GLOBAL();
 glob_out = GLOBALOUT();
 
 D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
+
 nbelem = [20,20];
 glob.S = build_model(D,'nbelem',nbelem);
 % cl = 0.05;
@@ -220,13 +221,13 @@ save(fullfile(pathname,'all.mat'));
 %% Display domain, partition and mesh
 
 % Display global domain and patches
-% plot_domain(D,D_patch);
-% mysaveas(pathname,'domain_global_patches',{'fig','epsc2'},renderer);
-% mymatlab2tikz(pathname,'domain_global_patches.tex');
+plot_domain(D,D_patch);
+mysaveas(pathname,'domain_global_patches',{'fig','epsc2'},renderer);
+mymatlab2tikz(pathname,'domain_global_patches.tex');
 
 % Display partition of global mesh glob.S
-plot_partition(glob);
-mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
+% plot_partition(glob,'nolegend');
+% mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
 
 % Display global mesh glob.S_out and local meshes patch.S
 plot_model(glob,patches,'nolegend');

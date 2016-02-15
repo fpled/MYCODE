@@ -22,26 +22,22 @@ myparallel('start');
 
 %% Domain and mesh definition
 
-if exist([pathname 'gmsh_circular_inclusions.msh'],'file')
-    system.S = gmsh2femobject(2,[pathname 'gmsh_circular_inclusions.msh'],2);
-elseif exist([pathname 'gmsh_circular_inclusions.geo'],'file')
-    system.S = gmsh2femobject(2,[pathname 'gmsh_circular_inclusions.geo'],2);
-else
-    D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
-    r = 0.13;
-    B = cell(1,9);
-    B{1} = CIRCLE(0.2,0.2,r);
-    B{2} = CIRCLE(0.2,0.5,r);
-    B{3} = CIRCLE(0.2,0.8,r);
-    B{4} = CIRCLE(0.5,0.8,r);
-    B{5} = CIRCLE(0.8,0.8,r);
-    B{6} = CIRCLE(0.8,0.5,r);
-    B{7} = CIRCLE(0.8,0.2,r);
-    B{8} = CIRCLE(0.5,0.2,r);
-    B{9} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
-    cl = 0.02;
-    system.S = gmshdomainwithinclusion(D,B,cl,cl,[pathname 'gmsh_circular_inclusions']);
-end
+D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
+
+r = 0.13;
+B = cell(1,9);
+B{1} = CIRCLE(0.2,0.2,r);
+B{2} = CIRCLE(0.2,0.5,r);
+B{3} = CIRCLE(0.2,0.8,r);
+B{4} = CIRCLE(0.5,0.8,r);
+B{5} = CIRCLE(0.8,0.8,r);
+B{6} = CIRCLE(0.8,0.5,r);
+B{7} = CIRCLE(0.8,0.2,r);
+B{8} = CIRCLE(0.5,0.2,r);
+B{9} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
+
+cl = 0.02;
+system.S = gmshdomainwithinclusion(D,B,cl,cl,[pathname 'gmsh_circular_inclusions']);
 
 %% Random variables
 
@@ -128,8 +124,13 @@ save(fullfile(pathname,'all.mat'));
 
 %% Display domain, partition and mesh
 
+% Display domain
+plot_domain(D,B);
+mysaveas(pathname,'domain',{'fig','epsc2'},renderer);
+mymatlab2tikz(pathname,'domain.tex');
+
 % Display partition of mesh system.S
-plot_partition(system.S);
+plot_partition(system.S,'nolegend');
 mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
 
 % Display mesh system.S

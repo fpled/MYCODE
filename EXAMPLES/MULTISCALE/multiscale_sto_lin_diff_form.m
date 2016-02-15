@@ -326,7 +326,7 @@ mysaveas(pathname,'domain_global_patches',{'fig','epsc2'},renderer);
 mymatlab2tikz(pathname,'domain_global_patches.tex');
 
 % Display partition of global mesh glob.S
-% plot_partition(glob);
+% plot_partition(glob,'nolegend');
 % mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
 
 % Display global mesh glob.S_out and local meshes patch.S

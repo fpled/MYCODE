@@ -21,6 +21,7 @@ myparallel('start');
 %% Domain and mesh definition
 
 D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
+
 nbelem = [20,20];
 system.S = build_model(D,'nbelem',nbelem);
 % cl = 0.05;
@@ -108,7 +109,7 @@ mysaveas(pathname,'domain',{'fig','epsc2'},renderer);
 mymatlab2tikz(pathname,'domain.tex');
 
 % Display partition of mesh system.S
-% plot_partition(system.S);
+% plot_partition(system.S,'nolegend');
 % mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
 
 % Display mesh system.S
