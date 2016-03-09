@@ -13,7 +13,7 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE','RESULTS',filename,file
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
+% set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 fontsize = 16;
 
 dim = 2; % dimension

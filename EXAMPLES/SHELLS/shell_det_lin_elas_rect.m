@@ -2,7 +2,7 @@
 %%--------------------------------------------%%
 
 % clc
-clear all
+% clear all
 close all
 
 %% Input data
@@ -11,7 +11,7 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',files
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-set(0,'DefaultFigureVisible','on'); % change the default figure properties of the MATLAB root object
+% set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 renderer = 'OpenGL';
 
 % Parallel computing
@@ -40,13 +40,13 @@ NU = 0.23;
 % Thickness
 H = 40e-3;
 % Density
-q = -500;
-RHO = -q/(H*g);
-% Constants
-D = E*H^3/(12*(1-NU^2));
+RHO = 500/(g*H);
+% Extensional stiffness
 A = E*H/(1-NU^2);
+% Bending stiffness
+D = E*H^3/(12*(1-NU^2));
 
-% Material mat_out associated to outside subdomain
+% Material
 % a(u,v) = int( epsilon(u) : K : epsilon(v) )
 mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',H);
 mat = setnumber(mat,1);
@@ -54,20 +54,43 @@ system.S = setmaterial(system.S,mat);
 
 %% Dirichlet boundary conditions
 
+% bctype = 'clamped';
+bctype = 'simply supported';
+
 system.S = final(system.S);
-% system.S = addcl(system.S,[]); % addcl(system.S,[],{'U','R'},0);
-system.S = addcl(system.S,[],'U',0); % system.S = addcl(system.S,[],{'UX','UY','UZ'},0);
+switch bctype
+    case 'clamped'
+        system.S = addcl(system.S,[]); % addcl(system.S,[],{'U','R'},0);
+    case 'simply supported'
+        system.S = addcl(system.S,[],'U',0); % system.S = addcl(system.S,[],{'UX','UY','UZ'},0);
+end
 % system.S = addcl(system.S,[],'R',0); % system.S = addcl(system.S,[],{'RX','RY','RZ'},0);
 
 %% Stiffness matrices and sollicitation vectors
 
-% Body force field q
-q = -RHO*H*g;
-forcedof = 'FZ'; % FX, FY, FZ
+% Body or Nodal force field p
+% forceload = 'body';
+forceload = 'nodal';
+switch forceload
+    case 'body'
+        p = RHO*g*H;
+    case 'nodal'
+        p = RHO*g*H*a*b;
+end
+Pload = getcenter(Q);
+xload = double(getcoord(Pload));
 
 % Stiffness matrix system.A and sollicitation vector system.b associated to mesh system.S
 system.A = calc_rigi(system.S);
-system.b = bodyload(system.S,[],forcedof,q);
+switch forceload
+    case 'body'
+        system.b = bodyload(system.S,[],'FZ',-p);
+    case 'nodal'
+        system.b = nodalload(system.S,Pload,'FZ',-p);
+        if isempty(ispointin(Pload,POINT(system.S.node)))
+            error('Pointwise load must be applied to a node of the mesh')
+        end
+end
 
 %% Resolution
 
@@ -87,7 +110,22 @@ m_max = 10;
 n_max = 10;
 for m=1:m_max
     for n=1:n_max
-        w = @(x) w(x) + 16*q/(D*pi^6*m*n)/(m^2/a^2+n^2/b^2)^2 * sin(m*pi/2)^2 * sin(n*pi/2)^2 .* sin(m*pi*x(:,1)/a) .* sin(n*pi*x(:,2)/b);
+        switch forceload
+            case 'body'
+                switch bctype
+                    case 'clamped'
+                        error('TODO')
+                    case 'simply supported'
+                        w = @(x) w(x) - 16*p/(D*pi^6*m*n*(m^2/a^2+n^2/b^2)^2) * sin(m*pi/2)^2 * sin(n*pi/2)^2 .* sin(m*pi*x(:,1)/a) .* sin(n*pi*x(:,2)/b);
+                end
+            case 'nodal'
+                switch bctype
+                    case 'clamped'
+                        error('TODO')
+                    case 'simply supported'
+                        w = @(x) w(x) - 4*p/(D*pi^4*a*b*(m^2/a^2+n^2/b^2)^2) * sin(m*pi*xload(1)/a) * sin(n*pi*xload(2)/b) .* sin(m*pi*x(:,1)/a) .* sin(n*pi*x(:,2)/b);
+                end
+        end
     end
 end
 x = getcoord(system.S.node);
@@ -157,7 +195,13 @@ mysaveas(pathname,'meshes_deflected',{'fig','epsc2'},renderer);
 
 % Display boundary conditions
 [hD,legD] = plot_boundary_conditions(system.S,'nolegend');
-[hN,legN] = vectorplot(system.S,'F',system.b,'r');
+switch forceload
+    case 'body'
+        ampl = 2;
+    case 'nodal'
+        ampl = 1/(2*system.S.nbnode);
+end
+[hN,legN] = vectorplot(system.S,'F',system.b,ampl,'r');
 % legend([hD,hN],'Dirichlet','Neumann')
 legend([hD,hN],[legD,legN])
 axis image
@@ -172,6 +216,8 @@ mysaveas(pathname,'boundary_conditions',{'fig','epsc2'},renderer);
 % mysaveas(pathname,'ridges',{'fig','epsc2'},renderer);
 
 %% Display solution u=(Ux,Uy,Uz,Rx,Ry,Rz)
+
+ampl = max(getsize(system.S))/max(abs(u));
 
 % Uz
 % plot_solution(system.S,u,'displ',3,'solid');

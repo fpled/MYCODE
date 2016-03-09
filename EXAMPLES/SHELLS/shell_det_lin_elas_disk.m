@@ -11,7 +11,7 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',files
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-set(0,'DefaultFigureVisible','on'); % change the default figure properties of the MATLAB root object
+% set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 renderer = 'OpenGL';
 
 % Parallel computing
@@ -23,7 +23,7 @@ r = 0.5;
 C = CIRCLE(0.0,0.0,0.0,r);
 
 elemtype = 'DKT'; % DKT, DKQ, COQ4
-cl = 0.1;
+cl = 0.05;
 system.S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_disk_' elemtype]);
 
 %% Materials
@@ -37,13 +37,13 @@ NU = 0.23;
 % Thickness
 H = 40e-3;
 % Density
-q = -500;
-RHO = -q/(H*g);
-% Constants
-D = E*H^3/(12*(1-NU^2));
+RHO = 500/(g*H);
+% Extensional stiffness
 A = E*H/(1-NU^2);
+% Bending stiffness
+D = E*H^3/(12*(1-NU^2));
 
-% Material mat_out associated to outside subdomain
+% Material
 % a(u,v) = int( epsilon(u) : K : epsilon(v) )
 mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',H);
 mat = setnumber(mat,1);
@@ -51,26 +51,47 @@ system.S = setmaterial(system.S,mat);
 
 %% Dirichlet boundary conditions
 
+% bctype = 'clamped';
+bctype = 'simply supported';
+
 system.S = final(system.S);
-% system.S = addcl(system.S,[]); % addcl(system.S,[],{'U','R'},0);
-system.S = addcl(system.S,[],'U',0); % system.S = addcl(system.S,[],{'UX','UY','UZ'},0);
+switch bctype
+    case 'clamped'
+        system.S = addcl(system.S,[]); % addcl(system.S,[],{'U','R'},0);
+    case 'simply supported'
+        system.S = addcl(system.S,[],'U',0); % system.S = addcl(system.S,[],{'UX','UY','UZ'},0);
+end
 % system.S = addcl(system.S,[],'R',0); % system.S = addcl(system.S,[],{'RX','RY','RZ'},0);
 
 %% Stiffness matrices and sollicitation vectors
 
-% Body force field q
-q = -RHO*H*g;
-forcedof = 'FZ'; % FX, FY, FZ
+% Body or Nodal force field p
+forceload = 'body';
+% forceload = 'nodal';
+switch forceload
+    case 'body'
+        p = RHO*g*H;
+    case 'nodal'
+        p = RHO*g*H*r^2;
+end
+Pload = getcenter(C);
+xload = double(getcoord(Pload));
 % Moment per unit length c
-% c = -100;
-% momentdof = {'MX','MY'}; % MX, MY, MZ
+c = 0;
 
 % Stiffness matrix system.A and sollicitation vector system.b associated to mesh system.S
 system.A = calc_rigi(system.S);
-system.b = bodyload(system.S,[],forcedof,q);
-if exist('momentdof','var')
-    fun = @(x,c) c*[-x(:,2) x(:,1)]'/norm(x);
-    system.b = system.b + surfload(system.S,[],momentdof,fun,c);
+switch forceload
+    case 'body'
+        system.b = bodyload(system.S,[],'FZ',-p);
+    case 'nodal'
+        system.b = nodalload(system.S,Pload,'FZ',-p);
+        if isempty(ispointin(Pload,POINT(system.S.node)))
+            error('Pointwise load must be applied to a node of the mesh')
+        end
+end
+if strcmp(bctype,'simply supported')
+    system.b = system.b + surfload(system.S,[],{'MX','MY'},-c*[1;1]);
 end
 
 %% Resolution
@@ -86,10 +107,21 @@ Ux = u(findddl(system.S,'UX'),:); % Ux = double(squeeze(eval_sol(system.S,u,syst
 Uy = u(findddl(system.S,'UY'),:); % Uy = double(squeeze(eval_sol(system.S,u,system.S.node,'UY')));
 Uz = u(findddl(system.S,'UZ'),:); % Uz = double(squeeze(eval_sol(system.S,u,system.S.node,'UZ')));
 
-if ~exist('momentdof','var')
-    w = @(x) q/(64*D) * ((x(:,1).^2+x(:,2).^2) - r^2) .* (x(:,1).^2+x(:,2).^2 - (5+NU)/(1+NU)*r^2);
-else
-    w = @(x) q/(64*D) * ((x(:,1).^2+x(:,2).^2).^2 - r^4) - ((x(:,1).^2+x(:,2).^2) - r^2) .* (c + q*r^2*(3+NU)/8) / (2*D*(1+NU));
+switch forceload
+    case 'body'
+        switch bctype
+            case 'clamped'
+                w = @(x) -p/(64*D) * (r^2 - (x(:,1).^2+x(:,2).^2)).^2;
+            case 'simply supported'
+                w = @(x) -1/(2*D*(1+NU)) * (r^2 - (x(:,1).^2+x(:,2).^2)) .* (p/32*((5+NU)*r^2 - (1+NU)*(x(:,1).^2+x(:,2).^2)) + c);
+        end
+    case 'nodal'
+        switch bctype
+            case 'clamped'
+                w = @(x) -p/(16*pi*D) * (r^2 - (x(:,1).^2+x(:,2).^2) - 2*(x(:,1).^2+x(:,2).^2).*log(r/sqrt(x(:,1).^2+x(:,2).^2)));
+            case 'simply supported'
+                w = @(x) -p/(16*pi*D) * ((3+NU)/(1+NU)*(r^2 - (x(:,1).^2+x(:,2).^2)) - 2*(x(:,1).^2+x(:,2).^2).*log(r/sqrt(x(:,1).^2+x(:,2).^2))) - c/(2*D*(1+NU))*(r^2 - (x(:,1).^2+x(:,2).^2));
+        end
 end
 x = getcoord(system.S.node);
 Uz_ex = w(x);
@@ -158,7 +190,13 @@ mysaveas(pathname,'meshes_deflected',{'fig','epsc2'},renderer);
 
 % Display boundary conditions
 [hD,legD] = plot_boundary_conditions(system.S,'nolegend');
-[hN,legN] = vectorplot(system.S,'F',system.b,'r');
+switch forceload
+    case 'body'
+        ampl = 2;
+    case 'nodal'
+        ampl = 1/(2*system.S.nbnode);
+end
+[hN,legN] = vectorplot(system.S,'F',system.b,ampl,'r');
 % legend([hD,hN],'Dirichlet','Neumann')
 legend([hD,hN],[legD,legN])
 axis image
@@ -173,6 +211,8 @@ mysaveas(pathname,'boundary_conditions',{'fig','epsc2'},renderer);
 % mysaveas(pathname,'ridges',{'fig','epsc2'},renderer);
 
 %% Display solution u=(Ux,Uy,Uz,Rx,Ry,Rz)
+
+ampl = max(getsize(system.S))/max(abs(u));
 
 % Uz
 % plot_solution(system.S,u,'displ',3,'solid');
