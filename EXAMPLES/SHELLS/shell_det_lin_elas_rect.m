@@ -24,9 +24,9 @@ b = 1;
 Q = QUADRANGLE([0.0,0.0,0.0],[a,0.0,0.0],[a,b,0.0],[0.0,b,0.0]);
 
 elemtype = 'DKT'; % DKT, DKQ, COQ4
-nbelem = [20,20];
+nbelem = [30,30];
 system.S = build_model(Q,'nbelem',nbelem,'elemtype',elemtype);
-% cl = 0.01;
+% cl = 0.05;
 % system.S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_rect_' elemtype]);
 
 %% Materials
@@ -54,6 +54,11 @@ system.S = setmaterial(system.S,mat);
 
 %% Dirichlet boundary conditions
 
+L1 = LIGNE([0.0,0.0,0.0],[a,0.0,0.0]);
+L2 = LIGNE([a,0.0,0.0],[a,b,0.0]);
+L3 = LIGNE([a,b,0.0],[0.0,b,0.0]);
+L4 = LIGNE([0.0,b,0.0],[0.0,0.0,0.0]);
+
 % bctype = 'clamped';
 bctype = 'simply supported';
 
@@ -63,14 +68,18 @@ switch bctype
         system.S = addcl(system.S,[]); % addcl(system.S,[],{'U','R'},0);
     case 'simply supported'
         system.S = addcl(system.S,[],'U',0); % system.S = addcl(system.S,[],{'UX','UY','UZ'},0);
+%         system.S = addcl(system.S,L1,'RY',0);
+%         system.S = addcl(system.S,L3,'RY',0);
+%         system.S = addcl(system.S,L2,'RX',0);
+%         system.S = addcl(system.S,L4,'RX',0);
 end
 % system.S = addcl(system.S,[],'R',0); % system.S = addcl(system.S,[],{'RX','RY','RZ'},0);
 
 %% Stiffness matrices and sollicitation vectors
 
 % Body or Nodal force field p
-% forceload = 'body';
-forceload = 'nodal';
+forceload = 'body';
+% forceload = 'nodal';
 switch forceload
     case 'body'
         p = RHO*g*H;
@@ -164,6 +173,95 @@ rz = eval_sol(system.S,u,P,'RZ');
 fprintf('rx    = %.4e\n',rx);
 fprintf('ry    = %.4e\n',ry);
 fprintf('rz    = %.4e\n',rz);
+fprintf('\n');
+
+P1=POINT([0.0,0.0,0.0]);
+P2=POINT([a,0.0,0.0]);
+P3=POINT([a,b,0.0]);
+P4=POINT([0.0,b,0.0]);
+P5=POINT([a/2,0.0,0.0]);
+P6=POINT([a,b/2,0.0]);
+P7=POINT([a/2,b,0.0]);
+P8=POINT([0.0,b/2,0.0]);
+
+disp('Rotation r at point');
+disp(P1);
+r1x = eval_sol(system.S,u,P1,'RX');
+r1y = eval_sol(system.S,u,P1,'RY');
+r1z = eval_sol(system.S,u,P1,'RZ');
+fprintf('r1x    = %.4e\n',r1x);
+fprintf('r1y    = %.4e\n',r1y);
+fprintf('r1z    = %.4e\n',r1z);
+fprintf('\n');
+
+disp('Rotation r at point');
+disp(P2);
+r2x = eval_sol(system.S,u,P2,'RX');
+r2y = eval_sol(system.S,u,P2,'RY');
+r2z = eval_sol(system.S,u,P2,'RZ');
+fprintf('r2x    = %.4e\n',r2x);
+fprintf('r2y    = %.4e\n',r2y);
+fprintf('r2z    = %.4e\n',r2z);
+fprintf('\n');
+
+disp('Rotation r at point');
+disp(P3);
+r3x = eval_sol(system.S,u,P3,'RX');
+r3y = eval_sol(system.S,u,P3,'RY');
+r3z = eval_sol(system.S,u,P3,'RZ');
+fprintf('r3x    = %.4e\n',r3x);
+fprintf('r3y    = %.4e\n',r3y);
+fprintf('r3z    = %.4e\n',r3z);
+fprintf('\n');
+
+disp('Rotation r at point');
+disp(P4);
+r4x = eval_sol(system.S,u,P4,'RX');
+r4y = eval_sol(system.S,u,P4,'RY');
+r4z = eval_sol(system.S,u,P4,'RZ');
+fprintf('r4x    = %.4e\n',r4x);
+fprintf('r4y    = %.4e\n',r4y);
+fprintf('r4z    = %.4e\n',r4z);
+fprintf('\n');
+
+disp('Rotation r at point');
+disp(P5);
+r5x = eval_sol(system.S,u,P5,'RX');
+r5y = eval_sol(system.S,u,P5,'RY');
+r5z = eval_sol(system.S,u,P5,'RZ');
+fprintf('r5x    = %.4e\n',r5x);
+fprintf('r5y    = %.4e\n',r5y);
+fprintf('r5z    = %.4e\n',r5z);
+fprintf('\n');
+
+disp('Rotation r at point');
+disp(P6);
+r6x = eval_sol(system.S,u,P6,'RX');
+r6y = eval_sol(system.S,u,P6,'RY');
+r6z = eval_sol(system.S,u,P6,'RZ');
+fprintf('r6x    = %.4e\n',r6x);
+fprintf('r6y    = %.4e\n',r6y);
+fprintf('r6z    = %.4e\n',r6z);
+fprintf('\n');
+
+disp('Rotation r at point');
+disp(P7);
+r7x = eval_sol(system.S,u,P7,'RX');
+r7y = eval_sol(system.S,u,P7,'RY');
+r7z = eval_sol(system.S,u,P7,'RZ');
+fprintf('r7x    = %.4e\n',r7x);
+fprintf('r7y    = %.4e\n',r7y);
+fprintf('r7z    = %.4e\n',r7z);
+fprintf('\n');
+
+disp('Rotation r at point');
+disp(P8);
+r8x = eval_sol(system.S,u,P8,'RX');
+r8y = eval_sol(system.S,u,P8,'RY');
+r8z = eval_sol(system.S,u,P8,'RZ');
+fprintf('r8x    = %.4e\n',r8x);
+fprintf('r8y    = %.4e\n',r8y);
+fprintf('r8z    = %.4e\n',r8z);
 fprintf('\n');
 
 %% Save variables

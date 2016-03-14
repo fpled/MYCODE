@@ -143,26 +143,22 @@ end
 
 %% Dirichlet boundary conditions
 
+LU = LIGNE([0.0,L],[L,L]);
+LL = LIGNE([0.0,0.0],[L,0.0]);
+LMH = LIGNE([0.0,L/2],[L,L/2]);
+LMV = LIGNE([L/2,0.0],[L/2,L]);
+
 % Global
 glob.S = final(glob.S);
-
 switch loading
     case 'pull'
-        LH = LIGNE([0.0,L/2],[L,L/2]);
-        [~,numnode,~] = intersect(glob.S,LH);
-        glob.S = addcl(glob.S,numnode,'UY');
-        LV = LIGNE([L/2,0.0],[L/2,L]);
-        [~,numnode,~] = intersect(glob.S,LV);
-        glob.S = addcl(glob.S,numnode,'UX');
+        glob.S = addcl(glob.S,LMH,'UY');
+        glob.S = addcl(glob.S,LMV,'UX');
     case 'shear'
-        LH = LIGNE([0.0,0.0],[L,0.0]);
-        B = create_boundary(glob.S);
-        [~,numnode,~] = intersect(B,LH);
-        glob.S = addcl(glob.S,numnode);
+        glob.S = addcl(glob.S,LL);
     otherwise
         error('Wrong loading case')
 end
-
 
 glob.S_out = get_final_model_part(glob.S,0);
 glob_out.S_out = glob.S_out;
@@ -186,8 +182,6 @@ f = 1;
 
 % Stiffness matrix glob_out.A_out and sollicitation vector glob_out.b_out associated to mesh glob_out.S_out
 glob_out.A_out = calc_rigi(glob_out.S_out);
-LU = LIGNE([0.0,L],[L,L]);
-LL = LIGNE([0.0,0.0],[L,0.0]);
 switch loading
     case 'pull'
         glob_out.b_out = surfload(glob_out.S_out,LU,{'FX','FY'},[0;f]);
