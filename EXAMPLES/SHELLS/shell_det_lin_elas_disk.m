@@ -65,13 +65,13 @@ end
 
 %% Stiffness matrices and sollicitation vectors
 
-% Body or Nodal force field p
-forceload = 'body';
-% forceload = 'nodal';
+% Uniform or Concentrated load p
+forceload = 'uniform';
+% forceload = 'concentrated';
 switch forceload
-    case 'body'
+    case 'uniform'
         p = RHO*g*H;
-    case 'nodal'
+    case 'concentrated'
         p = RHO*g*H*r^2;
 end
 Pload = getcenter(C);
@@ -82,9 +82,9 @@ c = 0;
 % Stiffness matrix system.A and sollicitation vector system.b associated to mesh system.S
 system.A = calc_rigi(system.S);
 switch forceload
-    case 'body'
+    case 'uniform'
         system.b = bodyload(system.S,[],'FZ',-p);
-    case 'nodal'
+    case 'concentrated'
         system.b = nodalload(system.S,Pload,'FZ',-p);
         if isempty(ispointin(Pload,POINT(system.S.node)))
             error('Pointwise load must be applied to a node of the mesh')
@@ -107,15 +107,20 @@ Ux = u(findddl(system.S,'UX'),:); % Ux = double(squeeze(eval_sol(system.S,u,syst
 Uy = u(findddl(system.S,'UY'),:); % Uy = double(squeeze(eval_sol(system.S,u,system.S.node,'UY')));
 Uz = u(findddl(system.S,'UZ'),:); % Uz = double(squeeze(eval_sol(system.S,u,system.S.node,'UZ')));
 
+R = u(findddl(system.S,DDL(DDLVECT('R',system.S.syscoord,'ROTA'))));
+Rx = u(findddl(system.S,'RX'),:); % Rx = double(squeeze(eval_sol(system.S,u,system.S.node,'RX'))));
+Ry = u(findddl(system.S,'RY'),:); % Ry = double(squeeze(eval_sol(system.S,u,system.S.node,'RY'))));
+Rz = u(findddl(system.S,'RZ'),:); % Rz = double(squeeze(eval_sol(system.S,u,system.S.node,'RZ'))));
+
 switch forceload
-    case 'body'
+    case 'uniform'
         switch bctype
             case 'clamped'
                 w = @(x) -p/(64*D) * (r^2 - (x(:,1).^2+x(:,2).^2)).^2;
             case 'simply supported'
                 w = @(x) -1/(2*D*(1+NU)) * (r^2 - (x(:,1).^2+x(:,2).^2)) .* (p/32*((5+NU)*r^2 - (1+NU)*(x(:,1).^2+x(:,2).^2)) + c);
         end
-    case 'nodal'
+    case 'concentrated'
         switch bctype
             case 'clamped'
                 w = @(x) -p/(16*pi*D) * (r^2 - (x(:,1).^2+x(:,2).^2) - 2*(x(:,1).^2+x(:,2).^2).*log(r/sqrt(x(:,1).^2+x(:,2).^2)));
@@ -129,33 +134,27 @@ error_Uz = norm(Uz-Uz_ex)/norm(Uz_ex);
 fprintf('error = %.4e\n',error_Uz);
 fprintf('\n');
 
-R = u(findddl(system.S,DDL(DDLVECT('R',system.S.syscoord,'ROTA'))));
-Rx = u(findddl(system.S,'RX'),:); % Rx = double(squeeze(eval_sol(system.S,u,system.S.node,'RX'))));
-Ry = u(findddl(system.S,'RY'),:); % Ry = double(squeeze(eval_sol(system.S,u,system.S.node,'RY'))));
-Rz = u(findddl(system.S,'RZ'),:); % Rz = double(squeeze(eval_sol(system.S,u,system.S.node,'RZ'))));
-
 P = getcenter(C);
 
-disp('Displacement u at point');
-disp(P);
 ux = eval_sol(system.S,u,P,'UX');
 uy = eval_sol(system.S,u,P,'UY');
 uz = eval_sol(system.S,u,P,'UZ');
+uz_ex = w(double(P));
+error_uz = norm(uz-uz_ex)/norm(uz_ex);
+
+rx = eval_sol(system.S,u,P,'RX');
+ry = eval_sol(system.S,u,P,'RY');
+rz = eval_sol(system.S,u,P,'RZ');
+
+disp('Displacement u at point'); disp(P);
 fprintf('ux    = %.4e\n',ux);
 fprintf('uy    = %.4e\n',uy);
 fprintf('uz    = %.4e\n',uz);
-
-uz_ex = w(double(P));
-error_uz = norm(uz-uz_ex)/norm(uz_ex);
 fprintf('uz_ex = %.4e\n',uz_ex);
 fprintf('error = %.4e\n',error_uz);
 fprintf('\n');
 
-disp('Rotation r at point');
-disp(P);
-rx = eval_sol(system.S,u,P,'RX');
-ry = eval_sol(system.S,u,P,'RY');
-rz = eval_sol(system.S,u,P,'RZ');
+disp('Rotation r at point'); disp(P);
 fprintf('rx    = %.4e\n',rx);
 fprintf('ry    = %.4e\n',ry);
 fprintf('rz    = %.4e\n',rz);
@@ -191,9 +190,9 @@ mysaveas(pathname,'meshes_deflected',{'fig','epsc2'},renderer);
 % Display boundary conditions
 [hD,legD] = plot_boundary_conditions(system.S,'nolegend');
 switch forceload
-    case 'body'
+    case 'uniform'
         ampl = 2;
-    case 'nodal'
+    case 'concentrated'
         ampl = 1/(2*system.S.nbnode);
 end
 [hN,legN] = vectorplot(system.S,'F',system.b,ampl,'r');
