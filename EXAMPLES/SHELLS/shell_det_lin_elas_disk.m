@@ -38,9 +38,9 @@ NU = 0.23;
 H = 40e-3;
 % Density
 RHO = 500/(g*H);
-% Extensional stiffness
+% Extensional stiffness (or In-plane plate rigidity)
 A = E*H/(1-NU^2);
-% Bending stiffness
+% Bending stiffness (or Flexural rigidity)
 D = E*H^3/(12*(1-NU^2));
 
 % Material
@@ -51,8 +51,8 @@ system.S = setmaterial(system.S,mat);
 
 %% Dirichlet boundary conditions
 
-% bctype = 'clamped';
-bctype = 'simply supported';
+bctype = 'clamped';
+% bctype = 'simply supported';
 
 system.S = final(system.S);
 switch bctype

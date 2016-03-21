@@ -41,9 +41,9 @@ NU = 0.23;
 H = 40e-3;
 % Density
 RHO = 500/(g*H);
-% Extensional stiffness
+% Extensional stiffness (or In-plane plate rigidity)
 A = E*H/(1-NU^2);
-% Bending stiffness
+% Bending stiffness (or Flexural rigidity)
 D = E*H^3/(12*(1-NU^2));
 
 % Material
@@ -59,8 +59,8 @@ L2 = LIGNE([a,0.0,0.0],[a,b,0.0]);
 L3 = LIGNE([a,b,0.0],[0.0,b,0.0]);
 L4 = LIGNE([0.0,b,0.0],[0.0,0.0,0.0]);
 
-% bctype = 'clamped';
-bctype = 'simply supported';
+bctype = 'clamped';
+% bctype = 'simply supported';
 
 system.S = final(system.S);
 switch bctype
@@ -78,8 +78,8 @@ end
 %% Stiffness matrices and sollicitation vectors
 
 % Uniform or Concentrated load p
-forceload = 'uniform';
-% forceload = 'concentrated';
+% forceload = 'uniform';
+forceload = 'concentrated';
 switch forceload
     case 'uniform'
         p = RHO*g*H;
@@ -122,25 +122,35 @@ Rz = u(findddl(system.S,'RZ'),:); % Rz = double(squeeze(eval_sol(system.S,u,syst
 w = @(x) 0;
 m_max = 10;
 n_max = 10;
-for m=1:m_max
-    for n=1:n_max
-        switch forceload
-            case 'uniform'
-                switch bctype
-                    case 'clamped'
-                        error('TODO')
-                    case 'simply supported'
+switch forceload
+    case 'uniform'
+        switch bctype
+            case 'clamped'
+%                 for n=1:n_max
+%                     w = @(x) w(x) - p/(4*D*pi^4*n^4*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*n*pi*x(:,1)/a)) .* (1-cos(2*n*pi*x(:,2)/b));
+%                 end
+                w = @(x) -p/(4*D*pi^4*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*pi*x(:,1)/a)) .* (1-cos(2*pi*x(:,2)/b));
+            case 'simply supported'
+                for m=1:m_max
+                    for n=1:n_max
                         w = @(x) w(x) - 16*p/(D*pi^6*m*n*(m^2/a^2+n^2/b^2)^2) * sin(m*pi/2)^2 * sin(n*pi/2)^2 .* sin(m*pi*x(:,1)/a) .* sin(n*pi*x(:,2)/b);
-                end
-            case 'concentrated'
-                switch bctype
-                    case 'clamped'
-                        error('TODO')
-                    case 'simply supported'
-                        w = @(x) w(x) - 4*p/(D*pi^4*a*b*(m^2/a^2+n^2/b^2)^2) * sin(m*pi*xload(1)/a) * sin(n*pi*xload(2)/b) .* sin(m*pi*x(:,1)/a) .* sin(n*pi*x(:,2)/b);
+                    end
                 end
         end
-    end
+    case 'concentrated'
+        switch bctype
+            case 'clamped'
+%                 for n=1:n_max
+%                     w = @(x) w(x) - p/(D*pi^4*n^4*a*b*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*n*pi*x(:,1)/a)) .* (1-cos(2*n*pi*x(:,2)/b));
+%                 end
+                w = @(x) -p/(D*pi^4*a*b*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*pi*x(:,1)/a)) .* (1-cos(2*pi*x(:,2)/b));
+            case 'simply supported'
+                for m=1:m_max
+                    for n=1:n_max
+                        w = @(x) w(x) - 4*p/(D*pi^4*a*b*(m^2/a^2+n^2/b^2)^2) * sin(m*pi*xload(1)/a) * sin(n*pi*xload(2)/b) .* sin(m*pi*x(:,1)/a) .* sin(n*pi*x(:,2)/b);
+                    end
+                end
+        end
 end
 x = getcoord(system.S.node);
 Uz_ex = w(x);
