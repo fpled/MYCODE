@@ -61,8 +61,8 @@ L2 = LIGNE([a,0.0,0.0],[a,b,0.0]);
 L3 = LIGNE([a,b,0.0],[0.0,b,0.0]);
 L4 = LIGNE([0.0,b,0.0],[0.0,0.0,0.0]);
 
-bctype = 'clamped';
-% bctype = 'simply supported';
+% bctype = 'clamped';
+bctype = 'simply supported';
 
 system.S = final(system.S);
 switch bctype
@@ -80,8 +80,8 @@ end
 %% Stiffness matrices and sollicitation vectors
 
 % Uniform or Concentrated load p
-% forceload = 'uniform';
-forceload = 'concentrated';
+forceload = 'uniform';
+% forceload = 'concentrated';
 switch forceload
     case 'uniform'
         p = RHO*g*H;

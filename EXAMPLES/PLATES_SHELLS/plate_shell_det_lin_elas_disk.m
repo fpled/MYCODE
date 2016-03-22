@@ -53,8 +53,8 @@ system.S = setmaterial(system.S,mat);
 
 %% Dirichlet boundary conditions
 
-bctype = 'clamped';
-% bctype = 'simply supported';
+% bctype = 'clamped';
+bctype = 'simply supported';
 
 system.S = final(system.S);
 switch bctype
