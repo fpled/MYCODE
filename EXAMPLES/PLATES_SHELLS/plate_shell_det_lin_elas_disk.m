@@ -133,6 +133,7 @@ end
 x = getcoord(system.S.node);
 Uz_ex = w(x);
 error_Uz = norm(Uz-Uz_ex)/norm(Uz_ex);
+fprintf('\n');
 fprintf('error = %.4e\n',error_Uz);
 fprintf('\n');
 

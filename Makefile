@@ -26,32 +26,34 @@ Cluster_Name = cluster
 #Pb_Name = multiscale_sto_nonlin_diff_reac
 
 #Pb_Name = multiscale_sto_lin_diff_align_inclusions
-#Pb_Name = multiscale_sto_lin_diff_square_inclusions_iso
-#Pb_Name = multiscale_sto_lin_diff_square_inclusions_aniso
-Pb_Name = multiscale_sto_nonlin_diff_reac_square_inclusions_iso
-#Pb_Name = multiscale_sto_nonlin_diff_reac_square_inclusions_aniso
-
 #Pb_Name = multiscale_sto_lin_diff_circ_inclusions_iso
 #Pb_Name = multiscale_sto_lin_diff_circ_inclusions_aniso
+#Pb_Name = multiscale_sto_lin_diff_square_inclusions_iso
+#Pb_Name = multiscale_sto_lin_diff_square_inclusions_aniso
+#Pb_Name = multiscale_sto_nonlin_diff_reac_square_inclusions_iso
+#Pb_Name = multiscale_sto_nonlin_diff_reac_square_inclusions_aniso
 
 #Pb_Name = monoscale_sto_lin_diff
-#Pb_Name = monoscale_sto_nonlin_diff_reac
 #Pb_Name = monoscale_sto_lin_diff_circ_inclusions_iso
 #Pb_Name = monoscale_sto_lin_diff_circ_inclusions_aniso
+#Pb_Name = monoscale_sto_nonlin_diff_reac
 
 #Pb_Name = sparse_approx_polynomial_function
 #Pb_Name = sparse_approx_ishigami_function
 #Pb_Name = sparse_approx_anisotropic_function
 #Pb_Name = sparse_approx_geometric_brownian
 
+Pb_Name = plate_shell_det_lin_elas_disk
+#Pb_Name = plate_shell_det_lin_elas_rect
+
 # Default ---------------------------
 default:
-#	matlab -nodesktop -nosplash -noFigureWindows -r "$(Pb_Name); exit" -logfile RESULTS/$(Pb_Name).log
-	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac_square_inclusions_iso; exit" -logfile RESULTS/multiscale_sto_nonlin_diff_reac_square_inclusions_iso.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac_square_inclusions_aniso; exit" -logfile RESULTS/multiscale_sto_nonlin_diff_reac_square_inclusions_aniso.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "$(Pb_Name); exit" -logfile RESULTS/$(Pb_Name).log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac_square_inclusions_iso; exit" -logfile RESULTS/multiscale_sto_nonlin_diff_reac_square_inclusions_iso.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac_square_inclusions_aniso; exit" -logfile RESULTS/multiscale_sto_nonlin_diff_reac_square_inclusions_aniso.log
 
 # All ---------------------------
-all: sparseapprox monosto multidet multisto
+all: sparseapprox monosto multidet multisto plateshell
 
 # Multiscale ---------------------------
 multi: multidet multisto
@@ -73,19 +75,19 @@ multisto:
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_elas; exit" -logfile RESULTS/multiscale_sto_lin_elas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac; exit" -logfile RESULTS/multiscale_sto_nonlin_diff_reac.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_align_inclusions; exit" -logfile RESULTS/multiscale_sto_lin_diff_align_inclusions.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_circ_inclusions_iso; exit" -logfile RESULTS/multiscale_sto_lin_diff_circ_inclusions_iso.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_circ_inclusions_aniso; exit" -logfile RESULTS/multiscale_sto_lin_diff_circ_inclusions_aniso.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_square_inclusions_iso; exit" -logfile RESULTS/multiscale_sto_lin_diff_square_inclusions_iso.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_square_inclusions_aniso; exit" -logfile RESULTS/multiscale_sto_lin_diff_square_inclusions_aniso.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac_square_inclusions_iso; exit" -logfile RESULTS/multiscale_sto_nonlin_diff_reac_square_inclusions_iso.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac_square_inclusions_aniso; exit" -logfile RESULTS/multiscale_sto_nonlin_diff_reac_square_inclusions_aniso.log
-#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_circ_inclusions_iso; exit" -logfile RESULTS/multiscale_sto_lin_diff_circ_inclusions_iso.log
-#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_circ_inclusions_aniso; exit" -logfile RESULTS/multiscale_sto_lin_diff_circ_inclusions_aniso.log
 
 # Monoscale Stochastic ---------------------------
 monosto:
 	matlab -nodesktop -nosplash -noFigureWindows -r "monoscale_sto_lin_diff; exit" -logfile RESULTS/monoscale_sto_lin_diff.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "monoscale_sto_nonlin_diff_reac; exit" -logfile RESULTS/monoscale_sto_nonlin_diff_reac.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "monoscale_sto_lin_diff_circ_inclusions_iso; exit" -logfile RESULTS/monoscale_sto_lin_diff_circ_inclusions_iso.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "monoscale_sto_lin_diff_circ_inclusions_aniso; exit" -logfile RESULTS/monoscale_sto_lin_diff_circ_inclusions_aniso.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "monoscale_sto_nonlin_diff_reac; exit" -logfile RESULTS/monoscale_sto_nonlin_diff_reac.log
 
 # Sparse approximation ---------------------------
 sparseapprox:
@@ -93,6 +95,11 @@ sparseapprox:
 	matlab -nodesktop -nosplash -noFigureWindows -r "sparse_approx_ishigami_function; exit" -logfile RESULTS/sparse_approx_ishigami_function.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "sparse_approx_anisotropic_function; exit" -logfile RESULTS/sparse_approx_anisotropic_function.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "sparse_approx_geometric_brownian; exit" -logfile RESULTS/sparse_approx_geometric_brownian.log
+
+# Plate Shell ---------------------------
+plateshell:
+	matlab -nodesktop -nosplash -noFigureWindows -r "plate_shell_det_lin_elas_disk; exit" -logfile RESULTS/plate_shell_det_lin_elas_disk.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "plate_shell_det_lin_elas_rect; exit" -logfile RESULTS/plate_shell_det_lin_elas_rect.log
 
 # Clean ---------------------------
 clean:
