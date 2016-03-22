@@ -7,7 +7,7 @@ close all
 
 %% Input data
 
-n = 1; % number of patches n = 1, 2
+n = 1; % number of patches n = 1
 loading = 'pull'; % 'pull' or 'shear'
 filename = ['multiscale_det_lin_elas_' num2str(n) '_edge_cracks_' loading];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE','RESULTS',filename,filesep);
@@ -145,6 +145,7 @@ glob.S = final(glob.S);
 switch loading
     case 'pull'
         glob.S = addcl(glob.S,LM,'UY');
+        glob.S = addcl(glob.S,POINT([w,0.0]),'UX');
     case 'shear'
         glob.S = addcl(glob.S,LL);
     otherwise
@@ -250,7 +251,7 @@ end
 %% Multiscale resolution using global-local iterative algorithm based on overlapping domain decomposition
 
 I = ITERATIVESOLVER('display',true,'displayiter',true,...
-    'maxiter',50,'tol',eps,'rho','Aitken',...
+    'maxiter',100,'tol',eps,'rho','Aitken',...
     'errorindicator','reference','reference',{{U_ref,w_ref,lambda_ref}});
 if solve_multiscale
     [U,w,lambda,result] = solve(I,glob,patches,interfaces);

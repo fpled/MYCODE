@@ -145,15 +145,15 @@ end
 
 LU = LIGNE([0.0,L],[L,L]);
 LL = LIGNE([0.0,0.0],[L,0.0]);
-LMH = LIGNE([0.0,L/2],[L,L/2]);
-LMV = LIGNE([L/2,0.0],[L/2,L]);
 
 % Global
 glob.S = final(glob.S);
 switch loading
     case 'pull'
-        glob.S = addcl(glob.S,LMH,'UY');
-        glob.S = addcl(glob.S,LMV,'UX');
+        glob.S = addcl(glob.S,POINT([0.0,L/2]),'UY');
+        glob.S = addcl(glob.S,POINT([L/2,0.0]),'UX');
+        glob.S = addcl(glob.S,POINT([L,L/2]),'UY');
+        glob.S = addcl(glob.S,POINT([L/2,L]),'UX');
     case 'shear'
         glob.S = addcl(glob.S,LL);
     otherwise
