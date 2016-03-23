@@ -2,7 +2,7 @@
 %%--------------------------------------------------%%
 
 % clc
-% clear all
+clear all
 close all
 
 %% Input data
@@ -24,7 +24,7 @@ b = 1;
 Q = QUADRANGLE([0.0,0.0,0.0],[a,0.0,0.0],[a,b,0.0],[0.0,b,0.0]);
 
 elemtype = 'DKQ'; % DKT, DKQ, COQ4
-nbelem = [4,4];
+nbelem = [30,30];
 system.S = build_model(Q,'nbelem',nbelem,'elemtype',elemtype);
 % cl = 0.05;
 % system.S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_rect_' elemtype]);
