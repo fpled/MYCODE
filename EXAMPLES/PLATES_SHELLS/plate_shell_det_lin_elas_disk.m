@@ -19,35 +19,33 @@ renderer = 'OpenGL';
 
 %% Domain and mesh definition
 
-r = 0.5;
+r = 1;
 C = CIRCLE(0.0,0.0,0.0,r);
 
 elemtype = 'DKT'; % DKT, DKQ, COQ4
-cl = 0.05;
+cl = 0.1;
 system.S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_disk_' elemtype]);
 
 %% Materials
 
 % Gravitational acceleration
-g = 9.81;
+g = 10;
 % Young modulus
-E = 11.5e9;
+E = 1;
 % Poisson ratio
-NU = 0.23;
+NU = 0.3;
 % Thickness
-H = 40e-3;
+H = 0.1;
 % Density
-RHO = 500/(g*H);
-% Extensional stiffness (or In-plane membrane rigidity)
+RHO = 1;
+% Extensional stiffness (or Membrane rigidity)
 A = E*H/(1-NU^2);
 % Bending stiffness (or Flexural rigidity)
 D = E*H^3/(12*(1-NU^2));
-% Shear correction factor
-k = 5/6;
 
 % Material
 % a(u,v) = int( epsilon(u) : K : epsilon(v) )
-mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',H,'k',k);
+mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',H,'k',5/6);
 mat = setnumber(mat,1);
 system.S = setmaterial(system.S,mat);
 
@@ -114,13 +112,19 @@ Rx = u(findddl(system.S,'RX'),:); % Rx = double(squeeze(eval_sol(system.S,u,syst
 Ry = u(findddl(system.S,'RY'),:); % Ry = double(squeeze(eval_sol(system.S,u,system.S.node,'RY'))));
 Rz = u(findddl(system.S,'RZ'),:); % Rz = double(squeeze(eval_sol(system.S,u,system.S.node,'RZ'))));
 
+switch elemtype
+    case {'DKT','DKQ'} % Kirchhoff-Love
+        phi = 0;
+    case {'COQ4'} % Reissner-Mindlin
+        phi = 16/5*(H/r)^2/(1-NU);
+end
 switch forceload
     case 'uniform'
         switch bctype
             case 'clamped'
-                w = @(x) -p/(64*D) * (r^2 - (x(:,1).^2+x(:,2).^2)).^2;
+                w = @(x) -p/(64*D) * (r^2 - (x(:,1).^2+x(:,2).^2)).*(r^2 - (x(:,1).^2+x(:,2).^2) + phi);
             case 'simply supported'
-                w = @(x) -1/(2*D*(1+NU)) * (r^2 - (x(:,1).^2+x(:,2).^2)) .* (p/32*((5+NU)*r^2 - (1+NU)*(x(:,1).^2+x(:,2).^2)) + c);
+                w = @(x) -1/(2*D*(1+NU)) * (r^2 - (x(:,1).^2+x(:,2).^2)) .* (p/32*((5+NU)*r^2 - (1+NU)*(x(:,1).^2+x(:,2).^2) + phi*(1+NU)) + c);
         end
     case 'concentrated'
         switch bctype

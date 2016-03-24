@@ -32,25 +32,23 @@ system.S = build_model(Q,'nbelem',nbelem,'elemtype',elemtype);
 %% Materials
 
 % Gravitational acceleration
-g = 9.81;
+g = 10;
 % Young modulus
-E = 11.5e9;
+E = 1;
 % Poisson ratio
-NU = 0.23;
+NU = 0.3;
 % Thickness
-H = 40e-3;
+H = 0.1;
 % Density
-RHO = 500/(g*H);
-% Extensional stiffness (or In-plane membrane rigidity)
+RHO = 1;
+% Extensional stiffness (or Membrane rigidity)
 A = E*H/(1-NU^2);
 % Bending stiffness (or Flexural rigidity)
 D = E*H^3/(12*(1-NU^2));
-% Shear correction factor
-k = 5/6;
 
 % Material
 % a(u,v) = int( epsilon(u) : K : epsilon(v) )
-mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',H,'k',k);
+mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',H,'k',5/6);
 mat = setnumber(mat,1);
 system.S = setmaterial(system.S,mat);
 

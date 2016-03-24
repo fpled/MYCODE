@@ -23,7 +23,7 @@ a = 1;
 b = 1;
 Q = QUADRANGLE([0.0,0.0,0.0],[a,0.0,0.0],[a,b,0.0],[0.0,b,0.0]);
 
-elemtype = 'DKT'; % DKT, DKQ, COQ4
+elemtype = 'DKQ'; % DKT, DKQ, COQ4
 nbelem = [30,30];
 system.S = build_model(Q,'nbelem',nbelem,'elemtype',elemtype);
 % cl = 0.05;
@@ -41,16 +41,14 @@ NU = 0.23;
 H = 40e-3;
 % Density
 RHO = 500/(g*H);
-% Extensional stiffness (or In-plane plate rigidity)
+% Extensional stiffness (or Membrane rigidity)
 A = E*H/(1-NU^2);
 % Bending stiffness (or Flexural rigidity)
 D = E*H^3/(12*(1-NU^2));
-% Shear correction factor
-k = 5/6;
 
 % Material
 % a(u,v) = int( epsilon(u) : K : epsilon(v) )
-mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',H,'k',k);
+mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',H,'k',5/6);
 mat = setnumber(mat,1);
 system.S = setmaterial(system.S,mat);
 
@@ -69,13 +67,13 @@ switch bctype
     case 'clamped'
         system.S = addcl(system.S,[]); % addcl(system.S,[],{'U','R'},0);
     case 'simply supported'
-        system.S = addcl(system.S,[],'U',0); % system.S = addcl(system.S,[],{'UX','UY','UZ'},0);
-%         system.S = addcl(system.S,L1,'RY',0);
-%         system.S = addcl(system.S,L3,'RY',0);
-%         system.S = addcl(system.S,L2,'RX',0);
-%         system.S = addcl(system.S,L4,'RX',0);
+        system.S = addcl(system.S,[],'U'); % system.S = addcl(system.S,[],{'UX','UY','UZ'});
+%         system.S = addcl(system.S,L1,'RY');
+%         system.S = addcl(system.S,L3,'RY');
+%         system.S = addcl(system.S,L2,'RX');
+%         system.S = addcl(system.S,L4,'RX');
 end
-% system.S = addcl(system.S,[],'R',0); % system.S = addcl(system.S,[],{'RX','RY','RZ'},0);
+% system.S = addcl(system.S,[],'R'); % system.S = addcl(system.S,[],{'RX','RY','RZ'});
 
 %% Stiffness matrices and sollicitation vectors
 
@@ -105,7 +103,7 @@ end
 
 %% Resolution
 
-u = solve_system(calc_system(system));
+u = solve_system(system);
 
 %% Outputs
 
@@ -374,3 +372,4 @@ if exist('momentdof','var')
 end
 
 % myparallel('stop');
+
