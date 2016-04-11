@@ -24,7 +24,7 @@ C = CIRCLE(0.0,0.0,0.0,r);
 
 elemtype = 'DKT'; % DKT, DKQ, COQ4
 cl = 0.1;
-system.S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_disk_' elemtype]);
+system.S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_disk_' elemtype '_cl_' num2str(cl)]);
 
 %% Materials
 
@@ -51,11 +51,11 @@ system.S = setmaterial(system.S,mat);
 
 %% Dirichlet boundary conditions
 
-% bctype = 'clamped';
-bctype = 'simply supported';
+% boundary = 'clamped';
+boundary = 'simply supported';
 
 system.S = final(system.S);
-switch bctype
+switch boundary
     case 'clamped'
         system.S = addcl(system.S,[]); % addcl(system.S,[],{'U','R'});
     case 'simply supported'
@@ -66,9 +66,9 @@ end
 %% Stiffness matrices and sollicitation vectors
 
 % Uniform or Concentrated load p
-forceload = 'uniform';
-% forceload = 'concentrated';
-switch forceload
+loading = 'uniform';
+% loading = 'concentrated';
+switch loading
     case 'uniform'
         p = RHO*g*H;
     case 'concentrated'
@@ -81,7 +81,7 @@ c = 0;
 
 % Stiffness matrix system.A and sollicitation vector system.b associated to mesh system.S
 system.A = calc_rigi(system.S);
-switch forceload
+switch loading
     case 'uniform'
         system.b = bodyload(system.S,[],'FZ',-p);
     case 'concentrated'
@@ -90,13 +90,18 @@ switch forceload
             error('Pointwise load must be applied to a node of the mesh')
         end
 end
-if strcmp(bctype,'simply supported')
+if strcmp(boundary,'simply supported')
     system.b = system.b + surfload(system.S,[],{'MX','MY'},-c*[1;1]);
 end
 
 %% Resolution
 
+t = tic;
 u = solve_system(system);
+time = toc(t);
+fprintf(['\nCircular ' boundary ' plate under ' loading ' load\n']);
+fprintf('Span-to-thickness ratio = %.3e\n',r/H);
+fprintf('Elapsed time = %f s\n',time);
 
 %% Outputs
 
@@ -118,16 +123,16 @@ switch elemtype
     case {'COQ4'} % Reissner-Mindlin
         phi = 16/5*(H/r)^2/(1-NU);
 end
-switch forceload
+switch loading
     case 'uniform'
-        switch bctype
+        switch boundary
             case 'clamped'
                 w = @(x) -p/(64*D) * (r^2 - (x(:,1).^2+x(:,2).^2)).*(r^2 - (x(:,1).^2+x(:,2).^2) + phi);
             case 'simply supported'
                 w = @(x) -1/(2*D*(1+NU)) * (r^2 - (x(:,1).^2+x(:,2).^2)) .* (p/32*((5+NU)*r^2 - (1+NU)*(x(:,1).^2+x(:,2).^2) + phi*(1+NU)) + c);
         end
     case 'concentrated'
-        switch bctype
+        switch boundary
             case 'clamped'
                 w = @(x) -p/(16*pi*D) * (r^2 - (x(:,1).^2+x(:,2).^2) - 2*(x(:,1).^2+x(:,2).^2).*log(r/sqrt(x(:,1).^2+x(:,2).^2)));
             case 'simply supported'
@@ -196,7 +201,7 @@ mysaveas(pathname,'meshes_deflected',{'fig','epsc2'},renderer);
 
 % Display boundary conditions
 [hD,legD] = plot_boundary_conditions(system.S,'nolegend');
-switch forceload
+switch loading
     case 'uniform'
         ampl = 2;
     case 'concentrated'

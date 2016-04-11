@@ -23,11 +23,11 @@ a = 1;
 b = 1;
 Q = QUADRANGLE([0.0,0.0,0.0],[a,0.0,0.0],[a,b,0.0],[0.0,b,0.0]);
 
-elemtype = 'DKQ'; % DKT, DKQ, COQ4
-nbelem = [30,30];
-system.S = build_model(Q,'nbelem',nbelem,'elemtype',elemtype);
-% cl = 0.05;
-% system.S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_rect_' elemtype]);
+elemtype = 'DKT'; % DKT, DKQ, COQ4
+% nbelem = [30,30];
+% system.S = build_model(Q,'nbelem',nbelem,'elemtype',elemtype);
+cl = 0.05;
+system.S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_rect_' elemtype  '_cl_' num2str(cl)]);
 
 %% Materials
 
@@ -59,11 +59,11 @@ L2 = LIGNE([a,0.0,0.0],[a,b,0.0]);
 L3 = LIGNE([a,b,0.0],[0.0,b,0.0]);
 L4 = LIGNE([0.0,b,0.0],[0.0,0.0,0.0]);
 
-% bctype = 'clamped';
-bctype = 'simply supported';
+% boundary = 'clamped';
+boundary = 'simply supported';
 
 system.S = final(system.S);
-switch bctype
+switch boundary
     case 'clamped'
         system.S = addcl(system.S,[]); % addcl(system.S,[],{'U','R'},0);
     case 'simply supported'
@@ -78,9 +78,9 @@ end
 %% Stiffness matrices and sollicitation vectors
 
 % Uniform or Concentrated load p
-forceload = 'uniform';
-% forceload = 'concentrated';
-switch forceload
+loading = 'uniform';
+% loading = 'concentrated';
+switch loading
     case 'uniform'
         p = RHO*g*H;
     case 'concentrated'
@@ -91,7 +91,7 @@ xload = double(getcoord(Pload));
 
 % Stiffness matrix system.A and sollicitation vector system.b associated to mesh system.S
 system.A = calc_rigi(system.S);
-switch forceload
+switch loading
     case 'uniform'
         system.b = bodyload(system.S,[],'FZ',-p);
     case 'concentrated'
@@ -103,7 +103,12 @@ end
 
 %% Resolution
 
+t = tic;
 u = solve_system(system);
+time = toc(t);
+fprintf(['\nRectangular ' boundary ' plate under ' loading ' load\n']);
+fprintf('Span-to-thickness ratio = %.3e\n',max(a,b)/H);
+fprintf('Elapsed time = %f s\n',time);
 
 %% Outputs
 
@@ -122,9 +127,9 @@ Rz = u(findddl(system.S,'RZ'),:); % Rz = double(squeeze(eval_sol(system.S,u,syst
 w = @(x) 0;
 m_max = 10;
 n_max = 10;
-switch forceload
+switch loading
     case 'uniform'
-        switch bctype
+        switch boundary
             case 'clamped'
 %                 for n=1:n_max
 %                     w = @(x) w(x) - p/(4*D*pi^4*n^4*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*n*pi*x(:,1)/a)) .* (1-cos(2*n*pi*x(:,2)/b));
@@ -138,7 +143,7 @@ switch forceload
                 end
         end
     case 'concentrated'
-        switch bctype
+        switch boundary
             case 'clamped'
 %                 for n=1:n_max
 %                     w = @(x) w(x) - p/(D*pi^4*n^4*a*b*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*n*pi*x(:,1)/a)) .* (1-cos(2*n*pi*x(:,2)/b));
@@ -303,7 +308,7 @@ mysaveas(pathname,'meshes_deflected',{'fig','epsc2'},renderer);
 
 % Display boundary conditions
 [hD,legD] = plot_boundary_conditions(system.S,'nolegend');
-switch forceload
+switch loading
     case 'uniform'
         ampl = 2;
     case 'concentrated'
