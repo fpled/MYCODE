@@ -23,6 +23,7 @@ myparallel('start');
 %% Domain and mesh definition
 
 D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
+
 r = 0.13;
 B = cell(1,9);
 B{1} = CIRCLE(0.2,0.2,r);
