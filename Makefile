@@ -30,7 +30,7 @@ Cluster_Name = cluster
 #Pb_Name = multiscale_sto_lin_diff_circ_inclusions_aniso
 #Pb_Name = multiscale_sto_lin_diff_square_inclusions_iso
 #Pb_Name = multiscale_sto_lin_diff_square_inclusions_aniso
-#Pb_Name = multiscale_sto_nonlin_diff_reac_square_inclusions_iso
+Pb_Name = multiscale_sto_nonlin_diff_reac_square_inclusions_iso
 #Pb_Name = multiscale_sto_nonlin_diff_reac_square_inclusions_aniso
 
 #Pb_Name = monoscale_sto_lin_diff
@@ -43,7 +43,7 @@ Cluster_Name = cluster
 #Pb_Name = sparse_approx_anisotropic_function
 #Pb_Name = sparse_approx_geometric_brownian
 
-Pb_Name = plate_shell_det_lin_elas_disk
+#Pb_Name = plate_shell_det_lin_elas_disk
 #Pb_Name = plate_shell_det_lin_elas_rect
 
 # Default ---------------------------

@@ -360,20 +360,18 @@ mysaveas(pathname,'Uz_ex_deflected',{'fig','epsc2'},renderer);
 % plot3(x(:,1),x(:,2),Uz,'b.');
 % plot3(x(:,1),x(:,2),w(x),'r.');
 
-if exist('momentdof','var')
-    % Rx
-%     plot_solution(system.S,u,'rotation',1,'solid');
-%     mysaveas(pathname,'Rx',{'fig','epsc2'},renderer);
-    
-    plot_solution(system.S,u,'rotation',1,'ampl',ampl,'solid');
-    mysaveas(pathname,'Rx_deflected',{'fig','epsc2'},renderer);
-    
-    % Ry
-%     plot_solution(system.S,u,'rotation',2,'solid');
-%     mysaveas(pathname,'Ry',{'fig','epsc2'},renderer);
-    
-    plot_solution(system.S,u,'rotation',2,'ampl',ampl,'solid');
-    mysaveas(pathname,'Ry_deflected',{'fig','epsc2'},renderer);
-end
+% Rx
+% plot_solution(system.S,u,'rotation',1,'solid');
+% mysaveas(pathname,'Rx',{'fig','epsc2'},renderer);
+
+% plot_solution(system.S,u,'rotation',1,'ampl',ampl,'solid');
+% mysaveas(pathname,'Rx_deflected',{'fig','epsc2'},renderer);
+
+% Ry
+% plot_solution(system.S,u,'rotation',2,'solid');
+% mysaveas(pathname,'Ry',{'fig','epsc2'},renderer);
+
+% plot_solution(system.S,u,'rotation',2,'ampl',ampl,'solid');
+% mysaveas(pathname,'Ry_deflected',{'fig','epsc2'},renderer);
 
 % myparallel('stop');
