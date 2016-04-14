@@ -38,7 +38,7 @@ D = DOMAIN(2,[0.0,0.0],[L,L]);
 nbelem = [20,20];
 glob.S = build_model(D,'nbelem',nbelem);
 % cl = 0.05;
-% system.S = build_model(D,'cl',cl,'filename','gmsh_domain');
+% system.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
 
 % Patches
 patches = PATCHES(n);
