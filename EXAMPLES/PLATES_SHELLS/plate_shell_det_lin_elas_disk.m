@@ -35,17 +35,17 @@ E = 1;
 % Poisson ratio
 NU = 0.3;
 % Thickness
-H = 0.1;
+h = 0.1;
 % Density
 RHO = 1;
 % Extensional stiffness (or Membrane rigidity)
-A = E*H/(1-NU^2);
+A = E*h/(1-NU^2);
 % Bending stiffness (or Flexural rigidity)
-D = E*H^3/(12*(1-NU^2));
+D = E*h^3/(12*(1-NU^2));
 
 % Material
 % a(u,v) = int( epsilon(u) : K : epsilon(v) )
-mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',H,'k',5/6);
+mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
 mat = setnumber(mat,1);
 system.S = setmaterial(system.S,mat);
 
@@ -70,9 +70,9 @@ loading = 'uniform';
 % loading = 'concentrated';
 switch loading
     case 'uniform'
-        p = RHO*g*H;
+        p = RHO*g*h;
     case 'concentrated'
-        p = RHO*g*H*r^2;
+        p = RHO*g*h*r^2;
 end
 Pload = getcenter(C);
 xload = double(getcoord(Pload));
@@ -100,7 +100,7 @@ t = tic;
 u = solve_system(system);
 time = toc(t);
 fprintf(['\nCircular ' boundary ' plate under ' loading ' load\n']);
-fprintf('Span-to-thickness ratio = %.3e\n',r/H);
+fprintf('Span-to-thickness ratio = %.3e\n',r/h);
 fprintf('Elapsed time = %f s\n',time);
 
 %% Outputs
@@ -121,7 +121,7 @@ switch elemtype
     case {'DKT','DKQ'} % Kirchhoff-Love
         phi = 0;
     case {'COQ4'} % Reissner-Mindlin
-        phi = 16/5*(H/r)^2/(1-NU);
+        phi = 16/5*(h/r)^2/(1-NU);
 end
 switch loading
     case 'uniform'
