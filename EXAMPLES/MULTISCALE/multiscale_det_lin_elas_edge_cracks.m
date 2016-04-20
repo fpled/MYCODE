@@ -127,7 +127,7 @@ mat_in = MATERIALS();
 for k=1:n
     mat_in{k} = ELAS_ISOT('E',E_in{k},'NU',NU,'RHO',RHO,'DIM3',DIM3); % uniform value
     % mat_in{k} = ELAS_ISOT('E',FENODEFIELD(E_in{k}),'NU',NU,'RHO',RHO,'DIM3',DIM3); % nodal values
-    mat_in = setnumber(mat_in{k},k);
+    mat_in{k} = setnumber(mat_in{k},k);
     glob.S = setmaterial(glob.S,mat_in{k},getnumgroupelemwithparam(glob.S,'partition',k));
 end
 
