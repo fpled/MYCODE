@@ -71,7 +71,7 @@ glob = partition(glob,patches);
 
 %% Materials associated to initial problem
 
-% Linear diffusion coefficients K_out, K_patch and K_in
+% Linear diffusion coefficients K_out, K_patch, K_in
 K_out = 1;
 K_patch = cell(1,n);
 K_in = cell(1,n);
@@ -90,11 +90,9 @@ for k=1:n
     % L = norm(getsize(D_patch{k}),Inf)/4;
     % c = getcenter(D_patch{k});
     % f = @(x) (distance(x,c,Inf)<L) * alpha * exp(-Amp*distance(x,c,2).^2/L^2);
-    % 
     % beta_patch = 1;
-    % K_patch{k} = 1 + beta_patch * squeeze(f(patch.S.node));
-    % 
     % beta_in = 0;
+    % K_patch{k} = 1 + beta_patch * squeeze(f(patch.S.node));
     % K_in{k} = 1 + beta_in * squeeze(f(glob.S.node));
     
     % K_patch(x)  = 1 + f(x)
@@ -113,29 +111,28 @@ for k=1:n
 end
 
 % Material mat_out associated to outside subdomain
-% a(u,v) = int( K.grad(u).grad(v) )
 mat_out = FOUR_ISOT('k',K_out); % uniform value
 mat_out = setnumber(mat_out,0);
 glob.S = setmaterial(glob.S,mat_out,getnumgroupelemwithparam(glob.S,'partition',0));
 
 % Material mat_patch associated to patch
-% a(u,v) = int( (K+K2.u^2).grad(u).grad(v) + R.u^3.v )
+mat_patch = MATERIALS();
 for k=1:n
-    % mat_patch = FOUR_ISOT('k',K_patch{k},'k2',K2_patch{k}); % uniform value
-    % mat_patch = FOUR_ISOT('k',FENODEFIELD(K_patch{k}),'k2',FENODEFIELD(K2_patch{k})); % nodal values
-    % mat_patch = FOUR_ISOT('k',K_patch{k},'r',R_patch{k}); % uniform value
-    mat_patch = FOUR_ISOT('k',FENODEFIELD(K_patch{k}),'r',FENODEFIELD(R_patch{k})); % nodal values
-    mat_patch = setnumber(mat_patch,k);
-    patches.PATCH{k}.S = setmaterial(patches.PATCH{k}.S,mat_patch);
+    % mat_patch{k} = FOUR_ISOT('k',K_patch{k},'k2',K2_patch{k}); % uniform value
+    % mat_patch{k} = FOUR_ISOT('k',FENODEFIELD(K_patch{k}),'k2',FENODEFIELD(K2_patch{k})); % nodal values
+    % mat_patch{k} = FOUR_ISOT('k',K_patch{k},'r',R_patch{k}); % uniform value
+    mat_patch{k} = FOUR_ISOT('k',FENODEFIELD(K_patch{k}),'r',FENODEFIELD(R_patch{k})); % nodal values
+    mat_patch{k} = setnumber(mat_patch{k},k);
+    patches.PATCH{k}.S = setmaterial(patches.PATCH{k}.S,mat_patch{k});
 end
 
 % Material mat_in associated to fictitious patch
-% a(u,v) = int( K.grad(u).grad(v) )
+mat_in = MATERIALS();
 for k=1:n
-    mat_in = FOUR_ISOT('k',K_in{k}); % uniform value
-    % mat_in = FOUR_ISOT('k',FENODEFIELD(K_in{k})); % nodal values
-    mat_in = setnumber(mat_in,k);
-    glob.S = setmaterial(glob.S,mat_in,getnumgroupelemwithparam(glob.S,'partition',k));
+    mat_in{k} = FOUR_ISOT('k',K_in{k}); % uniform value
+    % mat_in{k} = FOUR_ISOT('k',FENODEFIELD(K_in{k})); % nodal values
+    mat_in{k} = setnumber(mat_in{k},k);
+    glob.S = setmaterial(glob.S,mat_in{k},getnumgroupelemwithparam(glob.S,'partition',k));
 end
 
 %% Dirichlet boundary conditions

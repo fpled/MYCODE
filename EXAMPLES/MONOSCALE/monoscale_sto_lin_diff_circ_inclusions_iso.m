@@ -47,46 +47,46 @@ RV = RANDVARS(repmat({rv},1,M));
 
 %% Materials
 
-% Linear diffusion coefficients K_square and K_circle
-K_square = 1;
-K_circle = cell(1,M);
+% Linear diffusion coefficients K_det, K_sto
+K_det = 1;
+K_sto = cell(1,M);
+g = [1 0.9 0.75 0.6];
 for m=1:M
-    % K_circle(xi) = 1 + xi
-    K_circle{m} = ones(1,1,PC) + X{m};
+    % K_sto(xi) = 1 + xi
+    K_sto{m} = ones(1,1,PC) + X{m};
 end
 
-% Material mat_square associated to squares
-% a(u,v) = int( K.grad(u).grad(v) )
-mat_square = FOUR_ISOT('k',K_square); % uniform value
-mat_square = setnumber(mat_square,0);
+% Material mat_det associated to deterministic subdomains
+mat_det = FOUR_ISOT('k',K_det); % uniform value
+mat_det = setnumber(mat_det,0);
 k = [0 9];
-system.S = setmaterial(system.S,mat_square,k+1);
+system.S = setmaterial(system.S,mat_det,k+1);
 
-% Material mat_circle associated to circles
-% a(u,v) = int( K.grad(u).grad(v) )
-mat_circle = cell(1,M);
+% Material mat_sto associated to stochastic subdomains
+mat_sto = MATERIALS();
 for m=1:M
-    mat_circle{m} = FOUR_ISOT('k',K_circle{m}); % uniform value
-    mat_circle{m} = setnumber(mat_circle{m},m);
+    K_sto = ones(1,1,PC) + X{m};
+    mat_sto{m} = FOUR_ISOT('k',K_sto); % uniform value
+    mat_sto{m} = setnumber(mat_sto{m},m);
 end
 switch M
     case 2
         k = [2 4 6 8];
-        system.S = setmaterial(system.S,mat_circle{1},k+1);
+        system.S = setmaterial(system.S,mat_sto{1},k+1);
         k = [1 3 5 7];
-        system.S = setmaterial(system.S,mat_circle{2},k+1);
+        system.S = setmaterial(system.S,mat_sto{2},k+1);
     case 4
         k = [1 5];
-        system.S = setmaterial(system.S,mat_circle{1},k+1);
+        system.S = setmaterial(system.S,mat_sto{1},k+1);
         k = [2 6];
-        system.S = setmaterial(system.S,mat_circle{2},k+1);
+        system.S = setmaterial(system.S,mat_sto{2},k+1);
         k = [3 7];
-        system.S = setmaterial(system.S,mat_circle{3},k+1);
+        system.S = setmaterial(system.S,mat_sto{3},k+1);
         k = [4 8];
-        system.S = setmaterial(system.S,mat_circle{4},k+1);
+        system.S = setmaterial(system.S,mat_sto{4},k+1);
     case 8
         for m=1:M
-            system.S = setmaterial(system.S,mat_circle{m},m+1);
+            system.S = setmaterial(system.S,mat_sto{m},m+1);
         end
     otherwise
         error('Wrong number of variables')

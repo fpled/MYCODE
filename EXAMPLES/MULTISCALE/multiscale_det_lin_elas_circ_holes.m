@@ -83,7 +83,7 @@ NU = 0.3;
 DIM3 = 1;
 % Density
 RHO = 1;
-% Young modulus E_out, E_patch and E_in
+% Young modulus E_out, E_patch, E_in
 E_out = 1;
 E_patch = cell(1,n);
 E_in = cell(1,n);
@@ -98,11 +98,9 @@ for k=1:n
     % L = norm(getsize(D_patch{k}),Inf)/4;
     % c = getcenter(D_patch{k});
     % f = @(x) (distance(x,c,Inf)<L) * alpha * exp(-Amp*distance(x,c,2).^2/L^2);
-    %
     % beta_patch = 1;
-    % E_patch{k} = 1 + beta_patch * squeeze(f(patch.S.node));
-    %
     % beta_in = 0;
+    % E_patch{k} = 1 + beta_patch * squeeze(f(patch.S.node));
     % E_in{k} = 1 + beta_in * squeeze(f(glob.S.node));
     
     % E_patch(x) = 1 + f(x)
@@ -118,27 +116,26 @@ for k=1:n
 end
 
 % Material mat_out associated to outside subdomain
-% a(u,v) = int( epsilon(u) : K : epsilon(v) )
 mat_out = ELAS_ISOT('E',E_out,'NU',NU,'RHO',RHO,'DIM3',DIM3);
 mat_out = setnumber(mat_out,0);
 glob.S = setmaterial(glob.S,mat_out,getnumgroupelemwithparam(glob.S,'partition',0));
 
 % Material mat_patch associated to patch
-% a(u,v) = int( epsilon(u) : K : epsilon(v) )
+mat_patch = MATERIALS();
 for k=1:n
-    mat_patch = ELAS_ISOT('E',E_patch{k},'NU',NU,'RHO',RHO,'DIM3',DIM3); % uniform value
-    % mat_patch = ELAS_ISOT('E',FENODEFIELD(E_patch{k}),'NU',NU,'RHO',RHO,'DIM3',DIM3); % nodal values
-    mat_patch = setnumber(mat_patch,k);
-    patches.PATCH{k}.S = setmaterial(patches.PATCH{k}.S,mat_patch);
+    mat_patch{k} = ELAS_ISOT('E',E_patch{k},'NU',NU,'RHO',RHO,'DIM3',DIM3); % uniform value
+    % mat_patch{k} = ELAS_ISOT('E',FENODEFIELD(E_patch{k}),'NU',NU,'RHO',RHO,'DIM3',DIM3); % nodal values
+    mat_patch{k} = setnumber(mat_patch{k},k);
+    patches.PATCH{k}.S = setmaterial(patches.PATCH{k}.S,mat_patch{k});
 end
 
 % Material mat_in associated to fictitious patch
-% a(u,v) = int( epsilon(u) : K : epsilon(v) )
+mat_in = MATERIALS();
 for k=1:n
-    mat_in = ELAS_ISOT('E',E_in{k},'NU',NU,'RHO',RHO,'DIM3',DIM3); % uniform value
-    % mat_in = ELAS_ISOT('E',FENODEFIELD(E_in{k}),'NU',NU,'RHO',RHO,'DIM3',DIM3); % nodal values
-    mat_in = setnumber(mat_in,k);
-    glob.S = setmaterial(glob.S,mat_in,getnumgroupelemwithparam(glob.S,'partition',k));
+    mat_in{k} = ELAS_ISOT('E',E_in{k},'NU',NU,'RHO',RHO,'DIM3',DIM3); % uniform value
+    % mat_in{k} = ELAS_ISOT('E',FENODEFIELD(E_in{k}),'NU',NU,'RHO',RHO,'DIM3',DIM3); % nodal values
+    mat_in{k} = setnumber(mat_in{k},k);
+    glob.S = setmaterial(glob.S,mat_in{k},getnumgroupelemwithparam(glob.S,'partition',k));
 end
 
 %% Dirichlet boundary conditions

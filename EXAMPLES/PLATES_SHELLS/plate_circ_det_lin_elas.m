@@ -1,12 +1,17 @@
-%% Plate/Shell deterministic linear elasticity disk %%
-%%--------------------------------------------------%%
+%% Plate circular deterministic linear elasticity %%
+%%------------------------------------------------%%
 
 % clc
 clear all
 close all
 
 %% Input data
-filename = 'plate_shell_det_lin_elas_disk';
+boundary = 'simply_supported';
+% boundary = 'clamped';
+loading = 'uniform';
+% loading = 'concentrated';
+
+filename = ['plate_circ_det_lin_elas_' boundary '_' loading];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -22,9 +27,17 @@ renderer = 'OpenGL';
 r = 1;
 C = CIRCLE(0.0,0.0,0.0,r);
 
+Pload = getcenter(C);
+xload = double(getcoord(Pload));
+
 elemtype = 'DKT'; % DKT, DKQ, COQ4
 cl = 0.1;
-system.S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_disk_' elemtype '_cl_' num2str(cl)]);
+% switch loading
+%     case 'uniform'
+        system.S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_circ_' elemtype '_cl_' num2str(cl)]);
+%     case 'concentrated'
+%         system.S = build_model(C,'points',xload,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_circ_' elemtype '_cl_' num2str(cl)]);
+% end
 
 %% Materials
 
@@ -44,21 +57,16 @@ A = E*h/(1-NU^2);
 D = E*h^3/(12*(1-NU^2));
 
 % Material
-% a(u,v) = int( epsilon(u) : K : epsilon(v) )
 mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
-mat = setnumber(mat,1);
 system.S = setmaterial(system.S,mat);
 
 %% Dirichlet boundary conditions
-
-% boundary = 'clamped';
-boundary = 'simply supported';
 
 system.S = final(system.S);
 switch boundary
     case 'clamped'
         system.S = addcl(system.S,[]); % addcl(system.S,[],{'U','R'});
-    case 'simply supported'
+    case 'simply_supported'
         system.S = addcl(system.S,[],'U'); % system.S = addcl(system.S,[],{'UX','UY','UZ'});
 end
 % system.S = addcl(system.S,[],'R'); % system.S = addcl(system.S,[],{'RX','RY','RZ'});
@@ -66,16 +74,12 @@ end
 %% Stiffness matrices and sollicitation vectors
 
 % Uniform or Concentrated load p
-loading = 'uniform';
-% loading = 'concentrated';
 switch loading
     case 'uniform'
         p = RHO*g*h;
     case 'concentrated'
         p = RHO*g*h*r^2;
 end
-Pload = getcenter(C);
-xload = double(getcoord(Pload));
 % Moment per unit length c
 c = 0;
 
@@ -90,7 +94,7 @@ switch loading
             error('Pointwise load must be applied to a node of the mesh')
         end
 end
-if strcmp(boundary,'simply supported')
+if strcmp(boundary,'simply_supported')
     system.b = system.b + surfload(system.S,[],{'MX','MY'},-c*[1;1]);
 end
 
@@ -128,15 +132,15 @@ switch loading
         switch boundary
             case 'clamped'
                 w = @(x) -p/(64*D) * (r^2 - (x(:,1).^2+x(:,2).^2)).*(r^2 - (x(:,1).^2+x(:,2).^2) + phi);
-            case 'simply supported'
+            case 'simply_supported'
                 w = @(x) -1/(2*D*(1+NU)) * (r^2 - (x(:,1).^2+x(:,2).^2)) .* (p/32*((5+NU)*r^2 - (1+NU)*(x(:,1).^2+x(:,2).^2) + phi*(1+NU)) + c);
         end
     case 'concentrated'
         switch boundary
             case 'clamped'
-                w = @(x) -p/(16*pi*D) * (r^2 - (x(:,1).^2+x(:,2).^2) - 2*(x(:,1).^2+x(:,2).^2).*log(r/sqrt(x(:,1).^2+x(:,2).^2)));
-            case 'simply supported'
-                w = @(x) -p/(16*pi*D) * ((3+NU)/(1+NU)*(r^2 - (x(:,1).^2+x(:,2).^2)) - 2*(x(:,1).^2+x(:,2).^2).*log(r/sqrt(x(:,1).^2+x(:,2).^2))) - c/(2*D*(1+NU))*(r^2 - (x(:,1).^2+x(:,2).^2));
+                w = @(x) -p/(16*pi*D) * (r^2 - (x(:,1).^2+x(:,2).^2) - 2*(x(:,1).^2+x(:,2).^2).*log(r./sqrt(x(:,1).^2+x(:,2).^2)));
+            case 'simply_supported'
+                w = @(x) -p/(16*pi*D) * ((3+NU)/(1+NU)*(r^2 - (x(:,1).^2+x(:,2).^2)) - 2*(x(:,1).^2+x(:,2).^2).*log(r./sqrt(x(:,1).^2+x(:,2).^2))) - c/(2*D*(1+NU))*(r^2 - (x(:,1).^2+x(:,2).^2));
         end
 end
 x = getcoord(system.S.node);
@@ -205,7 +209,7 @@ switch loading
     case 'uniform'
         ampl = 2;
     case 'concentrated'
-        ampl = 1/(2*system.S.nbnode);
+        ampl = 1;
 end
 [hN,legN] = vectorplot(system.S,'F',system.b,ampl,'r');
 % legend([hD,hN],'Dirichlet','Neumann')

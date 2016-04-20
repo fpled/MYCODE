@@ -32,14 +32,13 @@ system.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
 rv = RVUNIFORM(0,1);
 RV = RANDVARS(rv);
 [X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
-% K(xi) = 1 + xi
-K = ones(1,1,PC) + X{1};
 
 %% Materials
 
-% a(u,v) = int( K.grad(u).grad(v) )
+% Linear diffusion coefficient K
+% K(xi) = 1 + xi
+K = ones(1,1,PC) + X{1};
 mat = FOUR_ISOT('k',K); % uniform value
-mat = setnumber(mat,1);
 system.S = setmaterial(system.S,mat);
 
 %% Dirichlet boundary conditions

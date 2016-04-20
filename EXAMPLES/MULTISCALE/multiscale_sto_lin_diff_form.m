@@ -136,7 +136,7 @@ method = METHOD('type','leastsquares','display',true,'displayiter',false,...
 
 %% Bilinear forms and linear forms associated to initial problem
 
-% Linear diffusion coefficients K_out, K_patch and K_in
+% Linear diffusion coefficients K_out, K_patch, K_in
 K_out = 1;
 K_patch = cell(1,n);
 K_in = cell(1,n);
@@ -151,11 +151,9 @@ for k=1:n
     % L = norm(getsize(D_patch{k}),Inf)/4;
     % c = getcenter(D_patch{k});
     % f = @(x) (distance(x,c,Inf)<L) * alpha * exp(-Amp*distance(x,c,2).^2/L^2);
-    % 
     % beta_patch = 1;
-    % K_patch{k} = ones(patch.S.nbnode,1,PC) + beta_patch * double(squeeze(f(patch.S.node))) * X{k};
-    % 
     % beta_in = 0;
+    % K_patch{k} = ones(patch.S.nbnode,1,PC) + beta_patch * double(squeeze(f(patch.S.node))) * X{k};
     % K_in{k} = 1 + beta_in * squeeze(f(glob.S.node));
     
     % K_patch(x,xi) = 1 + f(x) * xi

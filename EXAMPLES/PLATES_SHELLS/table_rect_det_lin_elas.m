@@ -1,12 +1,15 @@
-%% Plate/Shell deterministic linear elasticity rect %%
-%%--------------------------------------------------%%
+%% Table deterministic linear elasticity rectangular %%
+%%---------------------------------------------------%%
 
 % clc
 clear all
 close all
 
 %% Input data
-filename = 'plate_shell_det_lin_elas_rect';
+loading = 'uniform';
+% loading = 'concentrated';
+
+filename = ['table_rect_det_lin_elas_' loading];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -23,11 +26,25 @@ a = 1;
 b = 1;
 Q = QUADRANGLE([0.0,0.0,0.0],[a,0.0,0.0],[a,b,0.0],[0.0,b,0.0]);
 
+Pload = getcenter(Q);
+xload = double(getcoord(Pload));
+
+Pbeam{1} = POINT([1/4*a,1/4*b]);
+Pbeam{2} = POINT([3/4*a,1/4*b]);
+Pbeam{3} = POINT([3/4*a,3/4*b]);
+Pbeam{4} = POINT([1/4*a,3/4*b]);
+xbeam = cellfun(@(P) double(getcoord(P)),Pbeam,'UniformOutput',false);
+
 elemtype = 'DKT'; % DKT, DKQ, COQ4
 % nbelem = [30,30];
-% system.S = build_model(Q,'nbelem',nbelem,'elemtype',elemtype);
+% S_plate = build_model(Q,'nbelem',nbelem,'elemtype',elemtype);
 cl = 0.05;
-system.S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_rect_' elemtype  '_cl_' num2str(cl)]);
+switch loading
+    case 'uniform'
+        S_plate = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_rect_' elemtype  '_cl_' num2str(cl)]);
+    case 'concentrated'
+        S_plate = build_model(Q,'points',xload,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_rect_' elemtype  '_cl_' num2str(cl)]);
+end
 
 %% Materials
 
@@ -46,11 +63,27 @@ A = E*h/(1-NU^2);
 % Bending stiffness (or Flexural rigidity)
 D = E*h^3/(12*(1-NU^2));
 
-% Material
-% a(u,v) = int( epsilon(u) : K : epsilon(v) )
-mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
-mat = setnumber(mat,1);
-system.S = setmaterial(system.S,mat);
+% Material mat_plate associated to plate
+mat_plate = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
+mat_plate = setnumber(mat_plate,1);
+S_plate = setmaterial(S_plate,mat_plate);
+
+
+
+d = 0.01;
+IY = pi*d^4/2;
+IZ = IY;
+
+% Material mat_beam associated to beams
+mat_beam = ELAS_BEAM('E',E,'NU',NU,'S',d*l,'IZ',IZ,'IY',IY,'IX',IY+IZ,'RHO',RHO);
+mat_beam = setnumber(mat_beam,2);
+S_beam = setmaterial(S_beam,mat_beam);
+
+mat = MATERIALS();
+mat{1} = mat_plate;
+mat{2} = mat_beam;
+
+system.S = union(S_plate,S_beam);
 
 %% Dirichlet boundary conditions
 
@@ -59,14 +92,11 @@ L2 = LIGNE([a,0.0,0.0],[a,b,0.0]);
 L3 = LIGNE([a,b,0.0],[0.0,b,0.0]);
 L4 = LIGNE([0.0,b,0.0],[0.0,0.0,0.0]);
 
-% boundary = 'clamped';
-boundary = 'simply supported';
-
 system.S = final(system.S);
 switch boundary
     case 'clamped'
         system.S = addcl(system.S,[]); % addcl(system.S,[],{'U','R'},0);
-    case 'simply supported'
+    case 'simply_supported'
         system.S = addcl(system.S,[],'U'); % system.S = addcl(system.S,[],{'UX','UY','UZ'});
 %         system.S = addcl(system.S,L1,'RY');
 %         system.S = addcl(system.S,L3,'RY');
@@ -78,16 +108,12 @@ end
 %% Stiffness matrices and sollicitation vectors
 
 % Uniform or Concentrated load p
-loading = 'uniform';
-% loading = 'concentrated';
 switch loading
     case 'uniform'
         p = RHO*g*h;
     case 'concentrated'
         p = RHO*g*h*a*b;
 end
-Pload = getcenter(Q);
-xload = double(getcoord(Pload));
 
 % Stiffness matrix system.A and sollicitation vector system.b associated to mesh system.S
 system.A = calc_rigi(system.S);
@@ -135,7 +161,7 @@ switch loading
 %                     w = @(x) w(x) - p/(4*D*pi^4*n^4*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*n*pi*x(:,1)/a)) .* (1-cos(2*n*pi*x(:,2)/b));
 %                 end
                 w = @(x) -p/(4*D*pi^4*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*pi*x(:,1)/a)) .* (1-cos(2*pi*x(:,2)/b));
-            case 'simply supported'
+            case 'simply_supported'
                 for m=1:m_max
                     for n=1:n_max
                         w = @(x) w(x) - 16*p/(D*pi^6*m*n*(m^2/a^2+n^2/b^2)^2) * sin(m*pi/2)^2 * sin(n*pi/2)^2 .* sin(m*pi*x(:,1)/a) .* sin(n*pi*x(:,2)/b);
@@ -149,7 +175,7 @@ switch loading
 %                     w = @(x) w(x) - p/(D*pi^4*n^4*a*b*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*n*pi*x(:,1)/a)) .* (1-cos(2*n*pi*x(:,2)/b));
 %                 end
                 w = @(x) -p/(D*pi^4*a*b*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*pi*x(:,1)/a)) .* (1-cos(2*pi*x(:,2)/b));
-            case 'simply supported'
+            case 'simply_supported'
                 for m=1:m_max
                     for n=1:n_max
                         w = @(x) w(x) - 4*p/(D*pi^4*a*b*(m^2/a^2+n^2/b^2)^2) * sin(m*pi*xload(1)/a) * sin(n*pi*xload(2)/b) .* sin(m*pi*x(:,1)/a) .* sin(n*pi*x(:,2)/b);
@@ -312,7 +338,7 @@ switch loading
     case 'uniform'
         ampl = 2;
     case 'concentrated'
-        ampl = 1/(2*system.S.nbnode);
+        ampl = 0.5;
 end
 [hN,legN] = vectorplot(system.S,'F',system.b,ampl,'r');
 % legend([hD,hN],'Dirichlet','Neumann')

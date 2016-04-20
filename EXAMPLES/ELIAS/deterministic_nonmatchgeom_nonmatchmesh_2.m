@@ -1,4 +1,4 @@
-% clear all
+clear all
 close all
 D = DOMAIN(2,[0,0],[5,5]);
 P1=[2.2,2.2];

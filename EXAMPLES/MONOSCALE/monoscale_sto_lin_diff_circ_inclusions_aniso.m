@@ -47,32 +47,29 @@ RV = RANDVARS(repmat({rv},1,M));
 
 %% Materials
 
-% Linear diffusion coefficients K_square and K_circle
-K_square = 1;
-K_circle = cell(1,M);
+% Linear diffusion coefficients K_det, K_sto
+K_det = 1;
+K_sto = cell(1,M);
 g = [1 0.9 0.75 0.6];
 for m=1:M
-    % K_circle(xi) = 1 + g * xi
-    K_circle{m} = ones(1,1,PC) + g(m) * X{m};
+    % K_sto(xi) = 1 + g * xi
+    K_sto{m} = ones(1,1,PC) + g(m) * X{m};
 end
 
-% Material mat_square associated to squares
-% a(u,v) = int( K.grad(u).grad(v) )
-mat_square = FOUR_ISOT('k',K_square); % uniform value
-mat_square = setnumber(mat_square,0);
+% Material mat_det associated to deterministic subdomains
+mat_det = FOUR_ISOT('k',K_det); % uniform value
+mat_det = setnumber(mat_det,0);
 k = [0 2 4 6 8 9];
-system.S = setmaterial(system.S,mat_square,k+1);
+system.S = setmaterial(system.S,mat_det,k+1);
 
-% Material mat_circle associated to circles
-% a(u,v) = int( K.grad(u).grad(v) )
-mat_circle = cell(1,M);
-for m=1:M
-    mat_circle{m} = FOUR_ISOT('k',K_circle{m}); % uniform value
-    mat_circle{m} = setnumber(mat_circle{m},m);
-end
+% Material mat_sto associated to stochastic subdomains
+mat_sto = MATERIALS();
 k=[1 3 5 7];
 for m=1:M
-    system.S = setmaterial(system.S,mat_circle{m},k(m)+1);
+    K_sto = ones(1,1,PC) + g(m) * X{m};
+    mat_sto{m} = FOUR_ISOT('k',K_sto); % uniform value
+    mat_sto{m} = setnumber(mat_sto{m},m);
+    system.S = setmaterial(system.S,mat_sto{m},k(m)+1);
 end
 
 %% Dirichlet boundary conditions

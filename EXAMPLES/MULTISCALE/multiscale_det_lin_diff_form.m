@@ -84,7 +84,7 @@ interfaces = INTERFACES(patches);
 
 %% Bilinear forms and linear forms associated to initial problem
 
-% Linear diffusion coefficients K_out, K_patch and K_in
+% Linear diffusion coefficients K_out, K_patch, K_in
 K_out = 1;
 K_patch = cell(1,n);
 K_in = cell(1,n);

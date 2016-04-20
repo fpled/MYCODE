@@ -32,19 +32,21 @@ system.S = build_model(D,'nbelem',nbelem);
 rv = RVUNIFORM(0,1);
 RV = RANDVARS(rv,rv);
 [X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
-% K(xi)  = 1 + xi
-% K2(xi) = xi
-% R(xi)  = xi
-K = ones(1,1,PC) + X{1};
-% K2 = X{2};
-R = X{2};
 
 %% Materials
 
-% a(u,v) = int( (K+K2.u^2).grad(u).grad(v) + R.u^3.v )
+% Linear diffusion coefficient K
+% K(xi)  = 1 + xi
+K = ones(1,1,PC) + X{1};
+% Nonlinear diffusion coefficient K2
+% K2(xi) = xi
+% K2 = X{2};
+% Nonlinear reaction parameter R
+% R(xi) = xi
+R = X{2};
+
 % mat = FOUR_ISOT('k',K,'k2',K2); % uniform value
 mat = FOUR_ISOT('k',K,'r',R); % uniform value
-mat = setnumber(mat,1);
 system.S = setmaterial(system.S,mat);
 
 %% Dirichlet boundary conditions
