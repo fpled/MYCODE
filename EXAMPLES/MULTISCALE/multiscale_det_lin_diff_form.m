@@ -16,16 +16,13 @@ end
 % set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 renderer = 'OpenGL';
 
-% Reference solution - Direct resolution of initial problem based on non-overlapping domain decomposition
 solve_reference = true;
-
-% Multscale solution - Reformulated global-local iterative algorithm based on overlapping domain decomposition
 solve_multiscale = true;
 
 % Parallel computing
 % myparallel('start');
 
-%% Domain and mesh definition
+%% Domains and meshes
 
 % Global
 glob = GLOBAL();
@@ -70,7 +67,7 @@ end
 %     patches.PATCH{k}.S = final(patches.PATCH{k}.S);
 % end
 
-% Partition of global mesh glob.S
+% Partition of global mesh
 glob = partition(glob,patches);
 glob.S_out = get_final_model_part(glob.S,0);
 glob_out.S_out = glob.S_out;
@@ -82,9 +79,9 @@ glob_out.S_out = glob.S_out;
 % Interfaces
 interfaces = INTERFACES(patches);
 
-%% Bilinear forms and linear forms associated to initial problem
+%% Bilinear and linear forms
 
-% Linear diffusion coefficients K_out, K_patch, K_in
+% Linear diffusion coefficients
 K_out = 1;
 K_patch = cell(1,n);
 K_in = cell(1,n);
@@ -117,13 +114,13 @@ for k=1:n
     K_in{k} = 1;
 end
 
-% Bilinear form a_out associated to outside subdomain
+% Outside
 % a(u,v) = int( K.grad(u).grad(v) )
 % a_out = BILINFORM(1,1,K_out);
 a_out = DIFFUSIONFORM(K_out);
 a_out = setfree(a_out,1);
 
-% Bilinear form a_patch associated to patch
+% Patches
 % a(u,v) = int( K.grad(u).grad(v) )
 a_patch = cell(1,n);
 for k=1:n
@@ -133,7 +130,7 @@ for k=1:n
     a_patch{k} = setfree(a_patch{k},1);
 end
 
-% Bilinear form a_in associated to fictitious patch
+% Fictitious patches
 % a(u,v) = int( K.grad(u).grad(v) )
 a_in = cell(1,n);
 for k=1:n
@@ -143,25 +140,25 @@ for k=1:n
     a_in{k} = setfree(a_in{k},1);
 end
 
-% Source term f
+% Source term
 f = 100;
 
-% Linear form l associated to source term f
+% Global
 % l(v) = int( f.v )
 l = LINFORM(0,f);
 l = setfree(l,1);
 
-% Linear form l_patch associated to source term f
+% Patches
 % l(v) = int( f.v )
 l_patch = l;
 
 %% Stiffness matrices and sollicitation vectors
 
-% Stiffness matrix glob_out.A_out and sollicitation vector glob_out.b_out associated to mesh glob_out.S_out
+% Outside
 glob_out.A_out = calc_matrix(a_out,glob_out.S_out);
 glob_out.b_out = calc_vector(l,glob_out.S_out);
 
-% Stiffness matrices glob.A and glob.A_in and sollicitation vector glob.b_out associated to mesh glob.S
+% Global
 a_out = setselgroup(a_out,getnumgroupelemwithparam(glob.S,'partition',0));
 A_out = calc_matrix(a_out,glob.S);
 glob.A = A_out;
@@ -173,7 +170,7 @@ end
 l_out = setselgroup(l,getnumgroupelemwithparam(glob.S,'partition',0));
 glob.b_out = calc_vector(l_out,glob.S);
 
-% Stiffness matrix patch.A and sollicitation vector patch.b associated to mesh patch.S
+% Patches
 for k=1:n
     patches.PATCH{k}.A = calc_matrix(a_patch{k},patches.PATCH{k}.S);
     patches.PATCH{k}.b = calc_vector(l_patch,patches.PATCH{k}.S);
@@ -181,12 +178,8 @@ end
 
 %% Mass matrices
 
-% Bilinear form a
-% a(u,v) = int( u.v )
 % a = BILINFORM(0,0,1);
 % a = setfree(a,1);
-
-% Mass matrix interface.M associated to boundary mesh interface.S
 for k=1:n
     % interfaces.INTERFACE{k}.M = calc_matrix(a,interfaces.INTERFACE{k}.S);
     interfaces.INTERFACE{k}.M = calc_massgeom(interfaces.INTERFACE{k}.S);
@@ -194,10 +187,7 @@ end
 
 %% Projection operators
 
-% Projection operator glob.P_out from mesh glob.S to mesh glob.S_out
 glob.P_out = calc_P_free(glob.S,glob.S_out);
-
-% Projection operator interface.P_glob from mesh glob.S to boundary mesh interface.S
 for k=1:n
     [interfaces.INTERFACE{k}.P_glob] = calc_projection(interfaces.INTERFACE{k},glob);
     [interfaces.INTERFACE{k}.P_glob_out,numnode] = calc_projection(interfaces.INTERFACE{k},glob_out);
@@ -228,7 +218,7 @@ else
     load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
 end
 
-%% Multiscale resolution using global-local iterative algorithm based on overlapping domain decomposition
+%% Multiscale resolution
 
 I = ITERATIVESOLVER('display',true,'displayiter',true,...
     'maxiter',50,'tol',eps,'rho','Aitken',...
@@ -241,32 +231,24 @@ else
 end
 fprintf('\n');
 
-%% Save all variables
+%% Save variables
 
 save(fullfile(pathname,'all.mat'));
 
-%% Display domain, partition and mesh
+%% Display domains and meshes
 
-% Display global domain and patches
 plot_domain(D,D_patch);
 mysaveas(pathname,'domain_global_patches',{'fig','epsc2'},renderer);
 mymatlab2tikz(pathname,'domain_global_patches.tex');
 
-% Display partition of global mesh glob.S
 % plot_partition(glob,'nolegend');
 % mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
 
-% Display global mesh glob.S_out and local meshes patch.S
 plot_model(glob,patches,'nolegend');
 mysaveas(pathname,'mesh_global_patches',{'fig','epsc2'},renderer);
 
-% Display all parts of global mesh glob.S
 % plot_model(glob);
-
-% Display local meshes patch.S
 % plot_model(patches);
-
-% Display boundary meshes interface.S
 % plot_model(interfaces);
 
 %% Display evolution of error indicator, stagnation indicator and CPU time w.r.t. number of iterations
@@ -295,7 +277,7 @@ plot_relaxation_parameter(result,'nolegend');
 mysaveas(pathname,'relaxation_parameter','fig');
 mymatlab2tikz(pathname,'relaxation_parameter.tex');
 
-%% Display reference solution u_ref=(U_ref,w_ref) and multscale solution u=(U,w) at final iteration
+%% Display reference and multscale solutions
 
 % if exist('U_ref','var') && exist('w_ref','var') && exist('lambda_ref','var')
 %     plot_sols_ref(glob,patches,interfaces,U_ref,w_ref,lambda_ref);

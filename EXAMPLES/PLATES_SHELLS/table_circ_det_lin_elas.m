@@ -1,21 +1,15 @@
-%% Plate circular deterministic linear elasticity %%
-%%------------------------------------------------%%
-% Code_Aster v3.03.100.pdf
-% SSLS100 - Plaque circulaire encastrée soumise à une pression uniforme
-% Code_Aster v3.03.101.pdf
-% SSLS101 - Plaque circulaire posée soumise à une pression uniforme
+%% Table circular deterministic linear elasticity %%
+%%---------------------------------------------------%%
 
 % clc
 clear all
 close all
 
 %% Input data
-boundary = 'simply_supported';
-% boundary = 'clamped';
 loading = 'uniform';
 % loading = 'concentrated';
 
-filename = ['plate_circ_det_lin_elas_' boundary '_' loading];
+filename = ['table_circ_det_lin_elas_' loading];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -31,17 +25,29 @@ renderer = 'OpenGL';
 r = 1;
 C = CIRCLE(0.0,0.0,0.0,r);
 
-P_load = getcenter(C);
+P_load = POINT([-r/2,0.0,0.0]);
 x_load = double(getcoord(P_load));
 
+P_beam = getcenter(C);
+x_beam = double(getcoord(P_beam));
+
+l = 1;
+L_beam = LIGNE(P_beam,P_beam+POINT([0.0,0.0,-l]));
+
 elemtype = 'DKT'; % DKT
-cl = 0.1;
+cl_plate = 0.1;
 switch loading
     case 'uniform'
-        system.S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype '_cl_' num2str(cl)]);
+        points = x_beam;
     case 'concentrated'
-        system.S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype '_cl_' num2str(cl)],'points',x_load);
+        points = {x_beam,x_load};
 end
+S_plate = build_model(C,'cl',cl_plate,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],'points',points);
+
+nbelem_beam = [10,10];
+S_beam = build_model(L_beam,'nbelem',nbelem_beam,'elemtype','BEAM');
+% cl_beam = 0.1;
+% S_beam = build_model(L_beam,'cl',cl_beam,'elemtype','BEAM','filename',[pathname 'gmsh_beam_cl_' num2str(cl_beam)]);
 
 %% Materials
 
@@ -60,20 +66,35 @@ A = E*h/(1-NU^2);
 % Bending stiffness (or Flexural rigidity)
 D = E*h^3/(12*(1-NU^2));
 
-% Material
-mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
-system.S = setmaterial(system.S,mat);
+% Plate
+mat_plate = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
+mat_plate = setnumber(mat_plate,1);
+S_plate = setmaterial(S_plate,mat_plate);
+
+% Radius
+r_beam = 0.1;
+% Section
+Sec_beam = pi*r_beam^2;
+% Planar second moment of area (or Planar area moment of inertia)
+IY = pi*r_beam^4/2;
+IZ = IY;
+% Polar second moment of area (or Polar area moment of inertia)
+IX = IY+IZ;
+
+% Beam
+mat_beam = ELAS_BEAM('E',E,'NU',NU,'S',Sec_beam,'IZ',IZ,'IY',IY,'IX',IX,'RHO',RHO);
+mat_beam = setnumber(mat_beam,2);
+S_beam = setmaterial(S_beam,mat_beam);
+
+system.S = union(S_plate,S_beam);
 
 %% Dirichlet boundary conditions
 
+x_support = getvertex(L_beam,2);
+P_support = POINT(x_support);
+
 system.S = final(system.S);
-switch boundary
-    case 'clamped'
-        system.S = addcl(system.S,[]); % addcl(system.S,[],{'U','R'},0);
-    case 'simply_supported'
-        system.S = addcl(system.S,[],'U'); % system.S = addcl(system.S,[],{'UX','UY','UZ'},0);
-end
-% system.S = addcl(system.S,[],'R'); % system.S = addcl(system.S,[],{'RX','RY','RZ'},0);
+system.S = addcl(system.S,P_support); % addcl(system.S,P_support,{'U','R'},0);
 
 %% Stiffness matrices and sollicitation vectors
 
@@ -84,21 +105,16 @@ switch loading
     case 'concentrated'
         p = RHO*g*h*r^2;
 end
-% Moment per unit length
-c = 0;
 
 system.A = calc_rigi(system.S);
 switch loading
     case 'uniform'
-        system.b = bodyload(system.S,[],'FZ',-p);
+        system.b = bodyload(keepgroupelem(system.S,1),[],'FZ',-p);
     case 'concentrated'
         system.b = nodalload(system.S,P_load,'FZ',-p);
         if isempty(ispointin(P_load,POINT(system.S.node)))
             error('Pointwise load must be applied to a node of the mesh')
         end
-end
-if strcmp(boundary,'simply_supported')
-    system.b = system.b + surfload(system.S,[],{'MX','MY'},-c*[1;1]);
 end
 
 %% Resolution
@@ -106,9 +122,10 @@ end
 t = tic;
 u = solve_system(system);
 time = toc(t);
-fprintf(['\nCircular ' boundary ' plate under ' loading ' load\n']);
+fprintf(['\nCircular table under ' loading ' load\n']);
 fprintf('Span-to-thickness ratio = %g\n',r/h);
 fprintf('Elapsed time = %f s\n',time);
+fprintf('\n');
 
 %% Outputs
 
@@ -124,42 +141,11 @@ Rx = u(findddl(system.S,'RX'),:); % Rx = double(squeeze(eval_sol(system.S,u,syst
 Ry = u(findddl(system.S,'RY'),:); % Ry = double(squeeze(eval_sol(system.S,u,system.S.node,'RY'))));
 Rz = u(findddl(system.S,'RZ'),:); % Rz = double(squeeze(eval_sol(system.S,u,system.S.node,'RZ'))));
 
-switch elemtype
-    case {'DKT','DKQ'} % Kirchhoff-Love
-        phi = 0;
-    case {'COQ4'} % Reissner-Mindlin
-        phi = 16/5*(h/r)^2/(1-NU);
-end
-switch loading
-    case 'uniform'
-        switch boundary
-            case 'clamped'
-                w = @(x) -p/(64*D) * (r^2 - (x(:,1).^2+x(:,2).^2)).*(r^2 - (x(:,1).^2+x(:,2).^2) + phi);
-            case 'simply_supported'
-                w = @(x) -1/(2*D*(1+NU)) * (r^2 - (x(:,1).^2+x(:,2).^2)) .* (p/32*((5+NU)*r^2 - (1+NU)*(x(:,1).^2+x(:,2).^2) + phi*(1+NU)) + c);
-        end
-    case 'concentrated'
-        switch boundary
-            case 'clamped'
-                w = @(x) -p/(16*pi*D) * (r^2 - (x(:,1).^2+x(:,2).^2) - 2*(x(:,1).^2+x(:,2).^2).*log(r./sqrt(x(:,1).^2+x(:,2).^2)));
-            case 'simply_supported'
-                w = @(x) -p/(16*pi*D) * ((3+NU)/(1+NU)*(r^2 - (x(:,1).^2+x(:,2).^2)) - 2*(x(:,1).^2+x(:,2).^2).*log(r./sqrt(x(:,1).^2+x(:,2).^2))) - c/(2*D*(1+NU))*(r^2 - (x(:,1).^2+x(:,2).^2));
-        end
-end
-x = getcoord(system.S.node);
-Uz_ex = w(x);
-error_Uz = norm(Uz-Uz_ex)/norm(Uz_ex);
-fprintf('\n');
-fprintf('error = %g\n',error_Uz);
-fprintf('\n');
-
 P = getcenter(C);
 
 ux = eval_sol(system.S,u,P,'UX');
 uy = eval_sol(system.S,u,P,'UY');
 uz = eval_sol(system.S,u,P,'UZ');
-uz_ex = w(double(P));
-error_uz = norm(uz-uz_ex)/norm(uz_ex);
 
 rx = eval_sol(system.S,u,P,'RX');
 ry = eval_sol(system.S,u,P,'RY');
@@ -169,8 +155,6 @@ disp('Displacement u at point'); disp(P);
 fprintf('ux    = %g\n',ux);
 fprintf('uy    = %g\n',uy);
 fprintf('uz    = %g\n',uz);
-fprintf('uz_ex = %g\n',uz_ex);
-fprintf('error = %g\n',error_uz);
 fprintf('\n');
 
 disp('Rotation r at point'); disp(P);
@@ -186,7 +170,7 @@ save(fullfile(pathname,'all.mat'));
 
 %% Display domains, boundary conditions and meshes
 
-plot_domain(C,'solid','nolegend');
+plot_domain(C,L_beam,'nolegend');
 mysaveas(pathname,'domain',{'fig','epsc2'},renderer);
 mymatlab2tikz(pathname,'domain.tex');
 
@@ -195,7 +179,7 @@ switch loading
     case 'uniform'
         ampl = 2;
     case 'concentrated'
-        ampl = 1;
+        ampl = 0.5;
 end
 [hN,legN] = vectorplot(system.S,'F',system.b,ampl,'r');
 % legend([hD,hN],'Dirichlet','Neumann')
@@ -203,17 +187,17 @@ legend([hD,hN],[legD,legN])
 axis image
 mysaveas(pathname,'boundary_conditions',{'fig','epsc2'},renderer);
 
-plot_model(system.S,'color','k','facecolor','k','facealpha',0.1,'nolegend');
+plot_model(system.S,'color','k','facecolor','k','facealpha',0.1,'node','nolegend');
 mysaveas(pathname,'mesh',{'fig','epsc2'},renderer);
 
-ampl = max(getsize(system.S))/max(abs(u));
-plot_model_deflection(system.S,u,'ampl',ampl,'color','b','facecolor','b','facealpha',0.1,'nolegend');
+ampl = max(getsize(system.S))/max(abs(u))/10;
+plot_model_deflection(system.S,u,'ampl',ampl,'color','b','facecolor','b','facealpha',0.1,'node','nolegend');
 mysaveas(pathname,'mesh_deflected',{'fig','epsc2'},renderer);
 
 figure('Name','Meshes')
 clf
-plot(system.S,'color','k','facecolor','k','facealpha',0.1);
-plot(system.S+ampl*u,'color','b','facecolor','b','facealpha',0.1);
+plot(system.S,'color','k','facecolor','k','facealpha',0.1,'node');
+plot(system.S+ampl*u,'color','b','facecolor','b','facealpha',0.1,'node');
 mysaveas(pathname,'meshes_deflected',{'fig','epsc2'},renderer);
 
 % plot_facets(system.S);
@@ -222,19 +206,12 @@ mysaveas(pathname,'meshes_deflected',{'fig','epsc2'},renderer);
 %% Display solution
 
 % ampl = 0;
-ampl = max(getsize(system.S))/max(abs(u));
-options = {'solid'};
-% options = {};
+ampl = max(getsize(system.S))/max(abs(u))/10;
+% options = {'solid'};
+options = {};
 
 plot_solution(system.S,u,'displ',3,'ampl',ampl,options{:});
 mysaveas(pathname,'Uz',{'fig','epsc2'},renderer);
-
-figure('Name','Solution u_3_ex')
-clf
-plot(FENODEFIELD(w(x)),system.S+ampl*u,options{:});
-colorbar
-set(gca,'FontSize',16)
-mysaveas(pathname,'Uz_ex',{'fig','epsc2'},renderer);
 
 % plot_solution(system.S,u,'rotation',1,'ampl',ampl,options{:});
 % mysaveas(pathname,'Rx',{'fig','epsc2'},renderer);
@@ -242,4 +219,4 @@ mysaveas(pathname,'Uz_ex',{'fig','epsc2'},renderer);
 % plot_solution(system.S,u,'rotation',2,'ampl',ampl,options{:});
 % mysaveas(pathname,'Ry',{'fig','epsc2'},renderer);
 
-% myparallel('stop');
+% myparallel('stop');s

@@ -17,16 +17,13 @@ end
 % set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 renderer = 'OpenGL';
 
-% Reference solution - Direct resolution of initial problem based on non-overlapping domain decomposition
 solve_reference = true;
-
-% Multscale solution - Reformulated global-local iterative algorithm based on overlapping domain decomposition
 solve_multiscale = true;
 
 % Parallel computing
 % myparallel('start');
 
-%% Domain and mesh definition
+%% Domains and meshes
 
 % Global
 glob = GLOBAL();
@@ -34,7 +31,6 @@ glob_out = GLOBALOUT();
 
 L = 16;
 w = 7;
-a = w/2;
 D = DOMAIN(2,[0.0,-L/2],[w,L/2]);
 
 nbelem = [w*2,L*2];
@@ -45,16 +41,16 @@ glob.S = build_model(D,'nbelem',nbelem);
 % Patches
 patches = PATCHES(n);
 
+a = w/2;
+l = 1;
 D_patch = cell(1,n);
-P_patch = cell(1,n);
 B_patch = cell(1,n);
+P_patch = cell(1,n);
 switch n
     case 1
-        l = 1;
-        D_patch{1} = DOMAIN(2,[0.0,-l],[a+l,l]);
         P_patch{1} = [a,0.0];
-        P = getvertex(D_patch{1},1);
-        B_patch{1} = LIGNE([P(1) P_patch{1}(2)],P_patch{1});
+        B_patch{1} = LIGNE([0.0,0.0],P_patch{1});
+        D_patch{1} = DOMAIN(2,[0.0,-l],P_patch{1}+[l,l]);
     otherwise
         error('Wrong number of patches')
 end
@@ -65,10 +61,10 @@ for k=1:n
     patches.PATCH{k}.S = gmshdomainwithedgecrack(D_patch{k},P_patch{k},cl_patch_D,cl_patch_P,[pathname 'gmsh_patch_' num2str(k) '_edge_crack']);
 end
 
-% Partition of global mesh glob.S
+% Partition of global mesh
 glob = partition(glob,patches);
 
-%% Materials associated to initial problem
+%% Materials
 
 % Poisson ratio
 NU = 0.3;
@@ -76,7 +72,7 @@ NU = 0.3;
 DIM3 = 1;
 % Density
 RHO = 1;
-% Young modulus E_out, E_patch, E_in
+% Young modulus
 E_out = 1;
 E_patch = cell(1,n);
 E_in = cell(1,n);
@@ -108,12 +104,12 @@ for k=1:n
     E_in{k} = 1;
 end
 
-% Material mat_out associated to outside subdomain
+% Outside
 mat_out = ELAS_ISOT('E',E_out,'NU',NU,'RHO',RHO,'DIM3',DIM3);
 mat_out = setnumber(mat_out,0);
 glob.S = setmaterial(glob.S,mat_out,getnumgroupelemwithparam(glob.S,'partition',0));
 
-% Material mat_patch associated to patch
+% Patches
 mat_patch = MATERIALS();
 for k=1:n
     mat_patch{k} = ELAS_ISOT('E',E_patch{k},'NU',NU,'RHO',RHO,'DIM3',DIM3); % uniform value
@@ -122,7 +118,7 @@ for k=1:n
     patches.PATCH{k}.S = setmaterial(patches.PATCH{k}.S,mat_patch{k});
 end
 
-% Material mat_in associated to fictitious patch
+% Fictitious patches
 mat_in = MATERIALS();
 for k=1:n
     mat_in{k} = ELAS_ISOT('E',E_in{k},'NU',NU,'RHO',RHO,'DIM3',DIM3); % uniform value
@@ -169,7 +165,7 @@ interfaces = INTERFACES(patches,glob);
 % Traction force density
 f = 1;
 
-% Stiffness matrix glob_out.A_out and sollicitation vector glob_out.b_out associated to mesh glob_out.S_out
+% Outside
 glob_out.A_out = calc_rigi(glob_out.S_out);
 switch loading
     case 'pull'
@@ -181,7 +177,7 @@ switch loading
         error('Wrong loading case')
 end
 
-% Stiffness matrices glob.A and glob.A_in and sollicitation vector glob.b_out associated to mesh glob.S
+% Global
 glob.A = calc_rigi(glob.S);
 for k=1:n
     glob.A_in{k} = calc_rigi(glob.S,'selgroup',getnumgroupelemwithparam(glob.S,'partition',k));
@@ -196,7 +192,7 @@ switch loading
         error('Wrong loading case')
 end
 
-% Stiffness matrix patch.A and sollicitation vector patch.b associated to mesh patch.S
+% Patches
 for k=1:n
     patches.PATCH{k}.A = calc_rigi(patches.PATCH{k}.S);
     patches.PATCH{k}.b = sparse(getnbddlfree(patches.PATCH{k}.S),1);
@@ -204,17 +200,13 @@ end
 
 %% Mass matrices
 
-% Mass matrix interface.M associated to boundary mesh interface.S
 for k=1:n
     interfaces.INTERFACE{k}.M = calc_massgeom(interfaces.INTERFACE{k}.S);
 end
 
 %% Projection operators
 
-% Projection operator glob.P_out from mesh glob.S to mesh glob.S_out
 glob.P_out = calc_P_free(glob.S,glob.S_out);
-
-% Projection operator interface.P_glob from mesh glob.S to boundary mesh interface.S
 for k=1:n
     [interfaces.INTERFACE{k}.P_glob] = calc_projection(interfaces.INTERFACE{k},glob);
     [interfaces.INTERFACE{k}.P_glob_out,numnode] = calc_projection(interfaces.INTERFACE{k},glob_out);
@@ -245,7 +237,7 @@ else
     load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
 end
 
-%% Multiscale resolution using global-local iterative algorithm based on overlapping domain decomposition
+%% Multiscale resolution
 
 I = ITERATIVESOLVER('display',true,'displayiter',true,...
     'maxiter',100,'tol',eps,'rho','Aitken',...
@@ -258,32 +250,24 @@ else
 end
 fprintf('\n');
 
-%% Save all variables
+%% Save variables
 
 save(fullfile(pathname,'all.mat'));
 
-%% Display domain, partition and mesh
+%% Display domains and meshes
 
-% Display global domain and patches
 plot_domain(D,cellfun(@(x,y) {x,y},D_patch,B_patch,'UniformOutput',false));
 mysaveas(pathname,'domain_global_patches',{'fig','epsc2'},renderer);
 mymatlab2tikz(pathname,'domain_global_patches.tex');
 
-% Display partition of global mesh glob.S
 % plot_partition(glob,'nolegend');
 % mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
 
-% Display global mesh glob.S_out and local meshes patch.S
 plot_model(glob,patches,'nolegend');
 mysaveas(pathname,'mesh_global_patches',{'fig','epsc2'},renderer);
 
-% Display all parts of global mesh glob.S
 % plot_model(glob);
-
-% Display local meshes patch.S
 % plot_model(patches);
-
-% Display boundary meshes interface.S
 % plot_model(interfaces);
 
 %% Display evolution of error indicator, stagnation indicator and CPU time w.r.t. number of iterations
@@ -312,7 +296,7 @@ plot_relaxation_parameter(result,'nolegend');
 mysaveas(pathname,'relaxation_parameter','fig');
 mymatlab2tikz(pathname,'relaxation_parameter.tex');
 
-%% Display reference solution u_ref=(U_ref,w_ref) and multscale solution u=(U,w) at final iteration
+%% Display reference and multscale solutions
 
 % if exist('U_ref','var') && exist('w_ref','var') && exist('lambda_ref','var')
 %     for i=1:2

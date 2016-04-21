@@ -134,7 +134,7 @@ restart_local_solver = []; % restarts gmres solver every restart inner iteration
 local_perturbation = 0; % introduction of a perturbation into local solutions w through a truncated svd
 tol_local_perturbation = 1e-3; % prescribed tolerance in truncated svd for approximation of local solutions w
 
-%% Domain and mesh definition
+%% Domains and meshes
 
 % Domain D
 D = DOMAIN(dim,P(1),P(2));
@@ -372,7 +372,7 @@ for k=1:nbpatch
     % M_B_in{k} = a{B_in{k}}(:,:);
 end
 
-%% Bilinear forms and linear forms associated to initial problem
+%% Bilinear and linear forms
 
 % Bilinear form a
 % a(u,v) = int( K.grad(u).grad(v) )
@@ -730,7 +730,7 @@ if solve_reference
     end
 end
 
-%% Display reference solution u_ref=(U_ref,w_ref)
+%% Display reference solution
 figure('Name','Reference solution u_ref=(U_ref,w_ref)')
 % set(gcf,'Name','Reference solution u_ref=(U_ref,w_ref)')
 clf
@@ -1265,7 +1265,7 @@ else
 end
 fprintf('\nElapsed time = %f s\n',toc);
 
-%% Display multscale solution u=(U,w) at final iteration
+%% Display multscale solution
 figure('Name',['Multscale solution u=(U,w) at final iteration #' num2str(iter)])
 % set(gcf,'Name',['Multscale solution u=(U,w) at final iteration #' num2str(iter)])
 clf

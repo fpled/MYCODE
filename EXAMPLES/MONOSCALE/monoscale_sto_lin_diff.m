@@ -18,7 +18,7 @@ renderer = 'OpenGL';
 % Parallel computing
 myparallel('start');
 
-%% Domain and mesh definition
+%% Domains and meshes
 
 D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
 
@@ -48,15 +48,14 @@ system.S = addcl(system.S,[]);
 
 %% Stiffness matrices and sollicitation vectors
 
-% Source term f
-f = 100;
-
-% Stiffness matrix system.A and sollicitation vector system.b associated to mesh system.S
 if israndom(system.S)
     system.A = [];
 else
     system.A = calc_rigi(system.S);
 end
+
+% Source term
+f = 100;
 
 if israndom(f)
     system.b = [];
@@ -64,7 +63,7 @@ else
     system.b = bodyload(system.S,[],'QN',f);
 end
 
-%% Sampling-based method: L2 Projection, Least-squares minimization/Regression, Interpolation/Collocation
+%% Resolution
 
 initPC = POLYCHAOS(RV,0,'typebase',1);
 
@@ -76,30 +75,23 @@ method = METHOD('type','leastsquares','display',true,'displayiter',true,...
     'tol',1e-12,'tolstagn',1e-1,'toloverfit',1.1,'correction',false,...
     'decompKL',false,'tolKL',1e-12,'cvKL','leaveout','kKL',10);
 
-%% Resolution
-
 fun = @(xi) solve_system(calc_system(randomeval_system(system,xi)));
-
 [u,result] = solve_random(method,fun);
-
 PC = getPC(u);
 
-%% Save all variables
+%% Save variables
 
 save(fullfile(pathname,'all.mat'));
 
-%% Display domain, partition and mesh
+%% Display domains and meshes
 
-% Display domain
 plot_domain(D);
 mysaveas(pathname,'domain',{'fig','epsc2'},renderer);
 mymatlab2tikz(pathname,'domain.tex');
 
-% Display partition of mesh system.S
 % plot_partition(system.S,'nolegend');
 % mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
 
-% Display mesh system.S
 plot_model(system.S,'nolegend');
 mysaveas(pathname,'mesh',{'fig','epsc2'},renderer);
 
@@ -123,7 +115,7 @@ mymatlab2tikz(pathname,'multi_index_set.tex');
 %     mymatlab2tikz(pathname,'adaptive_algorithm.tex');
 % end
 
-%% Display statistical outputs : mean, variance, standard deviation, Sobol and other sensitivity indices
+%% Display statistical outputs of solution
 
 % plot_stats(system.S,u);
 
@@ -145,7 +137,7 @@ for m=1:M
     mysaveas(pathname,['sensitivity_indices_sol_var_' num2str(m)],{'fig','epsc2'},renderer);
 end
 
-%% Display random evaluations of solution u
+%% Display random evaluations of solution
 
 % nbsamples = 3;
 % for s=1:nbsamples

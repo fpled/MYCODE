@@ -16,18 +16,16 @@ end
 % set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 renderer = 'OpenGL';
 
-% Reference solution - Direct resolution of initial problem based on non-overlapping domain decomposition
 solve_reference = true;
-calc_MC_error_estimate_ref = false;
-
-% Multiscale solution - Reformulated global-local iterative algorithm based on overlapping domain decomposition
 solve_multiscale = true;
+
+calc_MC_error_estimate_ref = false;
 calc_MC_error_estimate = false;
 
 % Parallel computing
 myparallel('start');
 
-%% Domain and mesh definition
+%% Domains and meshes
 
 % Global
 glob = GLOBAL();
@@ -57,7 +55,7 @@ end
 %     patches.PATCH{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',[pathname 'gmsh_patch_' num2str(k)]);
 % end
 
-% Partition of global mesh glob.S
+% Partition of global mesh
 % glob = partition(glob,patches);
 glob = partition(glob,D_patch);
 
@@ -67,31 +65,9 @@ rv = RVUNIFORM(0,1);
 RV = RANDVARS(repmat({rv},1,n));
 [X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
 
-%% Sampling-based method: L2 Projection, Least-squares minimization/Regression, Interpolation/Collocation
+%% Materials
 
-initPC = POLYCHAOS(RV,0,'typebase',1);
-
-% For direct resolution of initial problem
-method_ref = METHOD('type','leastsquares','display',true,'displayiter',true,...
-    'basis','adaptive','initPC',initPC,'maxcoeff',Inf,...
-    'algorithm','RMS','bulkparam',0.5,...
-    'sampling','adaptive','initsample',2,'addsample',0.1,'maxsample',Inf,...
-    'regul','','cv','leaveout','k',10,...
-    'tol',1e-8,'tolstagn',1e-1,'toloverfit',1.1,'correction',false,...
-    'decompKL',false,'tolKL',1e-12,'cvKL','leaveout','kKL',10);
-
-% For reformulated global-local iterative algorithm
-method = METHOD('type','leastsquares','display',true,'displayiter',false,...
-    'basis','adaptive','initPC',initPC,'maxcoeff',Inf,...
-    'algorithm','RMS','bulkparam',0.5,...
-    'sampling','adaptive','initsample',2,'addsample',0.1,'maxsample',Inf,...
-    'regul','','cv','leaveout','k',10,...
-    'tol',1e-4,'tolstagn',1e-1,'toloverfit',1.1,'correction',false,...
-    'decompKL',false,'tolKL',1e-12,'cvKL','leaveout','kKL',10);
-
-%% Materials associated to initial problem
-
-% Linear diffusion coefficients K_out, K_patch, K_in
+% Linear diffusion coefficient
 K_out = 1;
 K_patch = cell(1,n);
 K_in = cell(1,n);
@@ -108,12 +84,12 @@ for k=1:n
     K_in{k} = 1;
 end
 
-% Material mat_out associated to outside subdomain
+% Outside
 mat_out = FOUR_ISOT('k',K_out); % uniform value
 mat_out = setnumber(mat_out,0);
 glob.S = setmaterial(glob.S,mat_out,getnumgroupelemwithparam(glob.S,'partition',0));
 
-% Material mat_patch associated to patch
+% Patches
 mat_patch = MATERIALS();
 for k=1:n
     % mat_patch{k} = FOUR_ISOT('k',K_patch{k}); % uniform value
@@ -122,7 +98,7 @@ for k=1:n
     patches.PATCH{k}.S = setmaterial(patches.PATCH{k}.S,mat_patch{k});
 end
 
-% Material mat_in associated to fictitious patch
+% Fictitious patches
 mat_in = MATERIALS();
 for k=1:n
     mat_in{k} = FOUR_ISOT('k',K_in{k}); % uniform value
@@ -153,21 +129,21 @@ interfaces = INTERFACES(patches);
 
 %% Stiffness matrices and sollicitation vectors
 
-% Source term f
+% Source term
 f = 1;
 
-% Stiffness matrix glob_out.A_out and sollicitation vector glob_out.b_out associated to mesh glob_out.S_out
+% Outside
 glob_out.A_out = calc_rigi(glob_out.S_out);
 glob_out.b_out = bodyload(glob_out.S_out,[],'QN',f);
 
-% Stiffness matrices glob.A and glob.A_in and sollicitation vector glob.b_out associated to mesh glob.S
+% Global
 glob.A = calc_rigi(glob.S);
 for k=1:n
     glob.A_in{k} = calc_rigi(glob.S,'selgroup',getnumgroupelemwithparam(glob.S,'partition',k));
 end
 glob.b_out = bodyload(keepgroupelem(glob.S,getnumgroupelemwithparam(glob.S,'partition',0)),[],'QN',f);
 
-% Stiffness matrix patch.A and sollicitation vector patch.b associated to mesh patch.S
+% Patches
 for k=1:n
     if ~israndom(patches.PATCH{k}.S)
         patches.PATCH{k}.A = calc_rigi(patches.PATCH{k}.S);
@@ -179,17 +155,13 @@ end
 
 %% Mass matrices
 
-% Mass matrix interface.M associated to boundary mesh interface.S
 for k=1:n
     interfaces.INTERFACE{k}.M = calc_massgeom(interfaces.INTERFACE{k}.S);
 end
 
 %% Projection operators
 
-% Projection operator glob.P_out from mesh glob.S to mesh glob.S_out
 glob.P_out = calc_P_free(glob.S,glob.S_out);
-
-% Projection operator interface.P_glob from mesh glob.S to boundary mesh interface.S
 for k=1:n
     [interfaces.INTERFACE{k}.P_glob] = calc_projection(interfaces.INTERFACE{k},glob);
     [interfaces.INTERFACE{k}.P_glob_out,numnode] = calc_projection(interfaces.INTERFACE{k},glob_out);
@@ -212,6 +184,16 @@ end
 
 %% Monoscale resolution
 
+initPC = POLYCHAOS(RV,0,'typebase',1);
+
+method_ref = METHOD('type','leastsquares','display',true,'displayiter',true,...
+    'basis','adaptive','initPC',initPC,'maxcoeff',Inf,...
+    'algorithm','RMS','bulkparam',0.5,...
+    'sampling','adaptive','initsample',2,'addsample',0.1,'maxsample',Inf,...
+    'regul','','cv','leaveout','k',10,...
+    'tol',1e-8,'tolstagn',1e-1,'toloverfit',1.1,'correction',false,...
+    'decompKL',false,'tolKL',1e-12,'cvKL','leaveout','kKL',10);
+
 R = REFERENCESOLVER('display',true,'change_of_variable',false,'inittype','zero');
 if solve_reference
     [U_ref,w_ref,lambda_ref,result_ref] = solve_random(R,glob_out,patches,interfaces,method_ref);
@@ -220,17 +202,15 @@ else
     load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
 end
 
-%% Monte Carlo error estimation of reference solution u_ref=(U_ref,w_ref)
+%% Multiscale resolution
 
-if calc_MC_error_estimate_ref && exist('U_ref','var') && exist('w_ref','var') && exist('lambda_ref','var')
-    nbsamples = 100;
-    [mean_error_U_ref,mean_error_w_ref,mean_error_lambda_ref,...
-        var_error_U_ref,var_error_w_ref,var_error_lambda_ref,...
-        std_error_U_ref,std_error_w_ref,std_error_lambda_ref]...
-        = calc_Monte_Carlo_error_estimates(R,glob_out,patches,interfaces,U_ref,w_ref,lambda_ref,nbsamples);
-end
-
-%% Multiscale resolution using global-local iterative algorithm based on overlapping domain decomposition
+method = METHOD('type','leastsquares','display',true,'displayiter',false,...
+    'basis','adaptive','initPC',initPC,'maxcoeff',Inf,...
+    'algorithm','RMS','bulkparam',0.5,...
+    'sampling','adaptive','initsample',2,'addsample',0.1,'maxsample',Inf,...
+    'regul','','cv','leaveout','k',10,...
+    'tol',1e-4,'tolstagn',1e-1,'toloverfit',1.1,'correction',false,...
+    'decompKL',false,'tolKL',1e-12,'cvKL','leaveout','kKL',10);
 
 I = ITERATIVESOLVER('display',true,'displayiter',true,...
     'maxiter',20,'tol',eps,'rho','Aitken',...
@@ -243,42 +223,40 @@ else
 end
 fprintf('\n');
 
-%% Monte Carlo error estimation of multiscale solution u=(U,w) at final iteration
+%% Monte Carlo error estimation
 
+nbsamples = 100;
+if calc_MC_error_estimate_ref
+    [mean_error_U_ref,mean_error_w_ref,mean_error_lambda_ref,...
+        var_error_U_ref,var_error_w_ref,var_error_lambda_ref,...
+        std_error_U_ref,std_error_w_ref,std_error_lambda_ref]...
+        = calc_Monte_Carlo_error_estimates(R,glob_out,patches,interfaces,U_ref,w_ref,lambda_ref,nbsamples);
+end
 if calc_MC_error_estimate
-    nbsamples = 100;
     [mean_error_U,mean_error_w,mean_error_lambda,...
         var_error_U,var_error_w,var_error_lambda,...
         std_error_U,std_error_w,std_error_lambda]...
         = calc_Monte_Carlo_error_estimates(I,glob,patches,interfaces,U,w,lambda,nbsamples);
 end
 
-%% Save all variables
+%% Save variables
 
 save(fullfile(pathname,'all.mat'));
 
-%% Display domain, partition and mesh
+%% Display domains and meshes
 
-% Display global domain and patches
 plot_domain(D,D_patch);
 mysaveas(pathname,'domain_global_patches',{'fig','epsc2'},renderer);
 mymatlab2tikz(pathname,'domain_global_patches.tex');
 
-% Display partition of global mesh glob.S
 % plot_partition(glob,'nolegend');
 % mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
 
-% Display global mesh glob.S_out and local meshes patch.S
 plot_model(glob,patches,'nolegend');
 mysaveas(pathname,'mesh_global_patches',{'fig','epsc2'},renderer);
 
-% Display all parts of global mesh glob.S
 % plot_model(glob);
-
-% Display local meshes patch.S
 % plot_model(patches);
-
-% Display boundary meshes interface.S
 % plot_model(interfaces);
 
 %% Display evolution of error indicator, stagnation indicator, CPU time, sparsity ratio, number of samples, dimension of stochastic space, cross-validation error indicator w.r.t. number of iterations
@@ -386,7 +364,7 @@ end
 %     end
 % end
 
-%% Display statistical outputs : mean, variance, standard deviation, Sobol and other sensitivity indices
+%% Display statistical outputs of multiscale solution
 
 % plot_stats_sols(glob,patches,interfaces,U,w,lambda);
 
@@ -435,22 +413,7 @@ for m=1:M
     mysaveas(pathname,['sensitivity_indices_sol_var_' num2str(m)],{'fig','epsc2'},renderer);
 end
 
-%% Display relative error in statistical outputs : mean, variance, standard deviation
-
-% if exist('U_ref','var') && exist('w_ref','var') && exist('lambda_ref','var')
-%     % plot_error_stats_sols(glob,patches,interfaces,U,w,lambda,U_ref,w_ref,lambda_ref);
-%     
-%     plot_error_mean_sol(glob,patches,interfaces,U,w,U_ref,w_ref);
-%     mysaveas(pathname,'error_mean_sol',{'fig','epsc2'},renderer);
-%     
-%     plot_error_var_sol(glob,patches,interfaces,U,w,U_ref,w_ref);
-%     mysaveas(pathname,'error_var_sol',{'fig','epsc2'},renderer);
-%     
-%     plot_error_std_sol(glob,patches,interfaces,U,w,U_ref,w_ref);
-%     mysaveas(pathname,'error_std_sol',{'fig','epsc2'},renderer);
-% end
-
-%% Display random evaluations of reference solution u_ref=(U_ref,w_ref) and multiscale solution u=(U,w) at final iteration
+%% Display random evaluations of reference and multiscale solutions
 
 % nbsamples = 3;
 % for s=1:nbsamples
