@@ -6,12 +6,27 @@ clear all
 close all
 
 %% Input data
-loading = 'uniform';
+% loading = 'uniform';
 % loading = 'concentrated';
-meshtype = 'structured';
+% elemtype = 'DKT';
+% elemtype = 'DKQ';
+% elemtype = 'COQ4';
+% meshtype = 'structured';
 % meshtype = 'unstructured';
+loadings={'uniform','concentrated'};
+elemtypes={'DKT','DKQ'};
+% elemtypes={'DKT','DKQ','COQ4'};
+meshtypes={'structured','unstructured'};
+for indexl=1:length(loadings)
+    loading = loadings{indexl};
+for indexe=1:length(elemtypes)
+    elemtype = elemtypes{indexe};
+for indexm=1:length(meshtypes)
+    meshtype = meshtypes{indexm};
 
-filename = ['table_rect_det_lin_elas_' loading '_' meshtype];
+close all
+
+filename = strcat('table_rect_det_lin_elas_',loading,'_',elemtype,'_',meshtype);
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -42,11 +57,9 @@ P_beam = cellfun(@(x) POINT(x),x_beam,'UniformOutput',false);
 
 switch meshtype
     case 'structured'
-        elemtype = 'DKQ'; % DKT, DKQ, COQ4
         nbelem_plate = [20,20];
         S_plate = build_model(Q,'nbelem',nbelem_plate,'elemtype',elemtype);
     case 'unstructured'
-        elemtype = 'DKT'; % DKT
         cl_plate = 0.05;
         switch loading
             case 'uniform'
@@ -54,7 +67,7 @@ switch meshtype
             case 'concentrated'
                 points = [x_beam(:)',{x_load}];
         end
-        S_plate = build_model(Q,'cl',cl_plate,'elemtype',elemtype,'points',points,'filename',[pathname 'gmsh_plate_rect_' elemtype  '_cl_' num2str(cl_plate)]);
+        S_plate = build_model(Q,'cl',cl_plate,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_rect_' elemtype  '_cl_' num2str(cl_plate)],'points',points);
 end
 
 nbelem_beam = [10,10];
@@ -139,7 +152,9 @@ end
 t = tic;
 u = solve_system(system);
 time = toc(t);
-fprintf(['\nRectangular table under ' loading ' load\n']);
+fprintf('\nRectangular table\n');
+fprintf(['Load : ' loading '\n']);
+fprintf(['Mesh : ' meshtype ' with ' elemtype ' elements\n']);
 fprintf('Span-to-thickness ratio = %g\n',max(a,b)/h);
 fprintf('Elapsed time = %f s\n',time);
 fprintf('\n');
@@ -235,5 +250,9 @@ mysaveas(pathname,'Uz',{'fig','epsc2'},renderer);
 
 % plot_solution(system.S,u,'rotation',2,'ampl',ampl,options{:});
 % mysaveas(pathname,'Ry',{'fig','epsc2'},renderer);
+
+end
+end
+end
 
 % myparallel('stop');

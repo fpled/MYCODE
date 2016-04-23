@@ -6,14 +6,32 @@ clear all
 close all
 
 %% Input data
-boundary = 'simply_supported';
+% boundary = 'simply_supported';
 % boundary = 'clamped';
-loading = 'uniform';
+% loading = 'uniform';
 % loading = 'concentrated';
-meshtype = 'structured';
+% elemtype = 'DKT';
+% elemtype = 'DKQ';
+% elemtype = 'COQ4';
+% meshtype = 'structured';
 % meshtype = 'unstructured';
+boundaries = {'simply_supported','clamped'};
+loadings = {'uniform','concentrated'};
+elemtypes={'DKT','DKQ'};
+% elemtypes={'DKT','DKQ','COQ4'};
+meshtypes = {'structured','unstructured'};
+for indexb=1:length(boundaries)
+    boundary = boundaries{indexb};
+for indexl=1:length(loadings)
+    loading = loadings{indexl};
+for indexe=1:length(elemtypes)
+    elemtype = elemtypes{indexe};
+for indexm=1:length(meshtypes)
+    meshtype = meshtypes{indexm};
 
-filename = ['plate_rect_det_lin_elas_' boundary '_' loading '_' meshtype];
+close all
+
+filename = strcat('plate_rect_det_lin_elas_',boundary,'_',loading,'_',elemtype,'_',meshtype);
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -35,11 +53,9 @@ x_load = double(getcoord(P_load));
 
 switch meshtype
     case 'structured'
-        elemtype = 'DKQ'; % DKT, DKQ, COQ4
         nbelem = [20,20];
         system.S = build_model(Q,'nbelem',nbelem,'elemtype',elemtype);
     case 'unstructured'
-        elemtype = 'DKT'; % DKT
         cl = 0.05;
         switch loading
             case 'uniform'
@@ -119,7 +135,10 @@ end
 t = tic;
 u = solve_system(system);
 time = toc(t);
-fprintf(['\nRectangular ' boundary ' plate under ' loading ' load\n']);
+fprintf('\nRectangular plate\n');
+fprintf(['Boundary : ' boundary '\n']);
+fprintf(['Load : ' loading '\n']);
+fprintf(['Mesh : ' meshtype ' with ' elemtype ' elements\n']);
 fprintf('Span-to-thickness ratio = %g\n',max(a,b)/h);
 fprintf('Elapsed time = %f s\n',time);
 
@@ -265,5 +284,10 @@ mysaveas(pathname,'Uz_ex',{'fig','epsc2'},renderer);
 
 % plot_solution(system.S,u,'rotation',2,'ampl',ampl,options{:});
 % mysaveas(pathname,'Ry',{'fig','epsc2'},renderer);
+
+end
+end
+end
+end
 
 % myparallel('stop');

@@ -6,10 +6,22 @@ clear all
 close all
 
 %% Input data
-loading = 'uniform';
+% loading = 'uniform';
 % loading = 'concentrated';
+% elemtype = 'DKT';
+% elemtype = 'DKQ';
+% elemtype = 'COQ4';
+loadings={'uniform','concentrated'};
+elemtypes={'DKT','DKQ'};
+% elemtypes={'DKT','DKQ','COQ4'};
+for indexl=1:length(loadings)
+    loading = loadings{indexl};
+for indexe=1:length(elemtypes)
+    elemtype = elemtypes{indexe};
 
-filename = ['table_circ_det_lin_elas_' loading];
+close all
+
+filename = strcat('table_circ_det_lin_elas_',loading,'_',elemtype);
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -29,12 +41,12 @@ P_load = POINT([-r/2,0.0,0.0]);
 x_load = double(getcoord(P_load));
 
 P_beam = getcenter(C);
+% P_beam = POINT([r/2,0.0,0.0]);
 x_beam = double(getcoord(P_beam));
 
 l = 1;
 L_beam = LIGNE(P_beam,P_beam+POINT([0.0,0.0,-l]));
 
-elemtype = 'DKT'; % DKT
 cl_plate = 0.1;
 switch loading
     case 'uniform'
@@ -122,7 +134,9 @@ end
 t = tic;
 u = solve_system(system);
 time = toc(t);
-fprintf(['\nCircular table under ' loading ' load\n']);
+fprintf('\nCircular table\n');
+fprintf(['Load : ' loading '\n']);
+fprintf(['Mesh : unstructured with ' elemtype ' elements\n']);
 fprintf('Span-to-thickness ratio = %g\n',r/h);
 fprintf('Elapsed time = %f s\n',time);
 fprintf('\n');
@@ -218,5 +232,8 @@ mysaveas(pathname,'Uz',{'fig','epsc2'},renderer);
 
 % plot_solution(system.S,u,'rotation',2,'ampl',ampl,options{:});
 % mysaveas(pathname,'Ry',{'fig','epsc2'},renderer);
+
+end
+end
 
 % myparallel('stop');s

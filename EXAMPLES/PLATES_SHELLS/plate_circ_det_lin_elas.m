@@ -10,12 +10,27 @@ clear all
 close all
 
 %% Input data
-boundary = 'simply_supported';
+% boundary = 'simply_supported';
 % boundary = 'clamped';
-loading = 'uniform';
+% loading = 'uniform';
 % loading = 'concentrated';
+% elemtype = 'DKT';
+% elemtype = 'DKQ';
+% elemtype = 'COQ4';
+boundaries = {'simply_supported','clamped'};
+loadings = {'uniform','concentrated'};
+elemtypes={'DKT','DKQ'};
+% elemtypes={'DKT','DKQ','COQ4'};
+for indexb=1:length(boundaries)
+    boundary = boundaries{indexb};
+for indexl=1:length(loadings)
+    loading = loadings{indexl};
+for indexe=1:length(elemtypes)
+    elemtype = elemtypes{indexe};
 
-filename = ['plate_circ_det_lin_elas_' boundary '_' loading];
+close all
+
+filename = strcat('plate_circ_det_lin_elas_',boundary,'_',loading,'_',elemtype);
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -34,7 +49,6 @@ C = CIRCLE(0.0,0.0,0.0,r);
 P_load = getcenter(C);
 x_load = double(getcoord(P_load));
 
-elemtype = 'DKT'; % DKT
 cl = 0.1;
 switch loading
     case 'uniform'
@@ -106,7 +120,10 @@ end
 t = tic;
 u = solve_system(system);
 time = toc(t);
-fprintf(['\nCircular ' boundary ' plate under ' loading ' load\n']);
+fprintf('\nCircular plate\n');
+fprintf(['Boundary : ' boundary '\n']);
+fprintf(['Load : ' loading '\n']);
+fprintf(['Mesh : unstructured with ' elemtype ' elements\n']);
 fprintf('Span-to-thickness ratio = %g\n',r/h);
 fprintf('Elapsed time = %f s\n',time);
 
@@ -241,5 +258,9 @@ mysaveas(pathname,'Uz_ex',{'fig','epsc2'},renderer);
 
 % plot_solution(system.S,u,'rotation',2,'ampl',ampl,options{:});
 % mysaveas(pathname,'Ry',{'fig','epsc2'},renderer);
+
+end
+end
+end
 
 % myparallel('stop');
