@@ -6,14 +6,15 @@ clear all
 close all
 
 %% Input data
-% loading = 'uniform';
-% loading = 'concentrated';
-% elemtype = 'DKT';
-% elemtype = 'DKQ';
-% elemtype = 'COQ4';
+% loadings = {'uniform'};
+% loadings = {'concentrated'};
 loadings={'uniform','concentrated'};
-elemtypes={'DKT','DKQ'};
-% elemtypes={'DKT','DKQ','COQ4'};
+% elemtypes = {'DKT'};
+% elemtypes = {'DKQ'};
+% elemtypes = {'COQ4'};
+elemtypes = {'DKT','DKQ'};
+% elemtypes = {'DKT','DKQ','COQ4'};
+
 for indexl=1:length(loadings)
     loading = loadings{indexl};
 for indexe=1:length(elemtypes)

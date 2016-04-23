@@ -6,17 +6,18 @@ clear all
 close all
 
 %% Input data
-% loading = 'uniform';
-% loading = 'concentrated';
-% elemtype = 'DKT';
-% elemtype = 'DKQ';
-% elemtype = 'COQ4';
-% meshtype = 'structured';
-% meshtype = 'unstructured';
+% loadings = {'uniform'};
+% loadings = {'concentrated'};
 loadings={'uniform','concentrated'};
-elemtypes={'DKT','DKQ'};
-% elemtypes={'DKT','DKQ','COQ4'};
-meshtypes={'structured','unstructured'};
+% elemtypes = {'DKT'};
+% elemtypes = {'DKQ'};
+% elemtypes = {'COQ4'};
+elemtypes = {'DKT','DKQ'};
+% elemtypes = {'DKT','DKQ','COQ4'};
+% meshtypes = 'structured';
+% meshtypes = {'unstructured'};
+meshtypes = {'structured','unstructured'};
+
 for indexl=1:length(loadings)
     loading = loadings{indexl};
 for indexe=1:length(elemtypes)

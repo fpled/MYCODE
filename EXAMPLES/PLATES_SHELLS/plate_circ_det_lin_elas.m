@@ -10,17 +10,18 @@ clear all
 close all
 
 %% Input data
-% boundary = 'simply_supported';
-% boundary = 'clamped';
-% loading = 'uniform';
-% loading = 'concentrated';
-% elemtype = 'DKT';
-% elemtype = 'DKQ';
-% elemtype = 'COQ4';
+% boundaries = {'simply_supported'};
+% boundaries = {'clamped'};
 boundaries = {'simply_supported','clamped'};
-loadings = {'uniform','concentrated'};
-elemtypes={'DKT','DKQ'};
-% elemtypes={'DKT','DKQ','COQ4'};
+% loadings = {'uniform'};
+% loadings = {'concentrated'};
+loadings={'uniform','concentrated'};
+% elemtypes = {'DKT'};
+% elemtypes = {'DKQ'};
+% elemtypes = {'COQ4'};
+elemtypes = {'DKT','DKQ'};
+% elemtypes = {'DKT','DKQ','COQ4'};
+
 for indexb=1:length(boundaries)
     boundary = boundaries{indexb};
 for indexl=1:length(loadings)
