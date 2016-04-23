@@ -13,6 +13,7 @@ if ~exist(pathname,'dir')
     mkdir(pathname);
 end
 % set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
+formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
 % Parallel computing
@@ -101,14 +102,14 @@ save(fullfile(pathname,'all.mat'));
 %% Display domains and meshes
 
 plot_domain(D);
-mysaveas(pathname,'domain',{'fig','epsc2'},renderer);
+mysaveas(pathname,'domain',formats,renderer);
 mymatlab2tikz(pathname,'domain.tex');
 
 % plot_partition(system.S,'nolegend');
-% mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
+% mysaveas(pathname,'mesh_partition',formats,renderer);
 
 plot_model(system.S,'nolegend');
-mysaveas(pathname,'mesh',{'fig','epsc2'},renderer);
+mysaveas(pathname,'mesh',formats,renderer);
 
 %% Display multi-index set
 
@@ -135,21 +136,21 @@ mymatlab2tikz(pathname,'multi_index_set.tex');
 % plot_stats(system.S,u);
 
 plot_mean(system.S,u);
-mysaveas(pathname,'mean_sol',{'fig','epsc2'},renderer);
+mysaveas(pathname,'mean_sol',formats,renderer);
 
 plot_var(system.S,u);
-mysaveas(pathname,'var_sol',{'fig','epsc2'},renderer);
+mysaveas(pathname,'var_sol',formats,renderer);
 
 plot_std(system.S,u);
-mysaveas(pathname,'std_sol',{'fig','epsc2'},renderer);
+mysaveas(pathname,'std_sol',formats,renderer);
 
 M = getM(PC);
 for m=1:M
     plot_sobol_indices(system.S,u,m);
-    mysaveas(pathname,['sobol_indices_sol_var_' num2str(m)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['sobol_indices_sol_var_' num2str(m)],formats,renderer);
     
     plot_sensitivity_indices_max_var(system.S,u,m);
-    mysaveas(pathname,['sensitivity_indices_sol_var_' num2str(m)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['sensitivity_indices_sol_var_' num2str(m)],formats,renderer);
 end
 
 %% Display random evaluations of solution

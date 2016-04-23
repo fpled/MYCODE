@@ -14,6 +14,7 @@ if ~exist(pathname,'dir')
     mkdir(pathname);
 end
 % set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
+formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
 solve_reference = true;
@@ -276,14 +277,14 @@ save(fullfile(pathname,'all.mat'));
 %% Display domains and meshes
 
 plot_domain(D,D_patch);
-mysaveas(pathname,'domain_global_patches',{'fig','epsc2'},renderer);
+mysaveas(pathname,'domain_global_patches',formats,renderer);
 mymatlab2tikz(pathname,'domain_global_patches.tex');
 
 % plot_partition(glob,'nolegend');
-% mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
+% mysaveas(pathname,'mesh_partition',formats,renderer);
 
 plot_model(glob,patches,'nolegend');
-mysaveas(pathname,'mesh_global_patches',{'fig','epsc2'},renderer);
+mysaveas(pathname,'mesh_global_patches',formats,renderer);
 
 % plot_model(glob);
 % plot_model(patches);
@@ -397,63 +398,63 @@ end
 %% Display statistical outputs
 
 plot_mean_U(glob,U);
-mysaveas(pathname,'mean_U',{'fig','epsc2'},renderer);
+mysaveas(pathname,'mean_U',formats,renderer);
 
 plot_mean_sol(glob,patches,interfaces,U,w);
-mysaveas(pathname,'mean_sol',{'fig','epsc2'},renderer);
+mysaveas(pathname,'mean_sol',formats,renderer);
 
 plot_var_U(glob,U);
-mysaveas(pathname,'var_U',{'fig','epsc2'},renderer);
+mysaveas(pathname,'var_U',formats,renderer);
 
 plot_var_sol(glob,patches,interfaces,U,w);
-mysaveas(pathname,'var_sol',{'fig','epsc2'},renderer);
+mysaveas(pathname,'var_sol',formats,renderer);
 
 for i=1:2
     % plot_stats_sols(glob,patches,interfaces,U,w,lambda,'displ',i);
     
     plot_mean_U(glob,U,'displ',i);
-    mysaveas(pathname,['mean_U_' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['mean_U_' num2str(i)],formats,renderer);
     
     plot_mean_sol(glob,patches,interfaces,U,w,'displ',i);
-    mysaveas(pathname,['mean_sol_' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['mean_sol_' num2str(i)],formats,renderer);
     
     plot_mean_U_w(glob,patches,interfaces,U,w,'displ',i);
-    mysaveas(pathname,['mean_U_w' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['mean_U_w' num2str(i)],formats,renderer);
     
     plot_mean_U_w(glob,patches,interfaces,U,w,'displ',i,'view3');
-    mysaveas(pathname,['mean_U_w_surf' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['mean_U_w_surf' num2str(i)],formats,renderer);
     
     plot_var_U(glob,U,'displ',i);
-    mysaveas(pathname,['var_U_' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['var_U_' num2str(i)],formats,renderer);
     
     plot_var_sol(glob,patches,interfaces,U,w,'displ',i);
-    mysaveas(pathname,['var_sol_' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['var_sol_' num2str(i)],formats,renderer);
     
     plot_var_U_w(glob,patches,interfaces,U,w,'displ',i);
-    mysaveas(pathname,['var_U_w' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['var_U_w' num2str(i)],formats,renderer);
     
     plot_var_U_w(glob,patches,interfaces,U,w,'displ',i,'view3');
-    mysaveas(pathname,['var_U_w_surf' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['var_U_w_surf' num2str(i)],formats,renderer);
 
     plot_std_U(glob,U,'displ',i);
-    mysaveas(pathname,['std_U_' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['std_U_' num2str(i)],formats,renderer);
     
     plot_std_sol(glob,patches,interfaces,U,w,'displ',i);
-    mysaveas(pathname,['std_sol_' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['std_sol_' num2str(i)],formats,renderer);
     
     plot_std_U_w(glob,patches,interfaces,U,w,'displ',i);
-    mysaveas(pathname,['std_U_w' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['std_U_w' num2str(i)],formats,renderer);
     
     plot_std_U_w(glob,patches,interfaces,U,w,'displ',i,'view3');
-    mysaveas(pathname,['std_U_w_surf' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['std_U_w_surf' num2str(i)],formats,renderer);
     
     M = getM(PC);
     for m=1:M
         plot_sobol_indices_sol(glob,patches,interfaces,U,w,m,'displ',i);
-        mysaveas(pathname,['sobol_indices_sol_' num2str(i) '_var_' num2str(m)],{'fig','epsc2'},renderer);
+        mysaveas(pathname,['sobol_indices_sol_' num2str(i) '_var_' num2str(m)],formats,renderer);
         
         plot_sensitivity_indices_max_var_sol(glob,patches,interfaces,U,w,m,'displ',i);
-        mysaveas(pathname,['sensitivity_indices_sol_' num2str(i) '_var_' num2str(m)],{'fig','epsc2'},renderer);
+        mysaveas(pathname,['sensitivity_indices_sol_' num2str(i) '_var_' num2str(m)],formats,renderer);
     end
 end
 

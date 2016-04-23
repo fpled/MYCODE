@@ -15,6 +15,7 @@ if ~exist(pathname,'dir')
     mkdir(pathname);
 end
 % set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
+formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
 solve_reference = true;
@@ -267,14 +268,14 @@ save(fullfile(pathname,'all.mat'));
 %% Display domains and meshes
 
 plot_domain(D,D_patch);
-mysaveas(pathname,'domain_global_patches',{'fig','epsc2'},renderer);
+mysaveas(pathname,'domain_global_patches',formats,renderer);
 mymatlab2tikz(pathname,'domain_global_patches.tex');
 
 % plot_partition(glob,'nolegend');
-% mysaveas(pathname,'mesh_partition',{'fig','epsc2'},renderer);
+% mysaveas(pathname,'mesh_partition',formats,renderer);
 
 plot_model(glob,patches,'nolegend');
-mysaveas(pathname,'mesh_global_patches',{'fig','epsc2'},renderer);
+mysaveas(pathname,'mesh_global_patches',formats,renderer);
 
 % plot_model(glob);
 % plot_model(patches);
@@ -320,16 +321,16 @@ mymatlab2tikz(pathname,'relaxation_parameter.tex');
 
 for i=1:2
     plot_U(glob,U,'displ',i);
-    mysaveas(pathname,['U_' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['U_' num2str(i)],formats,renderer);
     
     plot_sol(glob,patches,interfaces,U,w,'displ',i);
-    mysaveas(pathname,['sol_' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['sol_' num2str(i)],formats,renderer);
     
     plot_U_w(glob,patches,interfaces,U,w,'displ',i);
-    mysaveas(pathname,['U_w' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['U_w' num2str(i)],formats,renderer);
     
     plot_U_w(glob,patches,interfaces,U,w,'displ',i,'view3');
-    mysaveas(pathname,['U_w_surf' num2str(i)],{'fig','epsc2'},renderer);
+    mysaveas(pathname,['U_w_surf' num2str(i)],formats,renderer);
 end
 
 % myparallel('stop');

@@ -28,6 +28,7 @@ if ~exist(pathname,'dir')
     mkdir(pathname);
 end
 % set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
+formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
 % Parallel computing
@@ -186,7 +187,7 @@ save(fullfile(pathname,'all.mat'));
 %% Display domains, boundary conditions and meshes
 
 plot_domain(C,L_beam,'nolegend');
-mysaveas(pathname,'domain',{'fig','epsc2'},renderer);
+mysaveas(pathname,'domain',formats,renderer);
 mymatlab2tikz(pathname,'domain.tex');
 
 [hD,legD] = plot_boundary_conditions(system.S,'nolegend');
@@ -200,20 +201,20 @@ end
 % legend([hD,hN],'Dirichlet','Neumann')
 legend([hD,hN],[legD,legN])
 axis image
-mysaveas(pathname,'boundary_conditions',{'fig','epsc2'},renderer);
+mysaveas(pathname,'boundary_conditions',formats,renderer);
 
 plot_model(system.S,'color','k','facecolor','k','facealpha',0.1,'node','nolegend');
-mysaveas(pathname,'mesh',{'fig','epsc2'},renderer);
+mysaveas(pathname,'mesh',formats,renderer);
 
 ampl = max(getsize(system.S))/max(abs(u))/10;
 plot_model_deflection(system.S,u,'ampl',ampl,'color','b','facecolor','b','facealpha',0.1,'node','nolegend');
-mysaveas(pathname,'mesh_deflected',{'fig','epsc2'},renderer);
+mysaveas(pathname,'mesh_deflected',formats,renderer);
 
 figure('Name','Meshes')
 clf
 plot(system.S,'color','k','facecolor','k','facealpha',0.1,'node');
 plot(system.S+ampl*u,'color','b','facecolor','b','facealpha',0.1,'node');
-mysaveas(pathname,'meshes_deflected',{'fig','epsc2'},renderer);
+mysaveas(pathname,'meshes_deflected',formats,renderer);
 
 % plot_facets(system.S);
 % plot_ridges(system.S);
@@ -226,13 +227,13 @@ ampl = max(getsize(system.S))/max(abs(u))/10;
 options = {};
 
 plot_solution(system.S,u,'displ',3,'ampl',ampl,options{:});
-mysaveas(pathname,'Uz',{'fig','epsc2'},renderer);
+mysaveas(pathname,'Uz',formats,renderer);
 
 % plot_solution(system.S,u,'rotation',1,'ampl',ampl,options{:});
-% mysaveas(pathname,'Rx',{'fig','epsc2'},renderer);
+% mysaveas(pathname,'Rx',formats,renderer);
 
 % plot_solution(system.S,u,'rotation',2,'ampl',ampl,options{:});
-% mysaveas(pathname,'Ry',{'fig','epsc2'},renderer);
+% mysaveas(pathname,'Ry',formats,renderer);
 
 end
 end
