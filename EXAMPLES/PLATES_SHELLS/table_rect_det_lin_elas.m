@@ -14,7 +14,7 @@ loadings={'uniform','concentrated'};
 % elemtypes = {'COQ4'};
 elemtypes = {'DKT','DKQ'};
 % elemtypes = {'DKT','DKQ','COQ4'};
-% meshtypes = 'structured';
+% meshtypes = {'structured'};
 % meshtypes = {'unstructured'};
 meshtypes = {'structured','unstructured'};
 
@@ -72,7 +72,7 @@ switch meshtype
         S_plate = build_model(Q,'cl',cl_plate,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_rect_' elemtype  '_cl_' num2str(cl_plate)],'points',points);
 end
 
-nbelem_beam = [10,10];
+nbelem_beam = 10;
 S_beam = cellfun(@(L) build_model(L,'nbelem',nbelem_beam,'elemtype','BEAM'),L_beam,'UniformOutput',false);
 % cl_beam = 0.1;
 % S_beam = cellfun(@(L,n) build_model(L,'cl',cl_plate,'elemtype','BEAM','filename',[pathname 'gmsh_beam_' num2str(n) '_cl_' num2str(cl_beam)]),L_beam,num2cell(1:length(L_beam)),'UniformOutput',false);

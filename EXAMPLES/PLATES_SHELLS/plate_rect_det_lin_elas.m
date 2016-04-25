@@ -2,7 +2,7 @@
 %%---------------------------------------------------%%
 
 % clc
-clear all
+% clear all
 close all
 
 %% Input data
@@ -17,7 +17,7 @@ loadings={'uniform','concentrated'};
 % elemtypes = {'COQ4'};
 elemtypes = {'DKT','DKQ'};
 % elemtypes = {'DKT','DKQ','COQ4'};
-% meshtypes = 'structured';
+% meshtypes = {'structured'};
 % meshtypes = {'unstructured'};
 meshtypes = {'structured','unstructured'};
 
