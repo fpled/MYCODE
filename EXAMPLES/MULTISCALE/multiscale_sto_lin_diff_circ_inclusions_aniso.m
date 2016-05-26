@@ -6,6 +6,9 @@
 clear all
 close all
 
+% Parallel computing
+myparallel('start');
+
 %% Input data
 
 n = 4; % number of patches
@@ -23,9 +26,6 @@ solve_multiscale = true;
 
 calc_MC_error_estimate_ref = false;
 calc_MC_error_estimate = false;
-
-% Parallel computing
-myparallel('start');
 
 %% Domains and meshes
 

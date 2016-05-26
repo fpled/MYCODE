@@ -6,6 +6,9 @@
 clear all
 close all
 
+% Parallel computing
+myparallel('start');
+
 %% Input data
 
 M = 8; % number of random variables M = 2, 4, 8
@@ -17,9 +20,6 @@ end
 % set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
-
-% Parallel computing
-myparallel('start');
 
 %% Domains and meshes
 

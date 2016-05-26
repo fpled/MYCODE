@@ -24,6 +24,7 @@ loadings={'uniform','concentrated'};
 % elemtypes = {'COQ4'};
 elemtypes = {'DKT','DKQ'};
 % elemtypes = {'DKT','DKQ','COQ4'};
+nbelems = 2.^(1:5);
 
 % set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 formats = {'fig','epsc2'};
@@ -35,6 +36,11 @@ for ib=1:length(boundaries)
 for il=1:length(loadings)
     loading = loadings{il};
     filename = ['plate_circ_det_lin_elas_' boundary '_' loading];
+    hcv = figure('Name','Evolution of error indicator w.r.t number of elements');
+    clf
+    htime = figure('Name','Evolution of CPU time w.r.t number of elements');
+    clf
+    leg = cell(1,length(elemtypes));
     
 for ie=1:length(elemtypes)
     elemtype = elemtypes{ie};
@@ -42,8 +48,7 @@ for ie=1:length(elemtypes)
     if ~exist(pathname,'dir')
         mkdir(pathname);
     end
-
-close all
+    leg{ie} = elemtype;
 
 %% Domains and meshes
 
@@ -53,7 +58,12 @@ C = CIRCLE(0.0,0.0,0.0,r);
 P_load = getcenter(C);
 x_load = double(getcoord(P_load));
 
-cl = 0.1;
+err = zeros(1,length(nbelems));
+time = zeros(1,length(nbelems));
+Nbelem = zeros(1,length(nbelems));
+for i=1:length(nbelems)
+
+cl = r./nbelems(i);
 switch loading
     case 'uniform'
         system.S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype '_cl_' num2str(cl)]);
@@ -123,7 +133,7 @@ end
 
 t = tic;
 u = solve_system(system);
-time = toc(t);
+time(i) = toc(t);
 
 %% Outputs
 
@@ -163,7 +173,7 @@ switch loading
 end
 x = getcoord(system.S.node);
 Uz_ex = w(x);
-err = norm(Uz-Uz_ex)/norm(Uz_ex);
+err(i) = norm(Uz-Uz_ex)/norm(Uz_ex);
 
 P = getcenter(C);
 
@@ -181,10 +191,11 @@ fprintf('\nCircular plate\n');
 fprintf(['Boundary : ' boundary '\n']);
 fprintf(['Load     : ' loading '\n']);
 fprintf(['Mesh     : ' elemtype ' elements\n']);
-fprintf('Nb elements = %g\n',getnbelem(system.S));
+Nbelem(i) = getnbelem(system.S);
+fprintf('Nb elements = %g\n',Nbelem(i));
 fprintf('Span-to-thickness ratio = %g\n',r/h);
-fprintf('Error = %g\n',err);
-fprintf('Elapsed time = %f s\n',time);
+fprintf('Error = %g\n',err(i));
+fprintf('Elapsed time = %f s\n',time(i));
 fprintf('\n');
 
 disp('Displacement u at point'); disp(P);
@@ -201,6 +212,18 @@ fprintf('ry    = %g\n',ry);
 fprintf('rz    = %g\n',rz);
 fprintf('\n');
 
+plot_model(system.S,'color','k','facecolor','k','facealpha',0.1,'nolegend');
+
+end
+
+figure(hcv)
+loglog(Nbelem,err,'-','Color',getfacecolor(ie+1),'LineWidth',1);
+hold on
+
+figure(htime)
+loglog(Nbelem,time,'-','Color',getfacecolor(ie+1),'LineWidth',1);
+hold on
+
 %% Save variables
 
 save(fullfile(pathname,'solution.mat'),'u','U','R');
@@ -208,63 +231,86 @@ save(fullfile(pathname,'all.mat'));
 
 %% Display domains, boundary conditions and meshes
 
-plot_domain(C,'solid','nolegend');
-mysaveas(pathname,'domain',formats,renderer);
-mymatlab2tikz(pathname,'domain.tex');
+% plot_domain(C,'solid','nolegend');
+% mysaveas(pathname,'domain',formats,renderer);
+% mymatlab2tikz(pathname,'domain.tex');
+% 
+% [hD,legD] = plot_boundary_conditions(system.S,'nolegend');
+% switch loading
+%     case 'uniform'
+%         ampl = 2;
+%     case 'concentrated'
+%         ampl = 1;
+% end
+% [hN,legN] = vectorplot(system.S,'F',system.b,ampl,'r');
+% % legend([hD,hN],'Dirichlet','Neumann')
+% % legend([hD,hN],[legD,legN])
+% axis image
+% mysaveas(pathname,'boundary_conditions',formats,renderer);
+% 
+% plot_model(system.S,'color','k','facecolor','k','facealpha',0.1,'nolegend');
+% mysaveas(pathname,'mesh',formats,renderer);
+% 
+% ampl = max(getsize(system.S))/max(abs(u));
+% plot_model_deflection(system.S,u,'ampl',ampl,'color','b','facecolor','b','facealpha',0.1,'nolegend');
+% mysaveas(pathname,'mesh_deflected',formats,renderer);
+% 
+% figure('Name','Meshes')
+% clf
+% plot(system.S,'color','k','facecolor','k','facealpha',0.1);
+% plot(system.S+ampl*u,'color','b','facecolor','b','facealpha',0.1);
+% mysaveas(pathname,'meshes_deflected',formats,renderer);
+% 
+% % plot_facets(system.S);
+% % plot_ridges(system.S);
+% 
+% %% Display solution
+% 
+% % ampl = 0;
+% ampl = max(getsize(system.S))/max(abs(u));
+% options = {'solid'};
+% % options = {};
+% 
+% plot_solution(system.S,u,'displ',3,'ampl',ampl,options{:});
+% mysaveas(pathname,'Uz',formats,renderer);
+% 
+% figure('Name','Solution u_3_ex')
+% clf
+% plot(FENODEFIELD(w(x)),system.S+ampl*u,options{:});
+% colorbar
+% set(gca,'FontSize',16)
+% mysaveas(pathname,'Uz_ex',formats,renderer);
+% 
+% % plot_solution(system.S,u,'rotation',1,'ampl',ampl,options{:});
+% % mysaveas(pathname,'Rx',formats,renderer);
+% 
+% % plot_solution(system.S,u,'rotation',2,'ampl',ampl,options{:});
+% % mysaveas(pathname,'Ry',formats,renderer);
 
-[hD,legD] = plot_boundary_conditions(system.S,'nolegend');
-switch loading
-    case 'uniform'
-        ampl = 2;
-    case 'concentrated'
-        ampl = 1;
 end
-[hN,legN] = vectorplot(system.S,'F',system.b,ampl,'r');
-% legend([hD,hN],'Dirichlet','Neumann')
-% legend([hD,hN],[legD,legN])
-axis image
-mysaveas(pathname,'boundary_conditions',formats,renderer);
 
-plot_model(system.S,'color','k','facecolor','k','facealpha',0.1,'nolegend');
-mysaveas(pathname,'mesh',formats,renderer);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 
-ampl = max(getsize(system.S))/max(abs(u));
-plot_model_deflection(system.S,u,'ampl',ampl,'color','b','facecolor','b','facealpha',0.1,'nolegend');
-mysaveas(pathname,'mesh_deflected',formats,renderer);
-
-figure('Name','Meshes')
-clf
-plot(system.S,'color','k','facecolor','k','facealpha',0.1);
-plot(system.S+ampl*u,'color','b','facecolor','b','facealpha',0.1);
-mysaveas(pathname,'meshes_deflected',formats,renderer);
-
-% plot_facets(system.S);
-% plot_ridges(system.S);
-
-%% Display solution
-
-% ampl = 0;
-ampl = max(getsize(system.S))/max(abs(u));
-options = {'solid'};
-% options = {};
-
-plot_solution(system.S,u,'displ',3,'ampl',ampl,options{:});
-mysaveas(pathname,'Uz',formats,renderer);
-
-figure('Name','Solution u_3_ex')
-clf
-plot(FENODEFIELD(w(x)),system.S+ampl*u,options{:});
-colorbar
+figure(hcv)
+grid on
+box on
 set(gca,'FontSize',16)
-mysaveas(pathname,'Uz_ex',formats,renderer);
+xlabel('Number of elements')
+ylabel('Error indicator')
+legend(leg{:})
+mysaveas(pathname,'error_indicator','fig');
+mymatlab2tikz(pathname,'error_indicator.tex');
 
-% plot_solution(system.S,u,'rotation',1,'ampl',ampl,options{:});
-% mysaveas(pathname,'Rx',formats,renderer);
+figure(htime)
+grid on
+box on
+set(gca,'FontSize',16)
+xlabel('Number of elements')
+ylabel('CPU time (s)')
+legend(leg{:})
+mysaveas(pathname,'cputime','fig');
+mymatlab2tikz(pathname,'cputime.tex');
 
-% plot_solution(system.S,u,'rotation',2,'ampl',ampl,options{:});
-% mysaveas(pathname,'Ry',formats,renderer);
-
-end
 end
 end
 

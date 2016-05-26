@@ -5,6 +5,9 @@
 clear all
 close all
 
+% Parallel computing
+myparallel('start');
+
 %% Input data
 
 filename = 'monoscale_sto_lin_diff';
@@ -15,9 +18,6 @@ end
 % set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
-
-% Parallel computing
-myparallel('start');
 
 %% Domains and meshes
 

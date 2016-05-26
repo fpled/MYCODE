@@ -5,6 +5,9 @@
 clear all
 close all
 
+% Parallel computing
+% myparallel('start');
+
 %% Input data
 
 n = 4; % number of patches n = 1, 2, 4
@@ -20,9 +23,6 @@ renderer = 'OpenGL';
 
 solve_reference = true;
 solve_multiscale = true;
-
-% Parallel computing
-% myparallel('start');
 
 %% Domains and meshes
 

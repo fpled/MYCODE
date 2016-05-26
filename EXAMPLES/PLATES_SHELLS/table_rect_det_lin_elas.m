@@ -5,6 +5,9 @@
 clear all
 close all
 
+% Parallel computing
+% myparallel('start');
+
 %% Input data
 % loadings = {'uniform'};
 % loadings = {'concentrated'};
@@ -18,26 +21,23 @@ elemtypes = {'DKT','DKQ'};
 % meshtypes = {'unstructured'};
 meshtypes = {'structured','unstructured'};
 
-for indexl=1:length(loadings)
-    loading = loadings{indexl};
-for indexe=1:length(elemtypes)
-    elemtype = elemtypes{indexe};
-for indexm=1:length(meshtypes)
-    meshtype = meshtypes{indexm};
-
-close all
-
-filename = strcat('table_rect_det_lin_elas_',loading,'_',elemtype,'_',meshtype);
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
-if ~exist(pathname,'dir')
-    mkdir(pathname);
-end
 % set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-% Parallel computing
-% myparallel('start');
+for il=1:length(loadings)
+    loading = loadings{il};
+    filename = ['table_rect_det_lin_elas_' loading];
+    
+for ie=1:length(elemtypes)
+    elemtype = elemtypes{ie};
+    
+for im=1:length(meshtypes)
+    meshtype = meshtypes{im};
+    pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep,[elemtype '_' meshtype],filesep);
+    if ~exist(pathname,'dir')
+        mkdir(pathname);
+    end
 
 %% Domains and meshes
 
@@ -154,12 +154,6 @@ end
 t = tic;
 u = solve_system(system);
 time = toc(t);
-fprintf('\nRectangular table\n');
-fprintf(['Load : ' loading '\n']);
-fprintf(['Mesh : ' meshtype ' with ' elemtype ' elements\n']);
-fprintf('Span-to-thickness ratio = %g\n',max(a,b)/h);
-fprintf('Elapsed time = %f s\n',time);
-fprintf('\n');
 
 %% Outputs
 
@@ -184,6 +178,14 @@ uz = eval_sol(system.S,u,P,'UZ');
 rx = eval_sol(system.S,u,P,'RX');
 ry = eval_sol(system.S,u,P,'RY');
 rz = eval_sol(system.S,u,P,'RZ');
+
+fprintf('\nRectangular table\n');
+fprintf(['Load : ' loading '\n']);
+fprintf(['Mesh : ' elemtype ' ' meshtype ' elements\n']);
+fprintf('Nb elements = %g\n',getnbelem(system.S));
+fprintf('Span-to-thickness ratio = %g\n',max(a,b)/h);
+fprintf('Elapsed time = %f s\n',time);
+fprintf('\n');
 
 disp('Displacement u at point'); disp(P);
 fprintf('ux    = %g\n',ux);
@@ -217,7 +219,7 @@ switch loading
 end
 [hN,legN] = vectorplot(system.S,'F',system.b,ampl,'r');
 % legend([hD,hN],'Dirichlet','Neumann')
-legend([hD,hN],[legD,legN])
+% legend([hD,hN],[legD,legN])
 axis image
 mysaveas(pathname,'boundary_conditions',formats,renderer);
 

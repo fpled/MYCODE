@@ -7,7 +7,7 @@ close all
 
 %% Input data
 filename = 'sparse_approx_monotone_multi_index_set';
-pathname = [getfemobjectoptions('path') 'MYCODE/RESULTS/' filename '/'];
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

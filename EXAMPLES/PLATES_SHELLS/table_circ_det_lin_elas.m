@@ -5,6 +5,9 @@
 clear all
 close all
 
+% Parallel computing
+% myparallel('start');
+
 %% Input data
 % loadings = {'uniform'};
 % loadings = {'concentrated'};
@@ -15,24 +18,20 @@ loadings={'uniform','concentrated'};
 elemtypes = {'DKT','DKQ'};
 % elemtypes = {'DKT','DKQ','COQ4'};
 
-for indexl=1:length(loadings)
-    loading = loadings{indexl};
-for indexe=1:length(elemtypes)
-    elemtype = elemtypes{indexe};
-
-close all
-
-filename = strcat('table_circ_det_lin_elas_',loading,'_',elemtype);
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
-if ~exist(pathname,'dir')
-    mkdir(pathname);
-end
 % set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-% Parallel computing
-% myparallel('start');
+for il=1:length(loadings)
+    loading = loadings{il};
+    filename = ['table_circ_det_lin_elas_' loading];
+    
+for ie=1:length(elemtypes)
+    elemtype = elemtypes{ie};
+    pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep,elemtype,filesep);
+    if ~exist(pathname,'dir')
+        mkdir(pathname);
+    end
 
 %% Domains and meshes
 
@@ -136,12 +135,6 @@ end
 t = tic;
 u = solve_system(system);
 time = toc(t);
-fprintf('\nCircular table\n');
-fprintf(['Load : ' loading '\n']);
-fprintf(['Mesh : unstructured with ' elemtype ' elements\n']);
-fprintf('Span-to-thickness ratio = %g\n',r/h);
-fprintf('Elapsed time = %f s\n',time);
-fprintf('\n');
 
 %% Outputs
 
@@ -166,6 +159,14 @@ uz = eval_sol(system.S,u,P,'UZ');
 rx = eval_sol(system.S,u,P,'RX');
 ry = eval_sol(system.S,u,P,'RY');
 rz = eval_sol(system.S,u,P,'RZ');
+
+fprintf('\nCircular table\n');
+fprintf(['Load : ' loading '\n']);
+fprintf(['Mesh : ' elemtype ' elements\n']);
+fprintf('Nb elements = %g\n',getnbelem(system.S));
+fprintf('Span-to-thickness ratio = %g\n',r/h);
+fprintf('Elapsed time = %f s\n',time);
+fprintf('\n');
 
 disp('Displacement u at point'); disp(P);
 fprintf('ux    = %g\n',ux);
@@ -199,7 +200,7 @@ switch loading
 end
 [hN,legN] = vectorplot(system.S,'F',system.b,ampl,'r');
 % legend([hD,hN],'Dirichlet','Neumann')
-legend([hD,hN],[legD,legN])
+% legend([hD,hN],[legD,legN])
 axis image
 mysaveas(pathname,'boundary_conditions',formats,renderer);
 
