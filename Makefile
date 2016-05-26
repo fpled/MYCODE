@@ -125,26 +125,26 @@ sync_results: sync_results_from_pcmsme_to_mac sync_results_from_mac_to_pcmsme
 exclude = --exclude 'links.m' --exclude 'initfemobjectoptions.m' --exclude '.svn' --exclude '.DS_Store' --exclude '.directory' --exclude '*.mat' --exclude '*.geo' --exclude '*.msh' --exclude '*.err' --exclude '*.out' --exclude '*.log' --exclude '*.err' --exclude '*.jpeg' --exclude '*.jpg' --exclude '*.png' --exclude '*.tiff' --exclude '*.eps' --exclude '*.dvi' --exclude '*.pdf' --exclude '*.fig' --exclude '*.tex' --exclude '*.tsv' --exclude '*.avi' --exclude 'spams-matlab'
 
 sync_from_mac_to_pcmsme:
-	rsync -auv $(Dir_mac)/FEMOBJECT/MYCODE $(User_Name_linux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/FEMOBJECT $(exclude)
+	rsync -auv $(Dir_mac)/ApproximationToolbox/MYCODE $(User_Name_linux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/ApproximationToolbox $(exclude)
 
 sync_from_pcmsme_to_mac:
-	rsync -auv $(User_Name_linux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/FEMOBJECT/MYCODE $(Dir_mac)/FEMOBJECT $(exclude)
+	rsync -auv $(User_Name_linux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/ApproximationToolbox/MYCODE $(Dir_mac)/ApproximationToolbox $(exclude)
 
 sync_from_mac_to_cluster:
-	rsync -auv $(Dir_mac)/FEMOBJECT/MYCODE $(User_Name_linux)@$(Cluster_Name):$(Dir_cluster)/FEMOBJECT $(exclude)
+	rsync -auv $(Dir_mac)/ApproximationToolbox/MYCODE $(User_Name_linux)@$(Cluster_Name):$(Dir_cluster)/ApproximationToolbox $(exclude)
 
 sync_from_cluster_to_mac:
-	rsync -auv $(User_Name_linux)@$(Cluster_Name):$(Dir_cluster)/FEMOBJECT/MYCODE $(Dir_mac)/FEMOBJECT $(exclude)
+	rsync -auv $(User_Name_linux)@$(Cluster_Name):$(Dir_cluster)/ApproximationToolbox/MYCODE $(Dir_mac)/ApproximationToolbox $(exclude)
 
 sync_results_from_mac_to_pcmsme:
-	rsync -auv $(Dir_mac)/FEMOBJECT/MYCODE/RESULTS $(User_Name_linux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/FEMOBJECT/MYCODE
+	rsync -auv $(Dir_mac)/ApproximationToolbox/MYCODE/RESULTS $(User_Name_linux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/ApproximationToolbox/MYCODE
 
 sync_results_from_pcmsme_to_mac:
-	rsync -auv $(User_Name_linux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/FEMOBJECT/MYCODE/RESULTS $(Dir_mac)/FEMOBJECT/MYCODE
+	rsync -auv $(User_Name_linux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/ApproximationToolbox/MYCODE/RESULTS $(Dir_mac)/ApproximationToolbox/MYCODE
 
 # Cluster ---------------------------
 cluster:
-	ssh -YC $(User_Name_linux)@$(Cluster_Name) "hostname; cd $(Dir_cluster)/FEMOBJECT/MYCODE/EXAMPLES/MULTISCALE; qsub $(Pb_Name).pbs"
+	ssh -YC $(User_Name_linux)@$(Cluster_Name) "hostname; cd $(Dir_cluster)/ApproximationToolbox/MYCODE/EXAMPLES/MULTISCALE; qsub $(Pb_Name).pbs"
 
 interactive:
-	ssh -YC $(User_Name_linux)@$(Cluster_Name) "hostname; cd $(Dir_cluster)/FEMOBJECT/MYCODE/EXAMPLES/MULTISCALE; qsub -I -X $(Pb_Name).pbs"
+	ssh -YC $(User_Name_linux)@$(Cluster_Name) "hostname; cd $(Dir_cluster)/ApproximationToolbox/MYCODE/EXAMPLES/MULTISCALE; qsub -I -X $(Pb_Name).pbs"
