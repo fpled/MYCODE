@@ -18,8 +18,8 @@ loadings={'uniform','concentrated'};
 % elemtypes = {'DKT'};
 % elemtypes = {'DKQ'};
 % elemtypes = {'COQ4'};
-elemtypes = {'DKT','DKQ'};
-% elemtypes = {'DKT','DKQ','COQ4'};
+% elemtypes = {'DKT','DKQ'};
+elemtypes = {'DKT','DKQ','COQ4'};
 % meshtypes = {'structured'};
 % meshtypes = {'unstructured'};
 meshtypes = {'structured','unstructured'};
@@ -196,7 +196,9 @@ switch loading
 end
 x = getcoord(system.S.node);
 Uz_ex = w(x);
-err = norm(Uz-Uz_ex)/norm(Uz_ex);
+
+ind = find(~isnan(Uz) & ~isnan(Uz_ex));
+err = norm(Uz(ind)-Uz_ex(ind))/norm(Uz_ex(ind));
 
 P = getcenter(Q);
 

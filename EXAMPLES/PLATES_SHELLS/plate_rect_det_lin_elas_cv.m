@@ -18,8 +18,8 @@ loadings={'uniform','concentrated'};
 % elemtypes = {'DKT'};
 % elemtypes = {'DKQ'};
 % elemtypes = {'COQ4'};
-elemtypes = {'DKT','DKQ'};
-% elemtypes = {'DKT','DKQ','COQ4'};
+% elemtypes = {'DKT','DKQ'};
+elemtypes = {'DKT','DKQ','COQ4'};
 % meshtypes = {'structured'};
 % meshtypes = {'unstructured'};
 meshtypes = {'structured','unstructured'};
@@ -201,7 +201,9 @@ switch loading
 end
 x = getcoord(system.S.node);
 Uz_ex = w(x);
-err(i) = norm(Uz-Uz_ex)/norm(Uz_ex);
+
+ind = find(~isnan(Uz) & ~isnan(Uz_ex));
+err(i) = norm(Uz(ind)-Uz_ex(ind))/norm(Uz_ex(ind));
 
 P = getcenter(Q);
 
@@ -241,6 +243,7 @@ fprintf('\n');
 % fprintf('\n');
 
 plot_model(system.S,'color','k','facecolor','k','facealpha',0.1,'nolegend');
+mysaveas(pathname,['mesh_' num2str(i)],formats,renderer);
 
 end
 

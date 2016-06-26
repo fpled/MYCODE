@@ -22,8 +22,8 @@ loadings={'uniform','concentrated'};
 % elemtypes = {'DKT'};
 % elemtypes = {'DKQ'};
 % elemtypes = {'COQ4'};
-elemtypes = {'DKT','DKQ'};
-% elemtypes = {'DKT','DKQ','COQ4'};
+% elemtypes = {'DKT','DKQ'};
+elemtypes = {'DKT','DKQ','COQ4'};
 
 % set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 formats = {'fig','epsc2'};
@@ -163,7 +163,9 @@ switch loading
 end
 x = getcoord(system.S.node);
 Uz_ex = w(x);
-err = norm(Uz-Uz_ex)/norm(Uz_ex);
+
+ind = find(~isnan(Uz) & ~isnan(Uz_ex));
+err = norm(Uz(ind)-Uz_ex(ind))/norm(Uz_ex(ind));
 
 P = getcenter(C);
 

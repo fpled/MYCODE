@@ -7,116 +7,86 @@ clear all
 close all
 
 %% Filename and Pathname
-M = 3; % number of random variables
-filename = ['sparse_approx_ishigami_function_nbvar_' num2str(M)];
-% filename = ['sparse_approx_ishigami_function_nbvar_' num2str(M) '_algorithm_' opts.algorithm];
-% if strcmp(opts.algorithm,'MS') || strcmp(opts.algorithm,'RMS')
-%     filename = [filename '_bulkparam_' num2str(opts.bulkparam)];
-% end
+d = 3; % number of random variables
+filename = ['sparse_approx_ishigami_function_nbvar_' num2str(d)];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
 % set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 
-%% Random variables
-rv = RVUNIFORM(-pi,pi);
-RV = RANDVARS(repmat({rv},1,M));
-
-%% Ishigami function
+%% Scalar-valued ishigami function
 % y = sin(x_1) + a*sin(x_2)^2 + b*(x_3)^4*sin(x_1)
 a = 7;
 b = 0.1;
-fun = @(x) (sin(x(:,1)) + a.*sin(x(:,2)).^2 + b.*x(:,3).^4.*sin(x(:,1)))';
+% fun = @(x) (sin(x(:,1)) + a*sin(x(:,2)).^2 + b*x(:,3).^4.*sin(x(:,1)));
+fun = vectorize('sin(x1)+7*sin(x2)^2+0.1*x3^4*sin(x1)');
+rv = RandomVector(UniformRandomVariable(-pi,pi),d);
 
-%% Resolution using adaptive sparse approximation and least-squares minimization
+% fun = vectorize('sin(-pi+2*pi*x1) + 7*sin(-pi+2*pi*x2)^2 + 0.1*(-pi+2*pi*x3)^4*sin(-pi+2*pi*x1)');
+% rv = RandomVector(UniformRandomVariable(0,1),d);
 
-% Polynomial chaos basis
-p = 0; % (initial) order of PC expansion
-PC = POLYCHAOS(RV,p,'typebase',1); % (initial) PC basis
-opts = struct();
-opts.basis = 'adaptive'; % construction of PC basis ('fixed' or 'adaptive')
-opts.maxcoeff = Inf; % maximal number of unknown PC expansion coefficients
-opts.algorithm = 'RMS'; % adaptive algorithm for the construction of a nested sequence of finite monotone/lower multi-index sets
-% 'TP' or 'PD':  isotropic Tensor Product (or Partial Degree) polynomial space
-%        multidimensional space of polynomials of partial degree less or equal to p (in each variable)
-%        update the partial degree by 1 in each dimension at each iteration
-% 'TD':  isotropic Total Degree polynomial space
-%        multidimensional space of polynomials of total degree less or equal to p
-%        update the total degree by 1 at each iteration
-% 'MS':  Margin Search strategy
-%        add a smallest monotone/lower subset S_n of the margin M_n of a given monotone/lower set A_n
-%        for which energy(S_n)>=bulkparam*energy(M_n), where bulkparam is a bulk parameter
-% 'RMS': Reduced Margin Search strategy
-%        add a smallest monotone/lower subset S_n of the reduced margin M_n of a given monotone/lower set A_n
-%        for which energy(S_n)>=bulkparam*energy(M_n), where bulkparam is a bulk parameter
-opts.bulkparam = 0.5; % bulk parameter in (0,1) such that energy(S_n)>=bulkparam*energy(M_n)
-% bulkparam = 1 selects all multi-indices in the (reduced) margin M_n
-% bulkparam = 0 selects the multi-index in the (reduced) margin M_n
-%               corresponding to the maximal norm of the expansion coefficients
-trfun = @(x) fun(transfer(RANDVARS(PC),RANDVARS(RV),x));
+% [fun,rv] = multivariateFunctionsBenchmarks('ishigami');
 
-% Sampling
-N = 2; % (initial) number of samples (regression points)
-opts.sampling = 'adaptive'; % sampling strategy ('fixed' or 'adaptive')
-opts.addsample = 0.1; % percentage of additional samples if 0 < addsample < 1
-                      % number of additional samples if addsample > 1
-opts.maxsample = Inf; % maximal number of samples
+fun = MultiVariateFunction(fun,d);
+fun.evaluationAtMultiplePoints = true;
 
-% Regularization
-regul = ''; % type of regularization ('' or 'l0' or 'l1')
+h = PolynomialFunctionalBasis(LegendrePolynomials(),0:15);
+H = FunctionalBases(h,d);
 
-% Cross-validation
-cv = 'leaveout'; % type of cross-validation procedure ('leaveout' or 'kfold')
-k = 10; % number of folds (only for k-fold cross-validation procedure)
-opts.tol = 1e-3; % prescribed tolerance for cross-validation error
-opts.tolstagn = 1e-1; % prescribed stagnation tolerance for cross-validation error
-opts.toloverfit = 1.1; % prescribed tolerance to detect overfitting for cross-validation error such that err>=toloverfit*err_old
-opts.correction = false; % correction for cross-validation error
+%% Adaptive sparse approximation using least-squares
+s = AdaptiveSparseTensorAlgorithm();
+% s.addSamplesFactor = 0.1;
+s.tol = 1e-3;
+% s.tolStagnation = 5e-2;
+% s.tolOverfit = 1.1;
+% s.bulkParameter = 0.5;
+% s.adaptiveSampling = true;
+% s.adaptationRule = 'reducedmargin';
+% s.display = true;
+s.maxIndex = 15;
 
-% Least-squares minimization
+ls = LeastSquaresSolver();
+ls.regularization = false;
+% ls.regularization = true;
+% ls.regularizationOptions = struct('lambda',0);
+% ls.regularizationType = 'l1';
+% ls.modelSelection = true;
+% ls.modelSelectionOptions.stopIfErrorIncrease = false;
+% ls.errorEstimation = true;
+% ls.errorEstimationType = 'leaveout';
+ls.errorEstimationOptions.correction = false;
+% ls.basisAdaptation = false;
+% ls.basisAdaptationPath = [];
+% ls.solver = '\';
+% ls.solver = 'qr';
+% ls.options = struct();
+
+% rng('default')
+
 t = tic;
-[u,err,x,PC_seq,err_seq,x_seq] = decompmatrix_leastsquares(PC,N,trfun,1,regul,[],cv,k,opts,'displayiter');
-N_seq = cellfun(@(x) size(x,1),x_seq);
-PC = getPC(u);
+[f,err,N] = s.leastSquares(@(x) functionEval(fun,x),H,ls,rv);
 time = toc(t);
 
 %% Results
-disp(' ')
-disp(['M = ' num2str(getM(PC)) ' random variables'])
-disp(['p = ' num2str(getorder(PC)) ' (order of PC expansion)'])
-disp(['P = ' num2str(length(PC)) ' unknown PC expansion coefficients'])
-disp(['N = ' num2str(size(x,1)) ' samples'])
-disp(['I = ' num2str(size(getindices(PC),1)) ' multi-indices']);
-% disp('Set of multi-indices = '); % P-by-(M+1) matrix
-% disp(num2str(getindices(PC)));
-disp(['eta = ' num2str(get_sparsity_ratio(u)) ' (sparsity index or ratio)'])
-fprintf('error = %.4e (cross-validation error)\n',err)
-fprintf('elapsed time = %f s\n',time);
-disp(' ')
+fprintf('nb rand vars = %d\n',ndims(f.basis))% fprintf('nb rand vars = %d\n',numel(rv))
+fprintf('dimension = %d\n',numel(f.basis))
+fprintf('order = [ %s ]\n',num2str(max(f.basis.indices.array)))
+fprintf('multi-index set = \n')
+disp(f.basis.indices.array)
+fprintf('nb samples = %d\n',N)
+fprintf('CV error = %d\n',err)
+fprintf('elapsed time = %f s\n',time)
 
-%% Display evolution of multi-index set
-dim = 1:3;
-video_indices(PC_seq,'dim',dim,'filename','multi_index_set','pathname',pathname)
-
-%% Display evolution of cross-validation error indicator, dimension of stochastic space and number of samples w.r.t. number of iterations
-plot_adaptive_algorithm(err_seq,PC_seq,N_seq);
-mysaveas(pathname,'adaptive_algorithm.fig','fig');
-mymatlab2tikz(pathname,'adaptive_algorithm.tex');
-
-%% Display evolution of cross-validation error indicator w.r.t. number of samples
-plot_cv_error_indicator_vs_nb_samples(err_seq,N_seq,'nolegend');
-mysaveas(pathname,'cv_error_indicator_vs_nb_samples.fig','fig');
-mymatlab2tikz(pathname,'cv_error_indicator_vs_nb_samples.tex');
-
-%% Display evolution of cross-validation error indicator w.r.t. dimension of stochastic space
-plot_cv_error_indicator_vs_dim_stochastic_space(err_seq,PC_seq,'nolegend');
-mysaveas(pathname,'cv_error_indicator_vs_dim_stochastic_space.fig','fig');
-mymatlab2tikz(pathname,'cv_error_indicator_vs_dim_stochastic_space.tex');
+xtest = random(rv,300,1);xtest=[xtest{:}];
+ytest = fun.functionEval(xtest);
+fxtest = f.functionEval(xtest);
+error = norm(ytest-fxtest)/norm(ytest);
+fprintf('test error = %d\n',error)
 
 %% Display multi-index set
 dim = 1:3;
-plot_multi_index_set(PC,'dim',dim,'nolegend')
+plot(f.basis.indices,'dim',dim,'legend',false)
 mysaveas(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end))],'fig');
 mymatlab2tikz(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end)) '.tex']);
 
@@ -135,15 +105,15 @@ anal.S1T = anal.S1 + anal.S12 + anal.S13 + anal.S123;
 anal.S2T = anal.S2 + anal.S12 + anal.S23 + anal.S123;
 anal.S3T = anal.S3 + anal.S13 + anal.S23 + anal.S123;
 % Numerical approximate values
-num.mean = mean(u);
-num.var = variance(u);
-num.S1 = sobol_indices(u,1);
-num.S2 = sobol_indices(u,2);
-num.S3 = sobol_indices(u,3);
-num.S12 = sobol_indices_group(u,[1,2]) - num.S1 - num.S2;
-num.S13 = sobol_indices_group(u,[1,3]) - num.S1 - num.S3;
-num.S23 = sobol_indices_group(u,[2,3]) - num.S2 - num.S3;
-num.S123 = sobol_indices_group(u,[1,2,3]) - num.S1 - num.S2 - num.S3 - num.S12 - num.S13 - num.S23;
+num.mean = mean(f.data);
+num.var = var(f.data);
+num.S1 = sobol_indices(f,1);
+num.S2 = sobol_indices(f,2);
+num.S3 = sobol_indices(f,3);
+num.S12 = sobol_indices_group(f,[1,2]) - num.S1 - num.S2;
+num.S13 = sobol_indices_group(f,[1,3]) - num.S1 - num.S3;
+num.S23 = sobol_indices_group(f,[2,3]) - num.S2 - num.S3;
+num.S123 = sobol_indices_group(f,[1,2,3]) - num.S1 - num.S2 - num.S3 - num.S12 - num.S13 - num.S23;
 num.S1T = num.S1 + num.S12 + num.S13 + num.S123;
 num.S2T = num.S2 + num.S12 + num.S23 + num.S123;
 num.S3T = num.S3 + num.S13 + num.S23 + num.S123;

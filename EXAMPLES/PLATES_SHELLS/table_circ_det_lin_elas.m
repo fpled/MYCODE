@@ -15,8 +15,8 @@ loadings={'uniform','concentrated'};
 % elemtypes = {'DKT'};
 % elemtypes = {'DKQ'};
 % elemtypes = {'COQ4'};
-elemtypes = {'DKT','DKQ'};
-% elemtypes = {'DKT','DKQ','COQ4'};
+% elemtypes = {'DKT','DKQ'};
+elemtypes = {'DKT','DKQ','COQ4'};
 
 % set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 formats = {'fig','epsc2'};

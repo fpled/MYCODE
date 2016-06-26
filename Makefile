@@ -44,7 +44,9 @@ Pb_Name = multiscale_sto_nonlin_diff_reac_square_inclusions_iso
 #Pb_Name = sparse_approx_geometric_brownian
 
 #Pb_Name = plate_circ_det_lin_elas
+#Pb_Name = plate_circ_det_lin_elas_cv
 #Pb_Name = plate_rect_det_lin_elas
+#Pb_Name = plate_rect_det_lin_elas_cv
 #Pb_Name = table_circ_det_lin_elas
 #Pb_Name = table_rect_det_lin_elas
 
@@ -101,7 +103,9 @@ sparseapprox:
 # Plate Shell ---------------------------
 plateshell:
 	matlab -nodesktop -nosplash -noFigureWindows -r "plate_circ_det_lin_elas; exit" -logfile RESULTS/plate_circ_det_lin_elas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "plate_circ_det_lin_elas_cv; exit" -logfile RESULTS/plate_circ_det_lin_elas_cv.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "plate_rect_det_lin_elas; exit" -logfile RESULTS/plate_rect_det_lin_elas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "plate_rect_det_lin_elas_cv; exit" -logfile RESULTS/plate_rect_det_lin_elas_cv.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "table_circ_det_lin_elas; exit" -logfile RESULTS/table_circ_det_lin_elas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "table_rect_det_lin_elas; exit" -logfile RESULTS/table_rect_det_lin_elas.log
 
