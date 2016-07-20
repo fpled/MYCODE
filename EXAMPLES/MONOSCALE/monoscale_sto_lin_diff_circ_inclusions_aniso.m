@@ -5,19 +5,17 @@
 % clc
 clear all
 close all
-
-% Parallel computing
+% set(0,'DefaultFigureVisible','off');
+% rng('default');
 myparallel('start');
 
 %% Input data
 
-M = 4; % number of random variables
-filename = ['monoscale_sto_lin_diff_' num2str(M) '_circ_inclusions_aniso'];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'RESULTS',filesep,filename,filesep);
+filename = 'monoscale_sto_lin_diff_circ_inclusions_aniso';
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-% set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
@@ -38,78 +36,141 @@ B{8} = CIRCLE(0.5,0.2,r);
 B{9} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
 
 cl = 0.02;
-system.S = gmshdomainwithinclusion(D,B,cl,cl,[pathname 'gmsh_circular_inclusions']);
+problem.S = gmshdomainwithinclusion(D,B,cl,cl,[pathname 'gmsh_circular_inclusions']);
 
 %% Random variables
 
-rv = RVUNIFORM(-0.99,0);
-RV = RANDVARS(repmat({rv},1,M));
-[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
+d = 4; % parametric dimension
+v = UniformRandomVariable(-0.99,0);
+rv = RandomVector(v,d);
+
+V = RVUNIFORM(-0.99,0);
+RV = RANDVARS(repmat({V},1,d));
+[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',2);
 
 %% Materials
 
-% Linear diffusion coefficients K_det, K_sto
-K_det = 1;
-K_sto = cell(1,M);
-g = [1 0.9 0.75 0.6];
-for m=1:M
-    % K_sto(xi) = 1 + g * xi
-    K_sto{m} = ones(1,1,PC) + g(m) * X{m};
-end
-
 % Deterministic subdomains
+% Linear diffusion coefficient
+K_det = 1;
 mat_det = FOUR_ISOT('k',K_det); % uniform value
 mat_det = setnumber(mat_det,0);
 k = [0 2 4 6 8 9];
-system.S = setmaterial(system.S,mat_det,k+1);
+problem.S = setmaterial(problem.S,mat_det,k+1);
 
 % Stochastic subdomains
+p = 1;
+basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
+bases = FunctionalBases(basis,d);
+vb = basis.basis.randomVariable;
+rvb = getRandomVector(bases);
+H = FullTensorProductFunctionalBasis(bases);
+I = gaussIntegrationRule(vb,2);
+I = I.tensorize(d);
+
 mat_sto = MATERIALS();
-k=[1 3 5 7];
-for m=1:M
-    K_sto = ones(1,1,PC) + g(m) * X{m};
-    mat_sto{m} = FOUR_ISOT('k',K_sto); % uniform value
-    mat_sto{m} = setnumber(mat_sto{m},m);
-    system.S = setmaterial(system.S,mat_sto{m},k(m)+1);
+g = [1 0.9 0.75 0.6];
+k = [1 3 5 7];
+for i=1:d
+    % Linear diffusion coefficient
+    % K_sto(xi) = 1 + g * xi
+    fun = @(x) 1 + g(i) * x(:,i);
+    funtr = @(x) fun(transfer(rvb,rv,x));
+    fun = MultiVariateFunction(funtr,d);
+    fun.evaluationAtMultiplePoints = true;
+
+    K_sto = H.projection(fun,I);
+    K_sto = PCMATRIX(K_sto.tensor.data,[1 1],PC);
+    % K_sto = ones(1,1,PC) + g(i) * X{i};
+    
+    mat_sto{i} = FOUR_ISOT('k',K_sto); % uniform value
+    mat_sto{i} = setnumber(mat_sto{i},i);
+    problem.S = setmaterial(problem.S,mat_sto{i},k(i)+1);
 end
 
 %% Dirichlet boundary conditions
 
-system.S = final(system.S);
-system.S = addcl(system.S,[]);
+problem.S = final(problem.S);
+problem.S = addcl(problem.S,[]);
 
 %% Stiffness matrices and sollicitation vectors
 
-if israndom(system.S)
-    system.A = [];
+if israndom(problem.S)
+    problem.A = [];
 else
-    system.A = calc_rigi(system.S);
+    problem.A = calc_rigi(problem.S);
 end
 
 % Source term
 f = 100;
 
 if israndom(f)
-    system.b = [];
+    problem.b = [];
 else
-    system.b = bodyload(system.S,[],'QN',f);
+    problem.b = bodyload(problem.S,[],'QN',f);
 end
 
-%% Resolution
+%% Adaptive sparse approximation using least-squares
 
-initPC = POLYCHAOS(RV,0,'typebase',1);
+p = 50;
+basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
+bases = FunctionalBases(basis,d);
+rv = getRandomVector(bases);
 
-method = METHOD('type','leastsquares','display',true,'displayiter',true,...
-    'basis','adaptive','initPC',initPC,'maxcoeff',Inf,...
-    'algorithm','RMS','bulkparam',0.5,...
-    'sampling','adaptive','initsample',2,'addsample',0.1,'maxsample',Inf,...
-    'regul','','cv','leaveout','k',10,...
-    'tol',1e-2,'tolstagn',1e-1,'toloverfit',1.1,'correction',false,...
-    'decompKL',false,'tolKL',1e-12,'cvKL','leaveout','kKL',10);
+s = AdaptiveSparseTensorAlgorithm();
+% s.nbSamples = 1;
+% s.addSamplesFactor = 0.1;
+s.tol = 1e-2;
+s.tolStagnation = 1e-1;
+% s.tolOverfit = 1.1;
+% s.bulkParameter = 0.5;
+% s.adaptiveSampling = true;
+% s.adaptationRule = 'reducedmargin';
+s.maxIndex = p;
+% s.display = true;
+% s.displayIterations = true;
 
-fun = @(xi) solve_system(calc_system(randomeval_system(system,xi)));
-[u,result] = solve_random(method,fun);
-PC = getPC(u);
+ls = LeastSquaresSolver();
+ls.regularization = false;
+% ls.regularizationType = 'l1';
+ls.errorEstimation = true;
+% ls.errorEstimationType = 'leaveout';
+% ls.errorEstimationOptions.correction = true;
+
+fun = @(xi) solveSystem(calcOperator(funEval(problem,xi)));
+fun = MultiVariateFunction(fun,d,getnbddlfree(problem.S));
+fun.evaluationAtMultiplePoints = false;
+
+t = tic;
+[f,err,N] = s.leastSquares(fun,bases,ls,rv);
+time = toc(t);
+
+ind = f.basis.indices.array;
+switch gettypebase(PC)
+    case 1
+        ind(:,ndims(f.basis)+1) = sum(ind(:,1:ndims(f.basis)),2);
+    case 2
+        ind(:,ndims(f.basis)+1) = max(ind(:,1:ndims(f.basis)),[],2);
+end
+PC = setindices(PC,ind,'update');
+u = f.data';
+u = PCMATRIX(u,[size(u,1) 1],PC);
+
+%% Outputs
+
+fprintf('\n')
+fprintf('parametric dimension = %d\n',ndims(f.basis))% fprintf('parametric dimension = %d\n',numel(rv))
+fprintf('basis dimension = %d\n',numel(f.basis))
+% fprintf('multi-index set = \n')
+% disp(f.basis.indices.array)
+fprintf('order = [ %s ]\n',num2str(max(f.basis.indices.array)))
+fprintf('nb samples = %d\n',N)
+fprintf('CV error = %d\n',norm(err))
+fprintf('elapsed time = %f s\n',time)
+
+Ntest = 100;
+[errtest,xtest,fxtest,ytest] = f.computeError(fun,Ntest);
+fprintf('test error = %d\n',norm(errtest))
 
 %% Save variables
 
@@ -117,70 +178,52 @@ save(fullfile(pathname,'all.mat'));
 
 %% Display domains and meshes
 
-plot_domain(D,B);
+plotDomain(D,B);
 mysaveas(pathname,'domain',formats,renderer);
 mymatlab2tikz(pathname,'domain.tex');
 
-plot_partition(system.S,'nolegend');
+plotPartition(problem.S,'legend',false);
 mysaveas(pathname,'mesh_partition',formats,renderer);
 
-plot_model(system.S,'nolegend');
+plotModel(problem.S,'legend',false);
 mysaveas(pathname,'mesh',formats,renderer);
 
 %% Display multi-index set
 
-for m=1:2:M
-    plot_multi_index_set(PC,'dim',[m m+1],'nolegend')
-    mysaveas(pathname,['multi_index_set_dim_' num2str(m) '_' num2str(m+1)],'fig');
-    mymatlab2tikz(pathname,['multi_index_set_dim_' num2str(m) '_' num2str(m+1) '.tex']);
+for i=1:2:d
+    plotMultiIndexSet(f,'dim',[i i+1],'legend',false)
+    mysaveas(pathname,['multi_index_set_dim_' num2str(i) '_' num2str(i+1)],'fig');
+    mymatlab2tikz(pathname,['multi_index_set_dim_' num2str(i) '_' num2str(i+1) '.tex']);
 end
-
-%% Display evolution of multi-index set
-
-% if isfield(result,'PC_seq')
-%     for m=1:2:M
-%         video_indices(result.PC_seq,'dim',[m m+1],'filename','multi_index_set','pathname',pathname)
-%     end
-% end
-
-%% Display evolution of cross-validation error indicator, dimension of stochastic space and number of samples w.r.t. number of iterations
-
-% if isfield(result,{'cv_error_indicator_seq','PC_seq','N_seq'})
-%     plot_adaptive_algorithm(result.cv_error_indicator_seq,result.PC_seq,result.N_seq);
-%     mysaveas(pathname,'adaptive_algorithm.fig','fig');
-%     mymatlab2tikz(pathname,'adaptive_algorithm.tex');
-% end
 
 %% Display statistical outputs of solution
 
-% plot_stats(system.S,u);
+% plotStats(problem.S,u);
 
-plot_mean(system.S,u);
-mysaveas(pathname,'mean_sol',formats,renderer);
+plotMean(problem.S,u);
+mysaveas(pathname,'mean_solution',formats,renderer);
 
-plot_var(system.S,u);
-mysaveas(pathname,'var_sol',formats,renderer);
+plotVar(problem.S,u);
+mysaveas(pathname,'var_solution',formats,renderer);
 
-plot_std(system.S,u);
-mysaveas(pathname,'std_sol',formats,renderer);
+plotStd(problem.S,u);
+mysaveas(pathname,'std_solution',formats,renderer);
 
-M = getM(PC);
-for m=1:M
-    plot_sobol_indices(system.S,u,m);
-    mysaveas(pathname,['sobol_indices_sol_var_' num2str(m)],formats,renderer);
+for i=1:d
+    plotSobolIndices(problem.S,u,i);
+    mysaveas(pathname,['sobol_indices_solution_var_' num2str(i)],formats,renderer);
     
-    plot_sensitivity_indices_max_var(system.S,u,m);
-    mysaveas(pathname,['sensitivity_indices_sol_var_' num2str(m)],formats,renderer);
+    plotSensitivityIndicesMaxVar(problem.S,u,i);
+    mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i)],formats,renderer);
 end
 
 %% Display random evaluations of solution
 
 % nbsamples = 3;
-% for s=1:nbsamples
-%     xi = random(RANDVARS(PC));
-%     u_xi = randomeval(u,xi);
-%     S_xi = randomeval(system.S,xi);
-%     plot_solution(S_xi,u_xi);
+% for i=1:nbsamples
+%     Stest = randomeval(problem.S,xtest(i,:)');
+%     plotSolution(Stest,ytest(i,:)');
+%     plotSolution(Stest,fxtest(i,:)');
 % end
 
 myparallel('stop');

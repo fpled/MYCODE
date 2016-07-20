@@ -4,43 +4,40 @@
 % clc
 clear all
 close all
-
-% Parallel computing
+% set(0,'DefaultFigureVisible','off');
+% rng('default');
 myparallel('start');
 
 %% Input data
 
 n = 4; % number of patches n = 1, 2, 4
 filename = ['multiscale_sto_lin_diff_' num2str(n) '_patches'];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE','RESULTS',filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-% set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-solve_reference = true;
-solve_multiscale = true;
-
-calc_MC_error_estimate = false;
-calc_MC_error_estimate_ref = false;
+directSolver = true;
+iterativeSolver = true;
 
 %% Domains and meshes
 
 % Global
-glob = GLOBAL();
-glob_out = GLOBALOUT();
+glob = Global();
+glob_out = GlobalOutside();
 
 D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
+% D = DOMAIN(2,[0.0,0.0],[5.0,5.0]);
 
 nbelem = [20,20];
 glob.S = build_model(D,'nbelem',nbelem);
 % cl = 0.05;
-% system.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
+% glob.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
 
 % Patches
-patches = PATCHES(n);
+patches = Patches(n);
 
 D_patch = cell(1,n);
 switch n
@@ -57,14 +54,28 @@ switch n
     otherwise
         error('Wrong number of patches')
 end
+% switch n
+%     case 1
+%         D_patch{1} = DOMAIN(2,[2.0,2.0],[3.0,3.0]);
+%     case 2
+%         D_patch{1} = DOMAIN(2,[1.0,2.0],[2.0,3.0]);
+%         D_patch{2} = DOMAIN(2,[3.0,2.0],[4.0,3.0]);
+%     case 4
+%         D_patch{1} = DOMAIN(2,[1.0,1.0],[2.0,2.0]);
+%         D_patch{2} = DOMAIN(2,[1.0,3.0],[2.0,4.0]);
+%         D_patch{3} = DOMAIN(2,[3.0,3.0],[4.0,4.0]);
+%         D_patch{4} = DOMAIN(2,[3.0,1.0],[4.0,2.0]);
+%     otherwise
+%         error('Wrong number of patches')
+% end
 
 nbelem_patch = [40,40];
 for k=1:n
-    patches.PATCH{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
+    patches.patches{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
 end
 % cl_patch = 0.005;
 % for k=1:n
-%     patches.PATCH{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',[pathname 'gmsh_patch_' num2str(k)]);
+%     patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',[pathname 'gmsh_patch_' num2str(k)]);
 % end
 
 % Partition of global mesh
@@ -72,9 +83,13 @@ glob = partition(glob,patches);
 
 %% Random variables
 
-rv = RVUNIFORM(0,1);
-RV = RANDVARS(repmat({rv},1,n));
-[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
+d = n; % parametric dimension
+v = UniformRandomVariable(0,1);
+rv = RandomVector(v,d);
+
+V = RVUNIFORM(0,1);
+RV = RANDVARS(repmat({V},1,d));
+[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',2);
 
 %% Materials
 
@@ -82,21 +97,40 @@ RV = RANDVARS(repmat({rv},1,n));
 K_out = 1;
 K_patch = cell(1,n);
 K_in = cell(1,n);
+
+p = 1;
+basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
+bases = FunctionalBases(basis,d);
+vb = basis.basis.randomVariable;
+rvb = getRandomVector(bases);
+H = FullTensorProductFunctionalBasis(bases);
+I = gaussIntegrationRule(vb,2);
+I = I.tensorize(d);
+
 for k=1:n
-    patch = patches.PATCH{k};
+    patch = patches.patches{k};
     % K_patch(x,xi) = 1 + beta_patch * f(x) * xi
     % K_in(x)       = 1 + beta_in * f(x)
     % with f(x) = alpha*exp( -Amp*||x-c||_2^2/L^2 ) if ||x-c||_Inf < L
     %           = 0                                 if ||x-c||_Inf >= L
-    % alpha = 10;
-    % Amp = 2;
-    % L = norm(getsize(D_patch{k}),Inf)/4;
-    % c = getcenter(D_patch{k});
-    % f = @(x) (distance(x,c,Inf)<L) * alpha * exp(-Amp*distance(x,c,2).^2/L^2);
-    % beta_patch = 1;
-    % beta_in = 0;
-    % K_patch{k} = ones(patch.S.nbnode,1,PC) + beta_patch * double(squeeze(f(patch.S.node))) * X{k};
-    % K_in{k} = 1 + beta_in * squeeze(f(glob.S.node));
+%     alpha = 10;
+%     Amp = 2;
+%     L = norm(getsize(D_patch{k}),Inf)/4;
+%     c = getcenter(D_patch{k});
+%     f = @(x) (distance(x,c,Inf)<L) * alpha * exp(-Amp*distance(x,c,2).^2/L^2);
+%     
+%     beta_patch = 1;
+%     fun = @(xi) ones(size(xi,1),patch.S.nbnode) + beta_patch * xi(:,k) * double(squeeze(f(patch.S.node)))';
+%     funtr = @(xi) fun(transfer(rvb,rv,xi));
+%     fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
+%     fun.evaluationAtMultiplePoints = true;
+%     
+%     K_patch{k} = H.projection(fun,I);
+%     K_patch{k} = PCMATRIX(permute(K_patch{k}.tensor.data,[d+1 1:d]),[patch.S.nbnode 1],PC);
+%     % K_patch{k} = ones(patch.S.nbnode,1,PC) + beta_patch * double(squeeze(f(patch.S.node))) * X{k};
+
+%     beta_in = 0;
+%     K_in{k} = 1 + beta_in * squeeze(f(glob.S.node));
     
     % K_patch(x,xi) = 1 + f(x) * xi
     % K_in(x)       = 1
@@ -105,11 +139,19 @@ for k=1:n
     L = norm(getsize(D_patch{k}),Inf)/4;
     c = getcenter(D_patch{k});
     f = @(x) distance(x,c,Inf)<L;
-    K_patch{k} = ones(patch.S.nbnode,1,PC) + double(squeeze(f(patch.S.node))) * X{k};
+    fun = @(xi) ones(size(xi,1),patch.S.nbnode) + xi(:,k) * double(squeeze(f(patch.S.node)))';
+    funtr = @(xi) fun(transfer(rvb,rv,xi));
+    fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
+    fun.evaluationAtMultiplePoints = true;
+    
+    K_patch{k} = H.projection(fun,I);
+    K_patch{k} = PCMATRIX(permute(K_patch{k}.tensor.data,[d+1 1:d]),[patch.S.nbnode 1],PC);
+    % K_patch{k} = ones(patch.S.nbnode,1,PC) + double(squeeze(f(patch.S.node))) * X{k};
+    
     K_in{k} = 1;
 end
 
-% Outside
+% Complementary subdomain
 mat_out = FOUR_ISOT('k',K_out); % uniform value
 mat_out = setnumber(mat_out,0);
 glob.S = setmaterial(glob.S,mat_out,getnumgroupelemwithparam(glob.S,'partition',0));
@@ -120,7 +162,7 @@ for k=1:n
     % mat_patch{k} = FOUR_ISOT('k',K_patch{k}); % uniform value
     mat_patch{k} = FOUR_ISOT('k',FENODEFIELD(K_patch{k})); % nodal values
     mat_patch{k} = setnumber(mat_patch{k},k);
-    patches.PATCH{k}.S = setmaterial(patches.PATCH{k}.S,mat_patch{k});
+    patches.patches{k}.S = setmaterial(patches.patches{k}.S,mat_patch{k});
 end
 
 % Fictitious patches
@@ -137,27 +179,29 @@ end
 % Global
 glob.S = final(glob.S);
 glob.S = addcl(glob.S,[]);
-glob.S_out = get_final_model_part(glob.S,0);
-glob_out.S_out = glob.S_out;
+glob.S_out = getfinalmodelpart(glob.S,0);
 % S_in = cell(1,n);
 % for k=1:n
-%     S_in{k} = get_final_model_part(glob.S,k);
+%     S_in{k} = getfinalmodelpart(glob.S,k);
 % end
+
+% Complementary subdomain
+glob_out.S_out = glob.S_out;
 
 % Patches
 for k=1:n
-    patches.PATCH{k}.S = final(patches.PATCH{k}.S);
+    patches.patches{k}.S = final(patches.patches{k}.S);
 end
 
 % Interfaces
-interfaces = INTERFACES(patches);
+interfaces = Interfaces(patches);
 
 %% Stiffness matrices and sollicitation vectors
 
 % Source term
 f = 100;
 
-% Outside
+% Complementary subdomain
 glob_out.A_out = calc_rigi(glob_out.S_out);
 glob_out.b_out = bodyload(glob_out.S_out,[],'QN',f);
 
@@ -170,98 +214,167 @@ glob.b_out = bodyload(keepgroupelem(glob.S,getnumgroupelemwithparam(glob.S,'part
 
 % Patches
 for k=1:n
-    if ~israndom(patches.PATCH{k}.S)
-        patches.PATCH{k}.A = calc_rigi(patches.PATCH{k}.S);
+    if ~israndom(patches.patches{k}.S)
+        patches.patches{k}.A = calc_rigi(patches.patches{k}.S);
     end
     if ~israndom(f)
-        patches.PATCH{k}.b = bodyload(patches.PATCH{k}.S,[],'QN',f);
+        patches.patches{k}.b = bodyload(patches.patches{k}.S,[],'QN',f);
     end
 end
 
 %% Mass matrices
 
 for k=1:n
-    interfaces.INTERFACE{k}.M = calc_massgeom(interfaces.INTERFACE{k}.S);
+    interfaces.interfaces{k}.M = calc_massgeom(interfaces.interfaces{k}.S);
 end
 
 %% Projection operators
 
-glob.P_out = calc_P_free(glob.S,glob.S_out);
+glob.P_out = calcProjection(glob);
 for k=1:n
-    [interfaces.INTERFACE{k}.P_glob] = calc_projection(interfaces.INTERFACE{k},glob);
-    [interfaces.INTERFACE{k}.P_glob_out,numnode] = calc_projection(interfaces.INTERFACE{k},glob_out);
-    interfaces.INTERFACE{k}.P_patch = calc_P_free(patches.PATCH{k}.S,interfaces.INTERFACE{k}.S);
-    % plot_projection_operator(glob,patches.PATCH{k},numnode);
+    [interfaces.interfaces{k}.P_glob] = calcProjection(interfaces.interfaces{k},glob);
+    [interfaces.interfaces{k}.P_glob_out,numnode] = calcProjection(interfaces.interfaces{k},glob_out);
+    interfaces.interfaces{k}.P_patch = calcProjection(patches.patches{k},interfaces.interfaces{k});
+    % plotProjectionOperator(glob,patches.patches{k},numnode);
 end
 
 %% Parameters for global and local problems
 
 % Global problem
-glob.param = setparam(glob.param,'increment',true);
-glob.param = setparam(glob.param,'inittype','zero');
+glob.increment = true;
 
 % Local problems
 for k=1:n
-    patches.PATCH{k}.param = setparam(patches.PATCH{k}.param,'change_of_variable',false);
-    patches.PATCH{k}.param = setparam(patches.PATCH{k}.param,'increment',true);
-    patches.PATCH{k}.param = setparam(patches.PATCH{k}.param,'inittype','zero');
+    patches.patches{k}.changeOfVariable = false;
+    patches.patches{k}.increment = true;
 end
 
-%% Monoscale resolution
+%% Direct solver
 
-initPC = POLYCHAOS(RV,0,'typebase',1);
+p = 50;
+basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
+bases = FunctionalBases(basis,d);
+rv = getRandomVector(bases);
 
-method_ref = METHOD('type','leastsquares','display',true,'displayiter',true,...
-    'basis','adaptive','initPC',initPC,'maxcoeff',Inf,...
-    'algorithm','RMS','bulkparam',0.5,...
-    'sampling','adaptive','initsample',2,'addsample',0.1,'maxsample',Inf,...
-    'regul','','cv','leaveout','k',10,...
-    'tol',1e-8,'tolstagn',1e-1,'toloverfit',1.1,'correction',false,...
-    'decompKL',false,'tolKL',1e-12,'cvKL','leaveout','kKL',10);
+s = AdaptiveSparseTensorAlgorithm();
+% s.nbSamples = 1;
+% s.addSamplesFactor = 0.1;
+s.tol = 1e-8;
+s.tolStagnation = 1e-1;
+% s.tolOverfit = 1.1;
+% s.bulkParameter = 0.5;
+% s.adaptiveSampling = true;
+% s.adaptationRule = 'reducedmargin';
+s.maxIndex = p;
+% s.display = true;
+% s.displayIterations = true;
 
-R = REFERENCESOLVER('display',true,'change_of_variable',false,'inittype','zero');
-if solve_reference
-    [U_ref,w_ref,lambda_ref,result_ref] = solve_random(R,glob_out,patches,interfaces,method_ref);
-    save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
+ls = LeastSquaresSolver();
+ls.regularization = false;
+% ls.regularizationType = 'l1';
+ls.errorEstimation = true;
+% ls.errorEstimationType = 'leaveout';
+% ls.errorEstimationOptions.correction = true;
+
+DS = DirectSolver();
+DS.changeOfVariable = false;
+DS.display = true;
+if directSolver
+    [fU_ref,fw_ref,flambda_ref,output_ref] = DS.solveRandom(glob_out,patches,interfaces,s,bases,ls,rv);
+    save(fullfile(pathname,'reference_solution.mat'),'fU_ref','fw_ref','flambda_ref','output_ref');
 else
-    load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','result_ref');
+    load(fullfile(pathname,'reference_solution.mat'),'fU_ref','fw_ref','flambda_ref','output_ref');
 end
 
-%% Multiscale resolution
+ind_ref = output_ref.f.basis.indices.array;
+switch gettypebase(PC)
+    case 1
+        ind_ref(:,ndims(output_ref.f.basis)+1) = sum(ind_ref(:,1:ndims(output_ref.f.basis)),2);
+    case 2
+        ind_ref(:,ndims(output_ref.f.basis)+1) = max(ind_ref(:,1:ndims(output_ref.f.basis)),[],2);
+end
+PC_ref = setindices(PC,ind_ref,'update');
+u_ref = output_ref.f.data';
+u_ref = PCMATRIX(u_ref,[size(u_ref,1) 1],PC_ref);
+U_ref = fU_ref.data';
+U_ref = PCMATRIX(U_ref,[size(U_ref,1) 1],PC_ref);
+w_ref = cellfun(@(x) x.data',fw_ref,'UniformOutput',false);
+w_ref = cellfun(@(x) PCMATRIX(x,[size(x,1) 1],PC_ref),w_ref,'UniformOutput',false);
+lambda_ref = cellfun(@(x) x.data',flambda_ref,'UniformOutput',false);
+lambda_ref = cellfun(@(x) PCMATRIX(x,[size(x,1) 1],PC_ref),lambda_ref,'UniformOutput',false);
 
-method = METHOD('type','leastsquares','display',true,'displayiter',false,...
-    'basis','adaptive','initPC',initPC,'maxcoeff',Inf,...
-    'algorithm','RMS','bulkparam',0.5,...
-    'sampling','adaptive','initsample',2,'addsample',0.1,'maxsample',Inf,...
-    'regul','','cv','leaveout','k',10,...
-    'tol',1e-4,'tolstagn',1e-1,'toloverfit',1.1,'correction',false,...
-    'decompKL',false,'tolKL',1e-12,'cvKL','leaveout','kKL',10);
+%% Outputs
 
-I = ITERATIVESOLVER('display',true,'displayiter',true,...
-    'maxiter',20,'tol',eps,'rho','Aitken',...
-    'errorindicator','reference','reference',{{U_ref,w_ref,lambda_ref}});
-if solve_multiscale
-    [U,w,lambda,result] = solve_random(I,glob,patches,interfaces,method);
-    save(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
+fprintf('\n')
+fprintf('parametric dimension = %d\n',ndims(output_ref.f.basis))% fprintf('parametric dimension = %d\n',numel(rv))
+fprintf('basis dimension = %d\n',numel(output_ref.f.basis))
+fprintf('order = [ %s ]\n',num2str(max(output_ref.f.basis.indices.array)))
+% fprintf('multi-index set = \n')
+% disp(output_ref.f.basis.indices.array)
+fprintf('nb samples = %d\n',output_ref.N)
+fprintf('CV error = %d\n',norm(output_ref.CVError))
+fprintf('elapsed time = %f s\n',output_ref.time)
+
+%% Global-local Iterative solver
+
+s.tol = 1e-4;
+s.tolStagnation = 1e-1;
+s.display = true;
+s.displayIterations = false;
+
+IS = IterativeSolver();
+IS.maxIterations = 20;
+IS.tolerance = eps;
+IS.relaxation = 'Aitken';
+IS.updateRelaxationParameter = true;
+IS.errorCriterion = 'reference';
+IS.referenceSolution = {fU_ref,fw_ref,flambda_ref};
+IS.display = true;
+IS.displayIterations = true;
+if iterativeSolver
+    [fU,fw,flambda,output] = IS.solveRandom(glob,patches,interfaces,s,bases,ls,rv);
+    save(fullfile(pathname,'solution.mat'),'fU','fw','flambda','output');
 else
-    load(fullfile(pathname,'solution.mat'),'U','w','lambda','result');
+    load(fullfile(pathname,'solution.mat'),'fU','fw','flambda','output');
 end
-fprintf('\n');
 
-%% Monte Carlo error estimation
-
-nbsamples = 100;
-if calc_MC_error_estimate_ref
-    [mean_error_U_ref,mean_error_w_ref,mean_error_lambda_ref,...
-        var_error_U_ref,var_error_w_ref,var_error_lambda_ref,...
-        std_error_U_ref,std_error_w_ref,std_error_lambda_ref]...
-        = calc_Monte_Carlo_error_estimates(R,glob_out,patches,interfaces,U_ref,w_ref,lambda_ref,nbsamples);
+ind_glob = fU.basis.indices.array;
+ind_patch = cellfun(@(x) x.basis.indices.array,output.f,'UniformOutput',false);
+switch gettypebase(PC)
+    case 1
+        ind_glob(:,ndims(fU.basis)+1) = sum(ind_glob(:,1:ndims(fU.basis)),2);
+        ind_patch_end = cellfun(@(ind,f) sum(ind(:,1:ndims(f.basis)),2),ind_patch,output.f,'UniformOutput',false);
+    case 2
+        ind_glob(:,ndims(fU.basis)+1) = max(ind_glob(:,1:ndims(fU.basis)),[],2);
+        ind_patch_end = cellfun(@(ind,f) max(ind(:,1:ndims(f.basis)),[],2),ind_patch,output.f,'UniformOutput',false);
 end
-if calc_MC_error_estimate
-    [mean_error_U,mean_error_w,mean_error_lambda,...
-        var_error_U,var_error_w,var_error_lambda,...
-        std_error_U,std_error_w,std_error_lambda]...
-        = calc_Monte_Carlo_error_estimates(I,glob,patches,interfaces,U,w,lambda,nbsamples);
+ind_patch = cellfun(@(ind,ind_end) [ind,ind_end],ind_patch,ind_patch_end,'UniformOutput',false);
+PC_glob = setindices(PC,ind_glob,'update');
+PC_patch = cellfun(@(x) setindices(PC,x,'update'),ind_patch,'UniformOutput',false);
+U = fU.data';
+U = PCMATRIX(U,[size(U,1) 1],PC_glob);
+w = cellfun(@(x) x.data',fw,'UniformOutput',false);
+w = cellfun(@(x,PC) PCMATRIX(x,[size(x,1) 1],PC),w,PC_patch,'UniformOutput',false);
+lambda = cellfun(@(x) x.data',flambda,'UniformOutput',false);
+lambda = cellfun(@(x,PC) PCMATRIX(x,[size(x,1) 1],PC),lambda,PC_patch,'UniformOutput',false);
+
+%% Outputs
+
+fprintf('\n')
+fprintf('parametric dimension = %d\n',ndims(fU.basis))% fprintf('parametric dimension = %d\n',numel(rv))
+fprintf('Global solution : basis dimension = %d\n',numel(fU.basis))
+fprintf('                  order = [ %s ]\n',num2str(max(fU.basis.indices.array)))
+% fprintf('                  multi-index set = \n')
+% disp([repmat('                  ',numel(fU.basis),1) num2str(fU.basis.indices.array)])
+
+for k=1:n
+    fprintf('Local solution #%2.d : basis dimension = %d\n',k,numel(fw{k}.basis))
+    % fprintf('                     multi-index set = \n')
+    % disp([repmat('                     ',numel(fw{k}.basis),1) num2str(fw{k}.basis.indices.array)])
+    fprintf('                     order = [ %s ]\n',num2str(max(fw{k}.basis.indices.array)))
+    fprintf('                     nb samples = %d\n',output.N{k})
+    fprintf('                     CV error = %d\n',norm(output.CVError{k}))
+    fprintf('                     elapsed time = %f s\n',output.time(k))
 end
 
 %% Save variables
@@ -270,199 +383,135 @@ save(fullfile(pathname,'all.mat'));
 
 %% Display domains and meshes
 
-plot_domain(D,D_patch);
+plotDomain(D,D_patch);
 mysaveas(pathname,'domain_global_patches',formats,renderer);
 mymatlab2tikz(pathname,'domain_global_patches.tex');
 
-% plot_partition(glob,'nolegend');
+% plotPartition(glob,'legend',false);
 % mysaveas(pathname,'mesh_partition',formats,renderer);
 
-plot_model(glob,patches,'nolegend');
+plotModel(glob,patches,'legend',false);
 mysaveas(pathname,'mesh_global_patches',formats,renderer);
 
-% plot_model(glob);
-% plot_model(patches);
-% plot_model(interfaces);
+% plotModel(glob);
+% plotModel(patches);
+% plotModel(interfaces);
 
-%% Display evolution of error indicator, stagnation indicator, CPU time, sparsity ratio, number of samples, dimension of stochastic space, cross-validation error indicator w.r.t. number of iterations
+%% Display evolution of error indicator, stagnation indicator, CPU time, relaxation parameter w.r.t. number of iterations
 
-plot_error_indicator(result);
-mysaveas(pathname,'error_indicator','fig');
-mymatlab2tikz(pathname,'error_indicator.tex');
+plotError(output);
+mysaveas(pathname,'error','fig');
+mymatlab2tikz(pathname,'error.tex');
 
-plot_stagnation_indicator(result);
-mysaveas(pathname,'stagnation_indicator','fig');
-mymatlab2tikz(pathname,'stagnation_indicator.tex');
+plotStagnation(output);
+mysaveas(pathname,'stagnation','fig');
+mymatlab2tikz(pathname,'stagnation.tex');
 
-plot_error_indicator_U(result);
-mysaveas(pathname,'error_indicator_U','fig');
-mymatlab2tikz(pathname,'error_indicator_U.tex');
+plotErrorGlobalSolution(output);
+mysaveas(pathname,'error_global_solution','fig');
+mymatlab2tikz(pathname,'error_global_solution.tex');
 
-plot_stagnation_indicator_U(result);
-mysaveas(pathname,'stagnation_indicator_U','fig');
-mymatlab2tikz(pathname,'stagnation_indicator_U.tex');
+plotStagnationGlobalSolution(output);
+mysaveas(pathname,'stagnation_global_solution','fig');
+mymatlab2tikz(pathname,'stagnation_global_solution.tex');
 
-plot_cpu_time(result,'nolegend');
+plotCPUTime(output,'legend',false);
 mysaveas(pathname,'cpu_time','fig');
 mymatlab2tikz(pathname,'cpu_time.tex');
 
-plot_relaxation_parameter(result,'nolegend');
+plotRelaxationParameter(output,'legend',false);
 mysaveas(pathname,'relaxation_parameter','fig');
 mymatlab2tikz(pathname,'relaxation_parameter.tex');
 
-plot_sparsity_ratio(result);
-mysaveas(pathname,'sparsity_ratio','fig');
-mymatlab2tikz(pathname,'sparsity_ratio.tex');
-
-plot_nb_samples(result);
-mysaveas(pathname,'nb_samples','fig');
-mymatlab2tikz(pathname,'nb_samples.tex');
-
-plot_dim_stochastic_space(result);
-mysaveas(pathname,'dim_stochastic_space','fig');
-mymatlab2tikz(pathname,'dim_stochastic_space.tex');
-
-plot_cv_error_indicator(result);
-mysaveas(pathname,'cv_error_indicator','fig');
-mymatlab2tikz(pathname,'cv_error_indicator.tex');
-
 %% Display multi-index set
 
-PC_U = getPC(U);
-plot_multi_index_set(PC_U,'nolegend')
-mysaveas(pathname,'multi_index_set_U','fig');
-mymatlab2tikz(pathname,'multi_index_set_U.tex');
+plotMultiIndexSet(fU,'legend',false)
+mysaveas(pathname,'multi_index_set_global_solution','fig');
+mymatlab2tikz(pathname,'multi_index_set_global_solution.tex');
 
 for k=1:n
-    PC_w = getPC(w{k});
-    plot_multi_index_set(PC_w,'nolegend')
-    mysaveas(pathname,['multi_index_set_w_' num2str(k)],'fig');
-    mymatlab2tikz(pathname,['multi_index_set_w_' num2str(k) '.tex']);
+    plotMultiIndexSet(fw{k},'legend',false)
+    mysaveas(pathname,['multi_index_set_local_solution_' num2str(k)],'fig');
+    mymatlab2tikz(pathname,['multi_index_set_local_solution_' num2str(k) '.tex']);
     
-    PC_lambda = getPC(lambda{k});
-    plot_multi_index_set(PC_lambda,'nolegend')
-    mysaveas(pathname,['multi_index_set_lambda_' num2str(k)],'fig');
-    mymatlab2tikz(pathname,['multi_index_set_lambda_' num2str(k) '.tex']);
+    plotMultiIndexSet(flambda{k},'legend',false)
+    mysaveas(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k)],'fig');
+    mymatlab2tikz(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '.tex']);
 end
-
-%% Display evolution of multi-index set
-
-% if isfield(result_ref,{'PC_seq_U','PC_seq_w','PC_seq_lambda'})
-%     video_indices(result_ref.PC_seq_U,'filename','multi_index_set_U_ref','pathname',pathname)
-%     for k=1:n
-%         video_indices(result_ref.PC_seq_w{k},'filename',['multi_index_set_w_ref_' num2str(k)],'pathname',pathname)
-%         video_indices(result_ref.PC_seq_lambda{k},'filename',['multi_index_set_lambda_ref_' num2str(k)],'pathname',pathname)
-%     end
-% end
-
-% if isfield(result,{'PC_seq_w','PC_seq_lambda'})
-%     for k=1:n
-%         video_indices(result.PC_seq_w{k}{end},'filename',['multi_index_set_w_' num2str(k)],'pathname',pathname)
-%         video_indices(result.PC_seq_lambda{k}{end},'filename',['multi_index_set_lambda_' num2str(k)],'pathname',pathname)
-%     end
-% end
-
-%% Display evolution of cross-validation error indicator, dimension of stochastic space and number of samples w.r.t. number of iterations
-
-% if isfield(result_ref,{'cv_error_indicator_seq_U','cv_error_indicator_seq_w','cv_error_indicator_seq_lambda','PC_seq_U','PC_seq_w','PC_seq_lambda','N_seq'})
-%     plot_adaptive_algorithm(result_ref.cv_error_indicator_seq_U,result_ref.PC_seq_U,result_ref.N_seq);
-%     mysaveas(pathname,'adaptive_algorithm_U_ref.fig','fig');
-%     mymatlab2tikz(pathname,'adaptive_algorithm_U_ref.tex');
-%     for k=1:n
-%         plot_adaptive_algorithm(result_ref.cv_error_indicator_seq_w{k},result_ref.PC_seq_w{k},result_ref.N_seq);
-%         mysaveas(pathname,['adaptive_algorithm_w_ref_' num2str(k) '.fig'],'fig');
-%         mymatlab2tikz(pathname,['adaptive_algorithm_w_ref_' num2str(k) '.tex']);
-%         plot_adaptive_algorithm(result_ref.cv_error_indicator_seq_lambda{k},result_ref.PC_seq_lambda{k},result_ref.N_seq);
-%         mysaveas(pathname,['adaptive_algorithm_lambda_ref_' num2str(k) '.fig'],'fig');
-%         mymatlab2tikz(pathname,['adaptive_algorithm_lambda_ref_' num2str(k) '.tex']);
-%     end
-% end
-
-% if isfield(result,{'cv_error_indicator_seq_w','cv_error_indicator_seq_lambda','PC_seq_w','PC_seq_lambda','N_seq'})
-%     for k=1:n
-%         plot_adaptive_algorithm(result.cv_error_indicator_seq_w{k}{end},result.PC_seq_w{k}{end},result.N_seq{k}{end});
-%         mysaveas(pathname,['adaptive_algorithm_w_' num2str(k) '.fig'],'fig');
-%         mymatlab2tikz(pathname,['adaptive_algorithm_w_' num2str(k) '.tex']);
-%         plot_adaptive_algorithm(result.cv_error_indicator_seq_lambda{k}{end},result.PC_seq_lambda{k}{end},result.N_seq{k}{end});
-%         mysaveas(pathname,['adaptive_algorithm_lambda_' num2str(k) '.fig'],'fig');
-%         mymatlab2tikz(pathname,['adaptive_algorithm_lambda_' num2str(k) '.tex']);
-%     end
-% end
 
 %% Display statistical outputs of multiscale solution
 
-% plot_stats_sols(glob,patches,interfaces,U,w,lambda);
+% plotStatsAllSolutions(glob,patches,interfaces,U,w,lambda);
 
-plot_mean_U(glob,U);
-mysaveas(pathname,'mean_U',formats,renderer);
+plotMeanGlobalSolution(glob,U);
+mysaveas(pathname,'mean_global_solution',formats,renderer);
 
-plot_mean_sol(glob,patches,interfaces,U,w);
-mysaveas(pathname,'mean_sol',formats,renderer);
+plotMeanMultiscaleSolution(glob,patches,interfaces,U,w);
+mysaveas(pathname,'mean_multiscale_solution',formats,renderer);
 
-plot_mean_U_w(glob,patches,interfaces,U,w);
-mysaveas(pathname,'mean_U_w',formats,renderer);
+plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w);
+mysaveas(pathname,'mean_global_local_solution',formats,renderer);
 
-plot_mean_U_w(glob,patches,interfaces,U,w,'view3');
-mysaveas(pathname,'mean_U_w_surf',formats,renderer);
+plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
+mysaveas(pathname,'mean_global_local_solution_surf',formats,renderer);
 
-plot_var_U(glob,U);
-mysaveas(pathname,'var_U',formats,renderer);
+plotVarGlobalSolution(glob,U);
+mysaveas(pathname,'var_global_solution',formats,renderer);
 
-plot_var_sol(glob,patches,interfaces,U,w);
-mysaveas(pathname,'var_sol',formats,renderer);
+plotVarMultiscaleSolution(glob,patches,interfaces,U,w);
+mysaveas(pathname,'var_multiscale_solution',formats,renderer);
 
-plot_var_U_w(glob,patches,interfaces,U,w);
-mysaveas(pathname,'var_U_w',formats,renderer);
+plotVarGlobalLocalSolution(glob,patches,interfaces,U,w);
+mysaveas(pathname,'var_global_local_solution',formats,renderer);
 
-plot_var_U_w(glob,patches,interfaces,U,w,'view3');
-mysaveas(pathname,'var_U_w_surf',formats,renderer);
+plotVarGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
+mysaveas(pathname,'var_global_local_solution_surf',formats,renderer);
 
-plot_std_U(glob,U);
-mysaveas(pathname,'std_U',formats,renderer);
+plotStdGlobalSolution(glob,U);
+mysaveas(pathname,'std_global_solution',formats,renderer);
 
-plot_std_sol(glob,patches,interfaces,U,w);
-mysaveas(pathname,'std_sol',formats,renderer);
+plotStdMultiscaleSolution(glob,patches,interfaces,U,w);
+mysaveas(pathname,'std_multiscale_solution',formats,renderer);
 
-plot_std_U_w(glob,patches,interfaces,U,w);
-mysaveas(pathname,'std_U_w',formats,renderer);
+plotStdGlobalLocalSolution(glob,patches,interfaces,U,w);
+mysaveas(pathname,'std_global_local_solution',formats,renderer);
 
-plot_std_U_w(glob,patches,interfaces,U,w,'view3');
-mysaveas(pathname,'std_U_w_surf',formats,renderer);
+plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
+mysaveas(pathname,'std_global_local_solution_surf',formats,renderer);
 
-M = getM(PC);
-for m=1:M
-    plot_sobol_indices_sol(glob,patches,interfaces,U,w,m);
-    mysaveas(pathname,['sobol_indices_sol_var_' num2str(m)],formats,renderer);
+for i=1:d
+    plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i);
+    mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i)],formats,renderer);
     
-    plot_sensitivity_indices_max_var_sol(glob,patches,interfaces,U,w,m);
-    mysaveas(pathname,['sensitivity_indices_sol_var_' num2str(m)],formats,renderer);
+    plotSensitivityIndicesMaxVarMultiscaleSolution(glob,patches,interfaces,U,w,i);
+    mysaveas(pathname,['sensitivity_indices_multiscale_solution_var_' num2str(i)],formats,renderer);
 end
 
 %% Display random evaluations of reference and multiscale solutions
 
 % nbsamples = 3;
-% for s=1:nbsamples
-%     xi = random(RANDVARS(PC));
+% for i=1:nbsamples
+%     xi = random(rv,1,1);
 %     
 %     if exist('U_ref','var') && exist('w_ref','var') && exist('lambda_ref','var')
-%         U_ref_xi = randomeval(U_ref,xi);
-%         w_ref_xi = randomeval(w_ref,xi);
-%         lambda_ref_xi = randomeval(lambda_ref,xi);
-%         % plot_sols_ref(glob,randomeval(patches,xi),interfaces,U_ref_xi,w_ref_xi,lambda_ref_xi);
-%         plot_sol_ref(glob,randomeval(patches,xi),interfaces,U_ref_xi,w_ref_xi);
-%         % plot_U_ref(glob,U_ref_xi);
-%         plot_w_ref(patches,w_ref_xi);
-%         % plot_lambda_ref(interfaces,lambda_ref_xi);
+%         U_ref_xi = fU_ref.functionEval(xi);
+%         w_ref_xi = cellfun(@(x) x.functionEval(xi),fw_ref,'UniformOutput',false);
+%         lambda_ref_xi = cellfun(@(x) x.functionEval(xi),flambda_ref,'UniformOutput',false);
+%         % plotAllSolutionsReference(glob,patches.patchEval(xi),interfaces,U_ref_xi',cellfun(@(x) x',w_ref_xi,'UniformOutput',false),cellfun(@(x) x',lambda_ref_xi,'UniformOutput',false));
+%         plotMultiscaleSolutionReference(glob,patches.patchEval(xi),interfaces,U_ref_xi',cellfun(@(x) x',w_ref_xi,'UniformOutput',false));
+%         % plotGlobalSolutionReference(glob,U_ref_xi');
+%         plotLocalSolutionReference(patches,cellfun(@(x) x',w_ref_xi,'UniformOutput',false));
+%         % plotLagrangeMultiplierReference(interfaces,cellfun(@(x) x',lambda_ref_xi,'UniformOutput',false));
 %     end
 %     
-%     U_xi = randomeval(U,xi);
-%     w_xi = randomeval(w,xi);
-%     lambda_xi = randomeval(lambda,xi);
-%     % plot_sols(glob,randomeval(patches,xi),interfaces,U_xi,w_xi,lambda_xi);
-%     plot_sol(glob,randomeval(patches,xi),interfaces,U_xi,w_xi);
-%     % plot_U(glob,U_xi);
-%     plot_w(patches,w_xi);
-%     % plot_lambda(interfaces,lambda_xi);
+%     U_xi = fU.functionEval(xi);
+%     w_xi = cellfun(@(x) x.functionEval(xi),fw,'UniformOutput',false);
+%     lambda_xi = cellfun(@(x) x.functionEval(xi),flambda,'UniformOutput',false);
+%     % plotAllSolutions(glob,patches.patchEval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false),cellfun(@(x) x',lambda_xi,'UniformOutput',false));
+%     plotMultiscaleSolution(glob,patches.patchEval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false));
+%     % plotGlobalSolution(glob,U_xi');
+%     plotLocalSolution(patches,cellfun(@(x) x',w_xi,'UniformOutput',false));
+%     % plotLagrangeMultiplier(interfaces,cellfun(@(x) x',lambda_xi,'UniformOutput',false));
 % end
 
 myparallel('stop');

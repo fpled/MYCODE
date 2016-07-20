@@ -4,16 +4,16 @@
 % clc
 clear all
 close all
+% set(0,'DefaultFigureVisible','off');
 
 %% Input data
 
 filename = 'multiscale_det_lin_diff_form_old';
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE','RESULTS',filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
 % pathname = '/Users/Op/Dropbox/ANTHONY-FLORENT-MATHILDE/PATCH_NONLINEAR/figures/';
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-% set(0,'DefaultFigureVisible','off'); % change the default figure properties of the MATLAB root object
 fontsize = 16;
 
 dim = 2; % dimension
@@ -72,9 +72,9 @@ regular_mesh_patch = 1;
 full_projection = 0; % compute full projection operator
 
 % Initial problem
-solve_reference = true; % solve initial reference problem
-save_reference = false; % save reference solution
-load_reference = false; % load reference solution
+solve_monoscale = true; % solve initial reference problem
+save_monoscale = false; % save reference solution
+load_monoscale = false; % load reference solution
 change_of_variable_initial_problem = 0; % reformulation of initial problem by introducing a change of variable w=w_tilde+z
 initial_solver = 'direct'; % 'direct' : direct resolution of initial problem
                            % 'pcg'    : iterative resolution of initial problem (Preconditioned conjugate gradients method)
@@ -208,12 +208,12 @@ end
 figure('Name','Meshes')
 % set(gcf,'Name','Meshes')
 clf
-plot(S_out,'facecolor',getfacecolor(1),'edgecolor','k');
+plot(S_out,'FaceColor',getfacecolor(1),'EdgeColor','k');
 leg = {'T_H^{\Omega \\ \Lambda} of domain \Omega \\ \Lambda'};
 for k=1:nbpatch
-    % plot(S_in{k},'facecolor',getfacecolor(k+1),'edgecolor','k');
+    % plot(S_in{k},'FaceColor',getfacecolor(k+1),'EdgeColor','k');
     % leg = [leg, {['T_H^{\Lambda_{' num2str(k) '}} of patch \Lambda_{' num2str(k) '}']}];
-    plot(S_patch{k},'facecolor',getfacecolor(k+1),'edgecolor','k');
+    plot(S_patch{k},'FaceColor',getfacecolor(k+1),'EdgeColor','k');
     leg = [leg, {['T_h^{\Lambda_{' num2str(k) '}} of patch \Lambda_{' num2str(k) '}']}];
 end
 legend(leg{:})
@@ -297,15 +297,15 @@ end
 figure('Name','Coupling nodes for projection operator from mesh T_H^Omega\Lambda of domain Omega\Lambda to boundary meshes T_h^Gamma_k of interfaces Gamma_k')
 % set(gcf,'Name','Coupling nodes for projection operator from mesh T_H^Omega\Lambda of domain Omega\Lambda to boundary meshes T_h^Gamma_k of interfaces Gamma_k')
 clf
-plot(S_out,'facecolor',getfacecolor(1),'edgecolor','k');
+plot(S_out,'FaceColor',getfacecolor(1),'EdgeColor','k');
 leg = {'T_H^{\Omega \\ \Lambda} of domain \Omega \\ \Lambda'};
 node_coupling = [];
 for k=1:nbpatch
-    plot(S_patch{k},'facecolor',getfacecolor(k+1),'edgecolor','k');
+    plot(S_patch{k},'FaceColor',getfacecolor(k+1),'EdgeColor','k');
     leg = [leg, {['T_h^{\Lambda_{' num2str(k) '}} of patch \Lambda_{' num2str(k) '}']}];
     node_coupling = union(node_coupling,numnode_coupling{k});
 end
-plot(S_out.node(node_coupling),'o','color','b');
+plot(S_out.node(node_coupling),'o','Color','b');
 leg = [leg, {'i \in T_H^{\Omega \\ \Lambda}'}];
 legend(leg{:})
 set(gca,'FontSize',fontsize)
@@ -530,17 +530,17 @@ for k=1:nbpatch
 end
 
 %% Direct resolution of initial problem based on domain decomposition
-fullfilename = fullfile(pathname,'reference_solution.mat');
-if solve_reference
-    fprintf('\n --------------------------------------------------------------');
-    fprintf('\n ------------ Direct resolution of initial problem ------------')
-    fprintf('\n --------------------------------------------------------------\n');
+fullfilename = fullfile(pathname,'monoscale_solution.mat');
+if solve_monoscale
+    fprintf('\n ---------------------------------------');
+    fprintf('\n ------------ Direct solver ------------')
+    fprintf('\n ---------------------------------------\n');
     tic
     
     if ~change_of_variable_initial_problem
-        fprintf('\nResolution of initial problem without change of variable and using a %s solver\n',initial_solver);
+        fprintf('\nResolution without change of variable and using a %s solver\n',initial_solver);
     else
-        fprintf('\nResolution of initial problem with change of variable and using a %s solver\n',initial_solver);
+        fprintf('\nResolution with change of variable and using a %s solver\n',initial_solver);
     end
     
     if ~change_of_variable_initial_problem
@@ -590,7 +590,7 @@ if solve_reference
         
         % Total multscale solution vector sol_ref=[U_ref;w_ref{k};lambda_ref{k}] associated to initial problem
         if strcmp(initial_solver,'direct')
-            sol_ref = solve(A,b);
+            sol_ref = A\b;
         else
             if strcmp(precond_initial_solver,'inv')
                 M1_initial_solver = inv(A);
@@ -668,7 +668,7 @@ if solve_reference
         
         % Total multscale solution vector sol_ref=[U_ref;z_ref{k}] associated to initial problem
         if strcmp(initial_solver,'direct')
-            sol_ref = solve(A,b);
+            sol_ref = A\b;
         else
             if strcmp(precond_initial_solver,'inv')
                 M1_initial_solver = inv(A);
@@ -712,17 +712,17 @@ if solve_reference
             % b = A_patch{k}*w_ref{k} - b_patch{k};
             A = M_B_patch{k};
             b = P_from_S_patch_to_B_patch{k}*(A_patch{k}*w_ref{k} - b_patch{k});
-            lambda_ref{k} = solve(A,b);
+            lambda_ref{k} = A\b;
         end
     end
     fprintf('\nElapsed time = %f s\n',toc);
     
-    if save_reference
+    if save_monoscale
         % Save reference solution (U_ref,w_ref{k},lambda_ref{k})
         save(fullfilename,'U_ref','w_ref','lambda_ref');
-    elseif load_reference
+    elseif load_monoscale
         if ~exist(filename,'file')
-            error(['File reference_solution.mat does not exist in folder' pathname]);
+            error(['File monoscale_solution.mat does not exist in folder' pathname]);
         else
             % Load reference solution (U_ref,w_ref{k},lambda_ref{k})
             load(fullfilename,'U_ref','w_ref','lambda_ref');
@@ -736,10 +736,10 @@ figure('Name','Reference solution u_ref=(U_ref,w_ref)')
 clf
 
 subplot(1+nbpatch,2,1)
-plot_sol(S_out,U_ref,'edgecolor','none');
+plot_sol(S_out,U_ref,'EdgeColor','none');
 for k=1:nbpatch
-    plot_sol(S_patch{k},w_ref{k},'edgecolor','none');
-    plot(D_patch{k},'facecolor','none','edgecolor','k');
+    plot_sol(S_patch{k},w_ref{k},'EdgeColor','none');
+    plot(D_patch{k},'FaceColor','none','EdgeColor','k');
     % gtext(['\Lambda_{' num2str(k) '}'],'FontSize',fontsize);
 end
 % colormap('default')
@@ -750,7 +750,7 @@ set(gca,'FontSize',fontsize)
 title('Reference solution u^{ref}=(U^{ref},w^{ref}) over domain \Omega')
 
 subplot(1+nbpatch,2,2)
-plot_sol(S_out,U_ref,'edgecolor','none');
+plot_sol(S_out,U_ref,'EdgeColor','none');
 % colormap('default')
 colorbar
 axis(ax)
@@ -760,7 +760,7 @@ title('Global solution U^{ref} over mesh T_H^{\Omega \\ \Lambda} of domain \Omeg
 
 for k=1:nbpatch
     subplot(1+nbpatch,2,2*k+1)
-    plot_sol(S_patch{k},w_ref{k},'edgecolor','none');
+    plot_sol(S_patch{k},w_ref{k},'EdgeColor','none');
     % colormap('default')
     colorbar
     % axis(ax)
@@ -769,7 +769,7 @@ for k=1:nbpatch
     title(['Local solution w^{ref}^{' num2str(k) '} over mesh T_h^{\Lambda_{' num2str(k) '}} of patch \Lambda_{' num2str(k) '}'])
     
     subplot(1+nbpatch,2,2*(k+1))
-    plot_sol(B_patch{k},lambda_ref{k},'edgecolor','interp');
+    plot_sol(B_patch{k},lambda_ref{k},'EdgeColor','interp');
     % colormap('default')
     colorbar
     % axis(ax)
@@ -780,9 +780,9 @@ end
 
 %% Initial (resp. Reformulated) global-local iterative algorithm based on domain decomposition without (resp. with) overlapping domains
 
-fprintf('\n ----------------------------------------------------------');
-fprintf('\n ------------ Global-local iterative algorithm ------------')
-fprintf('\n ----------------------------------------------------------\n');
+fprintf('\n -------------------------------------------------------');
+fprintf('\n ------------ Global-local iterative solver ------------')
+fprintf('\n -------------------------------------------------------\n');
 tic
 if ~overlapping_domains
     fprintf('\nInitial algorithm without overlapping domains\n');
@@ -870,23 +870,23 @@ for k=1:nbpatch
 end
 
 if overlapping_domains
-    error_indicator_U_init = norm(P_from_S_to_S_out*U_init - U_ref)/norm(U_ref);
+    error_U_init = norm(P_from_S_to_S_out*U_init - U_ref)/norm(U_ref);
 else
-    error_indicator_U_init = norm(U_init - U_ref)/norm(U_ref);
+    error_U_init = norm(U_init - U_ref)/norm(U_ref);
 end
 
-error_indicator_w_init = cell(1,nbpatch);
-error_indicator_lambda_init = cell(1,nbpatch);
+error_w_init = cell(1,nbpatch);
+error_lambda_init = cell(1,nbpatch);
 for k=1:nbpatch
-    error_indicator_w_init{k} = norm(w_init{k} - w_ref{k})/norm(w_ref{k});
-    error_indicator_lambda_init{k} = norm(lambda_init{k} - lambda_ref{k})/norm(lambda_ref{k});
+    error_w_init{k} = norm(w_init{k} - w_ref{k})/norm(w_ref{k});
+    error_lambda_init{k} = norm(lambda_init{k} - lambda_ref{k})/norm(lambda_ref{k});
 end
 
 if display
-    fprintf('\nInitialization : residual error = %.3e w.r.t. U',error_indicator_U_init);
+    fprintf('\nInitialization : residual error = %.3e w.r.t. U',error_U_init);
     for k=1:nbpatch
-        fprintf('\n                 residual error = %.3e w.r.t. w for patch #%u',error_indicator_w_init{k},k);
-        fprintf('\n                 residual error = %.3e w.r.t. lambda for patch #%u\n',error_indicator_lambda_init{k},k);
+        fprintf('\n                 residual error = %.3e w.r.t. w for patch #%u',error_w_init{k},k);
+        fprintf('\n                 residual error = %.3e w.r.t. lambda for patch #%u\n',error_lambda_init{k},k);
     end
 end
 
@@ -897,17 +897,17 @@ if change_of_variable_local_problem
     z = z_init;
 end
 
-error_indicator_U = zeros(1,maxiter);
-stagnation_indicator_U = zeros(1,maxiter);
-error_indicator_w = cell(1,nbpatch);
-stagnation_indicator_w = cell(1,nbpatch);
-error_indicator_lambda = cell(1,nbpatch);
-stagnation_indicator_lambda = cell(1,nbpatch);
+error_U = zeros(1,maxiter);
+stagnation_U = zeros(1,maxiter);
+error_w = cell(1,nbpatch);
+stagnation_w = cell(1,nbpatch);
+error_lambda = cell(1,nbpatch);
+stagnation_lambda = cell(1,nbpatch);
 for k=1:nbpatch
-    error_indicator_w{k} = zeros(1,maxiter);
-    stagnation_indicator_w{k} = zeros(1,maxiter);
-    error_indicator_lambda{k} = zeros(1,maxiter);
-    stagnation_indicator_lambda{k} = zeros(1,maxiter);
+    error_w{k} = zeros(1,maxiter);
+    stagnation_w{k} = zeros(1,maxiter);
+    error_lambda{k} = zeros(1,maxiter);
+    stagnation_lambda{k} = zeros(1,maxiter);
 end
 
 % Iteration step
@@ -940,7 +940,7 @@ for iter=1:maxiter
     
     if ~global_increment
         if strcmp(global_solver,'direct')
-            U = solve(A,b);
+            U = A\b;
         else
             if strcmp(precond_global_solver,'inv')
                 M1_global_solver = inv(A);
@@ -970,7 +970,7 @@ for iter=1:maxiter
     else
         b = b - A*U_old;
         if strcmp(global_solver,'direct')
-            dU = solve(A,b);
+            dU = A\b;
         else
             if strcmp(precond_global_solver,'inv')
                 M1_global_solver = inv(A);
@@ -1002,7 +1002,7 @@ for iter=1:maxiter
     
     U = rho*U + (1-rho)*U_old;
     
-    stagnation_indicator_U(iter) = norm(U - U_old)/norm(U);
+    stagnation_U(iter) = norm(U - U_old)/norm(U);
     
     % Verification step : prolongation of global solution U in the fictitious patch is uniquely defined and belongs to a suitable subspace
     if overlapping_domains && verification_global_prolongation
@@ -1021,7 +1021,7 @@ for iter=1:maxiter
             b2 = P_from_S_in_to_B_in{k}'*M_B_in{k}*P_from_S_to_B_in{k}*U;
             b = b1 + b2;
             
-            U_in = solve(A,b);
+            U_in = A\b;
             relative_error_prolongation_U = norm(P_from_S_to_S_in{k}*U - U_in)/norm(U_in);
             if relative_error_prolongation_U > tol
                 fprintf('\nProlongation of U in fictitious patch #%u at iteration #%3.d : residual error = %.3e\n',k,iter,relative_error_prolongation_U);
@@ -1046,9 +1046,9 @@ for iter=1:maxiter
     end
     
     if overlapping_domains
-        error_indicator_U(iter) = norm(P_from_S_to_S_out*U - U_ref)/norm(U_ref);
+        error_U(iter) = norm(P_from_S_to_S_out*U - U_ref)/norm(U_ref);
     else
-        error_indicator_U(iter) = norm(U - U_ref)/norm(U_ref);
+        error_U(iter) = norm(U - U_ref)/norm(U_ref);
     end
     
     % Local problems
@@ -1075,7 +1075,7 @@ for iter=1:maxiter
             
             if ~local_increment
                 if strcmp(local_solver,'direct')
-                    local_sol = solve(A,b);
+                    local_sol = A\b;
                 else
                     if strcmp(precond_local_solver,'inv')
                         M1_local_solver = inv(A);
@@ -1106,7 +1106,7 @@ for iter=1:maxiter
                 local_sol_old = [w_old{k};lambda_old{k}];
                 b = b - A*local_sol_old;
                 if strcmp(local_solver,'direct')
-                    dlocal_sol = solve(A,b);
+                    dlocal_sol = A\b;
                 else
                     if strcmp(precond_local_solver,'inv')
                         M1_local_solver = inv(A);
@@ -1152,7 +1152,7 @@ for iter=1:maxiter
             
             if ~local_increment
                 if strcmp(local_solver,'direct')
-                    z{k} = solve(A,b);
+                    z{k} = A\b;
                 else
                     if strcmp(precond_local_solver,'inv')
                         M1_local_solver = inv(A);
@@ -1182,7 +1182,7 @@ for iter=1:maxiter
             else
                 b = b - A*z_old{k};
                 if strcmp(local_solver,'direct')
-                    dz = solve(A,b);
+                    dz = A\b;
                 else
                     if strcmp(precond_local_solver,'inv')
                         M1_local_solver = inv(A);
@@ -1223,11 +1223,11 @@ for iter=1:maxiter
             % b = A_patch{k}*w{k} - b_patch{k};
             A = M_B_patch{k};
             b = P_from_S_patch_to_B_patch{k}*(A_patch{k}*w{k} - b_patch{k});
-            lambda{k} = solve(A,b);
+            lambda{k} = A\b;
         end
         
-        stagnation_indicator_w{k}(iter) = norm(w{k} - w_old{k})/norm(w{k});
-        stagnation_indicator_lambda{k}(iter) = norm(lambda{k} - lambda_old{k})/norm(lambda{k});
+        stagnation_w{k}(iter) = norm(w{k} - w_old{k})/norm(w{k});
+        stagnation_lambda{k}(iter) = norm(lambda{k} - lambda_old{k})/norm(lambda{k});
         
         if local_perturbation
             w{k} = unfreevector(S_patch{k},w{k});
@@ -1238,30 +1238,30 @@ for iter=1:maxiter
             % b = A_patch{k}*w{k} - b_patch{k};
             A = M_B_patch{k};
             b = P_from_S_patch_to_B_patch{k}*(A_patch{k}*w{k} - b_patch{k});
-            lambda{k} = solve(A,b);
+            lambda{k} = A\b;
         end
         
-        error_indicator_w{k}(iter) = norm(w{k} - w_ref{k})/norm(w_ref{k});
-        error_indicator_lambda{k}(iter) = norm(lambda{k} - lambda_ref{k})/norm(lambda_ref{k});
+        error_w{k}(iter) = norm(w{k} - w_ref{k})/norm(w_ref{k});
+        error_lambda{k}(iter) = norm(lambda{k} - lambda_ref{k})/norm(lambda_ref{k});
     end
     
-    if error_indicator_U(iter) < tol
+    if error_U(iter) < tol
         break
     else
         if display
-            fprintf('\nIteration #%3.d : stagnation = %.3e, residual error = %.3e w.r.t. U\n',iter,stagnation_indicator_U(iter),error_indicator_U(iter));
+            fprintf('\nIteration #%3.d : stagnation = %.3e, residual error = %.3e w.r.t. U\n',iter,stagnation_U(iter),error_U(iter));
             for k=1:nbpatch
-                fprintf('\n                 stagnation = %.3e, residual error = %.3e w.r.t. w for patch #%u',stagnation_indicator_w{k}(iter),error_indicator_w{k}(iter),k);
-                fprintf('\n                 stagnation = %.3e, residual error = %.3e w.r.t. lambda for patch #%u\n',stagnation_indicator_lambda{k}(iter),error_indicator_lambda{k}(iter),k);
+                fprintf('\n                 stagnation = %.3e, residual error = %.3e w.r.t. w for patch #%u',stagnation_w{k}(iter),error_w{k}(iter),k);
+                fprintf('\n                 stagnation = %.3e, residual error = %.3e w.r.t. lambda for patch #%u\n',stagnation_lambda{k}(iter),error_lambda{k}(iter),k);
             end
         end
     end
 end
 
-if error_indicator_U(iter) < tol
-    fprintf('\nAlgorithm converged at iteration #%d with residual error = %.3e w.r.t. U\n',iter,error_indicator_U(iter));
+if error_U(iter) < tol
+    fprintf('\nAlgorithm converged at iteration #%d with residual error = %.3e w.r.t. U\n',iter,error_U(iter));
 else
-    fprintf('\nAlgorithm stopped at iteration #%d with residual error = %.3e w.r.t. U\n',iter,error_indicator_U(iter));
+    fprintf('\nAlgorithm stopped at iteration #%d with residual error = %.3e w.r.t. U\n',iter,error_U(iter));
 end
 fprintf('\nElapsed time = %f s\n',toc);
 
@@ -1272,13 +1272,13 @@ clf
 
 subplot(1+nbpatch,2,1)
 if overlapping_domains
-    plot_sol(S_out,P_from_S_to_S_out*U,'edgecolor','none');
+    plot_sol(S_out,P_from_S_to_S_out*U,'EdgeColor','none');
 else
-    plot_sol(S_out,U,'edgecolor','none');
+    plot_sol(S_out,U,'EdgeColor','none');
 end
 for k=1:nbpatch
-    plot_sol(S_patch{k},w{k},'edgecolor','none');
-    plot(D_patch{k},'facecolor','none','edgecolor','k');
+    plot_sol(S_patch{k},w{k},'EdgeColor','none');
+    plot(D_patch{k},'FaceColor','none','EdgeColor','k');
     % gtext(['\Lambda_{' num2str(k) '}'],'FontSize',fontsize);
 end
 % colormap('default')
@@ -1290,9 +1290,9 @@ title(['Multscale solution u=(U,w) at final iteration #' num2str(iter) ' over do
 
 subplot(1+nbpatch,2,2)
 if overlapping_domains
-    plot_sol(S,U,'edgecolor','none');
+    plot_sol(S,U,'EdgeColor','none');
 else
-    plot_sol(S_out,U,'edgecolor','none');
+    plot_sol(S_out,U,'EdgeColor','none');
 end
 % colormap('default')
 colorbar
@@ -1307,7 +1307,7 @@ end
 
 for k=1:nbpatch
     subplot(1+nbpatch,2,2*k+1)
-    plot_sol(S_patch{k},w{k},'edgecolor','none');
+    plot_sol(S_patch{k},w{k},'EdgeColor','none');
     % colormap('default')
     colorbar
     % axis(ax)
@@ -1316,7 +1316,7 @@ for k=1:nbpatch
     title(['Local solution w_{' num2str(k) '} at final iteration #' num2str(iter) ' over mesh T_h^{\Lambda_{' num2str(k) '}} of patch \Lambda_{' num2str(k) '}'])
     
     subplot(1+nbpatch,2,2*(k+1))
-    plot_sol(B_patch{k},lambda{k},'edgecolor','interp');
+    plot_sol(B_patch{k},lambda{k},'EdgeColor','interp');
     % colormap('default')
     colorbar
     % axis(ax)
@@ -1330,27 +1330,27 @@ figure('Name','Evolution of error indicators epsilon(U;U_ref) w.r.t number of it
 % set(gcf,'Name','Evolution of error indicators epsilon(U;U_ref) w.r.t number of iterations') %, epsilon(w;w_ref) and epsilon(lambda;lambda_ref) w.r.t number of iterations')
 clf
 iter=1:iter;
-semilogy([0,iter],[error_indicator_U_init,error_indicator_U(iter)],'-k')
+semilogy([0,iter],[error_U_init,error_U(iter)],'-k')
 hold on
 if overlapping_domains
     leg = {'\epsilon_{\Omega}(U;U^{ref})'};
 else
     leg = {'\epsilon_{\Omega \\ \Lambda}(U;U^{ref})'};
 end
-semilogy(iter,stagnation_indicator_U(iter),'--k')
+semilogy(iter,stagnation_U(iter),'--k')
 if overlapping_domains
     leg = [leg, {'\epsilon_{\Omega}(U^n;U^{n-1})'}];
 else
     leg = [leg, {'\epsilon_{\Omega \\ \Lambda}(U^n;U^{n-1})'}];
 end
 for k=1:nbpatch
-    semilogy([0,iter],[error_indicator_w_init{k},error_indicator_w{k}(iter)],'Color',getfacecolor(2*k))
+    semilogy([0,iter],[error_w_init{k},error_w{k}(iter)],'Color',getfacecolor(2*k))
     leg = [leg, {['\epsilon_{\Lambda_{' num2str(k) '}}(w_{' num2str(k) '};w^{ref}_{' num2str(k) '})']}];
-    semilogy(iter,stagnation_indicator_w{k}(iter),'--','Color',getfacecolor(2*k))
+    semilogy(iter,stagnation_w{k}(iter),'--','Color',getfacecolor(2*k))
     leg = [leg, {['\epsilon_{\Lambda_{' num2str(k) '}}(w^n_{' num2str(k) '};w^{n-1}_{' num2str(k) '})']}];
-    semilogy([0,iter],[error_indicator_lambda_init{k},error_indicator_lambda{k}(iter)],'-','Color',getfacecolor(2*k+1))
+    semilogy([0,iter],[error_lambda_init{k},error_lambda{k}(iter)],'-','Color',getfacecolor(2*k+1))
     leg = [leg, {['\epsilon_{\Gamma_{' num2str(k) '}}(\lambda_{' num2str(k) '};\lambda^{ref}_{' num2str(k) '})']}];
-    semilogy(iter,stagnation_indicator_lambda{k}(iter),'--','Color',getfacecolor(2*k+1))
+    semilogy(iter,stagnation_lambda{k}(iter),'--','Color',getfacecolor(2*k+1))
     leg = [leg, {['\epsilon_{\Gamma_{' num2str(k) '}}(\lambda^n_{' num2str(k) '};\lambda^{n-1}_{' num2str(k) '})']}];
 end
 hold off
