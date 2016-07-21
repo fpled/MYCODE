@@ -2,7 +2,7 @@
 %%---------------------------------------------------%%
 
 % clc
-% clear all
+clear all
 close all
 % set(0,'DefaultFigureVisible','off');
 % rng('default');
@@ -160,7 +160,7 @@ fprintf('CV error = %d\n',norm(err))
 fprintf('elapsed time = %f s\n',time)
 
 Ntest = 100;
-[errtest,xtest,fxtest,ytest] = f.computeError(fun,Ntest);
+[errtest,xtest,fxtest,ytest] = computeTestError(f,fun,Ntest);
 fprintf('test error = %d\n',norm(errtest))
 
 %% Save variables

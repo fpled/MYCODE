@@ -95,7 +95,7 @@ fprintf('CV error = %d\n',err)
 fprintf('elapsed time = %f s\n',time)
 
 Ntest = 1000;
-[errtest,xtest,fxtest,ytest] = f.computeError(fun,Ntest,rv);
+[errtest,xtest,fxtest,ytest] = computeTestError(f,fun,Ntest,rv);
 fprintf('test error = %d\n',errtest)
 
 %% Display multi-index set

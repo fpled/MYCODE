@@ -411,11 +411,16 @@ end
 %% Display statistical outputs
 
 for i=1:2
-    
     % plotStatsAllSolutions(glob,patches,interfaces,U,w,lambda,'displ',i);
     
     plotMeanGlobalSolution(glob,U,'displ',i);
     mysaveas(pathname,['mean_global_solution_' num2str(i)],formats,renderer);
+    
+    % plotMeanLocalSolution(patches,w,'displ',i);
+    % mysaveas(pathname,['mean_local_solution_' num2str(i)],formats,renderer);
+    
+    % plotMeanLagrangeMultiplier(interfaces,lambda,'displ',i);
+    % mysaveas(pathname,['mean_Lagrange_multiplier_' num2str(i)],formats,renderer);
     
     plotMeanMultiscaleSolution(glob,patches,interfaces,U,w,'displ',i);
     mysaveas(pathname,['mean_multiscale_solution_' num2str(i)],formats,renderer);
@@ -424,10 +429,16 @@ for i=1:2
     mysaveas(pathname,['mean_global_local_solution_' num2str(i)],formats,renderer);
     
     plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'displ',i,'view3',true);
-    mysaveas(pathname,['mean_global_local_solution_surf_' num2str(i)],formats,renderer);
+    mysaveas(pathname,['mean_global_local_solution_' num2str(i) '_surf'],formats,renderer);
     
     plotVarGlobalSolution(glob,U,'displ',i);
     mysaveas(pathname,['var_global_solution_' num2str(i)],formats,renderer);
+    
+    % plotVarLocalSolution(patches,w,'displ',i);
+    % mysaveas(pathname,['var_local_solution_' num2str(i)],formats,renderer);
+    
+    % plotVarLagrangeMultiplier(interfaces,lambda,'displ',i);
+    % mysaveas(pathname,['var_Lagrange_multiplier_' num2str(i)],formats,renderer);
     
     plotVarMultiscaleSolution(glob,patches,interfaces,U,w,'displ',i);
     mysaveas(pathname,['var_multiscale_solution_' num2str(i)],formats,renderer);
@@ -436,10 +447,16 @@ for i=1:2
     mysaveas(pathname,['var_global_local_solution_' num2str(i)],formats,renderer);
     
     plotVarGlobalLocalSolution(glob,patches,interfaces,U,w,'displ',i,'view3',true);
-    mysaveas(pathname,['var_global_local_solution_surf_' num2str(i)],formats,renderer);
+    mysaveas(pathname,['var_global_local_solution_' num2str(i) '_surf'],formats,renderer);
     
     plotStdGlobalSolution(glob,U,'displ',i);
     mysaveas(pathname,['std_global_solution_' num2str(i)],formats,renderer);
+    
+    % plotStdLocalSolution(patches,w,'displ',i);
+    % mysaveas(pathname,['std_local_solution_' num2str(i)],formats,renderer);
+    
+    % plotStdLagrangeMultiplier(interfaces,lambda,'displ',i);
+    % mysaveas(pathname,['std_Lagrange_multiplier_' num2str(i)],formats,renderer);
     
     plotStdMultiscaleSolution(glob,patches,interfaces,U,w,'displ',i);
     mysaveas(pathname,['std_multiscale_solution_' num2str(i)],formats,renderer);
@@ -448,7 +465,7 @@ for i=1:2
     mysaveas(pathname,['std_global_local_solution_' num2str(i)],formats,renderer);
     
     plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'displ',i,'view3',true);
-    mysaveas(pathname,['std_global_local_solution_surf_' num2str(i)],formats,renderer);
+    mysaveas(pathname,['std_global_local_solution_' num2str(i) '_surf'],formats,renderer);
     
     for j=1:d
         plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,j,'displ',i);
@@ -459,36 +476,20 @@ for i=1:2
     end
 end
 
-%% Display random evaluations of reference and multiscale solutions
-
-%% Display random evaluations of reference and multiscale solutions
+%% Display random evaluations of solutions
 
 nbsamples = 3;
 for i=1:nbsamples
     xi = random(rv,1,1);
-    
-    if exist('U_ref','var') && exist('w_ref','var') && exist('lambda_ref','var')
-        U_ref_xi = fU_ref.functionEval(xi);
-        w_ref_xi = cellfun(@(x) x.functionEval(xi),fw_ref,'UniformOutput',false);
-        lambda_ref_xi = cellfun(@(x) x.functionEval(xi),flambda_ref,'UniformOutput',false);
-        for j=1:2
-            % plotAllSolutionsReference(glob,patches.patchEval(xi),interfaces,U_ref_xi',cellfun(@(x) x',w_ref_xi,'UniformOutput',false),cellfun(@(x) x',lambda_ref_xi,'UniformOutput',false),'displ',j);
-            plotMultiscaleSolutionReference(glob,patches.patchEval(xi),interfaces,U_ref_xi',cellfun(@(x) x',w_ref_xi,'UniformOutput',false),'displ',j);
-            % plotGlobalSolutionReference(glob,U_ref_xi','displ',j);
-            plotLocalSolutionReference(patches,cellfun(@(x) x',w_ref_xi,'UniformOutput',false),'displ',j);
-            % plotLagrangeMultiplierReference(interfaces,cellfun(@(x) x',lambda_ref_xi,'UniformOutput',false),'displ',j);
-        end
-    end
-    
     U_xi = fU.functionEval(xi);
     w_xi = cellfun(@(x) x.functionEval(xi),fw,'UniformOutput',false);
     lambda_xi = cellfun(@(x) x.functionEval(xi),flambda,'UniformOutput',false);
     for j=1:2
         % plotAllSolutions(glob,patches.patchEval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false),cellfun(@(x) x',lambda_xi,'UniformOutput',false),'displ',j);
-        plotMultiscaleSolution(glob,patches.patchEval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false),'displ',j);
-        % plotGlobalSolution(glob,U_xi','displ',j);
-        plotLocalSolution(patches,cellfun(@(x) x',w_xi,'UniformOutput',false),'displ',j);
+        plotGlobalSolution(glob,U_xi','displ',j);
+        % plotLocalSolution(patches,cellfun(@(x) x',w_xi,'UniformOutput',false),'displ',j);
         % plotLagrangeMultiplier(interfaces,cellfun(@(x) x',lambda_xi,'UniformOutput',false),'displ',j);
+        plotMultiscaleSolution(glob,patches.patchEval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false),'displ',j);
     end
 end
 

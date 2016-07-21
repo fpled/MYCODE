@@ -588,7 +588,7 @@ if solve_monoscale
         end
         b = cell2mat(b);
         
-        % Total multscale solution vector sol_ref=[U_ref;w_ref{k};lambda_ref{k}] associated to initial problem
+        % Total multiscale solution vector sol_ref=[U_ref;w_ref{k};lambda_ref{k}] associated to initial problem
         if strcmp(initial_solver,'direct')
             sol_ref = A\b;
         else
@@ -666,7 +666,7 @@ if solve_monoscale
         end
         b = cell2mat(b);
         
-        % Total multscale solution vector sol_ref=[U_ref;z_ref{k}] associated to initial problem
+        % Total multiscale solution vector sol_ref=[U_ref;z_ref{k}] associated to initial problem
         if strcmp(initial_solver,'direct')
             sol_ref = A\b;
         else
@@ -1265,9 +1265,9 @@ else
 end
 fprintf('\nElapsed time = %f s\n',toc);
 
-%% Display multscale solution
-figure('Name',['Multscale solution u=(U,w) at final iteration #' num2str(iter)])
-% set(gcf,'Name',['Multscale solution u=(U,w) at final iteration #' num2str(iter)])
+%% Display multiscale solution
+figure('Name',['Multiscale solution u=(U,w) at final iteration #' num2str(iter)])
+% set(gcf,'Name',['Multiscale solution u=(U,w) at final iteration #' num2str(iter)])
 clf
 
 subplot(1+nbpatch,2,1)
@@ -1286,7 +1286,7 @@ colorbar
 ax=axis;
 cax=caxis;
 set(gca,'FontSize',fontsize)
-title(['Multscale solution u=(U,w) at final iteration #' num2str(iter) ' over domain \Omega'])
+title(['Multiscale solution u=(U,w) at final iteration #' num2str(iter) ' over domain \Omega'])
 
 subplot(1+nbpatch,2,2)
 if overlapping_domains

@@ -259,16 +259,19 @@ plotRelaxationParameter(output,'legend',false);
 mysaveas(pathname,'relaxation_parameter','fig');
 mymatlab2tikz(pathname,'relaxation_parameter.tex');
 
-%% Display reference and multscale solutions
+%% Display solutions
 
-% if exist('U_ref','var') && exist('w_ref','var') && exist('lambda_ref','var')
-%     plotAllSolutionsReference(glob,patches,interfaces,U_ref,w_ref,lambda_ref);
-% end
-% 
 % plotAllSolutions(glob,patches,interfaces,U,w,lambda);
+% mysaveas(pathname,'all_solutions',formats,renderer);
 
 plotGlobalSolution(glob,U);
 mysaveas(pathname,'global_solution',formats,renderer);
+
+% plotLocalSolution(patches,w);
+% mysaveas(pathname,'local_solution',formats,renderer);
+% 
+% plotLagrangeMultiplier(interfaces,lambda);
+% mysaveas(pathname,'Lagrange_multiplier',formats,renderer);
 
 plotMultiscaleSolution(glob,patches,interfaces,U,w);
 mysaveas(pathname,'multiscale_solution',formats,renderer);
