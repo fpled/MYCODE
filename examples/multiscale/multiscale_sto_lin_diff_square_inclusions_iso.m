@@ -95,7 +95,6 @@ for k=1:n
     L = norm(getsize(D_patch{k}),Inf)/4;
     c = getcenter(D_patch{k});
     f = @(x) distance(x,c,Inf)<L;
-    
     fun = @(xi) ones(size(xi,1),patch.S.nbnode) + xi(:,k) * double(squeeze(f(patch.S.node)))';
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
@@ -202,7 +201,7 @@ glob.increment = true;
 
 % Local problems
 for k=1:n
-    patches.patches{k}.ChangeOfVariable = false;
+    patches.patches{k}.changeOfVariable = false;
     patches.patches{k}.increment = true;
 end
 
@@ -243,33 +242,64 @@ else
     load(fullfile(pathname,'reference_solution.mat'),'fU_ref','fw_ref','flambda_ref','output_ref');
 end
 
-ind_ref = output_ref.f.basis.indices.array;
+ind_U_ref = fU_ref.basis.indices.array;
+ind_w_ref = cellfun(@(x) x.basis.indices.array,fw_ref,'UniformOutput',false);
+ind_lambda_ref = cellfun(@(x) x.basis.indices.array,flambda_ref,'UniformOutput',false);
 switch gettypebase(PC)
     case 1
-        ind_ref(:,ndims(output_ref.f.basis)+1) = sum(ind_ref(:,1:ndims(output_ref.f.basis)),2);
+        ind_U_ref(:,ndims(fU_ref.basis)+1) = sum(ind_U_ref(:,1:ndims(fU_ref.basis)),2);
+        ind_w_ref_end = cellfun(@(ind,f) sum(ind(:,1:ndims(f.basis)),2),ind_w_ref,fw_ref,'UniformOutput',false);
+        ind_lambda_ref_end = cellfun(@(ind,f) sum(ind(:,1:ndims(f.basis)),2),ind_lambda_ref,flambda_ref,'UniformOutput',false);
     case 2
-        ind_ref(:,ndims(output_ref.f.basis)+1) = max(ind_ref(:,1:ndims(output_ref.f.basis)),[],2);
+        ind_U_ref(:,ndims(fU_ref.basis)+1) = max(ind_U_ref(:,1:ndims(fU_ref.basis)),[],2);
+        ind_w_ref_end = cellfun(@(ind,f) max(ind(:,1:ndims(f.basis)),[],2),ind_w_ref,fw_ref,'UniformOutput',false);
+        ind_lambda_ref_end = cellfun(@(ind,f) max(ind(:,1:ndims(f.basis)),[],2),ind_lambda_ref,flambda_ref,'UniformOutput',false);
 end
-PC_ref = setindices(PC,ind_ref,'update');
-u_ref = output_ref.f.data';
-u_ref = PCMATRIX(u_ref,[size(u_ref,1) 1],PC_ref);
+ind_w_ref = cellfun(@(ind,ind_end) [ind,ind_end],ind_w_ref,ind_w_ref_end,'UniformOutput',false);
+ind_lambda_ref = cellfun(@(ind,ind_end) [ind,ind_end],ind_lambda_ref,ind_lambda_ref_end,'UniformOutput',false);
+PC_U_ref = setindices(PC,ind_U_ref,'update');
+PC_w_ref = cellfun(@(x) setindices(PC,x,'update'),ind_w_ref,'UniformOutput',false);
+PC_lambda_ref = cellfun(@(x) setindices(PC,x,'update'),ind_lambda_ref,'UniformOutput',false);
 U_ref = fU_ref.data';
-U_ref = PCMATRIX(U_ref,[size(U_ref,1) 1],PC_ref);
+U_ref = PCMATRIX(U_ref,[size(U_ref,1) 1],PC_U_ref);
 w_ref = cellfun(@(x) x.data',fw_ref,'UniformOutput',false);
-w_ref = cellfun(@(x) PCMATRIX(x,[size(x,1) 1],PC_ref),w_ref,'UniformOutput',false);
+w_ref = cellfun(@(x,PC) PCMATRIX(x,[size(x,1) 1],PC),w_ref,PC_w_ref,'UniformOutput',false);
 lambda_ref = cellfun(@(x) x.data',flambda_ref,'UniformOutput',false);
-lambda_ref = cellfun(@(x) PCMATRIX(x,[size(x,1) 1],PC_ref),lambda_ref,'UniformOutput',false);
+lambda_ref = cellfun(@(x,PC) PCMATRIX(x,[size(x,1) 1],PC),lambda_ref,PC_lambda_ref,'UniformOutput',false);
 
 %% Outputs
 
 fprintf('\n')
-fprintf('parametric dimension = %d\n',ndims(output_ref.f.basis))% fprintf('parametric dimension = %d\n',numel(rv))
-fprintf('basis dimension = %d\n',numel(output_ref.f.basis))
-fprintf('order = [ %s ]\n',num2str(max(output_ref.f.basis.indices.array)))
-% fprintf('multi-index set = \n')
-% disp(output_ref.f.basis.indices.array)
-fprintf('nb samples = %d\n',output_ref.N)
-fprintf('CV error = %d\n',norm(output_ref.CVError))
+fprintf('spatial dimension = %d for U_ref\n',fU_ref.sz)
+for k=1:n
+    fprintf('                  = %d for w_ref{%u}\n',fw_ref{k}.sz,k)
+    fprintf('                  = %d for lambda_ref{%u}\n',flambda_ref{k}.sz,k)
+end
+fprintf('parametric dimension = %d\n',ndims(fU_ref.basis))% fprintf('parametric dimension = %d\n',numel(rv))
+fprintf('basis dimension = %d for U_ref\n',numel(fU_ref.basis))
+for k=1:n
+    fprintf('                = %d for w_ref{%u}\n',numel(fw_ref{k}.basis),k)
+    fprintf('                = %d for lambda_ref{%u}\n',numel(flambda_ref{k}.basis),k)
+end
+% fprintf('multi-index set for U_ref = \n')
+% disp(num2str(fU_ref.basis.indices.array))
+% for k=1:n
+%     fprintf('multi-index set for w_ref{%u} = \n',k)
+%     disp(num2str(fw_ref{k}.basis.indices.array))
+%     fprintf('multi-index set for lambda_ref{%u} = \n',k)
+%     disp(num2str(flambda_ref{k}.basis.indices.array))
+% end
+fprintf('order = [ %s ] for U_ref\n',num2str(max(fU_ref.basis.indices.array)))
+for k=1:n
+    fprintf('      = [ %s ] for w_ref{%u}\n',num2str(max(fw_ref{k}.basis.indices.array)),k)
+    fprintf('      = [ %s ] for lambda_ref{%u}\n',num2str(max(flambda_ref{k}.basis.indices.array)),k)
+end
+fprintf('CV error = %d for U_ref\n',norm(output_ref.CVErrorGlobalSolution))
+for k=1:n
+    fprintf('         = %d for w_ref{%u}\n',norm(output_ref.CVErrorLocalSolution{k}),k)
+    fprintf('         = %d for lambda_ref{%u}\n',norm(output_ref.CVErrorLagrangeMultiplier{k}),k)
+end
+fprintf('nb samples = %d\n',output_ref.nbSamples)
 fprintf('elapsed time = %f s\n',output_ref.time)
 
 %% Global-local Iterative solver
@@ -295,43 +325,68 @@ else
     load(fullfile(pathname,'solution.mat'),'fU','fw','flambda','output');
 end
 
-ind_glob = fU.basis.indices.array;
-ind_patch = cellfun(@(x) x.basis.indices.array,output.f,'UniformOutput',false);
+ind_U = fU.basis.indices.array;
+ind_w = cellfun(@(x) x.basis.indices.array,fw,'UniformOutput',false);
+ind_lambda = cellfun(@(x) x.basis.indices.array,flambda,'UniformOutput',false);
 switch gettypebase(PC)
     case 1
-        ind_glob(:,ndims(fU.basis)+1) = sum(ind_glob(:,1:ndims(fU.basis)),2);
-        ind_patch_end = cellfun(@(ind,f) sum(ind(:,1:ndims(f.basis)),2),ind_patch,output.f,'UniformOutput',false);
+        ind_U(:,ndims(fU.basis)+1) = sum(ind_U(:,1:ndims(fU.basis)),2);
+        ind_w_end = cellfun(@(ind,f) sum(ind(:,1:ndims(f.basis)),2),ind_w,fw,'UniformOutput',false);
+        ind_lambda_end = cellfun(@(ind,f) sum(ind(:,1:ndims(f.basis)),2),ind_lambda,flambda,'UniformOutput',false);
     case 2
-        ind_glob(:,ndims(fU.basis)+1) = max(ind_glob(:,1:ndims(fU.basis)),[],2);
-        ind_patch_end = cellfun(@(ind,f) max(ind(:,1:ndims(f.basis)),[],2),ind_patch,output.f,'UniformOutput',false);
+        ind_U(:,ndims(fU.basis)+1) = max(ind_U(:,1:ndims(fU.basis)),[],2);
+        ind_w_end = cellfun(@(ind,f) max(ind(:,1:ndims(f.basis)),[],2),ind_w,fw,'UniformOutput',false);
+        ind_lambda_end = cellfun(@(ind,f) max(ind(:,1:ndims(f.basis)),[],2),ind_lambda,flambda,'UniformOutput',false);
 end
-ind_patch = cellfun(@(ind,ind_end) [ind,ind_end],ind_patch,ind_patch_end,'UniformOutput',false);
-PC_glob = setindices(PC,ind_glob,'update');
-PC_patch = cellfun(@(x) setindices(PC,x,'update'),ind_patch,'UniformOutput',false);
+ind_w = cellfun(@(ind,ind_end) [ind,ind_end],ind_w,ind_w_end,'UniformOutput',false);
+ind_lambda = cellfun(@(ind,ind_end) [ind,ind_end],ind_lambda,ind_lambda_end,'UniformOutput',false);
+PC_U = setindices(PC,ind_U,'update');
+PC_w = cellfun(@(x) setindices(PC,x,'update'),ind_w,'UniformOutput',false);
+PC_lambda = cellfun(@(x) setindices(PC,x,'update'),ind_lambda,'UniformOutput',false);
 U = fU.data';
-U = PCMATRIX(U,[size(U,1) 1],PC_glob);
+U = PCMATRIX(U,[size(U,1) 1],PC_U);
 w = cellfun(@(x) x.data',fw,'UniformOutput',false);
-w = cellfun(@(x,PC) PCMATRIX(x,[size(x,1) 1],PC),w,PC_patch,'UniformOutput',false);
+w = cellfun(@(x,PC) PCMATRIX(x,[size(x,1) 1],PC),w,PC_w,'UniformOutput',false);
 lambda = cellfun(@(x) x.data',flambda,'UniformOutput',false);
-lambda = cellfun(@(x,PC) PCMATRIX(x,[size(x,1) 1],PC),lambda,PC_patch,'UniformOutput',false);
+lambda = cellfun(@(x,PC) PCMATRIX(x,[size(x,1) 1],PC),lambda,PC_lambda,'UniformOutput',false);
 
 %% Outputs
 
 fprintf('\n')
-fprintf('parametric dimension = %d\n',ndims(fU.basis))% fprintf('parametric dimension = %d\n',numel(rv))
-fprintf('Global solution : basis dimension = %d\n',numel(fU.basis))
-fprintf('                  order = [ %s ]\n',num2str(max(fU.basis.indices.array)))
-% fprintf('                  multi-index set = \n')
-% disp([repmat('                  ',numel(fU.basis),1) num2str(fU.basis.indices.array)])
-
+fprintf('spatial dimension = %d for U\n',fU.sz)
 for k=1:n
-    fprintf('Local solution #%2.d : basis dimension = %d\n',k,numel(fw{k}.basis))
-    % fprintf('                     multi-index set = \n')
-    % disp([repmat('                     ',numel(fw{k}.basis),1) num2str(fw{k}.basis.indices.array)])
-    fprintf('                     order = [ %s ]\n',num2str(max(fw{k}.basis.indices.array)))
-    fprintf('                     nb samples = %d\n',output.N{k})
-    fprintf('                     CV error = %d\n',norm(output.CVError{k}))
-    fprintf('                     elapsed time = %f s\n',output.time(k))
+    fprintf('                  = %d for w{%u}\n',fw{k}.sz,k)
+    fprintf('                  = %d for lambda{%u}\n',flambda{k}.sz,k)
+end
+fprintf('parametric dimension = %d\n',ndims(fU.basis))
+% fprintf('parametric dimension = %d\n',numel(rv))
+fprintf('basis dimension = %d for U\n',numel(fU.basis))
+for k=1:n
+    fprintf('                = %d for w{%u}\n',numel(fw{k}.basis),k)
+    fprintf('                = %d for lambda{%u}\n',numel(flambda{k}.basis),k)
+end
+% fprintf('multi-index set for U = \n')
+% disp(num2str(fU.basis.indices.array))
+% for k=1:n
+%     fprintf('multi-index set for w{%u} = \n',k)
+%     disp(num2str(fw{k}.basis.indices.array))
+%     fprintf('multi-index set for lambda{%u} = \n',k)
+%     disp(num2str(flambda{k}.basis.indices.array))
+% end
+fprintf('order = [ %s ] for U\n',num2str(max(fU.basis.indices.array)))
+for k=1:n
+    fprintf('      = [ %s ] for w{%u}\n',num2str(max(fw{k}.basis.indices.array)),k)
+    fprintf('      = [ %s ] for lambda{%u}\n',num2str(max(flambda{k}.basis.indices.array)),k)
+end
+for k=1:n
+    fprintf('CV error = [ %s ] for w{%u}\n',num2str(cell2mat(cellfun(@norm,output.CVErrorLocalSolution{k},'UniformOutput',false))),k)
+    fprintf('         = [ %s ] for lambda{%u}\n',num2str(cell2mat(cellfun(@norm,output.CVErrorLagrangeMultiplier{k},'UniformOutput',false))),k)
+end
+for k=1:n
+    fprintf('nb samples = [ %s ] for patch #%u\n',num2str(output.nbSamples{k}),k)
+end
+for k=1:n
+    fprintf('elapsed time = %f s for patch #%u\n',output.time(k),k)
 end
 
 %% Save variables
@@ -399,8 +454,6 @@ for k=1:n
         mymatlab2tikz(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1) '.tex']);
     end
 end
-
-%% Display statistical outputs
 
 %% Display statistical outputs
 

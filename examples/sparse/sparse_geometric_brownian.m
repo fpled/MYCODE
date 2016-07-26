@@ -53,23 +53,24 @@ ls.errorEstimation = true;
 % ls.errorEstimationOptions.correction = true;
 
 t = tic;
-[f,err,N] = s.leastSquares(fun,bases,ls,rv);
+[f,err,y] = s.leastSquares(fun,bases,ls,rv);
 time = toc(t);
 
 %% Outputs
 fprintf('\n')
-fprintf('parametric dimension = %d\n',ndims(f.basis))% fprintf('parametric dimension = %d\n',numel(rv))
+fprintf('parametric dimension = %d\n',ndims(f.basis))
+% fprintf('parametric dimension = %d\n',numel(rv))
 fprintf('basis dimension = %d\n',numel(f.basis))
 fprintf('order = [ %s ]\n',num2str(max(f.basis.indices.array)))
 % fprintf('multi-index set = \n')
 % disp(f.basis.indices.array)
-fprintf('nb samples = %d\n',N)
+fprintf('nb samples = %d\n',size(y,1))
 fprintf('CV error = %d\n',norm(err))
 fprintf('elapsed time = %f s\n',time)
 
 Ntest = 1000;
 [errtest,xtest,fxtest,ytest] = computeTestError(f,fun,Ntest,rv);
-fprintf('test error = %d\n',norm(errtest))
+fprintf('test error = %d\n',errtest)
 
 %% Display random evaluation of Brownian motion
 plotGeometricBrownianKL(ytest(1,:)',fxtest(1,:)');

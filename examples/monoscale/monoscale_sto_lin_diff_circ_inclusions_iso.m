@@ -140,7 +140,7 @@ s = AdaptiveSparseTensorAlgorithm();
 % s.nbSamples = 1;
 % s.addSamplesFactor = 0.1;
 s.tol = 1e-2;
-s.tolStagnation = 1e-1;
+s.tolStagnation = 5e-2;
 % s.tolOverfit = 1.1;
 % s.bulkParameter = 0.5;
 % s.adaptiveSampling = true;
@@ -161,7 +161,7 @@ fun = MultiVariateFunction(fun,d,getnbddlfree(problem.S));
 fun.evaluationAtMultiplePoints = false;
 
 t = tic;
-[f,err,N] = s.leastSquares(fun,bases,ls,rv);
+[f,err,y] = s.leastSquares(fun,bases,ls,rv);
 time = toc(t);
 
 ind = f.basis.indices.array;
@@ -178,18 +178,19 @@ u = PCMATRIX(u,[size(u,1) 1],PC);
 %% Outputs
 
 fprintf('\n')
-fprintf('parametric dimension = %d\n',ndims(f.basis))% fprintf('parametric dimension = %d\n',numel(rv))
+fprintf('parametric dimension = %d\n',ndims(f.basis))
+% fprintf('parametric dimension = %d\n',numel(rv))
 fprintf('basis dimension = %d\n',numel(f.basis))
 % fprintf('multi-index set = \n')
 % disp(f.basis.indices.array)
 fprintf('order = [ %s ]\n',num2str(max(f.basis.indices.array)))
-fprintf('nb samples = %d\n',N)
+fprintf('nb samples = %d\n',size(y,1))
 fprintf('CV error = %d\n',norm(err))
 fprintf('elapsed time = %f s\n',time)
 
 Ntest = 100;
 [errtest,xtest,fxtest,ytest] = computeTestError(f,fun,Ntest);
-fprintf('test error = %d\n',norm(errtest))
+fprintf('test error = %d\n',errtest)
 
 %% Save variables
 

@@ -64,7 +64,7 @@ ls.errorEstimation = true;
 % ls.errorEstimationOptions.correction = true;
 
 t = tic;
-[f,err,N] = s.leastSquares(fun,bases,ls,rv);
+[f,err,y] = s.leastSquares(fun,bases,ls,rv);
 time = toc(t);
 
 ind = f.basis.indices.array;
@@ -85,7 +85,7 @@ fprintf('basis dimension = %d\n',numel(f.basis))
 fprintf('order = [ %s ]\n',num2str(max(f.basis.indices.array)))
 % fprintf('multi-index set = \n')
 % disp(f.basis.indices.array)
-fprintf('nb samples = %d\n',N)
+fprintf('nb samples = %d\n',size(y,1))
 fprintf('optimal nb samples = %d (according to empirical rule without regularization)\n',(ndims(f.basis)-1)*numel(f.basis))
 fprintf('CV error = %d\n',err)
 fprintf('elapsed time = %f s\n',time)

@@ -196,6 +196,15 @@ else
     load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
 end
 
+%% Outputs
+
+fprintf('\n')
+fprintf('spatial dimension = %d for U_ref\n',length(U_ref))
+for k=1:n
+    fprintf('                  = %d for w_ref{%u}\n',length(w_ref{k}),k)
+    fprintf('                  = %d for lambda_ref{%u}\n',length(lambda_ref{k}),k)
+end
+
 %% Global-local Iterative solver
 
 IS = IterativeSolver();
@@ -213,7 +222,15 @@ if iterativeSolver
 else
     load(fullfile(pathname,'solution.mat'),'U','w','lambda','output');
 end
-fprintf('\n');
+
+%% Outputs
+
+fprintf('\n')
+fprintf('spatial dimension = %d for U\n',length(U))
+for k=1:n
+    fprintf('                  = %d for w{%u}\n',length(w{k}),k)
+    fprintf('                  = %d for lambda{%u}\n',length(lambda{k}),k)
+end
 
 %% Save variables
 
