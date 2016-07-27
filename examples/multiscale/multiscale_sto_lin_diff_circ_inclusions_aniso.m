@@ -378,9 +378,7 @@ end
 for k=1:n
     fprintf('nb samples = [ %s ] for patch #%u\n',num2str(output.nbSamples{k}),k)
 end
-for k=1:n
-    fprintf('elapsed time = %f s for patch #%u\n',output.time(k),k)
-end
+fprintf('elapsed time = [ %s ] s\n',num2str(output.time))
 
 %% Save variables
 
@@ -427,6 +425,18 @@ mymatlab2tikz(pathname,'cpu_time.tex');
 plotRelaxationParameter(output,'legend',false);
 mysaveas(pathname,'relaxation_parameter','fig');
 mymatlab2tikz(pathname,'relaxation_parameter.tex');
+
+plotNbSamples(output);
+mysaveas(pathname,'nb_samples','fig');
+mymatlab2tikz(pathname,'nb_samples.tex');
+
+plotDimStochasticBasis(output);
+mysaveas(pathname,'dim_stochastic_basis','fig');
+mymatlab2tikz(pathname,'dim_stochastic_basis.tex');
+
+plotCVError(output);
+mysaveas(pathname,'cv_error','fig');
+mymatlab2tikz(pathname,'cv_error.tex');
 
 %% Display multi-index set
 

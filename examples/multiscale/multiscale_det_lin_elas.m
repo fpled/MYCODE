@@ -2,7 +2,7 @@
 %%--------------------------------------------%%
 
 % clc
-clear all
+% clear all
 close all
 % set(0,'DefaultFigureVisible','off');
 % myparallel('start');
