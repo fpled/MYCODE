@@ -44,10 +44,6 @@ d = 8; % parametric dimension d = 2, 4, 8
 v = UniformRandomVariable(-0.99,-0.2);
 rv = RandomVector(v,d);
 
-V = RVUNIFORM(-0.99,-0.2);
-RV = RANDVARS(repmat({V},1,d));
-[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',2);
-
 %% Materials
 
 % Deterministic subdomains
@@ -78,8 +74,6 @@ for i=1:d
     fun.evaluationAtMultiplePoints = true;
     
     K_sto = H.projection(fun,I);
-    K_sto = PCMATRIX(K_sto.tensor.data,[1 1],PC);
-    % K_sto = ones(1,1,PC) + X{i};
     
     mat_sto{i} = FOUR_ISOT('k',K_sto); % uniform value
     mat_sto{i} = setnumber(mat_sto{i},i);
@@ -163,6 +157,10 @@ fun.evaluationAtMultiplePoints = false;
 t = tic;
 [f,err,y] = s.leastSquares(fun,bases,ls,rv);
 time = toc(t);
+
+V = RVUNIFORM(-0.99,-0.2);
+RV = RANDVARS(repmat({V},1,d));
+[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
 
 ind = f.basis.indices.array;
 switch gettypebase(PC)

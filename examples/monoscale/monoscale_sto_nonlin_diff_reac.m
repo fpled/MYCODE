@@ -33,10 +33,6 @@ d = 2; % parametric dimension
 v = UniformRandomVariable(0,1);
 rv = RandomVector(v,d);
 
-V = RVUNIFORM(0,1);
-RV = RANDVARS(repmat({V},1,d));
-[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',2);
-
 %% Materials
 
 % Linear diffusion coefficient
@@ -55,8 +51,6 @@ fun = MultiVariateFunction(funtr,d);
 fun.evaluationAtMultiplePoints = true;
 
 K = H.projection(fun,I);
-K = PCMATRIX(K.tensor.data,[1 1],PC);
-% K = ones(1,1,PC) + X{1};
 
 % Nonlinear reaction parameter
 % R(xi) = xi
@@ -66,8 +60,6 @@ fun = MultiVariateFunction(funtr,d);
 fun.evaluationAtMultiplePoints = true;
 
 R = H.projection(fun,I);
-R = PCMATRIX(R.tensor.data,[1 1],PC);
-% R = X{2};
 
 mat = FOUR_ISOT('k',K,'r',R); % uniform value
 problem.S = setmaterial(problem.S,mat);
@@ -135,6 +127,10 @@ fun.evaluationAtMultiplePoints = false;
 t = tic;
 [f,err,y] = s.leastSquares(fun,bases,ls,rv);
 time = toc(t);
+
+V = RVUNIFORM(0,1);
+RV = RANDVARS(repmat({V},1,d));
+[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
 
 ind = f.basis.indices.array;
 switch gettypebase(PC)

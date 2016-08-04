@@ -72,14 +72,6 @@ d = 2*n; % parametric dimension
 v = UniformRandomVariable(0,1);
 rv = RandomVector(v,d);
 
-V = RVUNIFORM(0,1);
-RV = RANDVARS(repmat({V},1,d));
-[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',2);
-
-X_K = cellfun(@(patch) X{2*patch.number-1},patches.patches,'UniformOutput',false);
-% X_K2 = cellfun(@(patch) X{2*patch.number},patches.patches,'UniformOutput',false);
-X_R = cellfun(@(patch) X{2*patch.number},patches.patches,'UniformOutput',false);
-
 %% Materials
 
 % Linear diffusion coefficient
@@ -117,8 +109,6 @@ for k=1:n
     fun.evaluationAtMultiplePoints = true;
     
     K_patch{k} = H.projection(fun,I);
-    K_patch{k} = PCMATRIX(permute(K_patch{k}.tensor.data,[d+1 1:d]),[patch.S.nbnode 1],PC);
-    % K_patch{k} = ones(patch.S.nbnode,1,PC) + double(squeeze(f(patch.S.node))) * X_K{patch.number};
     
     fun = @(xi) xi(:,2*k) * double(squeeze(f(patch.S.node)))';
     funtr = @(xi) fun(transfer(rvb,rv,xi));
@@ -126,8 +116,6 @@ for k=1:n
     fun.evaluationAtMultiplePoints = true;
     
     R_patch{k} = H.projection(fun,I);
-    R_patch{k} = PCMATRIX(permute(R_patch{k}.tensor.data,[d+1 1:d]),[patch.S.nbnode 1],PC);
-    % R_patch{k} = double(squeeze(f(patch.S.node))) * X_R{patch.number};
     
     K_in{k} = 1;
 end
@@ -276,6 +264,10 @@ else
     load(fullfile(pathname,'reference_solution.mat'),'fU_ref','fw_ref','flambda_ref','output_ref');
 end
 
+V = RVUNIFORM(0,1);
+RV = RANDVARS(repmat({V},1,d));
+[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
+
 ind_U_ref = fU_ref.basis.indices.array;
 ind_w_ref = cellfun(@(x) x.basis.indices.array,fw_ref,'UniformOutput',false);
 ind_lambda_ref = cellfun(@(x) x.basis.indices.array,flambda_ref,'UniformOutput',false);
@@ -412,14 +404,6 @@ for k=1:n
     fprintf('      = [ %s ] for w{%u}\n',num2str(max(fw{k}.basis.indices.array)),k)
     fprintf('      = [ %s ] for lambda{%u}\n',num2str(max(flambda{k}.basis.indices.array)),k)
 end
-for k=1:n
-    fprintf('CV error = [ %s ] for w{%u}\n',num2str(cell2mat(cellfun(@norm,output.CVErrorLocalSolution{k},'UniformOutput',false))),k)
-    fprintf('         = [ %s ] for lambda{%u}\n',num2str(cell2mat(cellfun(@norm,output.CVErrorLagrangeMultiplier{k},'UniformOutput',false))),k)
-end
-for k=1:n
-    fprintf('nb samples = [ %s ] for patch #%u\n',num2str(output.nbSamples{k}),k)
-end
-fprintf('elapsed time = [ %s ] s\n',num2str(output.time))
 
 %% Save variables
 

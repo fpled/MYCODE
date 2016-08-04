@@ -87,10 +87,6 @@ d = n; % parametric dimension
 v = UniformRandomVariable(0,1);
 rv = RandomVector(v,d);
 
-V = RVUNIFORM(0,1);
-RV = RANDVARS(repmat({V},1,d));
-[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',2);
-
 %% Materials
 
 % Linear diffusion coefficient
@@ -120,16 +116,13 @@ for k=1:n
 %     f = @(x) (distance(x,c,Inf)<L) * alpha * exp(-Amp*distance(x,c,2).^2/L^2);
 %
 %     beta_patch = 1;
+%     beta_in = 0;
 %     fun = @(xi) ones(size(xi,1),patch.S.nbnode) + beta_patch * xi(:,k) * double(squeeze(f(patch.S.node)))';
 %     funtr = @(xi) fun(transfer(rvb,rv,xi));
 %     fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
 %     fun.evaluationAtMultiplePoints = true;
 %
 %     K_patch{k} = H.projection(fun,I);
-%     K_patch{k} = PCMATRIX(permute(K_patch{k}.tensor.data,[d+1 1:d]),[patch.S.nbnode 1],PC);
-%     % K_patch{k} = ones(patch.S.nbnode,1,PC) + beta_patch * double(squeeze(f(patch.S.node))) * X{k};
-
-%     beta_in = 0;
 %     K_in{k} = 1 + beta_in * squeeze(f(glob.S.node));
     
     % K_patch(x,xi) = 1 + f(x) * xi
@@ -145,9 +138,6 @@ for k=1:n
     fun.evaluationAtMultiplePoints = true;
     
     K_patch{k} = H.projection(fun,I);
-    K_patch{k} = PCMATRIX(permute(K_patch{k}.tensor.data,[d+1 1:d]),[patch.S.nbnode 1],PC);
-    % K_patch{k} = ones(patch.S.nbnode,1,PC) + double(squeeze(f(patch.S.node))) * X{k};
-    
     K_in{k} = 1;
 end
 
@@ -286,6 +276,10 @@ else
     load(fullfile(pathname,'reference_solution.mat'),'fU_ref','fw_ref','flambda_ref','output_ref');
 end
 
+V = RVUNIFORM(0,1);
+RV = RANDVARS(repmat({V},1,d));
+[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
+
 ind_U_ref = fU_ref.basis.indices.array;
 ind_w_ref = cellfun(@(x) x.basis.indices.array,fw_ref,'UniformOutput',false);
 ind_lambda_ref = cellfun(@(x) x.basis.indices.array,flambda_ref,'UniformOutput',false);
@@ -338,13 +332,6 @@ for k=1:n
     fprintf('      = [ %s ] for w_ref{%u}\n',num2str(max(fw_ref{k}.basis.indices.array)),k)
     fprintf('      = [ %s ] for lambda_ref{%u}\n',num2str(max(flambda_ref{k}.basis.indices.array)),k)
 end
-fprintf('CV error = %d for U_ref\n',norm(output_ref.CVErrorGlobalSolution))
-for k=1:n
-    fprintf('         = %d for w_ref{%u}\n',norm(output_ref.CVErrorLocalSolution{k}),k)
-    fprintf('         = %d for lambda_ref{%u}\n',norm(output_ref.CVErrorLagrangeMultiplier{k}),k)
-end
-fprintf('nb samples = %d\n',output_ref.nbSamples)
-fprintf('elapsed time = %f s\n',output_ref.time)
 
 %% Global-local Iterative solver
 
@@ -422,14 +409,6 @@ for k=1:n
     fprintf('      = [ %s ] for w{%u}\n',num2str(max(fw{k}.basis.indices.array)),k)
     fprintf('      = [ %s ] for lambda{%u}\n',num2str(max(flambda{k}.basis.indices.array)),k)
 end
-for k=1:n
-    fprintf('CV error = [ %s ] for w{%u}\n',num2str(cell2mat(cellfun(@norm,output.CVErrorLocalSolution{k},'UniformOutput',false))),k)
-    fprintf('         = [ %s ] for lambda{%u}\n',num2str(cell2mat(cellfun(@norm,output.CVErrorLagrangeMultiplier{k},'UniformOutput',false))),k)
-end
-for k=1:n
-    fprintf('nb samples = [ %s ] for patch #%u\n',num2str(output.nbSamples{k}),k)
-end
-fprintf('elapsed time = [ %s ] s\n',num2str(output.time))
 
 %% Save variables
 
