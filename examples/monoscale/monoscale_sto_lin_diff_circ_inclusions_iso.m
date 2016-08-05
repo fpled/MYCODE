@@ -44,6 +44,10 @@ d = 8; % parametric dimension d = 2, 4, 8
 v = UniformRandomVariable(-0.99,-0.2);
 rv = RandomVector(v,d);
 
+V = RVUNIFORM(-0.99,-0.2);
+RV = RANDVARS(repmat({V},1,d));
+[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
+
 %% Materials
 
 % Deterministic subdomains
@@ -157,10 +161,6 @@ fun.evaluationAtMultiplePoints = false;
 t = tic;
 [f,err,y] = s.leastSquares(fun,bases,ls,rv);
 time = toc(t);
-
-V = RVUNIFORM(-0.99,-0.2);
-RV = RANDVARS(repmat({V},1,d));
-[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
 
 ind = f.basis.indices.array;
 switch gettypebase(PC)

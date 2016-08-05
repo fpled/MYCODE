@@ -72,6 +72,10 @@ d = 2*n; % parametric dimension
 v = UniformRandomVariable(0,1);
 rv = RandomVector(v,d);
 
+V = RVUNIFORM(0,1);
+RV = RANDVARS(repmat({V},1,d));
+[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
+
 %% Materials
 
 % Linear diffusion coefficient
@@ -263,10 +267,6 @@ if directSolver
 else
     load(fullfile(pathname,'reference_solution.mat'),'fU_ref','fw_ref','flambda_ref','output_ref');
 end
-
-V = RVUNIFORM(0,1);
-RV = RANDVARS(repmat({V},1,d));
-[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
 
 ind_U_ref = fU_ref.basis.indices.array;
 ind_w_ref = cellfun(@(x) x.basis.indices.array,fw_ref,'UniformOutput',false);
