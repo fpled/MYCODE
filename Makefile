@@ -101,7 +101,7 @@ sparse:
 	matlab -nodesktop -nosplash -noFigureWindows -r "sparse_ishigami_function; exit" -logfile results/sparse_ishigami_function.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "sparse_polynomial_function; exit" -logfile results/sparse_polynomial_function.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "sparse_sobol_function; exit" -logfile results/sparse_sobol_function.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "sparse_geometric_brownian; exit" -logfile results/sparse_geometric_brownian.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "sparse_geometric_brownian; exit" -logfile results/sparse_geometric_brownian.log
 
 # Plate Shell ---------------------------
 plate:
