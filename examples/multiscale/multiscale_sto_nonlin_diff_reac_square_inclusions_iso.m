@@ -89,9 +89,8 @@ rvb = getRandomVector(bases);
 H = FullTensorProductFunctionalBasis(bases);
 I = gaussIntegrationRule(vb,2);
 I = I.tensorize(d);
-
-for k=1:n
-    patch = patches.patches{k};
+patch = patches.patches;
+parfor k=1:n
     % K_patch(x,xi) = 1 + f(x) * xi
     % K_in(x)       = 1
     % R_patch(x,xi) = f(x) * xi
@@ -101,19 +100,19 @@ for k=1:n
     c = getcenter(D_patch{k});
     f = @(x) distance(x,c,Inf)<L;
     
-    fun = @(xi) ones(size(xi,1),patch.S.nbnode) + xi(:,2*k-1) * double(squeeze(f(patch.S.node)))';
+    fun = @(xi) ones(size(xi,1),patch{k}.S.nbnode) + xi(:,2*k-1) * double(squeeze(f(patch{k}.S.node)))';
     funtr = @(xi) fun(transfer(rvb,rv,xi));
-    fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
+    fun = MultiVariateFunction(funtr,d,patch{k}.S.nbnode);
     fun.evaluationAtMultiplePoints = true;
     
-    K_patch{k} = H.projection(fun,I);
+    K_patch{k} = projection(H,fun,I);
     
-    fun = @(xi) xi(:,2*k) * double(squeeze(f(patch.S.node)))';
+    fun = @(xi) xi(:,2*k) * double(squeeze(f(patch{k}.S.node)))';
     funtr = @(xi) fun(transfer(rvb,rv,xi));
-    fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
+    fun = MultiVariateFunction(funtr,d,patch{k}.S.nbnode);
     fun.evaluationAtMultiplePoints = true;
     
-    R_patch{k} = H.projection(fun,I);
+    R_patch{k} = projection(H,fun,I);
     
     K_in{k} = 1;
 end
