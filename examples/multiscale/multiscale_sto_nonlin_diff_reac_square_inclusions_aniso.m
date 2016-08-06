@@ -48,7 +48,7 @@ D_patch{6} = DOMAIN(2,[0.7,0.4],[0.9,0.6]);
 D_patch{7} = DOMAIN(2,[0.7,0.1],[0.9,0.3]);
 D_patch{8} = DOMAIN(2,[0.4,0.1],[0.6,0.3]);
 
-nbelem_patch = [40,40];
+nbelem_patch = [20,20];
 for k=1:n
     patches.patches{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
 end
@@ -89,9 +89,9 @@ rvb = getRandomVector(bases);
 H = FullTensorProductFunctionalBasis(bases);
 I = gaussIntegrationRule(vb,2);
 I = I.tensorize(d);
-patch = patches.patches;
 g = 0.8:-0.1:0.1;
-parfor k=1:n
+for k=1:n
+    patch = patches.patches{k};
     % K_patch(x,xi)  = 1 + f(x) * g * xi
     % K_in(x)        = 1
     % R_patch(x,xi)  = f(x) * g * xi 
@@ -102,19 +102,19 @@ parfor k=1:n
     c = getcenter(D_patch{k});
     f = @(x) distance(x,c,Inf)<L;
     
-    fun = @(xi) ones(size(xi,1),patch{k}.S.nbnode) + g(k) * xi(:,2*k-1) * double(squeeze(f(patch{k}.S.node)))';
+    fun = @(xi) ones(size(xi,1),patch.S.nbnode) + g(k) * xi(:,2*k-1) * double(squeeze(f(patch.S.node)))';
     funtr = @(xi) fun(transfer(rvb,rv,xi));
-    fun = MultiVariateFunction(funtr,d,patch{k}.S.nbnode);
+    fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
     fun.evaluationAtMultiplePoints = true;
     
-    K_patch{k} = projection(H,fun,I);
+    K_patch{k} = H.projection(fun,I);
     
-    fun = @(xi) g(k) * xi(:,2*k) * double(squeeze(f(patch{k}.S.node)))';
+    fun = @(xi) g(k) * xi(:,2*k) * double(squeeze(f(patch.S.node)))';
     funtr = @(xi) fun(transfer(rvb,rv,xi));
-    fun = MultiVariateFunction(funtr,d,patch{k}.S.nbnode);
+    fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
     fun.evaluationAtMultiplePoints = true;
     
-    R_patch{k} = projection(H,fun,I);
+    R_patch{k} = H.projection(fun,I);
     
     K_in{k} = 1;
 end
