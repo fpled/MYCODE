@@ -332,6 +332,13 @@ for k=1:n
     fprintf('      = [ %s ] for w_ref{%u}\n',num2str(max(fw_ref{k}.basis.indices.array)),k)
     fprintf('      = [ %s ] for lambda_ref{%u}\n',num2str(max(flambda_ref{k}.basis.indices.array)),k)
 end
+fprintf('CV error = %d for U_ref\n',norm(output_ref.CVErrorGlobalSolution))
+for k=1:n
+    fprintf('         = %d for w_ref{%u}\n',norm(output_ref.CVErrorLocalSolution{k}),k)
+    fprintf('         = %d for lambda_ref{%u}\n',norm(output_ref.CVErrorLagrangeMultiplier{k}),k)
+end
+fprintf('nb samples = %d\n',output_ref.nbSamples)
+fprintf('elapsed time = %f s\n',output_ref.time)
 
 %% Global-local Iterative solver
 
