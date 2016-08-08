@@ -240,10 +240,6 @@ for k=1:n
     fprintf('                  = %d for lambda{%u}\n',length(lambda{k}),k)
 end
 
-%% Save variables
-
-save(fullfile(pathname,'all.mat'));
-
 %% Display domains and meshes
 
 plotDomain(D,D_patch);

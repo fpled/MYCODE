@@ -160,10 +160,6 @@ Ntest = 100;
 [errtest,xtest,fxtest,ytest] = computeTestError(f,fun,Ntest);
 fprintf('test error = %d\n',errtest)
 
-%% Save variables
-
-save(fullfile(pathname,'all.mat'));
-
 %% Display domains and meshes
 
 plotDomain(D);

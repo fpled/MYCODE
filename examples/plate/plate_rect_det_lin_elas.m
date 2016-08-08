@@ -239,7 +239,6 @@ fprintf('\n');
 %% Save variables
 
 save(fullfile(pathname,'solution.mat'),'u','U','R');
-save(fullfile(pathname,'all.mat'));
 
 %% Display domains, boundary conditions and meshes
 

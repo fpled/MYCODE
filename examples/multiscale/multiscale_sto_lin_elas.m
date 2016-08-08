@@ -389,10 +389,6 @@ for k=1:n
     fprintf('      = [ %s ] for lambda{%u}\n',num2str(max(flambda{k}.basis.indices.array)),k)
 end
 
-%% Save variables
-
-save(fullfile(pathname,'all.mat'));
-
 %% Display domains and meshes
 
 plotDomain(D,D_patch);
