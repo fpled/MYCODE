@@ -274,6 +274,11 @@ for k=1:n
     fprintf('                = %d for w_ref{%u}\n',numel(fw_ref{k}.basis),k)
     fprintf('                = %d for lambda_ref{%u}\n',numel(flambda_ref{k}.basis),k)
 end
+fprintf('order = [ %s ] for U_ref\n',num2str(max(fU_ref.basis.indices.array)))
+for k=1:n
+    fprintf('      = [ %s ] for w_ref{%u}\n',num2str(max(fw_ref{k}.basis.indices.array)),k)
+    fprintf('      = [ %s ] for lambda_ref{%u}\n',num2str(max(flambda_ref{k}.basis.indices.array)),k)
+end
 % fprintf('multi-index set for U_ref = \n')
 % disp(num2str(fU_ref.basis.indices.array))
 % for k=1:n
@@ -282,17 +287,12 @@ end
 %     fprintf('multi-index set for lambda_ref{%u} = \n',k)
 %     disp(num2str(flambda_ref{k}.basis.indices.array))
 % end
-fprintf('order = [ %s ] for U_ref\n',num2str(max(fU_ref.basis.indices.array)))
-for k=1:n
-    fprintf('      = [ %s ] for w_ref{%u}\n',num2str(max(fw_ref{k}.basis.indices.array)),k)
-    fprintf('      = [ %s ] for lambda_ref{%u}\n',num2str(max(flambda_ref{k}.basis.indices.array)),k)
-end
+fprintf('nb samples = %d\n',output_ref.nbSamples)
 fprintf('CV error = %d for U_ref\n',norm(output_ref.CVErrorGlobalSolution))
 for k=1:n
     fprintf('         = %d for w_ref{%u}\n',norm(output_ref.CVErrorLocalSolution{k}),k)
     fprintf('         = %d for lambda_ref{%u}\n',norm(output_ref.CVErrorLagrangeMultiplier{k}),k)
 end
-fprintf('nb samples = %d\n',output_ref.nbSamples)
 fprintf('elapsed time = %f s\n',output_ref.time)
 
 %% Global-local Iterative solver
@@ -358,6 +358,11 @@ for k=1:n
     fprintf('                = %d for w{%u}\n',numel(fw{k}.basis),k)
     fprintf('                = %d for lambda{%u}\n',numel(flambda{k}.basis),k)
 end
+fprintf('order = [ %s ] for U\n',num2str(max(fU.basis.indices.array)))
+for k=1:n
+    fprintf('      = [ %s ] for w{%u}\n',num2str(max(fw{k}.basis.indices.array)),k)
+    fprintf('      = [ %s ] for lambda{%u}\n',num2str(max(flambda{k}.basis.indices.array)),k)
+end
 % fprintf('multi-index set for U = \n')
 % disp(num2str(fU.basis.indices.array))
 % for k=1:n
@@ -366,11 +371,7 @@ end
 %     fprintf('multi-index set for lambda{%u} = \n',k)
 %     disp(num2str(flambda{k}.basis.indices.array))
 % end
-fprintf('order = [ %s ] for U\n',num2str(max(fU.basis.indices.array)))
-for k=1:n
-    fprintf('      = [ %s ] for w{%u}\n',num2str(max(fw{k}.basis.indices.array)),k)
-    fprintf('      = [ %s ] for lambda{%u}\n',num2str(max(flambda{k}.basis.indices.array)),k)
-end
+fprintf('elapsed time = %f s\n',output.totalTime)
 
 %% Display domains and meshes
 

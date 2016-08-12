@@ -196,10 +196,10 @@ DS.solver = NEWTONSOLVER('type','tangent','increment',true,...
     'maxiter',100,'tol',1e-12,'display',false,'stopini',true);
 DS.initializationType = 'zero';
 if solve_reference
-    [U_ref,w_ref,lambda_ref] = DS.solve(glob_out,patches,interfaces);
-    save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
+    [U_ref,w_ref,lambda_ref,output_ref] = DS.solve(glob_out,patches,interfaces);
+    save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref');
 else
-    load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref');
+    load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref');
 end
 
 %% Outputs
@@ -210,6 +210,7 @@ for k=1:n
     fprintf('                  = %d for w_ref{%u}\n',length(w_ref{k}),k)
     fprintf('                  = %d for lambda_ref{%u}\n',length(lambda_ref{k}),k)
 end
+fprintf('elapsed time = %f s\n',output_ref.time)
 
 %% Global-local Iterative solver
 
@@ -237,6 +238,7 @@ for k=1:n
     fprintf('                  = %d for w{%u}\n',length(w{k}),k)
     fprintf('                  = %d for lambda{%u}\n',length(lambda{k}),k)
 end
+fprintf('elapsed time = %f s\n',output.totalTime)
 
 %% Display domains and meshes
 
