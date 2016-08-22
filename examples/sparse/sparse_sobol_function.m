@@ -64,7 +64,7 @@ ls.errorEstimation = true;
 % ls.errorEstimationOptions.correction = true;
 
 t = tic;
-[f,err,y] = s.leastSquares(fun,bases,ls,rv);
+[f,err,~,y] = s.leastSquares(fun,bases,ls,rv);
 time = toc(t);
 
 ind = f.basis.indices.array;
