@@ -30,7 +30,7 @@ glob_out = GlobalOutside();
 
 D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
 
-nbelem = [10,10];
+nbelem = [20,20];
 glob.S = build_model(D,'nbelem',nbelem);
 % cl = 0.05;
 % glob.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
@@ -48,7 +48,7 @@ D_patch{6} = DOMAIN(2,[0.7,0.4],[0.9,0.6]);
 D_patch{7} = DOMAIN(2,[0.7,0.1],[0.9,0.3]);
 D_patch{8} = DOMAIN(2,[0.4,0.1],[0.6,0.3]);
 
-nbelem_patch = [10,10];
+nbelem_patch = [20,20];
 for k=1:n
     patches.patches{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
 end
