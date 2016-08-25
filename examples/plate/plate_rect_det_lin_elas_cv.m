@@ -228,19 +228,19 @@ fprintf('Error = %g\n',err(i));
 fprintf('Elapsed time = %f s\n',time(i));
 fprintf('\n');
 
-% disp('Displacement u at point'); disp(P);
-% fprintf('ux    = %g\n',ux);
-% fprintf('uy    = %g\n',uy);
-% fprintf('uz    = %g\n',uz);
-% fprintf('uz_ex = %g\n',uz_ex);
-% fprintf('error = %g\n',err_uz);
-% fprintf('\n');
-% 
-% disp('Rotation r at point'); disp(P);
-% fprintf('rx    = %g\n',rx);
-% fprintf('ry    = %g\n',ry);
-% fprintf('rz    = %g\n',rz);
-% fprintf('\n');
+disp('Displacement u at point'); disp(P);
+fprintf('ux    = %g\n',ux);
+fprintf('uy    = %g\n',uy);
+fprintf('uz    = %g\n',uz);
+fprintf('uz_ex = %g\n',uz_ex);
+fprintf('error = %g\n',err_uz);
+fprintf('\n');
+
+disp('Rotation r at point'); disp(P);
+fprintf('rx    = %g\n',rx);
+fprintf('ry    = %g\n',ry);
+fprintf('rz    = %g\n',rz);
+fprintf('\n');
 
 plotModel(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
 mysaveas(pathname,['mesh_' num2str(i)],formats,renderer);

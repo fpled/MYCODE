@@ -139,12 +139,6 @@ end
 t = tic;
 u = solveSystem(problem);
 time = toc(t);
-fprintf('\nRectangular plate\n');
-fprintf(['Boundary : ' boundary '\n']);
-fprintf(['Load : ' loading '\n']);
-fprintf(['Mesh : ' meshtype ' with ' elemtype ' elements\n']);
-fprintf('Span-to-thickness ratio = %g\n',max(a,b)/h);
-fprintf('Elapsed time = %f s\n',time);
 
 %% Outputs
 
