@@ -458,8 +458,8 @@ mymatlab2tikz(pathname,'cv_error.tex');
 
 for i=1:2:d
     plotMultiIndexSet(fU,'dim',[i i+1],'legend',false)
-    mysaveas(pathname,'multi_index_set_global_solution','fig');
-    mymatlab2tikz(pathname,'multi_index_set_global_solution.tex');
+    mysaveas(pathname,['multi_index_set_global_solution_dim_' num2str(i) '_' num2str(i+1)],'fig');
+    mymatlab2tikz(pathname,['multi_index_set_global_solution_dim_' num2str(i) '_' num2str(i+1) '.tex']);
 end
 
 for k=1:n
