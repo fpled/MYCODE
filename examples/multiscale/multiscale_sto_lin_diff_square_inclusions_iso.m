@@ -28,7 +28,7 @@ iterativeSolver = true;
 glob = Global();
 glob_out = GlobalOutside();
 
-D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
+D = DOMAIN(2,[0.0,0.0],[2.0,2.0]);
 
 nbelem = [20,20];
 glob.S = build_model(D,'nbelem',nbelem);
@@ -40,13 +40,13 @@ patches = Patches(n);
 
 D_patch = cell(1,n);
 D_patch{1} = DOMAIN(2,[0.1,0.1],[0.3,0.3]);
-D_patch{2} = DOMAIN(2,[0.1,0.4],[0.3,0.6]);
-D_patch{3} = DOMAIN(2,[0.1,0.7],[0.3,0.9]);
-D_patch{4} = DOMAIN(2,[0.4,0.7],[0.6,0.9]);
-D_patch{5} = DOMAIN(2,[0.7,0.7],[0.9,0.9]);
-D_patch{6} = DOMAIN(2,[0.7,0.4],[0.9,0.6]);
-D_patch{7} = DOMAIN(2,[0.7,0.1],[0.9,0.3]);
-D_patch{8} = DOMAIN(2,[0.4,0.1],[0.6,0.3]);
+D_patch{2} = DOMAIN(2,[0.1,0.9],[0.3,1.1]);
+D_patch{3} = DOMAIN(2,[0.1,1.7],[0.3,1.9]);
+D_patch{4} = DOMAIN(2,[0.9,1.7],[1.1,1.9]);
+D_patch{5} = DOMAIN(2,[1.7,1.7],[1.9,1.9]);
+D_patch{6} = DOMAIN(2,[1.7,0.9],[1.9,1.1]);
+D_patch{7} = DOMAIN(2,[1.7,0.1],[1.9,0.3]);
+D_patch{8} = DOMAIN(2,[0.9,0.1],[1.1,0.3]);
 
 nbelem_patch = [40,40];
 for k=1:n

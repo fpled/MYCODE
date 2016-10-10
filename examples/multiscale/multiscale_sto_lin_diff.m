@@ -29,7 +29,6 @@ glob = Global();
 glob_out = GlobalOutside();
 
 D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
-% D = DOMAIN(2,[0.0,0.0],[5.0,5.0]);
 
 nbelem = [20,20];
 glob.S = build_model(D,'nbelem',nbelem);
@@ -44,30 +43,16 @@ switch n
     case 1
         D_patch{1} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
     case 2
-        D_patch{1} = DOMAIN(2,[0.2,0.4],[0.4,0.6]);
-        D_patch{2} = DOMAIN(2,[0.6,0.4],[0.8,0.6]);
+        D_patch{1} = DOMAIN(2,[0.1,0.1],[0.3,0.3]);
+        D_patch{2} = DOMAIN(2,[0.7,0.7],[0.9,0.9]);
     case 4
-        D_patch{1} = DOMAIN(2,[0.2,0.2],[0.4,0.4]);
-        D_patch{2} = DOMAIN(2,[0.2,0.6],[0.4,0.8]);
-        D_patch{3} = DOMAIN(2,[0.6,0.6],[0.8,0.8]);
-        D_patch{4} = DOMAIN(2,[0.6,0.2],[0.8,0.4]);
+        D_patch{1} = DOMAIN(2,[0.1,0.1],[0.3,0.3]);
+        D_patch{2} = DOMAIN(2,[0.1,0.7],[0.3,0.9]);
+        D_patch{3} = DOMAIN(2,[0.7,0.7],[0.9,0.9]);
+        D_patch{4} = DOMAIN(2,[0.7,0.1],[0.9,0.3]);
     otherwise
         error('Wrong number of patches')
 end
-% switch n
-%     case 1
-%         D_patch{1} = DOMAIN(2,[2.0,2.0],[3.0,3.0]);
-%     case 2
-%         D_patch{1} = DOMAIN(2,[1.0,2.0],[2.0,3.0]);
-%         D_patch{2} = DOMAIN(2,[3.0,2.0],[4.0,3.0]);
-%     case 4
-%         D_patch{1} = DOMAIN(2,[1.0,1.0],[2.0,2.0]);
-%         D_patch{2} = DOMAIN(2,[1.0,3.0],[2.0,4.0]);
-%         D_patch{3} = DOMAIN(2,[3.0,3.0],[4.0,4.0]);
-%         D_patch{4} = DOMAIN(2,[3.0,1.0],[4.0,2.0]);
-%     otherwise
-%         error('Wrong number of patches')
-% end
 
 nbelem_patch = [40,40];
 for k=1:n

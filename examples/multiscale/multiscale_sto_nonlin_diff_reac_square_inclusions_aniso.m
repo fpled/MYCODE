@@ -13,6 +13,8 @@ myparallel('start');
 n = 8; % number of patches
 filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_aniso'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
+% filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_aniso_tol_3_rho_1.5'];
+% pathname = fullfile('/Users/Op/Documents/Recherche/GeM/Results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -28,7 +30,7 @@ iterativeSolver = true;
 glob = Global();
 glob_out = GlobalOutside();
 
-D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
+D = DOMAIN(2,[0.0,0.0],[2.0,2.0]);
 
 nbelem = [20,20];
 glob.S = build_model(D,'nbelem',nbelem);
@@ -40,13 +42,13 @@ patches = Patches(n);
 
 D_patch = cell(1,n);
 D_patch{1} = DOMAIN(2,[0.1,0.1],[0.3,0.3]);
-D_patch{2} = DOMAIN(2,[0.1,0.4],[0.3,0.6]);
-D_patch{3} = DOMAIN(2,[0.1,0.7],[0.3,0.9]);
-D_patch{4} = DOMAIN(2,[0.4,0.7],[0.6,0.9]);
-D_patch{5} = DOMAIN(2,[0.7,0.7],[0.9,0.9]);
-D_patch{6} = DOMAIN(2,[0.7,0.4],[0.9,0.6]);
-D_patch{7} = DOMAIN(2,[0.7,0.1],[0.9,0.3]);
-D_patch{8} = DOMAIN(2,[0.4,0.1],[0.6,0.3]);
+D_patch{2} = DOMAIN(2,[0.1,0.9],[0.3,1.1]);
+D_patch{3} = DOMAIN(2,[0.1,1.7],[0.3,1.9]);
+D_patch{4} = DOMAIN(2,[0.9,1.7],[1.1,1.9]);
+D_patch{5} = DOMAIN(2,[1.7,1.7],[1.9,1.9]);
+D_patch{6} = DOMAIN(2,[1.7,0.9],[1.9,1.1]);
+D_patch{7} = DOMAIN(2,[1.7,0.1],[1.9,0.3]);
+D_patch{8} = DOMAIN(2,[0.9,0.1],[1.1,0.3]);
 
 nbelem_patch = [20,20];
 for k=1:n
@@ -456,6 +458,8 @@ plotCVError(output);
 mysaveas(pathname,'cv_error','fig');
 mymatlab2tikz(pathname,'cv_error.tex');
 
+% close all
+
 %% Display multi-index set
 
 for i=1:2:d
@@ -475,6 +479,8 @@ for k=1:n
         mymatlab2tikz(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1) '.tex']);
     end
 end
+
+% close all
 
 %% Display statistical outputs
 

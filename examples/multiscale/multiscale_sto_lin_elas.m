@@ -44,13 +44,13 @@ switch n
     case 1
         D_patch{1} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
     case 2
-        D_patch{1} = DOMAIN(2,[0.2,0.4],[0.4,0.6]);
-        D_patch{2} = DOMAIN(2,[0.6,0.4],[0.8,0.6]);
+        D_patch{1} = DOMAIN(2,[0.1,0.1],[0.3,0.3]);
+        D_patch{2} = DOMAIN(2,[0.7,0.7],[0.9,0.9]);
     case 4
-        D_patch{1} = DOMAIN(2,[0.2,0.2],[0.4,0.4]);
-        D_patch{2} = DOMAIN(2,[0.2,0.6],[0.4,0.8]);
-        D_patch{3} = DOMAIN(2,[0.6,0.6],[0.8,0.8]);
-        D_patch{4} = DOMAIN(2,[0.6,0.2],[0.8,0.4]);
+        D_patch{1} = DOMAIN(2,[0.1,0.1],[0.3,0.3]);
+        D_patch{2} = DOMAIN(2,[0.1,0.7],[0.3,0.9]);
+        D_patch{3} = DOMAIN(2,[0.7,0.7],[0.9,0.9]);
+        D_patch{4} = DOMAIN(2,[0.7,0.1],[0.9,0.3]);
     otherwise
         error('Wrong number of patches')
 end
