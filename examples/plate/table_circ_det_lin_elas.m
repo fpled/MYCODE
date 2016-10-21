@@ -24,6 +24,7 @@ renderer = 'OpenGL';
 for il=1:length(loadings)
     loading = loadings{il};
     filename = ['table_circ_det_lin_elas_' loading];
+    close all
     
 for ie=1:length(elemtypes)
     elemtype = elemtypes{ie};
@@ -41,7 +42,6 @@ P_load = POINT([-r/2,0.0,0.0]);
 x_load = double(getcoord(P_load));
 
 P_beam = getcenter(C);
-% P_beam = POINT([r/2,0.0,0.0]);
 x_beam = double(getcoord(P_beam));
 
 l = 1;
@@ -65,36 +65,43 @@ S_beam = build_model(L_beam,'nbelem',nbelem_beam,'elemtype','BEAM');
 
 % Gravitational acceleration
 g = 10;
+
+% Plate
 % Young modulus
 E = 1;
 % Poisson ratio
 NU = 0.3;
-% Thickness
-h = 0.1;
 % Density
 RHO = 1;
+% Thickness
+h = 0.1;
 % Extensional stiffness (or Membrane rigidity)
 A = E*h/(1-NU^2);
 % Bending stiffness (or Flexural rigidity)
 D = E*h^3/(12*(1-NU^2));
-
-% Plate
+% Material
 mat_plate = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
 mat_plate = setnumber(mat_plate,1);
 S_plate = setmaterial(S_plate,mat_plate);
 
+% Beam
+% Young modulus
+E_beam = 1;
+% Poisson ratio
+NU_beam = 0.3;
+% Density
+RHO_beam = 1;
 % Radius
 r_beam = 0.1;
 % Section
 Sec_beam = pi*r_beam^2;
 % Planar second moment of area (or Planar area moment of inertia)
-IY = pi*r_beam^4/2;
+IY = pi*r_beam^4/4;
 IZ = IY;
 % Polar second moment of area (or Polar area moment of inertia)
 IX = IY+IZ;
-
-% Beam
-mat_beam = ELAS_BEAM('E',E,'NU',NU,'S',Sec_beam,'IZ',IZ,'IY',IY,'IX',IX,'RHO',RHO);
+% Material
+mat_beam = ELAS_BEAM('E',E_beam,'NU',NU_beam,'S',Sec_beam,'IZ',IZ,'IY',IY,'IX',IX,'RHO',RHO_beam);
 mat_beam = setnumber(mat_beam,2);
 S_beam = setmaterial(S_beam,mat_beam);
 
@@ -162,7 +169,7 @@ rz = eval_sol(problem.S,u,P,'RZ');
 fprintf('\nCircular table\n');
 fprintf(['Load : ' loading '\n']);
 fprintf(['Mesh : ' elemtype ' elements\n']);
-fprintf('Nb elements = %g\n',getnbelem(problem.S));
+fprintf('Nb elements = %g\n',getnbelem(S_plate));
 fprintf('Span-to-thickness ratio = %g\n',r/h);
 fprintf('Elapsed time = %f s\n',time);
 fprintf('\n');
@@ -222,8 +229,8 @@ mysaveas(pathname,'meshes_deflected',formats,renderer);
 
 % ampl = 0;
 ampl = max(getsize(problem.S))/max(abs(u))/10;
-% options = {'solid',true};
-options = {};
+options = {'solid',true};
+% options = {};
 
 plotSolution(problem.S,u,'displ',3,'ampl',ampl,options{:});
 mysaveas(pathname,'Uz',formats,renderer);

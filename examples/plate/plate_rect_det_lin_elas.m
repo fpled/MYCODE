@@ -27,24 +27,23 @@ meshtypes = {'structured','unstructured'};
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-for indexb=1:length(boundaries)
-    boundary = boundaries{indexb};
+for ib=1:length(boundaries)
+    boundary = boundaries{ib};
     
-for indexl=1:length(loadings)
-    loading = loadings{indexl};
+for il=1:length(loadings)
+    loading = loadings{il};
     filename = ['plate_rect_det_lin_elas_' boundary '_' loading];
+    close all
     
-for indexe=1:length(elemtypes)
-    elemtype = elemtypes{indexe};
+for ie=1:length(elemtypes)
+    elemtype = elemtypes{ie};
     
-for indexm=1:length(meshtypes)
-    meshtype = meshtypes{indexm};
+for im=1:length(meshtypes)
+    meshtype = meshtypes{im};
     pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep,[elemtype '_' meshtype],filesep);
     if ~exist(pathname,'dir')
         mkdir(pathname);
     end
-
-close all
 
 %% Domains and meshes
 
@@ -77,10 +76,10 @@ g = 10;
 E = 1;
 % Poisson ratio
 NU = 0.3;
-% Thickness
-h = 0.1;
 % Density
 RHO = 1;
+% Thickness
+h = 0.1;
 % Extensional stiffness (or Membrane rigidity)
 A = E*h/(1-NU^2);
 % Bending stiffness (or Flexural rigidity)
@@ -204,7 +203,6 @@ err_uz = norm(uz-uz_ex)/norm(uz_ex);
 rx = eval_sol(problem.S,u,P,'RX');
 ry = eval_sol(problem.S,u,P,'RY');
 rz = eval_sol(problem.S,u,P,'RZ');
-
 
 fprintf('\nRectangular plate\n');
 fprintf(['Boundary : ' boundary '\n']);

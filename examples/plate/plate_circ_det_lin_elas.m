@@ -34,6 +34,7 @@ for ib=1:length(boundaries)
 for il=1:length(loadings)
     loading = loadings{il};
     filename = ['plate_circ_det_lin_elas_' boundary '_' loading];
+    close all
     
 for ie=1:length(elemtypes)
     elemtype = elemtypes{ie};
@@ -41,8 +42,6 @@ for ie=1:length(elemtypes)
     if ~exist(pathname,'dir')
         mkdir(pathname);
     end
-
-close all
 
 %% Domains and meshes
 
@@ -68,10 +67,10 @@ g = 10;
 E = 1;
 % Poisson ratio
 NU = 0.3;
-% Thickness
-h = 0.1;
 % Density
 RHO = 1;
+% Thickness
+h = 0.1;
 % Extensional stiffness (or Membrane rigidity)
 A = E*h/(1-NU^2);
 % Bending stiffness (or Flexural rigidity)
@@ -138,19 +137,19 @@ Rx = u(findddl(problem.S,'RX'),:); % Rx = double(squeeze(eval_sol(problem.S,u,pr
 Ry = u(findddl(problem.S,'RY'),:); % Ry = double(squeeze(eval_sol(problem.S,u,problem.S.node,'RY'))));
 Rz = u(findddl(problem.S,'RZ'),:); % Rz = double(squeeze(eval_sol(problem.S,u,problem.S.node,'RZ'))));
 
-switch elemtype
-    case {'DKT','DKQ'} % Kirchhoff-Love
-        phi = 0;
-    case {'COQ4'} % Reissner-Mindlin
-        phi = 16/5*(h/r)^2/(1-NU);
-end
 switch loading
     case 'uniform'
+        switch elemtype
+            case {'DKT','DKQ'} % Kirchhoff-Love
+                phi = 0;
+            case {'COQ4'} % Reissner-Mindlin
+                phi = 16/5*(h/r)^2/(1-NU);
+        end
         switch boundary
             case 'clamped'
-                w = @(x) -p/(64*D) * (r^2 - (x(:,1).^2+x(:,2).^2)).*(r^2 - (x(:,1).^2+x(:,2).^2) + phi);
+                w = @(x) -p/(64*D) * (r^2 - (x(:,1).^2+x(:,2).^2)).*(r^2 - (x(:,1).^2+x(:,2).^2) + r^2*phi);
             case 'simply_supported'
-                w = @(x) -1/(2*D*(1+NU)) * (r^2 - (x(:,1).^2+x(:,2).^2)) .* (p/32*((5+NU)*r^2 - (1+NU)*(x(:,1).^2+x(:,2).^2) + phi*(1+NU)) + c);
+                w = @(x) -1/(2*D*(1+NU)) * (r^2 - (x(:,1).^2+x(:,2).^2)) .* (p/32*((5+NU)*r^2 - (1+NU)*(x(:,1).^2+x(:,2).^2) + (1+NU)*r^2*phi) + c);
         end
     case 'concentrated'
         switch boundary

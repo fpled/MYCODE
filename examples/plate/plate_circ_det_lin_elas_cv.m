@@ -35,6 +35,7 @@ for ib=1:length(boundaries)
 for il=1:length(loadings)
     loading = loadings{il};
     filename = ['plate_circ_det_lin_elas_' boundary '_' loading];
+    close all
     hcv = figure('Name','Evolution of error indicator w.r.t number of elements');
     clf
     htime = figure('Name','Evolution of CPU time w.r.t number of elements');
@@ -78,10 +79,10 @@ g = 10;
 E = 1;
 % Poisson ratio
 NU = 0.3;
-% Thickness
-h = 0.1;
 % Density
 RHO = 1;
+% Thickness
+h = 0.1;
 % Extensional stiffness (or Membrane rigidity)
 A = E*h/(1-NU^2);
 % Bending stiffness (or Flexural rigidity)
@@ -213,28 +214,15 @@ fprintf('ry    = %g\n',ry);
 fprintf('rz    = %g\n',rz);
 fprintf('\n');
 
-plotModel(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
-mysaveas(pathname,['mesh_' num2str(i)],formats,renderer);
-
-end
-
-figure(hcv)
-loglog(Nbelem,err,'-','Color',getfacecolor(ie+1),'LineWidth',1);
-hold on
-
-figure(htime)
-loglog(Nbelem,time,'-','Color',getfacecolor(ie+1),'LineWidth',1);
-hold on
-
 %% Save variables
 
-save(fullfile(pathname,'solution.mat'),'u','U','R');
+save(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','U','R');
 
 %% Display domains, boundary conditions and meshes
 
 % plotDomain(C,'solid',true,'legend',false);
-% mysaveas(pathname,'domain',formats,renderer);
-% mymatlab2tikz(pathname,'domain.tex');
+% mysaveas(pathname,['domain_' num2str(i)],formats,renderer);
+% mymatlab2tikz(pathname,['domain_' num2str(i) '.tex']);
 % 
 % [hD,legD] = plotBoundaryConditions(problem.S,'legend',false);
 % switch loading
@@ -247,10 +235,10 @@ save(fullfile(pathname,'solution.mat'),'u','U','R');
 % % legend([hD,hN],'Dirichlet','Neumann')
 % % legend([hD,hN],[legD,legN])
 % axis image
-% mysaveas(pathname,'boundary_conditions',formats,renderer);
+% mysaveas(pathname,['boundary_conditions_' num2str(i)],formats,renderer);
 % 
 % plotModel(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
-% mysaveas(pathname,'mesh',formats,renderer);
+% mysaveas(pathname,['mesh_' num2str(i)],formats,renderer);
 % 
 % ampl = max(getsize(problem.S))/max(abs(u));
 % plotModelDeflection(problem.S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
@@ -260,33 +248,43 @@ save(fullfile(pathname,'solution.mat'),'u','U','R');
 % clf
 % plot(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1);
 % plot(problem.S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1);
-% mysaveas(pathname,'meshes_deflected',formats,renderer);
+% mysaveas(pathname,['meshes_deflected_' num2str(i)],formats,renderer);
 % 
 % % plotFacets(problem.S);
 % % plotRidges(problem.S);
-% 
-% %% Display solution
-% 
+
+%% Display solution
+
 % % ampl = 0;
 % ampl = max(getsize(problem.S))/max(abs(u));
 % options = {'solid',true};
 % % options = {};
 % 
 % plotSolution(problem.S,u,'displ',3,'ampl',ampl,options{:});
-% mysaveas(pathname,'Uz',formats,renderer);
+% mysaveas(pathname,['Uz_' num2str(i)],formats,renderer);
 % 
 % figure('Name','Solution u_3_ex')
 % clf
 % plot(FENODEFIELD(w(x)),problem.S+ampl*u,options{:});
 % colorbar
 % set(gca,'FontSize',16)
-% mysaveas(pathname,'Uz_ex',formats,renderer);
+% mysaveas(pathname,['Uz_ex_' num2str(i)],formats,renderer);
 % 
 % % plotSolution(problem.S,u,'rotation',1,'ampl',ampl,options{:});
-% % mysaveas(pathname,'Rx',formats,renderer);
+% % mysaveas(pathname,['Rx_' num2str(i)],formats,renderer);
 % 
 % % plotSolution(problem.S,u,'rotation',2,'ampl',ampl,options{:});
-% % mysaveas(pathname,'Ry',formats,renderer);
+% % mysaveas(pathname,['Ry_' num2str(i)],formats,renderer);
+
+end
+
+figure(hcv)
+loglog(Nbelem,err,'-','Color',getfacecolor(ie+1),'LineWidth',1);
+hold on
+
+figure(htime)
+loglog(Nbelem,time,'-','Color',getfacecolor(ie+1),'LineWidth',1);
+hold on
 
 end
 
