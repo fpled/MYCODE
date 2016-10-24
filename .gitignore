@@ -2,4 +2,4 @@
 *.o
 *.mat
 .DS_Store
-RESULTS/
+results/
