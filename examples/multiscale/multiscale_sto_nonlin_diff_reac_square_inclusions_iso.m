@@ -13,8 +13,6 @@ myparallel('start');
 n = 8; % number of patches
 filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_iso'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
-% filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_iso_tol_3_rho_1.5'];
-% pathname = fullfile('/Users/Op/Documents/Recherche/GeM/Results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
