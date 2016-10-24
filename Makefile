@@ -51,6 +51,7 @@ Pb_Name = multiscale_sto_nonlin_diff_reac_square_inclusions_iso
 #Pb_Name = plate_rect_det_lin_elas_cv
 #Pb_Name = table_circ_det_lin_elas
 #Pb_Name = table_rect_det_lin_elas
+#Pb_Name = FCBA_table_circ_det_lin_elas
 
 # Default ---------------------------
 default:
@@ -111,6 +112,7 @@ plate:
 	matlab -nodesktop -nosplash -noFigureWindows -r "plate_rect_det_lin_elas_cv; exit" -logfile results/plate_rect_det_lin_elas_cv.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "table_circ_det_lin_elas; exit" -logfile results/table_circ_det_lin_elas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "table_rect_det_lin_elas; exit" -logfile results/table_rect_det_lin_elas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBA_table_circ_det_lin_elas; exit" -logfile results/FCBA_table_circ_det_lin_elas.log
 
 # Clean ---------------------------
 clean:
