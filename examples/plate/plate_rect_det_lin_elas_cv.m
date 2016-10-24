@@ -14,7 +14,7 @@ close all
 boundaries = {'simply_supported','clamped'};
 % loadings = {'uniform'};
 % loadings = {'concentrated'};
-loadings={'uniform','concentrated'};
+loadings = {'uniform','concentrated'};
 % elemtypes = {'DKT'};
 % elemtypes = {'DKQ'};
 % elemtypes = {'COQ4'};
@@ -173,10 +173,10 @@ switch loading
     case 'uniform'
         switch boundary
             case 'clamped'
-%                 for n=1:n_max
-%                     w = @(x) w(x) - p/(4*D*pi^4*n^4*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*n*pi*x(:,1)/a)) .* (1-cos(2*n*pi*x(:,2)/b));
-%                 end
-                w = @(x) -p/(4*D*pi^4*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*pi*x(:,1)/a)) .* (1-cos(2*pi*x(:,2)/b));
+                for n=1:n_max
+                    w = @(x) w(x) - p/(4*D*pi^4*n^4*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*n*pi*x(:,1)/a)) .* (1-cos(2*n*pi*x(:,2)/b));
+                end
+%                 w = @(x) -p/(4*D*pi^4*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*pi*x(:,1)/a)) .* (1-cos(2*pi*x(:,2)/b));
             case 'simply_supported'
                 for m=1:m_max
                     for n=1:n_max
@@ -187,10 +187,10 @@ switch loading
     case 'concentrated'
         switch boundary
             case 'clamped'
-%                 for n=1:n_max
-%                     w = @(x) w(x) - p/(D*pi^4*n^4*a*b*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*n*pi*x(:,1)/a)) .* (1-cos(2*n*pi*x(:,2)/b));
-%                 end
-                w = @(x) -p/(D*pi^4*a*b*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*pi*x(:,1)/a)) .* (1-cos(2*pi*x(:,2)/b));
+                for n=1:n_max
+                    w = @(x) w(x) - p/(D*pi^4*n^4*a*b*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*n*pi*x(:,1)/a)) .* (1-cos(2*n*pi*x(:,2)/b));
+                end
+%                 w = @(x) -p/(D*pi^4*a*b*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) .* (1-cos(2*pi*x(:,1)/a)) .* (1-cos(2*pi*x(:,2)/b));
             case 'simply_supported'
                 for m=1:m_max
                     for n=1:n_max
@@ -262,13 +262,12 @@ save(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','U','R');
 % [hN,legN] = vectorplot(problem.S,'F',problem.b,ampl,'r');
 % % legend([hD,hN],'Dirichlet','Neumann')
 % % legend([hD,hN],[legD,legN])
-% axis image
 % mysaveas(pathname,['boundary_conditions_' num2str(i)],formats,renderer);
 % 
 % plotModel(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
 % mysaveas(pathname,['mesh_' num2str(i)],formats,renderer);
 % 
-% ampl = max(getsize(problem.S))/max(abs(u));
+% ampl = getsize(problem.S)/max(abs(u))/2;
 % plotModelDeflection(problem.S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
 % mysaveas(pathname,['mesh_deflected_' num2str(i)],formats,renderer);
 % 
@@ -284,7 +283,7 @@ save(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','U','R');
 %% Display solution
 
 % % ampl = 0;
-% ampl = max(getsize(problem.S))/max(abs(u));
+% ampl = getsize(problem.S)/max(abs(u))/2;
 % options = {'solid',true};
 % % options = {};
 % 

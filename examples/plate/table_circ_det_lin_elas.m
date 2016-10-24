@@ -11,7 +11,7 @@ close all
 
 % loadings = {'uniform'};
 % loadings = {'concentrated'};
-loadings={'uniform','concentrated'};
+loadings = {'uniform','concentrated'};
 % elemtypes = {'DKT'};
 % elemtypes = {'DKQ'};
 % elemtypes = {'COQ4'};
@@ -35,19 +35,22 @@ for ie=1:length(elemtypes)
 
 %% Domains and meshes
 
+% Plate
 r = 1;
 C = CIRCLE(0.0,0.0,0.0,r);
 
+% Points
 P_load = POINT([-r/2,0.0,0.0]);
-x_load = double(getcoord(P_load));
-
 P_beam = getcenter(C);
+x_load = double(getcoord(P_load));
 x_beam = double(getcoord(P_beam));
 
+% Beam
 l = 1;
 L_beam = LIGNE(P_beam,P_beam+POINT([0.0,0.0,-l]));
 
-cl_plate = 0.1;
+% Plate mesh
+cl_plate = r/10;
 switch loading
     case 'uniform'
         points = x_beam;
@@ -56,6 +59,7 @@ switch loading
 end
 S_plate = build_model(C,'cl',cl_plate,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],'points',points);
 
+% Beam mesh
 nbelem_beam = 10;
 S_beam = build_model(L_beam,'nbelem',nbelem_beam,'elemtype','BEAM');
 % cl_beam = 0.1;
@@ -93,7 +97,7 @@ NU_beam = 0.3;
 RHO_beam = 1;
 % Radius
 r_beam = 0.1;
-% Section
+% Cross-section area
 Sec_beam = pi*r_beam^2;
 % Planar second moment of area (or Planar area moment of inertia)
 IY = pi*r_beam^4/4;
@@ -122,7 +126,8 @@ switch loading
     case 'uniform'
         p = RHO*g*h;
     case 'concentrated'
-        p = RHO*g*h*r^2;
+        Sec = pi*r^2;
+        p = RHO*g*h*Sec;
 end
 
 problem.A = calc_rigi(problem.S);
@@ -201,18 +206,17 @@ switch loading
     case 'uniform'
         ampl = 2;
     case 'concentrated'
-        ampl = 0.5;
+        ampl = 0.2;
 end
 [hN,legN] = vectorplot(problem.S,'F',problem.b,ampl,'r');
 % legend([hD,hN],'Dirichlet','Neumann')
 % legend([hD,hN],[legD,legN])
-axis image
 mysaveas(pathname,'boundary_conditions',formats,renderer);
 
 plotModel(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true,'legend',false);
 mysaveas(pathname,'mesh',formats,renderer);
 
-ampl = max(getsize(problem.S))/max(abs(u))/10;
+ampl = getsize(problem.S)/max(abs(u))/10;
 plotModelDeflection(problem.S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true,'legend',false);
 mysaveas(pathname,'mesh_deflected',formats,renderer);
 
@@ -228,7 +232,7 @@ mysaveas(pathname,'meshes_deflected',formats,renderer);
 %% Display solution
 
 % ampl = 0;
-ampl = max(getsize(problem.S))/max(abs(u))/10;
+ampl = getsize(problem.S)/max(abs(u))/10;
 options = {'solid',true};
 % options = {};
 

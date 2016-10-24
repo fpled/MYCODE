@@ -9,10 +9,23 @@ close all
 
 %% Input data
 
+% test = 'stability_1'; % stability test under vertical load 1
+% test = 'stability_2'; % stability test under vertical load 2
+% test = 'stability_3'; % stability test under vertical load 3
+% test = 'stability_4'; % stability test under vertical load 4
+% test = 'static_hori_1'; % test under static horizontal load 1
+% test = 'static_hori_2'; % test under static horizontal load 2
+% test = 'static_hori_3'; % test under static horizontal load 3
+% test = 'static_hori_4'; % test under static horizontal load 4
+% test = 'static_vert'; % test under static vertical load
+test = 'fatigue'; % horizontal fatigue test
+% test = 'impact'; % vertical impact test
+% test = 'drop'; % drop test
+
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-filename = 'FCBA_table_circ_sto_lin_elas';
+filename = ['FCBA_table_circ_sto_lin_elas_' test];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -20,34 +33,55 @@ end
 
 %% Domains and meshes
 
+% Plate
+% Radius
 r = 600e-3;
+% Thickness
+h = 25e-3;
 C = CIRCLE(0.0,0.0,0.0,r);
 
-x_load_hori = getvertices(C); % essai de charge statique horizontale
-x_load_vert = double(getcenter(C)); % essai de charge statique verticale
-x_load_stab = [0.0,-r+50e-3,0.0]; % essai de stabilité sous charge verticale
-x_load = [x_load_hori,{x_load_vert},{x_load_stab}];
+% Beams
+% Cross-section base
+b_beam = 43e-3;
+% Cross-section height
+h_beam = 43e-3;
+% Length
+l = 750e-3-h/2;
+% Distance between beams
+a = 800e-3-h_beam;
+b = 800e-3-b_beam;
+L_beam{1} = LIGNE([-a/2,-b/2,0.0],[-a/2,-b/2,-l]);
+L_beam{2} = LIGNE([a/2,-b/2,0.0],[a/2,-b/2,-l]);
+L_beam{3} = LIGNE([a/2,b/2,0.0],[a/2,b/2,-l]);
+L_beam{4} = LIGNE([-a/2,b/2,0.0],[-a/2,b/2,-l]);
+
+% Points
+x_beam = cellfun(@(L) getvertex(L,1),L_beam,'UniformOutput',false);
+x_load_stab = {[-r+50e-3,0.0,0.0],[0.0,-r+50e-3,0.0],[r-50e-3,0.0,0.0],[0.0,r-50e-3,0.0]}; % stability test under vertical load
+x_load_hori = getvertices(C); % test under static horizontal load
+x_load_vert = double(getcenter(C)); % test under static vertical load
+x_load = [x_load_stab,x_load_hori,x_load_vert];
+P_beam = cellfun(@(x) POINT(x),x_beam,'UniformOutput',false);
+P_load_stab = cellfun(@(x) POINT(x),x_load_stab,'UniformOutput',false);
+P_load_hori = cellfun(@(x) POINT(x),x_load_hori,'UniformOutput',false);
+P_load_vert = POINT(x_load_vert);
 P_load = cellfun(@(x) POINT(x),x_load,'UniformOutput',false);
 
-l = (750-25/2)*1e-3;
-a = (800-43)*1e-3;
-L_beam{1} = LIGNE([-a/2,-a/2,0.0],[-a/2,-a/2,-l]);
-L_beam{2} = LIGNE([a/2,-a/2,0.0],[a/2,-a/2,-l]);
-L_beam{3} = LIGNE([a/2,a/2,0.0],[a/2,a/2,-l]);
-L_beam{4} = LIGNE([-a/2,a/2,0.0],[-a/2,a/2,-l]);
-
-x_beam = cellfun(@(L) getvertex(L,1),L_beam,'UniformOutput',false);
-P_beam = cellfun(@(x) POINT(x),x_beam,'UniformOutput',false);
-
-cl_plate = 0.1;
+% Plate mesh
+cl_plate = r/20;
 elemtype = 'DKT';
-points = [x_beam,x_load];
-S_plate = build_model(C,'cl',cl_plate,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],'points',points);
+% points = [x_beam,x_load];
+points = [x_beam,x_load_stab];
+r_masse = 150e-3;
+C_masse = CIRCLE(0.0,0.0,0.0,r_masse);
+S_plate = gmshcirclewithinclusionandpoints(C,C_masse,points,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],3);
+S_plate = convertelem(S_plate,elemtype);
 
-nbelem_beam = 10;
-S_beam = build_model(L_beam,'nbelem',nbelem_beam,'elemtype','BEAM');
+% Beam meshes
+nbelem_beam = 100;
+S_beam = cellfun(@(L) build_model(L,'nbelem',nbelem_beam,'elemtype','BEAM'),L_beam,'UniformOutput',false);
 % cl_beam = 0.1;
-% S_beam = build_model(L_beam,'cl',cl_beam,'elemtype','BEAM','filename',[pathname 'gmsh_beam_cl_' num2str(cl_beam)]);
+% S_beam = cellfun(@(L,n) build_model(L,'cl',cl_plate,'elemtype','BEAM','filename',[pathname 'gmsh_beam_' num2str(n) '_cl_' num2str(cl_beam)]),L_beam,num2cell(1:length(L_beam)),'UniformOutput',false);
 
 %% Materials
 
@@ -60,9 +94,7 @@ E = 4e9;
 % Poisson ratio
 NU = 0.3;
 % Density
-RHO = 1;
-% Thickness
-h = 25e-3;
+RHO = 400;
 % Extensional stiffness (or Membrane rigidity)
 A = E*h/(1-NU^2);
 % Bending stiffness (or Flexural rigidity)
@@ -78,56 +110,118 @@ E_beam = 4e9;
 % Poisson ratio
 NU_beam = 0.3;
 % Density
-RHO_beam = 1;
-% Base (along y)
-b_beam = 43e-3;
-% Height (along z)
-h_beam = 43e-3;
-% Section
+RHO_beam = 700;
+% Cross-section area
 Sec_beam = b_beam*h_beam;
 % Planar second moment of area (or Planar area moment of inertia)
-IY = b_beam*h_beam^3/12;
-IZ = h_beam*b_beam^3/12;
+IY = h_beam*b_beam^3/12;
+IZ = b_beam*h_beam^3/12;
 % Polar second moment of area (or Polar area moment of inertia)
 IX = IY+IZ;
 % Material
 mat_beam = ELAS_BEAM('E',E_beam,'NU',NU_beam,'S',Sec_beam,'IZ',IZ,'IY',IY,'IX',IX,'RHO',RHO_beam);
 mat_beam = setnumber(mat_beam,2);
-S_beam = setmaterial(S_beam,mat_beam);
+S_beam = cellfun(@(S) setmaterial(S,mat_beam),S_beam,'UniformOutput',false);
 
-problem.S = union(S_plate,S_beam);
+problem.S = union(S_plate,S_beam{:});
 
 %% Dirichlet boundary conditions
 
-x_support = cellfun(@(L) getvertex(L,2),L_beam,'UniformOutput',false);
-P_support = cellfun(@(x) POINT(x),x_support,'UniformOutput',false);
+x_support = cellfun(@(L) getvertex(L,2)',L_beam,'UniformOutput',false);
+x_support = [x_support{:}]';
+P_support = POINT(x_support);
 
 problem.S = final(problem.S);
-for k=1:length(P_support)
-    problem.S = addcl(problem.S,P_support{k}); % addcl(problem.S,P_support{k},{'U','R'},0);
+switch test
+    case {'stability_1','stability_2','stability_3','stability_4'}
+        problem.S = addcl(problem.S,P_support(1)); % addcl(problem.S,P_support(1),{'U','R'},0);
+        problem.S = addcl(problem.S,P_support([2 3 4]),'U'); % addcl(problem.S,P_support([2 3 4]),'U',0);
+    case {'static_hori_1','static_hori_2'}
+        problem.S = addcl(problem.S,P_support([3 4])); % addcl(problem.S,P_support([3 4]),{'U','R'},0);
+        problem.S = addcl(problem.S,P_support([1 2]),'U'); % addcl(problem.S,P_support([1 2]),'U',0);
+    case {'static_hori_3','static_hori_4'}
+        problem.S = addcl(problem.S,P_support([4 1])); % addcl(problem.S,P_support([4 1]),{'U','R'},0);
+        problem.S = addcl(problem.S,P_support([2 3]),'U'); % addcl(problem.S,P_support([2 3]),'U',0);
+    case {'static_vert','fatigue','impact','drop'}
+        problem.S = addcl(problem.S,P_support); % addcl(problem.S,P_support,{'U','R'},0);
 end
 
 %% Stiffness matrices and sollicitation vectors
 
-% Essai de charge verticale
-p = 400;
-% Uniform or Concentrated load
-switch loading
-    case 'uniform'
-        p = RHO*g*h;
-    case 'concentrated'
-        p = RHO*g*h*r^2;
+p_plate = RHO*g*h;
+p_beam = cellfun(@(S) RHO_beam*g*Sec_beam,S_beam,'UniformOutput',false);
+switch test
+    case {'stability_1','stability_2','stability_3','stability_4'}
+        p = 400;
+    case {'static_hori_1','static_hori_2','static_hori_3','static_hori_4','fatigue'}
+        masse = 50;
+        Sec_masse = pi*r_masse^2;
+        p_masse = masse*g/Sec_masse;
+        p = 400;
+    case 'static_vert'
+        p = 1200;
+    case 'impact'
+        H = 180e-3;
+    case 'drop'
+        H = 100e-3;
 end
 
 problem.A = calc_rigi(problem.S);
-switch loading
-    case 'uniform'
-        problem.b = bodyload(keepgroupelem(problem.S,1),[],'FZ',-p);
-    case 'concentrated'
-        problem.b = nodalload(problem.S,P_load,'FZ',-p);
-        if isempty(ispointin(P_load,POINT(problem.S.node)))
+switch test
+    case 'stability_1'
+        problem.b = nodalload(problem.S,P_load_stab{1},'FZ',-p);
+        if isempty(ispointin(P_load_stab{1},POINT(problem.S.node)))
             error('Pointwise load must be applied to a node of the mesh')
         end
+    case 'stability_2'
+        problem.b = nodalload(problem.S,P_load_stab{2},'FZ',-p);
+        if isempty(ispointin(P_load_stab{2},POINT(problem.S.node)))
+            error('Pointwise load must be applied to a node of the mesh')
+        end
+    case 'stability_3'
+        problem.b = nodalload(problem.S,P_load_stab{3},'FZ',-p);
+        if isempty(ispointin(P_load_stab{3},POINT(problem.S.node)))
+            error('Pointwise load must be applied to a node of the mesh')
+        end
+    case 'stability_4'
+        problem.b = nodalload(problem.S,P_load_stab{4},'FZ',-p);
+        if isempty(ispointin(P_load_stab{4},POINT(problem.S.node)))
+            error('Pointwise load must be applied to a node of the mesh')
+        end
+    case {'static_hori_1','static_hori_2','static_hori_3','static_hori_4'}
+        if strcmp(test,'static_hori_1')
+            problem.b = nodalload(problem.S,P_load_hori{4},'FY',-p);
+            if isempty(ispointin(P_load_hori{2},POINT(problem.S.node)))
+                error('Pointwise load must be applied to a node of the mesh')
+            end
+        elseif strcmp(test,'static_hori_2')
+            problem.b = nodalload(problem.S,P_load_hori{2},'FY',p);
+            if isempty(ispointin(P_load_hori{4},POINT(problem.S.node)))
+                error('Pointwise load must be applied to a node of the mesh')
+            end
+        elseif strcmp(test,'static_hori_3')
+            problem.b = nodalload(problem.S,P_load_hori{3},'FX',-p);
+            if isempty(ispointin(P_load_hori{3},POINT(problem.S.node)))
+                error('Pointwise load must be applied to a node of the mesh')
+            end
+        elseif strcmp(test,'static_hori_4')
+            problem.b = nodalload(problem.S,P_load_hori{1},'FX',p);
+            if isempty(ispointin(P_load_hori{1},POINT(problem.S.node)))
+                error('Pointwise load must be applied to a node of the mesh')
+            end
+        end
+        problem.b = problem.b + bodyload(keepgroupelem(problem.S,2),[],'FZ',-p_masse);
+    case 'static_vert'
+        problem.b = nodalload(problem.S,P_load_vert,'FZ',-p);
+        if isempty(ispointin(P_load_vert,POINT(problem.S.node)))
+            error('Pointwise load must be applied to a node of the mesh')
+        end
+    case {'fatigue','impact','drop'}
+        error('Not implemented')
+end
+problem.b = problem.b + bodyload(keepgroupelem(problem.S,[1,2]),[],'FZ',-p_plate);
+for k=1:length(P_beam)
+    problem.b = problem.b + bodyload(keepgroupelem(problem.S,2+k),[],'FX',p_beam{k});
 end
 
 %% Resolution
@@ -161,7 +255,7 @@ ry = eval_sol(problem.S,u,P,'RY');
 rz = eval_sol(problem.S,u,P,'RZ');
 
 fprintf('\nCircular table\n');
-fprintf(['Load : ' loading '\n']);
+fprintf(['Test : ' test '\n']);
 fprintf(['Mesh : ' elemtype ' elements\n']);
 fprintf('Nb elements = %g\n',getnbelem(S_plate));
 fprintf('Span-to-thickness ratio = %g\n',r/h);
@@ -172,6 +266,12 @@ disp('Displacement u at point'); disp(P);
 fprintf('ux    = %g\n',ux);
 fprintf('uy    = %g\n',uy);
 fprintf('uz    = %g\n',uz);
+if strcmp(test,'static_vert')
+    uz_exp = -2.35e-3;
+    err_uz = norm(uz-uz_exp)/norm(uz_exp);
+    fprintf('uz_exp= %g\n',uz_exp);
+    fprintf('error = %g\n',err_uz);
+end
 fprintf('\n');
 
 disp('Rotation r at point'); disp(P);
@@ -191,22 +291,21 @@ mysaveas(pathname,'domain',formats,renderer);
 mymatlab2tikz(pathname,'domain.tex');
 
 [hD,legD] = plotBoundaryConditions(problem.S,'legend',false);
-switch loading
-    case 'uniform'
-        ampl = 2;
-    case 'concentrated'
-        ampl = 0.5;
+switch test
+    case {'static_hori_1','static_hori_2','static_hori_3','static_hori_4',...
+            'stability_1','stability_2','stability_3','stability_4',...
+            'static_vert','fatigue','impact','drop'}
+        ampl = 5;
 end
 [hN,legN] = vectorplot(problem.S,'F',problem.b,ampl,'r');
 % legend([hD,hN],'Dirichlet','Neumann')
 % legend([hD,hN],[legD,legN])
-axis image
 mysaveas(pathname,'boundary_conditions',formats,renderer);
 
 plotModel(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true,'legend',false);
 mysaveas(pathname,'mesh',formats,renderer);
 
-ampl = max(getsize(problem.S))/max(abs(u))/2;
+ampl = max(getsize(problem.S))/max(abs(u))/10;
 plotModelDeflection(problem.S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true,'legend',false);
 mysaveas(pathname,'mesh_deflected',formats,renderer);
 

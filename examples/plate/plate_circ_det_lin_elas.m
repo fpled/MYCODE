@@ -18,7 +18,7 @@ close all
 boundaries = {'simply_supported','clamped'};
 % loadings = {'uniform'};
 % loadings = {'concentrated'};
-loadings={'uniform','concentrated'};
+loadings = {'uniform','concentrated'};
 % elemtypes = {'DKT'};
 % elemtypes = {'DKQ'};
 % elemtypes = {'COQ4'};
@@ -51,7 +51,7 @@ C = CIRCLE(0.0,0.0,0.0,r);
 P_load = getcenter(C);
 x_load = double(getcoord(P_load));
 
-cl = 0.1;
+cl = r/10;
 switch loading
     case 'uniform'
         problem.S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype '_cl_' num2str(cl)]);
@@ -98,7 +98,8 @@ switch loading
     case 'uniform'
         p = RHO*g*h;
     case 'concentrated'
-        p = RHO*g*h*r^2;
+        Sec = pi*r^2;
+        p = RHO*g*h*Sec;
 end
 % Moment per unit length
 c = 0;
@@ -216,18 +217,17 @@ switch loading
     case 'uniform'
         ampl = 2;
     case 'concentrated'
-        ampl = 1;
+        ampl = 0.2;
 end
 [hN,legN] = vectorplot(problem.S,'F',problem.b,ampl,'r');
 % legend([hD,hN],'Dirichlet','Neumann')
 % legend([hD,hN],[legD,legN])
-axis image
 mysaveas(pathname,'boundary_conditions',formats,renderer);
 
 plotModel(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
 mysaveas(pathname,'mesh',formats,renderer);
 
-ampl = max(getsize(problem.S))/max(abs(u));
+ampl = getsize(problem.S)/max(abs(u))/5;
 plotModelDeflection(problem.S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
 mysaveas(pathname,'mesh_deflected',formats,renderer);
 
@@ -243,7 +243,7 @@ mysaveas(pathname,'meshes_deflected',formats,renderer);
 %% Display solution
 
 % ampl = 0;
-ampl = max(getsize(problem.S))/max(abs(u));
+ampl = getsize(problem.S)/max(abs(u))/5;
 options = {'solid',true};
 % options = {};
 

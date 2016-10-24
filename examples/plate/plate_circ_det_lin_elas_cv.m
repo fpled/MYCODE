@@ -18,7 +18,7 @@ close all
 boundaries = {'simply_supported','clamped'};
 % loadings = {'uniform'};
 % loadings = {'concentrated'};
-loadings={'uniform','concentrated'};
+loadings = {'uniform','concentrated'};
 % elemtypes = {'DKT'};
 % elemtypes = {'DKQ'};
 % elemtypes = {'COQ4'};
@@ -110,7 +110,8 @@ switch loading
     case 'uniform'
         p = RHO*g*h;
     case 'concentrated'
-        p = RHO*g*h*r^2;
+        Sec = pi*r^2;
+        p = RHO*g*h*Sec;
 end
 % Moment per unit length
 c = 0;
@@ -229,18 +230,17 @@ save(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','U','R');
 %     case 'uniform'
 %         ampl = 2;
 %     case 'concentrated'
-%         ampl = 1;
+%         ampl = 0.2;
 % end
 % [hN,legN] = vectorplot(problem.S,'F',problem.b,ampl,'r');
 % % legend([hD,hN],'Dirichlet','Neumann')
 % % legend([hD,hN],[legD,legN])
-% axis image
 % mysaveas(pathname,['boundary_conditions_' num2str(i)],formats,renderer);
 % 
 % plotModel(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
 % mysaveas(pathname,['mesh_' num2str(i)],formats,renderer);
 % 
-% ampl = max(getsize(problem.S))/max(abs(u));
+% ampl = getsize(problem.S)/max(abs(u))/5;
 % plotModelDeflection(problem.S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
 % mysaveas(pathname,'mesh_deflected',formats,renderer);
 % 
@@ -256,7 +256,7 @@ save(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','U','R');
 %% Display solution
 
 % % ampl = 0;
-% ampl = max(getsize(problem.S))/max(abs(u));
+% ampl = getsize(problem.S)/max(abs(u))/5;
 % options = {'solid',true};
 % % options = {};
 % 

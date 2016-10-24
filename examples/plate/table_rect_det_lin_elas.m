@@ -11,7 +11,7 @@ close all
 
 % loadings = {'uniform'};
 % loadings = {'concentrated'};
-loadings={'uniform','concentrated'};
+loadings = {'uniform','concentrated'};
 % elemtypes = {'DKT'};
 % elemtypes = {'DKQ'};
 % elemtypes = {'COQ4'};
@@ -41,28 +41,31 @@ for im=1:length(meshtypes)
 
 %% Domains and meshes
 
+% Plate
 a = 1;
-b = 1;
+b = 10;
 Q = QUADRANGLE([0.0,0.0,0.0],[a,0.0,0.0],[a,b,0.0],[0.0,b,0.0]);
 
-P_load = getcenter(Q);
-x_load = double(getcoord(P_load));
-
+% Beams
 l = 1;
 L_beam{1} = LIGNE([1/5*a,1/5*b,0.0],[1/5*a,1/5*b,-l]);
 L_beam{2} = LIGNE([4/5*a,1/5*b,0.0],[4/5*a,1/5*b,-l]);
 L_beam{3} = LIGNE([4/5*a,4/5*b,0.0],[4/5*a,4/5*b,-l]);
 L_beam{4} = LIGNE([1/5*a,4/5*b,0.0],[1/5*a,4/5*b,-l]);
 
+% Points
 x_beam = cellfun(@(L) getvertex(L,1),L_beam,'UniformOutput',false);
 P_beam = cellfun(@(x) POINT(x),x_beam,'UniformOutput',false);
+P_load = getcenter(Q);
+x_load = double(getcoord(P_load));
 
+% Plate mesh
 switch meshtype
     case 'structured'
         nbelem_plate = [20,20];
         S_plate = build_model(Q,'nbelem',nbelem_plate,'elemtype',elemtype);
     case 'unstructured'
-        cl_plate = 0.05;
+        cl_plate = min(a,b)/20;
         switch loading
             case 'uniform'
                 points = x_beam;
@@ -72,6 +75,7 @@ switch meshtype
         S_plate = build_model(Q,'cl',cl_plate,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_rect_' elemtype  '_cl_' num2str(cl_plate)],'points',points);
 end
 
+% Beam meshes
 nbelem_beam = 10;
 S_beam = cellfun(@(L) build_model(L,'nbelem',nbelem_beam,'elemtype','BEAM'),L_beam,'UniformOutput',false);
 % cl_beam = 0.1;
@@ -109,7 +113,7 @@ NU_beam = 0.3;
 RHO_beam = 1;
 % Radius
 r_beam = 0.1;
-% Section
+% Cross-section area
 Sec_beam = pi*r_beam^2;
 % Planar second moment of area (or Planar area moment of inertia)
 IY = pi*r_beam^4/4;
@@ -121,19 +125,16 @@ mat_beam = ELAS_BEAM('E',E_beam,'NU',NU_beam,'S',Sec_beam,'IZ',IZ,'IY',IY,'IX',I
 mat_beam = setnumber(mat_beam,2);
 S_beam = cellfun(@(S) setmaterial(S,mat_beam),S_beam,'UniformOutput',false);
 
-S_beams = union(S_beam{:});
-S_beams = concatgroupelem(S_beams);
-problem.S = union(S_plate,S_beams);
+problem.S = union(S_plate,S_beam{:});
 
 %% Dirichlet boundary conditions
 
-x_support = cellfun(@(L) getvertex(L,2),L_beam,'UniformOutput',false);
-P_support = cellfun(@(x) POINT(x),x_support,'UniformOutput',false);
+x_support = cellfun(@(L) getvertex(L,2)',L_beam,'UniformOutput',false);
+x_support = [x_support{:}]';
+P_support = POINT(x_support);
 
 problem.S = final(problem.S);
-for k=1:length(P_support)
-    problem.S = addcl(problem.S,P_support{k}); % addcl(problem.S,P_support{k},{'U','R'},0);
-end
+problem.S = addcl(problem.S,P_support); % addcl(problem.S,P_support,{'U','R'},0);
 
 %% Stiffness matrices and sollicitation vectors
 
@@ -226,13 +227,12 @@ end
 [hN,legN] = vectorplot(problem.S,'F',problem.b,ampl,'r');
 % legend([hD,hN],'Dirichlet','Neumann')
 % legend([hD,hN],[legD,legN])
-axis image
 mysaveas(pathname,'boundary_conditions',formats,renderer);
 
 plotModel(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true,'legend',false);
 mysaveas(pathname,'mesh',formats,renderer);
 
-ampl = max(getsize(problem.S))/max(abs(u))/2;
+ampl = getsize(problem.S)/max(abs(u))/5;
 plotModelDeflection(problem.S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true,'legend',false);
 mysaveas(pathname,'mesh_deflected',formats,renderer);
 
@@ -248,7 +248,7 @@ mysaveas(pathname,'meshes_deflected',formats,renderer);
 %% Display solution
 
 % ampl = 0;
-ampl = max(getsize(problem.S))/max(abs(u))/2;
+ampl = getsize(problem.S)/max(abs(u))/5;
 options = {'solid',true};
 % options = {};
 
