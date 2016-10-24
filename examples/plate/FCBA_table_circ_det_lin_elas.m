@@ -1,5 +1,5 @@
-%% FCBA table circular stochastic linear elasticity %%
-%%--------------------------------------------------%%
+%% FCBA table circular deterministic linear elasticity %%
+%%-----------------------------------------------------%%
 
 % clc
 clear all
@@ -9,7 +9,7 @@ close all
 
 %% Input data
 
-% test = 'stability_1'; % stability test under vertical load 1
+test = 'stability_1'; % stability test under vertical load 1
 % test = 'stability_2'; % stability test under vertical load 2
 % test = 'stability_3'; % stability test under vertical load 3
 % test = 'stability_4'; % stability test under vertical load 4
@@ -18,7 +18,10 @@ close all
 % test = 'static_hori_3'; % test under static horizontal load 3
 % test = 'static_hori_4'; % test under static horizontal load 4
 % test = 'static_vert'; % test under static vertical load
-test = 'fatigue'; % horizontal fatigue test
+% test = 'fatigue_1'; % fatigue test under horizontal load 1
+% test = 'fatigue_2'; % fatigue test under horizontal load 2
+% test = 'fatigue_3'; % fatigue test under horizontal load 3
+% test = 'fatigue_4'; % fatigue test under horizontal load 4
 % test = 'impact'; % vertical impact test
 % test = 'drop'; % drop test
 
@@ -58,23 +61,27 @@ L_beam{4} = LIGNE([-a/2,b/2,0.0],[-a/2,b/2,-l]);
 % Points
 x_beam = cellfun(@(L) getvertex(L,1),L_beam,'UniformOutput',false);
 x_load_stab = {[-r+50e-3,0.0,0.0],[0.0,-r+50e-3,0.0],[r-50e-3,0.0,0.0],[0.0,r-50e-3,0.0]}; % stability test under vertical load
-x_load_hori = getvertices(C); % test under static horizontal load
+x_load_hori = {getvertex(C,4),getvertex(C,2),getvertex(C,3),getvertex(C,1)}; % test under static horizontal load
 x_load_vert = double(getcenter(C)); % test under static vertical load
-x_load = [x_load_stab,x_load_hori,x_load_vert];
+x_load_fati = {getvertex(C,4),getvertex(C,2),[-str2double(num2str(sqrt(r^2-(r-50e-3)^2))),r-50e-3,0.0],[str2double(num2str(sqrt(r^2-(r-50e-3)^2))),r-50e-3,0.0]}; % fatigue test under horizontal load
+x_load = [x_load_stab,x_load_hori,x_load_vert,x_load_fati];
 P_beam = cellfun(@(x) POINT(x),x_beam,'UniformOutput',false);
 P_load_stab = cellfun(@(x) POINT(x),x_load_stab,'UniformOutput',false);
 P_load_hori = cellfun(@(x) POINT(x),x_load_hori,'UniformOutput',false);
 P_load_vert = POINT(x_load_vert);
+P_load_fati = cellfun(@(x) POINT(x),x_load_fati,'UniformOutput',false);
 P_load = cellfun(@(x) POINT(x),x_load,'UniformOutput',false);
 
 % Plate mesh
-cl_plate = r/20;
+cl_plate = r/10;
 elemtype = 'DKT';
-% points = [x_beam,x_load];
-points = [x_beam,x_load_stab];
 r_masse = 150e-3;
 C_masse = CIRCLE(0.0,0.0,0.0,r_masse);
-S_plate = gmshcirclewithinclusionandpoints(C,C_masse,points,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],3);
+% points = [x_beam,x_load_stab,x_load_fati{3:4}];
+% S_plate = gmshcirclewithinclusionandpoints(C,C_masse,points,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],3);
+Pi = [x_beam,x_load_stab];
+Pe = {getvertex(C,1),getvertex(C,2),getvertex(C,3),x_load_fati{4},getvertex(C,4),x_load_fati{3}};
+S_plate = gmshFCBAtablecirc(C,C_masse,Pi,Pe,cl_plate,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],3);
 S_plate = convertelem(S_plate,elemtype);
 
 % Beam meshes
@@ -133,16 +140,28 @@ P_support = POINT(x_support);
 
 problem.S = final(problem.S);
 switch test
-    case {'stability_1','stability_2','stability_3','stability_4'}
-        problem.S = addcl(problem.S,P_support(1)); % addcl(problem.S,P_support(1),{'U','R'},0);
-        problem.S = addcl(problem.S,P_support([2 3 4]),'U'); % addcl(problem.S,P_support([2 3 4]),'U',0);
+    case 'stability_1'
+        problem.S = addcl(problem.S,P_support(4)); % addcl(problem.S,P_support(4),{'U','R'},0);
+        problem.S = addcl(problem.S,P_support(1),'U'); % addcl(problem.S,P_support(1),'U',0);
+    case 'stability_2'
+        problem.S = addcl(problem.S,P_support(1)); % addcl(problem.S,P_support(4),{'U','R'},0);
+        problem.S = addcl(problem.S,P_support(2),'U'); % addcl(problem.S,P_support(1),'U',0);
+    case 'stability_3'
+        problem.S = addcl(problem.S,P_support(2)); % addcl(problem.S,P_support(4),{'U','R'},0);
+        problem.S = addcl(problem.S,P_support(3),'U'); % addcl(problem.S,P_support(1),'U',0);
+    case 'stability_4'
+        problem.S = addcl(problem.S,P_support(3)); % addcl(problem.S,P_support(4),{'U','R'},0);
+        problem.S = addcl(problem.S,P_support(4),'U'); % addcl(problem.S,P_support(1),'U',0);
     case {'static_hori_1','static_hori_2'}
         problem.S = addcl(problem.S,P_support([3 4])); % addcl(problem.S,P_support([3 4]),{'U','R'},0);
-        problem.S = addcl(problem.S,P_support([1 2]),'U'); % addcl(problem.S,P_support([1 2]),'U',0);
+        problem.S = addcl(problem.S,P_support([1 2]),'UZ'); % addcl(problem.S,P_support([1 2]),'UZ',0);
     case {'static_hori_3','static_hori_4'}
         problem.S = addcl(problem.S,P_support([4 1])); % addcl(problem.S,P_support([4 1]),{'U','R'},0);
-        problem.S = addcl(problem.S,P_support([2 3]),'U'); % addcl(problem.S,P_support([2 3]),'U',0);
-    case {'static_vert','fatigue','impact','drop'}
+        problem.S = addcl(problem.S,P_support([2 3]),'UZ'); % addcl(problem.S,P_support([2 3]),'UZ',0);
+    case 'static_vert'
+        problem.S = addcl(problem.S,P_support,'U'); % addcl(problem.S,P_support,'U',0);
+    case {'fatigue_1','fatigue_2','fatigue_3','fatigue_4',...
+            'impact','drop'}
         problem.S = addcl(problem.S,P_support); % addcl(problem.S,P_support,{'U','R'},0);
 end
 
@@ -153,13 +172,18 @@ p_beam = cellfun(@(S) RHO_beam*g*Sec_beam,S_beam,'UniformOutput',false);
 switch test
     case {'stability_1','stability_2','stability_3','stability_4'}
         p = 400;
-    case {'static_hori_1','static_hori_2','static_hori_3','static_hori_4','fatigue'}
+    case {'static_hori_1','static_hori_2','static_hori_3','static_hori_4'}
         masse = 50;
         Sec_masse = pi*r_masse^2;
         p_masse = masse*g/Sec_masse;
         p = 400;
     case 'static_vert'
         p = 1200;
+    case {'fatigue_1','fatigue_2','fatigue_3','fatigue_4'}
+        masse = 50;
+        Sec_masse = pi*r_masse^2;
+        p_masse = masse*g/Sec_masse;
+        p = 300;
     case 'impact'
         H = 180e-3;
     case 'drop'
@@ -190,13 +214,13 @@ switch test
         end
     case {'static_hori_1','static_hori_2','static_hori_3','static_hori_4'}
         if strcmp(test,'static_hori_1')
-            problem.b = nodalload(problem.S,P_load_hori{4},'FY',-p);
-            if isempty(ispointin(P_load_hori{2},POINT(problem.S.node)))
+            problem.b = nodalload(problem.S,P_load_hori{1},'FY',-p);
+            if isempty(ispointin(P_load_hori{1},POINT(problem.S.node)))
                 error('Pointwise load must be applied to a node of the mesh')
             end
         elseif strcmp(test,'static_hori_2')
             problem.b = nodalload(problem.S,P_load_hori{2},'FY',p);
-            if isempty(ispointin(P_load_hori{4},POINT(problem.S.node)))
+            if isempty(ispointin(P_load_hori{2},POINT(problem.S.node)))
                 error('Pointwise load must be applied to a node of the mesh')
             end
         elseif strcmp(test,'static_hori_3')
@@ -205,8 +229,8 @@ switch test
                 error('Pointwise load must be applied to a node of the mesh')
             end
         elseif strcmp(test,'static_hori_4')
-            problem.b = nodalload(problem.S,P_load_hori{1},'FX',p);
-            if isempty(ispointin(P_load_hori{1},POINT(problem.S.node)))
+            problem.b = nodalload(problem.S,P_load_hori{4},'FX',p);
+            if isempty(ispointin(P_load_hori{4},POINT(problem.S.node)))
                 error('Pointwise load must be applied to a node of the mesh')
             end
         end
@@ -216,7 +240,30 @@ switch test
         if isempty(ispointin(P_load_vert,POINT(problem.S.node)))
             error('Pointwise load must be applied to a node of the mesh')
         end
-    case {'fatigue','impact','drop'}
+    case {'fatigue_1','fatigue_2','fatigue_3','fatigue_4'}
+        if strcmp(test,'fatigue_1')
+            problem.b = nodalload(problem.S,P_load_fati{1},'FY',-p);
+            if isempty(ispointin(P_load_fati{1},POINT(problem.S.node)))
+                error('Pointwise load must be applied to a node of the mesh')
+            end
+        elseif strcmp(test,'fatigue_2')
+            problem.b = nodalload(problem.S,P_load_fati{2},'FY',p);
+            if isempty(ispointin(P_load_fati{2},POINT(problem.S.node)))
+                error('Pointwise load must be applied to a node of the mesh')
+            end
+        elseif strcmp(test,'fatigue_3')
+            problem.b = nodalload(problem.S,P_load_fati{3},'FX',p);
+            if isempty(ispointin(P_load_fati{3},POINT(problem.S.node)))
+                error('Pointwise load must be applied to a node of the mesh')
+            end
+        elseif strcmp(test,'fatigue_4')
+            problem.b = nodalload(problem.S,P_load_fati{4},'FX',-p);
+            if isempty(ispointin(P_load_fati{4},POINT(problem.S.node)))
+                error('Pointwise load must be applied to a node of the mesh')
+            end
+        end
+        problem.b = problem.b + bodyload(keepgroupelem(problem.S,2),[],'FZ',-p_masse);
+    case {'impact','drop'}
         error('Not implemented')
 end
 problem.b = problem.b + bodyload(keepgroupelem(problem.S,[1,2]),[],'FZ',-p_plate);
@@ -292,9 +339,11 @@ mymatlab2tikz(pathname,'domain.tex');
 
 [hD,legD] = plotBoundaryConditions(problem.S,'legend',false);
 switch test
-    case {'static_hori_1','static_hori_2','static_hori_3','static_hori_4',...
-            'stability_1','stability_2','stability_3','stability_4',...
-            'static_vert','fatigue','impact','drop'}
+    case {'stability_1','stability_2','stability_3','stability_4',...
+            'static_hori_1','static_hori_2','static_hori_3','static_hori_4',...
+            'static_vert',...
+            'fatigue_1','fatigue_2','fatigue_3','fatigue_4',...
+            'impact','drop'}
         ampl = 5;
 end
 [hN,legN] = vectorplot(problem.S,'F',problem.b,ampl,'r');
