@@ -28,11 +28,13 @@ test = 'static_vert'; % test under static vertical load
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-filename = ['FCBA_table_circ_det_lin_elas_' test];
+filename = ['FCBA_table_circ_sto_lin_elas_' test];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
+
+t = tic;
 
 %% Domains and meshes
 
@@ -94,6 +96,26 @@ S_beam = cellfun(@(L) build_model(L,'nbelem',nbelem_beam,'elemtype','BEAM'),L_be
 % cl_beam = 0.1;
 % S_beam = cellfun(@(L,n) build_model(L,'cl',cl_plate,'elemtype','BEAM','filename',[pathname 'gmsh_beam_' num2str(n) '_cl_' num2str(cl_beam)]),L_beam,num2cell(1:length(L_beam)),'UniformOutput',false);
 
+%% Random variables
+
+% Experimental data
+samples_E = [4.211 4.057 3.685 3.921 3.839 3.845 3.795...
+    3.406 3.389 3.299 3.485 3.319 3.267 3.349 3.307...
+    4.684 4.245 4.076 4.407 4.283 4.054 4.226 4.041...
+    4.104 4.075 3.556 3.319 3.848 3.707 3.664 3.493 3.550]*1e9;
+% Parameters
+phat = gamfit(samples_E);
+% Number of samples
+N = 1e5;
+% Sample set
+e = gamrnd(phat(1),phat(2),1,N);
+
+u = cell(1,N);
+mean_u = cell(1,N);
+std_u = cell(1,N);
+norm_mean_u = zeros(1,N);
+norm_std_u = zeros(1,N);
+for i=1:N
 %% Materials
 
 % Gravitational acceleration
@@ -101,7 +123,7 @@ g = 10;
 
 % Plate
 % Young modulus
-E = 3.797e9;
+E = e(i);
 % Poisson ratio
 NU = 0.3;
 % Density
@@ -286,63 +308,126 @@ end
 
 %% Resolution
 
-t = tic;
-u = solveSystem(problem);
+u{i} = solveSystem(problem);
+mean_u{i} = mean([u{:}],2);
+std_u{i} = std([u{:}],0,2);
+norm_mean_u(i) = norm(mean_u{i});
+norm_std_u(i) = norm(std_u{i});
+
+end
+
 time = toc(t);
+
+%% Convergence Monte-Carlo
+
+fontsize = 16;
+
+figure('Name','Convergence empirical mean')
+clf
+plot(1:N,norm_mean_u,'-b','LineWidth',1)
+grid on
+box on
+set(gca,'FontSize',fontsize)
+xlabel('Nombre de réalisations','Fontsize',fontsize)
+ylabel('Moyenne empirique','Fontsize',fontsize)
+mysaveas(pathname,'convergence_empirical_mean','fig');
+mymatlab2tikz(pathname,'convergence_empirical_mean.tex');
+
+figure('Name','Convergence empirical standard deviation')
+clf
+plot(1:N,norm_std_u,'-r','LineWidth',1)
+grid on
+box on
+set(gca,'FontSize',fontsize)
+xlabel('Nombre de réalisations','Fontsize',fontsize)
+ylabel('Ecart-type empirique','Fontsize',fontsize)
+mysaveas(pathname,'convergence_empirical_std','fig');
+mymatlab2tikz(pathname,'convergence_empirical_std.tex');
 
 %% Outputs
 
-u = unfreevector(problem.S,u);
+mean_u = mean_u{end};
+std_u = std_u{end};
 
-U = u(findddl(problem.S,DDL(DDLVECT('U',problem.S.syscoord,'TRANS'))),:);
-Ux = u(findddl(problem.S,'UX'),:); % Ux = double(squeeze(eval_sol(problem.S,u,problem.S.node,'UX')));
-Uy = u(findddl(problem.S,'UY'),:); % Uy = double(squeeze(eval_sol(problem.S,u,problem.S.node,'UY')));
-Uz = u(findddl(problem.S,'UZ'),:); % Uz = double(squeeze(eval_sol(problem.S,u,problem.S.node,'UZ')));
+mean_u = unfreevector(problem.S,mean_u);
+std_u = unfreevector(problem.S,std_u);
 
-R = u(findddl(problem.S,DDL(DDLVECT('R',problem.S.syscoord,'ROTA'))),:);
-Rx = u(findddl(problem.S,'RX'),:); % Rx = double(squeeze(eval_sol(problem.S,u,problem.S.node,'RX'))));
-Ry = u(findddl(problem.S,'RY'),:); % Ry = double(squeeze(eval_sol(problem.S,u,problem.S.node,'RY'))));
-Rz = u(findddl(problem.S,'RZ'),:); % Rz = double(squeeze(eval_sol(problem.S,u,problem.S.node,'RZ'))));
+mean_U = mean_u(findddl(problem.S,DDL(DDLVECT('U',problem.S.syscoord,'TRANS'))),:);
+mean_Ux = mean_u(findddl(problem.S,'UX'),:); % Ux = double(squeeze(eval_sol(problem.S,mean_u,problem.S.node,'UX')),:);
+mean_Uy = mean_u(findddl(problem.S,'UY'),:); % Uy = double(squeeze(eval_sol(problem.S,mean_u,problem.S.node,'UY')),:);
+mean_Uz = mean_u(findddl(problem.S,'UZ'),:); % Uz = double(squeeze(eval_sol(problem.S,mean_u,problem.S.node,'UZ')),:);
+
+mean_R = mean_u(findddl(problem.S,DDL(DDLVECT('R',problem.S.syscoord,'ROTA'))),:);
+mean_Rx = mean_u(findddl(problem.S,'RX'),:); % Rx = double(squeeze(eval_sol(problem.S,mean_u,problem.S.node,'RX'))),:);
+mean_Ry = mean_u(findddl(problem.S,'RY'),:); % Ry = double(squeeze(eval_sol(problem.S,mean_u,problem.S.node,'RY'))),:);
+mean_Rz = mean_u(findddl(problem.S,'RZ'),:); % Rz = double(squeeze(eval_sol(problem.S,mean_u,problem.S.node,'RZ'))),:);
+
+std_U = std_u(findddl(problem.S,DDL(DDLVECT('U',problem.S.syscoord,'TRANS'))),:);
+std_Ux = std_u(findddl(problem.S,'UX'),:); % Ux = double(squeeze(eval_sol(problem.S,std_u,problem.S.node,'UX')),:);
+std_Uy = std_u(findddl(problem.S,'UY'),:); % Uy = double(squeeze(eval_sol(problem.S,std_u,problem.S.node,'UY')),:);
+std_Uz = std_u(findddl(problem.S,'UZ'),:); % Uz = double(squeeze(eval_sol(problem.S,std_u,problem.S.node,'UZ')),:);
+
+std_R = std_u(findddl(problem.S,DDL(DDLVECT('R',problem.S.syscoord,'ROTA'))),:);
+std_Rx = std_u(findddl(problem.S,'RX'),:); % Rx = double(squeeze(eval_sol(problem.S,std_u,problem.S.node,'RX'))),:);
+std_Ry = std_u(findddl(problem.S,'RY'),:); % Ry = double(squeeze(eval_sol(problem.S,std_u,problem.S.node,'RY'))),:);
+std_Rz = std_u(findddl(problem.S,'RZ'),:); % Rz = double(squeeze(eval_sol(problem.S,std_u,problem.S.node,'RZ'))),:);
 
 P = getcenter(C);
 
-ux = eval_sol(problem.S,u,P,'UX');
-uy = eval_sol(problem.S,u,P,'UY');
-uz = eval_sol(problem.S,u,P,'UZ');
+mean_ux = eval_sol(problem.S,mean_u,P,'UX');
+mean_uy = eval_sol(problem.S,mean_u,P,'UY');
+mean_uz = eval_sol(problem.S,mean_u,P,'UZ');
 
-rx = eval_sol(problem.S,u,P,'RX');
-ry = eval_sol(problem.S,u,P,'RY');
-rz = eval_sol(problem.S,u,P,'RZ');
+mean_rx = eval_sol(problem.S,mean_u,P,'RX');
+mean_ry = eval_sol(problem.S,mean_u,P,'RY');
+mean_rz = eval_sol(problem.S,mean_u,P,'RZ');
+
+std_ux = eval_sol(problem.S,std_u,P,'UX');
+std_uy = eval_sol(problem.S,std_u,P,'UY');
+std_uz = eval_sol(problem.S,std_u,P,'UZ');
+
+std_rx = eval_sol(problem.S,std_u,P,'RX');
+std_ry = eval_sol(problem.S,std_u,P,'RY');
+std_rz = eval_sol(problem.S,std_u,P,'RZ');
 
 fprintf('\nCircular table\n');
 fprintf(['Test : ' test '\n']);
 fprintf(['Mesh : ' elemtype ' elements\n']);
 fprintf('Nb elements = %g\n',getnbelem(S_plate));
 fprintf('Span-to-thickness ratio = %g\n',r/h);
+fprintf('Nb samples = %g\n',N);
 fprintf('Elapsed time = %f s\n',time);
 fprintf('\n');
 
 disp('Displacement u at point'); disp(P);
-fprintf('ux    = %g\n',ux);
-fprintf('uy    = %g\n',uy);
-fprintf('uz    = %g\n',uz);
+fprintf('mean(ux) = %g\n',mean_ux);
+fprintf('std(ux)  = %g\n',std_ux);
+fprintf('mean(uy) = %g\n',mean_uy);
+fprintf('std(uy)  = %g\n',std_uy);
+fprintf('mean(uz) = %g\n',mean_uz);
+fprintf('std(uz)  = %g\n',std_uz);
 if strcmp(test,'static_vert')
     uz_exp = -2.35e-3;
-    err_uz = norm(uz-uz_exp)/norm(uz_exp);
-    fprintf('uz_exp= %g\n',uz_exp);
-    fprintf('error = %g\n',err_uz);
+    err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
+    fprintf('uz_exp   = %g\n',uz_exp);
+    fprintf('error    = %g\n',err_uz);
 end
 fprintf('\n');
 
 disp('Rotation r at point'); disp(P);
-fprintf('rx    = %g\n',rx);
-fprintf('ry    = %g\n',ry);
-fprintf('rz    = %g\n',rz);
+fprintf('mean(rx) = %g\n',mean_rx);
+fprintf('std(rx)  = %g\n',std_rx);
+fprintf('mean(ry) = %g\n',mean_ry);
+fprintf('std(ry)  = %g\n',std_ry);
+fprintf('mean(rz) = %g\n',mean_rz);
+fprintf('std(rz)  = %g\n',std_rz);
 fprintf('\n');
 
 %% Save variables
 
-save(fullfile(pathname,'solution.mat'),'u','U','R');
+save(fullfile(pathname,'solution.mat'),...
+    'mean_u','mean_U','mean_R',...
+    'std_u','std_U','std_R');
 
 %% Display domains, boundary conditions and meshes
 
@@ -367,14 +452,14 @@ mysaveas(pathname,'boundary_conditions',formats,renderer);
 plotModel(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true,'legend',false);
 mysaveas(pathname,'mesh',formats,renderer);
 
-ampl = max(getsize(problem.S))/max(abs(u))/10;
-plotModelDeflection(problem.S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true,'legend',false);
+ampl = max(getsize(problem.S))/max(abs(mean_u))/10;
+plotModelDeflection(problem.S,mean_u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true,'legend',false);
 mysaveas(pathname,'mesh_deflected',formats,renderer);
 
 figure('Name','Meshes')
 clf
 plot(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true);
-plot(problem.S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true);
+plot(problem.S+ampl*mean_u,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true);
 mysaveas(pathname,'meshes_deflected',formats,renderer);
 
 % plotFacets(problem.S);
@@ -383,17 +468,14 @@ mysaveas(pathname,'meshes_deflected',formats,renderer);
 %% Display solution
 
 % ampl = 0;
-ampl = max(getsize(problem.S))/max(abs(u))/10;
+ampl = max(getsize(problem.S))/max(abs(mean_u))/10;
 options = {'solid',true};
 % options = {};
 
-plotSolution(problem.S,u,'displ',3,'ampl',ampl,options{:});
-mysaveas(pathname,'Uz',formats,renderer);
+plotSolution(problem.S,mean_u,'displ',3,'ampl',ampl,options{:});
+mysaveas(pathname,'mean_Uz',formats,renderer);
 
-% plotSolution(problem.S,u,'rotation',1,'ampl',ampl,options{:});
-% mysaveas(pathname,'Rx',formats,renderer);
-
-% plotSolution(problem.S,u,'rotation',2,'ampl',ampl,options{:});
-% mysaveas(pathname,'Ry',formats,renderer);
+plotSolution(problem.S,mean_u,'displ',3,'ampl',ampl,options{:});
+mysaveas(pathname,'std_Uz',formats,renderer);
 
 % myparallel('stop');

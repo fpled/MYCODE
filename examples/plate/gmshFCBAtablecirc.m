@@ -1,30 +1,30 @@
-function varargout = gmshFCBAtablecirc(C,I,Pi,Pe,clC,clI,clPi,clPe,filename,indim,varargin)
-% function varargout = gmshFCBAtablecirc(C,I,Pi,Pe,clC,clI,clPi,clPe,filename,indim)
+function varargout = gmshFCBAtablecirc(C,I,Pi,Pb,clC,clI,clPi,clPb,filename,indim,varargin)
+% function varargout = gmshFCBAtablecirc(C,I,Pi,Pb,clC,clI,clPi,clPb,filename,indim)
 % C : CIRCLE
 % I : DOMAIN or CIRCLE or ELLIPSE or QUADRANGLE
-% Pi, Pe : POINT
-% clD, clI, clPi, clPe : characteristic lengths
+% Pi, Pb : POINT
+% clC, clI, clPi, clPb : characteristic lengths
 % filename : file name (optional)
 % indim : space dimension (optional, getdim(D) by default)
 
-if nargin<10
-    indim = getdim(C);
-end
-if nargin<8
-    clPe = clC;
+if nargin<6
+    clI = clC;
 end
 if nargin<7
     clPi = clC;
 end
-if nargin<6
-    clI = clC;
+if nargin<8
+    clPb = clC;
+end
+if nargin<10
+    indim = getdim(C);
 end
 
-if ~iscell(Pe)
-    Pe = {Pe};
+if ~iscell(Pb)
+    Pb = {Pb};
 end
-if length(clPe)==1
-    clPe = repmat(clPe,1,length(Pe));
+if length(clPb)==1
+    clPb = repmat(clPb,1,length(Pb));
 end
 
 G = GMSHFILE();
@@ -33,13 +33,13 @@ if nargin>=9 && ischar(filename)
 end
 
 numcenter = 1;
-numpoints = 1+(1:length(Pe));
-numlines = 1:length(Pe);
+numpoints = 1+(1:length(Pb));
+numlines = 1:length(Pb);
 numlineloop = 5;
 % PC = getvertices(C);
 Pc = double(getcenter(C));
 G = createpoint(G,Pc,clC,numcenter);
-G = createpoints(G,Pe,clPe,numpoints);
+G = createpoints(G,Pb,clPb,numpoints);
 G = createcirclecontour(G,numcenter,numpoints,numlines,numlineloop);
 
 if ~iscell(I)
@@ -47,13 +47,6 @@ if ~iscell(I)
 end
 if length(clI)==1
     clI = repmat(clI,1,length(I));
-end
-
-if ~iscell(Pi)
-    Pi = {Pi};
-end
-if length(clPi)==1
-    clPi = repmat(clPi,1,length(Pi));
 end
 
 numpoints = numpoints(end)+(1:5);
@@ -68,6 +61,9 @@ for j=1:length(I)
     end
     G = G+GI;
     G = createplanesurface(G,numlines(end),j+1);
+    if isa(I{j},'CIRCLE') || isa(I{j},'ELLIPSE')
+        G = embedpointsinsurface(G,numpoints(1),j+1);
+    end
     if ischarin('recombine',varargin)
         G = recombinesurface(G,j+1);
     end
