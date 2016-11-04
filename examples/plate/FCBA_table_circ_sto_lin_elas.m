@@ -446,7 +446,7 @@ switch test
             'impact','drop'}
         ampl = 5;
 end
-[hN,legN] = vectorplot(problem.S,'F',problem.b,ampl,'r');
+[hN,legN] = vectorplot(problem.S,'F',problem.b,ampl,'r','LineWidth',1);
 % legend([hD,hN],'Dirichlet','Neumann')
 % legend([hD,hN],[legD,legN])
 mysaveas(pathname,'boundary_conditions',formats,renderer);
@@ -477,7 +477,7 @@ options = {'solid',true};
 plotSolution(problem.S,mean_u,'displ',3,'ampl',ampl,options{:});
 mysaveas(pathname,'mean_Uz',formats,renderer);
 
-plotSolution(problem.S,mean_u,'displ',3,'ampl',ampl,options{:});
+plotSolution(problem.S,std_u,'displ',3,'ampl',ampl,options{:});
 mysaveas(pathname,'std_Uz',formats,renderer);
 
 % myparallel('stop');

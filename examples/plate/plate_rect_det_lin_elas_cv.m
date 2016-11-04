@@ -259,7 +259,7 @@ save(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','U','R');
 %     case 'concentrated'
 %         ampl = 0.5;
 % end
-% [hN,legN] = vectorplot(problem.S,'F',problem.b,ampl,'r');
+% [hN,legN] = vectorplot(problem.S,'F',problem.b,ampl,'r','LineWidth',1);
 % % legend([hD,hN],'Dirichlet','Neumann')
 % % legend([hD,hN],[legD,legN])
 % mysaveas(pathname,['boundary_conditions_' num2str(i)],formats,renderer);
