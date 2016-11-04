@@ -1,7 +1,7 @@
 %% Stochastic modeling of Young modulus %%
 %%--------------------------------------%%
 
-clc
+% clc
 clear all
 close all
 
