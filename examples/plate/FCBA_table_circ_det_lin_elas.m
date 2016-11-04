@@ -189,7 +189,7 @@ switch test
         Sec_masse = pi*r_masse^2;
         p_masse = masse*g/Sec_masse;
         p = 400;
-        slope = 28;
+        slope = 0;
     case 'static_vert'
         p = 1200;
     case {'fatigue_1','fatigue_2','fatigue_3','fatigue_4'}

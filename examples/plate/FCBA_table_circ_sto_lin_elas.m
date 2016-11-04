@@ -106,7 +106,7 @@ samples_E = [4.211 4.057 3.685 3.921 3.839 3.845 3.795...
 % Parameters
 phat = gamfit(samples_E);
 % Number of samples
-N = 1e5;
+N = 1e4;
 % Sample set
 e = gamrnd(phat(1),phat(2),1,N);
 
@@ -116,6 +116,7 @@ std_u = cell(1,N);
 norm_mean_u = zeros(1,N);
 norm_std_u = zeros(1,N);
 for i=1:N
+    fprintf('Sample #%d\n',i);
 %% Materials
 
 % Gravitational acceleration
@@ -211,7 +212,7 @@ switch test
         Sec_masse = pi*r_masse^2;
         p_masse = masse*g/Sec_masse;
         p = 400;
-        slope = 28;
+        slope = 0;
     case 'static_vert'
         p = 1200;
     case {'fatigue_1','fatigue_2','fatigue_3','fatigue_4'}
@@ -328,7 +329,7 @@ plot(1:N,norm_mean_u,'-b','LineWidth',1)
 grid on
 box on
 set(gca,'FontSize',fontsize)
-xlabel('Nombre de réalisations','Fontsize',fontsize)
+xlabel('Nombre de rÃ©alisations','Fontsize',fontsize)
 ylabel('Moyenne empirique','Fontsize',fontsize)
 mysaveas(pathname,'convergence_empirical_mean','fig');
 mymatlab2tikz(pathname,'convergence_empirical_mean.tex');
@@ -339,7 +340,7 @@ plot(1:N,norm_std_u,'-r','LineWidth',1)
 grid on
 box on
 set(gca,'FontSize',fontsize)
-xlabel('Nombre de réalisations','Fontsize',fontsize)
+xlabel('Nombre de rÃ©alisations','Fontsize',fontsize)
 ylabel('Ecart-type empirique','Fontsize',fontsize)
 mysaveas(pathname,'convergence_empirical_std','fig');
 mymatlab2tikz(pathname,'convergence_empirical_std.tex');
