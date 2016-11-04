@@ -6,8 +6,8 @@ clear all
 close all
 
 filename = 'model_sto_Young';
-% pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
-pathname = '/Users/Op/Dropbox/LUC-FLORENT-HEBA-ZHOU/Presentations/2016_GDR_Sciences_du_Bois/GDR_Sciences_du_bois_2016_Poster/figures/';
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
+% pathname = '/Users/Op/Dropbox/LUC-FLORENT-HEBA-ZHOU/Presentations/2016_GDR_Sciences_du_Bois/GDR_Sciences_du_bois_2016_Poster/figures/';
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
