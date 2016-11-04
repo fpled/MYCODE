@@ -29,13 +29,13 @@ mean_E = mean(E);
 std_E = std(E);
 
 %% Plot samples
-figure('Name','Données expérimentales')
+figure('Name','Experimental data')
 clf
 bar(1:length(E),E)
 set(gca,'FontSize',fontsize)
 set(gca,'XLim',[0,length(E)+1])
-xlabel('Echantillon','Fontsize',fontsize);
-ylabel('Module d''Young (GPa)','Fontsize',fontsize); 
+xlabel('Echantillon');
+ylabel('Module d''Young (GPa)'); 
 mysaveas(pathname,'data_E','fig');
 mymatlab2tikz(pathname,'data_E.tex');
 
@@ -134,8 +134,8 @@ hold off
 grid on
 box on
 set(gca,'FontSize',fontsize)
-xlabel('Nombre de réalisations','Fontsize',fontsize)
-ylabel('Module d''Young (GPa)','Fontsize',fontsize)
+xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+ylabel('Module d''Young (GPa)','Interpreter',interpreter)
 % l = legend('r\''ealisations $(e_1,\dots,e_N)$','moyenne $m_E$');
 % set(l,'Interpreter',interpreter);
 mysaveas(pathname,'samples_E','fig');

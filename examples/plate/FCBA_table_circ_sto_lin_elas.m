@@ -322,6 +322,7 @@ time = toc(t);
 %% Convergence Monte-Carlo
 
 fontsize = 16;
+interpreter = 'latex';
 
 figure('Name','Convergence empirical mean')
 clf
@@ -329,8 +330,8 @@ plot(1:N,norm_mean_u,'-b','LineWidth',1)
 grid on
 box on
 set(gca,'FontSize',fontsize)
-xlabel('Nombre de réalisations','Fontsize',fontsize)
-ylabel('Moyenne empirique','Fontsize',fontsize)
+xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+ylabel('Moyenne empirique','Interpreter',interpreter)
 mysaveas(pathname,'convergence_empirical_mean','fig');
 mymatlab2tikz(pathname,'convergence_empirical_mean.tex');
 
@@ -340,8 +341,8 @@ plot(1:N,norm_std_u,'-r','LineWidth',1)
 grid on
 box on
 set(gca,'FontSize',fontsize)
-xlabel('Nombre de réalisations','Fontsize',fontsize)
-ylabel('Ecart-type empirique','Fontsize',fontsize)
+xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+ylabel('Ecart-type empirique','Interpreter',interpreter)
 mysaveas(pathname,'convergence_empirical_std','fig');
 mymatlab2tikz(pathname,'convergence_empirical_std.tex');
 
