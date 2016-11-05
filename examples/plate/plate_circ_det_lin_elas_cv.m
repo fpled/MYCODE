@@ -22,9 +22,9 @@ loadings = {'uniform','concentrated'};
 % elemtypes = {'DKT'};
 % elemtypes = {'DKQ'};
 % elemtypes = {'COQ4'};
-% elemtypes = {'DKT','DKQ'};
-elemtypes = {'DKT','DKQ','COQ4'};
-nbelems = 2.^(1:6);
+elemtypes = {'DKT','DKQ'};
+% elemtypes = {'DKT','DKQ','COQ4'};
+nbelems = 2.^(1:7);
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
