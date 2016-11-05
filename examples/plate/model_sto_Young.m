@@ -7,7 +7,6 @@ close all
 
 filename = 'model_sto_Young';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
-% pathname = '/Users/Op/Dropbox/LUC-FLORENT-HEBA-ZHOU/Presentations/2016_GDR_Sciences_du_Bois/GDR_Sciences_du_bois_2016_Poster/figures/';
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -34,8 +33,8 @@ clf
 bar(1:length(E),E)
 set(gca,'FontSize',fontsize)
 set(gca,'XLim',[0,length(E)+1])
-xlabel('Echantillon');
-ylabel('Module d''Young (GPa)'); 
+xlabel('\''Echantillon','Interpreter',interpreter);
+ylabel('Module d''Young (GPa)','Interpreter',interpreter); 
 mysaveas(pathname,'data_E','fig');
 mymatlab2tikz(pathname,'data_E.tex');
 
