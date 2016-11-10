@@ -3,7 +3,7 @@ User_Name_mac = Op
 User_Name_linux = pled
 # Machine name
 Machine_Name_mac = MacBookProOp
-Machine_Name_pcmsme = pcmsmemeca22
+Machine_Name_pcmsme = pcmsmemeca52
 # Directory
 Dir_mac = /Users/$(User_Name_mac)/Documents/Recherche/GeM
 Dir_pcmsme = /home/p/$(User_Name_linux)/Documents
