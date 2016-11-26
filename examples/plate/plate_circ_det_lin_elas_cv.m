@@ -66,15 +66,15 @@ for i=1:length(nbelems)
 cl = r./nbelems(i);
 switch loading
     case 'uniform'
-        problem.S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype '_cl_' num2str(cl)]);
+        S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype '_cl_' num2str(cl)]);
     case 'concentrated'
-        problem.S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype '_cl_' num2str(cl)],'points',x_load);
+        S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype '_cl_' num2str(cl)],'points',x_load);
 end
 
 %% Materials
 
 % Gravitational acceleration
-g = 10;
+g = 9.81;
 % Young modulus
 E = 1;
 % Poisson ratio
@@ -84,24 +84,24 @@ RHO = 1;
 % Thickness
 h = 0.1;
 % Extensional stiffness (or Membrane rigidity)
-A = E*h/(1-NU^2);
+A_rig = E*h/(1-NU^2);
 % Bending stiffness (or Flexural rigidity)
-D = E*h^3/(12*(1-NU^2));
+D_rig = E*h^3/(12*(1-NU^2));
 
 % Material
 mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
-problem.S = setmaterial(problem.S,mat);
+S = setmaterial(S,mat);
 
 %% Dirichlet boundary conditions
 
-problem.S = final(problem.S);
+S = final(S);
 switch boundary
     case 'clamped'
-        problem.S = addcl(problem.S,[]); % addcl(problem.S,[],{'U','R'},0);
+        S = addcl(S,[]); % addcl(S,[],{'U','R'},0);
     case 'simply_supported'
-        problem.S = addcl(problem.S,[],'U'); % problem.S = addcl(problem.S,[],{'UX','UY','UZ'},0);
+        S = addcl(S,[],'U'); % S = addcl(S,[],{'UX','UY','UZ'},0);
 end
-% problem.S = addcl(problem.S,[],'R'); % problem.S = addcl(problem.S,[],{'RX','RY','RZ'},0);
+% S = addcl(S,[],'R'); % S = addcl(S,[],{'RX','RY','RZ'},0);
 
 %% Stiffness matrices and sollicitation vectors
 
@@ -116,39 +116,39 @@ end
 % Moment per unit length
 c = 0;
 
-problem.A = calc_rigi(problem.S);
+A = calc_rigi(S);
 switch loading
     case 'uniform'
-        problem.b = bodyload(problem.S,[],'FZ',-p);
+        f = bodyload(S,[],'FZ',-p);
     case 'concentrated'
-        problem.b = nodalload(problem.S,P_load,'FZ',-p);
-        if isempty(ispointin(P_load,POINT(problem.S.node)))
+        f = nodalload(S,P_load,'FZ',-p);
+        if isempty(ispointin(P_load,POINT(S.node)))
             error('Pointwise load must be applied to a node of the mesh')
         end
 end
 if strcmp(boundary,'simply_supported')
-    problem.b = problem.b + surfload(problem.S,[],{'MX','MY'},-c*[1;1]);
+    f = f + surfload(S,[],{'MX','MY'},-c*[1;1]);
 end
 
 %% Resolution
 
 t = tic;
-u = solveSystem(problem);
+u = A\f;
 time(i) = toc(t);
 
 %% Outputs
 
-u = unfreevector(problem.S,u);
+u = unfreevector(S,u);
 
-U = u(findddl(problem.S,DDL(DDLVECT('U',problem.S.syscoord,'TRANS'))),:);
-Ux = u(findddl(problem.S,'UX'),:); % Ux = double(squeeze(eval_sol(problem.S,u,problem.S.node,'UX')));
-Uy = u(findddl(problem.S,'UY'),:); % Uy = double(squeeze(eval_sol(problem.S,u,problem.S.node,'UY')));
-Uz = u(findddl(problem.S,'UZ'),:); % Uz = double(squeeze(eval_sol(problem.S,u,problem.S.node,'UZ')));
+U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+Ux = u(findddl(S,'UX'),:); % Ux = double(squeeze(eval_sol(S,u,S.node,'UX')));
+Uy = u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,u,S.node,'UY')));
+Uz = u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,u,S.node,'UZ')));
 
-R = u(findddl(problem.S,DDL(DDLVECT('R',problem.S.syscoord,'ROTA'))),:);
-Rx = u(findddl(problem.S,'RX'),:); % Rx = double(squeeze(eval_sol(problem.S,u,problem.S.node,'RX'))));
-Ry = u(findddl(problem.S,'RY'),:); % Ry = double(squeeze(eval_sol(problem.S,u,problem.S.node,'RY'))));
-Rz = u(findddl(problem.S,'RZ'),:); % Rz = double(squeeze(eval_sol(problem.S,u,problem.S.node,'RZ'))));
+R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
+Rx = u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,u,S.node,'RX'))));
+Ry = u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,u,S.node,'RY'))));
+Rz = u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,u,S.node,'RZ'))));
 
 switch elemtype
     case {'DKT','DKQ'} % Kirchhoff-Love
@@ -160,19 +160,19 @@ switch loading
     case 'uniform'
         switch boundary
             case 'clamped'
-                w = @(x) -p/(64*D) * (r^2 - (x(:,1).^2+x(:,2).^2)).*(r^2 - (x(:,1).^2+x(:,2).^2) + phi);
+                w = @(x) -p/(64*D_rig) * (r^2 - (x(:,1).^2+x(:,2).^2)).*(r^2 - (x(:,1).^2+x(:,2).^2) + phi);
             case 'simply_supported'
-                w = @(x) -1/(2*D*(1+NU)) * (r^2 - (x(:,1).^2+x(:,2).^2)) .* (p/32*((5+NU)*r^2 - (1+NU)*(x(:,1).^2+x(:,2).^2) + phi*(1+NU)) + c);
+                w = @(x) -1/(2*D_rig*(1+NU)) * (r^2 - (x(:,1).^2+x(:,2).^2)) .* (p/32*((5+NU)*r^2 - (1+NU)*(x(:,1).^2+x(:,2).^2) + phi*(1+NU)) + c);
         end
     case 'concentrated'
         switch boundary
             case 'clamped'
-                w = @(x) -p/(16*pi*D) * (r^2 - (x(:,1).^2+x(:,2).^2) - 2*(x(:,1).^2+x(:,2).^2).*log(r./sqrt(x(:,1).^2+x(:,2).^2)));
+                w = @(x) -p/(16*pi*D_rig) * (r^2 - (x(:,1).^2+x(:,2).^2) - 2*(x(:,1).^2+x(:,2).^2).*log(r./sqrt(x(:,1).^2+x(:,2).^2)));
             case 'simply_supported'
-                w = @(x) -p/(16*pi*D) * ((3+NU)/(1+NU)*(r^2 - (x(:,1).^2+x(:,2).^2)) - 2*(x(:,1).^2+x(:,2).^2).*log(r./sqrt(x(:,1).^2+x(:,2).^2))) - c/(2*D*(1+NU))*(r^2 - (x(:,1).^2+x(:,2).^2));
+                w = @(x) -p/(16*pi*D_rig) * ((3+NU)/(1+NU)*(r^2 - (x(:,1).^2+x(:,2).^2)) - 2*(x(:,1).^2+x(:,2).^2).*log(r./sqrt(x(:,1).^2+x(:,2).^2))) - c/(2*D_rig*(1+NU))*(r^2 - (x(:,1).^2+x(:,2).^2));
         end
 end
-x = getcoord(problem.S.node);
+x = getcoord(S.node);
 Uz_ex = w(x);
 
 ind = find(~isnan(Uz) & ~isnan(Uz_ex));
@@ -180,21 +180,21 @@ err(i) = norm(Uz(ind)-Uz_ex(ind))/norm(Uz_ex(ind));
 
 P = getcenter(C);
 
-ux = eval_sol(problem.S,u,P,'UX');
-uy = eval_sol(problem.S,u,P,'UY');
-uz = eval_sol(problem.S,u,P,'UZ');
+ux = eval_sol(S,u,P,'UX');
+uy = eval_sol(S,u,P,'UY');
+uz = eval_sol(S,u,P,'UZ');
 uz_ex = w(double(P));
 err_uz = norm(uz-uz_ex)/norm(uz_ex);
 
-rx = eval_sol(problem.S,u,P,'RX');
-ry = eval_sol(problem.S,u,P,'RY');
-rz = eval_sol(problem.S,u,P,'RZ');
+rx = eval_sol(S,u,P,'RX');
+ry = eval_sol(S,u,P,'RY');
+rz = eval_sol(S,u,P,'RZ');
 
 fprintf('\nCircular plate\n');
 fprintf(['Boundary : ' boundary '\n']);
 fprintf(['Load     : ' loading '\n']);
 fprintf(['Mesh     : ' elemtype ' elements\n']);
-Nbelem(i) = getnbelem(problem.S);
+Nbelem(i) = getnbelem(S);
 fprintf('Nb elements = %g\n',Nbelem(i));
 fprintf('Span-to-thickness ratio = %g\n',r/h);
 fprintf('Error = %g\n',err(i));
@@ -225,55 +225,55 @@ save(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','U','R');
 % mysaveas(pathname,['domain_' num2str(i)],formats,renderer);
 % mymatlab2tikz(pathname,['domain_' num2str(i) '.tex']);
 % 
-% [hD,legD] = plotBoundaryConditions(problem.S,'legend',false);
+% [hD,legD] = plotBoundaryConditions(S,'legend',false);
 % switch loading
 %     case 'uniform'
 %         ampl = 2;
 %     case 'concentrated'
 %         ampl = 0.2;
 % end
-% [hN,legN] = vectorplot(problem.S,'F',problem.b,ampl,'r','LineWidth',1);
+% [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
 % % legend([hD,hN],'Dirichlet','Neumann')
 % % legend([hD,hN],[legD,legN])
 % mysaveas(pathname,['boundary_conditions_' num2str(i)],formats,renderer);
 % 
-% plotModel(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+% plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
 % mysaveas(pathname,['mesh_' num2str(i)],formats,renderer);
 % 
-% ampl = getsize(problem.S)/max(abs(u))/5;
-% plotModelDeflection(problem.S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+% ampl = getsize(S)/max(abs(u))/5;
+% plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
 % mysaveas(pathname,'mesh_deflected',formats,renderer);
 % 
 % figure('Name','Meshes')
 % clf
-% plot(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-% plot(problem.S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1);
+% plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
+% plot(S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1);
 % mysaveas(pathname,['meshes_deflected_' num2str(i)],formats,renderer);
 % 
-% % plotFacets(problem.S);
-% % plotRidges(problem.S);
+% % plotFacets(S);
+% % plotRidges(S);
 
 %% Display solution
 
 % % ampl = 0;
-% ampl = getsize(problem.S)/max(abs(u))/5;
+% ampl = getsize(S)/max(abs(u))/5;
 % options = {'solid',true};
 % % options = {};
 % 
-% plotSolution(problem.S,u,'displ',3,'ampl',ampl,options{:});
+% plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
 % mysaveas(pathname,['Uz_' num2str(i)],formats,renderer);
 % 
 % figure('Name','Solution u_3_ex')
 % clf
-% plot(FENODEFIELD(w(x)),problem.S+ampl*u,options{:});
+% plot(FENODEFIELD(w(x)),S+ampl*u,options{:});
 % colorbar
 % set(gca,'FontSize',16)
 % mysaveas(pathname,['Uz_ex_' num2str(i)],formats,renderer);
 % 
-% % plotSolution(problem.S,u,'rotation',1,'ampl',ampl,options{:});
+% % plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
 % % mysaveas(pathname,['Rx_' num2str(i)],formats,renderer);
 % 
-% % plotSolution(problem.S,u,'rotation',2,'ampl',ampl,options{:});
+% % plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
 % % mysaveas(pathname,['Ry_' num2str(i)],formats,renderer);
 
 end

@@ -5,7 +5,8 @@
 clear all
 close all
 % set(0,'DefaultFigureVisible','off');
-% myparallel('start');
+rng('default');
+myparallel('start');
 
 %% Input data
 
@@ -103,37 +104,31 @@ samples_E = [4.211 4.057 3.685 3.921 3.839 3.845 3.795...
     3.406 3.389 3.299 3.485 3.319 3.267 3.349 3.307...
     4.684 4.245 4.076 4.407 4.283 4.054 4.226 4.041...
     4.104 4.075 3.556 3.319 3.848 3.707 3.664 3.493 3.550]*1e9;
-% Parameters
+% Parameters for Gamma distribution
 phat = gamfit(samples_E);
 % Number of samples
-N = 1e3;
+N = 1e1;
 % Sample set
 e = gamrnd(phat(1),phat(2),1,N);
 
-u = cell(1,N);
-mean_u = cell(1,N);
-std_u = cell(1,N);
-norm_mean_u = zeros(1,N);
-norm_std_u = zeros(1,N);
-for i=1:N
-    fprintf('Sample #%d\n',i);
 %% Materials
 
 % Gravitational acceleration
-g = 10;
+g = 9.81;
 
 % Plate
 % Young modulus
-E = e(i);
+E = mean(e);
 % Poisson ratio
 NU = 0.3;
 % Density
 mass_plate = 18.54;
 RHO = mass_plate/(pi*r^2*h);
 % Extensional stiffness (or Membrane rigidity)
-A = E*h/(1-NU^2);
+A_rig = E*h/(1-NU^2);
 % Bending stiffness (or Flexural rigidity)
-D = E*h^3/(12*(1-NU^2));
+D_rig = E*h^3/(12*(1-NU^2));
+
 % Material
 mat_plate = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
 mat_plate = setnumber(mat_plate,1);
@@ -165,7 +160,7 @@ mat_beam = ELAS_BEAM('E',E_beam,'NU',NU_beam,'S',Sec_beam,'IZ',IZ,'IY',IY,'IX',I
 mat_beam = setnumber(mat_beam,2);
 S_beam = cellfun(@(S) setmaterial(S,mat_beam),S_beam,'UniformOutput',false);
 
-problem.S = union(S_plate,S_beam{:});
+S = union(S_plate,S_beam{:});
 
 %% Dirichlet boundary conditions
 
@@ -173,37 +168,37 @@ x_support = cellfun(@(L) getvertex(L,2)',L_beam,'UniformOutput',false);
 x_support = [x_support{:}]';
 P_support = POINT(x_support);
 
-problem.S = final(problem.S);
+S = final(S);
 switch test
     case 'stability_1'
-        problem.S = addcl(problem.S,P_support(4)); % addcl(problem.S,P_support(4),{'U','R'},0);
-        problem.S = addcl(problem.S,P_support(1),'U'); % addcl(problem.S,P_support(1),'U',0);
+        S = addcl(S,P_support(4)); % addcl(S,P_support(4),{'U','R'},0);
+        S = addcl(S,P_support(1),'U'); % addcl(S,P_support(1),'U',0);
     case 'stability_2'
-        problem.S = addcl(problem.S,P_support(1)); % addcl(problem.S,P_support(4),{'U','R'},0);
-        problem.S = addcl(problem.S,P_support(2),'U'); % addcl(problem.S,P_support(1),'U',0);
+        S = addcl(S,P_support(1)); % addcl(S,P_support(4),{'U','R'},0);
+        S = addcl(S,P_support(2),'U'); % addcl(S,P_support(1),'U',0);
     case 'stability_3'
-        problem.S = addcl(problem.S,P_support(2)); % addcl(problem.S,P_support(4),{'U','R'},0);
-        problem.S = addcl(problem.S,P_support(3),'U'); % addcl(problem.S,P_support(1),'U',0);
+        S = addcl(S,P_support(2)); % addcl(S,P_support(4),{'U','R'},0);
+        S = addcl(S,P_support(3),'U'); % addcl(S,P_support(1),'U',0);
     case 'stability_4'
-        problem.S = addcl(problem.S,P_support(3)); % addcl(problem.S,P_support(4),{'U','R'},0);
-        problem.S = addcl(problem.S,P_support(4),'U'); % addcl(problem.S,P_support(1),'U',0);
+        S = addcl(S,P_support(3)); % addcl(S,P_support(4),{'U','R'},0);
+        S = addcl(S,P_support(4),'U'); % addcl(S,P_support(1),'U',0);
     case {'static_hori_1','static_hori_2'}
-        problem.S = addcl(problem.S,P_support([3 4])); % addcl(problem.S,P_support([3 4]),{'U','R'},0);
-        problem.S = addcl(problem.S,P_support([1 2]),'UZ'); % addcl(problem.S,P_support([1 2]),'UZ',0);
+        S = addcl(S,P_support([3 4])); % addcl(S,P_support([3 4]),{'U','R'},0);
+        S = addcl(S,P_support([1 2]),'UZ'); % addcl(S,P_support([1 2]),'UZ',0);
     case {'static_hori_3','static_hori_4'}
-        problem.S = addcl(problem.S,P_support([4 1])); % addcl(problem.S,P_support([4 1]),{'U','R'},0);
-        problem.S = addcl(problem.S,P_support([2 3]),'UZ'); % addcl(problem.S,P_support([2 3]),'UZ',0);
+        S = addcl(S,P_support([4 1])); % addcl(S,P_support([4 1]),{'U','R'},0);
+        S = addcl(S,P_support([2 3]),'UZ'); % addcl(S,P_support([2 3]),'UZ',0);
     case 'static_vert'
-        problem.S = addcl(problem.S,P_support,'U'); % addcl(problem.S,P_support,'U',0);
+        S = addcl(S,P_support,'U'); % addcl(S,P_support,'U',0);
     case {'fatigue_1','fatigue_2','fatigue_3','fatigue_4',...
             'impact','drop'}
-        problem.S = addcl(problem.S,P_support); % addcl(problem.S,P_support,{'U','R'},0);
+        S = addcl(S,P_support); % addcl(S,P_support,{'U','R'},0);
 end
 
 %% Stiffness matrices and sollicitation vectors
 
 p_plate = RHO*g*h;
-p_beam = cellfun(@(S) RHO_beam*g*Sec_beam,S_beam,'UniformOutput',false);
+p_beam = RHO_beam*g*Sec_beam;
 switch test
     case {'stability_1','stability_2','stability_3','stability_4'}
         p = 400;
@@ -226,95 +221,108 @@ switch test
         H = 100e-3;
 end
 
-problem.A = calc_rigi(problem.S);
+A_plate = cell(1,N);
+for i=1:N
+    % Young modulus
+    E = e(i);
+    % Extensional stiffness (or Membrane rigidity)
+    A_rig = E*h/(1-NU^2);
+    % Bending stiffness (or Flexural rigidity)
+    D_rig = E*h^3/(12*(1-NU^2));
+    
+    % Material
+    mat_platei = setparam(mat_plate,'E',E);
+    Si = setmaterial(S,mat_platei,[1,2]);
+    
+    % Stiffness matrix
+    A{i} = calc_rigi(Si);
+end
+
 switch test
     case 'stability_1'
-        problem.b = nodalload(problem.S,P_load_stab{1},'FZ',-p);
-        if isempty(ispointin(P_load_stab{1},POINT(problem.S.node)))
+        f = nodalload(S,P_load_stab{1},'FZ',-p);
+        if isempty(ispointin(P_load_stab{1},POINT(S.node)))
             error('Pointwise load must be applied to a node of the mesh')
         end
     case 'stability_2'
-        problem.b = nodalload(problem.S,P_load_stab{2},'FZ',-p);
-        if isempty(ispointin(P_load_stab{2},POINT(problem.S.node)))
+        f = nodalload(S,P_load_stab{2},'FZ',-p);
+        if isempty(ispointin(P_load_stab{2},POINT(S.node)))
             error('Pointwise load must be applied to a node of the mesh')
         end
     case 'stability_3'
-        problem.b = nodalload(problem.S,P_load_stab{3},'FZ',-p);
-        if isempty(ispointin(P_load_stab{3},POINT(problem.S.node)))
+        f = nodalload(S,P_load_stab{3},'FZ',-p);
+        if isempty(ispointin(P_load_stab{3},POINT(S.node)))
             error('Pointwise load must be applied to a node of the mesh')
         end
     case 'stability_4'
-        problem.b = nodalload(problem.S,P_load_stab{4},'FZ',-p*cosd(slope));
-        if isempty(ispointin(P_load_stab{4},POINT(problem.S.node)))
+        f = nodalload(S,P_load_stab{4},'FZ',-p*cosd(slope));
+        if isempty(ispointin(P_load_stab{4},POINT(S.node)))
             error('Pointwise load must be applied to a node of the mesh')
         end
     case {'static_hori_1','static_hori_2','static_hori_3','static_hori_4'}
         if strcmp(test,'static_hori_1')
-            problem.b = nodalload(problem.S,P_load_hori{1},{'FY','FZ'},-p*[cosd(slope);sind(slope)]);
-            if isempty(ispointin(P_load_hori{1},POINT(problem.S.node)))
+            f = nodalload(S,P_load_hori{1},{'FY','FZ'},-p*[cosd(slope);sind(slope)]);
+            if isempty(ispointin(P_load_hori{1},POINT(S.node)))
                 error('Pointwise load must be applied to a node of the mesh')
             end
         elseif strcmp(test,'static_hori_2')
-            problem.b = nodalload(problem.S,P_load_hori{2},{'FY','FZ'},p*[cosd(slope);-sind(slope)]);
-            if isempty(ispointin(P_load_hori{2},POINT(problem.S.node)))
+            f = nodalload(S,P_load_hori{2},{'FY','FZ'},p*[cosd(slope);-sind(slope)]);
+            if isempty(ispointin(P_load_hori{2},POINT(S.node)))
                 error('Pointwise load must be applied to a node of the mesh')
             end
         elseif strcmp(test,'static_hori_3')
-            problem.b = nodalload(problem.S,P_load_hori{3},{'FX','FZ'},-p*[cosd(slope);sind(slope)]);
-            if isempty(ispointin(P_load_hori{3},POINT(problem.S.node)))
+            f = nodalload(S,P_load_hori{3},{'FX','FZ'},-p*[cosd(slope);sind(slope)]);
+            if isempty(ispointin(P_load_hori{3},POINT(S.node)))
                 error('Pointwise load must be applied to a node of the mesh')
             end
         elseif strcmp(test,'static_hori_4')
-            problem.b = nodalload(problem.S,P_load_hori{4},{'FX','FZ'},p*[cosd(slope);-sind(slope)]);
-            if isempty(ispointin(P_load_hori{4},POINT(problem.S.node)))
+            f = nodalload(S,P_load_hori{4},{'FX','FZ'},p*[cosd(slope);-sind(slope)]);
+            if isempty(ispointin(P_load_hori{4},POINT(S.node)))
                 error('Pointwise load must be applied to a node of the mesh')
             end
         end
-        problem.b = problem.b + bodyload(keepgroupelem(problem.S,2),[],'FZ',-p_masse);
+        f = f + bodyload(keepgroupelem(S,2),[],'FZ',-p_masse);
     case 'static_vert'
-        problem.b = nodalload(problem.S,P_load_vert,'FZ',-p);
-        if isempty(ispointin(P_load_vert,POINT(problem.S.node)))
+        f = nodalload(S,P_load_vert,'FZ',-p);
+        if isempty(ispointin(P_load_vert,POINT(S.node)))
             error('Pointwise load must be applied to a node of the mesh')
         end
     case {'fatigue_1','fatigue_2','fatigue_3','fatigue_4'}
         if strcmp(test,'fatigue_1')
-            problem.b = nodalload(problem.S,P_load_fati{1},'FY',-p);
-            if isempty(ispointin(P_load_fati{1},POINT(problem.S.node)))
+            f = nodalload(S,P_load_fati{1},'FY',-p);
+            if isempty(ispointin(P_load_fati{1},POINT(S.node)))
                 error('Pointwise load must be applied to a node of the mesh')
             end
         elseif strcmp(test,'fatigue_2')
-            problem.b = nodalload(problem.S,P_load_fati{2},'FY',p);
-            if isempty(ispointin(P_load_fati{2},POINT(problem.S.node)))
+            f = nodalload(S,P_load_fati{2},'FY',p);
+            if isempty(ispointin(P_load_fati{2},POINT(S.node)))
                 error('Pointwise load must be applied to a node of the mesh')
             end
         elseif strcmp(test,'fatigue_3')
-            problem.b = nodalload(problem.S,P_load_fati{3},'FX',p);
-            if isempty(ispointin(P_load_fati{3},POINT(problem.S.node)))
+            f = nodalload(S,P_load_fati{3},'FX',p);
+            if isempty(ispointin(P_load_fati{3},POINT(S.node)))
                 error('Pointwise load must be applied to a node of the mesh')
             end
         elseif strcmp(test,'fatigue_4')
-            problem.b = nodalload(problem.S,P_load_fati{4},'FX',-p);
-            if isempty(ispointin(P_load_fati{4},POINT(problem.S.node)))
+            f = nodalload(S,P_load_fati{4},'FX',-p);
+            if isempty(ispointin(P_load_fati{4},POINT(S.node)))
                 error('Pointwise load must be applied to a node of the mesh')
             end
         end
-        problem.b = problem.b + bodyload(keepgroupelem(problem.S,2),[],'FZ',-p_masse);
+        f = f + bodyload(keepgroupelem(S,2),[],'FZ',-p_masse);
     case {'impact','drop'}
         error('Not implemented')
 end
-problem.b = problem.b + bodyload(keepgroupelem(problem.S,[1,2]),[],'FZ',-p_plate);
+f = f + bodyload(keepgroupelem(S,[1,2]),[],'FZ',-p_plate);
 for k=1:length(P_beam)
-    problem.b = problem.b + bodyload(keepgroupelem(problem.S,2+k),[],'FX',p_beam{k});
+    f = f + bodyload(keepgroupelem(S,2+k),[],'FX',p_beam);
 end
 
 %% Resolution
 
-u{i} = solveSystem(problem);
-mean_u{i} = mean([u{:}],2);
-std_u{i} = std([u{:}],0,2);
-norm_mean_u(i) = norm(mean_u{i});
-norm_std_u(i) = norm(std_u{i});
-
+parfor i=1:N
+    fprintf('Sample #%d\n',i);
+    u(:,i) = A{i}\f;
 end
 
 time = toc(t);
@@ -326,7 +334,8 @@ interpreter = 'latex';
 
 figure('Name','Convergence empirical mean')
 clf
-plot(1:N,norm_mean_u,'-b','LineWidth',1)
+mean_u = arrayfun(@(x) norm(mean(u(:,1:x),2)),1:N);
+plot(1:N,mean_u,'-b','LineWidth',1)
 grid on
 box on
 set(gca,'FontSize',fontsize)
@@ -337,7 +346,8 @@ mymatlab2tikz(pathname,'convergence_empirical_mean.tex');
 
 figure('Name','Convergence empirical standard deviation')
 clf
-plot(1:N,norm_std_u,'-r','LineWidth',1)
+std_u = arrayfun(@(x) norm(std(u(:,1:x),0,2)),1:N);
+plot(1:N,std_u,'-r','LineWidth',1)
 grid on
 box on
 set(gca,'FontSize',fontsize)
@@ -348,49 +358,49 @@ mymatlab2tikz(pathname,'convergence_empirical_std.tex');
 
 %% Outputs
 
-mean_u = mean_u{end};
-std_u = std_u{end};
+mean_u = mean(u,2);
+std_u = std(u,0,2);
 
-mean_u = unfreevector(problem.S,mean_u);
-std_u = unfreevector(problem.S,std_u);
+mean_u = unfreevector(S,mean_u);
+std_u = unfreevector(S,std_u);
 
-mean_U = mean_u(findddl(problem.S,DDL(DDLVECT('U',problem.S.syscoord,'TRANS'))),:);
-mean_Ux = mean_u(findddl(problem.S,'UX'),:); % Ux = double(squeeze(eval_sol(problem.S,mean_u,problem.S.node,'UX')),:);
-mean_Uy = mean_u(findddl(problem.S,'UY'),:); % Uy = double(squeeze(eval_sol(problem.S,mean_u,problem.S.node,'UY')),:);
-mean_Uz = mean_u(findddl(problem.S,'UZ'),:); % Uz = double(squeeze(eval_sol(problem.S,mean_u,problem.S.node,'UZ')),:);
+mean_U = mean_u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+mean_Ux = mean_u(findddl(S,'UX'),:); % Ux = double(squeeze(eval_sol(S,mean_u,S.node,'UX')),:);
+mean_Uy = mean_u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,mean_u,S.node,'UY')),:);
+mean_Uz = mean_u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,mean_u,S.node,'UZ')),:);
 
-mean_R = mean_u(findddl(problem.S,DDL(DDLVECT('R',problem.S.syscoord,'ROTA'))),:);
-mean_Rx = mean_u(findddl(problem.S,'RX'),:); % Rx = double(squeeze(eval_sol(problem.S,mean_u,problem.S.node,'RX'))),:);
-mean_Ry = mean_u(findddl(problem.S,'RY'),:); % Ry = double(squeeze(eval_sol(problem.S,mean_u,problem.S.node,'RY'))),:);
-mean_Rz = mean_u(findddl(problem.S,'RZ'),:); % Rz = double(squeeze(eval_sol(problem.S,mean_u,problem.S.node,'RZ'))),:);
+mean_R = mean_u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
+mean_Rx = mean_u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,mean_u,S.node,'RX'))),:);
+mean_Ry = mean_u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,mean_u,S.node,'RY'))),:);
+mean_Rz = mean_u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,mean_u,S.node,'RZ'))),:);
 
-std_U = std_u(findddl(problem.S,DDL(DDLVECT('U',problem.S.syscoord,'TRANS'))),:);
-std_Ux = std_u(findddl(problem.S,'UX'),:); % Ux = double(squeeze(eval_sol(problem.S,std_u,problem.S.node,'UX')),:);
-std_Uy = std_u(findddl(problem.S,'UY'),:); % Uy = double(squeeze(eval_sol(problem.S,std_u,problem.S.node,'UY')),:);
-std_Uz = std_u(findddl(problem.S,'UZ'),:); % Uz = double(squeeze(eval_sol(problem.S,std_u,problem.S.node,'UZ')),:);
+std_U = std_u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+std_Ux = std_u(findddl(S,'UX'),:); % Ux = double(squeeze(eval_sol(S,std_u,S.node,'UX')),:);
+std_Uy = std_u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,std_u,S.node,'UY')),:);
+std_Uz = std_u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,std_u,S.node,'UZ')),:);
 
-std_R = std_u(findddl(problem.S,DDL(DDLVECT('R',problem.S.syscoord,'ROTA'))),:);
-std_Rx = std_u(findddl(problem.S,'RX'),:); % Rx = double(squeeze(eval_sol(problem.S,std_u,problem.S.node,'RX'))),:);
-std_Ry = std_u(findddl(problem.S,'RY'),:); % Ry = double(squeeze(eval_sol(problem.S,std_u,problem.S.node,'RY'))),:);
-std_Rz = std_u(findddl(problem.S,'RZ'),:); % Rz = double(squeeze(eval_sol(problem.S,std_u,problem.S.node,'RZ'))),:);
+std_R = std_u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
+std_Rx = std_u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,std_u,S.node,'RX'))),:);
+std_Ry = std_u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,std_u,S.node,'RY'))),:);
+std_Rz = std_u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,std_u,S.node,'RZ'))),:);
 
 P = getcenter(C);
 
-mean_ux = eval_sol(problem.S,mean_u,P,'UX');
-mean_uy = eval_sol(problem.S,mean_u,P,'UY');
-mean_uz = eval_sol(problem.S,mean_u,P,'UZ');
+mean_ux = eval_sol(S,mean_u,P,'UX');
+mean_uy = eval_sol(S,mean_u,P,'UY');
+mean_uz = eval_sol(S,mean_u,P,'UZ');
 
-mean_rx = eval_sol(problem.S,mean_u,P,'RX');
-mean_ry = eval_sol(problem.S,mean_u,P,'RY');
-mean_rz = eval_sol(problem.S,mean_u,P,'RZ');
+mean_rx = eval_sol(S,mean_u,P,'RX');
+mean_ry = eval_sol(S,mean_u,P,'RY');
+mean_rz = eval_sol(S,mean_u,P,'RZ');
 
-std_ux = eval_sol(problem.S,std_u,P,'UX');
-std_uy = eval_sol(problem.S,std_u,P,'UY');
-std_uz = eval_sol(problem.S,std_u,P,'UZ');
+std_ux = eval_sol(S,std_u,P,'UX');
+std_uy = eval_sol(S,std_u,P,'UY');
+std_uz = eval_sol(S,std_u,P,'UZ');
 
-std_rx = eval_sol(problem.S,std_u,P,'RX');
-std_ry = eval_sol(problem.S,std_u,P,'RY');
-std_rz = eval_sol(problem.S,std_u,P,'RZ');
+std_rx = eval_sol(S,std_u,P,'RX');
+std_ry = eval_sol(S,std_u,P,'RY');
+std_rz = eval_sol(S,std_u,P,'RZ');
 
 fprintf('\nCircular table\n');
 fprintf(['Test : ' test '\n']);
@@ -437,7 +447,7 @@ plotDomain(C,L_beam,'legend',false);
 mysaveas(pathname,'domain',formats,renderer);
 mymatlab2tikz(pathname,'domain.tex');
 
-[hD,legD] = plotBoundaryConditions(problem.S,'legend',false);
+[hD,legD] = plotBoundaryConditions(S,'legend',false);
 switch test
     case {'stability_1','stability_2','stability_3','stability_4',...
             'static_hori_1','static_hori_2','static_hori_3','static_hori_4',...
@@ -446,38 +456,38 @@ switch test
             'impact','drop'}
         ampl = 5;
 end
-[hN,legN] = vectorplot(problem.S,'F',problem.b,ampl,'r','LineWidth',1);
+[hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
 % legend([hD,hN],'Dirichlet','Neumann')
 % legend([hD,hN],[legD,legN])
 mysaveas(pathname,'boundary_conditions',formats,renderer);
 
-plotModel(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true,'legend',false);
+plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true,'legend',false);
 mysaveas(pathname,'mesh',formats,renderer);
 
-ampl = max(getsize(problem.S))/max(abs(mean_u))/10;
-plotModelDeflection(problem.S,mean_u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true,'legend',false);
+ampl = max(getsize(S))/max(abs(mean_u))/10;
+plotModelDeflection(S,mean_u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true,'legend',false);
 mysaveas(pathname,'mesh_deflected',formats,renderer);
 
 figure('Name','Meshes')
 clf
-plot(problem.S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true);
-plot(problem.S+ampl*mean_u,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true);
+plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true);
+plot(S+ampl*mean_u,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true);
 mysaveas(pathname,'meshes_deflected',formats,renderer);
 
-% plotFacets(problem.S);
-% plotRidges(problem.S);
+% plotFacets(S);
+% plotRidges(S);
 
 %% Display solution
 
 % ampl = 0;
-ampl = max(getsize(problem.S))/max(abs(mean_u))/10;
+ampl = max(getsize(S))/max(abs(mean_u))/10;
 options = {'solid',true};
 % options = {};
 
-plotSolution(problem.S,mean_u,'displ',3,'ampl',ampl,options{:});
+plotSolution(S,mean_u,'displ',3,'ampl',ampl,options{:});
 mysaveas(pathname,'mean_Uz',formats,renderer);
 
-plotSolution(problem.S,std_u,'displ',3,'ampl',ampl,options{:});
+plotSolution(S,std_u,'displ',3,'ampl',ampl,options{:});
 mysaveas(pathname,'std_Uz',formats,renderer);
 
 % myparallel('stop');

@@ -5,7 +5,7 @@
 clear all
 close all
 
-PathName = '../Presentation/figures/';
+pathname = '../Presentation/figures/';
 fontsize = 16;
 linewidth = 1;
 markersize = 36;
@@ -53,7 +53,7 @@ lambda = mle(f,'nloglf',nloglf,'start',[0 0],'options',opts);
 lambda_mle_m12 = [log(integral(@(x) exp(-lambda(1)*x-lambda(2)*x.^2),0,1)),lambda(1:end)];
 pdf_mle_m12 = @(x) exp(-lambda_mle_m12(1)-lambda_mle_m12(2)*x-lambda_mle_m12(3)*x.^2);
 
-fprintf('\nnb_samples = %d',length(f));
+fprintf('\nnb samples = %d',length(f));
 for i=1:length(lambda_mle_m12)
     fprintf(['\nlambda_' num2str(i-1) ' = %.3f'],lambda_mle_m12(i));
 end
@@ -68,7 +68,7 @@ lambda_cens = mle(f,'nloglf',nloglf,'start',[0 0],'censoring',cens,'options',opt
 lambda_mle_m12_cens = [log(integral(@(x) exp(-lambda_cens(1)*x-lambda_cens(2)*x.^2),0,1)),lambda_cens(1:end)];
 pdf_mle_m12_cens = @(x) exp(-lambda_mle_m12_cens(1)-lambda_mle_m12_cens(2)*x-lambda_mle_m12_cens(3)*x.^2);
 
-fprintf('\nnb_samples = %d',length(f(~cens)));
+fprintf('\nnb samples = %d',length(f(~cens)));
 for i=1:length(lambda_mle_m12_cens)
     fprintf(['\nlambda_' num2str(i-1) ' = %.3f'],lambda_mle_m12_cens(i));
 end
@@ -91,7 +91,7 @@ lambda_mle_r01 = [betaln(p(1),p(2)),1-p(1:end)];
 % lambda_mle_r01 = [betaln(1-lambda(1),1-lambda(2)),lambda(1:end)];
 % pdf_mle_r01 = @(x) exp(-lambda_mle_r01(1)-lambda_mle_r01(2)*log(x)-lambda_mle_r01(3)*log1p(-x));
 
-fprintf('\nnb_samples = %d',length(f));
+fprintf('\nnb samples = %d',length(f));
 for i=1:length(lambda_mle_r01)
     fprintf(['\nlambda_' num2str(i-1) ' = %.3f'],lambda_mle_r01(i));
 end
@@ -106,7 +106,7 @@ lambda_cens = mle(f,'nloglf',nloglf,'start',[0 0],'censoring',cens,'options',opt
 lambda_mle_r01_cens = [betaln(1-lambda_cens(1),1-lambda_cens(2)),lambda_cens(1:end)];
 pdf_mle_r01_cens = @(x) exp(-lambda_mle_r01_cens(1)-lambda_mle_r01_cens(2)*log(x)-lambda_mle_r01_cens(3)*log1p(-x));
 
-fprintf('\nnb_samples = %d',length(f(~cens)));
+fprintf('\nnb samples = %d',length(f(~cens)));
 for i=1:length(lambda_mle_r01_cens)
     fprintf(['\nlambda_' num2str(i-1) ' = %.3f'],lambda_mle_r01_cens(i));
 end
@@ -125,7 +125,7 @@ lambda = mle(f,'nloglf',nloglf,'start',[0 0 0],'options',opts);
 lambda_mle_m1r01 = [log(integral(@(x) exp(-lambda(1)*x-lambda(2)*log(x)-lambda(3)*log1p(-x)),0,1)),lambda(1:end)];
 pdf_mle_m1r01 = @(x) exp(-lambda_mle_m1r01(1)-lambda_mle_m1r01(2)*x-lambda_mle_m1r01(3)*log(x)-lambda_mle_m1r01(4)*log1p(-x));
 
-fprintf('\nnb_samples = %d',length(f));
+fprintf('\nnb samples = %d',length(f));
 for i=1:length(lambda_mle_m1r01)
     fprintf(['\nlambda_' num2str(i-1) ' = %.3f'],lambda_mle_m1r01(i));
 end
@@ -141,7 +141,7 @@ lambda_cens = mle(f,'nloglf',nloglf,'start',[0 0 0],'censoring',cens,'options',o
 lambda_mle_m1r01_cens = [log(integral(@(x) exp(-lambda_cens(1)*x-lambda_cens(2)*log(x)-lambda_cens(3)*log1p(-x)),0,1)),lambda_cens(1:end)];
 pdf_mle_m1r01_cens = @(x) exp(-lambda_mle_m1r01_cens(1)-lambda_mle_m1r01_cens(2)*x-lambda_mle_m1r01_cens(3)*log(x)-lambda_mle_m1r01_cens(4)*log1p(-x));
 
-fprintf('\nnb_samples = %d',length(f(~cens)));
+fprintf('\nnb samples = %d',length(f(~cens)));
 for i=1:length(lambda_mle_m1r01_cens)
     fprintf(['\nlambda_' num2str(i-1) ' = %.3f'],lambda_mle_m1r01(i));
 end
@@ -194,29 +194,29 @@ l = legend(['$c_0e^{-\lambda_1 x-\lambda_2 x^2}$, $\max_{\boldsymbol{\lambda} \i
     ['$c_0e^{-\lambda_1 x-\lambda_2 \ln(x)-\lambda_3 \ln(1-x)}$, $\max_{\boldsymbol{\lambda} \in \Rbb^' num2str(length(lambda_mle_m1r01_cens)-1) '} \ell(\boldsymbol{\lambda})$'],...
     ['$e^{-\lambda_0-\lambda_1 x-\lambda_2 x^2}$, $\min_{\boldsymbol{\lambda} \in \Rbb^' num2str(length(lambda_mee)) '} \Hc(\boldsymbol{\lambda})$']);
 set(l,'Interpreter','none');
-mysaveas(PathName,['pdf_' volume_fraction],'fig');
-mymatlab2tikz(PathName,['pdf_' volume_fraction '.tex']);
+mysaveas(pathname,['pdf_' volume_fraction],'fig');
+mymatlab2tikz(pathname,['pdf_' volume_fraction '.tex']);
 
 figure('Name','Probability density function')
 clf
 switch volume_fraction
     case 'pore_cort'
-        xz = linspace(0,0.3,1000);
+        x_zoom = linspace(0,0.3,1000);
     case 'col_ultra'
-        xz = linspace(0.3,0.4,1000);
+        x_zoom = linspace(0.3,0.4,1000);
     case 'HA_foam'
-        xz = linspace(0.35,0.65,1000);
+        x_zoom = linspace(0.35,0.65,1000);
     otherwise
         error('Wrong volume fraction')
 end
 hold on
-plot(xz,pdf_mle_m12(xz),'-b','LineWidth',linewidth);
-plot(xz,pdf_mle_m12_cens(xz),'--b','LineWidth',linewidth);
-plot(xz,pdf_mle_r01(xz),'-g','LineWidth',linewidth);
-plot(xz,pdf_mle_r01_cens(xz),'--g','LineWidth',linewidth);
-plot(xz,pdf_mle_m1r01(xz),'-m','LineWidth',linewidth);
-plot(xz,pdf_mle_m1r01_cens(xz),'--m','LineWidth',linewidth);
-plot(xz,pdf_mee(xz),'-r','LineWidth',linewidth);
+plot(x_zoom,pdf_mle_m12(x_zoom),'-b','LineWidth',linewidth);
+plot(x_zoom,pdf_mle_m12_cens(x_zoom),'--b','LineWidth',linewidth);
+plot(x_zoom,pdf_mle_r01(x_zoom),'-g','LineWidth',linewidth);
+plot(x_zoom,pdf_mle_r01_cens(x_zoom),'--g','LineWidth',linewidth);
+plot(x_zoom,pdf_mle_m1r01(x_zoom),'-m','LineWidth',linewidth);
+plot(x_zoom,pdf_mle_m1r01_cens(x_zoom),'--m','LineWidth',linewidth);
+plot(x_zoom,pdf_mee(x_zoom),'-r','LineWidth',linewidth);
 plot(f,pdf_mle_m12(f),'b+');
 plot(f(~cens),pdf_mle_m12_cens(f(~cens)),'b+');
 plot(f,pdf_mle_r01(f),'g+');
@@ -247,8 +247,8 @@ l = legend(['$c_0e^{-\lambda_1 x-\lambda_2 x^2}$, $\max_{\boldsymbol{\lambda} \i
     ['$c_0e^{-\lambda_1 x-\lambda_2 \ln(x)-\lambda_3 \ln(1-x)}$, $\max_{\boldsymbol{\lambda} \in \Rbb^' num2str(length(lambda_mle_m1r01_cens)-1) '} \ell(\boldsymbol{\lambda})$'],...
     ['$e^{-\lambda_0-\lambda_1 x-\lambda_2 x^2}$, $\min_{\boldsymbol{\lambda} \in \Rbb^' num2str(length(lambda_mee)) '} \Hc(\boldsymbol{\lambda})$']);
 set(l,'Interpreter','none');
-mysaveas(PathName,['pdf_zoom_' volume_fraction],'fig');
-mymatlab2tikz(PathName,['pdf_zoom_' volume_fraction '.tex']);
+mysaveas(pathname,['pdf_zoom_' volume_fraction],'fig');
+mymatlab2tikz(pathname,['pdf_zoom_' volume_fraction '.tex']);
 
 %% Plot log-likelihood function logL
 % figure('Name','Maximization of Log-likelihood')

@@ -19,7 +19,7 @@ markersize = 36;
 interpreter = 'latex';
 
 %% Input data
-% Data on sample D
+% Data for sample D
 E = [4.211 4.057 3.685 3.921 3.839 3.845 3.795...
     3.406 3.389 3.299 3.485 3.319 3.267 3.349 3.307...
     4.684 4.245 4.076 4.407 4.283 4.054 4.226 4.041...
@@ -33,8 +33,10 @@ clf
 bar(1:length(E),E)
 set(gca,'FontSize',fontsize)
 set(gca,'XLim',[0,length(E)+1])
-xlabel('\''Echantillon','Interpreter',interpreter);
-ylabel('Module d''Young (GPa)','Interpreter',interpreter); 
+% xlabel('\''Echantillon','Interpreter',interpreter);
+% ylabel('Module d''Young (GPa)','Interpreter',interpreter); 
+xlabel('Sample','Interpreter',interpreter);
+ylabel('Young modulus (GPa)','Interpreter',interpreter);
 mysaveas(pathname,'data_E','fig');
 mymatlab2tikz(pathname,'data_E.tex');
 
@@ -47,7 +49,7 @@ opts = statset('TolFun',1e-6,'TolX',1e-6,'FunValCheck','off');
 % Available information = moment of order 1 + repulsion in 0
 fprintf('\nInformation = %s\n',strjoin({'moment1','repulsion0'},' + '));
 
-% Gamma distribution
+% Parameters for Gamma distribution
 phat = gamfit(E);
 % phat = mle(E,'distribution','gam');
 % nloglf = @(phat,data,cens,freq) length(data)*log(gamma(phat(1)))...
@@ -56,7 +58,7 @@ phat = gamfit(E);
 %     +1/phat(2)*sum(data);
 % phat = mle(E,'nloglf',nloglf,'start',[2 0],'lowerbound',[2 0],'options',opts);
 
-fprintf('\nnb_samples = %d',length(E));
+fprintf('\nnb samples = %d',length(E));
 fprintf('\na = %.4f',phat(1));
 fprintf('\nb = %.4f',phat(2));
 
