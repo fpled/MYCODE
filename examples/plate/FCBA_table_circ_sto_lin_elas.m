@@ -221,14 +221,10 @@ switch test
         H = 100e-3;
 end
 
-A_plate = cell(1,N);
+A = cell(1,N);
 for i=1:N
     % Young modulus
     E = e(i);
-    % Extensional stiffness (or Membrane rigidity)
-    A_rig = E*h/(1-NU^2);
-    % Bending stiffness (or Flexural rigidity)
-    D_rig = E*h^3/(12*(1-NU^2));
     
     % Material
     mat_platei = setparam(mat_plate,'E',E);
@@ -321,7 +317,6 @@ end
 %% Resolution
 
 parfor i=1:N
-    fprintf('Sample #%d\n',i);
     u(:,i) = A{i}\f;
 end
 
