@@ -74,7 +74,7 @@ end
 %% Materials
 
 % Gravitational acceleration
-g = 9.81;
+g = 10;
 % Young modulus
 E = 1;
 % Poisson ratio
