@@ -113,6 +113,7 @@ plate:
 	matlab -nodesktop -nosplash -noFigureWindows -r "table_circ_det_lin_elas; exit" -logfile results/table_circ_det_lin_elas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "table_rect_det_lin_elas; exit" -logfile results/table_rect_det_lin_elas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBA_table_circ_det_lin_elas; exit" -logfile results/FCBA_table_circ_det_lin_elas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBA_table_circ_sto_lin_elas; exit" -logfile results/FCBA_table_circ_sto_lin_elas.log
 
 # Clean ---------------------------
 clean:
