@@ -107,7 +107,7 @@ samples_E = [4.211 4.057 3.685 3.921 3.839 3.845 3.795...
 % Parameters for Gamma distribution
 phat = gamfit(samples_E);
 % Number of samples
-N = 1e1;
+N = 1e3;
 % Sample set
 e = gamrnd(phat(1),phat(2),1,N);
 
