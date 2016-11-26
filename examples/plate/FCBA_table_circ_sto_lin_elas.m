@@ -224,10 +224,10 @@ end
 A = cell(1,N);
 for i=1:N
     % Young modulus
-    E = e(i);
+    Ei = e(i);
     
     % Material
-    mat_platei = setparam(mat_plate,'E',E);
+    mat_platei = setparam(mat_plate,'E',Ei);
     Si = setmaterial(S,mat_platei,[1,2]);
     
     % Stiffness matrix
