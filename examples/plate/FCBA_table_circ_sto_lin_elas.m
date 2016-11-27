@@ -109,7 +109,7 @@ phat = gamfit(samples_E);
 % Number of samples
 N = 1e3;
 % Sample set
-e = gamrnd(phat(1),phat(2),1,N);
+e = gamrnd(phat(1),phat(2),N,1);
 
 %% Materials
 
@@ -221,7 +221,7 @@ switch test
         H = 100e-3;
 end
 
-A = cell(1,N);
+A = cell(N,1);
 for i=1:N
     % Young modulus
     Ei = e(i);
@@ -324,30 +324,32 @@ time = toc(t);
 
 %% Convergence Monte-Carlo
 
-fontsize = 16;
-interpreter = 'latex';
+mean_u = arrayfun(@(x) norm(mean(u(:,1:x),2)),1:N);
+std_u = arrayfun(@(x) norm(std(u(:,1:x),0,2)),1:N);
 
 figure('Name','Convergence empirical mean')
 clf
-mean_u = arrayfun(@(x) norm(mean(u(:,1:x),2)),1:N);
 plot(1:N,mean_u,'-b','LineWidth',1)
 grid on
 box on
-set(gca,'FontSize',fontsize)
-xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-ylabel('Moyenne empirique','Interpreter',interpreter)
+set(gca,'FontSize',16)
+xlabel('Nombre de r\''ealisations','Interpreter','latex')
+ylabel('Moyenne empirique','Interpreter','latex')
+% xlabel('Number of samples','Interpreter','latex')
+% ylabel('Empirical mean','Interpreter','latex')
 mysaveas(pathname,'convergence_empirical_mean','fig');
 mymatlab2tikz(pathname,'convergence_empirical_mean.tex');
 
 figure('Name','Convergence empirical standard deviation')
 clf
-std_u = arrayfun(@(x) norm(std(u(:,1:x),0,2)),1:N);
 plot(1:N,std_u,'-r','LineWidth',1)
 grid on
 box on
-set(gca,'FontSize',fontsize)
-xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-ylabel('Ecart-type empirique','Interpreter',interpreter)
+set(gca,'FontSize',16)
+xlabel('Nombre de r\''ealisations','Interpreter','latex')
+ylabel('Ecart-type empirique','Interpreter','latex')
+% xlabel('Number of samples','Interpreter','latex')
+% ylabel('Empirical standard deviation','Interpreter','latex')
 mysaveas(pathname,'convergence_empirical_std','fig');
 mymatlab2tikz(pathname,'convergence_empirical_std.tex');
 

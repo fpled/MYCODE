@@ -33,10 +33,10 @@ clf
 bar(1:length(E),E)
 set(gca,'FontSize',fontsize)
 set(gca,'XLim',[0,length(E)+1])
-% xlabel('\''Echantillon','Interpreter',interpreter);
-% ylabel('Module d''Young (GPa)','Interpreter',interpreter); 
-xlabel('Sample','Interpreter',interpreter);
-ylabel('Young modulus (GPa)','Interpreter',interpreter);
+xlabel('\''Echantillon','Interpreter',interpreter);
+ylabel('Module d''Young (GPa)','Interpreter',interpreter); 
+% xlabel('Sample','Interpreter',interpreter);
+% ylabel('Young modulus (GPa)','Interpreter',interpreter);
 mysaveas(pathname,'data_E','fig');
 mymatlab2tikz(pathname,'data_E.tex');
 
@@ -121,8 +121,8 @@ mymatlab2tikz(pathname,'cdf_E.tex',...
 
 %% Sample generation
 N = 1e4; % number of samples
-e = gamrnd(phat(1),phat(2),1,N);
-% u = randn(1,N);
+e = gamrnd(phat(1),phat(2),N,1);
+% u = randn(N,1);
 % e = gaminv(normcdf(u),phat(1),phat(2));
 
 figure('Name','Monte Carlo simulation')
@@ -137,6 +137,8 @@ box on
 set(gca,'FontSize',fontsize)
 xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
 ylabel('Module d''Young (GPa)','Interpreter',interpreter)
+% xlabel('Number of samples','Interpreter',interpreter)
+% ylabel('Young modulus (GPa)','Interpreter',interpreter)
 % l = legend('r\''ealisations $(e_1,\dots,e_N)$','moyenne $m_E$');
 % set(l,'Interpreter',interpreter);
 mysaveas(pathname,'samples_E','fig');
