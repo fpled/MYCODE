@@ -31,7 +31,7 @@ R = randn(n); % generate a n-by-n normal random matrix
 A = R*R'; % construct a symmetric positive (semi-)definite matrix
 L = chol(A); % upper Cholesky factor of A so that A = L'*L
 
-N = 1e4; % nb samples
+N = 1e3; % nb samples
 
 gam = 2; % existence of second-order moments of the inverse of random matrix
 delta = 0.1; % dispersion parameter

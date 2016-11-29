@@ -75,11 +75,11 @@ switch meshtype
         S_plate = build_model(Q,'cl',cl_plate,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_rect_' elemtype  '_cl_' num2str(cl_plate)],'points',points);
 end
 
-% Beam meshes
+% Beams meshes
 nbelem_beam = 10;
 S_beam = cellfun(@(L) build_model(L,'nbelem',nbelem_beam,'elemtype','BEAM'),L_beam,'UniformOutput',false);
 % cl_beam = 0.1;
-% S_beam = cellfun(@(L,n) build_model(L,'cl',cl_plate,'elemtype','BEAM','filename',[pathname 'gmsh_beam_' num2str(n) '_cl_' num2str(cl_beam)]),L_beam,num2cell(1:length(L_beam)),'UniformOutput',false);
+% S_beam = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','filename',[pathname 'gmsh_beam_' num2str(n) '_cl_' num2str(cl_beam)]),L_beam,num2cell(1:length(L_beam)),'UniformOutput',false);
 
 %% Materials
 
@@ -104,7 +104,7 @@ mat_plate = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
 mat_plate = setnumber(mat_plate,1);
 S_plate = setmaterial(S_plate,mat_plate);
 
-% Beam
+% Beams
 % Young modulus
 E_beam = 1;
 % Poisson ratio

@@ -5,7 +5,7 @@
 clear all
 close all
 % set(0,'DefaultFigureVisible','off');
-rng('default');
+% rng('default');
 myparallel('start');
 
 %% Input data
@@ -25,6 +25,8 @@ test = 'static_vert'; % test under static vertical load
 % test = 'fatigue_4'; % fatigue test under horizontal load 4
 % test = 'impact'; % vertical impact test
 % test = 'drop'; % drop test
+
+belt = 0; % belt modelisation
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
@@ -46,24 +48,31 @@ r = 600e-3;
 h = 25e-3;
 C = CIRCLE(0.0,0.0,0.0,r);
 
-% Beams
+% Beams and Belt
 % Cross-section base
 b_beam_top = 48e-3;
 b_beam_bot = 38e-3;
 b_beam = (b_beam_top+b_beam_bot)/2;
+b_belt = 30e-3;
 % Cross-section height
 h_beam_top = 48e-3;
 h_beam_bot = 38e-3;
 h_beam = (h_beam_top+h_beam_bot)/2;
+h_belt = 80e-3;
 % Length
 l = 710e-3+h/2;
-% Distance between beams
 a = 800e-3-h_beam_top;
 b = 800e-3-b_beam_top;
 L_beam{1} = LIGNE([-a/2,-b/2,0.0],[-a/2,-b/2,-l]);
 L_beam{2} = LIGNE([a/2,-b/2,0.0],[a/2,-b/2,-l]);
 L_beam{3} = LIGNE([a/2,b/2,0.0],[a/2,b/2,-l]);
 L_beam{4} = LIGNE([-a/2,b/2,0.0],[-a/2,b/2,-l]);
+Q_belt = QUADRANGLE([-a/2,-b/2,0.0],[a/2,-b/2,0.0],[a/2,b/2,0.0],[-a/2,b/2,0.0]);
+% L_belt{1} = LIGNE([-a/2,-b/2,0.0],[a/2,-b/2,0.0]);
+% L_belt{2} = LIGNE([a/2,-b/2,0.0],[a/2,b/2,0.0]);
+% L_belt{3} = LIGNE([a/2,b/2,0.0],[-a/2,b/2,0.0]);
+% L_belt{4} = LIGNE([-a/2,b/2,0.0],[-a/2,-b/2,0.0]);
+L_belt = getedges(Q_belt);
 
 % Points
 x_beam = cellfun(@(L) getvertex(L,1),L_beam,'UniformOutput',false);
@@ -81,21 +90,24 @@ P_load = cellfun(@(x) POINT(x),x_load,'UniformOutput',false);
 
 % Plate mesh
 cl_plate = r/15;
+cl_belt = cl_plate;
 elemtype = 'DKT';
 r_masse = 150e-3;
 C_masse = CIRCLE(0.0,0.0,0.0,r_masse);
-% points = [x_beam,x_load_stab,x_load_vert,x_load_fati{3:4}];
-% S_plate = gmshcirclewithinclusionandpoints(C,C_masse,points,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],3);
-Pi = [x_beam,x_load_stab,x_load_vert];
 Pb = {getvertex(C,1),getvertex(C,2),getvertex(C,3),x_load_fati{4},getvertex(C,4),x_load_fati{3}};
-S_plate = gmshFCBAtablecirc(C,C_masse,Pi,Pb,cl_plate,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],3);
+Pe = x_load_stab;
+Pi = getcenter(C);
+S_plate = gmshFCBAtablecirc(C,Q_belt,C_masse,Pb,Pe,[],Pi,cl_plate,cl_belt,cl_plate,cl_plate,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],3);
 S_plate = convertelem(S_plate,elemtype);
 
-% Beam meshes
+% Beams meshes
 nbelem_beam = 80;
 S_beam = cellfun(@(L) build_model(L,'nbelem',nbelem_beam,'elemtype','BEAM'),L_beam,'UniformOutput',false);
-% cl_beam = 0.1;
-% S_beam = cellfun(@(L,n) build_model(L,'cl',cl_plate,'elemtype','BEAM','filename',[pathname 'gmsh_beam_' num2str(n) '_cl_' num2str(cl_beam)]),L_beam,num2cell(1:length(L_beam)),'UniformOutput',false);
+% cl_beam = l/80;
+% S_beam = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','filename',[pathname 'gmsh_beam_' num2str(n) '_cl_' num2str(cl_beam)]),L_beam,num2cell(1:length(L_beam)),'UniformOutput',false);
+
+% Belt mesh
+S_belt = cellfun(@(L,n) build_model(L,'cl',cl_belt,'elemtype','BEAM','filename',[pathname 'gmsh_belt_' num2str(n) '_cl_' num2str(cl_belt)]),L_belt,num2cell(1:length(L_belt)),'UniformOutput',false);
 
 %% Random variables
 
@@ -104,6 +116,11 @@ samples_E = [4.211 4.057 3.685 3.921 3.839 3.845 3.795...
     3.406 3.389 3.299 3.485 3.319 3.267 3.349 3.307...
     4.684 4.245 4.076 4.407 4.283 4.054 4.226 4.041...
     4.104 4.075 3.556 3.319 3.848 3.707 3.664 3.493 3.550]*1e9;
+% samples_E = [2.7116 2.8945 2.9689 3.022 3.014 3.0069 2.9952 2.9711...
+%     2.7807 2.9541 2.9618 3.0014 2.9562 2.8909 2.8874 2.8923...
+%     2.6636 3.2635 3.1073 3.1657 3.1424 3.1731 3.1416 3.155...
+%     2.7356 2.8797 2.7230 2.7851 2.8312 2.8018 2.7592 2.743 2.7241 2.7055 2.7073...
+%     3.8267 3.2860 3.3753 3.1742 3.3089 3.2461 3.1331 3.0817	3.0093 3.0528]*1e9;
 % Parameters for Gamma distribution
 phat = gamfit(samples_E);
 % Number of samples
@@ -128,13 +145,12 @@ RHO = mass_plate/(pi*r^2*h);
 A_rig = E*h/(1-NU^2);
 % Bending stiffness (or Flexural rigidity)
 D_rig = E*h^3/(12*(1-NU^2));
-
 % Material
 mat_plate = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
 mat_plate = setnumber(mat_plate,1);
 S_plate = setmaterial(S_plate,mat_plate);
 
-% Beam
+% Beams and Belt
 % Young modulus
 E_beam = 15e9;
 % Poisson ratio
@@ -143,24 +159,35 @@ NU_beam = 0.3;
 Sec_beam_top = b_beam_top*h_beam_top;
 Sec_beam_bot = b_beam_bot*h_beam_bot;
 Sec_beam = b_beam*h_beam;
+Sec_belt = b_belt*h_belt;
 % Density
 Vol_beam = (l-h/2)*(Sec_beam_top+Sec_beam_bot+sqrt(Sec_beam_top*Sec_beam_bot))/3;
-b_belt = 30e-3;
-h_belt = 80e-3;
 Vol_belt = 2*(a-h_beam_top)*b_belt*h_belt + 2*(b-b_beam_top)*b_belt*h_belt;
 mass_beams = 8.48;
 RHO_beam = mass_beams/(length(L_beam)*Vol_beam + Vol_belt);
 % Planar second moment of area (or Planar area moment of inertia)
 IY = h_beam*b_beam^3/12;
 IZ = b_beam*h_beam^3/12;
+IY_belt = h_belt*b_belt^3/12;
+IZ_belt = b_belt*h_belt^3/12;
 % Polar second moment of area (or Polar area moment of inertia)
 IX = IY+IZ;
+IX_belt = IY_belt+IZ_belt;
 % Material
 mat_beam = ELAS_BEAM('E',E_beam,'NU',NU_beam,'S',Sec_beam,'IZ',IZ,'IY',IY,'IX',IX,'RHO',RHO_beam);
+mat_belt{1} = ELAS_BEAM('E',E_beam,'NU',NU_beam,'S',Sec_belt,'IZ',IZ_belt,'IY',IY_belt,'IX',IX_belt,'RHO',RHO_beam);
+mat_belt{2} = ELAS_BEAM('E',E_beam,'NU',NU_beam,'S',Sec_belt,'IZ',IY_belt,'IY',IZ_belt,'IX',IX_belt,'RHO',RHO_beam);
 mat_beam = setnumber(mat_beam,2);
+mat_belt{1} = setnumber(mat_belt{1},3);
+mat_belt{2} = setnumber(mat_belt{2},4);
 S_beam = cellfun(@(S) setmaterial(S,mat_beam),S_beam,'UniformOutput',false);
+S_belt([1,3]) = cellfun(@(S) setmaterial(S,mat_belt{1}),S_belt([1,3]),'UniformOutput',false);
+S_belt([2,4]) = cellfun(@(S) setmaterial(S,mat_belt{2}),S_belt([2,4]),'UniformOutput',false);
 
 S = union(S_plate,S_beam{:});
+if belt
+    S = union(S,S_belt{:});
+end
 
 %% Dirichlet boundary conditions
 
@@ -199,6 +226,7 @@ end
 
 p_plate = RHO*g*h;
 p_beam = RHO_beam*g*Sec_beam;
+p_belt = RHO_beam*g*Sec_belt;
 switch test
     case {'stability_1','stability_2','stability_3','stability_4'}
         p = 400;
@@ -225,11 +253,9 @@ A = cell(N,1);
 for i=1:N
     % Young modulus
     Ei = e(i);
-    
     % Material
     mat_platei = setparam(mat_plate,'E',Ei);
     Si = setmaterial(S,mat_platei,[1,2]);
-    
     % Stiffness matrix
     A{i} = calc_rigi(Si);
 end
@@ -277,7 +303,7 @@ switch test
                 error('Pointwise load must be applied to a node of the mesh')
             end
         end
-        f = f + bodyload(keepgroupelem(S,2),[],'FZ',-p_masse);
+        f = f + bodyload(keepgroupelem(S,3),[],'FZ',-p_masse);
     case 'static_vert'
         f = nodalload(S,P_load_vert,'FZ',-p);
         if isempty(ispointin(P_load_vert,POINT(S.node)))
@@ -305,14 +331,18 @@ switch test
                 error('Pointwise load must be applied to a node of the mesh')
             end
         end
-        f = f + bodyload(keepgroupelem(S,2),[],'FZ',-p_masse);
+        f = f + bodyload(keepgroupelem(S,3),[],'FZ',-p_masse);
     case {'impact','drop'}
         error('Not implemented')
 end
-f = f + bodyload(keepgroupelem(S,[1,2]),[],'FZ',-p_plate);
-for k=1:length(P_beam)
-    f = f + bodyload(keepgroupelem(S,2+k),[],'FX',p_beam);
+f = f + bodyload(keepgroupelem(S,[1,2,3]),[],'FZ',-p_plate);
+for k=1:length(L_beam)
+    f = f + bodyload(keepgroupelem(S,3+k),[],'FX',p_beam);
 end
+f = f + bodyload(keepgroupelem(S,3+length(L_beam)+1),[],'FY',p_belt);
+f = f + bodyload(keepgroupelem(S,3+length(L_beam)+2),[],'FZ',p_belt);
+f = f + bodyload(keepgroupelem(S,3+length(L_beam)+3),[],'FY',-p_belt);
+f = f + bodyload(keepgroupelem(S,3+length(L_beam)+4),[],'FZ',-p_belt);
 
 %% Resolution
 
@@ -440,7 +470,11 @@ save(fullfile(pathname,'solution.mat'),...
 
 %% Display domains, boundary conditions and meshes
 
-plotDomain(C,L_beam,'legend',false);
+if ~belt
+    plotDomain(C,L_beam,'legend',false);
+else
+    plotDomain(C,[L_beam,L_belt],'legend',false);
+end
 mysaveas(pathname,'domain',formats,renderer);
 mymatlab2tikz(pathname,'domain.tex');
 
