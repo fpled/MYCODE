@@ -37,7 +37,7 @@ glob_out = GlobalOutside();
 
 D = DOMAIN(2,[0.0,0.0],[2*n,2.0]);
 
-nbelem = [10*n,10];
+nbelem = [20*n,20];
 glob.S = build_model(D,'nbelem',nbelem);
 % cl = 0.25;
 % glob.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
