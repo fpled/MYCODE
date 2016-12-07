@@ -1,12 +1,12 @@
 #!/bin/sh
 
-# To start this job : qsub multiscale_sto_lin_diff_align_inclusions.pbs
+# To start this job : qsub multiscale_sto_nonlin_diff_reac_align_inclusions_aniso.pbs
 
 # Shell
 #PBS -S /bin/sh
 
 # Job name (up to 15 characters in length, no blank space, start with alphanumeric character)
-#PBS -N stoldiffalinc
+#PBS -N stonldiffreaca
 
 # Interactive mode
 ##PBS -I -X
@@ -30,10 +30,10 @@
 #PBS -q centos65
 
 # File name for standard output
-#PBS -o multiscale_sto_lin_diff_align_inclusions.out
+#PBS -o multiscale_sto_nonlin_diff_reac_align_inclusions_aniso.out
 
 # File name for standard error
-#PBS -e multiscale_sto_lin_diff_align_inclusions.err
+#PBS -e multiscale_sto_nonlin_diff_reac_align_inclusions_aniso.err
 
 # Keep (or retain) standard output and error streams on execution host
 ##PBS -k oe
@@ -52,7 +52,7 @@
 # Export all environment variables to the job
 #PBS -V
 JOBID=${PBS_JOBID%%.*}
-MATLAB_FILENAME=multiscale_sto_lin_diff_align_inclusions
+MATLAB_FILENAME=multiscale_sto_nonlin_diff_reac_align_inclusions_aniso
 LOG_FILENAME=$PBS_O_WORKDIR/$MATLAB_FILENAME.$JOBID.log
 
 # Change directories to working directory (default is home)

@@ -82,8 +82,6 @@ RV = RANDVARS(repmat({V},1,d));
 K_out = 1;
 K_patch = cell(1,n);
 K_in = cell(1,n);
-% Nonlinear diffusion coefficient
-% K2_patch = cell(1,n);
 % Nonlinear reaction parameter
 R_patch = cell(1,n);
 
@@ -132,8 +130,6 @@ glob.S = setmaterial(glob.S,mat_out,getnumgroupelemwithparam(glob.S,'partition',
 % Patches
 mat_patch = MATERIALS();
 for k=1:n
-    % mat_patch{k} = FOUR_ISOT('k',K_patch{k},'k2',K2_patch{k}); % uniform value
-    % mat_patch{k} = FOUR_ISOT('k',FENODEFIELD(K_patch{k}),'k2',FENODEFIELD(K2_patch{k})); % nodal values
     % mat_patch{k} = FOUR_ISOT('k',K_patch{k},'r',R_patch{k}); % uniform value
     mat_patch{k} = FOUR_ISOT('k',FENODEFIELD(K_patch{k}),'r',FENODEFIELD(R_patch{k})); % nodal values
     mat_patch{k} = setnumber(mat_patch{k},k);

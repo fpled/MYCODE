@@ -11,16 +11,22 @@ myparallel('start');
 %% Input data
 
 n = 8; % number of patches
-filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_iso'];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
+% filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_iso'];
+% pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
+% for rho = [0.2 0.4 0.6 0.8 1 1.2]
+for tol = 1:4
+    
+% filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_iso_tol_3_rho_' num2str(rho)];
+filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_aniso_tol_'  num2str(tol) '_rho_aitken'];
+pathname = fullfile('/Users/Op/Documents/Recherche/GeM/Results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-directSolver = true;
-iterativeSolver = true;
+directSolver = false;
+iterativeSolver = false;
 
 %% Domains and meshes
 
@@ -320,7 +326,7 @@ fprintf('elapsed time = %f s\n',output_ref.time)
 
 %% Global-local Iterative solver
 
-s.tol = 1e-3;
+s.tol = 10^(-tol);
 s.tolStagnation = 1e-1;
 s.display = true;
 s.displayIterations = false;
@@ -450,6 +456,8 @@ plotCVError(output);
 mysaveas(pathname,'cv_error','fig');
 mymatlab2tikz(pathname,'cv_error.tex');
 
+close all
+
 %% Display multi-index set
 
 for i=1:2:d
@@ -458,7 +466,10 @@ for i=1:2:d
     mymatlab2tikz(pathname,['multi_index_set_global_solution_dim_' num2str(i) '_' num2str(i+1) '.tex']);
 end
 
+close all
+
 for k=1:n
+    close all
     for i=1:2:d
         plotMultiIndexSet(fw{k},'dim',[i i+1],'legend',false)
         mysaveas(pathname,['multi_index_set_local_solution_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1)],'fig');
@@ -469,6 +480,8 @@ for k=1:n
         mymatlab2tikz(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1) '.tex']);
     end
 end
+
+close all
 
 %% Display statistical outputs
 
@@ -550,5 +563,7 @@ end
 %     % plotLagrangeMultiplier(interfaces,cellfun(@(x) x',lambda_xi,'UniformOutput',false));
 %     plotMultiscaleSolution(glob,patches.patchEval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false));
 % end
+
+end
 
 myparallel('stop');

@@ -6,7 +6,7 @@
 #PBS -S /bin/sh
 
 # Job name (up to 15 characters in length, no blank space, start with alphanumeric character)
-#PBS -N stocircincaniso
+#PBS -N stoldiffcinca
 
 # Interactive mode
 ##PBS -I -X

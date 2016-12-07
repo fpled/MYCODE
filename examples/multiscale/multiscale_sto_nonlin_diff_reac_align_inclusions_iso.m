@@ -1,5 +1,5 @@
-%% Multiscale stochastic nonlinear diffusion reaction square inclusions isotropic %%
-%%--------------------------------------------------------------------------------%%
+%% Multiscale stochastic nonlinear diffusion reaction aligned inclusions isotropic %%
+%%---------------------------------------------------------------------------------%%
 
 % clc
 clear all
@@ -11,7 +11,7 @@ myparallel('start');
 %% Input data
 
 n = 8; % number of patches
-filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_iso'];
+filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_iso'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -28,37 +28,33 @@ iterativeSolver = true;
 glob = Global();
 glob_out = GlobalOutside();
 
-D = DOMAIN(2,[0.0,0.0],[2.0,2.0]);
+D = DOMAIN(2,[2.0,2*n],[0.0,0.0]);
 
-nbelem = [20,20];
+nbelem = [20,20*n];
 glob.S = build_model(D,'nbelem',nbelem);
-% cl = 0.05;
+% cl = 0.25;
 % glob.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
 
 % Patches
 patches = Patches(n);
 
 D_patch = cell(1,n);
-D_patch{1} = DOMAIN(2,[0.1,0.1],[0.3,0.3]);
-D_patch{2} = DOMAIN(2,[0.1,0.9],[0.3,1.1]);
-D_patch{3} = DOMAIN(2,[0.1,1.7],[0.3,1.9]);
-D_patch{4} = DOMAIN(2,[0.9,1.7],[1.1,1.9]);
-D_patch{5} = DOMAIN(2,[1.7,1.7],[1.9,1.9]);
-D_patch{6} = DOMAIN(2,[1.7,0.9],[1.9,1.1]);
-D_patch{7} = DOMAIN(2,[1.7,0.1],[1.9,0.3]);
-D_patch{8} = DOMAIN(2,[0.9,0.1],[1.1,0.3]);
+for k=1:n
+    D_patch{k} = DOMAIN(2,[1.5,2*k-0.5],[0.5,2*k-1.5]);
+end
 
-nbelem_patch = [20,20];
+nbelem_patch = [40,40];
 for k=1:n
     patches.patches{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
 end
-% cl_patch = 0.005;
+% cl_patch = 0.025;
 % for k=1:n
 %     patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',[pathname 'gmsh_patch_' num2str(k)]);
 % end
 
 % Partition of global mesh
-glob = partition(glob,patches);
+% glob = partition(glob,patches);
+glob = partition(glob,D_patch);
 
 %% Random variables
 
@@ -92,7 +88,7 @@ for k=1:n
     patch = patches.patches{k};
     % K_patch(x,xi) = 1 + f(x) * xi
     % K_in(x)       = 1
-    % R_patch(x,xi) = f(x) * xi
+    % R_patch(x,xi) = f(x) * g * xi
     % with f(x) = 1 if ||x-c||_Inf < L
     %           = 0 if ||x-c||_Inf >= L
     L = norm(getsize(D_patch{k}),Inf)/4;
@@ -164,7 +160,7 @@ interfaces = Interfaces(patches);
 %% Stiffness matrices and sollicitation vectors
 
 % Source term
-f = 100;
+f = 1;
 
 % Complementary subdomain
 glob_out.A_out = calc_rigi(glob_out.S_out);
@@ -228,7 +224,7 @@ rv = getRandomVector(bases);
 s = AdaptiveSparseTensorAlgorithm();
 % s.nbSamples = 1;
 % s.addSamplesFactor = 0.1;
-s.tol = 1e-5;
+s.tol = 1e-6;
 s.tolStagnation = 1e-1;
 % s.tolOverfit = 1.1;
 % s.bulkParameter = 0.5;
@@ -452,22 +448,18 @@ mymatlab2tikz(pathname,'cv_error.tex');
 
 %% Display multi-index set
 
-for i=1:2:d
-    plotMultiIndexSet(fU,'dim',[i i+1],'legend',false)
-    mysaveas(pathname,['multi_index_set_global_solution_dim_' num2str(i) '_' num2str(i+1)],'fig');
-    mymatlab2tikz(pathname,['multi_index_set_global_solution_dim_' num2str(i) '_' num2str(i+1) '.tex']);
-end
+plotMultiIndexSet(fU,'legend',false)
+mysaveas(pathname,'multi_index_set_global_solution','fig');
+mymatlab2tikz(pathname,'multi_index_set_global_solution.tex');
 
 for k=1:n
-    for i=1:2:d
-        plotMultiIndexSet(fw{k},'dim',[i i+1],'legend',false)
-        mysaveas(pathname,['multi_index_set_local_solution_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1)],'fig');
-        mymatlab2tikz(pathname,['multi_index_set_local_solution_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1) '.tex']);
-        
-        plotMultiIndexSet(flambda{k},'dim',[i i+1],'legend',false)
-        mysaveas(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1)],'fig');
-        mymatlab2tikz(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1) '.tex']);
-    end
+    plotMultiIndexSet(fw{k},'legend',false)
+    mysaveas(pathname,['multi_index_set_local_solution_' num2str(k)],'fig');
+    mymatlab2tikz(pathname,['multi_index_set_local_solution_' num2str(k) '.tex']);
+    
+    plotMultiIndexSet(flambda{k},'legend',false)
+    mysaveas(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k)],'fig');
+    mymatlab2tikz(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '.tex']);
 end
 
 %% Display statistical outputs

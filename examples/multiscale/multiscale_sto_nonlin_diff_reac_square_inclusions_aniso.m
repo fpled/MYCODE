@@ -76,8 +76,6 @@ RV = RANDVARS(repmat({V},1,d));
 K_out = 1;
 K_patch = cell(1,n);
 K_in = cell(1,n);
-% Nonlinear diffusion coefficient
-% K2_patch = cell(1,n);
 % Nonlinear reaction parameter
 R_patch = cell(1,n);
 
@@ -93,10 +91,9 @@ I = I.tensorize(d);
 g = 0.8:-0.1:0.1;
 for k=1:n
     patch = patches.patches{k};
-    % K_patch(x,xi)  = 1 + f(x) * g * xi
-    % K_in(x)        = 1
-    % R_patch(x,xi)  = f(x) * g * xi 
-    % K2_patch(x,xi) = f(x) * g * xi
+    % K_patch(x,xi) = 1 + f(x) * g * xi
+    % K_in(x)       = 1
+    % R_patch(x,xi) = f(x) * g * xi 
     % with f(x) = 1 if ||x-c||_Inf < L
     %           = 0 if ||x-c||_Inf >= L
     L = norm(getsize(D_patch{k}),Inf)/4;
@@ -128,8 +125,6 @@ glob.S = setmaterial(glob.S,mat_out,getnumgroupelemwithparam(glob.S,'partition',
 % Patches
 mat_patch = MATERIALS();
 for k=1:n
-    % mat_patch{k} = FOUR_ISOT('k',K_patch{k},'k2',K2_patch{k}); % uniform value
-    % mat_patch{k} = FOUR_ISOT('k',FENODEFIELD(K_patch{k}),'k2',FENODEFIELD(K2_patch{k})); % nodal values
     % mat_patch{k} = FOUR_ISOT('k',K_patch{k},'r',R_patch{k}); % uniform value
     mat_patch{k} = FOUR_ISOT('k',FENODEFIELD(K_patch{k}),'r',FENODEFIELD(R_patch{k})); % nodal values
     mat_patch{k} = setnumber(mat_patch{k},k);
@@ -456,8 +451,6 @@ plotCVError(output);
 mysaveas(pathname,'cv_error','fig');
 mymatlab2tikz(pathname,'cv_error.tex');
 
-% close all
-
 %% Display multi-index set
 
 for i=1:2:d
@@ -477,8 +470,6 @@ for k=1:n
         mymatlab2tikz(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1) '.tex']);
     end
 end
-
-% close all
 
 %% Display statistical outputs
 

@@ -1,5 +1,5 @@
-%% Multiscale stochastic nonlinear diffusion reaction square inclusions isotropic %%
-%%--------------------------------------------------------------------------------%%
+%% Multiscale stochastic linear diffusion aligned inclusions anisotropic %%
+%%-----------------------------------------------------------------------%%
 
 % clc
 clear all
@@ -11,7 +11,7 @@ myparallel('start');
 %% Input data
 
 n = 8; % number of patches
-filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_iso'];
+filename = ['multiscale_sto_lin_diff_' num2str(n) '_align_inclusions_aniso'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -28,41 +28,37 @@ iterativeSolver = true;
 glob = Global();
 glob_out = GlobalOutside();
 
-D = DOMAIN(2,[0.0,0.0],[2.0,2.0]);
+D = DOMAIN(2,[2.0,2*n],[0.0,0.0]);
 
-nbelem = [20,20];
+nbelem = [20,20*n];
 glob.S = build_model(D,'nbelem',nbelem);
-% cl = 0.05;
+% cl = 0.25;
 % glob.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
 
 % Patches
 patches = Patches(n);
 
 D_patch = cell(1,n);
-D_patch{1} = DOMAIN(2,[0.1,0.1],[0.3,0.3]);
-D_patch{2} = DOMAIN(2,[0.1,0.9],[0.3,1.1]);
-D_patch{3} = DOMAIN(2,[0.1,1.7],[0.3,1.9]);
-D_patch{4} = DOMAIN(2,[0.9,1.7],[1.1,1.9]);
-D_patch{5} = DOMAIN(2,[1.7,1.7],[1.9,1.9]);
-D_patch{6} = DOMAIN(2,[1.7,0.9],[1.9,1.1]);
-D_patch{7} = DOMAIN(2,[1.7,0.1],[1.9,0.3]);
-D_patch{8} = DOMAIN(2,[0.9,0.1],[1.1,0.3]);
+for k=1:n
+    D_patch{k} = DOMAIN(2,[1.5,2*k-0.5],[0.5,2*k-1.5]);
+end
 
-nbelem_patch = [20,20];
+nbelem_patch = [40,40];
 for k=1:n
     patches.patches{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
 end
-% cl_patch = 0.005;
+% cl_patch = 0.025;
 % for k=1:n
 %     patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',[pathname 'gmsh_patch_' num2str(k)]);
 % end
 
 % Partition of global mesh
-glob = partition(glob,patches);
+% glob = partition(glob,patches);
+glob = partition(glob,D_patch);
 
 %% Random variables
 
-d = 2*n; % parametric dimension
+d = n; % parametric dimension
 v = UniformRandomVariable(0,1);
 rv = RandomVector(v,d);
 
@@ -76,8 +72,6 @@ RV = RANDVARS(repmat({V},1,d));
 K_out = 1;
 K_patch = cell(1,n);
 K_in = cell(1,n);
-% Nonlinear reaction parameter
-R_patch = cell(1,n);
 
 p = 1;
 basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
@@ -88,31 +82,22 @@ H = FullTensorProductFunctionalBasis(bases);
 I = gaussIntegrationRule(vb,2);
 I = I.tensorize(d);
 
+g = 0.8:-0.1:0.1;
 for k=1:n
     patch = patches.patches{k};
-    % K_patch(x,xi) = 1 + f(x) * xi
+    % K_patch(x,xi) = 1 + f(x) * g * xi
     % K_in(x)       = 1
-    % R_patch(x,xi) = f(x) * xi
     % with f(x) = 1 if ||x-c||_Inf < L
     %           = 0 if ||x-c||_Inf >= L
     L = norm(getsize(D_patch{k}),Inf)/4;
     c = getcenter(D_patch{k});
     f = @(x) distance(x,c,Inf)<L;
-    
-    fun = @(xi) ones(size(xi,1),patch.S.nbnode) + xi(:,2*k-1) * double(squeeze(f(patch.S.node)))';
+    fun = @(xi) ones(size(xi,1),patch.S.nbnode) + g(k) * xi(:,k) * double(squeeze(f(patch.S.node)))';
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
     fun.evaluationAtMultiplePoints = true;
     
     K_patch{k} = H.projection(fun,I);
-    
-    fun = @(xi) xi(:,2*k) * double(squeeze(f(patch.S.node)))';
-    funtr = @(xi) fun(transfer(rvb,rv,xi));
-    fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
-    fun.evaluationAtMultiplePoints = true;
-    
-    R_patch{k} = H.projection(fun,I);
-    
     K_in{k} = 1;
 end
 
@@ -124,8 +109,8 @@ glob.S = setmaterial(glob.S,mat_out,getnumgroupelemwithparam(glob.S,'partition',
 % Patches
 mat_patch = MATERIALS();
 for k=1:n
-    % mat_patch{k} = FOUR_ISOT('k',K_patch{k},'r',R_patch{k}); % uniform value
-    mat_patch{k} = FOUR_ISOT('k',FENODEFIELD(K_patch{k}),'r',FENODEFIELD(R_patch{k})); % nodal values
+    % mat_patch{k} = FOUR_ISOT('k',K_patch{k}); % uniform value
+    mat_patch{k} = FOUR_ISOT('k',FENODEFIELD(K_patch{k})); % nodal values
     mat_patch{k} = setnumber(mat_patch{k},k);
     patches.patches{k}.S = setmaterial(patches.patches{k}.S,mat_patch{k});
 end
@@ -164,7 +149,7 @@ interfaces = Interfaces(patches);
 %% Stiffness matrices and sollicitation vectors
 
 % Source term
-f = 100;
+f = 1;
 
 % Complementary subdomain
 glob_out.A_out = calc_rigi(glob_out.S_out);
@@ -180,8 +165,7 @@ glob.b_out = bodyload(keepgroupelem(glob.S,getnumgroupelemwithparam(glob.S,'part
 % Patches
 for k=1:n
     if ~israndom(patches.patches{k}.S)
-        patches.patches{k}.A = @(u) calc_fint(patches.patches{k}.S,u);
-        patches.patches{k}.Atang = @(u) calc_rigitang(patches.patches{k}.S,u);
+        patches.patches{k}.A = calc_rigi(patches.patches{k}.S);
     end
     if ~israndom(f)
         patches.patches{k}.b = bodyload(patches.patches{k}.S,[],'QN',f);
@@ -213,9 +197,6 @@ glob.increment = true;
 for k=1:n
     patches.patches{k}.changeOfVariable = false;
     patches.patches{k}.increment = true;
-    patches.patches{k}.initializationType = 'zero';
-    patches.patches{k}.solver = NEWTONSOLVER('type','tangent','increment',patches.patches{k}.increment,...
-        'maxiter',100,'tol',1e-12,'display',false,'stopini',true);
 end
 
 %% Direct solver
@@ -228,7 +209,7 @@ rv = getRandomVector(bases);
 s = AdaptiveSparseTensorAlgorithm();
 % s.nbSamples = 1;
 % s.addSamplesFactor = 0.1;
-s.tol = 1e-5;
+s.tol = 1e-8;
 s.tolStagnation = 1e-1;
 % s.tolOverfit = 1.1;
 % s.bulkParameter = 0.5;
@@ -248,9 +229,6 @@ ls.errorEstimation = true;
 DS = DirectSolver();
 DS.changeOfVariable = false;
 DS.display = true;
-DS.solver = NEWTONSOLVER('type','tangent','increment',true,...
-    'maxiter',100,'tol',1e-12,'display',false,'stopini',true);
-DS.initializationType = 'zero';
 if directSolver
     [fU_ref,fw_ref,flambda_ref,output_ref] = DS.solveRandom(glob_out,patches,interfaces,s,bases,ls,rv);
     save(fullfile(pathname,'reference_solution.mat'),'fU_ref','fw_ref','flambda_ref','output_ref');
@@ -320,7 +298,7 @@ fprintf('elapsed time = %f s\n',output_ref.time)
 
 %% Global-local Iterative solver
 
-s.tol = 1e-3;
+s.tol = 1e-4;
 s.tolStagnation = 1e-1;
 s.display = true;
 s.displayIterations = false;
@@ -452,22 +430,18 @@ mymatlab2tikz(pathname,'cv_error.tex');
 
 %% Display multi-index set
 
-for i=1:2:d
-    plotMultiIndexSet(fU,'dim',[i i+1],'legend',false)
-    mysaveas(pathname,['multi_index_set_global_solution_dim_' num2str(i) '_' num2str(i+1)],'fig');
-    mymatlab2tikz(pathname,['multi_index_set_global_solution_dim_' num2str(i) '_' num2str(i+1) '.tex']);
-end
+plotMultiIndexSet(fU,'legend',false)
+mysaveas(pathname,'multi_index_set_global_solution','fig');
+mymatlab2tikz(pathname,'multi_index_set_global_solution.tex');
 
 for k=1:n
-    for i=1:2:d
-        plotMultiIndexSet(fw{k},'dim',[i i+1],'legend',false)
-        mysaveas(pathname,['multi_index_set_local_solution_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1)],'fig');
-        mymatlab2tikz(pathname,['multi_index_set_local_solution_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1) '.tex']);
-        
-        plotMultiIndexSet(flambda{k},'dim',[i i+1],'legend',false)
-        mysaveas(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1)],'fig');
-        mymatlab2tikz(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1) '.tex']);
-    end
+    plotMultiIndexSet(fw{k},'legend',false)
+    mysaveas(pathname,['multi_index_set_local_solution_' num2str(k)],'fig');
+    mymatlab2tikz(pathname,['multi_index_set_local_solution_' num2str(k) '.tex']);
+    
+    plotMultiIndexSet(flambda{k},'legend',false)
+    mysaveas(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k)],'fig');
+    mymatlab2tikz(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '.tex']);
 end
 
 %% Display statistical outputs

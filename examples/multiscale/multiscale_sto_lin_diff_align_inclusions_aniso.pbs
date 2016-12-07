@@ -1,12 +1,12 @@
 #!/bin/sh
 
-# To start this job : qsub multiscale_sto_lin_diff_square_inclusions_iso.pbs
+# To start this job : qsub multiscale_sto_lin_diff_align_inclusions_aniso.pbs
 
 # Shell
 #PBS -S /bin/sh
 
 # Job name (up to 15 characters in length, no blank space, start with alphanumeric character)
-#PBS -N stoldiffsqinci
+#PBS -N stoldiffainca
 
 # Interactive mode
 ##PBS -I -X
@@ -21,19 +21,19 @@
 # If nodes, only for 'long' queue
 # Maximum number of local workers available with Parallel Computing Toolbox -
 # the limit was 4; this changed to 8 in R2009a; and to 12 in R2011b
-#PBS -l select=1:ncpus=12:mem=5gb,place=pack
+#PBS -l select=1:ncpus=12:mem=32gb,place=pack
 ##PBS -l nodes=1:ppn=12,mem=60gb
-#PBS -l walltime=24:00:00
+#PBS -l walltime=360:00:00
 
 # Destination : queue, @server, or queue@server
 # 'centos65', 'medium', 'long', 'heavy', 'superheavy', 'gpu', 'compil', or 'cuda'
 #PBS -q centos65
 
 # File name for standard output
-#PBS -o multiscale_sto_lin_diff_square_inclusions_iso.out
+#PBS -o multiscale_sto_lin_diff_align_inclusions_aniso.out
 
 # File name for standard error
-#PBS -e multiscale_sto_lin_diff_square_inclusions_iso.err
+#PBS -e multiscale_sto_lin_diff_align_inclusions_aniso.err
 
 # Keep (or retain) standard output and error streams on execution host
 ##PBS -k oe
@@ -52,7 +52,7 @@
 # Export all environment variables to the job
 #PBS -V
 JOBID=${PBS_JOBID%%.*}
-MATLAB_FILENAME=multiscale_sto_lin_diff_square_inclusions_iso
+MATLAB_FILENAME=multiscale_sto_lin_diff_align_inclusions_aniso
 LOG_FILENAME=$PBS_O_WORKDIR/$MATLAB_FILENAME.$JOBID.log
 
 # Change directories to working directory (default is home)

@@ -4,7 +4,10 @@
 % clc
 clear all
 close all
+% set(0,'DefaultFigureVisible','off');
+% rng('default');
 
+%% Input data
 filename = 'model_sto_Young';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
@@ -18,7 +21,6 @@ linewidth = 1;
 markersize = 36;
 interpreter = 'latex';
 
-%% Input data
 % Data for sample D
 E = [4.211 4.057 3.685 3.921 3.839 3.845 3.795...
     3.406 3.389 3.299 3.485 3.319 3.267 3.349 3.307...

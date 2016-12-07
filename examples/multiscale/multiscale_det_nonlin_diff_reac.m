@@ -77,7 +77,6 @@ for k=1:n
     patch = patches.patches{k};
     % K_patch(x)  = 1 + f(x)
     % K_in(x)     = 1
-    % K2_patch(x) = f(x)
     % R_patch(x)  = f(x)   
     % with f(x) = 1 if ||x-c||_Inf < L
     %           = 0 if ||x-c||_Inf >= L

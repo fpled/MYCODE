@@ -1,5 +1,5 @@
-%% Multiscale stochastic linear diffusion aligned inclusions %%
-%%-----------------------------------------------------------%%
+%% Multiscale stochastic linear diffusion aligned inclusions isotropic %%
+%%---------------------------------------------------------------------%%
 
 % clc
 clear all
@@ -10,8 +10,8 @@ myparallel('start');
 
 %% Input data
 
-n = 10; % number of patches
-filename = ['multiscale_sto_lin_diff_' num2str(n) '_align_inclusions'];
+n = 8; % number of patches
+filename = ['multiscale_sto_lin_diff_' num2str(n) '_align_inclusions_iso'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -28,7 +28,7 @@ iterativeSolver = true;
 glob = Global();
 glob_out = GlobalOutside();
 
-D = DOMAIN(2,[0.0,0.0],[2.0,2*n]);
+D = DOMAIN(2,[2.0,2*n],[0.0,0.0]);
 
 nbelem = [20,20*n];
 glob.S = build_model(D,'nbelem',nbelem);
@@ -40,7 +40,7 @@ patches = Patches(n);
 
 D_patch = cell(1,n);
 for k=1:n
-    D_patch{k} = DOMAIN(2,[0.5,2*k-1.5],[1.5,2*k-0.5]);
+    D_patch{k} = DOMAIN(2,[1.5,2*k-0.5],[0.5,2*k-1.5]);
 end
 
 nbelem_patch = [40,40];
