@@ -6,7 +6,6 @@ clear all
 close all
 % set(0,'DefaultFigureVisible','off');
 % rng('default');
-
 myparallel('start');
 
 %% Input data

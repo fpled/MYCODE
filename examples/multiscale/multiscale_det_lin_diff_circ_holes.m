@@ -67,7 +67,7 @@ for k=1:n
 end
 
 % Partition of global mesh
-glob = partition(glob,D_patch);
+glob = partition(glob,patches);
 
 %% Materials
 

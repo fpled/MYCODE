@@ -93,7 +93,7 @@ for k=1:n
     patch = patches.patches{k};
     % K_patch(x,xi) = 1 + f(x) * g * xi
     % K_in(x)       = 1
-    % R_patch(x,xi) = f(x) * g * xi 
+    % R_patch(x,xi) = f(x) * g * xi
     % with f(x) = 1 if ||x-c||_Inf < L
     %           = 0 if ||x-c||_Inf >= L
     L = norm(getsize(D_patch{k}),Inf)/4;

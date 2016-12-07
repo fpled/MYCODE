@@ -11,22 +11,23 @@ myparallel('start');
 %% Input data
 
 n = 8; % number of patches
-% filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_aniso'];
-% pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
+filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_aniso'];
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
 % for rho = [0.2 0.4 0.6 0.8 1 1.2]
-for tol = 1:4
-    
+% for tol = 1:4
+
 % filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_aniso_tol_3_rho_' num2str(rho)];
-filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_aniso_tol_'  num2str(tol) '_rho_aitken'];
-pathname = fullfile('/Users/Op/Documents/Recherche/GeM/Results',filesep,filename,filesep);
+% filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_aniso_tol_'  num2str(tol) '_rho_aitken'];
+% pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
+% pathname = fullfile('/Users/Op/Documents/Recherche/GeM/Results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-directSolver = false;
-iterativeSolver = false;
+directSolver = true;
+iterativeSolver = true;
 
 %% Domains and meshes
 
@@ -97,9 +98,9 @@ I = I.tensorize(d);
 g = 0.8:-0.1:0.1;
 for k=1:n
     patch = patches.patches{k};
-    % K_patch(x,xi)  = 1 + f(x) * g * xi
-    % K_in(x)        = 1
-    % R_patch(x,xi)  = f(x) * g * xi 
+    % K_patch(x,xi) = 1 + f(x) * g * xi
+    % K_in(x)       = 1
+    % R_patch(x,xi) = f(x) * g * xi
     % with f(x) = 1 if ||x-c||_Inf < L
     %           = 0 if ||x-c||_Inf >= L
     L = norm(getsize(D_patch{k}),Inf)/4;
@@ -327,7 +328,8 @@ fprintf('elapsed time = %f s\n',output_ref.time)
 
 %% Global-local Iterative solver
 
-s.tol = 10^(-tol);
+s.tol = 1e-3;
+% s.tol = 10^(-tol);
 s.tolStagnation = 1e-1;
 s.display = true;
 s.displayIterations = false;
@@ -337,6 +339,8 @@ IS.maxIterations = 20;
 IS.tolerance = eps;
 IS.relaxation = 'Aitken';
 IS.updateRelaxationParameter = true;
+% IS.relaxation = rho;
+% IS.updateRelaxationParameter = false;
 IS.errorCriterion = 'reference';
 IS.referenceSolution = {fU_ref,fw_ref,flambda_ref};
 IS.display = true;
@@ -565,6 +569,6 @@ end
 %     plotMultiscaleSolution(glob,patches.patchEval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false));
 % end
 
-end
+% end
 
 myparallel('stop');
