@@ -1,5 +1,5 @@
-%% Multiscale stochastic nonlinear diffusion reaction square inclusions isotropic %%
-%%--------------------------------------------------------------------------------%%
+%% Multiscale stochastic nonlinear diffusion reaction square inclusions anisotropic %%
+%%----------------------------------------------------------------------------------%%
 
 % clc
 clear all
@@ -11,14 +11,13 @@ myparallel('start');
 %% Input data
 
 n = 8; % number of patches
-filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_iso'];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
 % for rho = [0.2 0.4 0.6 0.8 1 1.2]
 % for tol = 1:4
 
-% filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_iso_tol_3_rho_' num2str(rho)];
-% filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_iso_tol_'  num2str(tol) '_rho_aitken'];
-% pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
+filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_aniso'];
+% filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_aniso_tol_3_rho_' num2str(rho)];
+% filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_aniso_tol_'  num2str(tol) '_rho_aitken'];
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
 % pathname = fullfile('/Users/Op/Documents/Recherche/GeM/Results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -95,25 +94,26 @@ H = FullTensorProductFunctionalBasis(bases);
 I = gaussIntegrationRule(vb,2);
 I = I.tensorize(d);
 
+g = 0.8:-0.1:0.1;
 for k=1:n
     patch = patches.patches{k};
-    % K_patch(x,xi) = 1 + f(x) * xi
+    % K_patch(x,xi) = 1 + f(x) * g * xi
     % K_in(x)       = 1
-    % R_patch(x,xi) = f(x) * xi
+    % R_patch(x,xi) = f(x) * g * xi
     % with f(x) = 1 if ||x-c||_Inf < L
     %           = 0 if ||x-c||_Inf >= L
     L = norm(getsize(D_patch{k}),Inf)/4;
     c = getcenter(D_patch{k});
     f = @(x) distance(x,c,Inf)<L;
     
-    fun = @(xi) ones(size(xi,1),patch.S.nbnode) + xi(:,2*k-1) * double(squeeze(f(patch.S.node)))';
+    fun = @(xi) ones(size(xi,1),patch.S.nbnode) + g(k) * xi(:,2*k-1) * double(squeeze(f(patch.S.node)))';
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
     fun.evaluationAtMultiplePoints = true;
     
     K_patch{k} = H.projection(fun,I);
     
-    fun = @(xi) xi(:,2*k) * double(squeeze(f(patch.S.node)))';
+    fun = @(xi) g(k) * xi(:,2*k) * double(squeeze(f(patch.S.node)))';
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
     fun.evaluationAtMultiplePoints = true;

@@ -11,14 +11,13 @@ myparallel('start');
 %% Input data
 
 n = 8; % number of patches
-filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_iso'];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
-% for rho = [0.2 0.4 0.6 0.8 1 1.2]
+% for rho = [0.2 0.4 0.6 0.8 1 1.2 1.4 1.6 1.8]
 % for tol = 1:4
 
+filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_iso'];
 % filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_iso_tol_3_rho_' num2str(rho)];
 % filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_iso_tol_'  num2str(tol) '_rho_aitken'];
-% pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
 % pathname = fullfile('/Users/Op/Documents/Recherche/GeM/Results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -35,9 +34,9 @@ iterativeSolver = true;
 glob = Global();
 glob_out = GlobalOutside();
 
-D = DOMAIN(2,[0.0,0.0],[2*n,2.0]);
+D = DOMAIN(2,[0.0,0.0],[2.0,2*n]);
 
-nbelem = [20*n,20];
+nbelem = [20,20*n];
 glob.S = build_model(D,'nbelem',nbelem);
 % cl = 0.25;
 % glob.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
@@ -47,7 +46,7 @@ patches = Patches(n);
 
 D_patch = cell(1,n);
 for k=1:n
-    D_patch{k} = DOMAIN(2,[2*k-1.5,0.5],[2*k-0.5,1.5]);
+    D_patch{k} = DOMAIN(2,[0.5,2*k-1.5],[1.5,2*k-0.5]);
 end
 
 nbelem_patch = [20,20];

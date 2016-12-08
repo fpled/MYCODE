@@ -28,9 +28,9 @@ iterativeSolver = true;
 glob = Global();
 glob_out = GlobalOutside();
 
-D = DOMAIN(2,[0.0,0.0],[2*n,2.0]);
+D = DOMAIN(2,[0.0,0.0],[2.0,2*n]);
 
-nbelem = [20*n,20];
+nbelem = [20,20*n];
 glob.S = build_model(D,'nbelem',nbelem);
 % cl = 0.25;
 % glob.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
@@ -40,7 +40,7 @@ patches = Patches(n);
 
 D_patch = cell(1,n);
 for k=1:n
-    D_patch{k} = DOMAIN(2,[2*k-1.5,0.5],[2*k-0.5,1.5]);
+    D_patch{k} = DOMAIN(2,[0.5,2*k-1.5],[1.5,2*k-0.5]);
 end
 
 nbelem_patch = [40,40];

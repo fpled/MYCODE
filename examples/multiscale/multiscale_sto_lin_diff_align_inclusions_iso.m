@@ -19,7 +19,7 @@ end
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-directSolver = true;
+directSolver = false;
 iterativeSolver = true;
 
 %% Domains and meshes
@@ -28,9 +28,9 @@ iterativeSolver = true;
 glob = Global();
 glob_out = GlobalOutside();
 
-D = DOMAIN(2,[0.0,0.0],[2*n,2.0]);
+D = DOMAIN(2,[0.0,0.0],[2.0,2*n]);
 
-nbelem = [20*n,20];
+nbelem = [20,20*n];
 glob.S = build_model(D,'nbelem',nbelem);
 % cl = 0.25;
 % glob.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
@@ -40,7 +40,7 @@ patches = Patches(n);
 
 D_patch = cell(1,n);
 for k=1:n
-    D_patch{k} = DOMAIN(2,[2*k-1.5,0.5],[2*k-0.5,1.5]);
+    D_patch{k} = DOMAIN(2,[0.5,2*k-1.5],[1.5,2*k-0.5]);
 end
 
 nbelem_patch = [40,40];
@@ -304,15 +304,15 @@ s.displayIterations = false;
 IS = IterativeSolver();
 IS.maxIterations = 20;
 IS.tolerance = eps;
-IS.relaxation = 'Aitken';
-IS.updateRelaxationParameter = true;
+IS.relaxation = 1.8;
+IS.updateRelaxationParameter = false;
 IS.errorCriterion = 'reference';
 IS.referenceSolution = {fU_ref,fw_ref,flambda_ref};
 IS.display = true;
 IS.displayIterations = true;
 if iterativeSolver
     [fU,fw,flambda,output] = IS.solveRandom(glob,patches,interfaces,s,bases,ls,rv);
-    save(fullfile(pathname,'solution.mat'),'fU','fw','flambda','output');
+%     save(fullfile(pathname,'solution.mat'),'fU','fw','flambda','output');
 else
     load(fullfile(pathname,'solution.mat'),'fU','fw','flambda','output');
 end
@@ -372,155 +372,155 @@ end
 % end
 fprintf('elapsed time = %f s\n',output.totalTime)
 
-%% Display domains and meshes
-
-plotDomain(D,D_patch);
-mysaveas(pathname,'domain_global_patches',formats,renderer);
-mymatlab2tikz(pathname,'domain_global_patches.tex');
-
-% plotPartition(glob,'legend',false);
-% mysaveas(pathname,'mesh_partition',formats,renderer);
-
-plotModel(glob,patches,'legend',false);
-mysaveas(pathname,'mesh_global_patches',formats,renderer);
-
-% plotModel(glob);
-% plotModel(patches);
-% plotModel(interfaces);
-
-%% Display evolution of error indicator, stagnation indicator, CPU time, relaxation parameter w.r.t. number of iterations
-
-plotError(output);
-mysaveas(pathname,'error','fig');
-mymatlab2tikz(pathname,'error.tex');
-
-plotStagnation(output);
-mysaveas(pathname,'stagnation','fig');
-mymatlab2tikz(pathname,'stagnation.tex');
-
-plotErrorGlobalSolution(output);
-mysaveas(pathname,'error_global_solution','fig');
-mymatlab2tikz(pathname,'error_global_solution.tex');
-
-plotStagnationGlobalSolution(output);
-mysaveas(pathname,'stagnation_global_solution','fig');
-mymatlab2tikz(pathname,'stagnation_global_solution.tex');
-
-plotCPUTime(output,'legend',false);
-mysaveas(pathname,'cpu_time','fig');
-mymatlab2tikz(pathname,'cpu_time.tex');
-
-plotRelaxationParameter(output,'legend',false);
-mysaveas(pathname,'relaxation_parameter','fig');
-mymatlab2tikz(pathname,'relaxation_parameter.tex');
-
-plotNbSamples(output);
-mysaveas(pathname,'nb_samples','fig');
-mymatlab2tikz(pathname,'nb_samples.tex');
-
-plotDimStochasticBasis(output);
-mysaveas(pathname,'dim_stochastic_basis','fig');
-mymatlab2tikz(pathname,'dim_stochastic_basis.tex');
-
-plotCVError(output);
-mysaveas(pathname,'cv_error','fig');
-mymatlab2tikz(pathname,'cv_error.tex');
-
-%% Display multi-index set
-
-plotMultiIndexSet(fU,'legend',false)
-mysaveas(pathname,'multi_index_set_global_solution','fig');
-mymatlab2tikz(pathname,'multi_index_set_global_solution.tex');
-
-for k=1:n
-    plotMultiIndexSet(fw{k},'legend',false)
-    mysaveas(pathname,['multi_index_set_local_solution_' num2str(k)],'fig');
-    mymatlab2tikz(pathname,['multi_index_set_local_solution_' num2str(k) '.tex']);
-    
-    plotMultiIndexSet(flambda{k},'legend',false)
-    mysaveas(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k)],'fig');
-    mymatlab2tikz(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '.tex']);
-end
-
-%% Display statistical outputs
-
-% plotStatsAllSolutions(glob,patches,interfaces,U,w,lambda);
-
-plotMeanGlobalSolution(glob,U);
-mysaveas(pathname,'mean_global_solution',formats,renderer);
-
-% plotMeanLocalSolution(patches,w);
-% mysaveas(pathname,'mean_local_solution',formats,renderer);
-
-% plotMeanLagrangeMultiplier(interfaces,lambda);
-% mysaveas(pathname,'mean_Lagrange_multiplier',formats,renderer);
-
-plotMeanMultiscaleSolution(glob,patches,interfaces,U,w);
-mysaveas(pathname,'mean_multiscale_solution',formats,renderer);
-
-plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w);
-mysaveas(pathname,'mean_global_local_solution',formats,renderer);
-
-plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-mysaveas(pathname,'mean_global_local_solution_surf',formats,renderer);
-
-plotVarGlobalSolution(glob,U);
-mysaveas(pathname,'var_global_solution',formats,renderer);
-
-% plotVarLocalSolution(patches,w);
-% mysaveas(pathname,'var_local_solution',formats,renderer);
-
-% plotVarLagrangeMultiplier(interfaces,lambda);
-% mysaveas(pathname,'var_Lagrange_multiplier',formats,renderer);
-
-plotVarMultiscaleSolution(glob,patches,interfaces,U,w);
-mysaveas(pathname,'var_multiscale_solution',formats,renderer);
-
-plotVarGlobalLocalSolution(glob,patches,interfaces,U,w);
-mysaveas(pathname,'var_global_local_solution',formats,renderer);
-
-plotVarGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-mysaveas(pathname,'var_global_local_solution_surf',formats,renderer);
-
-plotStdGlobalSolution(glob,U);
-mysaveas(pathname,'std_global_solution',formats,renderer);
-
-% plotStdLocalSolution(patches,w);
-% mysaveas(pathname,'std_local_solution',formats,renderer);
-
-% plotStdLagrangeMultiplier(interfaces,lambda);
-% mysaveas(pathname,'std_Lagrange_multiplier',formats,renderer);
-
-plotStdMultiscaleSolution(glob,patches,interfaces,U,w);
-mysaveas(pathname,'std_multiscale_solution',formats,renderer);
-
-plotStdGlobalLocalSolution(glob,patches,interfaces,U,w);
-mysaveas(pathname,'std_global_local_solution',formats,renderer);
-
-plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-mysaveas(pathname,'std_global_local_solution_surf',formats,renderer);
-
-for i=1:d
-    plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i);
-    mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i)],formats,renderer);
-    
-    plotSensitivityIndicesMaxVarMultiscaleSolution(glob,patches,interfaces,U,w,i);
-    mysaveas(pathname,['sensitivity_indices_multiscale_solution_var_' num2str(i)],formats,renderer);
-end
-
-%% Display random evaluations of solutions
-
-% nbsamples = 3;
-% for i=1:nbsamples
-%     xi = random(rv,1,1);
-%     U_xi = fU.functionEval(xi);
-%     w_xi = cellfun(@(x) x.functionEval(xi),fw,'UniformOutput',false);
-%     lambda_xi = cellfun(@(x) x.functionEval(xi),flambda,'UniformOutput',false);
-%     % plotAllSolutions(glob,patches.patchEval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false),cellfun(@(x) x',lambda_xi,'UniformOutput',false));
-%     plotGlobalSolution(glob,U_xi');
-%     % plotLocalSolution(patches,cellfun(@(x) x',w_xi,'UniformOutput',false));
-%     % plotLagrangeMultiplier(interfaces,cellfun(@(x) x',lambda_xi,'UniformOutput',false));
-%     plotMultiscaleSolution(glob,patches.patchEval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false));
+% %% Display domains and meshes
+% 
+% plotDomain(D,D_patch);
+% mysaveas(pathname,'domain_global_patches',formats,renderer);
+% mymatlab2tikz(pathname,'domain_global_patches.tex');
+% 
+% % plotPartition(glob,'legend',false);
+% % mysaveas(pathname,'mesh_partition',formats,renderer);
+% 
+% plotModel(glob,patches,'legend',false);
+% mysaveas(pathname,'mesh_global_patches',formats,renderer);
+% 
+% % plotModel(glob);
+% % plotModel(patches);
+% % plotModel(interfaces);
+% 
+% %% Display evolution of error indicator, stagnation indicator, CPU time, relaxation parameter w.r.t. number of iterations
+% 
+% plotError(output);
+% mysaveas(pathname,'error','fig');
+% mymatlab2tikz(pathname,'error.tex');
+% 
+% plotStagnation(output);
+% mysaveas(pathname,'stagnation','fig');
+% mymatlab2tikz(pathname,'stagnation.tex');
+% 
+% plotErrorGlobalSolution(output);
+% mysaveas(pathname,'error_global_solution','fig');
+% mymatlab2tikz(pathname,'error_global_solution.tex');
+% 
+% plotStagnationGlobalSolution(output);
+% mysaveas(pathname,'stagnation_global_solution','fig');
+% mymatlab2tikz(pathname,'stagnation_global_solution.tex');
+% 
+% plotCPUTime(output,'legend',false);
+% mysaveas(pathname,'cpu_time','fig');
+% mymatlab2tikz(pathname,'cpu_time.tex');
+% 
+% plotRelaxationParameter(output,'legend',false);
+% mysaveas(pathname,'relaxation_parameter','fig');
+% mymatlab2tikz(pathname,'relaxation_parameter.tex');
+% 
+% plotNbSamples(output);
+% mysaveas(pathname,'nb_samples','fig');
+% mymatlab2tikz(pathname,'nb_samples.tex');
+% 
+% plotDimStochasticBasis(output);
+% mysaveas(pathname,'dim_stochastic_basis','fig');
+% mymatlab2tikz(pathname,'dim_stochastic_basis.tex');
+% 
+% plotCVError(output);
+% mysaveas(pathname,'cv_error','fig');
+% mymatlab2tikz(pathname,'cv_error.tex');
+% 
+% %% Display multi-index set
+% 
+% plotMultiIndexSet(fU,'legend',false)
+% mysaveas(pathname,'multi_index_set_global_solution','fig');
+% mymatlab2tikz(pathname,'multi_index_set_global_solution.tex');
+% 
+% for k=1:n
+%     plotMultiIndexSet(fw{k},'legend',false)
+%     mysaveas(pathname,['multi_index_set_local_solution_' num2str(k)],'fig');
+%     mymatlab2tikz(pathname,['multi_index_set_local_solution_' num2str(k) '.tex']);
+%     
+%     plotMultiIndexSet(flambda{k},'legend',false)
+%     mysaveas(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k)],'fig');
+%     mymatlab2tikz(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '.tex']);
 % end
+% 
+% %% Display statistical outputs
+% 
+% % plotStatsAllSolutions(glob,patches,interfaces,U,w,lambda);
+% 
+% plotMeanGlobalSolution(glob,U);
+% mysaveas(pathname,'mean_global_solution',formats,renderer);
+% 
+% % plotMeanLocalSolution(patches,w);
+% % mysaveas(pathname,'mean_local_solution',formats,renderer);
+% 
+% % plotMeanLagrangeMultiplier(interfaces,lambda);
+% % mysaveas(pathname,'mean_Lagrange_multiplier',formats,renderer);
+% 
+% plotMeanMultiscaleSolution(glob,patches,interfaces,U,w);
+% mysaveas(pathname,'mean_multiscale_solution',formats,renderer);
+% 
+% plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w);
+% mysaveas(pathname,'mean_global_local_solution',formats,renderer);
+% 
+% plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
+% mysaveas(pathname,'mean_global_local_solution_surf',formats,renderer);
+% 
+% plotVarGlobalSolution(glob,U);
+% mysaveas(pathname,'var_global_solution',formats,renderer);
+% 
+% % plotVarLocalSolution(patches,w);
+% % mysaveas(pathname,'var_local_solution',formats,renderer);
+% 
+% % plotVarLagrangeMultiplier(interfaces,lambda);
+% % mysaveas(pathname,'var_Lagrange_multiplier',formats,renderer);
+% 
+% plotVarMultiscaleSolution(glob,patches,interfaces,U,w);
+% mysaveas(pathname,'var_multiscale_solution',formats,renderer);
+% 
+% plotVarGlobalLocalSolution(glob,patches,interfaces,U,w);
+% mysaveas(pathname,'var_global_local_solution',formats,renderer);
+% 
+% plotVarGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
+% mysaveas(pathname,'var_global_local_solution_surf',formats,renderer);
+% 
+% plotStdGlobalSolution(glob,U);
+% mysaveas(pathname,'std_global_solution',formats,renderer);
+% 
+% % plotStdLocalSolution(patches,w);
+% % mysaveas(pathname,'std_local_solution',formats,renderer);
+% 
+% % plotStdLagrangeMultiplier(interfaces,lambda);
+% % mysaveas(pathname,'std_Lagrange_multiplier',formats,renderer);
+% 
+% plotStdMultiscaleSolution(glob,patches,interfaces,U,w);
+% mysaveas(pathname,'std_multiscale_solution',formats,renderer);
+% 
+% plotStdGlobalLocalSolution(glob,patches,interfaces,U,w);
+% mysaveas(pathname,'std_global_local_solution',formats,renderer);
+% 
+% plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
+% mysaveas(pathname,'std_global_local_solution_surf',formats,renderer);
+% 
+% for i=1:d
+%     plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i);
+%     mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i)],formats,renderer);
+%     
+%     plotSensitivityIndicesMaxVarMultiscaleSolution(glob,patches,interfaces,U,w,i);
+%     mysaveas(pathname,['sensitivity_indices_multiscale_solution_var_' num2str(i)],formats,renderer);
+% end
+% 
+% %% Display random evaluations of solutions
+% 
+% % nbsamples = 3;
+% % for i=1:nbsamples
+% %     xi = random(rv,1,1);
+% %     U_xi = fU.functionEval(xi);
+% %     w_xi = cellfun(@(x) x.functionEval(xi),fw,'UniformOutput',false);
+% %     lambda_xi = cellfun(@(x) x.functionEval(xi),flambda,'UniformOutput',false);
+% %     % plotAllSolutions(glob,patches.patchEval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false),cellfun(@(x) x',lambda_xi,'UniformOutput',false));
+% %     plotGlobalSolution(glob,U_xi');
+% %     % plotLocalSolution(patches,cellfun(@(x) x',w_xi,'UniformOutput',false));
+% %     % plotLagrangeMultiplier(interfaces,cellfun(@(x) x',lambda_xi,'UniformOutput',false));
+% %     plotMultiscaleSolution(glob,patches.patchEval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false));
+% % end
 
 myparallel('stop');
