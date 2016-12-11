@@ -304,15 +304,15 @@ s.displayIterations = false;
 IS = IterativeSolver();
 IS.maxIterations = 20;
 IS.tolerance = eps;
-IS.relaxation = 1.8;
-IS.updateRelaxationParameter = false;
+IS.relaxation = 'Aitken';
+IS.updateRelaxationParameter = true;
 IS.errorCriterion = 'reference';
 IS.referenceSolution = {fU_ref,fw_ref,flambda_ref};
 IS.display = true;
 IS.displayIterations = true;
 if iterativeSolver
     [fU,fw,flambda,output] = IS.solveRandom(glob,patches,interfaces,s,bases,ls,rv);
-%     save(fullfile(pathname,'solution.mat'),'fU','fw','flambda','output');
+    save(fullfile(pathname,'solution.mat'),'fU','fw','flambda','output');
 else
     load(fullfile(pathname,'solution.mat'),'fU','fw','flambda','output');
 end
@@ -458,7 +458,7 @@ mysaveas(pathname,'mean_global_solution',formats,renderer);
 plotMeanMultiscaleSolution(glob,patches,interfaces,U,w);
 mysaveas(pathname,'mean_multiscale_solution',formats,renderer);
 
-plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w);
+plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'orientation','h');
 mysaveas(pathname,'mean_global_local_solution',formats,renderer);
 
 plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
@@ -476,7 +476,7 @@ mysaveas(pathname,'var_global_solution',formats,renderer);
 plotVarMultiscaleSolution(glob,patches,interfaces,U,w);
 mysaveas(pathname,'var_multiscale_solution',formats,renderer);
 
-plotVarGlobalLocalSolution(glob,patches,interfaces,U,w);
+plotVarGlobalLocalSolution(glob,patches,interfaces,U,w,'orientation','h');
 mysaveas(pathname,'var_global_local_solution',formats,renderer);
 
 plotVarGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
@@ -494,7 +494,7 @@ mysaveas(pathname,'std_global_solution',formats,renderer);
 plotStdMultiscaleSolution(glob,patches,interfaces,U,w);
 mysaveas(pathname,'std_multiscale_solution',formats,renderer);
 
-plotStdGlobalLocalSolution(glob,patches,interfaces,U,w);
+plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'orientation','h');
 mysaveas(pathname,'std_global_local_solution',formats,renderer);
 
 plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);

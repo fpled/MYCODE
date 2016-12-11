@@ -500,7 +500,7 @@ mysaveas(pathname,'mean_global_solution',formats,renderer);
 plotMeanMultiscaleSolution(glob,patches,interfaces,U,w);
 mysaveas(pathname,'mean_multiscale_solution',formats,renderer);
 
-plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w);
+plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'orientation','h');
 mysaveas(pathname,'mean_global_local_solution',formats,renderer);
 
 plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
@@ -518,7 +518,7 @@ mysaveas(pathname,'var_global_solution',formats,renderer);
 plotVarMultiscaleSolution(glob,patches,interfaces,U,w);
 mysaveas(pathname,'var_multiscale_solution',formats,renderer);
 
-plotVarGlobalLocalSolution(glob,patches,interfaces,U,w);
+plotVarGlobalLocalSolution(glob,patches,interfaces,U,w,'orientation','h');
 mysaveas(pathname,'var_global_local_solution',formats,renderer);
 
 plotVarGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
@@ -536,7 +536,7 @@ mysaveas(pathname,'std_global_solution',formats,renderer);
 plotStdMultiscaleSolution(glob,patches,interfaces,U,w);
 mysaveas(pathname,'std_multiscale_solution',formats,renderer);
 
-plotStdGlobalLocalSolution(glob,patches,interfaces,U,w);
+plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'orientation','h');
 mysaveas(pathname,'std_global_local_solution',formats,renderer);
 
 plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
