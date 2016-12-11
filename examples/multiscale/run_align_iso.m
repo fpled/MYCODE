@@ -12,7 +12,7 @@ myparallel('start');
 
 n = 8; % number of patches
 % for rho = [0.2 0.4 0.6 0.8 1 1.2 1.4 1.6 1.8]
-% for tol = 1:4
+% for tol = 1:5
 
 filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_iso'];
 % filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_iso_tol_3_rho_' num2str(rho)];
