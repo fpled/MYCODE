@@ -17,16 +17,16 @@ n = 8; % number of patches
 filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_iso'];
 % filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_iso_tol_3_rho_' num2str(rho)];
 % filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_iso_tol_'  num2str(tol) '_rho_aitken'];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
-% pathname = fullfile('/Users/Op/Documents/Recherche/GeM/Results',filesep,filename,filesep);
+% pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
+pathname = fullfile('/Users/Op/Documents/Recherche/GeM/Results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-directSolver = true;
-iterativeSolver = true;
+directSolver = false;
+iterativeSolver = false;
 
 %% Domains and meshes
 
@@ -330,10 +330,10 @@ s.displayIterations = false;
 IS = IterativeSolver();
 IS.maxIterations = 20;
 IS.tolerance = eps;
-IS.relaxation = 'Aitken';
-IS.updateRelaxationParameter = true;
-% IS.relaxation = rho;
-% IS.updateRelaxationParameter = false;
+% IS.relaxation = 'Aitken';
+% IS.updateRelaxationParameter = true;
+IS.relaxation = rho;
+IS.updateRelaxationParameter = false;
 IS.errorCriterion = 'reference';
 IS.referenceSolution = {fU_ref,fw_ref,flambda_ref};
 IS.display = true;
@@ -399,6 +399,8 @@ end
 %     disp(num2str(flambda{k}.basis.indices.array))
 % end
 fprintf('elapsed time = %f s\n',output.totalTime)
+
+close all
 
 %% Display domains and meshes
 

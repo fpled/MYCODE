@@ -1,5 +1,5 @@
-%% Multiscale stochastic nonlinear diffusion reaction square inclusions isotropic %%
-%%--------------------------------------------------------------------------------%%
+%% Multiscale stochastic nonlinear diffusion reaction aligned inclusions anisotropic %%
+%%-----------------------------------------------------------------------------------%%
 
 % clc
 clear all
@@ -11,22 +11,22 @@ myparallel('start');
 %% Input data
 
 n = 8; % number of patches
-% for rho = [0.2 0.4 0.6 0.8 1 1.2]
+% for rho = [0.2 0.4 0.6 0.8 1 1.2 1.4 1.6 1.8]
 % for tol = 1:4
 
-filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_iso'];
-% filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_iso_tol_3_rho_' num2str(rho)];
-% filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_square_inclusions_iso_tol_'  num2str(tol) '_rho_aitken'];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
-% pathname = fullfile('/Users/Op/Documents/Recherche/GeM/Results',filesep,filename,filesep);
+filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_aniso'];
+% filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_aniso_tol_3_rho_' num2str(rho)];
+% filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_aniso_tol_'  num2str(tol) '_rho_aitken'];
+% pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
+pathname = fullfile('/Users/Op/Documents/Recherche/GeM/Results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-directSolver = true;
-iterativeSolver = true;
+directSolver = false;
+iterativeSolver = false;
 
 %% Domains and meshes
 
@@ -34,31 +34,26 @@ iterativeSolver = true;
 glob = Global();
 glob_out = GlobalOutside();
 
-D = DOMAIN(2,[0.0,0.0],[2.0,2.0]);
+D = DOMAIN(2,[0.0,0.0],[2.0,2*n]);
 
-nbelem = [20,20];
+nbelem = [20,20*n];
 glob.S = build_model(D,'nbelem',nbelem);
-% cl = 0.05;
+% cl = 0.25;
 % glob.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
 
 % Patches
 patches = Patches(n);
 
 D_patch = cell(1,n);
-D_patch{1} = DOMAIN(2,[0.1,0.1],[0.3,0.3]);
-D_patch{2} = DOMAIN(2,[0.1,0.9],[0.3,1.1]);
-D_patch{3} = DOMAIN(2,[0.1,1.7],[0.3,1.9]);
-D_patch{4} = DOMAIN(2,[0.9,1.7],[1.1,1.9]);
-D_patch{5} = DOMAIN(2,[1.7,1.7],[1.9,1.9]);
-D_patch{6} = DOMAIN(2,[1.7,0.9],[1.9,1.1]);
-D_patch{7} = DOMAIN(2,[1.7,0.1],[1.9,0.3]);
-D_patch{8} = DOMAIN(2,[0.9,0.1],[1.1,0.3]);
+for k=1:n
+    D_patch{k} = DOMAIN(2,[0.5,2*k-1.5],[1.5,2*k-0.5]);
+end
 
 nbelem_patch = [20,20];
 for k=1:n
     patches.patches{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
 end
-% cl_patch = 0.005;
+% cl_patch = 0.025;
 % for k=1:n
 %     patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',[pathname 'gmsh_patch_' num2str(k)]);
 % end
@@ -94,25 +89,26 @@ H = FullTensorProductFunctionalBasis(bases);
 I = gaussIntegrationRule(vb,2);
 I = I.tensorize(d);
 
+g = 0.8:-0.1:0.1;
 for k=1:n
     patch = patches.patches{k};
-    % K_patch(x,xi) = 1 + f(x) * xi
+    % K_patch(x,xi) = 1 + f(x) * g * xi
     % K_in(x)       = 1
-    % R_patch(x,xi) = f(x) * xi
+    % R_patch(x,xi) = f(x) * g * xi
     % with f(x) = 1 if ||x-c||_Inf < L
     %           = 0 if ||x-c||_Inf >= L
     L = norm(getsize(D_patch{k}),Inf)/4;
     c = getcenter(D_patch{k});
     f = @(x) distance(x,c,Inf)<L;
     
-    fun = @(xi) ones(size(xi,1),patch.S.nbnode) + xi(:,2*k-1) * double(squeeze(f(patch.S.node)))';
+    fun = @(xi) ones(size(xi,1),patch.S.nbnode) + g(k) * xi(:,2*k-1) * double(squeeze(f(patch.S.node)))';
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
     fun.evaluationAtMultiplePoints = true;
     
     K_patch{k} = H.projection(fun,I);
     
-    fun = @(xi) xi(:,2*k) * double(squeeze(f(patch.S.node)))';
+    fun = @(xi) g(k) * xi(:,2*k) * double(squeeze(f(patch.S.node)))';
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
     fun.evaluationAtMultiplePoints = true;
@@ -170,7 +166,7 @@ interfaces = Interfaces(patches);
 %% Stiffness matrices and sollicitation vectors
 
 % Source term
-f = 100;
+f = 1;
 
 % Complementary subdomain
 glob_out.A_out = calc_rigi(glob_out.S_out);
@@ -234,7 +230,7 @@ rv = getRandomVector(bases);
 s = AdaptiveSparseTensorAlgorithm();
 % s.nbSamples = 1;
 % s.addSamplesFactor = 0.1;
-s.tol = 1e-5;
+s.tol = 1e-6;
 s.tolStagnation = 1e-1;
 % s.tolOverfit = 1.1;
 % s.bulkParameter = 0.5;
@@ -335,10 +331,10 @@ s.displayIterations = false;
 IS = IterativeSolver();
 IS.maxIterations = 20;
 IS.tolerance = eps;
-IS.relaxation = 'Aitken';
-IS.updateRelaxationParameter = true;
-% IS.relaxation = rho;
-% IS.updateRelaxationParameter = false;
+% IS.relaxation = 'Aitken';
+% IS.updateRelaxationParameter = true;
+IS.relaxation = rho;
+IS.updateRelaxationParameter = false;
 IS.errorCriterion = 'reference';
 IS.referenceSolution = {fU_ref,fw_ref,flambda_ref};
 IS.display = true;
@@ -404,6 +400,8 @@ end
 %     disp(num2str(flambda{k}.basis.indices.array))
 % end
 fprintf('elapsed time = %f s\n',output.totalTime)
+
+close all
 
 %% Display domains and meshes
 
