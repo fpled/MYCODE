@@ -441,7 +441,7 @@ mysaveas(pathname,'mean_global_local_solution',formats,renderer);
 plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
 mysaveas(pathname,'mean_global_local_solution_surf',formats,renderer);
 
-plotVarGlobalSolution(glob,U);
+plotVarianceGlobalSolution(glob,U);
 mysaveas(pathname,'var_global_solution',formats,renderer);
 
 % plotVarianceLocalSolution(patches,w);
