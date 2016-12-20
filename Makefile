@@ -59,8 +59,8 @@ Pb_Name = FCBA_table_circ_sto_lin_elas
 # Default ---------------------------
 default:
 	matlab -nodesktop -nosplash -noFigureWindows -r "$(Pb_Name); exit" -logfile results/$(Pb_Name).log
-#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac_square_inclusions_iso; exit" -logfile results/multiscale_sto_nonlin_diff_reac_square_inclusions_iso.log
-#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_nonlin_diff_reac_square_inclusions_aniso; exit" -logfile results/multiscale_sto_nonlin_diff_reac_square_inclusions_aniso.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_align_inclusions_iso; exit" -logfile results/multiscale_sto_lin_diff_align_inclusions_iso.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscale_sto_lin_diff_align_inclusions_aniso; exit" -logfile results/multiscale_sto_lin_diff_align_inclusions_aniso.log
 
 # All ---------------------------
 all: sparse monosto multidet multisto plate

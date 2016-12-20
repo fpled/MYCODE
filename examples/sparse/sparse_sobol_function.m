@@ -34,14 +34,10 @@ rv = RandomVector(v,d);
 fun = MultiVariateFunction(fun,d);
 fun.evaluationAtMultiplePoints = true;
 
-V = RVUNIFORM(0,1);
-RV = RANDVARS(repmat({V},1,d));
-[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',2);
-
 %% Adaptive sparse approximation using least-squares
 p = 50;
 basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-bases = FunctionalBases(basis,d);
+bases = FunctionalBases(basis,[],d);
 
 s = AdaptiveSparseTensorAlgorithm();
 % s.nbSamples = 1;
@@ -67,20 +63,10 @@ t = tic;
 [f,err,~,y] = s.leastSquares(fun,bases,ls,rv);
 time = toc(t);
 
-ind = f.basis.indices.array;
-switch gettypebase(PC)
-    case 1
-        ind(:,ndims(f.basis)+1) = sum(ind(:,1:ndims(f.basis)),2);
-    case 2
-        ind(:,ndims(f.basis)+1) = max(ind(:,1:ndims(f.basis)),[],2);
-end
-PC = setindices(PC,ind,'update');
-u = f.data';
-u = PCMATRIX(u,[size(u,1) 1],PC);
-
 %% Outputs
 fprintf('\n')
-fprintf('parametric dimension = %d\n',ndims(f.basis))% fprintf('parametric dimension = %d\n',numel(rv))
+fprintf('parametric dimension = %d\n',ndims(f.basis))
+% fprintf('parametric dimension = %d\n',numel(rv))
 fprintf('basis dimension = %d\n',numel(f.basis))
 fprintf('order = [ %s ]\n',num2str(max(f.basis.indices.array)))
 % fprintf('multi-index set = \n')
@@ -122,23 +108,23 @@ anal.S16 = 1/anal.var*1/(3*(1+a(1))^2)*1/(3*(1+a(6))^2);
 anal.S17 = 1/anal.var*1/(3*(1+a(1))^2)*1/(3*(1+a(7))^2);
 anal.S18 = 1/anal.var*1/(3*(1+a(1))^2)*1/(3*(1+a(8))^2);
 % Numerical approximate values
-num.mean = mean(u);
-num.var = variance(u);
-num.S1 = sobol_indices(u,1);
-num.S2 = sobol_indices(u,2);
-num.S3 = sobol_indices(u,3);
-num.S4 = sobol_indices(u,4);
-num.S5 = sobol_indices(u,5);
-num.S6 = sobol_indices(u,6);
-num.S7 = sobol_indices(u,7);
-num.S8 = sobol_indices(u,8);
-num.S12 = sobol_indices_group(u,[1,2]) - num.S1 - num.S2;
-num.S13 = sobol_indices_group(u,[1,3]) - num.S1 - num.S3;
-num.S14 = sobol_indices_group(u,[1,4]) - num.S1 - num.S4;
-num.S15 = sobol_indices_group(u,[1,5]) - num.S1 - num.S5;
-num.S16 = sobol_indices_group(u,[1,6]) - num.S1 - num.S6;
-num.S17 = sobol_indices_group(u,[1,7]) - num.S1 - num.S7;
-num.S18 = sobol_indices_group(u,[1,8]) - num.S1 - num.S8;
+num.mean = mean(f);
+num.var = variance(f);
+num.S1 = sobolIndices(f,1);
+num.S2 = sobolIndices(f,2);
+num.S3 = sobolIndices(f,3);
+num.S4 = sobolIndices(f,4);
+num.S5 = sobolIndices(f,5);
+num.S6 = sobolIndices(f,6);
+num.S7 = sobolIndices(f,7);
+num.S8 = sobolIndices(f,8);
+num.S12 = sobolIndicesGroup(f,[1,2]) - num.S1 - num.S2;
+num.S13 = sobolIndicesGroup(f,[1,3]) - num.S1 - num.S3;
+num.S14 = sobolIndicesGroup(f,[1,4]) - num.S1 - num.S4;
+num.S15 = sobolIndicesGroup(f,[1,5]) - num.S1 - num.S5;
+num.S16 = sobolIndicesGroup(f,[1,6]) - num.S1 - num.S6;
+num.S17 = sobolIndicesGroup(f,[1,7]) - num.S1 - num.S7;
+num.S18 = sobolIndicesGroup(f,[1,8]) - num.S1 - num.S8;
 % Comparative table
 fanal = '%10.5f';
 fnum = '%9.5f';

@@ -27,14 +27,10 @@ fun.evaluationAtMultiplePoints = true;
 v = UniformRandomVariable(0,1);
 rv = RandomVector(v,d);
 
-V = RVUNIFORM(0,1);
-RV = RANDVARS(repmat({V},1,d));
-[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',2);
-
 %% Adaptive sparse approximation using least-squares
 p = 50;
 basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-bases = FunctionalBases(basis,d);
+bases = FunctionalBases(basis,[],d);
 
 s = AdaptiveSparseTensorAlgorithm();
 % s.nbSamples = 1;
@@ -59,17 +55,6 @@ ls.errorEstimation = true;
 t = tic;
 [f,err,~,y] = s.leastSquares(fun,bases,ls,rv);
 time = toc(t);
-
-ind = f.basis.indices.array;
-switch gettypebase(PC)
-    case 1
-        ind(:,ndims(f.basis)+1) = sum(ind(:,1:ndims(f.basis)),2);
-    case 2
-        ind(:,ndims(f.basis)+1) = max(ind(:,1:ndims(f.basis)),[],2);
-end
-PC = setindices(PC,ind,'update');
-u = f.data';
-u = PCMATRIX(u,[size(u,1) 1],PC);
 
 %% Outputs
 fprintf('\n')
@@ -109,18 +94,21 @@ if q==2
     anal.S2T = anal.S2 + anal.S12 + anal.S23 + anal.S123;
     anal.S3T = anal.S3 + anal.S13 + anal.S23 + anal.S123;
     % Numerical approximate values
-    num.mean = mean(u);
-    num.var = variance(u);
-    num.S1 = sobol_indices(u,1);
-    num.S2 = sobol_indices(u,2);
-    num.S3 = sobol_indices(u,3);
-    num.S12 = sobol_indices_group(u,[1,2]) - num.S1 - num.S2;
-    num.S13 = sobol_indices_group(u,[1,3]) - num.S1 - num.S3;
-    num.S23 = sobol_indices_group(u,[2,3]) - num.S2 - num.S3;
-    num.S123 = sobol_indices_group(u,[1,2,3]) - num.S1 - num.S2 - num.S3 - num.S12 - num.S13 - num.S23;
-    num.S1T = num.S1 + num.S12 + num.S13 + num.S123;
-    num.S2T = num.S2 + num.S12 + num.S23 + num.S123;
-    num.S3T = num.S3 + num.S13 + num.S23 + num.S123;
+    num.mean = mean(f);
+    num.var = variance(f);
+    num.S1 = sobolIndices(f,1);
+    num.S2 = sobolIndices(f,2);
+    num.S3 = sobolIndices(f,3);
+    num.S12 = sobolIndicesGroup(f,[1,2]) - num.S1 - num.S2;
+    num.S13 = sobolIndicesGroup(f,[1,3]) - num.S1 - num.S3;
+    num.S23 = sobolIndicesGroup(f,[2,3]) - num.S2 - num.S3;
+    num.S123 = sobolIndicesGroup(f,[1,2,3]) - num.S1 - num.S2 - num.S3 - num.S12 - num.S13 - num.S23;
+    num.S1T = sobolIndices(f,1,true);
+    num.S2T = sobolIndices(f,2,true);
+    num.S3T = sobolIndices(f,3,true);
+%     num.S1T = num.S1 + num.S12 + num.S13 + num.S123;
+%     num.S2T = num.S2 + num.S12 + num.S23 + num.S123;
+%     num.S3T = num.S3 + num.S13 + num.S23 + num.S123;
     % Comparative table
     fanal = '%10.5f';
     fnum = '%9.5f';

@@ -33,17 +33,13 @@ d = 2; % parametric dimension
 v = UniformRandomVariable(0,1);
 rv = RandomVector(v,d);
 
-V = RVUNIFORM(0,1);
-RV = RANDVARS(repmat({V},1,d));
-[X,PC] = PCMODEL(RV,'order',1,'pcg','typebase',1);
-
 %% Materials
 
 % Linear diffusion coefficient
 % K(xi) = 1 + xi
 p = 1;
 basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-bases = FunctionalBases(basis,d);
+bases = FunctionalBases(basis,[],d);
 rvb = getRandomVector(bases);
 H = FullTensorProductFunctionalBasis(bases);
 I = gaussIntegrationRule(v,2);
@@ -99,7 +95,7 @@ problem.solver = NEWTONSOLVER('type','tangent','increment',true,...
 
 p = 50;
 basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-bases = FunctionalBases(basis,d);
+bases = FunctionalBases(basis,[],d);
 rv = getRandomVector(bases);
 
 s = AdaptiveSparseTensorAlgorithm();
@@ -122,42 +118,31 @@ ls.errorEstimation = true;
 % ls.errorEstimationType = 'leaveout';
 % ls.errorEstimationOptions.correction = true;
 
-% u0 = solveSystem(calcOperator(funEval(problem,mean(RANDVARS(PC)))));
+% u0 = solveSystem(calcOperator(funEval(problem,mean(rv))));
 % fun = @(xi) solveSystem(calcOperator(funEval(problem,xi)),'inittype',u0);
 fun = @(xi) solveSystem(calcOperator(funEval(problem,xi)));
 fun = MultiVariateFunction(fun,d,getnbddlfree(problem.S));
 fun.evaluationAtMultiplePoints = false;
 
 t = tic;
-[f,err,~,y] = s.leastSquares(fun,bases,ls,rv);
+[u,err,~,y] = s.leastSquares(fun,bases,ls,rv);
 time = toc(t);
-
-ind = f.basis.indices.array;
-switch gettypebase(PC)
-    case 1
-        ind(:,ndims(f.basis)+1) = sum(ind(:,1:ndims(f.basis)),2);
-    case 2
-        ind(:,ndims(f.basis)+1) = max(ind(:,1:ndims(f.basis)),[],2);
-end
-PC = setindices(PC,ind,'update');
-u = f.data';
-u = PCMATRIX(u,[size(u,1) 1],PC);
 
 %% Outputs
 
 fprintf('\n')
-fprintf('parametric dimension = %d\n',ndims(f.basis))
+fprintf('parametric dimension = %d\n',ndims(u.basis))
 % fprintf('parametric dimension = %d\n',numel(rv))
-fprintf('basis dimension = %d\n',numel(f.basis))
-fprintf('order = [ %s ]\n',num2str(max(f.basis.indices.array)))
+fprintf('basis dimension = %d\n',numel(u.basis))
+fprintf('order = [ %s ]\n',num2str(max(u.basis.indices.array)))
 % fprintf('multi-index set = \n')
-% disp(f.basis.indices.array)
+% disp(u.basis.indices.array)
 fprintf('nb samples = %d\n',size(y,1))
 fprintf('CV error = %d\n',norm(err))
 fprintf('elapsed time = %f s\n',time)
 
 Ntest = 100;
-[errtest,xtest,fxtest,ytest] = computeTestError(f,fun,Ntest);
+[errtest,xtest,utest,ytest] = computeTestError(u,fun,Ntest);
 fprintf('test error = %d\n',errtest)
 
 %% Display domains and meshes
@@ -174,7 +159,7 @@ mysaveas(pathname,'mesh',formats,renderer);
 
 %% Display multi-index set
 
-plotMultiIndexSet(f,'legend',false)
+plotMultiIndexSet(u,'legend',false)
 mysaveas(pathname,'multi_index_set','fig');
 mymatlab2tikz(pathname,'multi_index_set.tex');
 
@@ -185,7 +170,7 @@ mymatlab2tikz(pathname,'multi_index_set.tex');
 plotMean(problem.S,u);
 mysaveas(pathname,'mean_solution',formats,renderer);
 
-plotVar(problem.S,u);
+plotVariance(problem.S,u);
 mysaveas(pathname,'var_solution',formats,renderer);
 
 plotStd(problem.S,u);
@@ -195,7 +180,7 @@ for i=1:d
     plotSobolIndices(problem.S,u,i);
     mysaveas(pathname,['sobol_indices_solution_var_' num2str(i)],formats,renderer);
     
-    plotSensitivityIndicesMaxVar(problem.S,u,i);
+    plotSensitivityIndices(problem.S,u,i);
     mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i)],formats,renderer);
 end
 
@@ -205,7 +190,7 @@ end
 % for i=1:nbsamples
 %     Stest = randomeval(problem.S,xtest(i,:)');
 %     plotSolution(Stest,ytest(i,:)');
-%     plotSolution(Stest,fxtest(i,:)');
+%     plotSolution(Stest,utest(i,:)');
 % end
 
 myparallel('stop');

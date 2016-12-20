@@ -30,7 +30,7 @@ fun.evaluationAtMultiplePoints = true;
 %% Adaptive sparse approximation using least-squares
 p = 50;
 basis = PolynomialFunctionalBasis(HermitePolynomials(),0:p);
-bases = FunctionalBases(basis,d);
+bases = FunctionalBases(basis,[],d);
 
 s = AdaptiveSparseTensorAlgorithm();
 % s.nbSamples = 1;
