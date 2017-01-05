@@ -79,7 +79,7 @@ G = G+GQ;
 numlineloop = [1:length(PbC),-numlines];
 G = createlineloop(G,numlineloop,3);
 G = createplanesurface(G,3,1);
-if ~isempty(PiCeQ)
+if ~isempty([PiCeQ{:}])
     numpoints = numpoints(end)+(1:length(PiCeQ));
     G = createpoints(G,PiCeQ,clPiCeQ,numpoints);
     G = embedpointsinsurface(G,numpoints,1);
@@ -98,7 +98,7 @@ elseif isa(I,'CIRCLE') || isa(I,'ELLIPSE')
 end
 G = G+GI;
 G = createplanesurface(G,4,3);
-if ~isempty(PiI)
+if ~isempty([PiI{:}])
     numpoints = numpoints(end)+(1:length(PiI));
     G = createpoints(G,PiI,clPiI,numpoints);
     G = embedpointsinsurface(G,numpoints,3);
@@ -109,7 +109,7 @@ end
 numlineloop = [numlineloop,-numlines];
 G = createlineloop(G,numlineloop,5);
 G = createplanesurface(G,5,2);
-if ~isempty(PiQeI)
+if ~isempty([PiQeI{:}])
     numpoints = numpoints(end)+(1:length(PiQeI));
     G = createpoints(G,PiQeI,clPiQeI,numpoints);
     G = embedpointsinsurface(G,numpoints,2);

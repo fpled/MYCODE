@@ -45,7 +45,7 @@ for im=1:length(meshtypes)
 
 % Plate
 a = 1;
-b = 10;
+b = 1;
 Q = QUADRANGLE([0.0,0.0,0.0],[a,0.0,0.0],[a,b,0.0],[0.0,b,0.0]);
 
 % Beams
