@@ -18,23 +18,23 @@ end
 %% Scalar-valued anisotropic function
 d = 16; % parametric dimension
 
-% y = x_3*sin(x_4+x_16)
+% fun(x) = x_3*sin(x_4+x_16)
 % fun = @(x) x(:,3).*sin(x(:,4)+x(:,16));
-fun = vectorize('x3*sin(x4+x16)');
+% fun = vectorize('x3*sin(x4+x16)');
 
-% y = 1/(1 + sum_{j=1}^d (g_j*x_j)) with g_j = 3/(5*j^3)
+% fun(x) = 1/(1 + sum_{j=1}^d (g_j*x_j)) with g_j = 3/(5*j^3)
 % fun = @(x) 1./(ones(size(x,1),1)+x*(3./(5.*(1:size(x,2)).^3))');
 
-% y = 1/(1 + (sum_{j=1}^d (g_j*x_j))^2) with g_j = 5/(j^3)
+% fun(x) = 1/(1 + (sum_{j=1}^d (g_j*x_j))^2) with g_j = 5/(j^3)
 % fun = @(x) 1./(ones(size(x,1),1)+(x*(5./((1:size(x,2)).^3))').^2);
 
-% y = 1/(1 + sum_{j=1}^d (g_j*x_j)) with g_j = 10^(-j)
+% fun(x) = 1/(1 + sum_{j=1}^d (g_j*x_j)) with g_j = 10^(-j)
 % fun = @(x) 1./(ones(size(x,1),1)+x*(10.^(-(1:size(x,2))))');
 
-v = UniformRandomVariable(0,1);
-rv = RandomVector(v,d);
+% v = UniformRandomVariable(0,1);
+% rv = RandomVector(v,d);
 
-% [fun,rv] = multivariateFunctionsBenchmarks('anisotropic',d);
+[fun,rv] = multivariateFunctionsBenchmarks('anisotropic',d);
 
 fun = MultiVariateFunction(fun,d);
 fun.evaluationAtMultiplePoints = true;

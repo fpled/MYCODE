@@ -5,7 +5,6 @@
 clear all
 close all
 % set(0,'DefaultFigureVisible','off');
-% myparallel('start');
 
 %% Input data
 
@@ -25,7 +24,7 @@ test = 'static_vert'; % test under static vertical load
 % test = 'impact'; % vertical impact test
 % test = 'drop'; % drop test
 
-belt = 0; % belt modelisation
+belt = 1; % belt modelisation
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
@@ -86,7 +85,7 @@ P_load_fati = cellfun(@(x) POINT(x),x_load_fati,'UniformOutput',false);
 P_load = cellfun(@(x) POINT(x),x_load,'UniformOutput',false);
 
 % Plate mesh
-cl_plate = r/15;
+cl_plate = r/10;
 cl_belt = cl_plate;
 elemtype = 'DKT';
 r_masse = 150e-3;
@@ -94,7 +93,11 @@ C_masse = CIRCLE(0.0,0.0,0.0,r_masse);
 Pb = {getvertex(C,1),getvertex(C,2),getvertex(C,3),x_load_fati{4},getvertex(C,4),x_load_fati{3}};
 Pe = x_load_stab;
 Pi = getcenter(C);
-S_plate = gmshFCBAtablecirc(C,Q_belt,C_masse,Pb,Pe,[],Pi,cl_plate,cl_belt,cl_plate,cl_plate,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],3);
+if ~strcmp(elemtype,'QUA4') && ~strcmp(elemtype,'CUB8') && ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4') && ~strcmp(elemtype,'STOKES')
+    S_plate = gmshFCBAtablecirc(C,Q_belt,C_masse,Pb,Pe,[],Pi,cl_plate,cl_belt,cl_plate,cl_plate,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],3);
+else
+    S_plate = gmshFCBAtablecirc(C,Q_belt,C_masse,Pb,Pe,[],Pi,cl_plate,cl_belt,cl_plate,cl_plate,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],3,'recombine');
+end
 S_plate = convertelem(S_plate,elemtype);
 
 % Beams meshes
@@ -113,7 +116,7 @@ g = 9.81;
 
 % Plate
 % Young modulus
-E = 3.797e9;
+E = 2.9914e9;
 % Poisson ratio
 NU = 0.3;
 % Density
@@ -320,27 +323,44 @@ time = toc(t);
 
 %% Outputs
 
+x = getcoord(S.node);
+t = cart2pol(x(:,1),x(:,2),x(:,3));
+funr = @(x,y,theta) dot([cos(theta),sin(theta)],[x,y],2);
+funt = @(x,y,theta) dot([-sin(theta),cos(theta)],[x,y],2);
+funx = @(r,t,theta) dot([cos(theta),-sin(theta)],[r,t],2);
+funy = @(r,t,theta) dot([sin(theta),cos(theta)],[r,t],2);
+
 u = unfreevector(S,u);
 
 U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
 Ux = u(findddl(S,'UX'),:); % Ux = double(squeeze(eval_sol(S,u,S.node,'UX')));
 Uy = u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,u,S.node,'UY')));
 Uz = u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,u,S.node,'UZ')));
+Ur = funr(Ux,Uy,t);
+Ut = funt(Ux,Uy,t);
 
 R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
-Rx = u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,u,S.node,'RX'))));
-Ry = u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,u,S.node,'RY'))));
-Rz = u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,u,S.node,'RZ'))));
+Rx = u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,u,S.node,'RX')));
+Ry = u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,u,S.node,'RY')));
+Rz = u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,u,S.node,'RZ')));
+Rr = funr(Rx,Ry,t);
+Rt = funt(Rx,Ry,t);
 
 P = getcenter(C);
+xP = double(getcoord(P));
+tP = cart2pol(xP(:,1),xP(:,2),xP(:,3));
 
 ux = eval_sol(S,u,P,'UX');
 uy = eval_sol(S,u,P,'UY');
 uz = eval_sol(S,u,P,'UZ');
+ur = funr(ux,uy,tP);
+ut = funt(ux,uy,tP);
 
 rx = eval_sol(S,u,P,'RX');
 ry = eval_sol(S,u,P,'RY');
 rz = eval_sol(S,u,P,'RZ');
+rr = funr(rx,ry,tP);
+rt = funt(rx,ry,tP);
 
 fprintf('\nCircular table\n');
 fprintf(['Test : ' test '\n']);
@@ -357,15 +377,18 @@ fprintf('uz    = %g\n',uz);
 if strcmp(test,'static_vert')
     uz_exp = -2.35e-3;
     err_uz = norm(uz-uz_exp)/norm(uz_exp);
-    fprintf('uz_exp= %g\n',uz_exp);
-    fprintf('error = %g\n',err_uz);
+    fprintf('uz_exp= %g, error = %.3e\n',uz_exp,err_uz);
 end
+fprintf('ur    = %g\n',ur);
+fprintf('ut    = %g\n',ut);
 fprintf('\n');
 
 disp('Rotation r at point'); disp(P);
 fprintf('rx    = %g\n',rx);
 fprintf('ry    = %g\n',ry);
 fprintf('rz    = %g\n',rz);
+fprintf('rr    = %g\n',rr);
+fprintf('rt    = %g\n',rt);
 fprintf('\n');
 
 %% Save variables
@@ -409,9 +432,6 @@ plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true);
 plot(S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true);
 mysaveas(pathname,'meshes_deflected',formats,renderer);
 
-% plotFacets(S);
-% plotRidges(S);
-
 %% Display solution
 
 % ampl = 0;
@@ -424,8 +444,6 @@ mysaveas(pathname,'Uz',formats,renderer);
 
 % plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
 % mysaveas(pathname,'Rx',formats,renderer);
-
+% 
 % plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
 % mysaveas(pathname,'Ry',formats,renderer);
-
-% myparallel('stop');

@@ -16,23 +16,26 @@ if ~exist(pathname,'dir')
 end
 
 %% Scalar-valued ishigami function
-% y = sin(x_1) + a*sin(x_2)^2 + b*(x_3)^4*sin(x_1)
+% fun(x) = sin(x_1) + a*sin(x_2)^2 + b*(x_3)^4*sin(x_1)
 d = 3; % parametric dimension
 a = 7;
 b = 0.1;
 
-fun = vectorize('sin(x1)+7*sin(x2)^2+0.1*x3^4*sin(x1)');
-v = UniformRandomVariable(-pi,pi);
+% fun = vectorize('sin(x1) + 7*sin(x2)^2 + 0.1*x3^4*sin(x1)');
+% fun = @(x) sin(x(:,1)) + a.*sin(x(:,2)).^2 + b.*x(:,3).^4.*sin(x(:,1));
+% v = UniformRandomVariable(-pi,pi);
 
 % fun = vectorize('sin(pi*x1) + 7*sin(pi*x2)^2 + 0.1*(pi*x3)^4*sin(pi*x1)');
+% fun = @(x) sin(pi*x(:,1)) + a.*sin(pi*x(:,2)).^2 + b.*(pi*x(:,3)).^4.*sin(pi*x(:,1));
 % v = UniformRandomVariable(-1,1);
 
 % fun = vectorize('sin(-pi+2*pi*x1) + 7*sin(-pi+2*pi*x2)^2 + 0.1*(-pi+2*pi*x3)^4*sin(-pi+2*pi*x1)');
+% fun = @(x) sin(-pi+2*pi*x(:,1)) + a.*sin(-pi+2*pi*x(:,2)).^2 + b.*(-pi+2*pi*x(:,3)).^4.*sin(-pi+2*pi*x(:,1));
 % v = UniformRandomVariable(0,1);
 
-rv = RandomVector(v,d);
+% rv = RandomVector(v,d);
 
-% [fun,rv] = multivariateFunctionsBenchmarks('ishigami',d,a,b);
+[fun,rv] = multivariateFunctionsBenchmarks('ishigami',d,a,b);
 
 fun = MultiVariateFunction(fun,d);
 fun.evaluationAtMultiplePoints = true;

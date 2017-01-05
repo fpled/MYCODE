@@ -17,12 +17,12 @@ end
 %% Vector-valued geometric brownian
 d = 10; % parametric dimension
 m = 101; % output size
-fun = @(x) geometricBrownianKL(x,-1,0.5,1,m-1);
 
-v = NormalRandomVariable(0,1);
-rv = RandomVector(v,d);
+% fun = @(x) geometricBrownianKL(x,-1,0.5,1,m-1);
+% v = NormalRandomVariable(0,1);
+% rv = RandomVector(v,d);
 
-% [fun,rv] = multivariateFunctionsBenchmarks('geometricbrownian',d,m-1);
+[fun,rv] = multivariateFunctionsBenchmarks('geometricbrownian',d,m-1);
 
 fun = MultiVariateFunction(fun,d,m);
 fun.evaluationAtMultiplePoints = true;

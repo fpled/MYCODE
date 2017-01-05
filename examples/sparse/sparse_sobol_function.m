@@ -16,20 +16,15 @@ if ~exist(pathname,'dir')
 end
 
 %% Scalar-valued Sobol function
-% y = prod_{j=1}^d (|4*x_j-2|+a_j)/(1+a_j)
+% fun(x) = prod_{j=1}^d (|4*x_j-2|+a_j)/(1+a_j)
 d = 8; % parametric dimension
 a = [1,2,5,10,20,50,100,500];
 
-% fun = @(x) ((abs(4*x(:,1)-2)+a(1))/(1+a(1)).*(abs(4*x(:,2)-2)+a(2))/(1+a(2)).*...
-%     (abs(4*x(:,3)-2)+a(3))/(1+a(3)).*(abs(4*x(:,4)-2)+a(4))/(1+a(4)).*...
-%     (abs(4*x(:,5)-2)+a(5))/(1+a(5)).*(abs(4*x(:,6)-2)+a(6))/(1+a(6)).*...
-%     (abs(4*x(:,7)-2)+a(7))/(1+a(7)).*(abs(4*x(:,8)-2)+a(8))/(1+a(8)));
-fun = @(x) (prod((abs(4*x-2)+repmat(a,size(x,1),1))./repmat(1+a,size(x,1),1),2));
+% fun = @(x) prod((abs(4*x-2)+repmat(a,size(x,1),1))./repmat(1+a,size(x,1),1),2);
+% v = UniformRandomVariable(0,1);
+% rv = RandomVector(v,d);
 
-v = UniformRandomVariable(0,1);
-rv = RandomVector(v,d);
-
-% [fun,rv] = multivariateFunctionsBenchmarks('sobol',d,a);
+[fun,rv] = multivariateFunctionsBenchmarks('sobol',d,a);
 
 fun = MultiVariateFunction(fun,d);
 fun.evaluationAtMultiplePoints = true;

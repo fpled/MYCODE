@@ -26,7 +26,7 @@ test = 'static_vert'; % test under static vertical load
 % test = 'impact'; % vertical impact test
 % test = 'drop'; % drop test
 
-belt = 0; % belt modelisation
+belt = 1; % belt modelisation
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
@@ -89,7 +89,7 @@ P_load_fati = cellfun(@(x) POINT(x),x_load_fati,'UniformOutput',false);
 P_load = cellfun(@(x) POINT(x),x_load,'UniformOutput',false);
 
 % Plate mesh
-cl_plate = r/15;
+cl_plate = r/10;
 cl_belt = cl_plate;
 elemtype = 'DKT';
 r_masse = 150e-3;
@@ -97,7 +97,11 @@ C_masse = CIRCLE(0.0,0.0,0.0,r_masse);
 Pb = {getvertex(C,1),getvertex(C,2),getvertex(C,3),x_load_fati{4},getvertex(C,4),x_load_fati{3}};
 Pe = x_load_stab;
 Pi = getcenter(C);
-S_plate = gmshFCBAtablecirc(C,Q_belt,C_masse,Pb,Pe,[],Pi,cl_plate,cl_belt,cl_plate,cl_plate,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],3);
+if ~strcmp(elemtype,'QUA4') && ~strcmp(elemtype,'CUB8') && ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4') && ~strcmp(elemtype,'STOKES')
+    S_plate = gmshFCBAtablecirc(C,Q_belt,C_masse,Pb,Pe,[],Pi,cl_plate,cl_belt,cl_plate,cl_plate,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],3);
+else
+    S_plate = gmshFCBAtablecirc(C,Q_belt,C_masse,Pb,Pe,[],Pi,cl_plate,cl_belt,cl_plate,cl_plate,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],3,'recombine');
+end
 S_plate = convertelem(S_plate,elemtype);
 
 % Beams meshes
@@ -385,49 +389,74 @@ mymatlab2tikz(pathname,'convergence_empirical_std.tex');
 
 %% Outputs
 
-mean_u = mean(u,2);
-std_u = std(u,0,2);
+x = getcoord(S.node);
+t = cart2pol(x(:,1),x(:,2),x(:,3));
+funr = @(x,y,theta) dot([cos(theta),sin(theta)],[x,y],2);
+funt = @(x,y,theta) dot([-sin(theta),cos(theta)],[x,y],2);
+funx = @(r,t,theta) dot([cos(theta),-sin(theta)],[r,t],2);
+funy = @(r,t,theta) dot([sin(theta),cos(theta)],[r,t],2);
 
+mean_u = mean(u,2);
 mean_u = unfreevector(S,mean_u);
+
+std_u = std(u,0,2);
 std_u = unfreevector(S,std_u);
 
 mean_U = mean_u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
 mean_Ux = mean_u(findddl(S,'UX'),:); % Ux = double(squeeze(eval_sol(S,mean_u,S.node,'UX')),:);
 mean_Uy = mean_u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,mean_u,S.node,'UY')),:);
 mean_Uz = mean_u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,mean_u,S.node,'UZ')),:);
+mean_Ur = funr(mean_Ux,mean_Uy,t);
+mean_Ut = funt(mean_Ux,mean_Uy,t);
 
 mean_R = mean_u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
-mean_Rx = mean_u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,mean_u,S.node,'RX'))),:);
-mean_Ry = mean_u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,mean_u,S.node,'RY'))),:);
-mean_Rz = mean_u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,mean_u,S.node,'RZ'))),:);
+mean_Rx = mean_u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,mean_u,S.node,'RX')),:);
+mean_Ry = mean_u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,mean_u,S.node,'RY')),:);
+mean_Rz = mean_u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,mean_u,S.node,'RZ')),:);
+mean_Rr = funr(mean_Rx,mean_Ry,t);
+mean_Rt = funt(mean_Rx,mean_Ry,t);
 
 std_U = std_u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
 std_Ux = std_u(findddl(S,'UX'),:); % Ux = double(squeeze(eval_sol(S,std_u,S.node,'UX')),:);
 std_Uy = std_u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,std_u,S.node,'UY')),:);
 std_Uz = std_u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,std_u,S.node,'UZ')),:);
+std_Ur = funr(std_Ux,std_Uy,t);
+std_Ut = funt(std_Ux,std_Uy,t);
 
 std_R = std_u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
-std_Rx = std_u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,std_u,S.node,'RX'))),:);
-std_Ry = std_u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,std_u,S.node,'RY'))),:);
-std_Rz = std_u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,std_u,S.node,'RZ'))),:);
+std_Rx = std_u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,std_u,S.node,'RX')),:);
+std_Ry = std_u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,std_u,S.node,'RY')),:);
+std_Rz = std_u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,std_u,S.node,'RZ')),:);
+std_Rr = funr(std_Rx,std_Ry,t);
+std_Rt = funt(std_Rx,std_Ry,t);
 
 P = getcenter(C);
+xP = double(getcoord(P));
+tP = cart2pol(xP(:,1),xP(:,2),xP(:,3));
 
 mean_ux = eval_sol(S,mean_u,P,'UX');
 mean_uy = eval_sol(S,mean_u,P,'UY');
 mean_uz = eval_sol(S,mean_u,P,'UZ');
+mean_ur = funr(mean_ux,mean_uy,tP);
+mean_ut = funt(mean_ux,mean_uy,tP);
 
 mean_rx = eval_sol(S,mean_u,P,'RX');
 mean_ry = eval_sol(S,mean_u,P,'RY');
 mean_rz = eval_sol(S,mean_u,P,'RZ');
+mean_rr = funr(mean_rx,mean_ry,tP);
+mean_rt = funt(mean_rx,mean_ry,tP);
 
 std_ux = eval_sol(S,std_u,P,'UX');
 std_uy = eval_sol(S,std_u,P,'UY');
 std_uz = eval_sol(S,std_u,P,'UZ');
+std_ur = funr(std_ux,std_uy,tP);
+std_ut = funt(std_ux,std_uy,tP);
 
 std_rx = eval_sol(S,std_u,P,'RX');
 std_ry = eval_sol(S,std_u,P,'RY');
 std_rz = eval_sol(S,std_u,P,'RZ');
+std_rr = funr(std_rx,std_ry,tP);
+std_rt = funt(std_rx,std_ry,tP);
 
 fprintf('\nCircular table\n');
 fprintf(['Test : ' test '\n']);
@@ -439,27 +468,24 @@ fprintf('Elapsed time = %f s\n',time);
 fprintf('\n');
 
 disp('Displacement u at point'); disp(P);
-fprintf('mean(ux) = %g\n',mean_ux);
-fprintf('std(ux)  = %g\n',std_ux);
-fprintf('mean(uy) = %g\n',mean_uy);
-fprintf('std(uy)  = %g\n',std_uy);
-fprintf('mean(uz) = %g\n',mean_uz);
-fprintf('std(uz)  = %g\n',std_uz);
+fprintf('mean(ux) = %g, std(ux) = %g\n',mean_ux,std_ux);
+fprintf('mean(uy) = %g, std(uy) = %g\n',mean_uy,std_uy);
+fprintf('mean(uz) = %g, std(uz) = %g\n',mean_uz,std_uz);
 if strcmp(test,'static_vert')
     uz_exp = -2.35e-3;
     err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
-    fprintf('uz_exp   = %g\n',uz_exp);
-    fprintf('error    = %g\n',err_uz);
+    fprintf('uz_exp   = %g, error    = %.3e\n',uz_exp,err_uz);
 end
+fprintf('mean(ur) = %g, std(ur) = %g\n',mean_ur,std_ur);
+fprintf('mean(ut) = %g, std(ut) = %g\n',mean_ut,std_ut);
 fprintf('\n');
 
 disp('Rotation r at point'); disp(P);
-fprintf('mean(rx) = %g\n',mean_rx);
-fprintf('std(rx)  = %g\n',std_rx);
-fprintf('mean(ry) = %g\n',mean_ry);
-fprintf('std(ry)  = %g\n',std_ry);
-fprintf('mean(rz) = %g\n',mean_rz);
-fprintf('std(rz)  = %g\n',std_rz);
+fprintf('mean(rx) = %g, std(rx) = %g\n',mean_rx,std_rx);
+fprintf('mean(ry) = %g, std(ry) = %g\n',mean_ry,std_ry);
+fprintf('mean(rz) = %g, std(rz) = %g\n',mean_rz,std_rz);
+fprintf('mean(rr) = %g, std(rr) = %g\n',mean_rr,std_rr);
+fprintf('mean(rt) = %g, std(rt) = %g\n',mean_rt,std_rt);
 fprintf('\n');
 
 %% Save variables
@@ -505,9 +531,6 @@ plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true);
 plot(S+ampl*mean_u,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true);
 mysaveas(pathname,'meshes_deflected',formats,renderer);
 
-% plotFacets(S);
-% plotRidges(S);
-
 %% Display solution
 
 % ampl = 0;
@@ -520,5 +543,17 @@ mysaveas(pathname,'mean_Uz',formats,renderer);
 
 plotSolution(S,std_u,'displ',3,'ampl',ampl,options{:});
 mysaveas(pathname,'std_Uz',formats,renderer);
+
+% plotSolution(S,mean_u,'rotation',1,'ampl',ampl,options{:});
+% mysaveas(pathname,'mean_Rx',formats,renderer);
+% 
+% plotSolution(S,std_u,'rotation',1,'ampl',ampl,options{:});
+% mysaveas(pathname,'std_Rx',formats,renderer);
+% 
+% plotSolution(S,mean_u,'rotation',2,'ampl',ampl,options{:});
+% mysaveas(pathname,'mean_Ry',formats,renderer);
+% 
+% plotSolution(S,std_u,'rotation',2,'ampl',ampl,options{:});
+% mysaveas(pathname,'std_Ry',formats,renderer);
 
 % myparallel('stop');

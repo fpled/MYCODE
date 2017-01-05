@@ -5,21 +5,23 @@
 clear all
 close all
 % set(0,'DefaultFigureVisible','off');
-% myparallel('start');
 
 %% Input data
 
-% loadings = {'uniform'};
+loadings = {'uniform'};
 % loadings = {'concentrated'};
-loadings = {'uniform','concentrated'};
-% elemtypes = {'DKT'};
+% loadings = {'uniform','concentrated'};
+elemtypes = {'DKT'};
 % elemtypes = {'DKQ'};
+% elemtypes = {'DST'};
+% elemtypes = {'DSQ'};
 % elemtypes = {'COQ4'};
-% elemtypes = {'DKT','DKQ'};
-elemtypes = {'DKT','DKQ','COQ4'};
-% meshtypes = {'structured'};
+% elemtypes = {'DKT','DKQ'}; % Kirchhoff-Love (classical) plate theory
+% elemtypes = {'DST','DSQ','COQ4'}; % Reissner-Mindlin (first-order shear) plate theory
+% elemtypes = {'DKT','DKQ','DST','DSQ','COQ4'}; % Both plate theories
+meshtypes = {'structured'};
 % meshtypes = {'unstructured'};
-meshtypes = {'structured','unstructured'};
+% meshtypes = {'structured','unstructured'};
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
@@ -174,9 +176,9 @@ Uy = u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,u,S.node,'UY')));
 Uz = u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,u,S.node,'UZ')));
 
 R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
-Rx = u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,u,S.node,'RX'))));
-Ry = u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,u,S.node,'RY'))));
-Rz = u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,u,S.node,'RZ'))));
+Rx = u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,u,S.node,'RX')));
+Ry = u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,u,S.node,'RY')));
+Rz = u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,u,S.node,'RZ')));
 
 P = getcenter(Q);
 
@@ -243,9 +245,6 @@ plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true);
 plot(S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true);
 mysaveas(pathname,'meshes_deflected',formats,renderer);
 
-% plotFacets(S);
-% plotRidges(S);
-
 %% Display solution
 
 % ampl = 0;
@@ -258,12 +257,10 @@ mysaveas(pathname,'Uz',formats,renderer);
 
 % plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
 % mysaveas(pathname,'Rx',formats,renderer);
-
+% 
 % plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
 % mysaveas(pathname,'Ry',formats,renderer);
 
 end
 end
 end
-
-% myparallel('stop');

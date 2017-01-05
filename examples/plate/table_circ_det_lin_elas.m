@@ -5,18 +5,20 @@
 clear all
 close all
 % set(0,'DefaultFigureVisible','off');
-% myparallel('start');
 
 %% Input data
 
-% loadings = {'uniform'};
+loadings = {'uniform'};
 % loadings = {'concentrated'};
-loadings = {'uniform','concentrated'};
-% elemtypes = {'DKT'};
+% loadings = {'uniform','concentrated'};
+elemtypes = {'DKT'};
 % elemtypes = {'DKQ'};
+% elemtypes = {'DST'};
+% elemtypes = {'DSQ'};
 % elemtypes = {'COQ4'};
-% elemtypes = {'DKT','DKQ'};
-elemtypes = {'DKT','DKQ','COQ4'};
+% elemtypes = {'DKT','DKQ'}; % Kirchhoff-Love (classical) plate theory
+% elemtypes = {'DST','DSQ','COQ4'}; % Reissner-Mindlin (first-order shear) plate theory
+% elemtypes = {'DKT','DKQ','DST','DSQ','COQ4'}; % Both plate theories
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
@@ -149,27 +151,44 @@ time = toc(t);
 
 %% Outputs
 
+x = getcoord(S.node);
+t = cart2pol(x(:,1),x(:,2),x(:,3));
+funr = @(x,y,theta) dot([cos(theta),sin(theta)],[x,y],2);
+funt = @(x,y,theta) dot([-sin(theta),cos(theta)],[x,y],2);
+funx = @(r,t,theta) dot([cos(theta),-sin(theta)],[r,t],2);
+funy = @(r,t,theta) dot([sin(theta),cos(theta)],[r,t],2);
+
 u = unfreevector(S,u);
 
 U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
 Ux = u(findddl(S,'UX'),:); % Ux = double(squeeze(eval_sol(S,u,S.node,'UX')));
 Uy = u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,u,S.node,'UY')));
 Uz = u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,u,S.node,'UZ')));
+Ur = funr(Ux,Uy,t);
+Ut = funt(Ux,Uy,t);
 
 R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
-Rx = u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,u,S.node,'RX'))));
-Ry = u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,u,S.node,'RY'))));
-Rz = u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,u,S.node,'RZ'))));
+Rx = u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,u,S.node,'RX')));
+Ry = u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,u,S.node,'RY')));
+Rz = u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,u,S.node,'RZ')));
+Rr = funr(Rx,Ry,t);
+Rt = funt(Rx,Ry,t);
 
 P = getcenter(C);
+xP = double(getcoord(P));
+tP = cart2pol(xP(:,1),xP(:,2),xP(:,3));
 
 ux = eval_sol(S,u,P,'UX');
 uy = eval_sol(S,u,P,'UY');
 uz = eval_sol(S,u,P,'UZ');
+ur = funr(ux,uy,tP);
+ut = funt(ux,uy,tP);
 
 rx = eval_sol(S,u,P,'RX');
 ry = eval_sol(S,u,P,'RY');
 rz = eval_sol(S,u,P,'RZ');
+rr = funr(rx,ry,tP);
+rt = funt(rx,ry,tP);
 
 fprintf('\nCircular table\n');
 fprintf(['Load : ' loading '\n']);
@@ -183,12 +202,16 @@ disp('Displacement u at point'); disp(P);
 fprintf('ux    = %g\n',ux);
 fprintf('uy    = %g\n',uy);
 fprintf('uz    = %g\n',uz);
+fprintf('ur    = %g\n',ur);
+fprintf('ut    = %g\n',ut);
 fprintf('\n');
 
 disp('Rotation r at point'); disp(P);
 fprintf('rx    = %g\n',rx);
 fprintf('ry    = %g\n',ry);
 fprintf('rz    = %g\n',rz);
+fprintf('rr    = %g\n',rr);
+fprintf('rt    = %g\n',rt);
 fprintf('\n');
 
 %% Save variables
@@ -226,9 +249,6 @@ plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true);
 plot(S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true);
 mysaveas(pathname,'meshes_deflected',formats,renderer);
 
-% plotFacets(S);
-% plotRidges(S);
-
 %% Display solution
 
 % ampl = 0;
@@ -241,11 +261,9 @@ mysaveas(pathname,'Uz',formats,renderer);
 
 % plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
 % mysaveas(pathname,'Rx',formats,renderer);
-
+% 
 % plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
 % mysaveas(pathname,'Ry',formats,renderer);
 
 end
 end
-
-% myparallel('stop');

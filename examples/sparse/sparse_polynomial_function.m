@@ -16,16 +16,18 @@ if ~exist(pathname,'dir')
 end
 
 %% Scalar-valued polynomial function of total degree q*d = 2*3 = 6
-% y = 1/(2^d) * prod_{j=1}^d (3*(x_j)^q+1)
+% fun(x) = 1/(2^d) * prod_{j=1}^d (3*(x_j)^q+1)
 d = 3; % parametric dimension
 q = 2; % partial degree
-fun = @(x) (1/(2^(size(x,2)))*prod(3*x.^q+1,2));
+
+% fun = @(x) 1/(2^(size(x,2)))*prod(3*x.^q+1,2);
+% v = UniformRandomVariable(0,1);
+% rv = RandomVector(v,d);
+
+[fun,rv] = multivariateFunctionsBenchmarks('polynomial',d,q);
 
 fun = MultiVariateFunction(fun,d);
 fun.evaluationAtMultiplePoints = true;
-
-v = UniformRandomVariable(0,1);
-rv = RandomVector(v,d);
 
 %% Adaptive sparse approximation using least-squares
 p = 50;
