@@ -267,6 +267,7 @@ fprintf(['Load     : ' loading '\n']);
 fprintf(['Mesh     : ' elemtype ' ' meshtype ' elements\n']);
 Nbelem(i) = getnbelem(S);
 fprintf('Nb elements = %g\n',Nbelem(i));
+fprintf('Nb dofs     = %g\n',getnbddl(S));
 fprintf('Span-to-thickness ratio = %g\n',max(a,b)/h);
 fprintf('Error = %.3e for Uz\n',err_Uz(i));
 fprintf('      = %.3e for Rx\n',err_Rx(i));

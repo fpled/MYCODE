@@ -32,10 +32,11 @@ L = 16;
 w = 7;
 D = DOMAIN(2,[0.0,-L/2],[w,L/2]);
 
+option = 'DEFO'; % plane strain
 nbelem = [w*2,L*2];
-glob.S = build_model(D,'nbelem',nbelem);
+glob.S = build_model(D,'nbelem',nbelem,'option',option);
 % cl = 0.25;
-% glob.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
+% glob.S = build_model(D,'cl',cl,'option',option,'filename',[pathname 'gmsh_domain']);
 
 % Patches
 patches = Patches(n);
@@ -58,6 +59,7 @@ cl_patch_D = 0.25;
 cl_patch_P = 0.05;
 for k=1:n
     patches.patches{k}.S = gmshdomainwithedgecrack(D_patch{k},P_patch{k},cl_patch_D,cl_patch_P,[pathname 'gmsh_patch_' num2str(k) '_edge_crack']);
+    patches.patches{k}.S = setoption(patches.patches{k}.S,option);
 end
 
 % Partition of global mesh

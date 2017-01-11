@@ -29,10 +29,11 @@ glob_out = GlobalOutside();
 
 D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
 
+option = 'CONT'; % plane stress
 nbelem = [20,20];
-glob.S = build_model(D,'nbelem',nbelem);
+glob.S = build_model(D,'nbelem',nbelem,'option',option);
 % cl = 0.05;
-% glob.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
+% glob.S = build_model(D,'cl',cl,'option',option,'filename',[pathname 'gmsh_domain']);
 
 % Patches
 patches = Patches(n);
@@ -55,11 +56,11 @@ end
 
 nbelem_patch = [40,40];
 for k=1:n
-    patches.patches{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
+    patches.patches{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch,'option',option);
 end
 % cl_patch = 0.005;
 % for k=1:n
-%     patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',[pathname 'gmsh_patch_' num2str(k)]);
+%     patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'option',option,'filename',[pathname 'gmsh_patch_' num2str(k)]);
 % end
 
 % Partition of global mesh

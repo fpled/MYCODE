@@ -462,6 +462,7 @@ fprintf('\nCircular table\n');
 fprintf(['Test : ' test '\n']);
 fprintf(['Mesh : ' elemtype ' elements\n']);
 fprintf('Nb elements = %g\n',getnbelem(S_plate));
+fprintf('Nb dofs     = %g\n',getnbddl(S_plate));
 fprintf('Span-to-thickness ratio = %g\n',r/h);
 fprintf('Nb samples = %g\n',N);
 fprintf('Elapsed time = %f s\n',time);
@@ -521,7 +522,7 @@ mysaveas(pathname,'boundary_conditions',formats,renderer);
 plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true,'legend',false);
 mysaveas(pathname,'mesh',formats,renderer);
 
-ampl = max(getsize(S))/max(abs(mean_u))/10;
+ampl = getsize(S)/max(abs(mean_u))/10;
 plotModelDeflection(S,mean_u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true,'legend',false);
 mysaveas(pathname,'mesh_deflected',formats,renderer);
 
@@ -534,7 +535,7 @@ mysaveas(pathname,'meshes_deflected',formats,renderer);
 %% Display solution
 
 % ampl = 0;
-ampl = max(getsize(S))/max(abs(mean_u))/10;
+ampl = getsize(S)/max(abs(mean_u))/10;
 options = {'solid',true};
 % options = {};
 
