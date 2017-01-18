@@ -53,8 +53,8 @@ parfor i=1:N
     X = sigma*U; % (n*(n-1)/2)-by-1 random vector X of n*(n-1)/2 normal random variables X_j, centered (with zero mean) and a common standard deviation sigma
     LL = triu(ones(n),1);
     LL(LL==1) = 1/sqrt(2)*X; % non diagonal part of random matrix LL
-    Y = gamrnd(a,1); % generate a n-by-1 random vector Y of n Gamma random random variables Y_l with shape parameter a=(n-l+2*lambda)/2 and scale parameter b=1
-    LL = LL + diag(sigma*sqrt(Y)); % diagonal part of random matrix LL
+    Y = gamrnd(a,1); % generate a n-by-1 random vector Y of n Gamma random variables Y_l with shape parameter a=(n-l+2*lambda)/2 and scale parameter b=1
+    LL = LL + diag(sigma*sqrt(Y)); % add diagonal part of random matrix LL
     G = LL'*LL;
     a_ngam(:,:,i) = L'*G*L;
 end

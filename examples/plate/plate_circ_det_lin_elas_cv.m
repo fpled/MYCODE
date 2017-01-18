@@ -327,7 +327,6 @@ save(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','U','R');
 %         ampl = 0.2;
 % end
 % [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
-% % legend([hD,hN],'Dirichlet','Neumann')
 % % legend([hD,hN],[legD,legN])
 % mysaveas(pathname,['boundary_conditions_' num2str(i)],formats,renderer);
 % 

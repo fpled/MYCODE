@@ -233,7 +233,6 @@ switch loading
         ampl = 0.2;
 end
 [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
-% legend([hD,hN],'Dirichlet','Neumann')
 % legend([hD,hN],[legD,legN])
 mysaveas(pathname,'boundary_conditions',formats,renderer);
 

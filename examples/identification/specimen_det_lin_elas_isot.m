@@ -98,16 +98,19 @@ save(fullfile(pathname,'solution.mat'),'u');
 
 %% Display domains, boundary conditions and meshes
 
-u = unfreevector(S,u);
-
 plotDomain(D,'legend',false);
 mysaveas(pathname,'domain',formats,renderer);
 mymatlab2tikz(pathname,'domain.tex');
 
 [hD,legD] = plotBoundaryConditions(S,'legend',false);
 ampl = 0.5;
-[hN,legN] = vectorplot(S,'F',b,ampl,'r','LineWidth',1);
-% legend([hD,hN],'Dirichlet','Neumann')
+switch loading
+    case 'Neumann'
+        [hN,legN] = vectorplot(S,'F',b,ampl,'r','LineWidth',1);
+    case 'Dirichlet'
+        v = calc_init_dirichlet(S);
+        [hN,legN] = vectorplot(S,'U',v,ampl,'r','LineWidth',1);
+end
 % legend([hD,hN],[legD,legN])
 mysaveas(pathname,'boundary_conditions',formats,renderer);
 
@@ -124,7 +127,7 @@ mysaveas(pathname,'mesh_deflected',formats,renderer);
 figure('Name','Meshes')
 clf
 plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-plot(S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1);
+plot(S+ampl*unfreevector(S,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
 mysaveas(pathname,'meshes_deflected',formats,renderer);
 
 %% Display solution
@@ -132,18 +135,18 @@ mysaveas(pathname,'meshes_deflected',formats,renderer);
 % ampl = 0;
 ampl = getsize(S)/max(abs(u))/5;
 
-for i=1:2
-    plotSolution(S,u,'displ',i,'ampl',ampl);
-    mysaveas(pathname,['u_' num2str(i)],formats,renderer);
-end
-
-for i=1:3
-    plotSolution(S,u,'epsilon',i,'ampl',ampl);
-    mysaveas(pathname,['eps_' num2str(i)],formats,renderer);
-    
-    plotSolution(S,u,'sigma',i,'ampl',ampl);
-    mysaveas(pathname,['sig_' num2str(i)],formats,renderer);
-end
+% for i=1:2
+%     plotSolution(S,u,'displ',i,'ampl',ampl);
+%     mysaveas(pathname,['u_' num2str(i)],formats,renderer);
+% end
+% 
+% for i=1:3
+%     plotSolution(S,u,'epsilon',i,'ampl',ampl);
+%     mysaveas(pathname,['eps_' num2str(i)],formats,renderer);
+%     
+%     plotSolution(S,u,'sigma',i,'ampl',ampl);
+%     mysaveas(pathname,['sig_' num2str(i)],formats,renderer);
+% end
 
 % figure('Name','Solution eps_xx')
 % clf

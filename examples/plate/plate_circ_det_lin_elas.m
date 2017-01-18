@@ -6,7 +6,7 @@
 % SSLS101 - Plaque circulaire posée soumise à une pression uniforme
 
 % clc
-clear all
+% clear all
 close all
 % set(0,'DefaultFigureVisible','off');
 
@@ -212,6 +212,7 @@ err_Rx = norm(Rx-Rx_ex)/norm(Rx_ex);
 err_Ry = norm(Ry-Ry_ex)/norm(Ry_ex);
 
 P = getcenter(C);
+P = POINT([r/2 r/4 0]);
 xP = double(getcoord(P));
 tP = cart2pol(xP(:,1),xP(:,2),xP(:,3));
 
@@ -306,7 +307,6 @@ switch loading
         ampl = 0.2;
 end
 [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
-% legend([hD,hN],'Dirichlet','Neumann')
 % legend([hD,hN],[legD,legN])
 mysaveas(pathname,'boundary_conditions',formats,renderer);
 

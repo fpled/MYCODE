@@ -18,7 +18,7 @@ filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_iso
 % filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_iso_tol_3_rho_' num2str(rho)];
 % filename = ['multiscale_sto_nonlin_diff_reac_' num2str(n) '_align_inclusions_iso_tol_'  num2str(tol) '_rho_aitken'];
 % pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,'results',filesep,filename,filesep);
-pathname = fullfile('/Users/Op/Documents/Recherche/GeM/Results',filesep,filename,filesep);
+pathname = fullfile(filesep,'Users',filesep,'Op',filesep,'Documents',filesep,'Recherche',filesep,'GeM',filesep,'Results',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
