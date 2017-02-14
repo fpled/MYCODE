@@ -266,7 +266,7 @@ if solveProblem
     err_ry = norm(ry-ry_ex)/norm(ry_ex);
     
     %% Save variables
-    save(fullfile(pathname,['problem_' num2str(i) '.mat']),'S','Q','L_beam','a','b','h','f');
+    save(fullfile(pathname,['problem_' num2str(i) '.mat']),'S','Q','a','b','h','f');
     save(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','time_i',...
         'U','Ux','Uy','Uz',...
         'R','Rx','Ry','Rz');
@@ -279,7 +279,7 @@ if solveProblem
         'uz_ex','rx_ex','ry_ex',...
         'err_uz','err_rx','err_ry');
 else
-    load(fullfile(pathname,['problem_' num2str(i) '.mat']),'S','Q','L_beam','a','b','h','f');
+    load(fullfile(pathname,['problem_' num2str(i) '.mat']),'S','Q','a','b','h','f');
     load(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','time_i',...
         'U','Ux','Uy','Uz',...
         'R','Rx','Ry','Rz');
