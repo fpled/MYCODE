@@ -7,7 +7,7 @@ close all
 % set(0,'DefaultFigureVisible','off');
 % rng('default');
 
-%% Filename and Pathname
+%% Input data
 filename = 'geometricBrownian';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
     'results',filesep,'sparse',filesep,filename,filesep);
@@ -28,7 +28,7 @@ m = 101; % output size
 fun = MultiVariateFunction(fun,d,m);
 fun.evaluationAtMultiplePoints = true;
 
-%% Adaptive sparse approximation using least-squares
+%% Adaptive sparse least-squares approximation
 p = 50;
 basis = PolynomialFunctionalBasis(HermitePolynomials(),0:p);
 bases = FunctionalBases(basis,[],d);
@@ -60,7 +60,6 @@ time = toc(t);
 %% Outputs
 fprintf('\n')
 fprintf('parametric dimension = %d\n',ndims(f.basis))
-% fprintf('parametric dimension = %d\n',numel(rv))
 fprintf('basis dimension = %d\n',numel(f.basis))
 fprintf('order = [ %s ]\n',num2str(max(f.basis.indices.array)))
 % fprintf('multi-index set = \n')
@@ -69,11 +68,12 @@ fprintf('nb samples = %d\n',size(y,1))
 fprintf('CV error = %d\n',norm(err))
 fprintf('elapsed time = %f s\n',time)
 
+%% Test
 Ntest = 1000;
 [errtest,xtest,fxtest,ytest] = computeTestError(f,fun,Ntest,rv);
 fprintf('test error = %d\n',errtest)
 
-%% Display random evaluation of Brownian motion
+%% Display random evaluations
 plotGeometricBrownianKL(ytest(1,:)',fxtest(1,:)');
 mysaveas(pathname,'geometric_brownian_kl.fig','fig');
 mymatlab2tikz(pathname,'geometric_brownian_kl.tex');

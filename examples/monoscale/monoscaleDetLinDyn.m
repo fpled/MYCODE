@@ -2,15 +2,17 @@
 %%-------------------------------------------------%%
 
 % clc
-clear all
+% clear all
 close all
 % set(0,'DefaultFigureVisible','off');
-% rng('default');
-myparallel('start');
+% myparallel('start');
 
 %% Input data
+setProblem = true;
+solveProblem = true;
+displaySolution = true;
 
-filename = 'linDyn'; % Linear dynamicq equation
+filename = 'linDyn';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
     'results',filesep,'monoscaleDet',filesep,filename,filesep);
 if ~exist(pathname,'dir')
@@ -20,197 +22,124 @@ end
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-setProblem = true;
-solveProblem = true;
-displaySolution = true;
-testSolution = true;
-
 %% Problem
-
 if setProblem
     %% Domains and meshes
+    D = DOMAIN(2,[0.0,0.0],[2.0,0.3]);
     
-    D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
-    
-    nbelem = [20,20];
-    pb.S = build_model(D,'nbelem',nbelem);
-    % cl = 0.05;
-    % pb.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
-    
-    %% Random variables
-    
-    d = 1; % parametric dimension
-    v = UniformRandomVariable(0,1);
-    rv = RandomVector(v,d);
+    elemtype = 'TRI3';
+    % elemtype = 'QUA4';
+    % option = 'DEFO'; % plane strain
+    option = 'CONT'; % plane stress
+    % nbelem = [20,20];
+    % pb.S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
+    cl = 0.03;
+    pb.S = build_model(D,'cl',cl,'elemtype',elemtype,'option',option,'filename',[pathname 'gmsh_domain']);
     
     %% Materials
-    
-    % Linear diffusion coefficient
-    % K(xi) = 1 + xi
-    p = 1;
-    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases(basis,[],d);
-    vb = basis.basis.randomVariable;
-    rvb = getRandomVector(bases);
-    H = FullTensorProductFunctionalBasis(bases);
-    I = gaussIntegrationRule(vb,2);
-    I = I.tensorize(d);
-    
-    fun = @(x) 1 + x(:,1);
-    funtr = @(x) fun(transfer(rvb,rv,x));
-    fun = MultiVariateFunction(funtr,d);
-    fun.evaluationAtMultiplePoints = true;
-    
-    K = H.projection(fun,I);
-    
-    mat = FOUR_ISOT('k',K); % uniform value
+    % Poisson ratio
+    NU = 0.3;
+    % Thickness
+    DIM3 = 1;
+    % Density
+    RHO = 1;
+    % Young modulus
+    E = 1;    
+    % Material
+    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3);
+    mat = setnumber(mat,1);
     pb.S = setmaterial(pb.S,mat);
     
     %% Dirichlet boundary conditions
+    L1 = LIGNE(getvertex(D,1),getvertex(D,4));
+    L2 = LIGNE(getvertex(D,2),getvertex(D,3));
     
     pb.S = final(pb.S);
-    pb.S = addcl(pb.S,[]);
+    pb.S = addcl(pb.S,L1);
     
-    %% Stiffness matrices and sollicitation vectors
+    %% Stiffness, mass and damping matrices and sollicitation vectors
+    pb.M = calc_mass(pb.S);
+    pb.K = calc_rigi(pb.S);
     
-    if israndom(pb.S)
-        pb.A = [];
-    else
-        pb.A = calc_rigi(pb.S);
-    end
+    f = surfload(pb.S,L2,'FX',-1);
     
-    % Source term
-    f = 100;
+    %% Newmark time scheme
+    t0 = 0;
+    t1 = 2;
+    nt = 50;
+    T = TIMEMODEL(t0,t1,nt);
     
-    if israndom(f)
-        pb.b = [];
-    else
-        pb.b = bodyload(pb.S,[],'QN',f);
-    end
+    pb.N = NEWMARKSOLVER(T,'alpha',0.05);
+    % pb.N = DGTIMESOLVER(T,1);
+    pb.N = setparam(pb.N,'display',true);
     
-    save(fullfile(pathname,'problem.mat'),'pb','d','D');
+    tc = t1/6;
+    loadfun = @(N) rampe(N,0,tc);
+    % loadfun = @(N) dirac(N,0,tc);
+    % loadfun = @(N) one(N);
+    
+    pb.b = f*loadfun(pb.N);
+    
+    save(fullfile(pathname,'problem.mat'),'pb','D');
 else
-    load(fullfile(pathname,'problem.mat'),'pb','d','D');
+    load(fullfile(pathname,'problem.mat'),'pb','D');
 end
 
-%% Adaptive sparse approximation using least-squares
-
+%% Newmark time scheme
 if solveProblem
-    p = 50;
-    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases(basis,[],d);
-    rv = getRandomVector(bases);
-    
-    s = AdaptiveSparseTensorAlgorithm();
-    % s.nbSamples = 1;
-    % s.addSamplesFactor = 0.1;
-    s.tol = 1e-12;
-    s.tolStagnation = 1e-1;
-    % s.tolOverfit = 1.1;
-    % s.bulkParameter = 0.5;
-    % s.adaptiveSampling = true;
-    % s.adaptationRule = 'reducedmargin';
-    s.maxIndex = p;
-    % s.display = true;
-    % s.displayIterations = true;
-    
-    ls = LeastSquaresSolver();
-    ls.regularization = false;
-    % ls.regularizationType = 'l1';
-    ls.errorEstimation = true;
-    % ls.errorEstimationType = 'leaveout';
-    % ls.errorEstimationOptions.correction = true;
-    
-    % if isanlsolver(pb.solver)
-    %     u0 = solveSystem(calcOperator(funEval(pb,mean(rv))));
-    %     fun = @(xi) solveSystem(calcOperator(funEval(pb,xi)),'inittype',u0);
-    % else
-    fun = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
-    % end
-    fun = MultiVariateFunction(fun,d,getnbddlfree(pb.S));
-    fun.evaluationAtMultiplePoints = false;
-    
     t = tic;
-    [u,err,~,y] = s.leastSquares(fun,bases,ls,rv);
+    [ut,result,vt] = ddsolve(pb.N,pb.b,pb.M,pb.K);
     time = toc(t);
-    save(fullfile(pathname,'solution.mat'),'u','err','y','fun','time');
+    
+    utn =
+    
+    save(fullfile(pathname,'solution.mat'),'ut','utx','uty','result','vt','loadfun','time');
 else
-    load(fullfile(pathname,'solution.mat'),'u','err','y','fun','time');
+    load(fullfile(pathname,'solution.mat'),'ut','utx','uty','result','vt','loadfun','time');
 end
 
 %% Outputs
+fprintf('\n');
+fprintf(['load function : ' func2str(loadfun) '\n']);
+fprintf(['mesh          : ' elemtype ' elements\n']);
+fprintf('nb elements = %g\n',getnbelem(pb.S));
+fprintf('nb dofs     = %g\n',getnbddl(pb.S));
+fprintf('elapsed time = %f s\n',time);
+fprintf('\n');
 
-fprintf('\n')
-fprintf('parametric dimension = %d\n',ndims(u.basis))
-fprintf('basis dimension = %d\n',numel(u.basis))
-fprintf('order = [ %s ]\n',num2str(max(u.basis.indices.array)))
-% fprintf('multi-index set = \n')
-% disp(u.basis.indices.array)
-fprintf('nb samples = %d\n',size(y,1))
-fprintf('CV error = %d\n',norm(err))
-fprintf('elapsed time = %f s\n',time)
-
-%% Test
-
-if testSolution
-    Ntest = 100;
-    [errtest,xtest,utest,ytest] = computeTestError(u,fun,Ntest);
-    save(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
-else
-    load(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
-end
-fprintf('test error = %d\n',errtest)
-
+%% Display
 if displaySolution
     %% Display domains and meshes
-    
-    plotDomain(D);
+    plotDomain(D,'legend',false);
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
-    
-    % plotPartition(pb.S,'legend',false);
-    % mysaveas(pathname,'mesh_partition',formats,renderer);
     
     plotModel(pb.S,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
-    %% Display multi-index set
+    %% Display evolution
     
-    plotMultiIndexSet(u,'legend',false)
-    mysaveas(pathname,'multi_index_set','fig');
-    mymatlab2tikz(pathname,'multi_index_set.tex');
+    % pb.N = setevolparam(pb.N,'step',3,'view',2,'setcaxis',true,'caxis',[smmin,smmax],...
+    %     'pausetime',1/nt,'setaxis',false,'colormap',jet);
+    % evol(pb.N,utx,pb.S)
+    evol(utx,pb.S)
     
-    %% Display statistical outputs of solution
-    
-    % plotStats(pb.S,u);
-    
-    plotMean(pb.S,u);
-    mysaveas(pathname,'mean_solution',formats,renderer);
-    
-    plotVariance(pb.S,u);
-    mysaveas(pathname,'var_solution',formats,renderer);
-    
-    plotStd(pb.S,u);
-    mysaveas(pathname,'std_solution',formats,renderer);
-    
-    for i=1:d
-        plotSobolIndices(pb.S,u,i);
-        mysaveas(pathname,['sobol_indices_solution_var_' num2str(i)],formats,renderer);
-        
-        plotSensitivityIndices(pb.S,u,i);
-        mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i)],formats,renderer);
-    end
-    
-    %% Display random evaluations of solution
-    
-%     nbSamples = 3;
-%     for i=1:nbSamples
-%         Stest = randomeval(pb.S,xtest(i,:)');
-%         plotSolution(Stest,ytest(i,:)');
-%         mysaveas(pathname,['solution_ref_sample_' num2str(i)],formats,renderer);
-%         plotSolution(Stest,utest(i,:)');
-%         mysaveas(pathname,['solution_sample_' num2str(i)],formats,renderer);
+    %% Display solution
+    % ampl = 0;
+%     ampl = getsize(S)/max(abs(u))/5;
+%     
+%     for i=1:2
+%         plotSolution(S,ut,'displ',i,'ampl',ampl);
+%         mysaveas(pathname,['ut_' num2str(i)],formats,renderer);
+%     end
+%     
+%     for i=1:3
+%         plotSolution(S,ut,'epsilon',i,'ampl',ampl);
+%         mysaveas(pathname,['epst_' num2str(i)],formats,renderer);
+%         
+%         plotSolution(S,ut,'sigma',i,'ampl',ampl);
+%         mysaveas(pathname,['sigt_' num2str(i)],formats,renderer);
 %     end
 end
 
-myparallel('stop');
+% myparallel('stop');

@@ -1,6 +1,6 @@
 %% Nonparametric model for symmetric positive-definite real-valued random matrices %%
 %%---------------------------------------------------------------------------------%%
-% [Soize 2000]
+% [Soize, 2000]
 
 % clc
 clear all
@@ -10,6 +10,7 @@ close all
 myparallel('start');
 
 %% Input data
+displayCv = true;
 
 filename = 'nonparamtricModel';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
@@ -25,8 +26,7 @@ linewidth = 1;
 markersize = 36;
 interpreter = 'latex';
 
-%% Nonparametric model 
-
+%% Nonparametric model
 n = 3;
 R = randn(n); % generate a n-by-n normal random matrix
 A = R*R'; % construct a symmetric positive (semi-)definite matrix
@@ -108,8 +108,7 @@ if mod(lambda,1)==0
     time_stdmvn = toc(t);
 end
 
-%% Outputs
-
+%% Statistical outputs
 fprintf('\nNb samples = %e\n',N);
 
 fprintf('expect(A) =\n');
@@ -141,31 +140,34 @@ if mod(lambda,1)==0 % check if lambda is an integer
     fprintf('elapsed time = %f s\n',time_stdmvn);
 end
 
-figure('Name','Convergence empirical mean')
-clf
-loglog(1:N,err_mean_ngam,'-b','LineWidth',linewidth)
-hold on
-if mod(lambda,1)==0 % check if lambda is an integer
-    loglog(1:N,err_mean_wish,'-r','LineWidth',linewidth)
-    loglog(1:N,err_mean_mvn,'-g','LineWidth',linewidth)
-    loglog(1:N,err_mean_stdmvn,'-m','LineWidth',linewidth)
+%% Display convergence
+if displayCv
+    figure('Name','Convergence empirical mean')
+    clf
+    loglog(1:N,err_mean_ngam,'-b','LineWidth',linewidth)
+    hold on
+    if mod(lambda,1)==0 % check if lambda is an integer
+        loglog(1:N,err_mean_wish,'-r','LineWidth',linewidth)
+        loglog(1:N,err_mean_mvn,'-g','LineWidth',linewidth)
+        loglog(1:N,err_mean_stdmvn,'-m','LineWidth',linewidth)
+    end
+    loglog(1:N,1./sqrt(1:N),'-k','LineWidth',linewidth)
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    % xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+    % ylabel('Erreur relative','Interpreter',interpreter)
+    xlabel('Number of samples','Interpreter',interpreter)
+    ylabel('Relative error','Interpreter',interpreter)
+    if mod(lambda,1)==0
+        l = legend('Univariate normal and Gamma distributions','Wishart distribution','Multivariate normal distribution','Multivariate standard normal distribution','$1/\sqrt{N}$');
+    else
+        l = legend('Univariate normal and Gamma distributions','$1/\sqrt{N}$');
+    end
+    set(l,'Interpreter',interpreter);
+    mysaveas(pathname,'convergence_empirical_mean','fig');
+    mymatlab2tikz(pathname,'convergence_empirical_mean.tex');
 end
-loglog(1:N,1./sqrt(1:N),'-k','LineWidth',linewidth)
-hold off
-grid on
-box on
-set(gca,'FontSize',fontsize)
-% xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-% ylabel('Erreur relative','Interpreter',interpreter)
-xlabel('Number of samples','Interpreter',interpreter)
-ylabel('Relative error','Interpreter',interpreter)
-if mod(lambda,1)==0
-    l = legend('Univariate normal and Gamma distributions','Wishart distribution','Multivariate normal distribution','Multivariate standard normal distribution','$1/\sqrt{N}$');
-else
-    l = legend('Univariate normal and Gamma distributions','$1/\sqrt{N}$');
-end
-set(l,'Interpreter',interpreter);
-mysaveas(pathname,'convergence_empirical_mean','fig');
-mymatlab2tikz(pathname,'convergence_empirical_mean.tex');
 
 myparallel('stop');

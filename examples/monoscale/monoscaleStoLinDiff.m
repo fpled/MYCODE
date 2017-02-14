@@ -9,6 +9,10 @@ close all
 myparallel('start');
 
 %% Input data
+setProblem = true;
+solveProblem = true;
+displaySolution = true;
+testSolution = true;
 
 filename = 'linDiff';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
@@ -16,20 +20,12 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-setProblem = true;
-solveProblem = true;
-displaySolution = true;
-testSolution = true;
-
 %% Problem
-
 if setProblem
     %% Domains and meshes
-    
     D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
     
     nbelem = [20,20];
@@ -38,13 +34,11 @@ if setProblem
     % pb.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
     
     %% Random variables
-    
     d = 1; % parametric dimension
     v = UniformRandomVariable(0,1);
     rv = RandomVector(v,d);
     
     %% Materials
-    
     % Linear diffusion coefficient
     % K(xi) = 1 + xi
     p = 1;
@@ -56,23 +50,21 @@ if setProblem
     I = gaussIntegrationRule(vb,2);
     I = I.tensorize(d);
     
-    fun = @(x) 1 + x(:,1);
-    funtr = @(x) fun(transfer(rvb,rv,x));
+    fun = @(xi) 1 + xi(:,1);
+    funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;
     
     K = H.projection(fun,I);
     
-    mat = FOUR_ISOT('k',K); % uniform value
+    mat = FOUR_ISOT('k',K);
     pb.S = setmaterial(pb.S,mat);
     
     %% Dirichlet boundary conditions
-    
     pb.S = final(pb.S);
     pb.S = addcl(pb.S,[]);
     
     %% Stiffness matrices and sollicitation vectors
-    
     if israndom(pb.S)
         pb.A = [];
     else
@@ -88,13 +80,13 @@ if setProblem
         pb.b = bodyload(pb.S,[],'QN',f);
     end
     
+    %% Save variables
     save(fullfile(pathname,'problem.mat'),'pb','d','D');
 else
     load(fullfile(pathname,'problem.mat'),'pb','d','D');
 end
 
-%% Adaptive sparse approximation using least-squares
-
+%% Adaptive sparse least-squares approximation
 if solveProblem
     p = 50;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
@@ -139,7 +131,6 @@ else
 end
 
 %% Outputs
-
 fprintf('\n')
 fprintf('parametric dimension = %d\n',ndims(u.basis))
 fprintf('basis dimension = %d\n',numel(u.basis))
@@ -151,7 +142,6 @@ fprintf('CV error = %d\n',norm(err))
 fprintf('elapsed time = %f s\n',time)
 
 %% Test
-
 if testSolution
     Ntest = 100;
     [errtest,xtest,utest,ytest] = computeTestError(u,fun,Ntest);
@@ -161,9 +151,9 @@ else
 end
 fprintf('test error = %d\n',errtest)
 
+%% Display
 if displaySolution
     %% Display domains and meshes
-    
     plotDomain(D);
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
@@ -175,13 +165,11 @@ if displaySolution
     mysaveas(pathname,'mesh',formats,renderer);
     
     %% Display multi-index set
-    
     plotMultiIndexSet(u,'legend',false)
     mysaveas(pathname,'multi_index_set','fig');
     mymatlab2tikz(pathname,'multi_index_set.tex');
     
-    %% Display statistical outputs of solution
-    
+    %% Display statistical outputs
     % plotStats(pb.S,u);
     
     plotMean(pb.S,u);
@@ -201,16 +189,15 @@ if displaySolution
         mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i)],formats,renderer);
     end
     
-    %% Display random evaluations of solution
-    
-%     nbSamples = 3;
-%     for i=1:nbSamples
-%         Stest = randomeval(pb.S,xtest(i,:)');
-%         plotSolution(Stest,ytest(i,:)');
-%         mysaveas(pathname,['solution_ref_sample_' num2str(i)],formats,renderer);
-%         plotSolution(Stest,utest(i,:)');
-%         mysaveas(pathname,['solution_sample_' num2str(i)],formats,renderer);
-%     end
+    %% Display random evaluations
+    % nbSamples = 3;
+    % for i=1:nbSamples
+    %     Stest = randomeval(pb.S,xtest(i,:)');
+    %     plotSolution(Stest,ytest(i,:)');
+    %     mysaveas(pathname,['solution_ref_sample_' num2str(i)],formats,renderer);
+    %     plotSolution(Stest,utest(i,:)');
+    %     mysaveas(pathname,['solution_sample_' num2str(i)],formats,renderer);
+    % end
 end
 
 myparallel('stop');

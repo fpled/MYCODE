@@ -8,6 +8,10 @@ close all
 % myparallel('start');
 
 %% Input data
+setProblem = true;
+directSolver = true;
+iterativeSolver = true;
+displaySolution = true;
 
 n = 4; % number of holes n = 1, 2, 4
 filename = ['linElas' num2str(n) 'CircHoles'];
@@ -16,20 +20,12 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-setProblem = true;
-directSolver = true;
-iterativeSolver = true;
-displaySolution = true;
-
 %% Problem
-
 if setProblem
     %% Domains and meshes
-    
     % Global
     glob = Global();
     glob_out = GlobalOutside();
@@ -77,7 +73,6 @@ if setProblem
     glob = partition(glob,D_patch);
     
     %% Materials
-    
     % Linear diffusion coefficient
     K_out = 1;
     K_patch = cell(1,n);
@@ -91,20 +86,19 @@ if setProblem
         L = norm(getsize(D_patch{k}),Inf)/4;
         c = getcenter(D_patch{k});
         f = @(x) distance(x,c,Inf)<L;
-        K_patch{k} = ones(patch.S.nbnode,1) + double(squeeze(f(patch.S.node)));
+        K_patch{k} = FENODEFIELD(ones(patch.S.nbnode,1) + double(squeeze(f(patch.S.node))));
         K_in{k} = 1;
     end
     
     % Complementary subdomain
-    mat_out = FOUR_ISOT('k',K_out); % uniform value
+    mat_out = FOUR_ISOT('k',K_out);
     mat_out = setnumber(mat_out,0);
     glob.S = setmaterial(glob.S,mat_out,getnumgroupelemwithparam(glob.S,'partition',0));
     
     % Patches
     mat_patch = MATERIALS();
     for k=1:n
-        % mat_patch{k} = FOUR_ISOT('k',K_patch{k}); % uniform value
-        mat_patch{k} = FOUR_ISOT('k',FENODEFIELD(K_patch{k})); % nodal values
+        mat_patch{k} = FOUR_ISOT('k',K_patch{k});
         mat_patch{k} = setnumber(mat_patch{k},k);
         patches.patches{k}.S = setmaterial(patches.patches{k}.S,mat_patch{k});
     end
@@ -112,14 +106,12 @@ if setProblem
     % Fictitious patches
     mat_in = MATERIALS();
     for k=1:n
-        mat_in{k} = FOUR_ISOT('k',K_in{k}); % uniform value
-        % mat_in{k} = FOUR_ISOT('k',FENODEFIELD(K_in{k})); % nodal values
+        mat_in{k} = FOUR_ISOT('k',K_in{k});
         mat_in{k} = setnumber(mat_in{k},k);
         glob.S = setmaterial(glob.S,mat_in{k},getnumgroupelemwithparam(glob.S,'partition',k));
     end
     
     %% Dirichlet boundary conditions
-    
     % Global
     glob.S = final(glob.S);
     glob.S = addcl(glob.S,[]);
@@ -141,7 +133,6 @@ if setProblem
     interfaces = Interfaces(patches,glob);
     
     %% Stiffness matrices and sollicitation vectors
-    
     % Source term
     f = 10;
     
@@ -163,13 +154,11 @@ if setProblem
     end
     
     %% Mass matrices
-    
     for k=1:n
         interfaces.interfaces{k}.M = calc_massgeom(interfaces.interfaces{k}.S);
     end
     
     %% Projection operators
-    
     glob.P_out = calcProjection(glob);
     for k=1:n
         [interfaces.interfaces{k}.P_glob] = calcProjection(interfaces.interfaces{k},glob);
@@ -179,7 +168,6 @@ if setProblem
     end
     
     %% Parameters for global and local problems
-    
     % Global problem
     glob.increment = true;
     
@@ -189,13 +177,13 @@ if setProblem
         patches.patches{k}.increment = true;
     end
     
+    %% Save variables
     save(fullfile(pathname,'problem.mat'),'glob','patches','interfaces','D','D_patch');
 else
     load(fullfile(pathname,'problem.mat'),'glob','patches','interfaces','D','D_patch');
 end
 
 %% Direct solver
-
 if directSolver
     DS = DirectSolver();
     DS.changeOfVariable = false;
@@ -208,7 +196,6 @@ else
 end
 
 %% Outputs
-
 fprintf('\n')
 fprintf('spatial dimension = %d for U_ref\n',length(U_ref))
 for k=1:n
@@ -218,7 +205,6 @@ end
 fprintf('elapsed time = %f s\n',output_ref.time)
 
 %% Global-local Iterative solver
-
 if iterativeSolver
     IS = IterativeSolver();
     IS.maxIterations = 50;
@@ -237,7 +223,6 @@ else
 end
 
 %% Outputs
-
 fprintf('\n')
 fprintf('spatial dimension = %d for U\n',length(U))
 for k=1:n
@@ -246,9 +231,9 @@ for k=1:n
 end
 fprintf('elapsed time = %f s\n',output.totalTime)
 
+%% Dsiplay
 if displaySolution
     %% Display domains and meshes
-    
     plotDomain(D,D_patch);
     mysaveas(pathname,'domain_global_patches',formats,renderer);
     mymatlab2tikz(pathname,'domain_global_patches.tex');
@@ -263,8 +248,7 @@ if displaySolution
     % plotModel(patches);
     % plotModel(interfaces);
     
-    %% Display evolution of error indicator, stagnation indicator and CPU time w.r.t. number of iterations
-    
+    %% Display evolutions of error indicator, stagnation indicator, CPU time w.r.t. number of iterations
     plotError(output);
     mysaveas(pathname,'error','fig');
     mymatlab2tikz(pathname,'error.tex');
@@ -290,7 +274,6 @@ if displaySolution
     mymatlab2tikz(pathname,'relaxation_parameter.tex');
     
     %% Display solutions
-    
     % plotAllSolutions(glob,patches,interfaces,U,w,lambda);
     % mysaveas(pathname,'all_solutions',formats,renderer);
     

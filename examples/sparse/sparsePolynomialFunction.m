@@ -1,6 +1,6 @@
 %% Adaptive sparse polynomial approximation - Polynomial function %%
 %%----------------------------------------------------------------%%
-% [Sudret 2008]
+% [Sudret, 2008]
 
 % clc
 clear all
@@ -8,7 +8,7 @@ close all
 % set(0,'DefaultFigureVisible','off');
 % rng('default');
 
-%% Filename and Pathname
+%% Input data
 filename = 'polynomialFunction';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
     'results',filesep,'sparse',filesep,filename,filesep);
@@ -30,7 +30,7 @@ q = 2; % partial degree
 fun = MultiVariateFunction(fun,d);
 fun.evaluationAtMultiplePoints = true;
 
-%% Adaptive sparse approximation using least-squares
+%% Adaptive sparse least-squares approximation
 p = 50;
 basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
 bases = FunctionalBases(basis,[],d);
@@ -62,7 +62,6 @@ time = toc(t);
 %% Outputs
 fprintf('\n')
 fprintf('parametric dimension = %d\n',ndims(f.basis))
-% fprintf('parametric dimension = %d\n',numel(rv))
 fprintf('basis dimension = %d\n',numel(f.basis))
 fprintf('order = [ %s ]\n',num2str(max(f.basis.indices.array)))
 % fprintf('multi-index set = \n')
@@ -71,6 +70,7 @@ fprintf('nb samples = %d\n',size(y,1))
 fprintf('CV error = %d\n',norm(err))
 fprintf('elapsed time = %f s\n',time)
 
+%% Test
 Ntest = 1000;
 [errtest,xtest,fxtest,ytest] = computeTestError(f,fun,Ntest,rv);
 fprintf('test error = %d\n',errtest)
@@ -81,7 +81,7 @@ plotMultiIndexSet(f,'dim',dim,'legend',false)
 mysaveas(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end))],'fig');
 mymatlab2tikz(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end)) '.tex']);
 
-%% Quantities of interest : mean, variance, Sobol indices
+%% Quantities of interest: mean, variance, Sobol indices
 if q==2
     % Analytical exact values
     anal.mean = 1;

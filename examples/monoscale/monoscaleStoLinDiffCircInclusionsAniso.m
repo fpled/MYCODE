@@ -1,6 +1,6 @@
 %% Monoscale stochastic linear diffusion problem with circular inclusions - Anisotropic case %%
 %%-------------------------------------------------------------------------------------------%%
-% [Beck, Nobile, Tamellini, Tempone 2011,2014]
+% [Beck, Nobile, Tamellini, Tempone, 2011,2014]
 
 % clc
 clear all
@@ -10,6 +10,10 @@ close all
 myparallel('start');
 
 %% Input data
+setProblem = true;
+solveProblem = true;
+displaySolution = true;
+testSolution = true;
 
 filename = 'linDiffCircInclusionsAniso';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
@@ -17,20 +21,12 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-setProblem = true;
-solveProblem = true;
-displaySolution = true;
-testSolution = true;
-
 %% Problem
-
 if setProblem
     %% Domains and meshes
-    
     D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
     
     r = 0.13;
@@ -49,17 +45,15 @@ if setProblem
     pb.S = gmshdomainwithinclusion(D,B,cl,cl,[pathname 'gmsh_circular_inclusions']);
     
     %% Random variables
-    
     d = 4; % parametric dimension
     v = UniformRandomVariable(-0.99,0);
     rv = RandomVector(v,d);
     
     %% Materials
-    
     % Deterministic subdomains
     % Linear diffusion coefficient
     K_det = 1;
-    mat_det = FOUR_ISOT('k',K_det); % uniform value
+    mat_det = FOUR_ISOT('k',K_det);
     mat_det = setnumber(mat_det,0);
     k = [0 2 4 6 8 9];
     pb.S = setmaterial(pb.S,mat_det,k+1);
@@ -80,25 +74,23 @@ if setProblem
     for i=1:d
         % Linear diffusion coefficient
         % K_sto(xi) = 1 + g * xi
-        fun = @(x) 1 + g(i) * x(:,i);
-        funtr = @(x) fun(transfer(rvb,rv,x));
+        fun = @(xi) 1 + g(i) * xi(:,i);
+        funtr = @(xi) fun(transfer(rvb,rv,xi));
         fun = MultiVariateFunction(funtr,d);
         fun.evaluationAtMultiplePoints = true;
         
         K_sto = H.projection(fun,I);
         
-        mat_sto{i} = FOUR_ISOT('k',K_sto); % uniform value
+        mat_sto{i} = FOUR_ISOT('k',K_sto);
         mat_sto{i} = setnumber(mat_sto{i},i);
         pb.S = setmaterial(pb.S,mat_sto{i},k(i)+1);
     end
     
     %% Dirichlet boundary conditions
-    
     pb.S = final(pb.S);
     pb.S = addcl(pb.S,[]);
     
     %% Stiffness matrices and sollicitation vectors
-    
     if israndom(pb.S)
         pb.A = [];
     else
@@ -119,8 +111,7 @@ else
     load(fullfile(pathname,'problem.mat'),'pb','d','D','B');
 end
 
-%% Adaptive sparse approximation using least-squares
-
+%% Adaptive sparse least-squares approximation
 if solveProblem
     p = 50;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
@@ -165,7 +156,6 @@ else
 end
 
 %% Outputs
-
 fprintf('\n')
 fprintf('parametric dimension = %d\n',ndims(u.basis))
 fprintf('basis dimension = %d\n',numel(u.basis))
@@ -177,7 +167,6 @@ fprintf('CV error = %d\n',norm(err))
 fprintf('elapsed time = %f s\n',time)
 
 %% Test
-
 if testSolution
     Ntest = 100;
     [errtest,xtest,utest,ytest] = computeTestError(u,fun,Ntest);
@@ -187,9 +176,9 @@ else
 end
 fprintf('test error = %d\n',errtest)
 
+%% Display
 if displaySolution
     %% Display domains and meshes
-    
     plotDomain(D,B);
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
@@ -201,15 +190,13 @@ if displaySolution
     mysaveas(pathname,'mesh',formats,renderer);
     
     %% Display multi-index set
-    
     for i=1:2:d
         plotMultiIndexSet(u,'dim',[i i+1],'legend',false)
         mysaveas(pathname,['multi_index_set_dim_' num2str(i) '_' num2str(i+1)],'fig');
         mymatlab2tikz(pathname,['multi_index_set_dim_' num2str(i) '_' num2str(i+1) '.tex']);
     end
     
-    %% Display statistical outputs of solution
-    
+    %% Display statistical outputs
     % plotStats(pb.S,u);
     
     plotMean(pb.S,u);
@@ -229,16 +216,15 @@ if displaySolution
         mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i)],formats,renderer);
     end
     
-    %% Display random evaluations of solution
-    
-%     nbSamples = 3;
-%     for i=1:nbSamples
-%         Stest = randomeval(pb.S,xtest(i,:)');
-%         plotSolution(Stest,ytest(i,:)');
-%         mysaveas(pathname,['solution_ref_sample_' num2str(i)],formats,renderer);
-%         plotSolution(Stest,utest(i,:)');
-%         mysaveas(pathname,['solution_sample_' num2str(i)],formats,renderer);
-%     end
+    %% Display random evaluations
+    % nbSamples = 3;
+    % for i=1:nbSamples
+    %     Stest = randomeval(pb.S,xtest(i,:)');
+    %     plotSolution(Stest,ytest(i,:)');
+    %     mysaveas(pathname,['solution_ref_sample_' num2str(i)],formats,renderer);
+    %     plotSolution(Stest,utest(i,:)');
+    %     mysaveas(pathname,['solution_sample_' num2str(i)],formats,renderer);
+    % end
 end
 
 myparallel('stop');
