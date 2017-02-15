@@ -319,6 +319,7 @@ fprintf(['boundary : ' boundary '\n']);
 fprintf(['load     : ' loading '\n']);
 fprintf(['mesh     : ' elemtype ' elements\n']);
 fprintf('nb elements = %g\n',Nbelem(i));
+fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('span-to-thickness ratio = %g\n',r/h);
 fprintf('error = %.3e for Uz\n',err_Uz(i));

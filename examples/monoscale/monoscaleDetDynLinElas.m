@@ -1,5 +1,5 @@
-%% Monoscale deterministic linear dynamics problem %%
-%%-------------------------------------------------%%
+%% Monoscale deterministic linear elasticity dynamics problem %%
+%%------------------------------------------------------------%%
 
 % clc
 % clear all
@@ -12,7 +12,7 @@ setProblem = true;
 solveProblem = true;
 displaySolution = true;
 
-filename = 'linDyn';
+filename = 'dynLinElas';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
     'results',filesep,'monoscaleDet',filesep,filename,filesep);
 if ~exist(pathname,'dir')
@@ -38,13 +38,13 @@ if setProblem
     
     %% Materials
     % Poisson ratio
-    NU = 0.3;
+    NU = 0;
     % Thickness
     DIM3 = 1;
     % Density
     RHO = 1;
     % Young modulus
-    E = 1;    
+    E = 1;
     % Material
     mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3);
     mat = setnumber(mat,1);
@@ -57,28 +57,32 @@ if setProblem
     pb.S = final(pb.S);
     pb.S = addcl(pb.S,L1);
     
-    %% Stiffness, mass and damping matrices and sollicitation vectors
-    pb.M = calc_mass(pb.S);
-    pb.K = calc_rigi(pb.S);
+    %% Initial conditions
+    pb.u0 = zeros(getnbddlfree(pb.S),1);
+    pb.v0 = zeros(getnbddlfree(pb.S),1);
     
-    f = surfload(pb.S,L2,'FX',-1);
-    
-    %% Newmark time scheme
+    %% Time scheme
     t0 = 0;
     t1 = 2;
     nt = 50;
     T = TIMEMODEL(t0,t1,nt);
     
-    pb.N = NEWMARKSOLVER(T,'alpha',0.05);
-    % pb.N = DGTIMESOLVER(T,1);
+    % pb.N = NEWMARKSOLVER(T,'alpha',0.05);
+    pb.N = DGTIMESOLVER(T,1);
     pb.N = setparam(pb.N,'display',true);
     
-    tc = t1/6;
-    loadfun = @(N) rampe(N,0,tc);
-    % loadfun = @(N) dirac(N,0,tc);
+    %% Mass, stiffness and damping matrices and sollicitation vectors
+    pb.M = calc_mass(pb.S);
+    pb.K = calc_rigi(pb.S);
+    
+    f = surfload(pb.S,L2,'FX',-1);
+    
+    tc = get(T,'t1')/6;
+    loadfun = @(N) rampe(N,t0,tc);
+    % loadfun = @(N) dirac(N,t0,tc);
     % loadfun = @(N) one(N);
     
-    pb.b = f*loadfun(pb.N);
+    pb.f = f*loadfun(pb.N);
     
     save(fullfile(pathname,'problem.mat'),'pb','D');
 else
@@ -88,14 +92,15 @@ end
 %% Newmark time scheme
 if solveProblem
     t = tic;
-    [ut,result,vt] = ddsolve(pb.N,pb.b,pb.M,pb.K);
+    [ut,result,vt] = ddsolve(pb.N,pb.f,pb.M,pb.K,[],pb.u0,pb.v0);
     time = toc(t);
     
-    utn =
+    et = calc_epsilon(pb.S,ut);
+    st = calc_sigma(pb.S,ut);
     
-    save(fullfile(pathname,'solution.mat'),'ut','utx','uty','result','vt','loadfun','time');
+    save(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','loadfun','time');
 else
-    load(fullfile(pathname,'solution.mat'),'ut','utx','uty','result','vt','loadfun','time');
+    load(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','loadfun','time');
 end
 
 %% Outputs
@@ -103,6 +108,7 @@ fprintf('\n');
 fprintf(['load function : ' func2str(loadfun) '\n']);
 fprintf(['mesh          : ' elemtype ' elements\n']);
 fprintf('nb elements = %g\n',getnbelem(pb.S));
+fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(pb.S));
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
@@ -117,12 +123,21 @@ if displaySolution
     plotModel(pb.S,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
-    %% Display evolution
+    %% Display evolution of stress field
+    mov = VideoWriter(fullfile(pathname,['evol_sigma_' num2str(i)]));%,'Uncompressed AVI');
+    mov.FrameRate = 30;
+    mov.Quality = 100;
+    i=1;
+    stmin = min(min(st(i)));
+    stmax = max(max(st(i)));
+    ut = setevolparam(ut,'plotstep',10)
+    pb.N = setevolparam(pb.N,'plotstep',1,'setaxis',false,'setcaxis',true,...
+        'caxis',[stmin,stmax],'pausetime',1/get(gettimemodel(pb.N),'nt'),'colorbar',true);
+    frame = evol(pb.N,st,pb.S,'compo','SXX');
     
-    % pb.N = setevolparam(pb.N,'step',3,'view',2,'setcaxis',true,'caxis',[smmin,smmax],...
-    %     'pausetime',1/nt,'setaxis',false,'colormap',jet);
-    % evol(pb.N,utx,pb.S)
-    evol(utx,pb.S)
+    open(mov);
+    writeVideo(mov,frame);
+    close(mov);
     
     %% Display solution
     % ampl = 0;

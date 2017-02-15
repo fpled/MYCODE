@@ -213,6 +213,7 @@ fprintf('\nRectangular table\n');
 fprintf(['load : ' loading '\n']);
 fprintf(['mesh : ' elemtype ' ' meshtype ' elements\n']);
 fprintf('nb elements = %g\n',getnbelem(S_plate));
+fprintf('nb nodes    = %g\n',getnbnode(S_plate));
 fprintf('nb dofs     = %g\n',getnbddl(S_plate));
 fprintf('span-to-thickness ratio = %g\n',max(a,b)/h);
 fprintf('elapsed time = %f s\n',time);

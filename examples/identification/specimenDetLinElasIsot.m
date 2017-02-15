@@ -119,6 +119,7 @@ fprintf('\nSquare specimen\n');
 fprintf(['load     : ' loading '\n']);
 fprintf(['mesh     : ' elemtype ' elements\n']);
 fprintf('nb elements = %g\n',getnbelem(S));
+fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');

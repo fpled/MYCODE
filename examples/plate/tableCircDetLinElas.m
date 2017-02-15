@@ -213,6 +213,7 @@ fprintf('\nCircular table\n');
 fprintf(['load : ' loading '\n']);
 fprintf(['mesh : ' elemtype ' elements\n']);
 fprintf('nb elements = %g\n',getnbelem(S_plate));
+fprintf('nb nodes    = %g\n',getnbnode(S_plate));
 fprintf('nb dofs     = %g\n',getnbddl(S_plate));
 fprintf('span-to-thickness ratio = %g\n',r/h);
 fprintf('elapsed time = %f s\n',time);
