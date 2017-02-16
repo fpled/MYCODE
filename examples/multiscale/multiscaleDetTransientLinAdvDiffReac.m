@@ -1,5 +1,5 @@
-%% Monoscale deterministic transient linear advection-diffusion-reaction problem %%
-%%-------------------------------------------------------------------------------%%
+%% Multiscale deterministic transient linear advection-diffusion-reaction problem %%
+%%--------------------------------------------------------------------------------%%
 % [Pares, Diez, Huerta, 2008], [Nouy, 2010]
 
 % clc
@@ -10,12 +10,14 @@ close all
 
 %% Input data
 setProblem = true;
-solveProblem = true;
+directSolver = true;
+iterativeSolver = true;
 displaySolution = true;
 
-filename = 'transientLinAdvDiffReac';
+n = 5; % number of patches
+filename = ['transientLinAdvDiffReac' num2str(n) 'Patches'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-    'results',filesep,'monoscaleDet',filesep,filename,filesep);
+    'results',filesep,'multiscaleDet',filesep,filename,filesep);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -25,11 +27,37 @@ renderer = 'OpenGL';
 %% Problem
 if setProblem
     %% Domains and meshes
+    % Global
+    glob = Global();
+    glob_out = GlobalOutside();
+    
     cl1 = 0.02;
     cl2 = 0.04;
     cl0 = 0.02;
     cltip = 0.01;
-    pb.S = gmshcanister(cl1,cl2,cl0,cltip,[pathname 'gmsh_canister']);
+    glob.S = gmshcanister(cl1,cl2,cl0,cltip,[pathname 'gmsh_canister'],'recombine');
+    
+    % Patches
+    patches = Patches(n);
+    
+    D_patch = cell(1,n);
+    D_patch{1} = DOMAIN(2,[0.9,0.55],[1.0,0.65]);
+    D_patch{2} = DOMAIN(2,[0.51,0.55],[0.61,0.65]);
+    D_patch{3} = DOMAIN(2,[0.1,0.55],[0.2,0.65]);
+    D_patch{4} = DOMAIN(2,[0.1,1.0],[1.1,0.3]);
+    D_patch{5} = DOMAIN(2,[0.7,1.1],[0.8,0.3]);
+    
+    nbelem_patch = [20,20];
+    for k=1:n
+        patches.patches{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
+    end
+    % cl_patch = 0.005;
+    % for k=1:n
+    %     patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',[pathname 'gmsh_patch_' num2str(k)]);
+    % end
+    
+    % Partition of global mesh
+    glob = partition(glob,D_patch);
     
     %% Materials
     % Linear diffusion coefficient

@@ -92,6 +92,7 @@ if solveProblem
     % Material
     mat_plate = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
     mat_plate = setnumber(mat_plate,1);
+    mat = setnumber(mat,1);
     S_plate = setmaterial(S_plate,mat_plate);
     
     % Beam

@@ -2,7 +2,7 @@
 %%------------------------------------------------------------%%
 
 % clc
-% clear all
+clear all
 close all
 % set(0,'DefaultFigureVisible','off');
 % myparallel('start');
@@ -18,7 +18,6 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
@@ -89,7 +88,7 @@ else
     load(fullfile(pathname,'problem.mat'),'pb','D');
 end
 
-%% Newmark time scheme
+%% Solution
 if solveProblem
     t = tic;
     [ut,result,vt] = ddsolve(pb.N,pb.f,pb.M,pb.K,[],pb.u0,pb.v0);
@@ -108,7 +107,7 @@ fprintf('\n');
 fprintf(['load function : ' func2str(loadfun) '\n']);
 fprintf(['mesh          : ' elemtype ' elements\n']);
 fprintf('nb elements = %g\n',getnbelem(pb.S));
-fprintf('nb nodes    = %g\n',getnbnode(S));
+fprintf('nb nodes    = %g\n',getnbnode(pb.S));
 fprintf('nb dofs     = %g\n',getnbddl(pb.S));
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
@@ -123,38 +122,16 @@ if displaySolution
     plotModel(pb.S,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
-    %% Display evolution of stress field
-    mov = VideoWriter(fullfile(pathname,['evol_sigma_' num2str(i)]));%,'Uncompressed AVI');
-    mov.FrameRate = 30;
-    mov.Quality = 100;
-    i=1;
-    stmin = min(min(st(i)));
-    stmax = max(max(st(i)));
-    ut = setevolparam(ut,'plotstep',10)
-    pb.N = setevolparam(pb.N,'plotstep',1,'setaxis',false,'setcaxis',true,...
-        'caxis',[stmin,stmax],'pausetime',1/get(gettimemodel(pb.N),'nt'),'colorbar',true);
-    frame = evol(pb.N,st,pb.S,'compo','SXX');
+    %% Display evolution of solution
+    for i=1:2
+        evolSolution(pb.S,ut,'displ',i,'filename',['evol_u_' num2str(i)],'pathname',pathname);
+        evolSolution(pb.S,vt,'displ',i,'filename',['evol_v_' num2str(i)],'pathname',pathname);
+    end
     
-    open(mov);
-    writeVideo(mov,frame);
-    close(mov);
-    
-    %% Display solution
-    % ampl = 0;
-%     ampl = getsize(S)/max(abs(u))/5;
-%     
-%     for i=1:2
-%         plotSolution(S,ut,'displ',i,'ampl',ampl);
-%         mysaveas(pathname,['ut_' num2str(i)],formats,renderer);
-%     end
-%     
-%     for i=1:3
-%         plotSolution(S,ut,'epsilon',i,'ampl',ampl);
-%         mysaveas(pathname,['epst_' num2str(i)],formats,renderer);
-%         
-%         plotSolution(S,ut,'sigma',i,'ampl',ampl);
-%         mysaveas(pathname,['sigt_' num2str(i)],formats,renderer);
-%     end
+    for i=1:3
+        evolSolution(pb.S,ut,'epsilon',i,'filename',['evol_eps_' num2str(i)],'pathname',pathname);
+        evolSolution(pb.S,ut,'sigma',i,'filename',['evol_sig_' num2str(i)],'pathname',pathname);
+    end
 end
 
 % myparallel('stop');

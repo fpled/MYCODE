@@ -84,6 +84,7 @@ if solveProblem
     
     % Material
     mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
+    mat = setnumber(mat,1);
     S = setmaterial(S,mat);
     
     %% Dirichlet boundary conditions

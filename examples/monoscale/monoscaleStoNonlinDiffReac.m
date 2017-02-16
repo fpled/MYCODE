@@ -66,6 +66,7 @@ if setProblem
     R = H.projection(fun,I);
     
     mat = FOUR_ISOT('k',K,'r3',R);
+    mat = setnumber(mat,1);
     pb.S = setmaterial(pb.S,mat);
     
     %% Dirichlet boundary conditions
