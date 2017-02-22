@@ -155,7 +155,7 @@ if setProblem
     % end
     
     % Complementary subdomain
-    glob_out.S_out = glob.S_out;
+    glob_out.S = glob.S_out;
     
     % Patches
     for k=1:n
@@ -168,17 +168,17 @@ if setProblem
     %% Stiffness matrices and sollicitation vectors
     % Source term
     f = 100;
-    
-    % Complementary subdomain
-    glob_out.A_out = calc_rigi(glob_out.S_out);
-    glob_out.b_out = bodyload(keepgroupelem(glob_out.S_out,2),[],'QN',f);
-    
+        
     % Global
     glob.A = calc_rigi(glob.S);
     for k=1:n
         glob.A_in{k} = calc_rigi(glob.S,'selgroup',getnumgroupelemwithparam(glob.S,'partition',k));
     end
     glob.b_out = bodyload(keepgroupelem(glob.S,10),[],'QN',f);
+    
+    % Complementary subdomain
+    glob_out.A = calc_rigi(glob_out.S);
+    glob_out.b = bodyload(keepgroupelem(glob_out.S,2),[],'QN',f);
     
     % Patches
     for k=1:n
@@ -215,9 +215,9 @@ if setProblem
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'glob','patches','interfaces','D','D_patch');
+    save(fullfile(pathname,'problem.mat'),'glob','glob_out','patches','interfaces','D','D_patch');
 else
-    load(fullfile(pathname,'problem.mat'),'glob','patches','interfaces','D','D_patch');
+    load(fullfile(pathname,'problem.mat'),'glob','glob_out','patches','interfaces','D','D_patch');
 end 
 
 %% Direct solver
@@ -481,9 +481,9 @@ if displaySolution
     end
     
     %% Quantities of interest
-    % I_1: mean value of U over square subdomain I{9}
-    % I_2: mean value of u over domain D
-    % I_3: mean value of the gradient of u over domain D
+    % I1: mean value of U over square subdomain B{9}
+    % I2: mean value of u over domain D
+    % I3: mean value of the gradient of u over domain D
     
     %% Display random evaluations
     % nbsamples = 3;

@@ -109,7 +109,7 @@ if mod(lambda,1)==0
 end
 
 %% Statistical outputs
-fprintf('\nNb samples = %e\n',N);
+fprintf('\nNb samples = %g\n',N);
 
 fprintf('expect(A) =\n');
 disp(A);

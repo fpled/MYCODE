@@ -147,7 +147,7 @@ if setProblem
     % end
     
     % Complementary subdomain
-    glob_out.S_out = glob.S_out;
+    glob_out.S = glob.S_out;
     
     % Patches
     for k=1:n
@@ -161,18 +161,6 @@ if setProblem
     % Traction force density
     f = 1;
     
-    % Complementary subdomain
-    glob_out.A_out = calc_rigi(glob_out.S_out);
-    switch lower(loading)
-        case 'pull'
-            glob_out.b_out = surfload(glob_out.S_out,LU,{'FX','FY'},[0;f]);
-            glob_out.b_out = glob_out.b_out + surfload(glob_out.S_out,LL,{'FX','FY'},[0;-f]);
-        case 'shear'
-            glob_out.b_out = surfload(glob_out.S_out,LU,{'FX','FY'},[f;0]);
-        otherwise
-            error('Wrong loading case')
-    end
-    
     % Global
     glob.A = calc_rigi(glob.S);
     for k=1:n
@@ -184,6 +172,18 @@ if setProblem
             glob.b_out = glob.b_out + surfload(keepgroupelem(glob.S,getnumgroupelemwithparam(glob.S,'partition',0)),LL,{'FX','FY'},[0;-f]);
         case 'shear'
             glob.b_out = surfload(keepgroupelem(glob.S,getnumgroupelemwithparam(glob.S,'partition',0)),LU,{'FX','FY'},[f;0]);
+        otherwise
+            error('Wrong loading case')
+    end
+    
+    % Complementary subdomain
+    glob_out.A = calc_rigi(glob_out.S);
+    switch lower(loading)
+        case 'pull'
+            glob_out.b = surfload(glob_out.S,LU,{'FX','FY'},[0;f]);
+            glob_out.b = glob_out.b + surfload(glob_out.S,LL,{'FX','FY'},[0;-f]);
+        case 'shear'
+            glob_out.b = surfload(glob_out.S,LU,{'FX','FY'},[f;0]);
         otherwise
             error('Wrong loading case')
     end
@@ -219,9 +219,9 @@ if setProblem
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'glob','patches','interfaces','D','D_patch');
+    save(fullfile(pathname,'problem.mat'),'glob','glob_out','patches','interfaces','D','D_patch');
 else
-    load(fullfile(pathname,'problem.mat'),'glob','patches','interfaces','D','D_patch');
+    load(fullfile(pathname,'problem.mat'),'glob','glob_out','patches','interfaces','D','D_patch');
 end
 
 %% Direct solver

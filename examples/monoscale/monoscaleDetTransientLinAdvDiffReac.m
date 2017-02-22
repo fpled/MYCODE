@@ -90,16 +90,14 @@ if setProblem
     nt = 100;
     T = TIMEMODEL(t0,t1,nt);
     
-    % pb.N = EULERTIMESOLVER(T,'eulertype','explicit');
-    % pb.N = EULERTIMESOLVER(T,'eulertype','implicit');
-    pb.N = DGTIMESOLVER(T,1);
-    pb.N = setparam(pb.N,'display',true);
+    % pb.N = EULERTIMESOLVER(T,'eulertype','explicit','display',false);
+    % pb.N = EULERTIMESOLVER(T,'eulertype','implicit','display',false);
+    pb.N = DGTIMESOLVER(T,1,'outputsplit',true,'display',false,'lu',true);
     
     %% Mass and stifness matrices and sollicitation vectors
     pb.M = calc_mass(pb.S);
     [pb.K,pb.f0] = calc_rigi(pb.S);
     pb.f0 = -pb.f0;
-    
     pb.f = pb.f0*one(pb.N);
     
     save(fullfile(pathname,'problem.mat'),'pb','Sc','v','phi');
@@ -129,23 +127,25 @@ fprintf('\n');
 fprintf('nb elements = %g\n',getnbelem(pb.S));
 fprintf('nb nodes    = %g\n',getnbnode(pb.S));
 fprintf('nb dofs     = %g\n',getnbddl(pb.S));
+fprintf('time solver : %s\n',class(pb.N));
+fprintf('nb time steps = %g\n',getnt(pb.N));
+fprintf('nb time dofs  = %g\n',getnbtimedof(pb.N));
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
-
-foutput = bodyload(keepgroupelem(pb.S,2),[],'QN',1,'free');
 
 %% Display
 if displaySolution
     %% Display domains and meshes
     figure('Name','Domain')
     clf
+    plot(create_boundary(pb.S));
     h1 = plot(pb.S,'selgroup',1,'FaceColor',getfacecolor(1),'EdgeColor','none');
     h2 = plot(pb.S,'selgroup',2,'FaceColor',getfacecolor(2),'EdgeColor','none');
     h3 = plot(pb.S,'selgroup',3,'FaceColor',getfacecolor(3),'EdgeColor','none');
     h4 = plotfacets(pb.S,5,'FaceColor',getfacecolor(4),'EdgeColor','none');
     h5 = plotfacets(pb.S,17,'FaceColor',getfacecolor(5),'EdgeColor','none');
     set(gca,'FontSize',16)
-    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_0$','$\Gamma_1$','$\Gamma_2$');
+    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_1$','$\Gamma_2$');
     set(l,'Interpreter','latex')
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
@@ -176,6 +176,29 @@ if displaySolution
         evolSolution(pb.S,ut,'epsilon',i,'filename',['evol_eps_' num2str(i)],'pathname',pathname);
         evolSolution(pb.S,ut,'sigma',i,'filename',['evol_sig_' num2str(i)],'pathname',pathname);
     end
+    
+    %% Display quantity of interest
+    % boutput: concentration of pollutant captured by the trap domain
+    %          (group #2 in mesh) as a function of time
+    % Ioutput: total concentration of pollutant captured by the trap domain
+    %          (group #2 in mesh) along the complete time evolution,
+    %          corresponding to all the pollutant that the actual filter
+    %          (group #1 in mesh) is not able to retain
+    foutput = bodyload(keepgroupelem(pb.S,2),[],'QN',1,'nofree');
+    boutput = foutput'*ut;
+    
+    figure('Name','Quantity of interest')
+    clf
+    plot(boutput,'-b','LineWidth',1);
+    grid on
+    box on
+    set(gca,'FontSize',16)
+    xlabel('Time (s)')
+    ylabel('Quantity of interest')
+    mysaveas(pathname,'quantity_of_interest',formats,renderer);
+    
+    Ioutput = integrate(boutput);
+    fprintf('quantity of interest = %e\n',Ioutput);
 end
 
 % myparallel('stop');

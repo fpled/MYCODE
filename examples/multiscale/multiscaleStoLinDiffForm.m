@@ -78,7 +78,7 @@ if setProblem
     % end
     
     % Complementary subdomain
-    glob_out.S_out = glob.S_out;
+    glob_out.S = glob.S_out;
     
     % Interfaces
     interfaces = Interfaces(patches);
@@ -176,10 +176,6 @@ if setProblem
     l_patch = l;
     
     %% Stiffness matrices and sollicitation vectors
-    % Complementary subdomain
-    glob_out.A_out = calc_matrix(a_out,glob_out.S_out);
-    glob_out.b_out = calc_vector(l,glob_out.S_out);
-    
     % Global
     a_out = setselgroup(a_out,getnumgroupelemwithparam(glob.S,'partition',0));
     A_out = calc_matrix(a_out,glob.S);
@@ -191,6 +187,10 @@ if setProblem
     end
     l_out = setselgroup(l,getnumgroupelemwithparam(glob.S,'partition',0));
     glob.b_out = calc_vector(l_out,glob.S);
+    
+    % Complementary subdomain
+    glob_out.A = calc_matrix(a_out,glob_out.S);
+    glob_out.b = calc_vector(l,glob_out.S);
     
     % Patches
     for k=1:n
@@ -226,9 +226,9 @@ if setProblem
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'glob','patches','interfaces','D','D_patch');
+    save(fullfile(pathname,'problem.mat'),'glob','glob_out','patches','interfaces','D','D_patch');
 else
-    load(fullfile(pathname,'problem.mat'),'glob','patches','interfaces','D','D_patch');
+    load(fullfile(pathname,'problem.mat'),'glob','glob_out','patches','interfaces','D','D_patch');
 end 
 
 %% Direct solver

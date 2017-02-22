@@ -66,21 +66,18 @@ if setProblem
     nt = 50;
     T = TIMEMODEL(t0,t1,nt);
     
-    % pb.N = NEWMARKSOLVER(T,'alpha',0.05);
-    pb.N = DGTIMESOLVER(T,1);
-    pb.N = setparam(pb.N,'display',true);
+    % pb.N = NEWMARKSOLVER(T,'alpha',0.05,'display',false);
+    pb.N = DGTIMESOLVER(T,1,'outputsplit',true,'display',false,'lu',true);
     
     %% Mass, stiffness and damping matrices and sollicitation vectors
     pb.M = calc_mass(pb.S);
     pb.K = calc_rigi(pb.S);
-    
     f = surfload(pb.S,L2,'FX',-1);
     
     tc = get(T,'t1')/6;
     loadfun = @(N) rampe(N,t0,tc);
     % loadfun = @(N) dirac(N,t0,tc);
     % loadfun = @(N) one(N);
-    
     pb.f = f*loadfun(pb.N);
     
     save(fullfile(pathname,'problem.mat'),'pb','D');
@@ -105,10 +102,13 @@ end
 %% Outputs
 fprintf('\n');
 fprintf(['load function : ' func2str(loadfun) '\n']);
-fprintf(['mesh          : ' elemtype ' elements\n']);
+fprintf(['spatial mesh  : ' elemtype ' elements\n']);
 fprintf('nb elements = %g\n',getnbelem(pb.S));
 fprintf('nb nodes    = %g\n',getnbnode(pb.S));
 fprintf('nb dofs     = %g\n',getnbddl(pb.S));
+fprintf('time solver : %s\n',class(pb.N));
+fprintf('nb time steps = %g\n',getnt(pb.N));
+fprintf('nb time dofs  = %g\n',getnbtimedof(pb.N));
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
