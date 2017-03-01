@@ -43,7 +43,7 @@ if setProblem
     % K(xi) = 1 + xi
     p = 1;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases(basis,[],d);
+    bases = FunctionalBases.duplicate(basis,d);
     rvb = getRandomVector(bases);
     H = FullTensorProductFunctionalBasis(bases);
     I = gaussIntegrationRule(v,2);
@@ -105,7 +105,7 @@ end
 if solveProblem
     p = 50;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases(basis,[],d);
+    bases = FunctionalBases.duplicate(basis,d);
     rv = getRandomVector(bases);
     
     s = AdaptiveSparseTensorAlgorithm();

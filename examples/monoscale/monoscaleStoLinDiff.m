@@ -2,7 +2,7 @@
 %%-----------------------------------------------%%
 
 % clc
-clear all
+% clear all
 close all
 % set(0,'DefaultFigureVisible','off');
 % rng('default');
@@ -43,7 +43,7 @@ if setProblem
     % K(xi) = 1 + xi
     p = 1;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases(basis,[],d);
+    bases = FunctionalBases.duplicate(basis,d);
     vb = basis.basis.randomVariable;
     rvb = getRandomVector(bases);
     H = FullTensorProductFunctionalBasis(bases);
@@ -91,7 +91,7 @@ end
 if solveProblem
     p = 50;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases(basis,[],d);
+    bases = FunctionalBases.duplicate(basis,d);
     rv = getRandomVector(bases);
     
     s = AdaptiveSparseTensorAlgorithm();

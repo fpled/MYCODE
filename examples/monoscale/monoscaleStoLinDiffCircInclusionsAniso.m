@@ -61,7 +61,7 @@ if setProblem
     % Stochastic subdomains
     p = 1;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases(basis,[],d);
+    bases = FunctionalBases.duplicate(basis,d);
     vb = basis.basis.randomVariable;
     rvb = getRandomVector(bases);
     H = FullTensorProductFunctionalBasis(bases);
@@ -115,7 +115,7 @@ end
 if solveProblem
     p = 50;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases(basis,[],d);
+    bases = FunctionalBases.duplicate(basis,d);
     rv = getRandomVector(bases);
     
     s = AdaptiveSparseTensorAlgorithm();
