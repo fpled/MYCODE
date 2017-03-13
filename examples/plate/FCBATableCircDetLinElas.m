@@ -180,7 +180,7 @@ if solveProblem
     p_belt = RHO_beam*g*Sec_belt;
     switch lower(test)
         case {'stability1','stability2','stability3','stability4'}
-            p = 400; % pmin = 668;
+            p = 0; % pmin = 668;
         case {'statichori1','statichori2','statichori3','statichori4'}
             masse = 50;
             Sec_masse = pi*r_masse^2;
@@ -340,11 +340,11 @@ if solveProblem
     end
     f = f + bodyload(keepgroupelem(S,[1,2,3]),[],'FZ',-p_plate);
     for k=1:length(L_beam)
-        f = f + bodyload(keepgroupelem(S,3+k),[],'FX',p_beam);
+        f = f + bodyload(keepgroupelem(S,3+k),[],'FZ',-p_beam);
     end
-    f = f + bodyload(keepgroupelem(S,3+length(L_beam)+1),[],'FY',p_belt);
-    f = f + bodyload(keepgroupelem(S,3+length(L_beam)+2),[],'FZ',p_belt);
-    f = f + bodyload(keepgroupelem(S,3+length(L_beam)+3),[],'FY',-p_belt);
+    f = f + bodyload(keepgroupelem(S,3+length(L_beam)+1),[],'FZ',-p_belt);
+    f = f + bodyload(keepgroupelem(S,3+length(L_beam)+2),[],'FZ',-p_belt);
+    f = f + bodyload(keepgroupelem(S,3+length(L_beam)+3),[],'FZ',-p_belt);
     f = f + bodyload(keepgroupelem(S,3+length(L_beam)+4),[],'FZ',-p_belt);
     
     %% Solution

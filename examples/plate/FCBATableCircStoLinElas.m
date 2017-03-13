@@ -370,11 +370,11 @@ if solveProblem
     end
     f = f + bodyload(keepgroupelem(S,[1,2,3]),[],'FZ',-p_plate);
     for k=1:length(L_beam)
-        f = f + bodyload(keepgroupelem(S,3+k),[],'FX',p_beam);
+        f = f + bodyload(keepgroupelem(S,3+k),[],'FZ',-p_beam);
     end
-    f = f + bodyload(keepgroupelem(S,3+length(L_beam)+1),[],'FY',p_belt);
-    f = f + bodyload(keepgroupelem(S,3+length(L_beam)+2),[],'FZ',p_belt);
-    f = f + bodyload(keepgroupelem(S,3+length(L_beam)+3),[],'FY',-p_belt);
+    f = f + bodyload(keepgroupelem(S,3+length(L_beam)+1),[],'FZ',-p_belt);
+    f = f + bodyload(keepgroupelem(S,3+length(L_beam)+2),[],'FZ',-p_belt);
+    f = f + bodyload(keepgroupelem(S,3+length(L_beam)+3),[],'FZ',-p_belt);
     f = f + bodyload(keepgroupelem(S,3+length(L_beam)+4),[],'FZ',-p_belt);
     
     %% Solution
