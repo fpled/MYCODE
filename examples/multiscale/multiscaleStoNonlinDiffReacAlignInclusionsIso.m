@@ -1,6 +1,6 @@
 %% Multiscale stochastic nonlinear diffusion-reaction problem with n aligned inclusions - Isotropic case %%
 %%-------------------------------------------------------------------------------------------------------%%
-% [Nouy, Pled, Chevreuil 2017]
+% [Nouy, Pled 2017]
 
 % clc
 clear all

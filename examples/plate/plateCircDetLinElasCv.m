@@ -29,7 +29,7 @@ loadings = {'Uniform','Concentrated'};
 % elemtypes = {'DKT','DKQ'}; % Kirchhoff-Love (classical) plate theory
 % elemtypes = {'DST','DSQ','COQ4'}; % Reissner-Mindlin (first-order shear) plate theory
 elemtypes = {'DKT','DKQ','DST','DSQ','COQ4'}; % Both plate theories
-nbelems = 2.^(1:5);
+nbelems = 2.^(1:6);
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';

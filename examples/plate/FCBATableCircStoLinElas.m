@@ -276,8 +276,9 @@ if solveProblem
             S = addcl(S,P_support([2 3]),'UZ'); % addcl(S,P_support([2 3]),'UZ',0);
         case 'staticvert'
             S = addcl(S,P_support,'U'); % addcl(S,P_support,'U',0);
-        case {'fatigue1','fatigue2','fatigue3','fatigue4',...
-                'impact','drop'}
+        case {'fatigue1','fatigue2','fatigue3','fatigue4'}
+            S = addcl(S,P_support); % addcl(S,P_support,{'U','R'},0);
+        case {'impact','drop'}
             S = addcl(S,P_support); % addcl(S,P_support,{'U','R'},0);
     end
     
@@ -288,7 +289,7 @@ if solveProblem
         Ei = e(i);
         % Material
         mat_platei = setparam(mat_plate,'E',Ei);
-        Si = setmaterial(S,mat_platei,[1,2]);
+        Si = setmaterial(S,mat_platei,[1,2,3]);
         % Stiffness matrix
         A{i} = calc_rigi(Si);
     end
@@ -526,14 +527,7 @@ if displaySolution
     mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
-    switch lower(test)
-        case {'stability1','stability2','stability3','stability4',...
-                'statichori1','statichori2','statichori3','statichori4',...
-                'staticvert',...
-                'fatigue1','fatigue2','fatigue3','fatigue4',...
-                'impact','drop'}
-            ampl = 5;
-    end
+    ampl = 5;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
     % legend([hD,hN],[legD,legN])
     mysaveas(pathname,'boundary_conditions',formats,renderer);

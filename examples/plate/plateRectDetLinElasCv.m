@@ -23,7 +23,7 @@ elemtypes = {'DKT','DKQ'}; % Kirchhoff-Love (classical) plate theory
 % meshtypes = {'Structured'};
 % meshtypes = {'Unstructured'};
 meshtypes = {'Structured','Unstructured'};
-nbelems = 2.^(1:5);
+nbelems = 2.^(1:6);
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
@@ -179,7 +179,7 @@ if solveProblem
                 case 'uniform'
                     A = - p/(4*D_rig*pi^4*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) ./ n.^4;
                 case 'concentrated'
-                    A = - p/(D_rig*pi^4*a*b*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) ./ n.^4;
+                    A = - p/(4*D_rig*pi^4*a*b*(3*(1/a^4+1/b^4)+2/(a^2*b^2))) * (1+(-1).^(n+1)).^2 ./ n.^4;
             end
             fun_Uz = @(x) dot(repmat(A,size(x,1),1) .* (1-cos(2*pi/a*x(:,1)*n)),1-cos(2*pi/b*x(:,2)*n),2);
             fun_Rx = @(x) dot(repmat(A,size(x,1),1) .* (1-cos(2*pi/a*x(:,1)*n)),2*pi/b * repmat(n,size(x,1),1) .* sin(2*pi/b*x(:,2)*n),2);
@@ -193,7 +193,7 @@ if solveProblem
             %         case 'uniform'
             %             A(k) = - p/(4*D_rig*pi^4*n(k)^4*(3*(1/a^4+1/b^4)+2/(a^2*b^2)));
             %         case 'concentrated'
-            %             A(k) = - p/(D_rig*pi^4*n(k)^4*a*b*(3*(1/a^4+1/b^4)+2/(a^2*b^2)));
+            %             A(k) = - p*(1+(-1)^(n(k)+1))^2/(4*D_rig*pi^4*n(k)^4*a*b*(3*(1/a^4+1/b^4)+2/(a^2*b^2)));
             %     end
             %     fun_Uz = @(x) fun_Uz(x) + A(k) .* (1-cos(2*n(k)*pi*x(:,1)/a)) .* (1-cos(2*n(k)*pi*x(:,2)/b));
             %     fun_Rx = @(x) fun_Rx(x) + A(k) * 2*n(k)*pi/b .* (1-cos(2*n(k)*pi*x(:,1)/a)) .* sin(2*n(k)*pi*x(:,2)/b);

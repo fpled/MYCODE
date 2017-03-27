@@ -180,7 +180,7 @@ if solveProblem
     p_belt = RHO_beam*g*Sec_belt;
     switch lower(test)
         case {'stability1','stability2','stability3','stability4'}
-            p = 0; % pmin = 668;
+            p = 400; % pmin = 668;
         case {'statichori1','statichori2','statichori3','statichori4'}
             masse = 50;
             Sec_masse = pi*r_masse^2;
@@ -255,8 +255,9 @@ if solveProblem
             S = addcl(S,P_support([2 3]),'UZ'); % addcl(S,P_support([2 3]),'UZ',0);
         case 'staticvert'
             S = addcl(S,P_support,'U'); % addcl(S,P_support,'U',0);
-        case {'fatigue1','fatigue2','fatigue3','fatigue4',...
-                'impact','drop'}
+        case {'fatigue1','fatigue2','fatigue3','fatigue4'}
+            S = addcl(S,P_support); % addcl(S,P_support,{'U','R'},0);
+        case {'impact','drop'}
             S = addcl(S,P_support); % addcl(S,P_support,{'U','R'},0);
     end
     
@@ -454,16 +455,9 @@ if displaySolution
     mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
-    switch lower(test)
-        case {'stability1','stability2','stability3','stability4',...
-                'statichori1','statichori2','statichori3','statichori4',...
-                'staticvert',...
-                'fatigue1','fatigue2','fatigue3','fatigue4',...
-                'impact','drop'}
-            ampl = 5;
-    end
+    ampl = 5;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
-    % legend([hD,hN],[legD,legN])
+    legend([hD,hN],[legD,legN])
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true,'legend',false);

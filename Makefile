@@ -13,7 +13,7 @@ Dir_qsub = /usr/local/pbs/default/bin
 Cluster_Name = cluster
 # Problem name
 #Pb_Name = multiscaleDetLinDiffForm
-#Pb_Name = multiscaleDetLinDiff
+Pb_Name = multiscaleDetLinDiff
 #Pb_Name = multiscaleDetLinDiffCircHoles
 #Pb_Name = multiscaleDetLinElas
 #Pb_Name = multiscaleDetLinElasCircHoles
@@ -54,7 +54,9 @@ Cluster_Name = cluster
 #Pb_Name = tableCircDetLinElas
 #Pb_Name = tableRectDetLinElas
 #Pb_Name = FCBATableCircDetLinElas
-Pb_Name = FCBATableCircStoLinElas
+#Pb_Name = FCBATableCircStoLinElas
+#Pb_Name = FCBADeskDetLinElas
+#Pb_Name = FCBADeskStoLinElas
 
 # Default ---------------------------
 default:
@@ -120,6 +122,8 @@ plate:
 	matlab -nodesktop -nosplash -noFigureWindows -r "tableRectDetLinElas; exit" -logfile results/plate/tableRectDetLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBATableCircDetLinElas; exit" -logfile results/plate/FCBATableCircDetLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBATableCircStoLinElas; exit" -logfile results/plate/FCBATableCircStoLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskDetLinElas; exit" -logfile results/plate/FCBADeskDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskStoLinElas; exit" -logfile results/plate/FCBADeskStoLinElas.log
 
 # Clean ---------------------------
 clean:
