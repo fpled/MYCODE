@@ -9,7 +9,7 @@ close all
 %% Input data
 solveProblem = true;
 displaySolution = false;
-displayCv = true;
+displayCv = false;
 
 % boundaries = {'SimplySupported'};
 % boundaries = {'Clamped'};
