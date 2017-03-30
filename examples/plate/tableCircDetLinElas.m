@@ -10,17 +10,17 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-loadings = {'Uniform'};
+% loadings = {'Uniform'};
 % loadings = {'Concentrated'};
-% loadings = {'Uniform','Concentrated'};
-elemtypes = {'DKT'};
+loadings = {'Uniform','Concentrated'};
+% elemtypes = {'DKT'};
 % elemtypes = {'DKQ'};
 % elemtypes = {'DST'};
 % elemtypes = {'DSQ'};
 % elemtypes = {'COQ4'};
 % elemtypes = {'DKT','DKQ'}; % Kirchhoff-Love (classical) plate theory
 % elemtypes = {'DST','DSQ','COQ4'}; % Reissner-Mindlin (first-order shear) plate theory
-% elemtypes = {'DKT','DKQ','DST','DSQ','COQ4'}; % Both plate theories
+elemtypes = {'DKT','DKQ','DST','DSQ','COQ4'}; % Both plate theories
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';

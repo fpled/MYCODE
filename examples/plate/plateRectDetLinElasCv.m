@@ -23,7 +23,7 @@ elemtypes = {'DKT','DKQ'}; % Kirchhoff-Love (classical) plate theory
 % meshtypes = {'Structured'};
 % meshtypes = {'Unstructured'};
 meshtypes = {'Structured','Unstructured'};
-nbelems = 2.^(1:6);
+nbelems = 2.^(1:10);
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
