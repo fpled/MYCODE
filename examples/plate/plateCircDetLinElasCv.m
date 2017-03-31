@@ -29,7 +29,7 @@ loadings = {'Uniform','Concentrated'};
 % elemtypes = {'DKT','DKQ'}; % Kirchhoff-Love (classical) plate theory
 % elemtypes = {'DST','DSQ','COQ4'}; % Reissner-Mindlin (first-order shear) plate theory
 elemtypes = {'DKT','DKQ','DST','DSQ','COQ4'}; % Both plate theories
-nbelems = 2.^(1:10);
+nbelems = 2.^(1:9);
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
@@ -39,6 +39,7 @@ for ib=1:length(boundaries)
     
 for il=1:length(loadings)
     loading = loadings{il};
+    clear all
     filename = ['plateCircDetLinElas' boundary loading];
     if displayCv
         hcvUz = figure('Name','Evolution of error indicator for Uz w.r.t number of elements');
