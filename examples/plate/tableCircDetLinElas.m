@@ -64,7 +64,7 @@ if solveProblem
         case 'concentrated'
             points = {x_beam,x_load};
     end
-    S_plate = build_model(C,'cl',cl_plate,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],'points',points);
+    S_plate = build_model(C,'cl',cl_plate,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype '_cl_' num2str(cl_plate)],'points',points);
     
     % Beam mesh
     nbelem_beam = 10;

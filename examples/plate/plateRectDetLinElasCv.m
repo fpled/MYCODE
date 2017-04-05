@@ -85,9 +85,9 @@ if solveProblem
             cl = min(a,b)./nbelems(i);
             switch lower(loading)
                 case 'uniform'
-                    S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_rect_' elemtype  '_cl_' num2str(cl)]);
+                    S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_rect_' elemtype '_cl_' num2str(cl)]);
                 case 'concentrated'
-                    S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_rect_' elemtype  '_cl_' num2str(cl)],'points',x_load);
+                    S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_rect_' elemtype '_cl_' num2str(cl)],'points',x_load);
             end
     end
     
@@ -267,7 +267,7 @@ if solveProblem
     err_ry = norm(ry-ry_ex)/norm(ry_ex);
     
     %% Save variables
-    save(fullfile(pathname,['problem_' num2str(i) '.mat']),'S','Q','a','b','h','f');
+    save(fullfile(pathname,['problem_' num2str(i) '.mat']),'S','Q','a','b','h','f','-v7.3');
     save(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','time_i',...
         'U','Ux','Uy','Uz',...
         'R','Rx','Ry','Rz');

@@ -11,7 +11,6 @@ myparallel('start');
 %% Input data
 solveProblem = true;
 displaySolution = true;
-displayCv = true;
 
 % test = 'Stability1'; % stability test under vertical load 1
 % test = 'Stability2'; % stability test under vertical load 2
@@ -21,8 +20,8 @@ displayCv = true;
 % test = 'StaticHori2'; % test under static horizontal load 2
 % test = 'StaticHori3'; % test under static horizontal load 3
 % test = 'StaticHori4'; % test under static horizontal load 4
-test = 'StaticVert'; % test under static vertical load
-% test = 'Fatigue1'; % fatigue test under horizontal load 1
+% test = 'StaticVert'; % test under static vertical load
+test = 'Fatigue1'; % fatigue test under horizontal load 1
 % test = 'Fatigue2'; % fatigue test under horizontal load 2
 % test = 'Fatigue3'; % fatigue test under horizontal load 3
 % test = 'Fatigue4'; % fatigue test under horizontal load 4
@@ -101,9 +100,9 @@ if solveProblem
     Pe = x_load_stab;
     Pi = double(getcoord(getcenter(C)));
     if ~strcmp(elemtype,'QUA4') && ~strcmp(elemtype,'CUB8') && ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4') && ~strcmp(elemtype,'STOKES')
-        S_plate = gmshFCBAtablecirc(C,Q_belt,C_masse,Pb,Pe,[],Pi,cl_plate,cl_belt,cl_plate,cl_plate,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],3);
+        S_plate = gmshFCBAtablecirc(C,Q_belt,C_masse,Pb,Pe,[],Pi,cl_plate,cl_belt,cl_plate,cl_plate,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype '_cl_' num2str(cl_plate)],3);
     else
-        S_plate = gmshFCBAtablecirc(C,Q_belt,C_masse,Pb,Pe,[],Pi,cl_plate,cl_belt,cl_plate,cl_plate,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype  '_cl_' num2str(cl_plate)],3,'recombine');
+        S_plate = gmshFCBAtablecirc(C,Q_belt,C_masse,Pb,Pe,[],Pi,cl_plate,cl_belt,cl_plate,cl_plate,cl_plate,cl_plate,cl_plate,[pathname 'gmsh_plate_circ_' elemtype '_cl_' num2str(cl_plate)],3,'recombine');
     end
     S_plate = convertelem(S_plate,elemtype);
     
