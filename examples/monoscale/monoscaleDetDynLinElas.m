@@ -132,6 +132,9 @@ if displaySolution
         evolSolution(pb.S,ut,'epsilon',i,'filename',['evol_eps_' num2str(i)],'pathname',pathname);
         evolSolution(pb.S,ut,'sigma',i,'filename',['evol_sig_' num2str(i)],'pathname',pathname);
     end
+    
+    evolSolution(pb.S,ut,'epsilon','mises','filename','evol_eps_von_mises','pathname',pathname);
+    evolSolution(pb.S,ut,'sigma','mises','filename','evol_sig_von_mises','pathname',pathname);
 end
 
 % myparallel('stop');

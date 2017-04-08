@@ -30,7 +30,7 @@ if setProblem
     elemtype = 'QUA4';
     option = 'DEFO'; % plane strain
     % option = 'CONT'; % plane stress
-    nbelem = [3,3];
+    nbelem = [50,50];
     S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
     % cl = 0.05;
     % S = build_model(D,'cl',cl,'elemtype',elemtype,'option',option,'filename',[pathname 'gmsh_domain']);
@@ -175,6 +175,12 @@ if displaySolution
         plotSolution(S,u,'sigma',i,'ampl',ampl);
         mysaveas(pathname,['sig_' num2str(i)],formats,renderer);
     end
+    
+    plotSolution(S,u,'epsilon','mises','ampl',ampl);
+    mysaveas(pathname,'eps_von_mises',formats,renderer);
+    
+    plotSolution(S,u,'sigma','mises','ampl',ampl);
+    mysaveas(pathname,'sig_von_mises',formats,renderer);
     
     % u = unfreevector(S,u);
     %
