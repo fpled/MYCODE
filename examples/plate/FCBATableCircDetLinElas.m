@@ -208,57 +208,57 @@ if solveProblem
     S = final(S);
     switch lower(test)
         case 'stability1'
-            S = addcl(S,P_support(4)); % addcl(S,P_support(4),{'U','R'},0);
-            S = addcl(S,P_support(1),'U'); % addcl(S,P_support(1),'U',0);
+            S = addcl(S,P_support(4)); % S = addcl(S,P_support(4),{'U','R'},0);
+            S = addcl(S,P_support(1),'U'); % S = addcl(S,P_support(1),'U',0);
             pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-a/2),a/2,r,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2-x),0,a/2,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
                 +p_belt*a*(a+b)+2*p_beam*a*l)/(-x_load_stab{1}(1)-a/2);
             if p < pmin % no lifting
-                S = addcl(S,P_support([2 3]),'UZ'); % addcl(S,P_support([2 3]),'UZ',0);
+                S = addcl(S,P_support([2 3]),'UZ'); % S = addcl(S,P_support([2 3]),'UZ',0);
             end
         case 'stability2'
-            S = addcl(S,P_support(1)); % addcl(S,P_support(4),{'U','R'},0);
-            S = addcl(S,P_support(2),'U'); % addcl(S,P_support(1),'U',0);
+            S = addcl(S,P_support(1)); % S = addcl(S,P_support(4),{'U','R'},0);
+            S = addcl(S,P_support(2),'U'); % S = addcl(S,P_support(1),'U',0);
             pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-b/2),b/2,r,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2-x),0,b/2,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
                 +p_belt*b*(b+a)+2*p_beam*b*l)/(-x_load_stab{2}(2)-b/2);
             if p < pmin % no lifting
-                S = addcl(S,P_support([3 4]),'UZ'); % addcl(S,P_support([3 4]),'UZ',0);
+                S = addcl(S,P_support([3 4]),'UZ'); % S = addcl(S,P_support([3 4]),'UZ',0);
             end
         case 'stability3'
-            S = addcl(S,P_support(2)); % addcl(S,P_support(4),{'U','R'},0);
-            S = addcl(S,P_support(3),'U'); % addcl(S,P_support(1),'U',0);
+            S = addcl(S,P_support(2)); % S = addcl(S,P_support(4),{'U','R'},0);
+            S = addcl(S,P_support(3),'U'); % S = addcl(S,P_support(1),'U',0);
             pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-a/2),a/2,r,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2-x),0,a/2,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
                 +p_belt*a*(a+b)+2*p_beam*a*l)/(x_load_stab{3}(1)-a/2);
             if p < pmin % no lifting
-                S = addcl(S,P_support([1 4]),'UZ'); % addcl(S,P_support([1 4]),'UZ',0);
+                S = addcl(S,P_support([1 4]),'UZ'); % S = addcl(S,P_support([1 4]),'UZ',0);
             end
         case 'stability4'
-            S = addcl(S,P_support(3)); % addcl(S,P_support(4),{'U','R'},0);
-            S = addcl(S,P_support(4),'U'); % addcl(S,P_support(1),'U',0);
+            S = addcl(S,P_support(3)); % S = addcl(S,P_support(4),{'U','R'},0);
+            S = addcl(S,P_support(4),'U'); % S = addcl(S,P_support(1),'U',0);
             pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-b/2),b/2,r,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2-x),0,b/2,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
                 +p_belt*b*(b+a)+2*p_beam*b*l)/(x_load_stab{4}(2)-b/2);
             if p < pmin % no lifting
-                S = addcl(S,P_support([1 2]),'UZ'); % addcl(S,P_support([1 2]),'UZ',0);
+                S = addcl(S,P_support([1 2]),'UZ'); % S = addcl(S,P_support([1 2]),'UZ',0);
             end
         case {'statichori1','statichori2'}
-            S = addcl(S,P_support([3 4])); % addcl(S,P_support([3 4]),{'U','R'},0);
-            S = addcl(S,P_support([1 2]),'UZ'); % addcl(S,P_support([1 2]),'UZ',0);
+            S = addcl(S,P_support([3 4])); % S = addcl(S,P_support([3 4]),{'U','R'},0);
+            S = addcl(S,P_support([1 2]),'UZ'); % S = addcl(S,P_support([1 2]),'UZ',0);
         case {'statichori3','statichori4'}
-            S = addcl(S,P_support([4 1])); % addcl(S,P_support([4 1]),{'U','R'},0);
-            S = addcl(S,P_support([2 3]),'UZ'); % addcl(S,P_support([2 3]),'UZ',0);
+            S = addcl(S,P_support([4 1])); % S = addcl(S,P_support([4 1]),{'U','R'},0);
+            S = addcl(S,P_support([2 3]),'UZ'); % S = addcl(S,P_support([2 3]),'UZ',0);
         case 'staticvert'
-            S = addcl(S,P_support,'U'); % addcl(S,P_support,'U',0);
+            S = addcl(S,P_support,'U'); % S = addcl(S,P_support,'U',0);
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-            S = addcl(S,P_support); % addcl(S,P_support,{'U','R'},0);
+            S = addcl(S,P_support); % S = addcl(S,P_support,{'U','R'},0);
         case {'impact','drop'}
-            S = addcl(S,P_support); % addcl(S,P_support,{'U','R'},0);
+            S = addcl(S,P_support); % S = addcl(S,P_support,{'U','R'},0);
     end
     
     %% Stiffness matrices and sollicitation vectors

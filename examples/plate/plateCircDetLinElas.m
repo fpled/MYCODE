@@ -88,12 +88,28 @@ if solveProblem
     S = setmaterial(S,mat);
     
     %% Dirichlet boundary conditions
+    x_support = cellfun(@(x) x',getvertices(C),'UniformOutput',false);
+    x_support = [x_support{:}]';
+    P_support = POINT(x_support);
+    
     S = final(S);
     switch lower(boundary)
         case 'clamped'
-            S = addcl(S,[]); % addcl(S,[],{'U','R'},0);
+            % No locking
+            % S = addcl(S,[]); % S = addcl(S,[],{'U','R'},0);
+            % Shear locking for element COQ4
+            % S = addcl(S,P_support(:));
+            % Partial shear locking for element COQ4
+            S = addcl(S,getfacet(S,2),'U');
+            S = addcl(S,P_support([1 4]),'U');
         case 'simplysupported'
-            S = addcl(S,[],'U'); % S = addcl(S,[],{'UX','UY','UZ'},0);
+            % No locking
+            % S = addcl(S,[],'U'); % S = addcl(S,[],{'UX','UY','UZ'},0);
+            % Shear locking for element COQ4
+            % S = addcl(S,P_support(:),'U');
+            % Partial shear locking for element COQ4
+            S = addcl(S,getfacet(S,2),'U');
+            S = addcl(S,P_support([1 4]),'U');
     end
     % S = addcl(S,[],'R'); % S = addcl(S,[],{'RX','RY','RZ'},0);
     
