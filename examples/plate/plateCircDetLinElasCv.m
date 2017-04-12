@@ -56,9 +56,8 @@ for il=1:length(loadings)
     
 for ie=1:length(elemtypes)
     elemtype = elemtypes{ie};
-    pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-        'results',filesep,'plate',filesep,filename,filesep,...
-        elemtype,filesep);
+    pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+        'results','plate',filename,elemtype);
     if ~exist(pathname,'dir')
         mkdir(pathname);
     end
@@ -461,8 +460,8 @@ end
 end
 
 if displayCv
-    pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-        'results',filesep,'plate',filesep,filename,filesep);
+    pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+        'results','plate',filename);
     
     figure(hcvUz)
     grid on

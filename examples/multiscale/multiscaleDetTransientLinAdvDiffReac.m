@@ -16,8 +16,8 @@ displaySolution = true;
 
 n = 3; % number of patches
 filename = ['transientLinAdvDiffReac' num2str(n) 'Patches'];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-    'results',filesep,'multiscaleDet',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'results','multiscaleDet',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

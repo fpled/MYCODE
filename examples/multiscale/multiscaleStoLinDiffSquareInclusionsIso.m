@@ -16,8 +16,8 @@ displaySolution = true;
 
 n = 8; % number of inclusions n = 8
 filename = ['linDiff' num2str(n) 'SquareInclusionsIso'];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-    'results',filesep,'multiscaleSto',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'results','multiscaleSto',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

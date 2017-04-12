@@ -15,8 +15,8 @@ displaySolution = true;
 testSolution = true;
 
 filename = 'nonlinDiffReac';
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-        'results',filesep,'monoscaleSto',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+        'results','monoscaleSto',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

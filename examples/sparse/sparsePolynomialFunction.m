@@ -10,8 +10,8 @@ close all
 
 %% Input data
 filename = 'polynomialFunction';
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-    'results',filesep,'sparse',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'results','sparse',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

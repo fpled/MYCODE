@@ -13,8 +13,8 @@ myparallel('start');
 displayCv = true;
 
 filename = 'nonparamtricModel';
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-    'results',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'results',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

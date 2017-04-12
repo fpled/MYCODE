@@ -16,8 +16,8 @@ displaySolution = true;
 n = 4; % number of holes n = 1, 2, 4
 loading = 'Pull'; % 'Pull' or 'Shear'
 filename = ['linElas' num2str(n) 'CircHoles'];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-    'results',filesep,'multiscaleDet',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'results','multiscaleDet',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

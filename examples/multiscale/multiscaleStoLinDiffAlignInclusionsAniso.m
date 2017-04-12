@@ -16,8 +16,8 @@ displaySolution = true;
 
 n = 8; % number of inclusions
 filename = ['linDiff' num2str(n) 'AlignInclusionsAniso'];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-    'results',filesep,'multiscaleSto',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'results','multiscaleSto',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

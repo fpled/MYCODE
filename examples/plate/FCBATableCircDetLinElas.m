@@ -32,8 +32,8 @@ formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
 filename = ['FCBATableCircDetLinElas' test];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-    'results',filesep,'plate',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'results','plate',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

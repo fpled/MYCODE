@@ -51,9 +51,8 @@ for ie=1:length(elemtypes)
     
 for im=1:length(meshtypes)
     meshtype = meshtypes{im};
-    pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-        'results',filesep,'plate',filesep,filename,filesep,...
-        [elemtype meshtype],filesep);
+    pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+        'results','plate',filename,[elemtype meshtype]);
     if ~exist(pathname,'dir')
         mkdir(pathname);
     end
@@ -422,8 +421,8 @@ end
 end
 
 if displayCv
-    pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-        'results',filesep,'plate',filesep,filename,filesep);
+    pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+        'results','plate',filename);
     
     figure(hcvUz)
     grid on

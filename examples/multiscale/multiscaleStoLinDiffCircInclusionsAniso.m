@@ -17,8 +17,8 @@ displaySolution = true;
 
 n = 4; % number of inclusions n = 4
 filename = ['linDiff' num2str(n) 'CircInclusionsAniso'];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-    'results',filesep,'multiscaleSto',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'results','multiscaleSto',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

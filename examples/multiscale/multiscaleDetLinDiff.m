@@ -15,8 +15,8 @@ displaySolution = true;
 
 n = 4; % number of patches n = 1, 2, 4
 filename = ['linDiff' num2str(n) 'Patches'];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-    'results',filesep,'multiscaleDet',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'results','multiscaleDet',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

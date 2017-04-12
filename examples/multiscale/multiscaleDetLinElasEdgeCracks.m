@@ -16,8 +16,8 @@ displaySolution = true;
 n = 1; % number of cracks n = 1
 loading = 'Pull'; % 'Pull' or 'Shear'
 filename = ['linElas' num2str(n) 'EdgeCracks' loading];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-    'results',filesep,'multiscaleDet',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'results','multiscaleDet',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

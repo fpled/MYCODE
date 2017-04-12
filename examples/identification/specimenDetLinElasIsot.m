@@ -12,8 +12,8 @@ solveProblem = true;
 displaySolution = true;
 
 filename = 'specimenDetLinElasIsot';
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-    'results',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'results',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

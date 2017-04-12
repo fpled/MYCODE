@@ -14,8 +14,8 @@ solveProblem = true;
 displaySolution = true;
 
 filename = 'transientLinAdvDiffReac';
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-    'results',filesep,'monoscaleDet',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'results','monoscaleDet',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

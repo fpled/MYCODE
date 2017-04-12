@@ -9,8 +9,8 @@ close all
 
 %% Input data
 filename = 'modelStoYoung';
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',filesep,...
-    'results',filesep,'plate',filesep,filename,filesep);
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'results','plate',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
