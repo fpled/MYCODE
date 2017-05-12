@@ -85,10 +85,6 @@ if solveProblem
     RHO = 1;
     % Thickness
     h = 0.1;
-    % Extensional stiffness (or Membrane rigidity)
-    A_rig = E*h/(1-NU^2);
-    % Bending stiffness (or Flexural rigidity)
-    D_rig = E*h^3/(12*(1-NU^2));
     % Material
     mat_plate = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
     mat_plate = setnumber(mat_plate,1);

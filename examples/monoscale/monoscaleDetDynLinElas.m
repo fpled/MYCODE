@@ -66,8 +66,8 @@ if setProblem
     nt = 50;
     T = TIMEMODEL(t0,t1,nt);
     
-    % pb.N = NEWMARKSOLVER(T,'alpha',0.05,'display',false);
-    pb.N = DGTIMESOLVER(T,1,'outputsplit',true,'display',false,'lu',true);
+    pb.N = NEWMARKSOLVER(T,'alpha',0.05,'display',false);
+    % pb.N = DGTIMESOLVER(T,1,'outputsplit',true,'display',false,'lu',true);
     
     %% Mass, stiffness and damping matrices and sollicitation vectors
     pb.M = calc_mass(pb.S);
@@ -88,7 +88,7 @@ end
 %% Solution
 if solveProblem
     t = tic;
-    [ut,result,vt] = ddsolve(pb.N,pb.f,pb.M,pb.K,[],pb.u0,pb.v0);
+    [ut,result,vt,at] = ddsolve(pb.N,pb.f,pb.M,pb.K,[],pb.u0,pb.v0);
     time = toc(t);
     
     et = calc_epsilon(pb.S,ut);
@@ -126,6 +126,7 @@ if displaySolution
     for i=1:2
         evolSolution(pb.S,ut,'displ',i,'filename',['evol_u_' num2str(i)],'pathname',pathname);
         evolSolution(pb.S,vt,'displ',i,'filename',['evol_v_' num2str(i)],'pathname',pathname);
+        evolSolution(pb.S,at,'displ',i,'filename',['evol_a_' num2str(i)],'pathname',pathname);
     end
     
     for i=1:3

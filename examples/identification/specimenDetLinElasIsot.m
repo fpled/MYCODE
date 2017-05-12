@@ -23,13 +23,13 @@ renderer = 'OpenGL';
 %% Problem
 if setProblem
     %% Domains and meshes
-    L = 1;
+    L = 1e-2;
     D = DOMAIN(2,[0.0,0.0],[L,L]);
     
     % elemtype = 'TRI3';
     elemtype = 'QUA4';
-    option = 'DEFO'; % plane strain
-    % option = 'CONT'; % plane stress
+    % option = 'DEFO'; % plane strain
+    option = 'CONT'; % plane stress
     nbelem = [50,50];
     S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
     % cl = 0.05;
@@ -37,13 +37,13 @@ if setProblem
     
     %% Materials
     % Poisson ratio
-    NU = 0.3;
+    NU = 0.34;
     % Thickness
     DIM3 = 1;
     % Density
     RHO = 1;
     % Young modulus
-    E = 1;
+    E = 12e9;
     
     % Material
     mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3);
@@ -59,9 +59,9 @@ if setProblem
     
     % loading = 'Dirichlet'; % Imposed displacement
     loading = 'Neumann'; % Traction force density
-    % degree = 'cst'; % constant loading
+    degree = 'cst'; % constant loading
     % degree = 'lin'; % linear loading
-    degree = 'qua'; % quadratic loading
+    % degree = 'qua'; % quadratic loading
     if strcmpi(loading,'dirichlet')
         udmax = -1e-2;
         switch lower(degree)
@@ -79,7 +79,7 @@ if setProblem
     switch lower(loading)
         case 'neumann'
             A = calc_rigi(S);
-            fmax = -1;
+            fmax = -5e3/L^2;
             switch lower(degree)
                 case 'cst'
                     f = fmax;
@@ -160,8 +160,8 @@ if displaySolution
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display solution
-    % ampl = 0;
-    ampl = getsize(S)/max(abs(u))/5;
+    ampl = 0;
+    % ampl = getsize(S)/max(abs(u))/5;
     
     for i=1:2
         plotSolution(S,u,'displ',i,'ampl',ampl);

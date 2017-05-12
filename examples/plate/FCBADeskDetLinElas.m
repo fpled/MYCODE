@@ -143,17 +143,13 @@ if solveProblem
     
     % Plate
     % Young modulus
-    E = 2.9914e9;
+    E = 4.1e9;
     % Poisson ratio
-    NU = 0.3;
+    NU = 0.25;
     % Density
     Mass_plates_total = 13.9; % kg
     Volum_plates_total = h*(a12*b12*2+a3*b3+a5*b5*2);
     RHO = Mass_plates_total/(Volum_plates_total);
-    % Extensional stiffness (or Membrane rigidity)
-    A_rig = E*h/(1-NU^2);
-    % Bending stiffness (or Flexural rigidity)
-    D_rig = E*h^3/(12*(1-NU^2));
     % Material
     mat_plate = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
     mat_plate = setnumber(mat_plate,1);
@@ -394,8 +390,29 @@ if displaySolution
     options = {'solid',true};
     % options = {};
     
-    plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
-    mysaveas(pathname,'Uz',formats,renderer);
+    switch lower(test)
+        case 'stability'
+            plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
+            mysaveas(pathname,'Uz',formats,renderer);
+        case {'statichori1','statichori2','statichori3','statichori4'}
+            plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
+            mysaveas(pathname,'Ux',formats,renderer);
+        case 'staticvert'
+            plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
+            mysaveas(pathname,'Uz',formats,renderer);
+        case {'fatigue1','fatigue2'}
+            plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
+            mysaveas(pathname,'Ux',formats,renderer);
+        case {'fatigue3','fatigue4'}
+            plotSolution(S,u,'displ',2,'ampl',ampl,options{:});
+            mysaveas(pathname,'Uy',formats,renderer);
+        case 'impact'
+            plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
+            mysaveas(pathname,'Uz',formats,renderer);
+        case 'drop'
+            plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
+            mysaveas(pathname,'Uz',formats,renderer);
+    end
     
     % plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
     % mysaveas(pathname,'Rx',formats,renderer);

@@ -90,9 +90,9 @@ if setProblem
     nt = 100;
     T = TIMEMODEL(t0,t1,nt);
     
-    % pb.N = EULERTIMESOLVER(T,'eulertype','explicit','display',false);
-    % pb.N = EULERTIMESOLVER(T,'eulertype','implicit','display',false);
-    pb.N = DGTIMESOLVER(T,1,'outputsplit',true,'display',false,'lu',true);
+    % pb.N = EULERTIMESOLVER(T,'eulertype','explicit','display',true);
+    pb.N = EULERTIMESOLVER(T,'eulertype','implicit','display',true);
+    % pb.N = DGTIMESOLVER(T,1,'outputsplit',true,'display',true,'lu',true);
     
     %% Mass and stifness matrices and sollicitation vectors
     pb.M = calc_mass(pb.S);
@@ -113,13 +113,14 @@ if solveProblem
     
     % Dynamic solution
     t = tic;
-    [ut,result] = dsolve(pb.N,pb.f,pb.M,pb.K);
+    [ut,result,vt] = dsolve(pb.N,pb.f,pb.M,pb.K);
     ut = unfreevector(pb.S,ut);
+    vt = unfreevector(pb.S,vt);
     time = toc(t);
     
-    save(fullfile(pathname,'solution.mat'),'u','ut','result','time');
+    save(fullfile(pathname,'solution.mat'),'u','ut','result','vt','time');
 else
-    load(fullfile(pathname,'solution.mat'),'u','ut','result','time');
+    load(fullfile(pathname,'solution.mat'),'u','ut','result','vt','time');
 end
 
 %% Outputs
@@ -172,6 +173,7 @@ if displaySolution
     
     %% Display evolution of solution
     evolSolution(pb.S,ut,'filename','evol_u','pathname',pathname);
+    evolSolution(pb.S,vt,'rescale',false,'filename','evol_v','pathname',pathname);
     for i=1:2
         evolSolution(pb.S,ut,'epsilon',i,'filename',['evol_eps_' num2str(i)],'pathname',pathname);
         evolSolution(pb.S,ut,'sigma',i,'filename',['evol_sig_' num2str(i)],'pathname',pathname);
