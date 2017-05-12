@@ -4,10 +4,10 @@
 % clc
 clear all
 close all
-% rng('default')
+% set(0,'DefaultFigureVisible','off');
+% rng('default');
 
 %% Experimental values
-
 E_exp = 11.55;
 nu_exp = 0.4;
 x_exp = [E_exp nu_exp];
@@ -18,7 +18,6 @@ fprintf('E_exp  = %g GPa\n',x_exp(1));
 fprintf('nu_exp = %g\n',x_exp(2));
 
 %% Identification
-
 E0 = 10;
 nu0 = 0.2;
 x0 = [E0 nu0];
