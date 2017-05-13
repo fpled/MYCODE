@@ -11,6 +11,7 @@ myparallel('start');
 %% Input data
 solveProblem = true;
 displaySolution = true;
+displayCv = true;
 
 % test = 'Stability1'; % stability test under vertical load 1
 % test = 'Stability2'; % stability test under vertical load 2

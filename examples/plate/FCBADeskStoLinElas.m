@@ -11,6 +11,7 @@ myparallel('start');
 %% Input data
 solveProblem = true;
 displaySolution = true;
+displayCv = true;
 
 % test = 'Stability'; % stability test under vertical load
 % test = 'StaticHori1'; % test under static horizontal load 1
@@ -502,6 +503,7 @@ if displaySolution
     % plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
     % mysaveas(pathname,'Ry',formats,renderer);
 end
+
 %% Display convergence Monte-Carlo
 if displayCv
     means_u = arrayfun(@(x) norm(mean(u(:,1:x),2)),1:N);
