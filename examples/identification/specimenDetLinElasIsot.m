@@ -33,7 +33,7 @@ if setProblem
     nbelem = [50,50];
     S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
     % cl = 0.05;
-    % S = build_model(D,'cl',cl,'elemtype',elemtype,'option',option,'filename',[pathname 'gmsh_domain']);
+    % S = build_model(D,'cl',cl,'elemtype',elemtype,'option',option,'filename',fullfile(pathname,'gmsh_domain'));
     
     %% Materials
     % Poisson ratio

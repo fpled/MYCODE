@@ -31,7 +31,7 @@ if setProblem
     nbelem = [20,20];
     pb.S = build_model(D,'nbelem',nbelem);
     % cl = 0.05;
-    % pb.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
+    % pb.S = build_model(D,'cl',cl,'filename',fullfile(pathname,'gmsh_domain'));
     
     %% Random variables
     d = 1; % parametric dimension

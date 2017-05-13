@@ -42,7 +42,7 @@ if setProblem
     B{9} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
     
     cl = 0.02;
-    pb.S = gmshdomainwithinclusion(D,B,cl,cl,[pathname 'gmsh_circular_inclusions']);
+    pb.S = gmshdomainwithinclusion(D,B,cl,cl,fullfile(pathname,'gmsh_circular_inclusions'));
     
     %% Random variables
     d = 4; % parametric dimension

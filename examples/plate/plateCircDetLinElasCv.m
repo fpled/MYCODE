@@ -13,7 +13,7 @@ close all
 %% Input data
 solveProblem = true;
 displaySolution = false;
-displayCv = false;
+displayCv = true;
 
 % boundaries = {'SimplySupported'};
 % boundaries = {'Clamped'};
@@ -29,7 +29,7 @@ loadings = {'Uniform','Concentrated'};
 % elemtypes = {'DKT','DKQ'}; % Kirchhoff-Love (classical) plate theory
 % elemtypes = {'DST','DSQ','COQ4'}; % Reissner-Mindlin (first-order shear) plate theory
 elemtypes = {'DKT','DKQ','DST','DSQ','COQ4'}; % Both plate theories
-nbelems = 2.^(1:9);
+nbelems = 2.^(1:6);
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
@@ -83,9 +83,9 @@ if solveProblem
     cl = r./nbelems(i);
     switch lower(loading)
         case 'uniform'
-            S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype '_cl_' num2str(cl)]);
+            S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_circ_' elemtype '_cl_' num2str(cl)]));
         case 'concentrated'
-            S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype '_cl_' num2str(cl)],'points',x_load);
+            S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_circ_' elemtype '_cl_' num2str(cl)]),'points',x_load);
     end
     
     %% Materials

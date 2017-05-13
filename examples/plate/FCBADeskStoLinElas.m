@@ -113,13 +113,13 @@ if solveProblem
     vertices_S1 = getvertices(S1);
     PbQ_S1 = {vertices_S1{1},[x23_S5b,y_S5b,z12_S5b],vertices_S1{2},vertices_S1{3},vertices_S1{4}};
     PL_S1 = {[x23_S5a,y_S5a,z12_S5a],[x23_S5a,y_S5a,z34_S5a],[x23_S5b,y_S5b,z34_S5b]};
-    S1_plate = gmshFCBAdesk12(S1,PL_S1,PbQ_S1,cl_plate12,cl_plate5,cl_plate12,[pathname 'gmsh_desk_1_' elemtype '_cl_' num2str(cl_plate12)],3);
+    S1_plate = gmshFCBAdesk12(S1,PL_S1,PbQ_S1,cl_plate12,cl_plate5,cl_plate12,fullfile(pathname,['gmsh_desk_1_' elemtype '_cl_' num2str(cl_plate12)]),3);
     S1_plate = convertelem(S1_plate,elemtype);
     %
     vertices_S2 = getvertices(S2);
     PbQ_S2 = {vertices_S2{1},[x14_S5b,y_S5b,z12_S5b],vertices_S2{2},vertices_S2{3},vertices_S2{4}};
     PL_S2 = {[x14_S5a,y_S5a,z12_S5a],[x14_S5a,y_S5a,z34_S5a],[x14_S5b,y_S5b,z34_S5b]};
-    S2_plate = gmshFCBAdesk12(S2,PL_S2,PbQ_S2,cl_plate12,cl_plate5,cl_plate12,[pathname 'gmsh_desk_2_' elemtype '_cl_' num2str(cl_plate12)],3);
+    S2_plate = gmshFCBAdesk12(S2,PL_S2,PbQ_S2,cl_plate12,cl_plate5,cl_plate12,fullfile(pathname,['gmsh_desk_2_' elemtype '_cl_' num2str(cl_plate12)]),3);
     S2_plate = convertelem(S2_plate,elemtype);
     %
     vertices_S3 = getvertices(S3);
@@ -130,13 +130,13 @@ if solveProblem
     PL_S3 = {[x_S1,y23_S1,z34_S1],[x_S1,y14_S1,z34_S1],[x_S2,y23_S2,z34_S2],[x_S2,y14_S2,z34_S2]};
     PiQeI = x_load_stab;
     PiI = double(getcoord(getcenter(C_masse)));
-    S3_plate = gmshFCBAdesk3(S3,C_masse,PL_S3,PbQ_S3,PiQeI,PiI,cl_plate3,cl_plate3,cl_plate12,cl_plate3,cl_plate3,cl_plate3,[pathname 'gmsh_desk_3_' elemtype '_cl_' num2str(cl_plate3)],3);
+    S3_plate = gmshFCBAdesk3(S3,C_masse,PL_S3,PbQ_S3,PiQeI,PiI,cl_plate3,cl_plate3,cl_plate12,cl_plate3,cl_plate3,cl_plate3,fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_plate3)]),3);
     S3_plate = convertelem(S3_plate,elemtype);
     %
-    S5a_plate = build_model(S5a,'cl',cl_plate5,'elemtype',elemtype,'filename',[pathname 'gmsh_desk_5a_' elemtype '_cl_' num2str(cl_plate5)]);
+    S5a_plate = build_model(S5a,'cl',cl_plate5,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_desk_5a_' elemtype '_cl_' num2str(cl_plate5)]));
     S5a_plate = convertelem(S5a_plate,elemtype);
     %
-    S5b_plate = build_model(S5b,'cl',cl_plate5,'elemtype',elemtype,'filename',[pathname 'gmsh_desk_5b_' elemtype '_cl_' num2str(cl_plate5)]);
+    S5b_plate = build_model(S5b,'cl',cl_plate5,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_desk_5b_' elemtype '_cl_' num2str(cl_plate5)]));
     S5b_plate = convertelem(S5b_plate,elemtype);
     
     %% Random variables

@@ -43,7 +43,7 @@ if setProblem
     cl2 = 0.04;
     cl0 = 0.02;
     cltip = 0.01;
-    glob.S = gmshcanistermulti(D_patch,cl1,cl2,cl0,cltip,cl1,[pathname 'gmsh_canister_multi']);
+    glob.S = gmshcanistermulti(D_patch,cl1,cl2,cl0,cltip,cl1,fullfile(pathname,'gmsh_canister_multi'));
     
     nbelem_patch = [20,20];
     for k=1:n
@@ -51,7 +51,7 @@ if setProblem
     end
     % cl_patch = 0.005;
     % for k=1:n
-    %     patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',[pathname 'gmsh_patch_' num2str(k)]);
+    %     patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',fullfile(pathname,['gmsh_patch_' num2str(k)]));
     % end
     
     % Partition of global mesh

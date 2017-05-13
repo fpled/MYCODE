@@ -35,7 +35,7 @@ if setProblem
     nbelem = [20,20];
     glob.S = build_model(D,'nbelem',nbelem);
     % cl = 0.05;
-    % glob.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
+    % glob.S = build_model(D,'cl',cl,'filename',fullfile(pathname,'gmsh_domain'));
     
     % Patches
     patches = Patches(n);
@@ -66,7 +66,7 @@ if setProblem
     cl_patch_D = 0.02;
     cl_patch_B = 0.002;
     for k=1:n
-        patches.patches{k}.S = gmshdomainwithhole(D_patch{k},B_patch{k},cl_patch_D,cl_patch_B,[pathname 'gmsh_patch_' num2str(k) '_circular_hole']);
+        patches.patches{k}.S = gmshdomainwithhole(D_patch{k},B_patch{k},cl_patch_D,cl_patch_B,fullfile(pathname,['gmsh_patch_' num2str(k) '_circular_hole']));
     end
     
     % Partition of global mesh

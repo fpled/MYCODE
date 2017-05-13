@@ -38,7 +38,7 @@ if setProblem
     nbelem = [20,20];
     glob.S = build_model(D,'nbelem',nbelem,'option',option);
     % cl = 0.05;
-    % glob.S = build_model(D,'cl',cl,'option',option,'filename',[pathname 'gmsh_domain']);
+    % glob.S = build_model(D,'cl',cl,'option',option,'filename',fullfile(pathname,'gmsh_domain'));
     
     % Patches
     patches = Patches(n);
@@ -70,7 +70,7 @@ if setProblem
     cl_patch_D = 0.02;
     cl_patch_B = 0.002;
     for k=1:n
-        patches.patches{k}.S = gmshdomainwithinteriorcrack(D_patch{k},B_patch{k},cl_patch_D,cl_patch_B,[pathname 'gmsh_patch_' num2str(k) '_interior_crack']);
+        patches.patches{k}.S = gmshdomainwithinteriorcrack(D_patch{k},B_patch{k},cl_patch_D,cl_patch_B,fullfile(pathname,['gmsh_patch_' num2str(k) '_interior_crack']));
         patches.patches{k}.S = setoption(patches.patches{k}.S,option);
     end
     

@@ -60,9 +60,9 @@ if solveProblem
     cl = r/10;
     switch lower(loading)
         case 'uniform'
-            S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype '_cl_' num2str(cl)]);
+            S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_circ_' elemtype '_cl_' num2str(cl)]));
         case 'concentrated'
-            S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_circ_' elemtype '_cl_' num2str(cl)],'points',x_load);
+            S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_circ_' elemtype '_cl_' num2str(cl)]),'points',x_load);
     end
     
     %% Materials
@@ -95,20 +95,20 @@ if solveProblem
     switch lower(boundary)
         case 'clamped'
             % No locking
-            % S = addcl(S,[]); % S = addcl(S,[],{'U','R'},0);
+            S = addcl(S,[]); % S = addcl(S,[],{'U','R'},0);
             % Shear locking for element COQ4
             % S = addcl(S,P_support(:));
             % Partial shear locking for element COQ4
-            S = addcl(S,getfacet(S,2),'U');
-            S = addcl(S,P_support([1 4]),'U');
+            % S = addcl(S,getfacet(S,2),'U');
+            % S = addcl(S,P_support([1 4]),'U');
         case 'simplysupported'
             % No locking
-            % S = addcl(S,[],'U'); % S = addcl(S,[],{'UX','UY','UZ'},0);
+            S = addcl(S,[],'U'); % S = addcl(S,[],{'UX','UY','UZ'},0);
             % Shear locking for element COQ4
             % S = addcl(S,P_support(:),'U');
             % Partial shear locking for element COQ4
-            S = addcl(S,getfacet(S,2),'U');
-            S = addcl(S,P_support([1 4]),'U');
+            % S = addcl(S,getfacet(S,2),'U');
+            % S = addcl(S,P_support([1 4]),'U');
     end
     % S = addcl(S,[],'R'); % S = addcl(S,[],{'RX','RY','RZ'},0);
     

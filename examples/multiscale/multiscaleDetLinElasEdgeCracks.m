@@ -39,7 +39,7 @@ if setProblem
     nbelem = [w*2,L*2];
     glob.S = build_model(D,'nbelem',nbelem,'option',option);
     % cl = 0.25;
-    % glob.S = build_model(D,'cl',cl,'option',option,'filename',[pathname 'gmsh_domain']);
+    % glob.S = build_model(D,'cl',cl,'option',option,'filename',fullfile(pathname,'gmsh_domain'));
     
     % Patches
     patches = Patches(n);
@@ -61,7 +61,7 @@ if setProblem
     cl_patch_D = 0.25;
     cl_patch_P = 0.05;
     for k=1:n
-        patches.patches{k}.S = gmshdomainwithedgecrack(D_patch{k},P_patch{k},cl_patch_D,cl_patch_P,[pathname 'gmsh_patch_' num2str(k) '_edge_crack']);
+        patches.patches{k}.S = gmshdomainwithedgecrack(D_patch{k},P_patch{k},cl_patch_D,cl_patch_P,fullfile(pathname,['gmsh_patch_' num2str(k) '_edge_crack']));
         patches.patches{k}.S = setoption(patches.patches{k}.S,option);
     end
     

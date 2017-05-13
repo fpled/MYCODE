@@ -35,7 +35,7 @@ if setProblem
     nbelem = [20,20];
     glob.S = build_model(D,'nbelem',nbelem);
     % cl = 0.05;
-    % glob.S = build_model(D,'cl',cl,'filename',[pathname 'gmsh_domain']);
+    % glob.S = build_model(D,'cl',cl,'filename',fullfile(pathname,'gmsh_domain'));
     
     % Patches
     patches = Patches(n);
@@ -62,7 +62,7 @@ if setProblem
     end
     % cl_patch = 0.005;
     % for k=1:n
-    %     patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',[pathname 'gmsh_patch_' num2str(k)]);
+    %     patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',fullfile(pathname,['gmsh_patch_' num2str(k)]));
     % end
     
     % Partition of global mesh

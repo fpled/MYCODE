@@ -9,7 +9,7 @@ close all
 %% Input data
 solveProblem = true;
 displaySolution = false;
-displayCv = false;
+displayCv = true;
 
 % boundaries = {'SimplySupported'};
 % boundaries = {'Clamped'};
@@ -23,7 +23,7 @@ elemtypes = {'DKT','DKQ'}; % Kirchhoff-Love (classical) plate theory
 % meshtypes = {'Structured'};
 % meshtypes = {'Unstructured'};
 meshtypes = {'Structured','Unstructured'};
-nbelems = 2.^(1:9);
+nbelems = 2.^(1:6);
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
@@ -84,9 +84,9 @@ if solveProblem
             cl = min(a,b)./nbelems(i);
             switch lower(loading)
                 case 'uniform'
-                    S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_rect_' elemtype '_cl_' num2str(cl)]);
+                    S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_rect_' elemtype '_cl_' num2str(cl)]));
                 case 'concentrated'
-                    S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_rect_' elemtype '_cl_' num2str(cl)],'points',x_load);
+                    S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_rect_' elemtype '_cl_' num2str(cl)]),'points',x_load);
             end
     end
     

@@ -63,9 +63,9 @@ if solveProblem
             cl = min(a,b)/20;
             switch lower(loading)
                 case 'uniform'
-                    S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_rect_' elemtype  '_cl_' num2str(cl)]);
+                    S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_rect_' elemtype  '_cl_' num2str(cl)]));
                 case 'concentrated'
-                    S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',[pathname 'gmsh_plate_rect_' elemtype  '_cl_' num2str(cl)],'points',x_load);
+                    S = build_model(Q,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_rect_' elemtype  '_cl_' num2str(cl)]),'points',x_load);
             end
     end
     
