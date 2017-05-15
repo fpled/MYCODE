@@ -489,15 +489,15 @@ if displaySolution
     %% Display random evaluations
     % nbsamples = 3;
     % for i=1:nbsamples
-    %     xi = random(rv,1,1);
-    %     U_xi = U.functionEval(xi);
-    %     w_xi = cellfun(@(x) x.functionEval(xi),w,'UniformOutput',false);
-    %     lambda_xi = cellfun(@(x) x.functionEval(xi),lambda,'UniformOutput',false);
-    %     % plotAllSolutions(glob,patches.patchEval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false),cellfun(@(x) x',lambda_xi,'UniformOutput',false));
+    %     xi = random(rv,1);
+    %     U_xi = U(xi);
+    %     w_xi = cellfun(@(x) x(xi),w,'UniformOutput',false);
+    %     lambda_xi = cellfun(@(x) x(xi),lambda,'UniformOutput',false);
+    %     % plotAllSolutions(glob,patches.eval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false),cellfun(@(x) x',lambda_xi,'UniformOutput',false));
     %     plotGlobalSolution(glob,U_xi');
     %     % plotLocalSolution(patches,cellfun(@(x) x',w_xi,'UniformOutput',false));
     %     % plotLagrangeMultiplier(interfaces,cellfun(@(x) x',lambda_xi,'UniformOutput',false));
-    %     plotMultiscaleSolution(glob,patches.patchEval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false));
+    %     plotMultiscaleSolution(glob,patches.eval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false));
     % end
 end
 

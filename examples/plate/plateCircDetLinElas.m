@@ -198,8 +198,8 @@ if solveProblem
     fun_Uz.evaluationAtMultiplePoints = true;
     fun_Rt.evaluationAtMultiplePoints = true;
     
-    Uz_ex = fun_Uz.functionEval(x);
-    Rt_ex = fun_Rt.functionEval(x);
+    Uz_ex = fun_Uz(x);
+    Rt_ex = fun_Rt(x);
     if strcmpi(loading,'concentrated')
         switch lower(boundary)
             case 'clamped'
@@ -244,8 +244,8 @@ if solveProblem
     rr = funr(rx,ry,tP);
     rt = funt(rx,ry,tP);
     
-    uz_ex = fun_Uz.functionEval(xP);
-    rt_ex = fun_Rt.functionEval(xP);
+    uz_ex = fun_Uz(xP);
+    rt_ex = fun_Rt(xP);
     if eq(P,getcenter(C)) && strcmpi(loading,'concentrated')
         switch lower(boundary)
             case 'clamped'

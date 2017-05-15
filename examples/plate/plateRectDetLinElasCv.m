@@ -237,9 +237,9 @@ if solveProblem
     fun_Ry.evaluationAtMultiplePoints = true;
     
     x = getcoord(S.node);
-    Uz_ex = fun_Uz.functionEval(x);
-    Rx_ex = fun_Rx.functionEval(x);
-    Ry_ex = fun_Ry.functionEval(x);
+    Uz_ex = fun_Uz(x);
+    Rx_ex = fun_Rx(x);
+    Ry_ex = fun_Ry(x);
     
     err_Uz_i = norm(Uz-Uz_ex)/norm(Uz_ex);
     err_Rx_i = norm(Rx-Rx_ex)/norm(Rx_ex);
@@ -257,9 +257,9 @@ if solveProblem
     ry = eval_sol(S,u,P,'RY');
     rz = eval_sol(S,u,P,'RZ');
     
-    uz_ex = fun_Uz.functionEval(xP);
-    rx_ex = fun_Rx.functionEval(xP);
-    ry_ex = fun_Ry.functionEval(xP);
+    uz_ex = fun_Uz(xP);
+    rx_ex = fun_Rx(xP);
+    ry_ex = fun_Ry(xP);
     
     err_uz = norm(uz-uz_ex)/norm(uz_ex);
     err_rx = norm(rx-rx_ex)/norm(rx_ex);
