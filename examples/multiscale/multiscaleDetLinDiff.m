@@ -77,13 +77,13 @@ if setProblem
         patch = patches.patches{k};
         % K_patch(x) = 1 + beta_patch * f(x)
         % K_in(x)    = 1 + beta_in * f(x)
-        % with f(x) = alpha*exp( -Amp*||x-c||_2^2/L^2 ) if ||x-c||_Inf < L
+        % with f(x) = alpha*exp( -ampl*||x-c||_2^2/L^2 ) if ||x-c||_Inf < L
         %           = 0                                 if ||x-c||_Inf >= L
         % alpha = 10;
-        % Amp = 2;
+        % ampl = 2;
         % L = norm(getsize(D_patch{k}),Inf)/4;
         % c = getcenter(D_patch{k});
-        % f = @(x) (distance(x,c,Inf)<L) * alpha * exp(-Amp*distance(x,c,2).^2/L^2);
+        % f = @(x) (distance(x,c,Inf)<L) * alpha * exp(-ampl*distance(x,c,2).^2/L^2);
         % beta_patch = 1;
         % K_patch{k} = FENODEFIELD(1 + beta_patch * squeeze(f(patch.S.node)));
         % beta_in = 0;

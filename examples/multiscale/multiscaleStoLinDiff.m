@@ -93,23 +93,23 @@ if setProblem
         patch = patches.patches{k};
         % K_patch(x,xi) = 1 + beta_patch * f(x) * xi
         % K_in(x)       = 1 + beta_in * f(x)
-        % with f(x) = alpha*exp( -Amp*||x-c||_2^2/L^2 ) if ||x-c||_Inf < L
+        % with f(x) = alpha*exp( -ampl*||x-c||_2^2/L^2 ) if ||x-c||_Inf < L
         %           = 0                                 if ||x-c||_Inf >= L
-        %     alpha = 10;
-        %     Amp = 2;
-        %     L = norm(getsize(D_patch{k}),Inf)/4;
-        %     c = getcenter(D_patch{k});
-        %     f = @(x) (distance(x,c,Inf)<L) * alpha * exp(-Amp*distance(x,c,2).^2/L^2);
-        %
-        %     beta_patch = 1;
-        %     beta_in = 0;
-        %     fun = @(xi) ones(size(xi,1),patch.S.nbnode) + beta_patch * xi(:,k) * double(squeeze(f(patch.S.node)))';
-        %     funtr = @(xi) fun(transfer(rvb,rv,xi));
-        %     fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
-        %     fun.evaluationAtMultiplePoints = true;
-        %
-        %     K_patch{k} = FENODEFIELD(H.projection(fun,I));
-        %     K_in{k} = 1 + beta_in * squeeze(f(glob.S.node));
+        % alpha = 10;
+        % ampl = 2;
+        % L = norm(getsize(D_patch{k}),Inf)/4;
+        % c = getcenter(D_patch{k});
+        % f = @(x) (distance(x,c,Inf)<L) * alpha * exp(-ampl*distance(x,c,2).^2/L^2);
+        % 
+        % beta_patch = 1;
+        % beta_in = 0;
+        % fun = @(xi) ones(size(xi,1),patch.S.nbnode) + beta_patch * xi(:,k) * double(squeeze(f(patch.S.node)))';
+        % funtr = @(xi) fun(transfer(rvb,rv,xi));
+        % fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
+        % fun.evaluationAtMultiplePoints = true;
+        % 
+        % K_patch{k} = FENODEFIELD(H.projection(fun,I));
+        % K_in{k} = 1 + beta_in * squeeze(f(glob.S.node));
         
         % K_patch(x,xi) = 1 + f(x) * xi
         % K_in(x)       = 1
