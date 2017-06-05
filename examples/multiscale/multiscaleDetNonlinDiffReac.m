@@ -28,7 +28,7 @@ if setProblem
     %% Domains and meshes
     % Global
     glob = Global();
-    glob_out = GlobalOutside();
+    globOut = GlobalOutside();
     
     D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
     
@@ -122,7 +122,7 @@ if setProblem
     % end
     
     % Complementary subdomain
-    glob_out.S = glob.S_out;
+    globOut.S = glob.S_out;
     
     % Patches
     for k=1:n
@@ -144,8 +144,8 @@ if setProblem
     glob.b_out = bodyload(keepgroupelem(glob.S,getnumgroupelemwithparam(glob.S,'partition',0)),[],'QN',f);
     
     % Complementary subdomain
-    glob_out.A = calc_rigi(glob_out.S);
-    glob_out.b = bodyload(glob_out.S,[],'QN',f);
+    globOut.A = calc_rigi(globOut.S);
+    globOut.b = bodyload(globOut.S,[],'QN',f);
     
     % Patches
     for k=1:n
@@ -162,10 +162,9 @@ if setProblem
     %% Projection operators
     glob.P_out = calcProjection(glob);
     for k=1:n
-        [interfaces.interfaces{k}.P_glob] = calcProjection(interfaces.interfaces{k},glob);
-        [interfaces.interfaces{k}.P_glob_out,numnode] = calcProjection(interfaces.interfaces{k},glob_out);
+        interfaces.interfaces{k}.P_glob = calcProjection(glob,interfaces.interfaces{k});
+        interfaces.interfaces{k}.P_globOut = calcProjection(globOut,interfaces.interfaces{k});
         interfaces.interfaces{k}.P_patch = calcProjection(patches.patches{k},interfaces.interfaces{k});
-        % plotProjectionOperator(glob,patches.patches{k},numnode);
     end
     
     %% Parameters for global and local problems
@@ -182,9 +181,9 @@ if setProblem
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'glob','glob_out','patches','interfaces','D','D_patch');
+    save(fullfile(pathname,'problem.mat'),'glob','globOut','patches','interfaces','D','D_patch');
 else
-    load(fullfile(pathname,'problem.mat'),'glob','glob_out','patches','interfaces','D','D_patch');
+    load(fullfile(pathname,'problem.mat'),'glob','globOut','patches','interfaces','D','D_patch');
 end
 
 %% Direct solver
@@ -196,7 +195,7 @@ if directSolver
         'maxiter',100,'tol',1e-12,'display',false,'stopini',true);
     DS.initializationType = 'zero';
     
-    [U_ref,w_ref,lambda_ref,output_ref] = DS.solve(glob_out,patches,interfaces);
+    [U_ref,w_ref,lambda_ref,output_ref] = DS.solve(globOut,patches,interfaces);
     save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref');
 else
     load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref');

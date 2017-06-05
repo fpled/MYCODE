@@ -123,16 +123,17 @@ if displaySolution
     mysaveas(pathname,'mesh',formats,renderer);
     
     %% Display evolution of solution
-    for i=1:2
+    i = 1;
+    % for i=1:2
         evolSolution(pb.S,ut,'displ',i,'filename',['evol_u_' num2str(i)],'pathname',pathname);
         evolSolution(pb.S,vt,'displ',i,'filename',['evol_v_' num2str(i)],'pathname',pathname);
         evolSolution(pb.S,at,'displ',i,'filename',['evol_a_' num2str(i)],'pathname',pathname);
-    end
+    % end
     
-    for i=1:3
+    % for i=1:3
         evolSolution(pb.S,ut,'epsilon',i,'filename',['evol_eps_' num2str(i)],'pathname',pathname);
         evolSolution(pb.S,ut,'sigma',i,'filename',['evol_sig_' num2str(i)],'pathname',pathname);
-    end
+    % end
     
     evolSolution(pb.S,ut,'epsilon','mises','filename','evol_eps_von_mises','pathname',pathname);
     evolSolution(pb.S,ut,'sigma','mises','filename','evol_sig_von_mises','pathname',pathname);

@@ -37,22 +37,22 @@ if setProblem
     % Thermal capacity
     c = 1;
     % Advection velocity
-    Sc = pb.S;
+    Sadv = pb.S;
     mat = FOUR_ISOT('k',1);
     mat = setnumber(mat,1);
-    Sc = setmaterial(Sc,mat);
-    P = @(i) POINT(getnode(getridge(Sc,i)));
+    Sadv = setmaterial(Sadv,mat);
+    P = @(i) POINT(getnode(getridge(Sadv,i)));
     L1 = LIGNE(P(5),P(6));
     L2 = LIGNE(P(15),P(16));
-    Sc = final(Sc);
-    Sc = addcl(Sc,P(1),'T',0);
-    A = calc_rigi(Sc);
-    b1 = surfload(Sc,L1,'QN',-1);
-    b2 = surfload(Sc,L2,'QN',1);
+    Sadv = final(Sadv);
+    Sadv = addcl(Sadv,P(1),'T',0);
+    A = calc_rigi(Sadv);
+    b1 = surfload(Sadv,L1,'QN',-1);
+    b2 = surfload(Sadv,L2,'QN',1);
     b = b1+b2;
     phi = A\b;
-    v = FENODEFIELD(calc_sigma(Sc,phi,'node'));
-    V = 2*getvalue(v);
+    v = 2*FENODEFIELD(calc_sigma(Sadv,phi,'node'));
+    V = getvalue(v);
     V = {{FENODEFIELD(V(:,1)),FENODEFIELD(V(:,2))}};
     % Linear reaction parameter
     R1 = 0.1;
@@ -82,7 +82,8 @@ if setProblem
     end
     
     %% Initial conditions
-    pb.u0 = calc_init_dirichlet(pb.S);
+    % already taken into account by Dirichlet boundary conditions
+    % pb.u0 = calc_init_dirichlet(pb.S);
     
     %% Time scheme
     t0 = 0;
@@ -100,14 +101,14 @@ if setProblem
     pb.f0 = -pb.f0;
     pb.f = pb.f0*one(pb.N);
     
-    save(fullfile(pathname,'problem.mat'),'pb','Sc','v','phi');
+    save(fullfile(pathname,'problem.mat'),'pb','Sadv','v','phi');
 else
-    load(fullfile(pathname,'problem.mat'),'pb','Sc','v','phi');
+    load(fullfile(pathname,'problem.mat'),'pb','Sadv','v','phi');
 end
 
 %% Solution
 if solveProblem
-    % Static solution at initial time step
+    % Static solution
     u = pb.K\pb.f0;
     u = unfreevector(pb.S,u);
     
@@ -140,29 +141,44 @@ if displaySolution
     figure('Name','Domain')
     clf
     plot(create_boundary(pb.S));
+    hold on
     h1 = plot(pb.S,'selgroup',1,'FaceColor',getfacecolor(1),'EdgeColor','none');
     h2 = plot(pb.S,'selgroup',2,'FaceColor',getfacecolor(2),'EdgeColor','none');
     h3 = plot(pb.S,'selgroup',3,'FaceColor',getfacecolor(3),'EdgeColor','none');
     h4 = plotfacets(pb.S,5,'FaceColor',getfacecolor(4),'EdgeColor','none');
     h5 = plotfacets(pb.S,17,'FaceColor',getfacecolor(5),'EdgeColor','none');
+    hold off
     set(gca,'FontSize',16)
-    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_1$','$\Gamma_2$');
+    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$');
     set(l,'Interpreter','latex')
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
     figure('Name','Advection velocity')
     clf
-    plot(phi,Sc);
+    plot(phi,Sadv);
     colorbar
     set(gca,'FontSize',16)
     hold on
     ampl = 6;
-    quiver(v,Sc,ampl,'k');
+    quiver(v,Sadv,ampl,'k');
+    hold off
     ylim([0,1.7])
     mysaveas(pathname,'advection_velocity',formats,renderer);
 
-    plotModel(pb.S,'legend',false);
+    % plotModel(pb.S,'legend',false);
+    figure('Name','Mesh')
+    clf
+    h1 = plot(pb.S,'selgroup',1,'FaceColor',getfacecolor(1));
+    hold on
+    h2 = plot(pb.S,'selgroup',2,'FaceColor',getfacecolor(2));
+    h3 = plot(pb.S,'selgroup',3,'FaceColor',getfacecolor(3));
+    h4 = plotfacets(pb.S,5,'FaceColor',getfacecolor(4));
+    h5 = plotfacets(pb.S,17,'FaceColor',getfacecolor(5));
+    hold off
+    set(gca,'FontSize',16)
+    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$');
+    set(l,'Interpreter','latex')
     mysaveas(pathname,'mesh',formats,renderer);
     
     %% Display static solution

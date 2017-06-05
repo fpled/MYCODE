@@ -607,6 +607,7 @@ end
 
 %% Display convergence Monte-Carlo
 if displayCv
+    N = size(u,2);
     means_u = arrayfun(@(x) norm(mean(u(:,1:x),2)),1:N);
     stds_u = arrayfun(@(x) norm(std(u(:,1:x),0,2)),1:N);
     
