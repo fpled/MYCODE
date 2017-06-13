@@ -1,11 +1,10 @@
-%% Monoscale deterministic linear elasticity dynamics problem %%
-%%------------------------------------------------------------%%
+%% Monoscale deterministic linear elasticity dynamic problem %%
+%%-----------------------------------------------------------%%
 
 % clc
 clear all
 close all
 % set(0,'DefaultFigureVisible','off');
-% myparallel('start');
 
 %% Input data
 setProblem = true;
@@ -24,16 +23,16 @@ renderer = 'OpenGL';
 %% Problem
 if setProblem
     %% Domains and meshes
-    D = DOMAIN(2,[0.0,0.0],[2.0,0.3]);
+    D = DOMAIN(2,[0.0,0.0],[2.0,0.4]);
     
     elemtype = 'TRI3';
     % elemtype = 'QUA4';
     % option = 'DEFO'; % plane strain
     option = 'CONT'; % plane stress
-    % nbelem = [20,20];
-    % pb.S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
-    cl = 0.03;
-    pb.S = build_model(D,'cl',cl,'elemtype',elemtype,'option',option,'filename',fullfile(pathname,'gmsh_domain'));
+    nbelem = [60,12];
+    pb.S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
+%     cl = 0.03;
+%     pb.S = build_model(D,'cl',cl,'elemtype',elemtype,'option',option,'filename',fullfile(pathname,'gmsh_domain'));
     
     %% Materials
     % Poisson ratio
@@ -80,9 +79,9 @@ if setProblem
     % loadfun = @(N) one(N);
     pb.f = f*loadfun(pb.N);
     
-    save(fullfile(pathname,'problem.mat'),'pb','D');
+    save(fullfile(pathname,'problem.mat'),'pb','D','L1','L2');
 else
-    load(fullfile(pathname,'problem.mat'),'pb','D');
+    load(fullfile(pathname,'problem.mat'),'pb','D','L1','L2');
 end
 
 %% Solution
@@ -115,28 +114,58 @@ fprintf('\n');
 %% Display
 if displaySolution
     %% Display domains and meshes
-    plotDomain(D,'legend',false);
+%     plotDomain(D,'legend',false);
+%     mysaveas(pathname,'domain',formats,renderer);
+%     mymatlab2tikz(pathname,'domain.tex');
+    
+    figure('Name','Domain')
+    clf
+    h1 = plot(D,'FaceColor',getfacecolor(1));
+    hold on
+    h2 = plot(L1,'EdgeColor',getfacecolor(5));
+    h3 = plot(L2,'EdgeColor',getfacecolor(6));
+    hold off
+    set(gca,'FontSize',16)
+    l = legend([h1(1),h2(1),h3(1)],'$\Omega$','$\Gamma_D$','$\Gamma_N$');
+    set(l,'Interpreter','latex')
+    axis image
+    axis off
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
-    plotModel(pb.S,'legend',false);
+%     plotModel(pb.S,'legend',false);
+%     mysaveas(pathname,'mesh',formats,renderer);
+    
+    figure('Name','Mesh')
+    clf
+    h1 = plot(pb.S,'FaceColor',getfacecolor(1));
+    hold on
+    h2 = plot(L1,'EdgeColor',getfacecolor(5));
+    h3 = plot(L2,'EdgeColor',getfacecolor(6));
+    hold off
+    set(gca,'FontSize',16)
+    % l = legend([h1(1),h2(1),h3(1)],'$\Omega$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$');
+    % set(l,'Interpreter','latex')
     mysaveas(pathname,'mesh',formats,renderer);
     
     %% Display evolution of solution
     i = 1;
     % for i=1:2
-        evolSolution(pb.S,ut,'displ',i,'filename',['evol_u_' num2str(i)],'pathname',pathname);
-        evolSolution(pb.S,vt,'displ',i,'filename',['evol_v_' num2str(i)],'pathname',pathname);
-        evolSolution(pb.S,at,'displ',i,'filename',['evol_a_' num2str(i)],'pathname',pathname);
+        evolSolution(pb.S,ut,'displ',i,'filename',['evol_solution_' num2str(i)],'pathname',pathname);
+        evolSolution(pb.S,ut,'displ',i,'view3',true,'filename',['evol_solution_' num2str(i) '_view3'],'pathname',pathname);
+        
+        evolSolution(pb.S,vt,'displ',i,'filename',['evol_velocity_' num2str(i)],'pathname',pathname);
+        evolSolution(pb.S,vt,'displ',i,'view3',true,'filename',['evol_velocity_' num2str(i) '_view3'],'pathname',pathname);
+        
+        evolSolution(pb.S,at,'displ',i,'filename',['evol_acceleration_' num2str(i)],'pathname',pathname);
+        evolSolution(pb.S,at,'displ',i,'view3',true,'filename',['evol_acceleration_' num2str(i) '_view3'],'pathname',pathname);
     % end
     
     % for i=1:3
-        evolSolution(pb.S,ut,'epsilon',i,'filename',['evol_eps_' num2str(i)],'pathname',pathname);
-        evolSolution(pb.S,ut,'sigma',i,'filename',['evol_sig_' num2str(i)],'pathname',pathname);
+    %     evolSolution(pb.S,ut,'epsilon',i,'filename',['evol_epsilon_' num2str(i)],'pathname',pathname);
+    %     evolSolution(pb.S,ut,'sigma',i,'filename',['evol_sigma_' num2str(i)],'pathname',pathname);
     % end
     
-    evolSolution(pb.S,ut,'epsilon','mises','filename','evol_eps_von_mises','pathname',pathname);
-    evolSolution(pb.S,ut,'sigma','mises','filename','evol_sig_von_mises','pathname',pathname);
+    % evolSolution(pb.S,ut,'epsilon','mises','filename','evol_epsilon_von_mises','pathname',pathname);
+    % evolSolution(pb.S,ut,'sigma','mises','filename','evol_sigma_von_mises','pathname',pathname);
 end
-
-% myparallel('stop');

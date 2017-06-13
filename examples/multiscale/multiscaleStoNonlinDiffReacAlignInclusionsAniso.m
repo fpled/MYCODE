@@ -61,7 +61,7 @@ if setProblem
     % end
     
     % Partition of global mesh
-    glob = partition(glob,patches);
+    glob = partition(glob,D_patch);
     
     %% Random variables
     d = 2*n; % parametric dimension
@@ -440,7 +440,7 @@ if displaySolution
     mysaveas(pathname,'mean_global_local_solution',formats,renderer);
     
     plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-    mysaveas(pathname,'mean_global_local_solution_surf',formats,renderer);
+    mysaveas(pathname,'mean_global_local_solution_view3',formats,renderer);
     
     plotVarianceGlobalSolution(glob,U);
     mysaveas(pathname,'var_global_solution',formats,renderer);
@@ -458,7 +458,7 @@ if displaySolution
     mysaveas(pathname,'var_global_local_solution',formats,renderer);
     
     plotVarianceGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-    mysaveas(pathname,'var_global_local_solution_surf',formats,renderer);
+    mysaveas(pathname,'var_global_local_solution_view3',formats,renderer);
     
     plotStdGlobalSolution(glob,U);
     mysaveas(pathname,'std_global_solution',formats,renderer);
@@ -476,7 +476,7 @@ if displaySolution
     mysaveas(pathname,'std_global_local_solution',formats,renderer);
     
     plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-    mysaveas(pathname,'std_global_local_solution_surf',formats,renderer);
+    mysaveas(pathname,'std_global_local_solution_view3',formats,renderer);
     
     for i=1:d
         plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i);

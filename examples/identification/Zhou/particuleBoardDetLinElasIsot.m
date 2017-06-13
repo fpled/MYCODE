@@ -145,8 +145,8 @@ for sample_list = 1
             hold on
             [hD,legD] = vectorplot(S,'U',v_exp,ampl,'r','LineWidth',1);
             hold off
-            g = hggroup;
-            set([h(:),hD],'Parent',g);
+            hg = hggroup;
+            set([h(:),hD],'Parent',hg);
             axis image
             % legend(hD,'U_{exp}');
             % legend(hD,legD)

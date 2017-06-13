@@ -1,5 +1,5 @@
-%% Multiscale deterministic transient linear advection-diffusion-reaction problem %%
-%%--------------------------------------------------------------------------------%%
+%% Multiscale stochastic transient linear advection-diffusion-reaction problem %%
+%%-----------------------------------------------------------------------------%%
 % [Pares, Diez, Huerta, 2008], [Nouy, 2010]
 
 % clc
@@ -7,6 +7,8 @@ clear all
 close all
 % set(0,'DefaultFigureVisible','off');
 % myparallel('start');
+% rng('default');
+myparallel('start');
 
 %% Input data
 setProblem = true;

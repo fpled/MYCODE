@@ -334,7 +334,7 @@ if displaySolution
         mysaveas(pathname,['global_local_solution_' num2str(i)],formats,renderer);
         
         plotGlobalLocalSolution(glob,patches,interfaces,U,w,'displ',i,'view3',true);
-        mysaveas(pathname,['global_local_solution_' num2str(i) '_surf'],formats,renderer);
+        mysaveas(pathname,['global_local_solution_' num2str(i) '_view3'],formats,renderer);
     end
 end
 

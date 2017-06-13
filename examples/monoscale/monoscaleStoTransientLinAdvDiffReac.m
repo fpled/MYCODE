@@ -1,20 +1,23 @@
-%% Monoscale deterministic transient linear advection-diffusion-reaction problem %%
-%%-------------------------------------------------------------------------------%%
+%% Monoscale stochastic transient linear advection-diffusion-reaction problem %%
+%%----------------------------------------------------------------------------%%
 % [Pares, Diez, Huerta, 2008], [Nouy, 2010]
 
 % clc
 clear all
 close all
 % set(0,'DefaultFigureVisible','off');
+% rng('default');
+myparallel('start');
 
 %% Input data
 setProblem = true;
 solveProblem = true;
 displaySolution = true;
+testSolution = true;
 
 filename = 'transientLinAdvDiffReac';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','monoscaleDet',filename);
+    'results','monoscaleSto',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
