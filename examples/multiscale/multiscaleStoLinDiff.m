@@ -400,16 +400,16 @@ if displaySolution
     mymatlab2tikz(pathname,'cv_error.tex');
     
     %% Display multi-index sets
-    plotMultiIndexSet(U,'legend',false)
+    plotMultiIndexSet(U,'legend',false);
     mysaveas(pathname,'multi_index_set_global_solution','fig');
     mymatlab2tikz(pathname,'multi_index_set_global_solution.tex');
     
     for k=1:n
-        plotMultiIndexSet(w{k},'legend',false)
+        plotMultiIndexSet(w{k},'legend',false);
         mysaveas(pathname,['multi_index_set_local_solution_' num2str(k)],'fig');
         mymatlab2tikz(pathname,['multi_index_set_local_solution_' num2str(k) '.tex']);
         
-        plotMultiIndexSet(lambda{k},'legend',false)
+        plotMultiIndexSet(lambda{k},'legend',false);
         mysaveas(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k)],'fig');
         mymatlab2tikz(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '.tex']);
     end
@@ -471,6 +471,7 @@ if displaySolution
     plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
     mysaveas(pathname,'std_global_local_solution_view3',formats,renderer);
     
+    d = ndims(U.basis);
     for i=1:d
         plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i);
         mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i)],formats,renderer);

@@ -78,11 +78,11 @@ mymatlab2tikz(pathname,'geometric_brownian_kl.tex');
 
 %% Display multi-index set
 dim = [1 3 5];
-plotMultiIndexSet(f,'dim',dim,'legend',false)
+plotMultiIndexSet(f,'dim',dim,'legend',false);
 mysaveas(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end))],'fig');
 mymatlab2tikz(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end)) '.tex']);
 
 dim = [1 7 10];
-plotMultiIndexSet(f,'dim',dim,'legend',false)
+plotMultiIndexSet(f,'dim',dim,'legend',false);
 mysaveas(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end))],'fig');
 mymatlab2tikz(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end)) '.tex']);

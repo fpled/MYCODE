@@ -376,18 +376,18 @@ if displaySolution
     
     %% Display multi-index sets
     for i=1:2:d
-        plotMultiIndexSet(U,'dim',[i i+1],'legend',false)
+        plotMultiIndexSet(U,'dim',[i i+1],'legend',false);
         mysaveas(pathname,['multi_index_set_global_solution_dim_' num2str(i) '_' num2str(i+1)],'fig');
         mymatlab2tikz(pathname,['multi_index_set_global_solution_dim_' num2str(i) '_' num2str(i+1) '.tex']);
     end
     
     for k=1:n
         for i=1:2:d
-            plotMultiIndexSet(w{k},'dim',[i i+1],'legend',false)
+            plotMultiIndexSet(w{k},'dim',[i i+1],'legend',false);
             mysaveas(pathname,['multi_index_set_local_solution_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1)],'fig');
             mymatlab2tikz(pathname,['multi_index_set_local_solution_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1) '.tex']);
             
-            plotMultiIndexSet(lambda{k},'dim',[i i+1],'legend',false)
+            plotMultiIndexSet(lambda{k},'dim',[i i+1],'legend',false);
             mysaveas(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1)],'fig');
             mymatlab2tikz(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '_dim_' num2str(i) '_' num2str(i+1) '.tex']);
         end
@@ -450,6 +450,7 @@ if displaySolution
     plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
     mysaveas(pathname,'std_global_local_solution_view3',formats,renderer);
     
+    d = ndims(U.basis);
     for i=1:d
         plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i);
         mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i)],formats,renderer);

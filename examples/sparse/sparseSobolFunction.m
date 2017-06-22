@@ -78,7 +78,7 @@ fprintf('test error = %d\n',errtest)
 
 %% Display multi-index set
 dim = 1:3;
-plotMultiIndexSet(f,'dim',dim,'legend',false)
+plotMultiIndexSet(f,'dim',dim,'legend',false);
 mysaveas(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end))],'fig');
 mymatlab2tikz(pathname,['multi_index_set_dim' sprintf('_%d',dim(1:end)) '.tex']);
 

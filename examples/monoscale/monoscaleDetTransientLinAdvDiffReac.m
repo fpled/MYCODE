@@ -116,11 +116,11 @@ if solveProblem
     time = toc(t);
     
     % Transient solution
-    tt = tic;
+    t = tic;
     [ut,result,vt] = dsolve(pb.N,pb.b,pb.M,pb.A);
     % ut = unfreevector(pb.S,ut);
     vt = unfreevector(pb.S,vt)-calc_init_dirichlet(pb.S);
-    timet = toc(tt);
+    timet = toc(t);
     
     save(fullfile(pathname,'solution.mat'),'u','time');
     save(fullfile(pathname,'solution_transient.mat'),'ut','result','vt','timet');
@@ -139,7 +139,6 @@ fprintf('nb time steps = %g\n',getnt(pb.N));
 fprintf('nb time dofs  = %g\n',getnbtimedof(pb.N));
 fprintf('elapsed time = %f s for stationary solution\n',time);
 fprintf('elapsed time = %f s for transient solution\n',timet);
-fprintf('\n');
 
 %% Display
 if displaySolution

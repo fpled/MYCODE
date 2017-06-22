@@ -152,6 +152,7 @@ end
 
 %% Outputs
 fprintf('\n')
+fprintf('spatial dimension = %d\n',u.sz)
 fprintf('parametric dimension = %d\n',ndims(u.basis))
 fprintf('basis dimension = %d\n',numel(u.basis))
 fprintf('order = [ %s ]\n',num2str(max(u.basis.indices.array)))
@@ -186,7 +187,7 @@ if displaySolution
     
     %% Display multi-index set
     for i=1:2:d
-        plotMultiIndexSet(u,'dim',[i i+1],'legend',false)
+        plotMultiIndexSet(u,'dim',[i i+1],'legend',false);
         mysaveas(pathname,['multi_index_set_dim_' num2str(i) '_' num2str(i+1)],'fig');
         mymatlab2tikz(pathname,['multi_index_set_dim_' num2str(i) '_' num2str(i+1) '.tex']);
     end
@@ -203,6 +204,7 @@ if displaySolution
     plotStd(pb.S,u);
     mysaveas(pathname,'std_solution',formats,renderer);
     
+    d = ndims(u.basis);
     for i=1:d
         plotSobolIndices(pb.S,u,i);
         mysaveas(pathname,['sobol_indices_solution_var_' num2str(i)],formats,renderer);

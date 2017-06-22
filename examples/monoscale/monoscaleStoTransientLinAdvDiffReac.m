@@ -34,7 +34,7 @@ if setProblem
     pb.S = gmshcanister(cl1,cl2,cl0,cltip,fullfile(pathname,'gmsh_canister'));
     
     %% Random variables
-    d = 3; % parametric dimension
+    d = 2; % parametric dimension
     v = UniformRandomVariable(0,1);
     rv = RandomVector(v,d);
     
@@ -59,15 +59,7 @@ if setProblem
     K2 = 0.01;
     
     % Thermal capacity
-    % c1(xi) = 1 + xi
-    % c2 = 1
-    fun = @(x) 1 + x(:,2);
-    funtr = @(x) fun(transfer(rvb,rv,x));
-    fun = MultiVariateFunction(funtr,d);
-    fun.evaluationAtMultiplePoints = true;
-    
-    c1 = H.projection(fun,I);
-    c2 = 1;
+    c = 1;
     
     % Advection velocity
     Sadv = pb.S;
@@ -87,10 +79,11 @@ if setProblem
     v = 2*FENODEFIELD(calc_sigma(Sadv,phi,'node'));
     V = getvalue(v);
     V = {{FENODEFIELD(V(:,1)),FENODEFIELD(V(:,2))}};
+    
     % Linear reaction parameter
     % R1(xi) = 0.1 * (1 + xi)
     % R2 = 10
-    fun = @(x) 0.1 * (1 + x(:,3));
+    fun = @(x) 0.1 * (1 + x(:,2));
     funtr = @(x) fun(transfer(rvb,rv,x));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;
@@ -100,8 +93,8 @@ if setProblem
     
     % Materials
     mat = MATERIALS();
-    mat{1} = FOUR_ISOT('k',K1,'c',c1,'b',V,'r',R1);
-    mat{2} = FOUR_ISOT('k',K2,'c',c2,'b',V,'r',R2);
+    mat{1} = FOUR_ISOT('k',K1,'c',c,'b',V,'r',R1);
+    mat{2} = FOUR_ISOT('k',K2,'c',c,'b',V,'r',R2);
     mat{1} = setnumber(mat{1},1);
     mat{2} = setnumber(mat{2},2);
     pb.S = setmaterial(pb.S,mat{1},1);
@@ -128,12 +121,12 @@ if setProblem
     %% Time scheme
     t0 = 0;
     t1 = 2;
-    nt = 100;
-    pb.timeModel = TIMEMODEL(t0,t1,nt);
+    nt = 5;
+    T = TIMEMODEL(t0,t1,nt);
     
-    % pb.timeSolver = EULERTIMESOLVER(pb.timeModel,'eulertype','explicit','display',false);
-    pb.timeSolver = EULERTIMESOLVER(pb.timeModel,'eulertype','implicit','display',false);
-    % pb.timeSolver = DGTIMESOLVER(pb.timeModel,1,'outputsplit',true,'display',false,'lu',true);
+    % pb.timeSolver = EULERTIMESOLVER(T,'eulertype','explicit','display',false);
+    pb.timeSolver = EULERTIMESOLVER(T,'eulertype','implicit','display',false);
+    % pb.timeSolver = DGTIMESOLVER(T,1,'outputsplit',true,'display',false,'lu',true);
     
     pb.loadFunction = @(N) one(N);
     
@@ -160,7 +153,7 @@ if solveProblem
     s = AdaptiveSparseTensorAlgorithm();
     % s.nbSamples = 1;
     % s.addSamplesFactor = 0.1;
-    s.tol = 1e-6;
+    s.tol = 1e-3;
     s.tolStagnation = 1e-1;
     % s.tolOverfit = 1.1;
     % s.bulkParameter = 0.5;
@@ -177,10 +170,11 @@ if solveProblem
     % ls.errorEstimationType = 'leaveout';
     % ls.errorEstimationOptions.correction = true;
     
-    % Stationary solution
     pbt = pb;
-    pb.timeModel = [];
+    
+    % Stationary solution
     pb.timeSolver = [];
+    pb.loadFunction = [];
     fun = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
     fun = MultiVariateFunction(fun,d,getnbddlfree(pb.S));
     fun.evaluationAtMultiplePoints = false;
@@ -190,31 +184,34 @@ if solveProblem
     time = toc(t);
     
     % Transient solution
-    funt = @(xi) solveSystem(calcOperator(funEval(pbt,xi)));
+    pb = pbt;
+    funt = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
     funt = MultiVariateFunction(funt,d,2);
     funt.evaluationAtMultiplePoints = false;
-    tt = tic;
-    [ut,errt,~,yt] = s.leastSquaresCell(funt,bases,ls,rv);
-    timet = toc(tt);
+    
+    t = tic;
+    [Ut,errt,~,yt] = s.leastSquaresCell(funt,bases,ls,rv);
+    timet = toc(t);
     
     save(fullfile(pathname,'solution.mat'),'u','err','y','fun','time');
-    save(fullfile(pathname,'solution_transient.mat'),'ut','errt','yt','funt','timet');
+    save(fullfile(pathname,'solution_transient.mat'),'Ut','errt','yt','funt','timet');
 else
     load(fullfile(pathname,'solution.mat'),'u','err','y','fun','time');
-    load(fullfile(pathname,'solution_transient.mat'),'ut','errt','yt','funt','timet');
+    load(fullfile(pathname,'solution_transient.mat'),'Ut','errt','yt','funt','timet');
 end
 
 %% Outputs
 fprintf('\n');
-fprintf('nb elements = %g\n',getnbelem(pbt.S));
-fprintf('nb nodes    = %g\n',getnbnode(pbt.S));
-fprintf('nb dofs     = %g\n',getnbddl(pbt.S));
-fprintf('time solver : %s\n',class(pbt.timeSolver));
-fprintf('nb time steps = %g\n',getnt(pbt.timeSolver));
-fprintf('nb time dofs  = %g\n',getnbtimedof(pbt.timeSolver));
+fprintf('nb elements = %g\n',getnbelem(pb.S));
+fprintf('nb nodes    = %g\n',getnbnode(pb.S));
+fprintf('nb dofs     = %g\n',getnbddl(pb.S));
+fprintf('time solver : %s\n',class(pb.timeSolver));
+fprintf('nb time steps = %g\n',getnt(pb.timeSolver));
+fprintf('nb time dofs  = %g\n',getnbtimedof(pb.timeSolver));
 
 fprintf('\n');
-fprintf('Stationary solution');
+fprintf('Stationary solution\n');
+fprintf('spatial dimension = %d\n',u.sz)
 fprintf('parametric dimension = %d\n',ndims(u.basis))
 fprintf('basis dimension = %d\n',numel(u.basis))
 fprintf('order = [ %s ]\n',num2str(max(u.basis.indices.array)))
@@ -224,17 +221,49 @@ fprintf('nb samples = %d\n',size(y,1))
 fprintf('CV error = %d\n',norm(err))
 fprintf('elapsed time = %f s\n',time)
 
+ut = Ut{1}; errut = errt{1}; yut = yt{1};
+vt = Ut{2}; errvt = errt{2}; yvt = yt{2};
+
 fprintf('\n');
-fprintf('Transient solution');
-fprintf('parametric dimension = %d\n',ndims(ut.basis))
-fprintf('basis dimension = %d\n',numel(ut.basis))
-fprintf('order = [ %s ]\n',num2str(max(ut.basis.indices.array)))
-% fprintf('multi-index set = \n')
+fprintf('Transient solution\n');
+fprintf('spatial-time dimension = %d\n',ut.sz)
+fprintf('parametric dimension = %d for u\n',ndims(ut.basis))
+fprintf('                     = %d for v\n',ndims(vt.basis))
+fprintf('basis dimension = %d for u\n',numel(ut.basis))
+fprintf('                = %d for v\n',numel(vt.basis))
+fprintf('order = [ %s ] for u\n',num2str(max(ut.basis.indices.array)))
+fprintf('      = [ %s ] for v\n',num2str(max(vt.basis.indices.array)))
+% fprintf('multi-index set for u = \n')
 % disp(ut.basis.indices.array)
-fprintf('nb samples = %d\n',size(yt,1))
-fprintf('CV error = %d\n',norm(errt))
+% fprintf('multi-index set for v = \n')
+% disp(vt.basis.indices.array)
+fprintf('nb samples = %d\n',size(yut,1))
+fprintf('CV error = %d for u\n',norm(errut))
+fprintf('         = %d for v\n',norm(errvt))
 fprintf('elapsed time = %f s\n',timet)
+
+%% Test
+if testSolution
+    Ntest = 100;
+    [errtest,xtest,utest,ytest] = computeTestError(u,fun,Ntest);
+    [errttest,xttest,Uttest,yttest] = computeTestErrorCell(Ut,funt,Ntest);
+    save(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
+    save(fullfile(pathname,'testt.mat'),'Uttest','errttest','xttest','yttest');
+else
+    load(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
+    load(fullfile(pathname,'testt.mat'),'Uttest','errttest','xttest','yttest');
+end
 fprintf('\n');
+fprintf('Stationary solution\n');
+fprintf('test error = %d\n',errtest)
+
+uttest = Uttest{1}; erruttest = errttest{1}; yuttest = yttest{1};
+vttest = Uttest{2}; errvttest = errttest{2}; yvttest = yttest{2};
+
+fprintf('\n');
+fprintf('Transient solution\n');
+fprintf('test error = %d for u\n',erruttest)
+fprintf('test error = %d for v\n',errvttest)
 
 %% Display
 if displaySolution
@@ -282,11 +311,40 @@ if displaySolution
     % set(l,'Interpreter','latex')
     mysaveas(pathname,'mesh',formats,renderer);
     
-    %% Display stationary solution
-    plotSolution(pb.S,u);
-    mysaveas(pathname,'solution',formats,renderer);
-    plotSolution(pb.S,u,'surface',true);
-    mysaveas(pathname,'solution_surface',formats);
+    %% Display multi-index set for stationary solution
+    plotMultiIndexSet(u,'legend',false);
+    mysaveas(pathname,'multi_index_set_solution_stationary','fig');
+    mymatlab2tikz(pathname,'multi_index_set_solution_stationary.tex');
+    
+    %% Display multi-index set for transient solution
+    plotMultiIndexSet(ut,'legend',false);
+    mysaveas(pathname,'multi_index_set_solution_transient','fig');
+    mymatlab2tikz(pathname,'multi_index_set_solution_transient.tex');
+    
+    plotMultiIndexSet(vt,'legend',false);
+    mysaveas(pathname,'multi_index_set_velocity','fig');
+    mymatlab2tikz(pathname,'multi_index_set_velocity.tex');
+    
+    %% Display statistical outputs for stationary solution
+    % plotStats(pb.S,u);
+    
+    plotMean(pb.S,u);
+    mysaveas(pathname,'mean_solution_stationary',formats,renderer);
+    
+    plotVariance(pb.S,u);
+    mysaveas(pathname,'var_solution_stationary',formats,renderer);
+    
+    plotStd(pb.S,u);
+    mysaveas(pathname,'std_solution_stationary',formats,renderer);
+    
+    d = ndims(u.basis);
+    for i=1:d
+        plotSobolIndices(pb.S,u,i);
+        mysaveas(pathname,['sobol_indices_solution_stationary_var_' num2str(i)],formats,renderer);
+        
+        plotSensitivityIndices(pb.S,u,i);
+        mysaveas(pathname,['sensitivity_indices_solution_stationary_var_' num2str(i)],formats,renderer);
+    end
     
     %% Display evolution of transient solution
     evolSolution(pb.S,ut,'filename','evol_solution','pathname',pathname);

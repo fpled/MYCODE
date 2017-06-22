@@ -215,6 +215,8 @@ if setProblem
     N = EULERTIMESOLVER(T,'eulertype','implicit','display',false);
     % N = DGTIMESOLVER(T,1,'outputsplit',true,'display',false,'lu',true);
     
+    loadFunction = @(N) one(N);
+    
     % Global
     glob.timeSolver = N;
     glob.timeOrder = 1;
@@ -239,20 +241,20 @@ if setProblem
         glob.M_in{k} = calc_mass(glob.S,'selgroup',getnumgroupelemwithparam(glob.S,'partition',k));
         glob.A_in{k} = calc_rigi(glob.S,'selgroup',getnumgroupelemwithparam(glob.S,'partition',k));
     end
-    glob.b_out = glob.b0_out*one(glob.timeSolver);
+    glob.b_out = glob.b0_out*loadFunction(glob.timeSolver);
     
     % Complementary subdomain
     globOut.M = calc_mass(globOut.S);
     [globOut.A,globOut.b0] = calc_rigi(globOut.S);
     globOut.b0 = -globOut.b0;
-    globOut.b = globOut.b0*one(globOut.timeSolver);
+    globOut.b = globOut.b0*loadFunction(globOut.timeSolver);
     
     % Patches
     for k=1:n
         patches.patches{k}.M = calc_mass(patches.patches{k}.S);
         [patches.patches{k}.A,patches.patches{k}.b0] = calc_rigi(patches.patches{k}.S);
         patches.patches{k}.b0 = -patches.patches{k}.b0;
-        patches.patches{k}.b = patches.patches{k}.b0*one(patches.patches{k}.timeSolver);
+        patches.patches{k}.b = patches.patches{k}.b0*loadFunction(patches.patches{k}.timeSolver);
     end
     
     %% Mass matrices
@@ -307,18 +309,17 @@ end
 
 %% Direct solver
 if directSolver
-    DSt = DirectSolver();
-    DSt.changeOfVariable = false;
-    DSt.timeSolver = N;
-    DSt.timeOrder = 1;
-    DSt.display = true;
+    DS = DirectSolver();
+    DS.changeOfVariable = false;
+    DS.display = true;
     
-    DS = DSt;
     DS.timeSolver = [];
     DS.timeOrder = [];
-    
     [U_ref,w_ref,lambda_ref,output_ref] = DS.solve(globOut_static,patches_static,interfaces_static);
-    [Ut_ref,wt_ref,lambdat_ref,outputt_ref] = DSt.solve(globOut,patches,interfaces);
+    
+    DS.timeSolver = N;
+    DS.timeOrder = 1;
+    [Ut_ref,wt_ref,lambdat_ref,outputt_ref] = DS.solve(globOut,patches,interfaces);
     outputt_ref.vU = unfreevector(globOut.S,outputt_ref.vU)-calc_init_dirichlet(globOut.S);
     for k=1:n
         outputt_ref.vw{k} = unfreevector(patches.patches{k}.S,outputt_ref.vw{k})-calc_init_dirichlet(patches.patches{k}.S);
@@ -338,6 +339,7 @@ for k=1:n
     fprintf('                  = %d for w_ref{%u}\n',size(wt_ref{k},1),k)
     fprintf('                  = %d for lambda_ref{%u}\n',size(lambdat_ref{k},1),k)
 end
+fprintf('time solver : %s\n',class(N));
 fprintf('nb time steps = %g\n',getnt(N))
 fprintf('nb time dofs  = %g\n',getnbtimedof(N))
 fprintf('elapsed time = %f s for static solution\n',output_ref.time)
@@ -345,21 +347,20 @@ fprintf('elapsed time = %f s for dynamic solution\n',outputt_ref.time)
 
 %% Global-local Iterative solver
 if iterativeSolver
-    ISt = IterativeSolver();
-    ISt.maxIterations = 50;
-    ISt.tolerance = eps;
-    ISt.relaxation = 'Aitken';
-    ISt.updateRelaxationParameter = true;
-    ISt.errorCriterion = 'reference';
-    ISt.referenceSolution = {Ut_ref,wt_ref,lambdat_ref};
-    ISt.display = true;
-    ISt.displayIterations = true;
+    IS = IterativeSolver();
+    IS.maxIterations = 50;
+    IS.tolerance = eps;
+    IS.relaxation = 'Aitken';
+    IS.updateRelaxationParameter = true;
+    IS.errorCriterion = 'reference';
+    IS.display = true;
+    IS.displayIterations = true;
     
-    IS = ISt;
     IS.referenceSolution = {U_ref,w_ref,lambda_ref};
-    
     [U,w,lambda,output] = IS.solve(glob_static,patches_static,interfaces);
-    [Ut,wt,lambdat,outputt] = ISt.solve(glob,patches,interfaces);
+    
+    IS.referenceSolution = {Ut_ref,wt_ref,lambdat_ref};
+    [Ut,wt,lambdat,outputt] = IS.solve(glob,patches,interfaces);
     outputt.vU = unfreevector(glob.S,outputt.vU)-calc_init_dirichlet(glob.S);
     for k=1:n
         outputt.vw{k} = unfreevector(patches.patches{k}.S,outputt.vw{k})-calc_init_dirichlet(patches.patches{k}.S);
@@ -379,6 +380,7 @@ for k=1:n
     fprintf('                  = %d for w{%u}\n',size(wt{k},1),k)
     fprintf('                  = %d for lambda{%u}\n',size(lambdat{k},1),k)
 end
+fprintf('time solver : %s\n',class(N));
 fprintf('nb time steps = %g\n',getnt(N))
 fprintf('nb time dofs  = %g\n',getnbtimedof(N))
 fprintf('elapsed time = %f s for stationary solution\n',output.totalTime)

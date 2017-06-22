@@ -100,8 +100,7 @@ end
 
 %% Outputs
 fprintf('\n');
-fprintf(['load function : ' func2str(pb.loadFunction) '\n']);
-fprintf(['spatial mesh  : ' elemtype ' elements\n']);
+fprintf(['spatial mesh : ' elemtype ' elements\n']);
 fprintf('nb elements = %g\n',getnbelem(pb.S));
 fprintf('nb nodes    = %g\n',getnbnode(pb.S));
 fprintf('nb dofs     = %g\n',getnbddl(pb.S));
@@ -109,7 +108,6 @@ fprintf('time solver : %s\n',class(pb.N));
 fprintf('nb time steps = %g\n',getnt(pb.N));
 fprintf('nb time dofs  = %g\n',getnbtimedof(pb.N));
 fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
 
 %% Display
 if displaySolution

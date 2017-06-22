@@ -150,6 +150,11 @@ if setProblem
     N = NEWMARKSOLVER(T,'alpha',0.05,'display',false);
     % N = DGTIMESOLVER(T,1,'outputsplit',true,'display',false,'lu',true);
     
+    tc = get(T,'t1')/6;
+    loadFunction = @(N) rampe(N,t0,tc);
+    % loadFunction = @(N) dirac(N,t0,tc);
+    % loadFunction = @(N) one(N);
+    
     % Global
     glob.timeSolver = N;
     glob.timeOrder = 2;
@@ -165,12 +170,6 @@ if setProblem
     end
     
     %% Mass and stifness matrices and sollicitation vectors
-    % Loading function
-    tc = get(T,'t1')/6;
-    loadfun = @(N) rampe(N,t0,tc);
-    % loadfun = @(N) dirac(N,t0,tc);
-    % loadfun = @(N) one(N);
-    
     % Global
     glob.M = calc_mass(glob.S);
     glob.A = calc_rigi(glob.S);
@@ -179,13 +178,13 @@ if setProblem
         glob.A_in{k} = calc_rigi(glob.S,'selgroup',getnumgroupelemwithparam(glob.S,'partition',k));
     end
     b_out = surfload(keepgroupelem(glob.S,getnumgroupelemwithparam(glob.S,'partition',0)),L2,'FX',-1);
-    glob.b_out = b_out*loadfun(N);
+    glob.b_out = b_out*loadFunction(glob.timeSolver);
     
     % Complementary subdomain
     globOut.M = calc_mass(globOut.S);
     globOut.A = calc_rigi(globOut.S);
     b = surfload(globOut.S,L2,'FX',-1);
-    globOut.b = b*loadfun(N);
+    globOut.b = b*loadFunction(globOut.timeSolver);
     
     % Patches
     for k=1:n
@@ -217,9 +216,9 @@ if setProblem
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'glob','globOut','patches','interfaces','N','D','D_patch');
+    save(fullfile(pathname,'problem.mat'),'glob','globOut','patches','interfaces','N','D','D_patch','L1','L2');
 else
-    load(fullfile(pathname,'problem.mat'),'glob','globOut','patches','interfaces','N','D','D_patch');
+    load(fullfile(pathname,'problem.mat'),'glob','globOut','patches','interfaces','N','D','D_patch','L1','L2');
 end
 
 %% Direct solver
@@ -251,6 +250,7 @@ for k=1:n
     fprintf('                  = %d for w_ref{%u}\n',size(wt_ref{k},1),k)
     fprintf('                  = %d for lambda_ref{%u}\n',size(lambdat_ref{k},1),k)
 end
+fprintf('time solver : %s\n',class(N));
 fprintf('nb time steps = %g\n',getnt(N))
 fprintf('nb time dofs  = %g\n',getnbtimedof(N))
 fprintf('elapsed time = %f s\n',outputt_ref.time)

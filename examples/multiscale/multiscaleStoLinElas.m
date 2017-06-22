@@ -389,16 +389,16 @@ if displaySolution
     mymatlab2tikz(pathname,'cv_error.tex');
     
     %% Display multi-index sets
-    plotMultiIndexSet(U,'legend',false)
+    plotMultiIndexSet(U,'legend',false);
     mysaveas(pathname,'multi_index_set_global_solution','fig');
     mymatlab2tikz(pathname,'multi_index_set_global_solution.tex');
     
     for k=1:n
-        plotMultiIndexSet(w{k},'legend',false)
+        plotMultiIndexSet(w{k},'legend',false);
         mysaveas(pathname,['multi_index_set_local_solution_' num2str(k)],'fig');
         mymatlab2tikz(pathname,['multi_index_set_local_solution_' num2str(k) '.tex']);
         
-        plotMultiIndexSet(lambda{k},'legend',false)
+        plotMultiIndexSet(lambda{k},'legend',false);
         mysaveas(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k)],'fig');
         mymatlab2tikz(pathname,['multi_index_set_Lagrange_multiplier_' num2str(k) '.tex']);
     end

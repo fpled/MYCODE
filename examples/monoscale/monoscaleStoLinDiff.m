@@ -57,6 +57,7 @@ if setProblem
     
     K = H.projection(fun,I);
     
+    % Material
     mat = FOUR_ISOT('k',K);
     mat = setnumber(mat,1);
     pb.S = setmaterial(pb.S,mat);
@@ -128,6 +129,7 @@ end
 
 %% Outputs
 fprintf('\n')
+fprintf('spatial dimension = %d\n',u.sz)
 fprintf('parametric dimension = %d\n',ndims(u.basis))
 fprintf('basis dimension = %d\n',numel(u.basis))
 fprintf('order = [ %s ]\n',num2str(max(u.basis.indices.array)))
@@ -161,7 +163,7 @@ if displaySolution
     mysaveas(pathname,'mesh',formats,renderer);
     
     %% Display multi-index set
-    plotMultiIndexSet(u,'legend',false)
+    plotMultiIndexSet(u,'legend',false);
     mysaveas(pathname,'multi_index_set','fig');
     mymatlab2tikz(pathname,'multi_index_set.tex');
     
@@ -177,6 +179,7 @@ if displaySolution
     plotStd(pb.S,u);
     mysaveas(pathname,'std_solution',formats,renderer);
     
+    d = ndims(u.basis);
     for i=1:d
         plotSobolIndices(pb.S,u,i);
         mysaveas(pathname,['sobol_indices_solution_var_' num2str(i)],formats,renderer);
