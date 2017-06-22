@@ -16,7 +16,7 @@ testSolution = true;
 
 filename = 'linDiff';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-        'results','monoscaleSto',filename);
+    'results','monoscaleSto',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

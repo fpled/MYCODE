@@ -121,7 +121,7 @@ if setProblem
     %% Time scheme
     t0 = 0;
     t1 = 2;
-    nt = 5;
+    nt = 100;
     T = TIMEMODEL(t0,t1,nt);
     
     % pb.timeSolver = EULERTIMESOLVER(T,'eulertype','explicit','display',false);
@@ -346,16 +346,16 @@ if displaySolution
         mysaveas(pathname,['sensitivity_indices_solution_stationary_var_' num2str(i)],formats,renderer);
     end
     
-    %% Display evolution of transient solution
-    evolSolution(pb.S,ut,'filename','evol_solution','pathname',pathname);
-    evolSolution(pb.S,ut,'surface',true,'filename','evol_solution_surface','pathname',pathname);
+    %% Display evolution of statistical outputs for transient solution
+    evolMean(pb.S,ut,'filename','evol_solution','pathname',pathname);
+    evolMean(pb.S,ut,'surface',true,'filename','evol_solution_surface','pathname',pathname);
     
-    evolSolution(pb.S,vt,'rescale',false,'filename','evol_velocity','pathname',pathname);
-    evolSolution(pb.S,vt,'rescale',false,'surface',true,'filename','evol_velocity_surface','pathname',pathname);
+    evolMean(pb.S,vt,'rescale',false,'filename','evol_velocity','pathname',pathname);
+    evolMean(pb.S,vt,'rescale',false,'surface',true,'filename','evol_velocity_surface','pathname',pathname);
     
 %     for i=1:2
-%         evolSolution(pb.S,ut,'epsilon',i,'filename',['evol_eps_' num2str(i)],'pathname',pathname);
-%         evolSolution(pb.S,ut,'sigma',i,'filename',['evol_sig_' num2str(i)],'pathname',pathname);
+%         evolMean(pb.S,ut,'epsilon',i,'filename',['evol_eps_' num2str(i)],'pathname',pathname);
+%         evolMean(pb.S,ut,'sigma',i,'filename',['evol_sig_' num2str(i)],'pathname',pathname);
 %     end
     
     %% Display quantity of interest
