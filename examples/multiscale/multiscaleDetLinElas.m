@@ -135,7 +135,7 @@ if setProblem
     % Interfaces
     interfaces = Interfaces(patches);
     
-    %% Mass and stiffness matrices and sollicitation vectors
+    %% Stiffness matrices and sollicitation vectors
     % Traction force density
     f = [0;-100];
     

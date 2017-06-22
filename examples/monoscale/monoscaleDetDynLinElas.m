@@ -68,16 +68,16 @@ if setProblem
     pb.N = NEWMARKSOLVER(T,'alpha',0.05,'display',false);
     % pb.N = DGTIMESOLVER(T,1,'outputsplit',true,'display',false,'lu',true);
     
+    tc = get(T,'t1')/6;
+    pb.loadFunction = @(N) rampe(N,t0,tc);
+    % pb.loadFunction = @(N) dirac(N,t0,tc);
+    % pb.loadFunction = @(N) one(N);
+    
     %% Mass, stiffness and damping matrices and sollicitation vectors
     pb.M = calc_mass(pb.S);
-    pb.K = calc_rigi(pb.S);
-    f = surfload(pb.S,L2,'FX',-1);
-    
-    tc = get(T,'t1')/6;
-    loadfun = @(N) rampe(N,t0,tc);
-    % loadfun = @(N) dirac(N,t0,tc);
-    % loadfun = @(N) one(N);
-    pb.f = f*loadfun(pb.N);
+    pb.A = calc_rigi(pb.S);
+    b = surfload(pb.S,L2,'FX',-1);
+    pb.b = b*pb.loadFunction(pb.N);
     
     save(fullfile(pathname,'problem.mat'),'pb','D','L1','L2');
 else
@@ -87,20 +87,20 @@ end
 %% Solution
 if solveProblem
     t = tic;
-    [ut,result,vt,at] = ddsolve(pb.N,pb.f,pb.M,pb.K,[],pb.u0,pb.v0);
+    [ut,result,vt,at] = ddsolve(pb.N,pb.b,pb.M,pb.A,[],pb.u0,pb.v0);
     time = toc(t);
     
     et = calc_epsilon(pb.S,ut);
     st = calc_sigma(pb.S,ut);
     
-    save(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','loadfun','time');
+    save(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','time');
 else
-    load(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','loadfun','time');
+    load(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','time');
 end
 
 %% Outputs
 fprintf('\n');
-fprintf(['load function : ' func2str(loadfun) '\n']);
+fprintf(['load function : ' func2str(pb.loadFunction) '\n']);
 fprintf(['spatial mesh  : ' elemtype ' elements\n']);
 fprintf('nb elements = %g\n',getnbelem(pb.S));
 fprintf('nb nodes    = %g\n',getnbnode(pb.S));

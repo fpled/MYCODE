@@ -33,11 +33,42 @@ if setProblem
     cltip = 0.01;
     pb.S = gmshcanister(cl1,cl2,cl0,cltip,fullfile(pathname,'gmsh_canister'));
     
+    %% Random variables
+    d = 3; % parametric dimension
+    v = UniformRandomVariable(0,1);
+    rv = RandomVector(v,d);
+    
     %% Materials
     % Linear diffusion coefficient
-    K = 0.01;
+    % K1(xi) = 0.01 * (1 + xi)
+    % K2 = 0.01
+    p = 1;
+    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
+    bases = FunctionalBases.duplicate(basis,d);
+    rvb = getRandomVector(bases);
+    H = FullTensorProductFunctionalBasis(bases);
+    I = gaussIntegrationRule(v,2);
+    I = I.tensorize(d);
+    
+    fun = @(xi) 0.01 * (1 + xi(:,1));
+    funtr = @(xi) fun(transfer(rvb,rv,xi));
+    fun = MultiVariateFunction(funtr,d);
+    fun.evaluationAtMultiplePoints = true;
+    
+    K1 = H.projection(fun,I);
+    K2 = 0.01;
+    
     % Thermal capacity
-    c = 1;
+    % c1(xi) = 1 + xi
+    % c2 = 1
+    fun = @(x) 1 + x(:,2);
+    funtr = @(x) fun(transfer(rvb,rv,x));
+    fun = MultiVariateFunction(funtr,d);
+    fun.evaluationAtMultiplePoints = true;
+    
+    c1 = H.projection(fun,I);
+    c2 = 1;
+    
     % Advection velocity
     Sadv = pb.S;
     mat = FOUR_ISOT('k',1);
@@ -57,13 +88,20 @@ if setProblem
     V = getvalue(v);
     V = {{FENODEFIELD(V(:,1)),FENODEFIELD(V(:,2))}};
     % Linear reaction parameter
-    R1 = 0.1;
+    % R1(xi) = 0.1 * (1 + xi)
+    % R2 = 10
+    fun = @(x) 0.1 * (1 + x(:,3));
+    funtr = @(x) fun(transfer(rvb,rv,x));
+    fun = MultiVariateFunction(funtr,d);
+    fun.evaluationAtMultiplePoints = true;
+    
+    R1 = H.projection(fun,I);
     R2 = 10;
     
     % Materials
     mat = MATERIALS();
-    mat{1} = FOUR_ISOT('k',K,'c',c,'b',V,'r',R1);
-    mat{2} = FOUR_ISOT('k',K,'c',c,'b',V,'r',R2);
+    mat{1} = FOUR_ISOT('k',K1,'c',c1,'b',V,'r',R1);
+    mat{2} = FOUR_ISOT('k',K2,'c',c2,'b',V,'r',R2);
     mat{1} = setnumber(mat{1},1);
     mat{2} = setnumber(mat{2},2);
     pb.S = setmaterial(pb.S,mat{1},1);
@@ -91,17 +129,21 @@ if setProblem
     t0 = 0;
     t1 = 2;
     nt = 100;
-    T = TIMEMODEL(t0,t1,nt);
+    pb.timeModel = TIMEMODEL(t0,t1,nt);
     
-    % pb.N = EULERTIMESOLVER(T,'eulertype','explicit','display',true);
-    pb.N = EULERTIMESOLVER(T,'eulertype','implicit','display',true);
-    % pb.N = DGTIMESOLVER(T,1,'outputsplit',true,'display',true,'lu',true);
+    % pb.timeSolver = EULERTIMESOLVER(pb.timeModel,'eulertype','explicit','display',false);
+    pb.timeSolver = EULERTIMESOLVER(pb.timeModel,'eulertype','implicit','display',false);
+    % pb.timeSolver = DGTIMESOLVER(pb.timeModel,1,'outputsplit',true,'display',false,'lu',true);
+    
+    pb.loadFunction = @(N) one(N);
     
     %% Mass and stifness matrices and sollicitation vectors
-    pb.M = calc_mass(pb.S);
-    [pb.K,pb.f0] = calc_rigi(pb.S);
-    pb.f0 = -pb.f0;
-    pb.f = pb.f0*one(pb.N);
+    if ~israndom(pb.S)
+        pb.M = calc_mass(pb.S);
+        [pb.A,pb.b0] = calc_rigi(pb.S);
+        pb.b0 = -pb.b0;
+        pb.b = pb.b0*pb.loadFunction(pb.timeSolver);
+    end
     
     save(fullfile(pathname,'problem.mat'),'pb','Sadv','v','phi');
 else
@@ -110,36 +152,88 @@ end
 
 %% Solution
 if solveProblem
+    p = 50;
+    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
+    bases = FunctionalBases.duplicate(basis,d);
+    rv = getRandomVector(bases);
+    
+    s = AdaptiveSparseTensorAlgorithm();
+    % s.nbSamples = 1;
+    % s.addSamplesFactor = 0.1;
+    s.tol = 1e-6;
+    s.tolStagnation = 1e-1;
+    % s.tolOverfit = 1.1;
+    % s.bulkParameter = 0.5;
+    % s.adaptiveSampling = true;
+    % s.adaptationRule = 'reducedmargin';
+    s.maxIndex = p;
+    % s.display = true;
+    % s.displayIterations = true;
+    
+    ls = LeastSquaresSolver();
+    ls.regularization = false;
+    % ls.regularizationType = 'l1';
+    ls.errorEstimation = true;
+    % ls.errorEstimationType = 'leaveout';
+    % ls.errorEstimationOptions.correction = true;
+    
     % Stationary solution
+    pbt = pb;
+    pb.timeModel = [];
+    pb.timeSolver = [];
+    fun = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
+    fun = MultiVariateFunction(fun,d,getnbddlfree(pb.S));
+    fun.evaluationAtMultiplePoints = false;
+    
     t = tic;
-    u = pb.K\pb.f0;
-    u = unfreevector(pb.S,u);
+    [u,err,~,y] = s.leastSquares(fun,bases,ls,rv);
     time = toc(t);
     
     % Transient solution
+    funt = @(xi) solveSystem(calcOperator(funEval(pbt,xi)));
+    funt = MultiVariateFunction(funt,d,2);
+    funt.evaluationAtMultiplePoints = false;
     tt = tic;
-    [ut,result,vt] = dsolve(pb.N,pb.f,pb.M,pb.K);
-    % ut = unfreevector(pb.S,ut);
-    vt = unfreevector(pb.S,vt)-calc_init_dirichlet(pb.S);
+    [ut,errt,~,yt] = s.leastSquaresCell(funt,bases,ls,rv);
     timet = toc(tt);
     
-    save(fullfile(pathname,'solution.mat'),'u','time');
-    save(fullfile(pathname,'solution_transient.mat'),'ut','result','vt','timet');
+    save(fullfile(pathname,'solution.mat'),'u','err','y','fun','time');
+    save(fullfile(pathname,'solution_transient.mat'),'ut','errt','yt','funt','timet');
 else
-    load(fullfile(pathname,'solution.mat'),'u','time');
-    load(fullfile(pathname,'solution_transient.mat'),'ut','result','vt','timet');
+    load(fullfile(pathname,'solution.mat'),'u','err','y','fun','time');
+    load(fullfile(pathname,'solution_transient.mat'),'ut','errt','yt','funt','timet');
 end
 
 %% Outputs
 fprintf('\n');
-fprintf('nb elements = %g\n',getnbelem(pb.S));
-fprintf('nb nodes    = %g\n',getnbnode(pb.S));
-fprintf('nb dofs     = %g\n',getnbddl(pb.S));
-fprintf('time solver : %s\n',class(pb.N));
-fprintf('nb time steps = %g\n',getnt(pb.N));
-fprintf('nb time dofs  = %g\n',getnbtimedof(pb.N));
-fprintf('elapsed time = %f s for stationary solution\n',time);
-fprintf('elapsed time = %f s for transient solution\n',timet);
+fprintf('nb elements = %g\n',getnbelem(pbt.S));
+fprintf('nb nodes    = %g\n',getnbnode(pbt.S));
+fprintf('nb dofs     = %g\n',getnbddl(pbt.S));
+fprintf('time solver : %s\n',class(pbt.timeSolver));
+fprintf('nb time steps = %g\n',getnt(pbt.timeSolver));
+fprintf('nb time dofs  = %g\n',getnbtimedof(pbt.timeSolver));
+
+fprintf('\n');
+fprintf('Stationary solution');
+fprintf('parametric dimension = %d\n',ndims(u.basis))
+fprintf('basis dimension = %d\n',numel(u.basis))
+fprintf('order = [ %s ]\n',num2str(max(u.basis.indices.array)))
+% fprintf('multi-index set = \n')
+% disp(u.basis.indices.array)
+fprintf('nb samples = %d\n',size(y,1))
+fprintf('CV error = %d\n',norm(err))
+fprintf('elapsed time = %f s\n',time)
+
+fprintf('\n');
+fprintf('Transient solution');
+fprintf('parametric dimension = %d\n',ndims(ut.basis))
+fprintf('basis dimension = %d\n',numel(ut.basis))
+fprintf('order = [ %s ]\n',num2str(max(ut.basis.indices.array)))
+% fprintf('multi-index set = \n')
+% disp(ut.basis.indices.array)
+fprintf('nb samples = %d\n',size(yt,1))
+fprintf('CV error = %d\n',norm(errt))
+fprintf('elapsed time = %f s\n',timet)
 fprintf('\n');
 
 %% Display
@@ -213,6 +307,7 @@ if displaySolution
     %          (group #2 in mesh) along the complete time evolution,
     %          corresponding to all the pollutant that the actual filter
     %          (group #1 in mesh) is not able to retain
+    ut = unfreevector(pb.S,ut);
     foutput = bodyload(keepgroupelem(pb.S,2),[],'QN',1,'nofree');
     boutput = foutput'*ut;
     

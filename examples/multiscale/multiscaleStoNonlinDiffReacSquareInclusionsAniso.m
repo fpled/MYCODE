@@ -16,7 +16,7 @@ displaySolution = true;
 
 n = 8; % number of inclusions
 filename = ['nonlinDiffReac' num2str(n) 'SquareInclusionsAniso'];
-% for rho = [0.2 0.4 0.6 0.8 1 1.2]
+% for rho = 0.2:0.2:1.2
 % filename = ['nonlinDiffReac' num2str(n) 'SquareInclusionsAnisoTol3Rho' num2str(rho)];
 % for tol = 1:4
 % filename = ['nonlinDiffReac' num2str(n) 'SquareInclusionsAnisoTol'  num2str(tol) 'RhoAitken'];

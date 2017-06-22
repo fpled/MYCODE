@@ -6,7 +6,6 @@
 clear all
 close all
 % set(0,'DefaultFigureVisible','off');
-% myparallel('start');
 % rng('default');
 myparallel('start');
 
@@ -19,7 +18,7 @@ displaySolution = true;
 n = 3; % number of patches
 filename = ['transientLinAdvDiffReac' num2str(n) 'Patches'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','multiscaleDet',filename);
+    'results','multiscaleSto',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

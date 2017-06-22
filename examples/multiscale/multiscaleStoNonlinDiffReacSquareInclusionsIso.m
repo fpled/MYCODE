@@ -16,7 +16,7 @@ displaySolution = true;
 
 n = 8; % number of inclusions
 filename = ['nonlinDiffReac' num2str(n) 'SquareInclusionsIso'];
-% for rho = [0.2 0.4 0.6 0.8 1 1.2]
+% for rho = 0.2:0.2:1.2
 % filename = ['nonlinDiffReac' num2str(n) 'SquareInclusionsIsoTol3Rho' num2str(rho)];
 % for tol = 1:4
 % filename = ['nonlinDiffReac' num2str(n) 'SquareInclusionsIsoTol'  num2str(tol) 'RhoAitken'];
@@ -493,9 +493,9 @@ if displaySolution
     % nbsamples = 3;
     % for i=1:nbsamples
     %     xi = random(rv,1);
-    %     U_xi = U.functionEval(xi);
-    %     w_xi = cellfun(@(x) x.functionEval(xi),w,'UniformOutput',false);
-    %     lambda_xi = cellfun(@(x) x.functionEval(xi),lambda,'UniformOutput',false);
+    %     U_xi = U(xi);
+    %     w_xi = cellfun(@(x) x(xi),w,'UniformOutput',false);
+    %     lambda_xi = cellfun(@(x) x(xi),lambda,'UniformOutput',false);
     %     % plotAllSolutions(glob,patches.eval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false),cellfun(@(x) x',lambda_xi,'UniformOutput',false));
     %     plotGlobalSolution(glob,U_xi');
     %     % plotLocalSolution(patches,cellfun(@(x) x',w_xi,'UniformOutput',false));

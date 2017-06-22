@@ -16,6 +16,8 @@ displaySolution = true;
 
 n = 3; % number of patches
 filename = ['transientLinAdvDiffReac' num2str(n) 'Patches'];
+% for rho = 0.1:0.1:1.8
+% filename = ['transientLinAdvDiffReac' num2str(n) 'PatchesRho' num2str(rho)];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','multiscaleDet',filename);
 if ~exist(pathname,'dir')
@@ -485,35 +487,35 @@ if displaySolution
     end
     hold off
     set(gca,'FontSize',16)
-    % l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h_patch{:}],...
-    %     '$\Omega_1 \setminus \Lambda$','$\Omega_2$','$\Omega_0$','$\Gamma_D^1$','$\Gamma_D^2$',leg_patch{:});
-    % set(l,'Interpreter','latex')
+    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h_patch{:}],...
+        '$\Omega_1 \setminus \Lambda$','$\Omega_2$','$\Omega_0$','$\Gamma_D^1$','$\Gamma_D^2$',leg_patch{:});
+    set(l,'Interpreter','latex')
     mysaveas(pathname,'mesh_global_patches',formats,renderer);
     
     %% Display evolutions of error indicator, stagnation indicator, CPU time w.r.t. number of iterations for stationary solution
     plotError(output);
-    mysaveas(pathname,'error','fig');
-    mymatlab2tikz(pathname,'error.tex');
+    mysaveas(pathname,'error_stationary','fig');
+    mymatlab2tikz(pathname,'error_stationary.tex');
     
     plotStagnation(output);
-    mysaveas(pathname,'stagnation','fig');
-    mymatlab2tikz(pathname,'stagnation.tex');
+    mysaveas(pathname,'stagnation_stationary','fig');
+    mymatlab2tikz(pathname,'stagnation_stationary.tex');
     
     plotErrorGlobalSolution(output);
-    mysaveas(pathname,'error_global_solution','fig');
-    mymatlab2tikz(pathname,'error_global_solution.tex');
+    mysaveas(pathname,'error_global_solution_stationary','fig');
+    mymatlab2tikz(pathname,'error_global_solution_stationary.tex');
     
     plotStagnationGlobalSolution(output);
-    mysaveas(pathname,'stagnation_global_solution','fig');
-    mymatlab2tikz(pathname,'stagnation_global_solution.tex');
+    mysaveas(pathname,'stagnation_global_solution_stationary','fig');
+    mymatlab2tikz(pathname,'stagnation_global_solution_stationary.tex');
     
     plotCPUTime(output,'legend',false);
-    mysaveas(pathname,'cpu_time','fig');
-    mymatlab2tikz(pathname,'cpu_time.tex');
+    mysaveas(pathname,'cpu_time_stationary','fig');
+    mymatlab2tikz(pathname,'cpu_time_stationary.tex');
     
     plotRelaxationParameter(output,'legend',false);
-    mysaveas(pathname,'relaxation_parameter','fig');
-    mymatlab2tikz(pathname,'relaxation_parameter.tex');
+    mysaveas(pathname,'relaxation_parameter_stationary','fig');
+    mymatlab2tikz(pathname,'relaxation_parameter_stationary.tex');
     
     %% Display stationary solutions
     % plotAllSolutions(glob,patches,interfaces,U,w,lambda);
@@ -637,5 +639,7 @@ if displaySolution
     fprintf('reference quantity of interest = %e\n',Ioutput_ref);
     fprintf('error in quantity of interest  = %e\n',errOutput);
 end
+
+% end
 
 % myparallel('stop');

@@ -94,11 +94,13 @@ if setProblem
     pb.N = EULERTIMESOLVER(T,'eulertype','implicit','display',true);
     % pb.N = DGTIMESOLVER(T,1,'outputsplit',true,'display',true,'lu',true);
     
+    pb.loadFunction = @(N) one(N);
+    
     %% Mass and stifness matrices and sollicitation vectors
     pb.M = calc_mass(pb.S);
-    [pb.K,pb.f0] = calc_rigi(pb.S);
-    pb.f0 = -pb.f0;
-    pb.f = pb.f0*one(pb.N);
+    [pb.A,pb.b0] = calc_rigi(pb.S);
+    pb.b0 = -pb.b0;
+    pb.b = pb.b0*pb.loadFunction(pb.N);
     
     save(fullfile(pathname,'problem.mat'),'pb','Sadv','v','phi');
 else
@@ -109,13 +111,13 @@ end
 if solveProblem
     % Stationary solution
     t = tic;
-    u = pb.K\pb.f0;
-    u = unfreevector(pb.S,u);
+    u = pb.A\pb.b0;
+    % u = unfreevector(pb.S,u);
     time = toc(t);
     
     % Transient solution
     tt = tic;
-    [ut,result,vt] = dsolve(pb.N,pb.f,pb.M,pb.K);
+    [ut,result,vt] = dsolve(pb.N,pb.b,pb.M,pb.A);
     % ut = unfreevector(pb.S,ut);
     vt = unfreevector(pb.S,vt)-calc_init_dirichlet(pb.S);
     timet = toc(tt);
@@ -210,6 +212,7 @@ if displaySolution
     %          (group #2 in mesh) along the complete time evolution,
     %          corresponding to all the pollutant that the actual filter
     %          (group #1 in mesh) is not able to retain
+    ut = unfreevector(pb.S,ut);
     foutput = bodyload(keepgroupelem(pb.S,2),[],'QN',1,'nofree');
     boutput = foutput'*ut;
     

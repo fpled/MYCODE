@@ -74,20 +74,14 @@ if setProblem
     pb.S = addcl(pb.S,[]);
     
     %% Stiffness matrices and sollicitation vectors
-    if israndom(pb.S)
-        pb.A = [];
-        pb.Atang = [];
-    else
+    if ~israndom(pb.S)
         pb.A = @(u) calc_fint(pb.S,u);
         pb.Atang = @(u) calc_rigitang(pb.S,u);
     end
     
     % Source term
     f = 100;
-    
-    if israndom(f)
-        pb.b = [];
-    else
+    if ~israndom(f)
         pb.b = bodyload(pb.S,[],'QN',f);
     end
     

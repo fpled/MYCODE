@@ -17,7 +17,7 @@ displaySolution = true;
 
 n = 8; % number of inclusions
 filename = ['nonlinDiffReac' num2str(n) 'AlignInclusionsIso'];
-% for rho = [0.2 0.4 0.6 0.8 1 1.2 1.4 1.6 1.8]
+% for rho = 0.2:0.2:1.8
 % filename = ['nonlinDiffReac' num2str(n) 'AlignInclusionsIsoTol3Rho' num2str(rho)];
 % for tol = 1:5
 % filename = ['nonlinDiffReac' num2str(n) 'AlignInclusionsIsoTol'  num2str(tol) 'RhoAitken'];
