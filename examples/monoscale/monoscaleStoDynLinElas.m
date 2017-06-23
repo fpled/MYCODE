@@ -172,9 +172,7 @@ vt = Ut{2}; errvt = errt{2}; yvt = yt{2};
 at = Ut{3}; errat = errt{3}; yat = yt{3};
 
 fprintf('\n');
-fprintf('parametric dimension = %d for u\n',ndims(ut.basis))
-fprintf('                     = %d for v\n',ndims(vt.basis))
-fprintf('                     = %d for a\n',ndims(at.basis))
+fprintf('parametric dimension = %d\n',ndims(ut.basis))
 fprintf('basis dimension = %d for u\n',numel(ut.basis))
 fprintf('                = %d for v\n',numel(vt.basis))
 fprintf('                = %d for a\n',numel(at.basis))
@@ -255,23 +253,25 @@ if displaySolution
     mysaveas(pathname,'mesh',formats,renderer);
     
     %% Display evolution of solution
+    T = gettimemodel(pb.timeSolver);
+    
     i = 1;
     % for i=1:2
-        evolMean(pb.S,ut,'displ',i,'filename',['evol_solution_' num2str(i)],'pathname',pathname);
-        evolMean(pb.S,ut,'displ',i,'view3',true,'filename',['evol_solution_' num2str(i) '_view3'],'pathname',pathname);
+        evolMean(pb.S,T,ut,'displ',i,'filename',['evol_solution_' num2str(i)],'pathname',pathname);
+        evolMean(pb.S,T,ut,'displ',i,'view3',true,'filename',['evol_solution_' num2str(i) '_view3'],'pathname',pathname);
         
-        evolMean(pb.S,vt,'displ',i,'filename',['evol_velocity_' num2str(i)],'pathname',pathname);
-        evolMean(pb.S,vt,'displ',i,'view3',true,'filename',['evol_velocity_' num2str(i) '_view3'],'pathname',pathname);
+        evolMean(pb.S,T,vt,'displ',i,'filename',['evol_velocity_' num2str(i)],'pathname',pathname);
+        evolMean(pb.S,T,vt,'displ',i,'view3',true,'filename',['evol_velocity_' num2str(i) '_view3'],'pathname',pathname);
         
-        evolMean(pb.S,at,'displ',i,'filename',['evol_acceleration_' num2str(i)],'pathname',pathname);
-        evolMean(pb.S,at,'displ',i,'view3',true,'filename',['evol_acceleration_' num2str(i) '_view3'],'pathname',pathname);
+        evolMean(pb.S,T,at,'displ',i,'filename',['evol_acceleration_' num2str(i)],'pathname',pathname);
+        evolMean(pb.S,T,at,'displ',i,'view3',true,'filename',['evol_acceleration_' num2str(i) '_view3'],'pathname',pathname);
     % end
     
     % for i=1:3
-    %     evolMean(pb.S,ut,'epsilon',i,'filename',['evol_epsilon_' num2str(i)],'pathname',pathname);
-    %     evolMean(pb.S,ut,'sigma',i,'filename',['evol_sigma_' num2str(i)],'pathname',pathname);
+    %     evolMean(pb.S,T,ut,'epsilon',i,'filename',['evol_epsilon_' num2str(i)],'pathname',pathname);
+    %     evolMean(pb.S,T,ut,'sigma',i,'filename',['evol_sigma_' num2str(i)],'pathname',pathname);
     % end
     
-    % evolMean(pb.S,ut,'epsilon','mises','filename','evol_epsilon_von_mises','pathname',pathname);
-    % evolMean(pb.S,ut,'sigma','mises','filename','evol_sigma_von_mises','pathname',pathname);
+    % evolMean(pb.S,T,ut,'epsilon','mises','filename','evol_epsilon_von_mises','pathname',pathname);
+    % evolMean(pb.S,T,ut,'sigma','mises','filename','evol_sigma_von_mises','pathname',pathname);
 end

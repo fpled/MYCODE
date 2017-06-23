@@ -224,11 +224,31 @@ fprintf('elapsed time = %f s\n',time)
 ut = Ut{1}; errut = errt{1}; yut = yt{1};
 vt = Ut{2}; errvt = errt{2}; yvt = yt{2};
 
+T = gettimemodel(pb.timeSolver);
+sz_free = [getnbddlfree(pb.S),getnbtimedof(T)];
+sz = [getnbddl(pb.S),getnbtimedof(T)];
+
+ut_data = ut.data;
+ut_data = reshape(ut_data,[numel(ut.basis),sz_free]);
+ut = FunctionalBasisArray(ut_data,ut.basis,sz_free);
+
+vt_data = vt.data;
+vt_data = reshape(vt_data,[numel(vt.basis),sz_free]);
+vt = FunctionalBasisArray(vt_data,vt.basis,sz_free);
+v0 = calc_init_dirichlet(pb.S)*one(T);
+vt_data_unfree = zeros([numel(vt.basis),sz]);
+for k=1:numel(vt.basis)
+    vtk = TIMEMATRIX(reshape(vt_data(k,:,:),sz_free),T);
+    vtk = getvalue(unfreevector(pb.S,vtk)-v0);
+    vt_data_unfree(k,:,:) = reshape(vtk,[1,sz]);
+end
+vt_unfree = FunctionalBasisArray(vt_data_unfree,vt.basis,sz);
+
 fprintf('\n');
 fprintf('Transient solution\n');
-fprintf('spatial-time dimension = %d\n',ut.sz)
-fprintf('parametric dimension = %d for u\n',ndims(ut.basis))
-fprintf('                     = %d for v\n',ndims(vt.basis))
+fprintf('spatial dimension = %d\n',ut.sz(1))
+fprintf('time dimension = %d\n',ut.sz(2))
+fprintf('parametric dimension = %d\n',ndims(ut.basis))
 fprintf('basis dimension = %d for u\n',numel(ut.basis))
 fprintf('                = %d for v\n',numel(vt.basis))
 fprintf('order = [ %s ] for u\n',num2str(max(ut.basis.indices.array)))
@@ -329,34 +349,75 @@ if displaySolution
     % plotStats(pb.S,u);
     
     plotMean(pb.S,u);
-    mysaveas(pathname,'mean_solution_stationary',formats,renderer);
+    mysaveas(pathname,'mean_solution',formats,renderer);
     
     plotVariance(pb.S,u);
-    mysaveas(pathname,'var_solution_stationary',formats,renderer);
+    mysaveas(pathname,'var_solution',formats,renderer);
     
     plotStd(pb.S,u);
-    mysaveas(pathname,'std_solution_stationary',formats,renderer);
+    mysaveas(pathname,'std_solution',formats,renderer);
     
     d = ndims(u.basis);
     for i=1:d
         plotSobolIndices(pb.S,u,i);
-        mysaveas(pathname,['sobol_indices_solution_stationary_var_' num2str(i)],formats,renderer);
+        mysaveas(pathname,['sobol_indices_solution_var_' num2str(i)],formats,renderer);
         
         plotSensitivityIndices(pb.S,u,i);
-        mysaveas(pathname,['sensitivity_indices_solution_stationary_var_' num2str(i)],formats,renderer);
+        mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i)],formats,renderer);
     end
     
     %% Display evolution of statistical outputs for transient solution
-    evolMean(pb.S,ut,'filename','evol_solution','pathname',pathname);
-    evolMean(pb.S,ut,'surface',true,'filename','evol_solution_surface','pathname',pathname);
+    evolMean(pb.S,T,ut,'filename','evol_mean_solution','pathname',pathname);
+    evolMean(pb.S,T,ut,'surface',true,'filename','evol_mean_solution_surface','pathname',pathname);
     
-    evolMean(pb.S,vt,'rescale',false,'filename','evol_velocity','pathname',pathname);
-    evolMean(pb.S,vt,'rescale',false,'surface',true,'filename','evol_velocity_surface','pathname',pathname);
+    evolMean(pb.S,T,vt_unfree,'rescale',false,'filename','evol_mean_velocity','pathname',pathname);
+    evolMean(pb.S,T,vt_unfree,'rescale',false,'surface',true,'filename','evol_mean_velocity_surface','pathname',pathname);
     
 %     for i=1:2
-%         evolMean(pb.S,ut,'epsilon',i,'filename',['evol_eps_' num2str(i)],'pathname',pathname);
-%         evolMean(pb.S,ut,'sigma',i,'filename',['evol_sig_' num2str(i)],'pathname',pathname);
+%         evolMean(pb.S,T,ut,'epsilon',i,'filename',['evol_mean_eps_' num2str(i)],'pathname',pathname);
+%         evolMean(pb.S,T,ut,'sigma',i,'filename',['evol_mean_sig_' num2str(i)],'pathname',pathname);
 %     end
+    
+    evolVariance(pb.S,T,ut,'filename','evol_variance_solution','pathname',pathname);
+    evolVariance(pb.S,T,ut,'surface',true,'filename','evol_variance_solution_surface','pathname',pathname);
+    
+    evolVariance(pb.S,T,vt,'rescale',false,'filename','evol_variance_velocity','pathname',pathname);
+    evolVariance(pb.S,T,vt,'rescale',false,'surface',true,'filename','evol_variance_velocity_surface','pathname',pathname);
+    
+%     for i=1:2
+%         evolVariance(pb.S,T,ut,'epsilon',i,'filename',['evol_variance_eps_' num2str(i)],'pathname',pathname);
+%         evolVariance(pb.S,T,ut,'sigma',i,'filename',['evol_variance_sig_' num2str(i)],'pathname',pathname);
+%     end
+    
+    evolStd(pb.S,T,ut,'filename','evol_std_solution','pathname',pathname);
+    evolStd(pb.S,T,ut,'surface',true,'filename','evol_std_solution_surface','pathname',pathname);
+    
+    evolStd(pb.S,T,vt,'rescale',false,'filename','evol_std_velocity','pathname',pathname);
+    evolStd(pb.S,T,vt,'rescale',false,'surface',true,'filename','evol_std_velocity_surface','pathname',pathname);
+    
+%     for i=1:2
+%         evolStd(pb.S,T,ut,'epsilon',i,'filename',['evol_std_eps_' num2str(i)],'pathname',pathname);
+%         evolStd(pb.S,T,ut,'sigma',i,'filename',['evol_std_sig_' num2str(i)],'pathname',pathname);
+%     end
+    
+    d = ndims(ut.basis);
+    for i=1:d
+        evolSobolIndices(pb.S,T,ut,i,'filename',['evol_sobol_indices_solution_var_' num2str(i)],'pathname',pathname);
+        evolSobolIndices(pb.S,T,vt,i,'filename',['evol_sobol_indices_velocity_var_' num2str(i)],'pathname',pathname);
+        
+%        for j=1:2
+%            evolSobolIndices(pb.S,T,ut,i,'epsilon',j,'filename',['evol_sobol_indices_eps_' num2str(j) '_var_' num2str(i)],'pathname',pathname);
+%            evolSobolIndices(pb.S,T,ut,i,'sigma',j,'filename',['evol_sobol_indices_sig_' num2str(j) '_var_' num2str(i)],'pathname',pathname);
+%        end
+        
+        evolSensitivityIndices(pb.S,T,ut,i,'filename',['evol_sensitivity_indices_solution_var_' num2str(i)],'pathname',pathname);
+        evolSensitivityIndices(pb.S,T,vt,i,'filename',['evol_sensitivity_indices_velocity_var_' num2str(i)],'pathname',pathname);
+        
+%        for j=1:2
+%            evolSensitivityIndices(pb.S,T,ut,i,'epsilon',j,'filename',['evol_sensitivity_indices_eps_' num2str(j) '_var_' num2str(i)],'pathname',pathname);
+%            evolSensitivityIndices(pb.S,T,ut,i,'sigma',j,'filename',['evol_sensitivity_indices_sig_' num2str(j) '_var_' num2str(i)],'pathname',pathname);
+%        end
+    end
     
     %% Display quantity of interest
     % boutput: concentration of pollutant captured by the trap domain
@@ -365,21 +426,21 @@ if displaySolution
     %          (group #2 in mesh) along the complete time evolution,
     %          corresponding to all the pollutant that the actual filter
     %          (group #1 in mesh) is not able to retain
-    ut = unfreevector(pb.S,ut);
-    foutput = bodyload(keepgroupelem(pb.S,2),[],'QN',1,'nofree');
-    boutput = foutput'*ut;
-    
-    figure('Name','Quantity of interest')
-    clf
-    plot(boutput,'-b','LineWidth',1);
-    grid on
-    box on
-    set(gca,'FontSize',16)
-    xlabel('Time (s)')
-    ylabel('Quantity of interest')
-    mysaveas(pathname,'quantity_of_interest',formats,renderer);
-    mymatlab2tikz(pathname,'quantity_of_interest.tex');
-    
-    Ioutput = integrate(boutput);
-    fprintf('quantity of interest = %e\n',Ioutput);
+%     ut = unfreevector(pb.S,ut);
+%     foutput = bodyload(keepgroupelem(pb.S,2),[],'QN',1,'nofree');
+%     boutput = foutput'*ut;
+%     
+%     figure('Name','Quantity of interest')
+%     clf
+%     plot(boutput,'-b','LineWidth',1);
+%     grid on
+%     box on
+%     set(gca,'FontSize',16)
+%     xlabel('Time (s)')
+%     ylabel('Quantity of interest')
+%     mysaveas(pathname,'quantity_of_interest',formats,renderer);
+%     mymatlab2tikz(pathname,'quantity_of_interest.tex');
+%     
+%     Ioutput = integrate(boutput);
+%     fprintf('quantity of interest = %e\n',Ioutput);
 end
