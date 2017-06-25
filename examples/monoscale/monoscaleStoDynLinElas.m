@@ -146,15 +146,15 @@ if solveProblem
     % ls.errorEstimationOptions.correction = true;
     
     fun = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
-    fun = MultiVariateFunction(fun,d,3);
+    fun = MultiVariateFunction(fun,d,getnbddlfree(pb.S)*getnbtimedof(pb.timeSolver));
     fun.evaluationAtMultiplePoints = false;
     t = tic;
-    [Ut,errt,~,yt] = s.leastSquaresCell(fun,bases,ls,rv);
+    [ut,errt,~,yt] = s.leastSquares(fun,bases,ls,rv);
     time = toc(t);
     
-    save(fullfile(pathname,'solution.mat'),'Ut','errt','yt','fun','time');
+    save(fullfile(pathname,'solution.mat'),'ut','errt','yt','fun','time');
 else
-    load(fullfile(pathname,'solution.mat'),'Ut','errt','yt','fun','time');
+    load(fullfile(pathname,'solution.mat'),'ut','errt','yt','fun','time');
 end
 
 %% Outputs
@@ -167,53 +167,33 @@ fprintf('time solver : %s\n',class(pb.N));
 fprintf('nb time steps = %g\n',getnt(pb.N));
 fprintf('nb time dofs  = %g\n',getnbtimedof(pb.N));
 
-ut = Ut{1}; errut = errt{1}; yut = yt{1};
-vt = Ut{2}; errvt = errt{2}; yvt = yt{2};
-at = Ut{3}; errat = errt{3}; yat = yt{3};
-
 fprintf('\n');
 fprintf('parametric dimension = %d\n',ndims(ut.basis))
-fprintf('basis dimension = %d for u\n',numel(ut.basis))
-fprintf('                = %d for v\n',numel(vt.basis))
-fprintf('                = %d for a\n',numel(at.basis))
-fprintf('order = [ %s ] for u\n',num2str(max(ut.basis.indices.array)))
-fprintf('      = [ %s ] for v\n',num2str(max(vt.basis.indices.array)))
-fprintf('      = [ %s ] for a\n',num2str(max(at.basis.indices.array)))
-% fprintf('multi-index set for u = \n')
+fprintf('basis dimension = %d\n',numel(ut.basis))
+fprintf('order = [ %s ]\n',num2str(max(ut.basis.indices.array)))
+% fprintf('multi-index set = \n')
 % disp(ut.basis.indices.array)
-% fprintf('multi-index set for v = \n')
-% disp(vt.basis.indices.array)
-% fprintf('multi-index set for a = \n')
-% disp(at.basis.indices.array)
-fprintf('nb samples = %d\n',size(yut,1))
-fprintf('CV error = %d for u\n',norm(errut))
-fprintf('         = %d for v\n',norm(errvt))
-fprintf('         = %d for a\n',norm(errat))
+fprintf('nb samples = %d\n',size(yt,1))
+fprintf('CV error = %d\n',norm(errt))
 fprintf('elapsed time = %f s\n',time)
 
 %% Test
 if testSolution
     Ntest = 100;
-    [errttest,xttest,Uttest,yttest] = computeTestErrorCell(Ut,fun,Ntest);
+    [errttest,xttest,uttest,yttest] = computeTestError(ut,fun,Ntest);
     save(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
-    save(fullfile(pathname,'testt.mat'),'Uttest','errttest','xttest','yttest');
+    save(fullfile(pathname,'testt.mat'),'uttest','errttest','xttest','yttest');
 else
     load(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
-    load(fullfile(pathname,'testt.mat'),'Uttest','errttest','xttest','yttest');
+    load(fullfile(pathname,'testt.mat'),'uttest','errttest','xttest','yttest');
 end
 fprintf('\n');
 fprintf('Stationary solution\n');
 fprintf('test error = %d\n',errtest)
 
-uttest = Uttest{1}; erruttest = errttest{1}; yuttest = yttest{1};
-vttest = Uttest{2}; errvttest = errttest{2}; yvttest = yttest{2};
-attest = Uttest{3}; errattest = errttest{3}; yattest = yttest{3};
-
 fprintf('\n');
 fprintf('Transient solution\n');
-fprintf('test error = %d for u\n',erruttest)
-fprintf('test error = %d for v\n',errvttest)
-fprintf('test error = %d for a\n',errattest)
+fprintf('test error = %d\n',errttest)
 
 %% Display
 if displaySolution

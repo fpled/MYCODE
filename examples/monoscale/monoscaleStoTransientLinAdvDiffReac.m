@@ -121,7 +121,7 @@ if setProblem
     %% Time scheme
     t0 = 0;
     t1 = 2;
-    nt = 100;
+    nt = 10;
     T = TIMEMODEL(t0,t1,nt);
     
     % pb.timeSolver = EULERTIMESOLVER(T,'eulertype','explicit','display',false);
@@ -153,7 +153,7 @@ if solveProblem
     s = AdaptiveSparseTensorAlgorithm();
     % s.nbSamples = 1;
     % s.addSamplesFactor = 0.1;
-    s.tol = 1e-3;
+    s.tol = 1e-6;
     s.tolStagnation = 1e-1;
     % s.tolOverfit = 1.1;
     % s.bulkParameter = 0.5;
@@ -186,18 +186,18 @@ if solveProblem
     % Transient solution
     pb = pbt;
     funt = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
-    funt = MultiVariateFunction(funt,d,2);
+    funt = MultiVariateFunction(funt,d,getnbddlfree(pb.S)*getnbtimedof(pb.timeSolver));
     funt.evaluationAtMultiplePoints = false;
     
     t = tic;
-    [Ut,errt,~,yt] = s.leastSquaresCell(funt,bases,ls,rv);
+    [ut,errt,~,yt] = s.leastSquares(funt,bases,ls,rv);
     timet = toc(t);
     
     save(fullfile(pathname,'solution.mat'),'u','err','y','fun','time');
-    save(fullfile(pathname,'solution_transient.mat'),'Ut','errt','yt','funt','timet');
+    save(fullfile(pathname,'solution_transient.mat'),'ut','errt','yt','funt','timet');
 else
     load(fullfile(pathname,'solution.mat'),'u','err','y','fun','time');
-    load(fullfile(pathname,'solution_transient.mat'),'Ut','errt','yt','funt','timet');
+    load(fullfile(pathname,'solution_transient.mat'),'ut','errt','yt','funt','timet');
 end
 
 %% Outputs
@@ -221,69 +221,58 @@ fprintf('nb samples = %d\n',size(y,1))
 fprintf('CV error = %d\n',norm(err))
 fprintf('elapsed time = %f s\n',time)
 
-ut = Ut{1}; errut = errt{1}; yut = yt{1};
-vt = Ut{2}; errvt = errt{2}; yvt = yt{2};
-
 T = gettimemodel(pb.timeSolver);
 sz_free = [getnbddlfree(pb.S),getnbtimedof(T)];
 sz = [getnbddl(pb.S),getnbtimedof(T)];
 
+utoutput = ut;
 ut_data = ut.data;
 ut_data = reshape(ut_data,[numel(ut.basis),sz_free]);
 ut = FunctionalBasisArray(ut_data,ut.basis,sz_free);
 
-vt_data = vt.data;
-vt_data = reshape(vt_data,[numel(vt.basis),sz_free]);
-vt = FunctionalBasisArray(vt_data,vt.basis,sz_free);
-v0 = calc_init_dirichlet(pb.S)*one(T);
-vt_data_unfree = zeros([numel(vt.basis),sz]);
-for k=1:numel(vt.basis)
-    vtk = TIMEMATRIX(reshape(vt_data(k,:,:),sz_free),T);
-    vtk = getvalue(unfreevector(pb.S,vtk)-v0);
-    vt_data_unfree(k,:,:) = reshape(vtk,[1,sz]);
-end
-vt_unfree = FunctionalBasisArray(vt_data_unfree,vt.basis,sz);
+% vt_data = vt.data;
+% vt_data = reshape(vt_data,[numel(vt.basis),sz_free]);
+% vt = FunctionalBasisArray(vt_data,vt.basis,sz_free);
+% v0 = calc_init_dirichlet(pb.S)*one(T);
+% vt_data_unfree = zeros([numel(vt.basis),sz]);
+% for k=1:numel(vt.basis)
+%     vtk = TIMEMATRIX(reshape(vt_data(k,:,:),sz_free),T);
+%     vtk = getvalue(unfreevector(pb.S,vtk)-v0);
+%     vt_data_unfree(k,:,:) = reshape(vtk,[1,sz]);
+% end
+% vt_unfree = FunctionalBasisArray(vt_data_unfree,vt.basis,sz);
 
 fprintf('\n');
 fprintf('Transient solution\n');
 fprintf('spatial dimension = %d\n',ut.sz(1))
 fprintf('time dimension = %d\n',ut.sz(2))
 fprintf('parametric dimension = %d\n',ndims(ut.basis))
-fprintf('basis dimension = %d for u\n',numel(ut.basis))
-fprintf('                = %d for v\n',numel(vt.basis))
-fprintf('order = [ %s ] for u\n',num2str(max(ut.basis.indices.array)))
-fprintf('      = [ %s ] for v\n',num2str(max(vt.basis.indices.array)))
-% fprintf('multi-index set for u = \n')
+fprintf('basis dimension = %d\n',numel(ut.basis))
+fprintf('order = [ %s ]\n',num2str(max(ut.basis.indices.array)))
+% fprintf('multi-index set = \n')
 % disp(ut.basis.indices.array)
-% fprintf('multi-index set for v = \n')
-% disp(vt.basis.indices.array)
-fprintf('nb samples = %d\n',size(yut,1))
-fprintf('CV error = %d for u\n',norm(errut))
-fprintf('         = %d for v\n',norm(errvt))
+fprintf('nb samples = %d\n',size(yt,1))
+fprintf('CV error = %d\n',norm(errt))
 fprintf('elapsed time = %f s\n',timet)
 
 %% Test
 if testSolution
     Ntest = 100;
     [errtest,xtest,utest,ytest] = computeTestError(u,fun,Ntest);
-    [errttest,xttest,Uttest,yttest] = computeTestErrorCell(Ut,funt,Ntest);
+    [errttest,xttest,uttest,yttest] = computeTestError(utoutput,funt,Ntest);
     save(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
-    save(fullfile(pathname,'testt.mat'),'Uttest','errttest','xttest','yttest');
+    save(fullfile(pathname,'testt.mat'),'uttest','errttest','xttest','yttest');
 else
     load(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
-    load(fullfile(pathname,'testt.mat'),'Uttest','errttest','xttest','yttest');
+    load(fullfile(pathname,'testt.mat'),'uttest','errttest','xttest','yttest');
 end
 fprintf('\n');
 fprintf('Stationary solution\n');
 fprintf('test error = %d\n',errtest)
 
-uttest = Uttest{1}; erruttest = errttest{1}; yuttest = yttest{1};
-vttest = Uttest{2}; errvttest = errttest{2}; yvttest = yttest{2};
-
 fprintf('\n');
 fprintf('Transient solution\n');
-fprintf('test error = %d for u\n',erruttest)
-fprintf('test error = %d for v\n',errvttest)
+fprintf('test error = %d\n',errttest)
 
 %% Display
 if displaySolution
@@ -341,9 +330,9 @@ if displaySolution
     mysaveas(pathname,'multi_index_set_solution_transient','fig');
     mymatlab2tikz(pathname,'multi_index_set_solution_transient.tex');
     
-    plotMultiIndexSet(vt,'legend',false);
-    mysaveas(pathname,'multi_index_set_velocity','fig');
-    mymatlab2tikz(pathname,'multi_index_set_velocity.tex');
+%     plotMultiIndexSet(vt,'legend',false);
+%     mysaveas(pathname,'multi_index_set_velocity','fig');
+%     mymatlab2tikz(pathname,'multi_index_set_velocity.tex');
     
     %% Display statistical outputs for stationary solution
     % plotStats(pb.S,u);
@@ -370,8 +359,8 @@ if displaySolution
     evolMean(pb.S,T,ut,'filename','evol_mean_solution','pathname',pathname);
     evolMean(pb.S,T,ut,'surface',true,'filename','evol_mean_solution_surface','pathname',pathname);
     
-    evolMean(pb.S,T,vt_unfree,'rescale',false,'filename','evol_mean_velocity','pathname',pathname);
-    evolMean(pb.S,T,vt_unfree,'rescale',false,'surface',true,'filename','evol_mean_velocity_surface','pathname',pathname);
+%     evolMean(pb.S,T,vt_unfree,'rescale',false,'filename','evol_mean_velocity','pathname',pathname);
+%     evolMean(pb.S,T,vt_unfree,'rescale',false,'surface',true,'filename','evol_mean_velocity_surface','pathname',pathname);
     
 %     for i=1:2
 %         evolMean(pb.S,T,ut,'epsilon',i,'filename',['evol_mean_eps_' num2str(i)],'pathname',pathname);
@@ -381,8 +370,8 @@ if displaySolution
     evolVariance(pb.S,T,ut,'filename','evol_variance_solution','pathname',pathname);
     evolVariance(pb.S,T,ut,'surface',true,'filename','evol_variance_solution_surface','pathname',pathname);
     
-    evolVariance(pb.S,T,vt,'rescale',false,'filename','evol_variance_velocity','pathname',pathname);
-    evolVariance(pb.S,T,vt,'rescale',false,'surface',true,'filename','evol_variance_velocity_surface','pathname',pathname);
+%     evolVariance(pb.S,T,vt,'rescale',false,'filename','evol_variance_velocity','pathname',pathname);
+%     evolVariance(pb.S,T,vt,'rescale',false,'surface',true,'filename','evol_variance_velocity_surface','pathname',pathname);
     
 %     for i=1:2
 %         evolVariance(pb.S,T,ut,'epsilon',i,'filename',['evol_variance_eps_' num2str(i)],'pathname',pathname);
@@ -392,8 +381,8 @@ if displaySolution
     evolStd(pb.S,T,ut,'filename','evol_std_solution','pathname',pathname);
     evolStd(pb.S,T,ut,'surface',true,'filename','evol_std_solution_surface','pathname',pathname);
     
-    evolStd(pb.S,T,vt,'rescale',false,'filename','evol_std_velocity','pathname',pathname);
-    evolStd(pb.S,T,vt,'rescale',false,'surface',true,'filename','evol_std_velocity_surface','pathname',pathname);
+%     evolStd(pb.S,T,vt,'rescale',false,'filename','evol_std_velocity','pathname',pathname);
+%     evolStd(pb.S,T,vt,'rescale',false,'surface',true,'filename','evol_std_velocity_surface','pathname',pathname);
     
 %     for i=1:2
 %         evolStd(pb.S,T,ut,'epsilon',i,'filename',['evol_std_eps_' num2str(i)],'pathname',pathname);
@@ -403,7 +392,7 @@ if displaySolution
     d = ndims(ut.basis);
     for i=1:d
         evolSobolIndices(pb.S,T,ut,i,'filename',['evol_sobol_indices_solution_var_' num2str(i)],'pathname',pathname);
-        evolSobolIndices(pb.S,T,vt,i,'filename',['evol_sobol_indices_velocity_var_' num2str(i)],'pathname',pathname);
+%         evolSobolIndices(pb.S,T,vt,i,'filename',['evol_sobol_indices_velocity_var_' num2str(i)],'pathname',pathname);
         
 %        for j=1:2
 %            evolSobolIndices(pb.S,T,ut,i,'epsilon',j,'filename',['evol_sobol_indices_eps_' num2str(j) '_var_' num2str(i)],'pathname',pathname);
@@ -411,7 +400,7 @@ if displaySolution
 %        end
         
         evolSensitivityIndices(pb.S,T,ut,i,'filename',['evol_sensitivity_indices_solution_var_' num2str(i)],'pathname',pathname);
-        evolSensitivityIndices(pb.S,T,vt,i,'filename',['evol_sensitivity_indices_velocity_var_' num2str(i)],'pathname',pathname);
+%         evolSensitivityIndices(pb.S,T,vt,i,'filename',['evol_sensitivity_indices_velocity_var_' num2str(i)],'pathname',pathname);
         
 %        for j=1:2
 %            evolSensitivityIndices(pb.S,T,ut,i,'epsilon',j,'filename',['evol_sensitivity_indices_eps_' num2str(j) '_var_' num2str(i)],'pathname',pathname);
