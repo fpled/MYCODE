@@ -12,7 +12,7 @@ myparallel('start');
 %% Input data
 setProblem = true;
 solveProblem = true;
-displaySolution = true;
+displaySolution = false;
 testSolution = true;
 
 filename = 'transientLinAdvDiffReac';
@@ -59,9 +59,9 @@ if setProblem
     K2 = 0.01;
     
     % Thermal capacity
-    % c1(xi) = 1 + xi
+    % c1(xi) = 1 + 0.1 * xi
     % c2 = 1
-    fun = @(x) 1 + x(:,2);
+    fun = @(x) 1 + 0.1 * x(:,2);
     funtr = @(x) fun(transfer(rvb,rv,x));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;
