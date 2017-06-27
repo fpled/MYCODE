@@ -34,7 +34,7 @@ if setProblem
     pb.S = gmshcanister(cl1,cl2,cl0,cltip,fullfile(pathname,'gmsh_canister'));
     
     %% Random variables
-    d = 2; % parametric dimension
+    d = 3; % parametric dimension
     v = UniformRandomVariable(0,1);
     rv = RandomVector(v,d);
     
@@ -59,7 +59,15 @@ if setProblem
     K2 = 0.01;
     
     % Thermal capacity
-    c = 1;
+    % c1(xi) = 1 + 0.1 * xi
+    % c2 = 1
+    fun = @(x) 1 + 0.1 * x(:,2);
+    funtr = @(x) fun(transfer(rvb,rv,x));
+    fun = MultiVariateFunction(funtr,d);
+    fun.evaluationAtMultiplePoints = true;
+    
+    c1 = H.projection(fun,I);
+    c2 = 1;
     
     % Advection velocity
     Sadv = pb.S;
@@ -83,7 +91,7 @@ if setProblem
     % Linear reaction parameter
     % R1(xi) = 0.1 * (1 + xi)
     % R2 = 10
-    fun = @(x) 0.1 * (1 + x(:,2));
+    fun = @(x) 0.1 * (1 + x(:,3));
     funtr = @(x) fun(transfer(rvb,rv,x));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;
@@ -93,8 +101,8 @@ if setProblem
     
     % Materials
     mat = MATERIALS();
-    mat{1} = FOUR_ISOT('k',K1,'c',c,'b',V,'r',R1);
-    mat{2} = FOUR_ISOT('k',K2,'c',c,'b',V,'r',R2);
+    mat{1} = FOUR_ISOT('k',K1,'c',c1,'b',V,'r',R1);
+    mat{2} = FOUR_ISOT('k',K2,'c',c2,'b',V,'r',R2);
     mat{1} = setnumber(mat{1},1);
     mat{2} = setnumber(mat{2},2);
     pb.S = setmaterial(pb.S,mat{1},1);
@@ -121,7 +129,7 @@ if setProblem
     %% Time scheme
     t0 = 0;
     t1 = 2;
-    nt = 10;
+    nt = 100;
     T = TIMEMODEL(t0,t1,nt);
     
     % pb.timeSolver = EULERTIMESOLVER(T,'eulertype','explicit','display',false);
@@ -153,7 +161,7 @@ if solveProblem
     s = AdaptiveSparseTensorAlgorithm();
     % s.nbSamples = 1;
     % s.addSamplesFactor = 0.1;
-    s.tol = 1e-6;
+    s.tol = 1e-3;
     s.tolStagnation = 1e-1;
     % s.tolOverfit = 1.1;
     % s.bulkParameter = 0.5;
