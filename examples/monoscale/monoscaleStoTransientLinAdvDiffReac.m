@@ -59,9 +59,9 @@ if setProblem
     K2 = 0.01;
     
     % Thermal capacity
-    % c1(xi) = 1 + 0.1 * xi
+    % c1(xi) = 1 + xi
     % c2 = 1
-    fun = @(x) 1 + 0.1 * x(:,2);
+    fun = @(x) 1 + x(:,2);
     funtr = @(x) fun(transfer(rvb,rv,x));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;
@@ -196,16 +196,19 @@ if solveProblem
     funt = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
     funt = MultiVariateFunction(funt,d,getnbddlfree(pb.S)*getnbtimedof(pb.timeSolver));
     funt.evaluationAtMultiplePoints = false;
+    funtCell = @(xi) solveSystemCell(calcOperator(funEval(pb,xi)));
+    funtCell = MultiVariateFunction(funtCell,d,3);
+    funtCell.evaluationAtMultiplePoints = false;
     
     t = tic;
     [ut,errt,~,yt] = s.leastSquares(funt,bases,ls,rv);
     timet = toc(t);
     
     save(fullfile(pathname,'solution.mat'),'u','err','y','fun','time');
-    save(fullfile(pathname,'solution_transient.mat'),'ut','errt','yt','funt','timet');
+    save(fullfile(pathname,'solution_transient.mat'),'ut','errt','yt','funt','funtCell','timet');
 else
     load(fullfile(pathname,'solution.mat'),'u','err','y','fun','time');
-    load(fullfile(pathname,'solution_transient.mat'),'ut','errt','yt','funt','timet');
+    load(fullfile(pathname,'solution_transient.mat'),'ut','errt','yt','funt','funtCell','timet');
 end
 
 %% Outputs
@@ -268,11 +271,14 @@ if testSolution
     Ntest = 100;
     [errtest,xtest,utest,ytest] = computeTestError(u,fun,Ntest);
     [errttest,xttest,uttest,yttest] = computeTestError(utoutput,funt,Ntest);
+    [Errttest,Xttest,Uttest,Yttest] = computeTestErrorCell({utoutput,vt},funtCell,Ntest);
     save(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
     save(fullfile(pathname,'testt.mat'),'uttest','errttest','xttest','yttest');
+    save(fullfile(pathname,'testt.mat'),'Uttest','Errttest','Xttest','Yttest');
 else
     load(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
     load(fullfile(pathname,'testt.mat'),'uttest','errttest','xttest','yttest');
+    load(fullfile(pathname,'testt.mat'),'Uttest','Errttest','Xttest','Yttest');
 end
 fprintf('\n');
 fprintf('Stationary solution\n');
@@ -281,6 +287,11 @@ fprintf('test error = %d\n',errtest)
 fprintf('\n');
 fprintf('Transient solution\n');
 fprintf('test error = %d\n',errttest)
+
+erruttest = errttest{1};
+errvttest = errttest{2};
+fprintf('test error = %d for u\n',erruttest)
+fprintf('test error = %d for v\n',errvttest)
 
 %% Display
 if displaySolution
