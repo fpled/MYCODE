@@ -267,7 +267,7 @@ zlabel('$F_{(E,N)}(e,n)$','Interpreter',interpreter)
 mysaveas(pathname,'cdf_EN',formats);
 mymatlab2tikz(pathname,'cdf_EG.tex');
 
-%%
+%% Sample generation
 N = 3000; % nombre de realisations  
 C1_Model = gamrnd(a1,b1,N,1);
 C2_Model = gamrnd(a2,b2,N,1);
