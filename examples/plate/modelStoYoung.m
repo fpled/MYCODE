@@ -14,13 +14,12 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-formats = {'fig','epsc2'};
-renderer = 'OpenGL';
-
 fontsize = 16;
 linewidth = 1;
 markersize = 36;
 interpreter = 'latex';
+formats = {'fig','epsc2'};
+renderer = 'OpenGL';
 
 % Data for sample D
 E = [4.211 4.057 3.685 3.921 3.839 3.845 3.795...
@@ -36,11 +35,11 @@ clf
 bar(1:length(E),E)
 set(gca,'FontSize',fontsize)
 set(gca,'XLim',[0,length(E)+1])
-xlabel('\''Echantillon','Interpreter',interpreter);
-ylabel('Module d''Young (GPa)','Interpreter',interpreter); 
-% xlabel('Sample','Interpreter',interpreter);
-% ylabel('Young modulus (GPa)','Interpreter',interpreter);
-mysaveas(pathname,'data_E','fig');
+% xlabel('\''Echantillon','Interpreter',interpreter);
+% ylabel('Module d''Young $E$ (GPa)','Interpreter',interpreter); 
+xlabel('Sample','Interpreter',interpreter);
+ylabel('Young modulus $E$ (GPa)','Interpreter',interpreter);
+mysaveas(pathname,'data_E',formats);
 mymatlab2tikz(pathname,'data_E.tex');
 
 %% Maximization of Log-likelihood function
@@ -99,7 +98,7 @@ xlabel('$e$ (GPa)','Interpreter',interpreter)
 ylabel('$p_E(e)$','Interpreter',interpreter)
 % l = legend('$p_E(e)$','$(e_i,p_E(e_i))_{i=1}^n$');
 % set(l,'Interpreter',interpreter,'Location','northwest');
-mysaveas(pathname,'pdf_E','fig');
+mysaveas(pathname,'pdf_E',formats);
 mymatlab2tikz(pathname,'pdf_E.tex',...
     'extraAxisOptions',{'ylabel style={overlay}'});
 
@@ -118,7 +117,7 @@ xlabel('$e$ (GPa)','Interpreter',interpreter)
 ylabel('$F_E(e)$','Interpreter',interpreter)
 % l = legend('$F_E(e)$','$(e_i,F_E(e_i))_{i=1}^n$');
 % set(l,'Interpreter',interpreter,'Location','northwest');
-mysaveas(pathname,'cdf_E','fig');
+mysaveas(pathname,'cdf_E',formats);
 mymatlab2tikz(pathname,'cdf_E.tex',...
     'extraAxisOptions',{'ylabel style={overlay}'});
 
@@ -138,11 +137,11 @@ hold off
 grid on
 box on
 set(gca,'FontSize',fontsize)
-xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-ylabel('Module d''Young (GPa)','Interpreter',interpreter)
-% xlabel('Number of samples','Interpreter',interpreter)
-% ylabel('Young modulus (GPa)','Interpreter',interpreter)
+% xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+% ylabel('Module d''Young $E$ (GPa)','Interpreter',interpreter)
+xlabel('Number of samples','Interpreter',interpreter)
+ylabel('Young modulus $E$ (GPa)','Interpreter',interpreter)
 % l = legend('r\''ealisations $(e_1,\dots,e_N)$','moyenne $m_E$');
 % set(l,'Interpreter',interpreter);
-mysaveas(pathname,'samples_E','fig');
+mysaveas(pathname,'samples_E',formats);
 mymatlab2tikz(pathname,'samples_E.tex');

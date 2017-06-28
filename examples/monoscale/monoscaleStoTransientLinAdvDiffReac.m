@@ -12,7 +12,7 @@ myparallel('start');
 %% Input data
 setProblem = true;
 solveProblem = true;
-displaySolution = false;
+displaySolution = true;
 testSolution = true;
 
 filename = 'transientLinAdvDiffReac';
@@ -40,7 +40,7 @@ if setProblem
     
     %% Materials
     % Linear diffusion coefficient
-    % K1(xi) = 0.01 * (1 + xi)
+    % K1(xi) = 0.01 + 0.005 * (2 * xi - 1) = 0.01 * (xi + 0.5)
     % K2 = 0.01
     p = 1;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
@@ -50,7 +50,7 @@ if setProblem
     I = gaussIntegrationRule(v,2);
     I = I.tensorize(d);
     
-    fun = @(xi) 0.01 * (1 + xi(:,1));
+    fun = @(xi) 0.01 * (xi(:,1) + 0.5);
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;
@@ -59,10 +59,10 @@ if setProblem
     K2 = 0.01;
     
     % Thermal capacity
-    % c1(xi) = 1 + 0.1 * xi
+    % c1(xi) = 1 + 0.05 * (2 * xi - 1)
     % c2 = 1
-    fun = @(x) 1 + 0.1 * x(:,2);
-    funtr = @(x) fun(transfer(rvb,rv,x));
+    fun = @(xi) 1 + 0.05 * (2 * xi(:,2) - 1);
+    funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;
     
@@ -89,10 +89,10 @@ if setProblem
     V = {{FENODEFIELD(V(:,1)),FENODEFIELD(V(:,2))}};
     
     % Linear reaction parameter
-    % R1(xi) = 0.1 * (1 + xi)
+    % R1(xi) = 0.1 + 0.05 * (2 * xi - 1) = 0.1 * (xi + 0.5)
     % R2 = 10
-    fun = @(x) 0.1 * (1 + x(:,3));
-    funtr = @(x) fun(transfer(rvb,rv,x));
+    fun = @(xi) 0.1 * (xi(:,3) + 0.5);
+    funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;
     
@@ -161,7 +161,7 @@ if solveProblem
     s = AdaptiveSparseTensorAlgorithm();
     % s.nbSamples = 1;
     % s.addSamplesFactor = 0.1;
-    s.tol = 1e-3;
+    s.tol = 1e-2;
     s.tolStagnation = 1e-1;
     % s.tolOverfit = 1.1;
     % s.bulkParameter = 0.5;
@@ -196,8 +196,9 @@ if solveProblem
     funt = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
     funt = MultiVariateFunction(funt,d,getnbddlfree(pb.S)*getnbtimedof(pb.timeSolver));
     funt.evaluationAtMultiplePoints = false;
+    
     funtCell = @(xi) solveSystemCell(calcOperator(funEval(pb,xi)));
-    funtCell = MultiVariateFunction(funtCell,d,3);
+    funtCell = MultiVariateFunction(funtCell,d,2);
     funtCell.evaluationAtMultiplePoints = false;
     
     t = tic;
@@ -233,25 +234,25 @@ fprintf('CV error = %d\n',norm(err))
 fprintf('elapsed time = %f s\n',time)
 
 T = gettimemodel(pb.timeSolver);
-sz_free = [getnbddlfree(pb.S),getnbtimedof(T)];
-sz = [getnbddl(pb.S),getnbtimedof(T)];
+sz = [getnbddlfree(pb.S),getnbtimedof(T)];
+sz_tot = [getnbddl(pb.S),getnbtimedof(T)];
 
 utoutput = ut;
-ut_data = ut.data;
-ut_data = reshape(ut_data,[numel(ut.basis),sz_free]);
-ut = FunctionalBasisArray(ut_data,ut.basis,sz_free);
+ut.data = reshape(ut.data,[numel(ut.basis),sz]);
+ut.sz = sz;
 
-% vt_data = vt.data;
-% vt_data = reshape(vt_data,[numel(vt.basis),sz_free]);
-% vt = FunctionalBasisArray(vt_data,vt.basis,sz_free);
-% v0 = calc_init_dirichlet(pb.S)*one(T);
-% vt_data_unfree = zeros([numel(vt.basis),sz]);
-% for k=1:numel(vt.basis)
-%     vtk = TIMEMATRIX(reshape(vt_data(k,:,:),sz_free),T);
-%     vtk = getvalue(unfreevector(pb.S,vtk)-v0);
-%     vt_data_unfree(k,:,:) = reshape(vtk,[1,sz]);
-% end
-% vt_unfree = FunctionalBasisArray(vt_data_unfree,vt.basis,sz);
+vt_data = zeros([numel(ut.basis),sz]);
+vt_data_tot = zeros([numel(ut.basis),sz_tot]);
+for k=1:numel(ut.basis)
+    vtk = diff(pb.timeSolver,TIMEMATRIX(reshape(ut.data(k,:,:),sz),T));
+    vt_data(k,:,:) = getvalue(vtk);
+    vt_data_tot(k,:,:) = getvalue(unfreevector(pb.S,vtk)-calc_init_dirichlet(pb.S)*one(T));
+end
+vt = FunctionalBasisArray(vt_data,ut.basis,sz);
+vt_unfree = FunctionalBasisArray(vt_data_tot,ut.basis,sz_tot);
+vtoutput = vt;
+vtoutput.data = reshape(vtoutput.data,[numel(ut.basis),prod(sz)]);
+vtoutput.sz = prod(sz);
 
 fprintf('\n');
 fprintf('Transient solution\n');
@@ -271,14 +272,14 @@ if testSolution
     Ntest = 100;
     [errtest,xtest,utest,ytest] = computeTestError(u,fun,Ntest);
     [errttest,xttest,uttest,yttest] = computeTestError(utoutput,funt,Ntest);
-    [Errttest,Xttest,Uttest,Yttest] = computeTestErrorCell({utoutput,vt},funtCell,Ntest);
+    [Errttest,Xttest,Uttest,Yttest] = computeTestErrorCell({utoutput;vtoutput},funtCell,Ntest);
     save(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
     save(fullfile(pathname,'testt.mat'),'uttest','errttest','xttest','yttest');
-    save(fullfile(pathname,'testt.mat'),'Uttest','Errttest','Xttest','Yttest');
+    save(fullfile(pathname,'Testt.mat'),'Uttest','Errttest','Xttest','Yttest');
 else
     load(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
     load(fullfile(pathname,'testt.mat'),'uttest','errttest','xttest','yttest');
-    load(fullfile(pathname,'testt.mat'),'Uttest','Errttest','Xttest','Yttest');
+    load(fullfile(pathname,'Testt.mat'),'Uttest','Errttest','Xttest','Yttest');
 end
 fprintf('\n');
 fprintf('Stationary solution\n');
@@ -288,8 +289,8 @@ fprintf('\n');
 fprintf('Transient solution\n');
 fprintf('test error = %d\n',errttest)
 
-erruttest = errttest{1};
-errvttest = errttest{2};
+erruttest = Errttest{1};
+errvttest = Errttest{2};
 fprintf('test error = %d for u\n',erruttest)
 fprintf('test error = %d for v\n',errvttest)
 
@@ -349,10 +350,6 @@ if displaySolution
     mysaveas(pathname,'multi_index_set_solution_transient','fig');
     mymatlab2tikz(pathname,'multi_index_set_solution_transient.tex');
     
-%     plotMultiIndexSet(vt,'legend',false);
-%     mysaveas(pathname,'multi_index_set_velocity','fig');
-%     mymatlab2tikz(pathname,'multi_index_set_velocity.tex');
-    
     %% Display statistical outputs for stationary solution
     % plotStats(pb.S,u);
     
@@ -378,77 +375,62 @@ if displaySolution
     evolMean(pb.S,T,ut,'filename','evol_mean_solution','pathname',pathname);
     evolMean(pb.S,T,ut,'surface',true,'filename','evol_mean_solution_surface','pathname',pathname);
     
-%     evolMean(pb.S,T,vt_unfree,'rescale',false,'filename','evol_mean_velocity','pathname',pathname);
-%     evolMean(pb.S,T,vt_unfree,'rescale',false,'surface',true,'filename','evol_mean_velocity_surface','pathname',pathname);
-    
-%     for i=1:2
-%         evolMean(pb.S,T,ut,'epsilon',i,'filename',['evol_mean_eps_' num2str(i)],'pathname',pathname);
-%         evolMean(pb.S,T,ut,'sigma',i,'filename',['evol_mean_sig_' num2str(i)],'pathname',pathname);
-%     end
+    evolMean(pb.S,T,vt_unfree,'rescale',false,'filename','evol_mean_velocity','pathname',pathname);
+    evolMean(pb.S,T,vt_unfree,'rescale',false,'surface',true,'filename','evol_mean_velocity_surface','pathname',pathname);
     
     evolVariance(pb.S,T,ut,'filename','evol_variance_solution','pathname',pathname);
     evolVariance(pb.S,T,ut,'surface',true,'filename','evol_variance_solution_surface','pathname',pathname);
     
-%     evolVariance(pb.S,T,vt,'rescale',false,'filename','evol_variance_velocity','pathname',pathname);
-%     evolVariance(pb.S,T,vt,'rescale',false,'surface',true,'filename','evol_variance_velocity_surface','pathname',pathname);
-    
-%     for i=1:2
-%         evolVariance(pb.S,T,ut,'epsilon',i,'filename',['evol_variance_eps_' num2str(i)],'pathname',pathname);
-%         evolVariance(pb.S,T,ut,'sigma',i,'filename',['evol_variance_sig_' num2str(i)],'pathname',pathname);
-%     end
+    evolVariance(pb.S,T,vt,'rescale',false,'filename','evol_variance_velocity','pathname',pathname);
+    evolVariance(pb.S,T,vt,'rescale',false,'surface',true,'filename','evol_variance_velocity_surface','pathname',pathname);
     
     evolStd(pb.S,T,ut,'filename','evol_std_solution','pathname',pathname);
     evolStd(pb.S,T,ut,'surface',true,'filename','evol_std_solution_surface','pathname',pathname);
     
-%     evolStd(pb.S,T,vt,'rescale',false,'filename','evol_std_velocity','pathname',pathname);
-%     evolStd(pb.S,T,vt,'rescale',false,'surface',true,'filename','evol_std_velocity_surface','pathname',pathname);
-    
-%     for i=1:2
-%         evolStd(pb.S,T,ut,'epsilon',i,'filename',['evol_std_eps_' num2str(i)],'pathname',pathname);
-%         evolStd(pb.S,T,ut,'sigma',i,'filename',['evol_std_sig_' num2str(i)],'pathname',pathname);
-%     end
+    evolStd(pb.S,T,vt,'rescale',false,'filename','evol_std_velocity','pathname',pathname);
+    evolStd(pb.S,T,vt,'rescale',false,'surface',true,'filename','evol_std_velocity_surface','pathname',pathname);
     
     d = ndims(ut.basis);
     for i=1:d
         evolSobolIndices(pb.S,T,ut,i,'filename',['evol_sobol_indices_solution_var_' num2str(i)],'pathname',pathname);
-%         evolSobolIndices(pb.S,T,vt,i,'filename',['evol_sobol_indices_velocity_var_' num2str(i)],'pathname',pathname);
-        
-%        for j=1:2
-%            evolSobolIndices(pb.S,T,ut,i,'epsilon',j,'filename',['evol_sobol_indices_eps_' num2str(j) '_var_' num2str(i)],'pathname',pathname);
-%            evolSobolIndices(pb.S,T,ut,i,'sigma',j,'filename',['evol_sobol_indices_sig_' num2str(j) '_var_' num2str(i)],'pathname',pathname);
-%        end
+        evolSobolIndices(pb.S,T,vt,i,'filename',['evol_sobol_indices_velocity_var_' num2str(i)],'pathname',pathname);
         
         evolSensitivityIndices(pb.S,T,ut,i,'filename',['evol_sensitivity_indices_solution_var_' num2str(i)],'pathname',pathname);
-%         evolSensitivityIndices(pb.S,T,vt,i,'filename',['evol_sensitivity_indices_velocity_var_' num2str(i)],'pathname',pathname);
-        
-%        for j=1:2
-%            evolSensitivityIndices(pb.S,T,ut,i,'epsilon',j,'filename',['evol_sensitivity_indices_eps_' num2str(j) '_var_' num2str(i)],'pathname',pathname);
-%            evolSensitivityIndices(pb.S,T,ut,i,'sigma',j,'filename',['evol_sensitivity_indices_sig_' num2str(j) '_var_' num2str(i)],'pathname',pathname);
-%        end
+        evolSensitivityIndices(pb.S,T,vt,i,'filename',['evol_sensitivity_indices_velocity_var_' num2str(i)],'pathname',pathname);
     end
     
     %% Display quantity of interest
-    % boutput: concentration of pollutant captured by the trap domain
+    % boutput: mean of concentration of pollutant captured by the trap domain
     %          (group #2 in mesh) as a function of time
-    % Ioutput: total concentration of pollutant captured by the trap domain
+    % Ioutput: mean of total concentration of pollutant captured by the trap domain
     %          (group #2 in mesh) along the complete time evolution,
     %          corresponding to all the pollutant that the actual filter
     %          (group #1 in mesh) is not able to retain
-%     ut = unfreevector(pb.S,ut);
-%     foutput = bodyload(keepgroupelem(pb.S,2),[],'QN',1,'nofree');
-%     boutput = foutput'*ut;
-%     
-%     figure('Name','Quantity of interest')
-%     clf
-%     plot(boutput,'-b','LineWidth',1);
-%     grid on
-%     box on
-%     set(gca,'FontSize',16)
-%     xlabel('Time (s)')
-%     ylabel('Quantity of interest')
-%     mysaveas(pathname,'quantity_of_interest',formats,renderer);
-%     mymatlab2tikz(pathname,'quantity_of_interest.tex');
-%     
-%     Ioutput = integrate(boutput);
-%     fprintf('quantity of interest = %e\n',Ioutput);
+    mean_ut = mean(ut);
+    mean_ut = reshape(mean_ut,sz);
+    mean_ut = TIMEMATRIX(mean_ut,T);
+    mean_ut = unfreevector(pb.S,mean_ut);
+    std_ut = std(ut);
+    std_ut = reshape(std_ut,sz);
+    std_ut = TIMEMATRIX(std_ut,T);
+    std_ut = unfreevector(pb.S,std_ut)-calc_init_dirichlet(pb.S)*one(T);
+    foutput = bodyload(keepgroupelem(pb.S,2),[],'QN',1,'nofree');
+    mean_boutput = foutput'*mean_ut;
+    std_boutput = foutput'*std_ut;
+    
+    figure('Name','Quantity of interest')
+    clf
+    plot(mean_boutput,'-b','LineWidth',1);
+    grid on
+    box on
+    set(gca,'FontSize',16)
+    xlabel('Time (s)')
+    ylabel('Quantity of interest')
+    mysaveas(pathname,'quantity_of_interest',formats,renderer);
+    mymatlab2tikz(pathname,'quantity_of_interest.tex');
+    
+    mean_Ioutput = integrate(mean_boutput);
+    std_Ioutput = integrate(std_boutput);
+    fprintf('mean of quantity of interest = %e\n',mean_Ioutput);
+    fprintf('std  of quantity of interest = %e\n',std_Ioutput);
 end

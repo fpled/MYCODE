@@ -20,11 +20,12 @@ Pb_Name = multiscaleDetLinDiff
 #Pb_Name = multiscaleDetLinElasEdgeCracks
 #Pb_Name = multiscaleDetLinElasInteriorCracks
 #Pb_Name = multiscaleDetNonlinDiffReac
+#Pb_Name = multiscaleDetTransientLinAdvDiffReac
+#Pb_Name = multiscaleDetDynLinElas
 
 #Pb_Name = multiscaleStoLinDiff
 #Pb_Name = multiscaleStoLinElas
 #Pb_Name = multiscaleStoNonlinDiffReac
-
 #Pb_Name = multiscaleStoLinDiffAlignInclusionsIso
 #Pb_Name = multiscaleStoLinDiffAlignInclusionsAniso
 #Pb_Name = multiscaleStoLinDiffCircInclusionsIso
@@ -35,11 +36,17 @@ Pb_Name = multiscaleDetLinDiff
 #Pb_Name = multiscaleStoNonlinDiffReacAlignInclusionsAniso
 #Pb_Name = multiscaleStoNonlinDiffReacSquareInclusionsIso
 #Pb_Name = multiscaleStoNonlinDiffReacSquareInclusionsAniso
+#Pb_Name = multiscaleStoTransientLinAdvDiffReac
+#Pb_Name = multiscaleStoDynLinElas
 
 #Pb_Name = monoscaleStoLinDiff
 #Pb_Name = monoscaleStoLinDiffCircInclusionsIso
 #Pb_Name = monoscaleStoLinDiffCircInclusionsAniso
 #Pb_Name = monoscaleStoNonlinDiffReac
+#Pb_Name = monoscaleDetTransientLinAdvDiffReac
+#Pb_Name = monoscaleDetDynLinElas
+#Pb_Name = monoscaleStoTransientLinAdvDiffReac
+#Pb_Name = monoscaleStoDynLinElas
 
 #Pb_Name = sparseAnisotropicFunction
 #Pb_Name = sparseIshigamiFunction
@@ -61,10 +68,9 @@ Pb_Name = multiscaleDetLinDiff
 # Default ---------------------------
 default:
 #	matlab -nodesktop -nosplash -noFigureWindows -r "$(Pb_Name); exit" -logfile results/$(Pb_Name).log
-	matlab -nodesktop -nosplash -noFigureWindows -r "plateCircDetLinElasCv; exit" -logfile results/plate/plateCircDetLinElasCv.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "plateRectDetLinElasCv; exit" -logfile results/plate/plateRectDetLinElasCv.log
 #	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoLinDiffAlignInclusionsIso; exit" -logfile results/multiscaleSto/linDiffAlignInclusionsIso.log
 #	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoLinDiffAlignInclusionsAniso; exit" -logfile results/multiscaleSto/linDiffAlignInclusionsAniso.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoTransientLinAdvDiffReac; exit" -logfile results/multiscaleSto/transientLinAdvDiffReac.log
 
 # All ---------------------------
 all: sparse monosto multidet multisto plate
@@ -82,6 +88,8 @@ multidet:
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleDetLinElasEdgeCracks; exit" -logfile results/multiscaleDet/linElasEdgeCracks.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleDetLinElasInteriorCracks; exit" -logfile results/multiscaleDet/linElasInteriorCracks.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleDetNonlinDiffReac; exit" -logfile results/multiscaleDet/nonlinDiffReac.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleDetTransientLinAdvDiffReac; exit" -logfile results/multiscaleDet/transientLinAdvDiffReac.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoDynLinElas; exit" -logfile results/multiscaleDet/dynLinElas.log
 
 # Multiscale Stochastic ---------------------------
 multisto:
@@ -98,6 +106,8 @@ multisto:
 #	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoNonlinDiffReacAlignInclusionsAniso; exit" -logfile results/multiscaleSto/nonlinDiffReacAlignInclusionsAniso.log
 #	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoNonlinDiffReacSquareInclusionsIso; exit" -logfile results/multiscaleSto/nonlinDiffReacSquareInclusionsIso.log
 #	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoNonlinDiffReacSquareInclusionsAniso; exit" -logfile results/multiscaleSto/nonlinDiffReacSquareInclusionsAniso.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoTransientLinAdvDiffReac; exit" -logfile results/multiscaleSto/transientLinAdvDiffReac.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoDynLinElas; exit" -logfile results/multiscaleSto/dynLinElas.log
 
 # Monoscale Stochastic ---------------------------
 monosto:
@@ -105,6 +115,8 @@ monosto:
 	matlab -nodesktop -nosplash -noFigureWindows -r "monoscaleStoLinDiffCircInclusionsIso; exit" -logfile results/monoscaleSto/linDiffCircInclusionsIso.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "monoscaleStoLinDiffCircInclusionsAniso; exit" -logfile results/monoscaleSto/linDiffCircInclusionsAniso.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "monoscaleStoNonlinDiffReac; exit" -logfile results/monoscaleSto/nonlinDiffReac.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "monoscaleStoTransientLinAdvDiffReac; exit" -logfile results/monoscaleSto/transientLinAdvDiffReac.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "monoscaleStoDynLinElas; exit" -logfile results/monoscaleSto/dynLinElas.log
 
 # Sparse approximation ---------------------------
 sparse:
