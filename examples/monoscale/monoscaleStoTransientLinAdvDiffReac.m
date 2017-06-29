@@ -40,7 +40,7 @@ if setProblem
     
     %% Materials
     % Linear diffusion coefficient
-    % K1(xi) = 0.01 + 0.005 * (2 * xi - 1) = 0.01 * (xi + 0.5)
+    % K1(xi) = 0.01 * (1 + 0.25 * (2 * xi - 1))
     % K2 = 0.01
     p = 1;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
@@ -50,7 +50,7 @@ if setProblem
     I = gaussIntegrationRule(v,2);
     I = I.tensorize(d);
     
-    fun = @(xi) 0.01 * (xi(:,1) + 0.5);
+    fun = @(xi) 0.01 * (1 + 0.25 * (2 * xi(:,1) - 1));
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;
@@ -59,9 +59,9 @@ if setProblem
     K2 = 0.01;
     
     % Thermal capacity
-    % c1(xi) = 1 + 0.05 * (2 * xi - 1)
+    % c1(xi) = 1 * (1 + 0.05 * (2 * xi - 1))
     % c2 = 1
-    fun = @(xi) 1 + 0.05 * (2 * xi(:,2) - 1);
+    fun = @(xi) 1 * (1 + 0.05 * (2 * xi(:,2) - 1));
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;
@@ -89,9 +89,9 @@ if setProblem
     V = {{FENODEFIELD(V(:,1)),FENODEFIELD(V(:,2))}};
     
     % Linear reaction parameter
-    % R1(xi) = 0.1 + 0.05 * (2 * xi - 1) = 0.1 * (xi + 0.5)
+    % R1(xi) = 0.1 * (1 + 0.25 * (2 * xi - 1))
     % R2 = 10
-    fun = @(xi) 0.1 * (xi(:,3) + 0.5);
+    fun = @(xi) 0.1 * (1 + 0.25 * (2 * xi(:,3) - 1));
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;
@@ -406,15 +406,18 @@ if displaySolution
     %          (group #2 in mesh) along the complete time evolution,
     %          corresponding to all the pollutant that the actual filter
     %          (group #1 in mesh) is not able to retain
+    foutput = bodyload(keepgroupelem(pb.S,2),[],'QN',1,'nofree');
+    
     mean_ut = mean(ut);
     mean_ut = reshape(mean_ut,sz);
     mean_ut = TIMEMATRIX(mean_ut,T);
     mean_ut = unfreevector(pb.S,mean_ut);
+    
     std_ut = std(ut);
     std_ut = reshape(std_ut,sz);
     std_ut = TIMEMATRIX(std_ut,T);
     std_ut = unfreevector(pb.S,std_ut)-calc_init_dirichlet(pb.S)*one(T);
-    foutput = bodyload(keepgroupelem(pb.S,2),[],'QN',1,'nofree');
+    
     mean_boutput = foutput'*mean_ut;
     std_boutput = foutput'*std_ut;
     
@@ -425,7 +428,7 @@ if displaySolution
     box on
     set(gca,'FontSize',16)
     xlabel('Time (s)')
-    ylabel('Quantity of interest')
+    ylabel('Mean concentration of polluant in trap domain')
     mysaveas(pathname,'quantity_of_interest',formats,renderer);
     mymatlab2tikz(pathname,'quantity_of_interest.tex');
     

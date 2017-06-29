@@ -211,8 +211,8 @@ if displaySolution
     %          (group #2 in mesh) along the complete time evolution,
     %          corresponding to all the pollutant that the actual filter
     %          (group #1 in mesh) is not able to retain
-    ut = unfreevector(pb.S,ut);
     foutput = bodyload(keepgroupelem(pb.S,2),[],'QN',1,'nofree');
+    ut = unfreevector(pb.S,ut);
     boutput = foutput'*ut;
     
     figure('Name','Quantity of interest')
@@ -222,7 +222,7 @@ if displaySolution
     box on
     set(gca,'FontSize',16)
     xlabel('Time (s)')
-    ylabel('Quantity of interest')
+    ylabel('Concentration of polluant in trap domain')
     mysaveas(pathname,'quantity_of_interest',formats,renderer);
     mymatlab2tikz(pathname,'quantity_of_interest.tex');
     

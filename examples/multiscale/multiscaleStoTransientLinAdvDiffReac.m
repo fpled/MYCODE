@@ -1,6 +1,5 @@
 %% Multiscale stochastic transient linear advection-diffusion-reaction problem %%
 %%-----------------------------------------------------------------------------%%
-% [Pares, Diez, Huerta, 2008], [Nouy, 2010]
 
 % clc
 clear all
@@ -17,6 +16,8 @@ displaySolution = true;
 
 n = 3; % number of patches
 filename = ['transientLinAdvDiffReac' num2str(n) 'Patches'];
+% for rho = 0.1:0.1:1.8
+% filename = ['transientLinAdvDiffReac' num2str(n) 'PatchesRho' num2str(rho)];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','multiscaleSto',filename);
 if ~exist(pathname,'dir')
@@ -57,6 +58,11 @@ if setProblem
     
     % Partition of global mesh
     glob = partition(glob,D_patch);
+    
+    %% Random variables
+    d = 3*n; % parametric dimension
+    v = UniformRandomVariable(0,1);
+    rv = RandomVector(v,d);
     
     %% Materials
     % Linear diffusion coefficient
@@ -111,25 +117,51 @@ if setProblem
     R2_out = 10;
     R_patch = cell(1,n);
     R_in = cell(1,n);
+    
+    p = 1;
+    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
+    bases = FunctionalBases.duplicate(basis,d);
+    vb = basis.basis.randomVariable;
+    rvb = getRandomVector(bases);
+    H = FullTensorProductFunctionalBasis(bases);
+    I = gaussIntegrationRule(vb,2);
+    I = I.tensorize(d);
+    
     for k=1:n
         patch = patches.patches{k};
-        % K_patch(x)  = K_out * (1 + f(x))
-        % K_in(x)     = K_out
-        % c_patch(x)  = c_out * (1 + f(x))
-        % c_in(x)     = c_out
-        % R_patch(x)  = R1_out * (1 + f(x))
-        % R_in(x)     = R1_out
+        % K_patch(x,xi) = K_out * (1 + 0.25 * (2 * xi - 1) * f(x))
+        % K_in(x)       = K_out
+        % c_patch(x,xi) = c_out * (1 + 0.1 * (2 * xi - 1) * f(x))
+        % c_in(x)       = c_out
+        % R_patch(x,xi) = R1_out * (1 + 0.25 * (2 * xi - 1) * f(x))
+        % R_in(x)       = R1_out
         % with f(x) = 1 if ||x-c||_Inf < L
         %           = 0 if ||x-c||_Inf >= L
-        % L = norm(getsize(D_patch{k}),Inf)/4;
-        % c = getcenter(D_patch{k});
-        % f = @(x) distance(x,c,Inf)<L;
-        % K_patch{k} = K_out * FENODEFIELD(ones(patch.S.nbnode,1) + double(squeeze(f(patch.S.node))));
-        % c_patch{k} = c_out * FENODEFIELD(ones(patch.S.nbnode,1) + double(squeeze(f(patch.S.node))));
-        % R_patch{k} = R1_out * FENODEFIELD(ones(patch.S.nbnode,1) + double(squeeze(f(patch.S.node))));
-        K_patch{k} = K_out;
-        c_patch{k} = c_out;
-        R_patch{k} = R1_out;
+        L = norm(getsize(D_patch{k}),Inf)/4;
+        c = getcenter(D_patch{k});
+        f = @(x) distance(x,c,Inf)<L;
+        
+        fun = @(xi) K_out * (ones(size(xi,1),patch.S.nbnode) + 0.25 * (2 * xi(:,3*k-2) - 1) * double(squeeze(f(patch.S.node)))');
+        funtr = @(xi) fun(transfer(rvb,rv,xi));
+        fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
+        fun.evaluationAtMultiplePoints = true;
+        
+        K_patch{k} = FENODEFIELD(H.projection(fun,I));
+        
+        fun = @(xi) c_out * (ones(size(xi,1),patch.S.nbnode) + 0.1 * (2 * xi(:,3*k-1) - 1) * double(squeeze(f(patch.S.node)))');
+        funtr = @(xi) fun(transfer(rvb,rv,xi));
+        fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
+        fun.evaluationAtMultiplePoints = true;
+        
+        c_patch{k} = FENODEFIELD(H.projection(fun,I));
+        
+        fun = @(xi) R1_out * (ones(size(xi,1),patch.S.nbnode) + 0.25 * (2* xi(:,3*k) - 1) * double(squeeze(f(patch.S.node)))');
+        funtr = @(xi) fun(transfer(rvb,rv,xi));
+        fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
+        fun.evaluationAtMultiplePoints = true;
+        
+        R_patch{k} = FENODEFIELD(H.projection(fun,I));
+        
         K_in{k} = K_out;
         c_in{k} = c_out;
         R_in{k} = R1_out;
@@ -214,6 +246,8 @@ if setProblem
     N = EULERTIMESOLVER(T,'eulertype','implicit','display',false);
     % N = DGTIMESOLVER(T,1,'outputsplit',true,'display',false,'lu',true);
     
+    loadFunction = @(N) one(N);
+    
     % Global
     glob.timeSolver = N;
     glob.timeOrder = 1;
@@ -238,20 +272,22 @@ if setProblem
         glob.M_in{k} = calc_mass(glob.S,'selgroup',getnumgroupelemwithparam(glob.S,'partition',k));
         glob.A_in{k} = calc_rigi(glob.S,'selgroup',getnumgroupelemwithparam(glob.S,'partition',k));
     end
-    glob.b_out = glob.b0_out*one(glob.timeSolver);
+    glob.b_out = glob.b0_out*loadFunction(glob.timeSolver);
     
     % Complementary subdomain
     globOut.M = calc_mass(globOut.S);
     [globOut.A,globOut.b0] = calc_rigi(globOut.S);
     globOut.b0 = -globOut.b0;
-    globOut.b = globOut.b0*one(globOut.timeSolver);
+    globOut.b = globOut.b0*loadFunction(globOut.timeSolver);
     
     % Patches
     for k=1:n
-        patches.patches{k}.M = calc_mass(patches.patches{k}.S);
-        [patches.patches{k}.A,patches.patches{k}.b0] = calc_rigi(patches.patches{k}.S);
-        patches.patches{k}.b0 = -patches.patches{k}.b0;
-        patches.patches{k}.b = patches.patches{k}.b0*one(patches.patches{k}.timeSolver);
+        if ~israndom(patches.patches{k}.S)
+            patches.patches{k}.M = calc_mass(patches.patches{k}.S);
+            [patches.patches{k}.A,patches.patches{k}.b0] = calc_rigi(patches.patches{k}.S);
+            patches.patches{k}.b0 = -patches.patches{k}.b0;
+            patches.patches{k}.b = patches.patches{k}.b0*loadFunction(patches.patches{k}.timeSolver);
+        end
     end
     
     %% Mass matrices
@@ -306,23 +342,50 @@ end
 
 %% Direct solver
 if directSolver
-    DSt = DirectSolver();
-    DSt.changeOfVariable = false;
-    DSt.timeSolver = N;
-    DSt.timeOrder = 1;
-    DSt.display = true;
+    p = 50;
+    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
+    bases = FunctionalBases.duplicate(basis,d);
+    rv = getRandomVector(bases);
     
-    DS = DSt;
+    s = AdaptiveSparseTensorAlgorithm();
+    % s.nbSamples = 1;
+    % s.addSamplesFactor = 0.1;
+    s.tol = 1e-3;
+    s.tolStagnation = 1e-1;
+    % s.tolOverfit = 1.1;
+    % s.bulkParameter = 0.5;
+    % s.adaptiveSampling = true;
+    % s.adaptationRule = 'reducedmargin';
+    s.maxIndex = p;
+    % s.display = true;
+    % s.displayIterations = true;
+    
+    ls = LeastSquaresSolver();
+    ls.regularization = false;
+    % ls.regularizationType = 'l1';
+    ls.errorEstimation = true;
+    % ls.errorEstimationType = 'leaveout';
+    % ls.errorEstimationOptions.correction = true;
+    
+    DS = DirectSolver();
+    DS.changeOfVariable = false;
+    DS.display = true;
+    
+    % Stationary solution
     DS.timeSolver = [];
     DS.timeOrder = [];
+    [U_ref,w_ref,lambda_ref,output_ref] = DS.solveRandom(globOut_static,patches_static,interfaces_static,s,bases,ls,rv);
     
-    [U_ref,w_ref,lambda_ref,output_ref] = DS.solve(globOut_static,patches_static,interfaces_static);
-    [Ut_ref,wt_ref,lambdat_ref,outputt_ref] = DSt.solve(globOut,patches,interfaces);
+    % Transient solution
+    DS.timeSolver = N;
+    DS.timeOrder = 1;
+    [Ut_ref,wt_ref,lambdat_ref,outputt_ref] = DS.solveRandom(globOut,patches,interfaces,s,bases,ls,rv);
     outputt_ref.vU = unfreevector(globOut.S,outputt_ref.vU)-calc_init_dirichlet(globOut.S);
     for k=1:n
         outputt_ref.vw{k} = unfreevector(patches.patches{k}.S,outputt_ref.vw{k})-calc_init_dirichlet(patches.patches{k}.S);
         outputt_ref.vlambda{k} = unfreevector(interfaces.interfaces{k}.S,outputt_ref.vlambda{k})-calc_init_dirichlet(interfaces.interfaces{k}.S);
     end
+    
     save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref');
     save(fullfile(pathname,'reference_solution_time.mat'),'Ut_ref','wt_ref','lambdat_ref','outputt_ref');
 else
@@ -332,33 +395,94 @@ end
 
 %% Outputs
 fprintf('\n')
-fprintf('spatial dimension = %d for U_ref\n',size(Ut_ref,1))
+fprintf('Stationary reference solution\n');
+fprintf('spatial dimension = %d for U_ref\n',U_ref.sz)
 for k=1:n
-    fprintf('                  = %d for w_ref{%u}\n',size(wt_ref{k},1),k)
-    fprintf('                  = %d for lambda_ref{%u}\n',size(lambdat_ref{k},1),k)
+    fprintf('                  = %d for w_ref{%u}\n',w_ref{k}.sz,k)
+    fprintf('                  = %d for lambda_ref{%u}\n',lambda_ref{k}.sz,k)
 end
-fprintf('nb time steps = %g\n',getnt(N))
-fprintf('nb time dofs  = %g\n',getnbtimedof(N))
-fprintf('elapsed time = %f s for static solution\n',output_ref.time)
-fprintf('elapsed time = %f s for dynamic solution\n',outputt_ref.time)
+fprintf('parametric dimension = %d\n',ndims(U_ref.basis))
+fprintf('basis dimension = %d for U_ref\n',numel(U_ref.basis))
+for k=1:n
+    fprintf('                = %d for w_ref{%u}\n',numel(w_ref{k}.basis),k)
+    fprintf('                = %d for lambda_ref{%u}\n',numel(lambda_ref{k}.basis),k)
+end
+fprintf('order = [ %s ] for U_ref\n',num2str(max(U_ref.basis.indices.array)))
+for k=1:n
+    fprintf('      = [ %s ] for w_ref{%u}\n',num2str(max(w_ref{k}.basis.indices.array)),k)
+    fprintf('      = [ %s ] for lambda_ref{%u}\n',num2str(max(lambda_ref{k}.basis.indices.array)),k)
+end
+% fprintf('multi-index set for U_ref = \n')
+% disp(num2str(Ut_ref.basis.indices.array))
+% for k=1:n
+%     fprintf('multi-index set for w_ref{%u} = \n',k)
+%     disp(num2str(wt_ref{k}.basis.indices.array))
+%     fprintf('multi-index set for lambda_ref{%u} = \n',k)
+%     disp(num2str(lambdat_ref{k}.basis.indices.array))
+% end
+fprintf('nb samples = %d\n',outputt_ref.nbSamples)
+fprintf('CV error = %d for U_ref\n',norm(outputt_ref.CVErrorGlobalSolution))
+for k=1:n
+    fprintf('         = %d for w_ref{%u}\n',norm(outputt_ref.CVErrorLocalSolution{k}),k)
+    fprintf('         = %d for lambda_ref{%u}\n',norm(outputt_ref.CVErrorLagrangeMultiplier{k}),k)
+end
+fprintf('elapsed time = %f s for stationary solution\n',outputt_ref.time)
+
+fprintf('\n')
+fprintf('Transient reference solution\n');
+fprintf('spatial dimension = %d for U_ref\n',Ut_ref.sz(1))
+for k=1:n
+    fprintf('                  = %d for w_ref{%u}\n',wt_ref{k}.sz(1),k)
+    fprintf('                  = %d for lambda_ref{%u}\n',lambdat_ref{k}.sz(1),k)
+end
+fprintf('time dimension = %d for U_ref\n',Ut_ref.sz(2))
+for k=1:n
+    fprintf('               = %d for w_ref{%u}\n',wt_ref{k}.sz(2),k)
+    fprintf('               = %d for lambda_ref{%u}\n',lambdat_ref{k}.sz(2),k)
+end
+fprintf('parametric dimension = %d\n',ndims(Ut_ref.basis))
+fprintf('basis dimension = %d for U_ref\n',numel(Ut_ref.basis))
+for k=1:n
+    fprintf('                = %d for w_ref{%u}\n',numel(wt_ref{k}.basis),k)
+    fprintf('                = %d for lambda_ref{%u}\n',numel(lambdat_ref{k}.basis),k)
+end
+fprintf('order = [ %s ] for U_ref\n',num2str(max(Ut_ref.basis.indices.array)))
+for k=1:n
+    fprintf('      = [ %s ] for w_ref{%u}\n',num2str(max(wt_ref{k}.basis.indices.array)),k)
+    fprintf('      = [ %s ] for lambda_ref{%u}\n',num2str(max(lambdat_ref{k}.basis.indices.array)),k)
+end
+% fprintf('multi-index set for U_ref = \n')
+% disp(num2str(Ut_ref.basis.indices.array))
+% for k=1:n
+%     fprintf('multi-index set for w_ref{%u} = \n',k)
+%     disp(num2str(wt_ref{k}.basis.indices.array))
+%     fprintf('multi-index set for lambda_ref{%u} = \n',k)
+%     disp(num2str(lambdat_ref{k}.basis.indices.array))
+% end
+fprintf('nb samples = %d\n',outputt_ref.nbSamples)
+fprintf('CV error = %d for U_ref\n',norm(outputt_ref.CVErrorGlobalSolution))
+for k=1:n
+    fprintf('         = %d for w_ref{%u}\n',norm(outputt_ref.CVErrorLocalSolution{k}),k)
+    fprintf('         = %d for lambda_ref{%u}\n',norm(outputt_ref.CVErrorLagrangeMultiplier{k}),k)
+end
+fprintf('elapsed time = %f s for transient solution\n',outputt_ref.time)
 
 %% Global-local Iterative solver
 if iterativeSolver
-    ISt = IterativeSolver();
-    ISt.maxIterations = 50;
-    ISt.tolerance = eps;
-    ISt.relaxation = 'Aitken';
-    ISt.updateRelaxationParameter = true;
-    ISt.errorCriterion = 'reference';
-    ISt.referenceSolution = {Ut_ref,wt_ref,lambdat_ref};
-    ISt.display = true;
-    ISt.displayIterations = true;
+    IS = IterativeSolver();
+    IS.maxIterations = 50;
+    IS.tolerance = eps;
+    IS.relaxation = 'Aitken';
+    IS.updateRelaxationParameter = true;
+    IS.errorCriterion = 'reference';
+    IS.display = true;
+    IS.displayIterations = true;
     
-    IS = ISt;
     IS.referenceSolution = {U_ref,w_ref,lambda_ref};
-    
     [U,w,lambda,output] = IS.solve(glob_static,patches_static,interfaces);
-    [Ut,wt,lambdat,outputt] = ISt.solve(glob,patches,interfaces);
+    
+    IS.referenceSolution = {Ut_ref,wt_ref,lambdat_ref};
+    [Ut,wt,lambdat,outputt] = IS.solve(glob,patches,interfaces);
     outputt.vU = unfreevector(glob.S,outputt.vU)-calc_init_dirichlet(glob.S);
     for k=1:n
         outputt.vw{k} = unfreevector(patches.patches{k}.S,outputt.vw{k})-calc_init_dirichlet(patches.patches{k}.S);
@@ -378,6 +502,7 @@ for k=1:n
     fprintf('                  = %d for w{%u}\n',size(wt{k},1),k)
     fprintf('                  = %d for lambda{%u}\n',size(lambdat{k},1),k)
 end
+fprintf('time solver : %s\n',class(N));
 fprintf('nb time steps = %g\n',getnt(N))
 fprintf('nb time dofs  = %g\n',getnbtimedof(N))
 fprintf('elapsed time = %f s for stationary solution\n',output.totalTime)
@@ -486,35 +611,35 @@ if displaySolution
     end
     hold off
     set(gca,'FontSize',16)
-    % l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h_patch{:}],...
-    %     '$\Omega_1 \setminus \Lambda$','$\Omega_2$','$\Omega_0$','$\Gamma_D^1$','$\Gamma_D^2$',leg_patch{:});
-    % set(l,'Interpreter','latex')
+    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h_patch{:}],...
+        '$\Omega_1 \setminus \Lambda$','$\Omega_2$','$\Omega_0$','$\Gamma_D^1$','$\Gamma_D^2$',leg_patch{:});
+    set(l,'Interpreter','latex')
     mysaveas(pathname,'mesh_global_patches',formats,renderer);
     
     %% Display evolutions of error indicator, stagnation indicator, CPU time w.r.t. number of iterations for stationary solution
     plotError(output);
-    mysaveas(pathname,'error','fig');
-    mymatlab2tikz(pathname,'error.tex');
+    mysaveas(pathname,'error_stationary','fig');
+    mymatlab2tikz(pathname,'error_stationary.tex');
     
     plotStagnation(output);
-    mysaveas(pathname,'stagnation','fig');
-    mymatlab2tikz(pathname,'stagnation.tex');
+    mysaveas(pathname,'stagnation_stationary','fig');
+    mymatlab2tikz(pathname,'stagnation_stationary.tex');
     
     plotErrorGlobalSolution(output);
-    mysaveas(pathname,'error_global_solution','fig');
-    mymatlab2tikz(pathname,'error_global_solution.tex');
+    mysaveas(pathname,'error_global_solution_stationary','fig');
+    mymatlab2tikz(pathname,'error_global_solution_stationary.tex');
     
     plotStagnationGlobalSolution(output);
-    mysaveas(pathname,'stagnation_global_solution','fig');
-    mymatlab2tikz(pathname,'stagnation_global_solution.tex');
+    mysaveas(pathname,'stagnation_global_solution_stationary','fig');
+    mymatlab2tikz(pathname,'stagnation_global_solution_stationary.tex');
     
     plotCPUTime(output,'legend',false);
-    mysaveas(pathname,'cpu_time','fig');
-    mymatlab2tikz(pathname,'cpu_time.tex');
+    mysaveas(pathname,'cpu_time_stationary','fig');
+    mymatlab2tikz(pathname,'cpu_time_stationary.tex');
     
     plotRelaxationParameter(output,'legend',false);
-    mysaveas(pathname,'relaxation_parameter','fig');
-    mymatlab2tikz(pathname,'relaxation_parameter.tex');
+    mysaveas(pathname,'relaxation_parameter_stationary','fig');
+    mymatlab2tikz(pathname,'relaxation_parameter_stationary.tex');
     
     %% Display stationary solutions
     % plotAllSolutions(glob,patches,interfaces,U,w,lambda);
@@ -626,7 +751,7 @@ if displaySolution
     box on
     set(gca,'FontSize',16)
     xlabel('Time (s)')
-    ylabel('Quantity of interest')
+    ylabel('Concentration of polluant in trap domain')
     legend('multiscale','monoscale')
     mysaveas(pathname,'quantity_of_interest',formats,renderer);
     mymatlab2tikz(pathname,'quantity_of_interest.tex');
@@ -637,6 +762,68 @@ if displaySolution
     fprintf('quantity of interest           = %e\n',Ioutput);
     fprintf('reference quantity of interest = %e\n',Ioutput_ref);
     fprintf('error in quantity of interest  = %e\n',errOutput);
+    
+    %% Display quantity of interest
+    % boutput: mean of concentration of pollutant captured by the trap domain
+    %          (group #2 in mesh) as a function of time
+    % Ioutput: mean of total concentration of pollutant captured by the trap domain
+    %          (group #2 in mesh) along the complete time evolution,
+    %          corresponding to all the pollutant that the actual filter
+    %          (group #1 in mesh) is not able to retain
+    foutput = bodyload(keepgroupelem(glob.S,2),[],'QN',1,'nofree');
+    foutput_ref = bodyload(keepgroupelem(globOut.S,2),[],'QN',1,'nofree');
+    
+    mean_Ut = mean(Ut);
+    mean_Ut = reshape(mean_Ut,sz_U);
+    mean_Ut = TIMEMATRIX(mean_Ut,T);
+    mean_Ut = unfreevector(glob.S,mean_Ut);
+    mean_Ut_ref = mean(Ut_ref);
+    mean_Ut_ref = reshape(mean_Ut_ref,sz_U_ref);
+    mean_Ut_ref = TIMEMATRIX(mean_Ut_ref,T);
+    mean_Ut_ref = unfreevector(globOut.S,mean_Ut_ref);
+    
+    std_Ut = std(Ut);
+    std_Ut = reshape(std_Ut,sz_U);
+    std_Ut = TIMEMATRIX(std_Ut,T);
+    std_Ut = unfreevector(glob.S,std_Ut)-calc_init_dirichlet(glob.S)*one(T);
+    std_Ut_ref = std(Ut_ref);
+    std_Ut_ref = reshape(std_Ut_ref,sz_U_ref);
+    std_Ut_ref = TIMEMATRIX(std_Ut_ref,T);
+    std_Ut_ref = unfreevector(globOut.S,std_Ut_ref)-calc_init_dirichlet(globOut.S)*one(T);
+    
+    mean_boutput = foutput'*mean_Ut;
+    mean_boutput_ref = foutput_ref'*mean_Ut_ref;
+    std_boutput = foutput'*std_Ut;
+    std_boutput_ref = foutput'*std_Ut_ref;
+    
+    figure('Name','Quantity of interest')
+    clf
+    plot(mean_boutput,'-b','LineWidth',1);
+    hold on
+    plot(mean_boutput_ref,'-r','LineWidth',1);
+    grid on
+    box on
+    set(gca,'FontSize',16)
+    xlabel('Time (s)')
+    ylabel('Mean concentration of polluant in trap domain')
+    legend('multiscale','monoscale')
+    mysaveas(pathname,'quantity_of_interest',formats,renderer);
+    mymatlab2tikz(pathname,'quantity_of_interest.tex');
+    
+    mean_Ioutput = integrate(mean_boutput);
+    mean_Ioutput_ref = integrate(mean_boutput_ref);
+    mean_errOutput = norm(mean_Ioutput-mean_Ioutput_ref)/mean_Ioutput_ref;
+    std_Ioutput = integrate(std_boutput);
+    std_Ioutput_ref = integrate(std_boutput_ref);
+    std_errOutput = norm(std_Ioutput-std_Ioutput_ref)/std_Ioutput_ref;
+    fprintf('mean of quantity of interest           = %e\n',mean_Ioutput);
+    fprintf('mean of reference quantity of interest = %e\n',mean_Ioutput_ref);
+    fprintf('error in mean of quantity of interest  = %e\n',mean_errOutput);
+    fprintf('std of quantity of interest            = %e\n',std_Ioutput);
+    fprintf('std of reference quantity of interest  = %e\n',std_Ioutput_ref);
+    fprintf('error in std of quantity of interest   = %e\n',std_errOutput);
 end
+
+% end
 
 % myparallel('stop');

@@ -114,12 +114,12 @@ if setProblem
     R_in = cell(1,n);
     for k=1:n
         patch = patches.patches{k};
-        % K_patch(x)  = K_out * (1 + f(x))
-        % K_in(x)     = K_out
-        % c_patch(x)  = c_out * (1 + f(x))
-        % c_in(x)     = c_out
-        % R_patch(x)  = R1_out * (1 + f(x))
-        % R_in(x)     = R1_out
+        % K_patch(x) = K_out * (1 + f(x))
+        % K_in(x)    = K_out
+        % c_patch(x) = c_out * (1 + f(x))
+        % c_in(x)    = c_out
+        % R_patch(x) = R1_out * (1 + f(x))
+        % R_in(x)    = R1_out
         % with f(x) = 1 if ||x-c||_Inf < L
         %           = 0 if ||x-c||_Inf >= L
         % L = norm(getsize(D_patch{k}),Inf)/4;
@@ -313,10 +313,12 @@ if directSolver
     DS.changeOfVariable = false;
     DS.display = true;
     
+    % Stationary solution
     DS.timeSolver = [];
     DS.timeOrder = [];
     [U_ref,w_ref,lambda_ref,output_ref] = DS.solve(globOut_static,patches_static,interfaces_static);
     
+    % Transient solution
     DS.timeSolver = N;
     DS.timeOrder = 1;
     [Ut_ref,wt_ref,lambdat_ref,outputt_ref] = DS.solve(globOut,patches,interfaces);
@@ -325,6 +327,7 @@ if directSolver
         outputt_ref.vw{k} = unfreevector(patches.patches{k}.S,outputt_ref.vw{k})-calc_init_dirichlet(patches.patches{k}.S);
         outputt_ref.vlambda{k} = unfreevector(interfaces.interfaces{k}.S,outputt_ref.vlambda{k})-calc_init_dirichlet(interfaces.interfaces{k}.S);
     end
+    
     save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref');
     save(fullfile(pathname,'reference_solution_time.mat'),'Ut_ref','wt_ref','lambdat_ref','outputt_ref');
 else
@@ -343,7 +346,7 @@ fprintf('time solver : %s\n',class(N));
 fprintf('nb time steps = %g\n',getnt(N))
 fprintf('nb time dofs  = %g\n',getnbtimedof(N))
 fprintf('elapsed time = %f s for static solution\n',output_ref.time)
-fprintf('elapsed time = %f s for dynamic solution\n',outputt_ref.time)
+fprintf('elapsed time = %f s for transient solution\n',outputt_ref.time)
 
 %% Global-local Iterative solver
 if iterativeSolver
@@ -617,8 +620,12 @@ if displaySolution
     %          (group #1 in mesh) is not able to retain
     foutput = bodyload(keepgroupelem(glob.S,2),[],'QN',1,'nofree');
     foutput_ref = bodyload(keepgroupelem(globOut.S,2),[],'QN',1,'nofree');
-    boutput = foutput'*unfreevector(glob.S,Ut);
-    boutput_ref = foutput_ref'*unfreevector(globOut.S,Ut_ref);
+    
+    Ut = unfreevector(glob.S,Ut);
+    Ut_ref = unfreevector(globOut.S,Ut_ref);
+    
+    boutput = foutput'*Ut;
+    boutput_ref = foutput_ref'*Ut_ref;
     
     figure('Name','Quantity of interest')
     clf
@@ -629,7 +636,7 @@ if displaySolution
     box on
     set(gca,'FontSize',16)
     xlabel('Time (s)')
-    ylabel('Quantity of interest')
+    ylabel('Concentration of polluant in trap domain')
     legend('multiscale','monoscale')
     mysaveas(pathname,'quantity_of_interest',formats,renderer);
     mymatlab2tikz(pathname,'quantity_of_interest.tex');

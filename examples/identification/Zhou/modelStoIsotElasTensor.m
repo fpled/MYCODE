@@ -10,7 +10,7 @@ close all
 %% Input data
 filename = 'modelStoIsotElasTensor';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','plate',filename);
+    'results','identification',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
