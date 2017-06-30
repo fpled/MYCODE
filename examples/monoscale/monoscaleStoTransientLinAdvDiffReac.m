@@ -194,7 +194,7 @@ if solveProblem
     % Transient solution
     pb = pbt;
     funt = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
-    funt = MultiVariateFunction(funt,d,getnbddlfree(pb.S)*getnbtimedof(pb.timeSolver));
+    funt = MultiVariateFunction(funt,d,[getnbddlfree(pb.S),getnbtimedof(pb.timeSolver)]);
     funt.evaluationAtMultiplePoints = false;
     
     funtCell = @(xi) solveSystemCell(calcOperator(funEval(pb,xi)));
@@ -233,27 +233,6 @@ fprintf('nb samples = %d\n',size(y,1))
 fprintf('CV error = %d\n',norm(err))
 fprintf('elapsed time = %f s\n',time)
 
-T = gettimemodel(pb.timeSolver);
-sz = [getnbddlfree(pb.S),getnbtimedof(T)];
-sz_tot = [getnbddl(pb.S),getnbtimedof(T)];
-
-utoutput = ut;
-ut.data = reshape(ut.data,[numel(ut.basis),sz]);
-ut.sz = sz;
-
-vt_data = zeros([numel(ut.basis),sz]);
-vt_data_tot = zeros([numel(ut.basis),sz_tot]);
-for k=1:numel(ut.basis)
-    vtk = diff(pb.timeSolver,TIMEMATRIX(reshape(ut.data(k,:,:),sz),T));
-    vt_data(k,:,:) = getvalue(vtk);
-    vt_data_tot(k,:,:) = getvalue(unfreevector(pb.S,vtk)-calc_init_dirichlet(pb.S)*one(T));
-end
-vt = FunctionalBasisArray(vt_data,ut.basis,sz);
-vt_unfree = FunctionalBasisArray(vt_data_tot,ut.basis,sz_tot);
-vtoutput = vt;
-vtoutput.data = reshape(vtoutput.data,[numel(ut.basis),prod(sz)]);
-vtoutput.sz = prod(sz);
-
 fprintf('\n');
 fprintf('Transient solution\n');
 fprintf('spatial dimension = %d\n',ut.sz(1))
@@ -267,12 +246,25 @@ fprintf('nb samples = %d\n',size(yt,1))
 fprintf('CV error = %d\n',norm(errt))
 fprintf('elapsed time = %f s\n',timet)
 
+T = gettimemodel(pb.timeSolver);
+sz = [getnbddl(pb.S),getnbtimedof(T)];
+
+vt_data = zeros([numel(ut.basis),ut.sz]);
+vt_data_tot = zeros([numel(ut.basis),sz]);
+for k=1:numel(ut.basis)
+    vtk = diff(pb.timeSolver,TIMEMATRIX(reshape(ut.data(k,:,:),ut.sz),T));
+    vt_data(k,:,:) = getvalue(vtk);
+    vt_data_tot(k,:,:) = getvalue(unfreevector(pb.S,vtk)-calc_init_dirichlet(pb.S)*one(T));
+end
+vt = FunctionalBasisArray(vt_data,ut.basis,ut.sz);
+vt_tot = FunctionalBasisArray(vt_data_tot,ut.basis,sz);
+
 %% Test
 if testSolution
     Ntest = 100;
     [errtest,xtest,utest,ytest] = computeTestError(u,fun,Ntest);
-    [errttest,xttest,uttest,yttest] = computeTestError(utoutput,funt,Ntest);
-    [Errttest,Xttest,Uttest,Yttest] = computeTestErrorCell({utoutput;vtoutput},funtCell,Ntest);
+    [errttest,xttest,uttest,yttest] = computeTestError(ut,funt,Ntest);
+    [Errttest,Xttest,Uttest,Yttest] = computeTestErrorCell({ut;vt},funtCell,Ntest);
     save(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
     save(fullfile(pathname,'testt.mat'),'uttest','errttest','xttest','yttest');
     save(fullfile(pathname,'Testt.mat'),'Uttest','Errttest','Xttest','Yttest');
@@ -375,8 +367,8 @@ if displaySolution
     evolMean(pb.S,T,ut,'filename','evol_mean_solution','pathname',pathname);
     evolMean(pb.S,T,ut,'surface',true,'filename','evol_mean_solution_surface','pathname',pathname);
     
-    evolMean(pb.S,T,vt_unfree,'rescale',false,'filename','evol_mean_velocity','pathname',pathname);
-    evolMean(pb.S,T,vt_unfree,'rescale',false,'surface',true,'filename','evol_mean_velocity_surface','pathname',pathname);
+    evolMean(pb.S,T,vt_tot,'rescale',false,'filename','evol_mean_velocity','pathname',pathname);
+    evolMean(pb.S,T,vt_tot,'rescale',false,'surface',true,'filename','evol_mean_velocity_surface','pathname',pathname);
     
     evolVariance(pb.S,T,ut,'filename','evol_variance_solution','pathname',pathname);
     evolVariance(pb.S,T,ut,'surface',true,'filename','evol_variance_solution_surface','pathname',pathname);
@@ -393,10 +385,16 @@ if displaySolution
     d = ndims(ut.basis);
     for i=1:d
         evolSobolIndices(pb.S,T,ut,i,'filename',['evol_sobol_indices_solution_var_' num2str(i)],'pathname',pathname);
+        evolSobolIndices(pb.S,T,ut,i,'surface',true,'filename',['evol_sobol_indices_solution_var_' num2str(i) '_surface'],'pathname',pathname);
+        
         evolSobolIndices(pb.S,T,vt,i,'filename',['evol_sobol_indices_velocity_var_' num2str(i)],'pathname',pathname);
+        evolSobolIndices(pb.S,T,vt,i,'surface',true,'filename',['evol_sobol_indices_velocity_var_' num2str(i) '_surface'],'pathname',pathname);
         
         evolSensitivityIndices(pb.S,T,ut,i,'filename',['evol_sensitivity_indices_solution_var_' num2str(i)],'pathname',pathname);
+        evolSensitivityIndices(pb.S,T,ut,i,'surface',true,'filename',['evol_sensitivity_indices_solution_var_' num2str(i) '_surface'],'pathname',pathname);
+        
         evolSensitivityIndices(pb.S,T,vt,i,'filename',['evol_sensitivity_indices_velocity_var_' num2str(i)],'pathname',pathname);
+        evolSensitivityIndices(pb.S,T,vt,i,'surface',true,'filename',['evol_sensitivity_indices_velocity_var_' num2str(i) '_surface'],'pathname',pathname);
     end
     
     %% Display quantity of interest
@@ -409,12 +407,12 @@ if displaySolution
     foutput = bodyload(keepgroupelem(pb.S,2),[],'QN',1,'nofree');
     
     mean_ut = mean(ut);
-    mean_ut = reshape(mean_ut,sz);
+    mean_ut = reshape(mean_ut,ut.sz);
     mean_ut = TIMEMATRIX(mean_ut,T);
     mean_ut = unfreevector(pb.S,mean_ut);
     
     std_ut = std(ut);
-    std_ut = reshape(std_ut,sz);
+    std_ut = reshape(std_ut,ut.sz);
     std_ut = TIMEMATRIX(std_ut,T);
     std_ut = unfreevector(pb.S,std_ut)-calc_init_dirichlet(pb.S)*one(T);
     

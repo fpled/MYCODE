@@ -313,30 +313,30 @@ if setProblem
         patches.patches{k}.increment = false;
     end
     
-    %% Static solution
-    glob_static = glob;
-    glob_static.timeSolver = [];
-    glob_static.timeOrder = [];
-    glob_static.b_out = glob.b0_out;
+    %% Stationary solution
+    glob_sta = glob;
+    glob_sta.timeSolver = [];
+    glob_sta.timeOrder = [];
+    glob_sta.b_out = glob.b0_out;
     
-    globOut_static = globOut;
-    globOut_static.timeSolver = [];
-    globOut_static.timeOrder = [];
-    globOut_static.b = globOut.b0;
+    globOut_sta = globOut;
+    globOut_sta.timeSolver = [];
+    globOut_sta.timeOrder = [];
+    globOut_sta.b = globOut.b0;
     
-    patches_static = patches;
-    interfaces_static = interfaces;
+    patches_sta = patches;
+    interfaces_sta = interfaces;
     for k=1:n
-        patches_static.patches{k}.timeSolver = [];
-        patches_static.patches{k}.timeOrder = [];
-        patches_static.patches{k}.b = patches.patches{k}.b0;
+        patches_sta.patches{k}.timeSolver = [];
+        patches_sta.patches{k}.timeOrder = [];
+        patches_sta.patches{k}.b = patches.patches{k}.b0;
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'glob_static','globOut_static','patches_static','interfaces_static');
+    save(fullfile(pathname,'problem.mat'),'glob_sta','globOut_sta','patches_sta','interfaces_sta');
     save(fullfile(pathname,'problem_time.mat'),'glob','globOut','patches','interfaces','N','D_patch','Sadv','Sadv_patch','v','v_patch','phi','phi_patch');
 else
-    load(fullfile(pathname,'problem.mat'),'glob_static','globOut_static','patches_static','interfaces_static');
+    load(fullfile(pathname,'problem.mat'),'glob_sta','globOut_sta','patches_sta','interfaces_sta');
     load(fullfile(pathname,'problem_time.mat'),'glob','globOut','patches','interfaces','N','D_patch','Sadv','Sadv_patch','v','v_patch','phi','phi_patch');
 end
 
@@ -374,17 +374,12 @@ if directSolver
     % Stationary solution
     DS.timeSolver = [];
     DS.timeOrder = [];
-    [U_ref,w_ref,lambda_ref,output_ref] = DS.solveRandom(globOut_static,patches_static,interfaces_static,s,bases,ls,rv);
+    [U_ref,w_ref,lambda_ref,output_ref] = DS.solveRandom(globOut_sta,patches_sta,interfaces_sta,s,bases,ls,rv);
     
     % Transient solution
     DS.timeSolver = N;
     DS.timeOrder = 1;
     [Ut_ref,wt_ref,lambdat_ref,outputt_ref] = DS.solveRandom(globOut,patches,interfaces,s,bases,ls,rv);
-    outputt_ref.vU = unfreevector(globOut.S,outputt_ref.vU)-calc_init_dirichlet(globOut.S);
-    for k=1:n
-        outputt_ref.vw{k} = unfreevector(patches.patches{k}.S,outputt_ref.vw{k})-calc_init_dirichlet(patches.patches{k}.S);
-        outputt_ref.vlambda{k} = unfreevector(interfaces.interfaces{k}.S,outputt_ref.vlambda{k})-calc_init_dirichlet(interfaces.interfaces{k}.S);
-    end
     
     save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref');
     save(fullfile(pathname,'reference_solution_time.mat'),'Ut_ref','wt_ref','lambdat_ref','outputt_ref');
@@ -413,20 +408,20 @@ for k=1:n
     fprintf('      = [ %s ] for lambda_ref{%u}\n',num2str(max(lambda_ref{k}.basis.indices.array)),k)
 end
 % fprintf('multi-index set for U_ref = \n')
-% disp(num2str(Ut_ref.basis.indices.array))
+% disp(num2str(U_ref.basis.indices.array))
 % for k=1:n
 %     fprintf('multi-index set for w_ref{%u} = \n',k)
-%     disp(num2str(wt_ref{k}.basis.indices.array))
+%     disp(num2str(w_ref{k}.basis.indices.array))
 %     fprintf('multi-index set for lambda_ref{%u} = \n',k)
-%     disp(num2str(lambdat_ref{k}.basis.indices.array))
+%     disp(num2str(lambda_ref{k}.basis.indices.array))
 % end
-fprintf('nb samples = %d\n',outputt_ref.nbSamples)
-fprintf('CV error = %d for U_ref\n',norm(outputt_ref.CVErrorGlobalSolution))
+fprintf('nb samples = %d\n',output_ref.nbSamples)
+fprintf('CV error = %d for U_ref\n',norm(output_ref.CVErrorGlobalSolution))
 for k=1:n
-    fprintf('         = %d for w_ref{%u}\n',norm(outputt_ref.CVErrorLocalSolution{k}),k)
-    fprintf('         = %d for lambda_ref{%u}\n',norm(outputt_ref.CVErrorLagrangeMultiplier{k}),k)
+    fprintf('         = %d for w_ref{%u}\n',norm(output_ref.CVErrorLocalSolution{k}),k)
+    fprintf('         = %d for lambda_ref{%u}\n',norm(output_ref.CVErrorLagrangeMultiplier{k}),k)
 end
-fprintf('elapsed time = %f s for stationary solution\n',outputt_ref.time)
+fprintf('elapsed time = %f s\n',output_ref.time)
 
 fprintf('\n')
 fprintf('Transient reference solution\n');
@@ -465,7 +460,7 @@ for k=1:n
     fprintf('         = %d for w_ref{%u}\n',norm(outputt_ref.CVErrorLocalSolution{k}),k)
     fprintf('         = %d for lambda_ref{%u}\n',norm(outputt_ref.CVErrorLagrangeMultiplier{k}),k)
 end
-fprintf('elapsed time = %f s for transient solution\n',outputt_ref.time)
+fprintf('elapsed time = %f s\n',outputt_ref.time)
 
 %% Global-local Iterative solver
 if iterativeSolver
@@ -479,7 +474,7 @@ if iterativeSolver
     IS.displayIterations = true;
     
     IS.referenceSolution = {U_ref,w_ref,lambda_ref};
-    [U,w,lambda,output] = IS.solve(glob_static,patches_static,interfaces);
+    [U,w,lambda,output] = IS.solve(glob_sta,patches_sta,interfaces);
     
     IS.referenceSolution = {Ut_ref,wt_ref,lambdat_ref};
     [Ut,wt,lambdat,outputt] = IS.solve(glob,patches,interfaces);
@@ -497,15 +492,65 @@ end
 
 %% Outputs
 fprintf('\n')
-fprintf('spatial dimension = %d for U\n',size(Ut,1))
+fprintf('Stationary solution\n');
+fprintf('spatial dimension = %d for U\n',U.sz)
 for k=1:n
-    fprintf('                  = %d for w{%u}\n',size(wt{k},1),k)
-    fprintf('                  = %d for lambda{%u}\n',size(lambdat{k},1),k)
+    fprintf('                  = %d for w{%u}\n',w{k}.sz,k)
+    fprintf('                  = %d for lambda{%u}\n',lambda{k}.sz,k)
 end
-fprintf('time solver : %s\n',class(N));
-fprintf('nb time steps = %g\n',getnt(N))
-fprintf('nb time dofs  = %g\n',getnbtimedof(N))
+fprintf('parametric dimension = %d\n',ndims(U.basis))
+fprintf('basis dimension = %d for U\n',numel(U.basis))
+for k=1:n
+    fprintf('                = %d for w{%u}\n',numel(w{k}.basis),k)
+    fprintf('                = %d for lambda{%u}\n',numel(lambda{k}.basis),k)
+end
+fprintf('order = [ %s ] for U\n',num2str(max(U.basis.indices.array)))
+for k=1:n
+    fprintf('      = [ %s ] for w{%u}\n',num2str(max(w{k}.basis.indices.array)),k)
+    fprintf('      = [ %s ] for lambda{%u}\n',num2str(max(lambda{k}.basis.indices.array)),k)
+end
+% fprintf('multi-index set for U = \n')
+% disp(num2str(U.basis.indices.array))
+% for k=1:n
+%     fprintf('multi-index set for w{%u} = \n',k)
+%     disp(num2str(w{k}.basis.indices.array))
+%     fprintf('multi-index set for lambda{%u} = \n',k)
+%     disp(num2str(lambda{k}.basis.indices.array))
+% end
 fprintf('elapsed time = %f s for stationary solution\n',output.totalTime)
+
+fprintf('\n')
+fprintf('Transient solution\n');
+fprintf('spatial dimension = %d for U\n',Ut.sz(1))
+for k=1:n
+    fprintf('                  = %d for w{%u}\n',wt{k}.sz(1),k)
+    fprintf('                  = %d for lambda{%u}\n',lambdat{k}.sz(1),k)
+end
+fprintf('time dimension = %d for U\n',Ut.sz(2))
+for k=1:n
+    fprintf('               = %d for w{%u}\n',wt{k}.sz(2),k)
+    fprintf('               = %d for lambda{%u}\n',lambdat{k}.sz(2),k)
+end
+fprintf('parametric dimension = %d\n',ndims(Ut.basis))
+fprintf('basis dimension = %d for U\n',numel(Ut.basis))
+for k=1:n
+    fprintf('                = %d for w{%u}\n',numel(wt{k}.basis),k)
+    fprintf('                = %d for lambda{%u}\n',numel(lambdat{k}.basis),k)
+end
+fprintf('order = [ %s ] for U\n',num2str(max(Ut.basis.indices.array)))
+for k=1:n
+    fprintf('      = [ %s ] for w{%u}\n',num2str(max(wt{k}.basis.indices.array)),k)
+    fprintf('      = [ %s ] for lambda{%u}\n',num2str(max(lambdat{k}.basis.indices.array)),k)
+end
+% fprintf('multi-index set for U = \n')
+% disp(num2str(Ut.basis.indices.array))
+% for k=1:n
+%     fprintf('multi-index set for w{%u} = \n',k)
+%     disp(num2str(wt{k}.basis.indices.array))
+%     fprintf('multi-index set for lambda{%u} = \n',k)
+%     disp(num2str(lambdat{k}.basis.indices.array))
+% end
+fprintf('nb samples = %d\n',outputt.nbSamples)
 fprintf('elapsed time = %f s for transient solution\n',outputt.totalTime)
 
 %% Display

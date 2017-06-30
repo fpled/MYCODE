@@ -280,30 +280,30 @@ if setProblem
         patches.patches{k}.increment = false;
     end
     
-    %% Static solution
-    glob_static = glob;
-    glob_static.timeSolver = [];
-    glob_static.timeOrder = [];
-    glob_static.b_out = glob.b0_out;
+    %% Stationary solution
+    glob_sta = glob;
+    glob_sta.timeSolver = [];
+    glob_sta.timeOrder = [];
+    glob_sta.b_out = glob.b0_out;
     
-    globOut_static = globOut;
-    globOut_static.timeSolver = [];
-    globOut_static.timeOrder = [];
-    globOut_static.b = globOut.b0;
+    globOut_sta = globOut;
+    globOut_sta.timeSolver = [];
+    globOut_sta.timeOrder = [];
+    globOut_sta.b = globOut.b0;
     
-    patches_static = patches;
-    interfaces_static = interfaces;
+    patches_sta = patches;
+    interfaces_sta = interfaces;
     for k=1:n
-        patches_static.patches{k}.timeSolver = [];
-        patches_static.patches{k}.timeOrder = [];
-        patches_static.patches{k}.b = patches.patches{k}.b0;
+        patches_sta.patches{k}.timeSolver = [];
+        patches_sta.patches{k}.timeOrder = [];
+        patches_sta.patches{k}.b = patches.patches{k}.b0;
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'glob_static','globOut_static','patches_static','interfaces_static');
+    save(fullfile(pathname,'problem.mat'),'glob_sta','globOut_sta','patches_sta','interfaces_sta');
     save(fullfile(pathname,'problem_time.mat'),'glob','globOut','patches','interfaces','N','D_patch','Sadv','Sadv_patch','v','v_patch','phi','phi_patch');
 else
-    load(fullfile(pathname,'problem.mat'),'glob_static','globOut_static','patches_static','interfaces_static');
+    load(fullfile(pathname,'problem.mat'),'glob_sta','globOut_sta','patches_sta','interfaces_sta');
     load(fullfile(pathname,'problem_time.mat'),'glob','globOut','patches','interfaces','N','D_patch','Sadv','Sadv_patch','v','v_patch','phi','phi_patch');
 end
 
@@ -316,7 +316,7 @@ if directSolver
     % Stationary solution
     DS.timeSolver = [];
     DS.timeOrder = [];
-    [U_ref,w_ref,lambda_ref,output_ref] = DS.solve(globOut_static,patches_static,interfaces_static);
+    [U_ref,w_ref,lambda_ref,output_ref] = DS.solve(globOut_sta,patches_sta,interfaces_sta);
     
     % Transient solution
     DS.timeSolver = N;
@@ -345,8 +345,8 @@ end
 fprintf('time solver : %s\n',class(N));
 fprintf('nb time steps = %g\n',getnt(N))
 fprintf('nb time dofs  = %g\n',getnbtimedof(N))
-fprintf('elapsed time = %f s for static solution\n',output_ref.time)
-fprintf('elapsed time = %f s for transient solution\n',outputt_ref.time)
+fprintf('elapsed time = %f s for stationary reference solution\n',output_ref.time)
+fprintf('elapsed time = %f s for transient reference solution\n',outputt_ref.time)
 
 %% Global-local Iterative solver
 if iterativeSolver
@@ -360,7 +360,7 @@ if iterativeSolver
     IS.displayIterations = true;
     
     IS.referenceSolution = {U_ref,w_ref,lambda_ref};
-    [U,w,lambda,output] = IS.solve(glob_static,patches_static,interfaces);
+    [U,w,lambda,output] = IS.solve(glob_sta,patches_sta,interfaces);
     
     IS.referenceSolution = {Ut_ref,wt_ref,lambdat_ref};
     [Ut,wt,lambdat,outputt] = IS.solve(glob,patches,interfaces);
@@ -369,6 +369,7 @@ if iterativeSolver
         outputt.vw{k} = unfreevector(patches.patches{k}.S,outputt.vw{k})-calc_init_dirichlet(patches.patches{k}.S);
         outputt.vlambda{k} = unfreevector(interfaces.interfaces{k}.S,outputt.vlambda{k})-calc_init_dirichlet(interfaces.interfaces{k}.S);
     end
+    
     save(fullfile(pathname,'solution.mat'),'U','w','lambda','output');
     save(fullfile(pathname,'solution_time.mat'),'Ut','wt','lambdat','outputt');
 else

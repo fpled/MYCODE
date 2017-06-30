@@ -77,9 +77,9 @@ if setProblem
     R_patch = cell(1,n);
     for k=1:n
         patch = patches.patches{k};
-        % K_patch(x)  = 1 + f(x)
-        % K_in(x)     = 1
-        % R_patch(x)  = f(x)
+        % K_patch(x) = 1 + f(x)
+        % K_in(x)    = 1
+        % R_patch(x) = f(x)
         % with f(x) = 1 if ||x-c||_Inf < L
         %           = 0 if ||x-c||_Inf >= L
         L = norm(getsize(D_patch{k}),Inf)/4;
