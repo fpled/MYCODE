@@ -14,7 +14,7 @@ displaySolution = true;
 
 filename = 'particuleBoardDetLinElasIsot';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results',filename);
+    'results','identification',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -23,9 +23,10 @@ renderer = 'OpenGL';
 
 
 % for sample_list = 1:20
-for sample_list = 1
+for sample_list = 20
     
-    sample_number = ['C' num2str(sample_list)];
+    sample = 'C';
+    sample_number = [sample num2str(sample_list)];
     F = applied_load(sample_number);
     [b,h,d,Iz] = dim_sample(sample_number);
     
@@ -45,8 +46,7 @@ for sample_list = 1
         Uy = U(2:2:end);
         Coordx = (X+ROI(1)-1);
         Coordy = (Y+ROI(2)-1);
-        % Change unit in mm et the system coordinate due to the use of
-        % Correli RT3
+		% Change unit in mm and the coordinate system due to the use of Correli RT3
         scale_factor = h/( max(Coordx) - min(Coordx) );
         coordx = (Coordy-min(Coordy))*scale_factor+d;
         coordy = -(Coordx-1/2*(min(Coordx)+max(Coordx)))*scale_factor;
@@ -148,7 +148,7 @@ for sample_list = 1
             hg = hggroup;
             set([h(:),hD],'Parent',hg);
             axis image
-            % legend(hD,'U_{exp}');
+            legend(hD,'U_{exp}',-1);
             % legend(hD,legD)
             
             mysaveas(pathname,'boundary_conditions',formats,renderer);

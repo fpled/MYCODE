@@ -1,6 +1,6 @@
 %% Adaptive sparse polynomial approximation - Ishigami function %%
 %%--------------------------------------------------------------%%
-% [Ishigami, Homma, 1990], [Saltelli, Chan, Scott, 2000], [Sudret, 2008], [Blatman, Sudret, 2011]
+% [Ishigami, Homma, 1990], [Saltelli, Chan, Scott, 2000], [Sudret, 2008], [Blatman, Sudret, 2010, 2011]
 
 % clc
 clear all

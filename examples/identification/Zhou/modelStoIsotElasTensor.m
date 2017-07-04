@@ -22,7 +22,10 @@ formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
 Num_sample = 20;
-load('resultats_ET_GL_EL_nuL_all_samples')
+loadPath = fullfile(getfemobjectoptions('path'),'MYCODE','results',...
+    'identification','materPropPartiBoards');
+loadData = 'result_ET_GL_EL_nuL_mean_value.mat';
+load([loadPath,filesep,loadData])
 
 E_data = zeros(1,Num_sample);  
 G_data = zeros(1,Num_sample);  
