@@ -477,7 +477,7 @@ if iterativeSolver
     IS.updateRelaxationParameter = true;
     IS.errorCriterion = 'reference';
     IS.display = true;
-    IS.displayIterations = false;
+    IS.displayIterations = true;
     
     % Stationary solution
     s.tol = 1e-4;
