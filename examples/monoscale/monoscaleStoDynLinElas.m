@@ -252,14 +252,14 @@ if displaySolution
 %         evolMean(pb.S,T,at,'displ',i,'filename',['evol_mean_acceleration_' num2str(i)],'pathname',pathname);
 %         evolMean(pb.S,T,at,'displ',i,'view3',true,'filename',['evol_mean_acceleration_' num2str(i) '_view3'],'pathname',pathname);
         
-        evolVariance(pb.S,T,ut,'displ',i,'filename',['evol_variance_solution_' num2str(i)],'pathname',pathname);
-        evolVariance(pb.S,T,ut,'displ',i,'view3',true,'filename',['evol_variance_solution_' num2str(i) '_view3'],'pathname',pathname);
+        evolVariance(pb.S,T,ut,'displ',i,'filename',['evol_var_solution_' num2str(i)],'pathname',pathname);
+        evolVariance(pb.S,T,ut,'displ',i,'view3',true,'filename',['evol_var_solution_' num2str(i) '_view3'],'pathname',pathname);
         
-%         evolVariance(pb.S,T,vt,'displ',i,'filename',['evol_variance_velocity_' num2str(i)],'pathname',pathname);
-%         evolVariance(pb.S,T,vt,'displ',i,'view3',true,'filename',['evol_variance_velocity_' num2str(i) '_view3'],'pathname',pathname);
+%         evolVariance(pb.S,T,vt,'displ',i,'filename',['evol_var_velocity_' num2str(i)],'pathname',pathname);
+%         evolVariance(pb.S,T,vt,'displ',i,'view3',true,'filename',['evol_var_velocity_' num2str(i) '_view3'],'pathname',pathname);
         
-%         evolVariance(pb.S,T,at,'displ',i,'filename',['evol_variance_acceleration_' num2str(i)],'pathname',pathname);
-%         evolVariance(pb.S,T,at,'displ',i,'view3',true,'filename',['evol_variance_acceleration_' num2str(i) '_view3'],'pathname',pathname);
+%         evolVariance(pb.S,T,at,'displ',i,'filename',['evol_var_acceleration_' num2str(i)],'pathname',pathname);
+%         evolVariance(pb.S,T,at,'displ',i,'view3',true,'filename',['evol_var_acceleration_' num2str(i) '_view3'],'pathname',pathname);
         
         evolStd(pb.S,T,ut,'displ',i,'filename',['evol_std_solution_' num2str(i)],'pathname',pathname);
         evolStd(pb.S,T,ut,'displ',i,'view3',true,'filename',['evol_std_solution_' num2str(i) '_view3'],'pathname',pathname);

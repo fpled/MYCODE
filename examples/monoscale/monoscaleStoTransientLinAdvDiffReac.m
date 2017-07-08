@@ -161,7 +161,7 @@ if solveProblem
     s = AdaptiveSparseTensorAlgorithm();
     % s.nbSamples = 1;
     % s.addSamplesFactor = 0.1;
-    s.tol = 1e-2;
+    s.tol = 1e-3;
     s.tolStagnation = 1e-1;
     % s.tolOverfit = 1.1;
     % s.bulkParameter = 0.5;
@@ -267,11 +267,11 @@ if testSolution
     [Errttest,Xttest,Uttest,Yttest] = computeTestErrorCell({ut;vt},funtCell,Ntest);
     save(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
     save(fullfile(pathname,'testt.mat'),'uttest','errttest','xttest','yttest');
-    save(fullfile(pathname,'Testt.mat'),'Uttest','Errttest','Xttest','Yttest');
+    save(fullfile(pathname,'testtAll.mat'),'Uttest','Errttest','Xttest','Yttest');
 else
     load(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
     load(fullfile(pathname,'testt.mat'),'uttest','errttest','xttest','yttest');
-    load(fullfile(pathname,'Testt.mat'),'Uttest','Errttest','Xttest','Yttest');
+    load(fullfile(pathname,'testtAll.mat'),'Uttest','Errttest','Xttest','Yttest');
 end
 fprintf('\n');
 fprintf('Stationary solution\n');
@@ -370,11 +370,11 @@ if displaySolution
     evolMean(pb.S,T,vt_tot,'rescale',false,'filename','evol_mean_velocity','pathname',pathname);
     evolMean(pb.S,T,vt_tot,'rescale',false,'surface',true,'filename','evol_mean_velocity_surface','pathname',pathname);
     
-    evolVariance(pb.S,T,ut,'filename','evol_variance_solution','pathname',pathname);
-    evolVariance(pb.S,T,ut,'surface',true,'filename','evol_variance_solution_surface','pathname',pathname);
+    evolVariance(pb.S,T,ut,'filename','evol_var_solution','pathname',pathname);
+    evolVariance(pb.S,T,ut,'surface',true,'filename','evol_var_solution_surface','pathname',pathname);
     
-    evolVariance(pb.S,T,vt,'rescale',false,'filename','evol_variance_velocity','pathname',pathname);
-    evolVariance(pb.S,T,vt,'rescale',false,'surface',true,'filename','evol_variance_velocity_surface','pathname',pathname);
+    evolVariance(pb.S,T,vt,'rescale',false,'filename','evol_var_velocity','pathname',pathname);
+    evolVariance(pb.S,T,vt,'rescale',false,'surface',true,'filename','evol_var_velocity_surface','pathname',pathname);
     
     evolStd(pb.S,T,ut,'filename','evol_std_solution','pathname',pathname);
     evolStd(pb.S,T,ut,'surface',true,'filename','evol_std_solution_surface','pathname',pathname);
