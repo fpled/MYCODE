@@ -295,7 +295,7 @@ if solveProblem
     err_ry = norm(ry-ry_ex)/norm(ry_ex);
     
     %% Save variables
-    save(fullfile(pathname,['problem_' num2str(i) '.mat']),'S','C','r','h','f','-v7.3');
+    save(fullfile(pathname,['problem_' num2str(i) '.mat']),'S','C','r','h','f');
     save(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','time_i',...
         'U','Ux','Uy','Uz','Ur','Ut',...
         'R','Rx','Ry','Rz','Rr','Rt');
