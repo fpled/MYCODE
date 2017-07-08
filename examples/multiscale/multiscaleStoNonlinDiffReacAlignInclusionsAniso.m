@@ -18,8 +18,10 @@ displaySolution = true;
 n = 8; % number of inclusions
 filename = ['nonlinDiffReac' num2str(n) 'AlignInclusionsAniso'];
 % for rho = 0.2:0.2:1.8
+% close all
 % filename = ['nonlinDiffReac' num2str(n) 'AlignInclusionsAnisoTol3Rho' num2str(rho)];
 % for tol = 1:5
+% close all
 % filename = ['nonlinDiffReac' num2str(n) 'AlignInclusionsAnisoTol'  num2str(tol) 'RhoAitken'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','multiscaleSto',filename);
@@ -76,6 +78,7 @@ if setProblem
     % Nonlinear reaction parameter
     R_patch = cell(1,n);
     
+    % IntegrationRule
     p = 1;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
     bases = FunctionalBases.duplicate(basis,d);
@@ -249,9 +252,9 @@ if directSolver
     DS.initializationType = 'zero';
     
     [U_ref,w_ref,lambda_ref,output_ref] = DS.solveRandom(globOut,patches,interfaces,s,bases,ls,rv);
-    save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref');
+    save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref','s','bases','ls','rv');
 else
-    load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref');
+    load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref','s','bases','ls','rv');
 end
 
 %% Outputs
@@ -438,7 +441,6 @@ if displaySolution
     
     plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'orientation','h');
     mysaveas(pathname,'mean_global_local_solution',formats,renderer);
-    
     plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
     mysaveas(pathname,'mean_global_local_solution_view3',formats,renderer);
     
@@ -456,7 +458,6 @@ if displaySolution
     
     plotVarianceGlobalLocalSolution(glob,patches,interfaces,U,w,'orientation','h');
     mysaveas(pathname,'var_global_local_solution',formats,renderer);
-    
     plotVarianceGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
     mysaveas(pathname,'var_global_local_solution_view3',formats,renderer);
     
@@ -474,7 +475,6 @@ if displaySolution
     
     plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'orientation','h');
     mysaveas(pathname,'std_global_local_solution',formats,renderer);
-    
     plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
     mysaveas(pathname,'std_global_local_solution_view3',formats,renderer);
     

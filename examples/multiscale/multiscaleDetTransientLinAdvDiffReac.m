@@ -17,6 +17,7 @@ displaySolution = true;
 n = 3; % number of patches
 filename = ['transientLinAdvDiffReac' num2str(n) 'Patches'];
 % for rho = 0.1:0.1:1.8
+% close all
 % filename = ['transientLinAdvDiffReac' num2str(n) 'PatchesRho' num2str(rho)];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','multiscaleDet',filename);
@@ -106,12 +107,12 @@ if setProblem
         V_patch{k} = getvalue(v_patch{k});
         V_patch{k} = {{FENODEFIELD(V_patch{k}(:,1)),FENODEFIELD(V_patch{k}(:,2))}};
     end
-    
     % Linear reaction parameter
     R1_out = 0.1;
     R2_out = 10;
     R_patch = cell(1,n);
     R_in = cell(1,n);
+    
     for k=1:n
         patch = patches.patches{k};
         % K_patch(x) = K_out * (1 + f(x))
@@ -283,19 +284,19 @@ if setProblem
     %% Stationary solution
     glob_sta = glob;
     glob_sta.timeSolver = [];
-    glob_sta.timeOrder = [];
+    glob_sta.timeOrder = 0;
     glob_sta.b_out = glob.b0_out;
     
     globOut_sta = globOut;
     globOut_sta.timeSolver = [];
-    globOut_sta.timeOrder = [];
+    globOut_sta.timeOrder = 0;
     globOut_sta.b = globOut.b0;
     
     patches_sta = patches;
     interfaces_sta = interfaces;
     for k=1:n
         patches_sta.patches{k}.timeSolver = [];
-        patches_sta.patches{k}.timeOrder = [];
+        patches_sta.patches{k}.timeOrder = 0;
         patches_sta.patches{k}.b = patches.patches{k}.b0;
     end
     
@@ -315,7 +316,7 @@ if directSolver
     
     % Stationary solution
     DS.timeSolver = [];
-    DS.timeOrder = [];
+    DS.timeOrder = 0;
     [U_ref,w_ref,lambda_ref,output_ref] = DS.solve(globOut_sta,patches_sta,interfaces_sta);
     
     % Transient solution
