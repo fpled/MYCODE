@@ -48,8 +48,7 @@ if setProblem
     % Thickness
     DIM3 = 1;
     
-    % Density
-    % RHO(xi) = 1 + 0.05 * (2 * xi - 1)
+    % IntegrationRule
     p = 1;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
     bases = FunctionalBases.duplicate(basis,d);
@@ -58,6 +57,8 @@ if setProblem
     I = gaussIntegrationRule(v,2);
     I = I.tensorize(d);
     
+    % Density
+    % RHO(xi) = 1 + 0.05 * (2 * xi - 1)
     fun = @(xi) 1 + 0.05 * (2 * xi(:,1) - 1);
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);

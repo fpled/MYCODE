@@ -39,8 +39,7 @@ if setProblem
     rv = RandomVector(v,d);
     
     %% Materials
-    % Linear diffusion coefficient
-    % K(xi) = 1 + xi
+    % IntegrationRule
     p = 1;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
     bases = FunctionalBases.duplicate(basis,d);
@@ -50,6 +49,8 @@ if setProblem
     I = gaussIntegrationRule(vb,2);
     I = I.tensorize(d);
     
+    % Linear diffusion coefficient
+    % K(xi) = 1 + xi
     fun = @(xi) 1 + xi(:,1);
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);

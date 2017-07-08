@@ -59,6 +59,7 @@ if setProblem
     pb.S = setmaterial(pb.S,mat_det,k+1);
     
     % Stochastic subdomains
+    % IntegrationRule
     p = 1;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
     bases = FunctionalBases.duplicate(basis,d);

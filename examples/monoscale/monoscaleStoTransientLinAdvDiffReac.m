@@ -39,9 +39,7 @@ if setProblem
     rv = RandomVector(v,d);
     
     %% Materials
-    % Linear diffusion coefficient
-    % K1(xi) = 0.01 * (1 + 0.25 * (2 * xi - 1))
-    % K2 = 0.01
+    % IntegrationRule
     p = 1;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
     bases = FunctionalBases.duplicate(basis,d);
@@ -50,6 +48,9 @@ if setProblem
     I = gaussIntegrationRule(v,2);
     I = I.tensorize(d);
     
+    % Linear diffusion coefficient
+    % K1(xi) = 0.01 * (1 + 0.25 * (2 * xi - 1))
+    % K2 = 0.01
     fun = @(xi) 0.01 * (1 + 0.25 * (2 * xi(:,1) - 1));
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);
@@ -161,7 +162,7 @@ if solveProblem
     s = AdaptiveSparseTensorAlgorithm();
     % s.nbSamples = 1;
     % s.addSamplesFactor = 0.1;
-    s.tol = 1e-3;
+    % s.tol = 1e-3;
     s.tolStagnation = 1e-1;
     % s.tolOverfit = 1.1;
     % s.bulkParameter = 0.5;
@@ -181,6 +182,7 @@ if solveProblem
     pbt = pb;
     
     % Stationary solution
+    s.tol = 1e-12;
     pb.timeSolver = [];
     pb.loadFunction = [];
     fun = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
@@ -192,6 +194,7 @@ if solveProblem
     time = toc(t);
     
     % Transient solution
+    s.tol = 1e-3;
     pb = pbt;
     funt = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
     funt = MultiVariateFunction(funt,d,[getnbddlfree(pb.S),getnbtimedof(pb.timeSolver)]);
