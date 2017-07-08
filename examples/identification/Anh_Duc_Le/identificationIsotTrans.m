@@ -8,7 +8,7 @@ close all
 % rng('default');
 
 %% Experimental values
-EL_exp = 11.50;
+EL_exp = 11.55;
 ET_exp = 0.5;
 nuL_exp = 0.4;
 GL_exp = 0.55;
@@ -23,9 +23,9 @@ fprintf('GL_exp  = %g GPa\n',x_exp(4));
 
 %% Identification
 EL0 = 10.0;
-ET0 = 0.3;
+ET0 = 0.2;
 nuL0 = 0.2;
-GL0 = 0.3;
+GL0 = 0.2;
 x0 = [EL0 ET0 nuL0 GL0];
 % lb = [0 0 -1 0];
 lb = [0 0 0 0];
@@ -39,8 +39,8 @@ optionsfminsearch = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
 optionsfminunc    = optimoptions('fminunc','Display',display,'TolX',tolX,'TolFun',tolFun,'Algorithm','quasi-newton');
 optionsfmincon    = optimoptions('fmincon','Display',display,'TolX',tolX,'TolFun',tolFun);
 
-ampl = 1e-5;
-noise = ampl.*(2*rand(length(U_exp),1)-1);
+ampl = 1e-2;
+noise = ampl.*(2*rand(length(U_exp),1)-1).*U_exp;
 % noise = 0;
 
 funlsqnonlin = @(x) funlsqnonlinIsotTrans(x,U_exp,noise);

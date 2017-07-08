@@ -33,8 +33,8 @@ optionsfminsearch = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
 optionsfminunc    = optimoptions('fminunc','Display',display,'TolX',tolX,'TolFun',tolFun,'Algorithm','quasi-newton');
 optionsfmincon    = optimoptions('fmincon','Display',display,'TolX',tolX,'TolFun',tolFun);
 
-ampl = 1e-5;
-noise = ampl.*(2*rand(length(U_exp),1)-1);
+ampl = 1e-2;
+noise = ampl.*(2*rand(length(U_exp),1)-1).*U_exp;
 % noise = 0;
 
 funlsqnonlin = @(x) funlsqnonlinIsot(x,U_exp,noise);
