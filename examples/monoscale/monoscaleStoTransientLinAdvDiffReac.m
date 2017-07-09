@@ -162,7 +162,6 @@ if solveProblem
     s = AdaptiveSparseTensorAlgorithm();
     % s.nbSamples = 1;
     % s.addSamplesFactor = 0.1;
-    % s.tol = 1e-3;
     s.tolStagnation = 1e-1;
     % s.tolOverfit = 1.1;
     % s.bulkParameter = 0.5;

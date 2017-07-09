@@ -351,7 +351,6 @@ if directSolver
     s = AdaptiveSparseTensorAlgorithm();
     % s.nbSamples = 1;
     % s.addSamplesFactor = 0.1;
-    % s.tol = 1e-3;
     s.tolStagnation = 1e-1;
     % s.tolOverfit = 1.1;
     % s.bulkParameter = 0.5;
@@ -486,7 +485,7 @@ if iterativeSolver
     [U,w,lambda,output] = IS.solveRandom(glob_sta,patches_sta,interfaces,s,bases,ls,rv);
     
     % Transient solution
-    s.tol = 1e-1;
+    s.tol = 1e-2;
     IS.maxIterations = 20;
     IS.referenceSolution = {Ut_ref,wt_ref,lambdat_ref};
     [Ut,wt,lambdat,outputt] = IS.solveRandom(glob,patches,interfaces,s,bases,ls,rv);
