@@ -225,6 +225,7 @@ fprintf('nb time dofs  = %g\n',getnbtimedof(pb.timeSolver));
 
 fprintf('\n');
 fprintf('Stationary solution\n');
+fprintf('-------------------\n');
 fprintf('spatial dimension = %d\n',u.sz)
 fprintf('parametric dimension = %d\n',ndims(u.basis))
 fprintf('basis dimension = %d\n',numel(u.basis))
@@ -237,6 +238,7 @@ fprintf('elapsed time = %f s\n',time)
 
 fprintf('\n');
 fprintf('Transient solution\n');
+fprintf('------------------\n');
 fprintf('spatial dimension = %d\n',ut.sz(1))
 fprintf('time dimension = %d\n',ut.sz(2))
 fprintf('parametric dimension = %d\n',ndims(ut.basis))
@@ -277,10 +279,12 @@ else
 end
 fprintf('\n');
 fprintf('Stationary solution\n');
+fprintf('-------------------\n');
 fprintf('test error = %d\n',errtest)
 
 fprintf('\n');
 fprintf('Transient solution\n');
+fprintf('------------------\n');
 fprintf('test error = %d\n',errttest)
 
 erruttest = Errttest{1};

@@ -478,7 +478,7 @@ if displaySolution
     % plotModel(glob,patches,'legend',false);
     % mysaveas(pathname,'mesh_global_patches',formats,renderer);
     
-    figure('Name',['Meshes of complement subdomain and patches #' num2str([numbers{:}])])
+    figure('Name',['Meshes of complementary subdomain and patches #' num2str([numbers{:}])])
     clf
     h1 = plot(glob.S,'selgroup',1:3,'FaceColor',getfacecolor(1));
     hold on
