@@ -17,9 +17,11 @@ displaySolution = true;
 n = 8; % number of inclusions
 filename = ['nonlinDiffReac' num2str(n) 'SquareInclusionsAniso'];
 % for rho = 0.2:0.2:1.2
+% clear all
 % close all
 % filename = ['nonlinDiffReac' num2str(n) 'SquareInclusionsAnisoTol3Rho' num2str(rho)];
 % for tol = 1:4
+% clear all
 % close all
 % filename = ['nonlinDiffReac' num2str(n) 'SquareInclusionsAnisoTol'  num2str(tol) 'RhoAitken'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...

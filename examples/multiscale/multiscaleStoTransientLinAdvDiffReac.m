@@ -17,8 +17,13 @@ displaySolution = true;
 n = 3; % number of patches
 filename = ['transientLinAdvDiffReac' num2str(n) 'Patches'];
 % for rho = 0.1:0.1:1.8
+% clear all
 % close all
-% filename = ['transientLinAdvDiffReac' num2str(n) 'PatchesRho' num2str(rho)];
+% filename = ['transientLinAdvDiffReac' num2str(n) 'PatchesTol3Rho' num2str(rho)];
+% for tol = 1:3
+% clear all
+% close all
+% filename = ['transientLinAdvDiffReac' num2str(n) 'PatcheTol'  num2str(tol) 'RhoAitken'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','multiscaleSto',filename);
 if ~exist(pathname,'dir')
@@ -378,7 +383,7 @@ if directSolver
     [U_ref,w_ref,lambda_ref,output_ref] = DS.solveRandom(globOut_sta,patches_sta,interfaces_sta,s,bases,ls,rv);
     
     % Transient solution
-    s.tol = 1e-3;
+    s.tol = 1e-4;
     DS.timeSolver = N;
     DS.timeOrder = 1;
     [Ut_ref,wt_ref,lambdat_ref,outputt_ref] = DS.solveRandom(globOut,patches,interfaces,s,bases,ls,rv);
