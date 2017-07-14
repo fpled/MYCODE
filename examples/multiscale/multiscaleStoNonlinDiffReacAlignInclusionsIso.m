@@ -18,14 +18,10 @@ displaySolution = true;
 n = 8; % number of inclusions
 filename = ['nonlinDiffReac' num2str(n) 'AlignInclusionsIso'];
 % for rho = 0.2:0.2:1.8
-% clear all
 % close all
-% n = 8; % number of inclusions
 % filename = ['nonlinDiffReac' num2str(n) 'AlignInclusionsIsoTol3Rho' num2str(rho)];
 % for tol = 1:5
-% clear all
 % close all
-% n = 8; % number of inclusions
 % filename = ['nonlinDiffReac' num2str(n) 'AlignInclusionsIsoTol'  num2str(tol) 'RhoAitken'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','multiscaleSto',filename);
