@@ -200,10 +200,6 @@ fprintf('test error = %d\n',errttest)
 %% Display
 if displaySolution
     %% Display domains and meshes
-%     plotDomain(D,'legend',false);
-%     mysaveas(pathname,'domain',formats,renderer);
-%     mymatlab2tikz(pathname,'domain.tex');
-    
     figure('Name','Domain')
     clf
     h1 = plot(D,'FaceColor',getfacecolor(1));
@@ -219,9 +215,6 @@ if displaySolution
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
-%     plotModel(pb.S,'legend',false);
-%     mysaveas(pathname,'mesh',formats,renderer);
-    
     figure('Name','Mesh')
     clf
     h1 = plot(pb.S,'FaceColor',getfacecolor(1));
@@ -234,12 +227,12 @@ if displaySolution
     % set(l,'Interpreter','latex')
     mysaveas(pathname,'mesh',formats,renderer);
     
-    %% Display multi-index set for transient solution
+    %% Display multi-index set
     plotMultiIndexSet(ut,'legend',false);
     mysaveas(pathname,'multi_index_set','fig');
     mymatlab2tikz(pathname,'multi_index_set.tex');
     
-    %% Display evolution of solution
+    %% Display evolution of statistical outputs
     T = gettimemodel(pb.timeSolver);
     
     i = 1;
@@ -274,12 +267,99 @@ if displaySolution
         d = ndims(ut.basis);
         for j=1:d
             evolSobolIndices(pb.S,T,ut,j,'displ',i,'filename',['evol_sobol_indices_solution_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
+            evolSobolIndices(pb.S,T,ut,j,'displ',i,'view3',true,'filename',['evol_sobol_indices_solution_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
+            
 %             evolSobolIndices(pb.S,T,vt,j,'displ',i,'filename',['evol_sobol_indices_velocity_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
+%             evolSobolIndices(pb.S,T,vt,j,'displ',i,'view3',true,'filename',['evol_sobol_indices_velocity_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
+            
 %             evolSobolIndices(pb.S,T,at,j,'displ',i,'filename',['evol_sobol_indices_acceleration_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
+%             evolSobolIndices(pb.S,T,at,j,'displ',i,'view3',true,'filename',['evol_sobol_indices_acceleration_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
             
             evolSensitivityIndices(pb.S,T,ut,j,'displ',i,'filename',['evol_sensitivity_indices_solution_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
+            evolSensitivityIndices(pb.S,T,ut,j,'displ',i,'view3',true,'filename',['evol_sensitivity_indices_solution_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
+            
 %             evolSensitivityIndices(pb.S,T,vt,j,'displ',i,'filename',['evol_sensitivity_indices_velocity_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
+%             evolSensitivityIndices(pb.S,T,vt,j,'displ',i,'view3',true,'filename',['evol_sensitivity_indices_velocity_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
+            
 %             evolSensitivityIndices(pb.S,T,at,j,'displ',i,'filename',['evol_sensitivity_indices_acceleration_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
+%             evolSensitivityIndices(pb.S,T,at,j,'displ',i,'view3',true,'filename',['evol_sensitivity_indices_acceleration_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
+        end
+    % end
+    
+    %% Display statistical outputs at differents instants
+    i = 1;
+    % for i=1:2
+        [t,rep] = gettevol(pb.timeSolver);
+        for k=1:floor(length(rep)/5):length(rep)
+            close all
+            uk_data = ut.data(:,:,rep(k));
+%             vk_data = vt.data(:,:,rep(k));
+%             ak_data = at_tot.data(:,:,rep(k));
+            uk = FunctionalBasisArray(uk_data,ut.basis,ut.sz(1));
+%             vk = FunctionalBasisArray(vk_data,vt.basis,vt.sz(1));
+%             ak = FunctionalBasisArray(ak_data,at.basis,at.sz(1));
+            
+            plotMean(pb.S,uk,'displ',i);
+            mysaveas(pathname,['mean_solution_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+            plotMean(pb.S,uk,'displ',i,'view3',true);
+            mysaveas(pathname,['mean_solution_' num2str(i) '_t' num2str(k-1) '_view3'],formats,renderer);
+            
+%             plotMean(pb.S,vk,'displ',i);
+%             mysaveas(pathname,['mean_velocity_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+%             plotMean(pb.S,vk,'displ',i,'view3',true);
+%             mysaveas(pathname,['mean_velocity_' num2str(i) '_t' num2str(k-1) '_view3'],formats,renderer);
+            
+%             plotMean(pb.S,ak,'displ',i);
+%             mysaveas(pathname,['mean_acceleration_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+%             plotMean(pb.S,ak,'displ',i,'view3',true);
+%             mysaveas(pathname,['mean_acceleration_' num2str(i) '_t' num2str(k-1) '_view3'],formats,renderer);
+            
+            plotVariance(pb.S,uk,'displ',i);
+            mysaveas(pathname,['var_solution_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+            plotVariance(pb.S,uk,'displ',i,'view3',true);
+            mysaveas(pathname,['var_solution_' num2str(i) '_t' num2str(k-1) '_view3'],formats,renderer);
+            
+%             plotVariance(pb.S,vk,'displ',i);
+%             mysaveas(pathname,['var_velocity_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+%             plotVariance(pb.S,vk,'displ',i,'view3',true);
+%             mysaveas(pathname,['var_velocity_' num2str(i) '_t' num2str(k-1) '_view3'],formats,renderer);
+            
+%             plotVariance(pb.S,ak,'displ',i);
+%             mysaveas(pathname,['var_acceleration_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+%             plotVariance(pb.S,ak,'displ',i,'view3',true);
+%             mysaveas(pathname,['var_acceleration_' num2str(i) '_t' num2str(k-1) '_view3'],formats,renderer);
+            
+            plotStd(pb.S,uk,'displ',i);
+            mysaveas(pathname,['std_solution_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+            plotStd(pb.S,uk,'displ',i,'view3',true);
+            mysaveas(pathname,['std_solution_' num2str(i) '_t' num2str(k-1) '_view3'],formats,renderer);
+            
+%             plotStd(pb.S,vk,'displ',i);
+%             mysaveas(pathname,['std_velocity_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+%             plotStd(pb.S,vk,'displ',i,'view3',true);
+%             mysaveas(pathname,['std_velocity_' num2str(i) '_t' num2str(k-1) '_view3'],formats,renderer);
+            
+%             plotStd(pb.S,ak,'displ',i);
+%             mysaveas(pathname,['std_acceleration_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+%             plotStd(pb.S,ak,'displ',i,'view3',true);
+%             mysaveas(pathname,['std_acceleration_' num2str(i) '_t' num2str(k-1) '_view3'],formats,renderer);
+            
+            d = ndims(uk.basis);
+            for j=1:d
+                plotSobolIndices(pb.S,uk,j,'displ',i);
+                mysaveas(pathname,['sobol_indices_solution_' num2str(i) '_var_' num2str(j) '_t' num2str(k-1)],formats,renderer);
+%                 plotSobolIndices(pb.S,vk,j,'displ',i);
+%                 mysaveas(pathname,['sobol_indices_velocity_' num2str(i) '_var_' num2str(j) '_t' num2str(k-1)],formats,renderer);
+%                 plotSobolIndices(pb.S,ak,j,'displ',i);
+%                 mysaveas(pathname,['sobol_indices_acceleration_' num2str(i) '_var_' num2str(j) '_t' num2str(k-1)],formats,renderer);
+                
+                plotSensitivityIndices(pb.S,uk,j,'displ',i);
+                mysaveas(pathname,['sensitivity_indices_solution_' num2str(i) '_var_' num2str(j) '_t' num2str(k-1)],formats,renderer);
+%                 plotSensitivityIndices(pb.S,vk,j,'displ',i);
+%                 mysaveas(pathname,['sensitivity_indices_velocity_' num2str(i) '_var_' num2str(j) '_t' num2str(k-1)],formats,renderer);
+%                 plotSensitivityIndices(pb.S,ak,j,'displ',i);
+%                 mysaveas(pathname,['sensitivity_indices_acceleration_' num2str(i) '_var_' num2str(j) '_t' num2str(k-1)],formats,renderer);
+            end
         end
     % end
 end

@@ -585,6 +585,8 @@ if displaySolution
     %% Display evolutions of transient solutions
     % evolAllSolutions(glob,patches,interfaces,Ut,wt,lambdat,'filename','evol_all_solutions','pathname',pathname);
     % evolAllSolutions(glob,patches,interfaces,Ut,wt,lambdat,'surface',true,'filename','evol_all_solutions_surface','pathname',pathname);
+    % evolAllSolutions(glob,patches,interfaces,outputt.vU,outputt.vw,outputt.vlambda,'filename','evol_all_velocities','pathname',pathname);
+    % evolAllSolutions(glob,patches,interfaces,outputt.vU,outputt.vw,outputt.vlambda,'surface',true,'filename','evol_all_velocities_surface','pathname',pathname);
     
     evolGlobalSolution(glob,Ut,'filename','evol_global_solution','pathname',pathname);
     evolGlobalSolution(glob,Ut,'surface',true,'filename','evol_global_solution_surface','pathname',pathname);
@@ -612,6 +614,76 @@ if displaySolution
     evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'filename','evol_global_local_solution_velocity','pathname',pathname);
     evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'surface',true,'filename','evol_global_local_solution_velocity_surface','pathname',pathname);
     evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'view3',true,'filename','evol_global_local_solution_velocity_view3','pathname',pathname);
+    
+    %% Display transient solutions at different instants
+    [t,rep] = gettevol(N);
+    for k=1:floor(length(rep)/4):length(rep)
+        close all
+        Uk = getmatrixatstep(Ut,rep(k));
+        wk = cellfun(@(x) getmatrixatstep(x,rep(k)),wt,'UniformOutput',false);
+        lambdak = cellfun(@(x) getmatrixatstep(x,rep(k)),lambdat,'UniformOutput',false);
+        vUk = getmatrixatstep(outputt.vU,rep(k));
+        vwk = cellfun(@(x) getmatrixatstep(x,rep(k)),outputt.vw,'UniformOutput',false);
+        vlambdak = cellfun(@(x) getmatrixatstep(x,rep(k)),outputt.vlambda,'UniformOutput',false);
+        
+        % plotAllSolutions(glob,patches,interfaces,Uk,wk,lambdak);
+        % mysaveas(pathname,['all_solutions_t' num2str(k-1)],formats,renderer);
+        % plotAllSolutions(glob,patches,interfaces,Uk,wk,lambdak,'view3',true);
+        % mysaveas(pathname,['all_solutions_t' num2str(k-1) '_view3'],formats,renderer);
+        % plotAllSolutions(glob,patches,interfaces,vUk,vwk,vlambdak);
+        % mysaveas(pathname,['all_velocities_t' num2str(k-1)],formats,renderer);
+        % plotAllSolutions(glob,patches,interfaces,vUk,vwk,vlambdak,'view3',true);
+        % mysaveas(pathname,['all_velocities_t' num2str(k-1) '_surface'],formats,renderer);
+        
+        plotGlobalSolution(glob,Uk);
+        mysaveas(pathname,['global_solution_t' num2str(k-1)],formats,renderer);
+        plotGlobalSolution(glob,Uk,'surface',true);
+        mysaveas(pathname,['global_solution_t' num2str(k-1) '_surface'],formats,renderer);
+        plotGlobalSolution(glob,vUk);
+        mysaveas(pathname,['global_solution_velocity_t' num2str(k-1)],formats,renderer);
+        plotGlobalSolution(glob,vUk,'surface',true);
+        mysaveas(pathname,['global_solution_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+        
+        % plotLocalSolution(patches,wk);
+        % mysaveas(pathname,['local_solution_t' num2str(k-1)],formats,renderer);
+        % plotLocalSolution(patches,wk,'surface',true);
+        % mysaveas(pathname,['local_solution_t' num2str(k-1) '_surface'],formats,renderer);
+        % plotLocalSolution(patches,vwk);
+        % mysaveas(pathname,['local_solution_velocity_t' num2str(k-1)],formats,renderer);
+        % plotLocalSolution(patches,vwk,'surface',true);
+        % mysaveas(pathname,['local_solution_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+        
+        % plotLagrangeMultiplier(interfaces,lambdak);
+        % mysaveas(pathname,['Lagrange_multiplier_t' num2str(k-1)],formats,renderer);
+        % plotLagrangeMultiplier(interfaces,lambdak,'surface',true);
+        % mysaveas(pathname,['Lagrange_multiplier_t' num2str(k-1) '_surface'],formats,renderer);
+        % plotLagrangeMultiplier(interfaces,vlambdak);
+        % mysaveas(pathname,['Lagrange_multiplier_velocity_t' num2str(k-1)],formats,renderer);
+        % plotLagrangeMultiplier(interfaces,vlambdak,'surface',true);
+        % mysaveas(pathname,['Lagrange_multiplier_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+        
+        plotMultiscaleSolution(glob,patches,interfaces,Uk,wk);
+        mysaveas(pathname,['multiscale_solution_t' num2str(k-1)],formats,renderer);
+        plotMultiscaleSolution(glob,patches,interfaces,Uk,wk,'surface',true);
+        mysaveas(pathname,['multiscale_solution_t' num2str(k-1) '_surface'],formats,renderer);
+        plotMultiscaleSolution(glob,patches,interfaces,vUk,vwk);
+        mysaveas(pathname,['multiscale_solution_velocity_t' num2str(k-1)],formats,renderer);
+        plotMultiscaleSolution(glob,patches,interfaces,vUk,vwk,'surface',true);
+        mysaveas(pathname,['multiscale_solution_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+        
+        plotGlobalLocalSolution(glob,patches,interfaces,Uk,wk);
+        mysaveas(pathname,['global_local_solution_t' num2str(k-1)],formats,renderer);
+        plotGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'surface',true);
+        mysaveas(pathname,['global_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
+        plotGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'view3',true);
+        mysaveas(pathname,['global_local_solution_t' num2str(k-1) '_view3'],formats,renderer);
+        plotGlobalLocalSolution(glob,patches,interfaces,vUk,vwk);
+        mysaveas(pathname,['global_local_solution_velocity_t' num2str(k-1)],formats,renderer);
+        plotGlobalLocalSolution(glob,patches,interfaces,vUk,vwk,'surface',true);
+        mysaveas(pathname,['global_local_solution_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+        plotGlobalLocalSolution(glob,patches,interfaces,vUk,vwk,'view3',true);
+        mysaveas(pathname,['global_local_solution_velocity_t' num2str(k-1) '_view3'],formats,renderer);
+    end
     
     %% Display quantity of interest
     % boutput: concentration of pollutant captured by the trap domain

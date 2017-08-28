@@ -170,8 +170,7 @@ if displaySolution
     hold off
     ylim([0,1.7])
     mysaveas(pathname,'advection_velocity',formats,renderer);
-
-    % plotModel(pb.S,'legend',false);
+    
     figure('Name','Mesh')
     clf
     h1 = plot(pb.S,'selgroup',1,'FaceColor',getfacecolor(1));
@@ -203,6 +202,24 @@ if displaySolution
 %         evolSolution(pb.S,ut,'epsilon',i,'filename',['evol_eps_' num2str(i)],'pathname',pathname);
 %         evolSolution(pb.S,ut,'sigma',i,'filename',['evol_sig_' num2str(i)],'pathname',pathname);
 %     end
+    
+    %% Display transient solution at differents instants
+    [t,rep] = gettevol(pb.N);
+    for k=1:floor(length(rep)/4):length(rep)
+        close all
+        uk = getmatrixatstep(ut,rep(k));
+        vk = getmatrixatstep(vt,rep(k));
+        
+        plotSolution(pb.S,uk);
+        mysaveas(pathname,['solution_t' num2str(k-1)],formats,renderer);
+        plotSolution(pb.S,uk,'surface',true);
+        mysaveas(pathname,['solution_t' num2str(k-1) '_surface'],formats);
+        
+        plotSolution(pb.S,vk);
+        mysaveas(pathname,['velocity_t' num2str(k-1)],formats,renderer);
+        plotSolution(pb.S,vk,'surface',true);
+        mysaveas(pathname,['velocity_t' num2str(k-1) '_surface'],formats);
+    end
     
     %% Display quantity of interest
     % boutput: concentration of pollutant captured by the trap domain

@@ -112,10 +112,6 @@ fprintf('elapsed time = %f s\n',time);
 %% Display
 if displaySolution
     %% Display domains and meshes
-%     plotDomain(D,'legend',false);
-%     mysaveas(pathname,'domain',formats,renderer);
-%     mymatlab2tikz(pathname,'domain.tex');
-    
     figure('Name','Domain')
     clf
     h1 = plot(D,'FaceColor',getfacecolor(1));
@@ -130,9 +126,6 @@ if displaySolution
     axis off
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
-    
-%     plotModel(pb.S,'legend',false);
-%     mysaveas(pathname,'mesh',formats,renderer);
     
     figure('Name','Mesh')
     clf
@@ -166,4 +159,31 @@ if displaySolution
     
     % evolSolution(pb.S,ut,'epsilon','mises','filename','evol_epsilon_von_mises','pathname',pathname);
     % evolSolution(pb.S,ut,'sigma','mises','filename','evol_sigma_von_mises','pathname',pathname);
+    
+    %% Display solution at differents instants
+    i = 1;
+    % for i=1:2
+        [t,rep] = gettevol(pb.N);
+        for k=1:floor(length(rep)/5):length(rep)
+            close all
+            uk = getmatrixatstep(ut,rep(k));
+            vk = getmatrixatstep(vt,rep(k));
+            ak = getmatrixatstep(at,rep(k));
+            
+            plotSolution(pb.S,uk,'displ',i);
+            mysaveas(pathname,['solution_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+            plotSolution(pb.S,uk,'displ',i,'view3',true);
+            mysaveas(pathname,['solution_' num2str(i) '_t' num2str(k-1) '_view3'],formats);
+            
+            plotSolution(pb.S,vk,'displ',i);
+            mysaveas(pathname,['velocity_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+            plotSolution(pb.S,vk,'displ',i,'view3',true);
+            mysaveas(pathname,['velocity_' num2str(i) '_t' num2str(k-1) '_view3'],formats);
+            
+            plotSolution(pb.S,ak,'displ',i);
+            mysaveas(pathname,['acceleration_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+            plotSolution(pb.S,ak,'displ',i,'view3',true);
+            mysaveas(pathname,['acceleration_' num2str(i) '_t' num2str(k-1) '_view3'],formats);
+        end
+    % end
 end

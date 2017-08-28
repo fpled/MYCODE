@@ -323,7 +323,7 @@ if displaySolution
         
         % plotLocalSolution(patches,w,'displ',i);
         % mysaveas(pathname,['local_solution_' num2str(i)],formats,renderer);
-        %
+        
         % plotLagrangeMultiplier(interfaces,lambda,'displ',i);
         % mysaveas(pathname,['Lagrange_multiplier_' num2str(i)],formats,renderer);
         
@@ -332,7 +332,6 @@ if displaySolution
         
         plotGlobalLocalSolution(glob,patches,interfaces,U,w,'displ',i);
         mysaveas(pathname,['global_local_solution_' num2str(i)],formats,renderer);
-        
         plotGlobalLocalSolution(glob,patches,interfaces,U,w,'displ',i,'view3',true);
         mysaveas(pathname,['global_local_solution_' num2str(i) '_view3'],formats,renderer);
     end

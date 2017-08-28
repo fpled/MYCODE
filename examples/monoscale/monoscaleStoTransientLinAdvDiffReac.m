@@ -322,8 +322,7 @@ if displaySolution
     hold off
     ylim([0,1.7])
     mysaveas(pathname,'advection_velocity',formats,renderer);
-
-    % plotModel(pb.S,'legend',false);
+    
     figure('Name','Mesh')
     clf
     h1 = plot(pb.S,'selgroup',1,'FaceColor',getfacecolor(1));
@@ -370,6 +369,8 @@ if displaySolution
     end
     
     %% Display evolution of statistical outputs for transient solution
+    T = gettimemodel(pb.timeSolver);
+    
     evolMean(pb.S,T,ut,'filename','evol_mean_solution','pathname',pathname);
     evolMean(pb.S,T,ut,'surface',true,'filename','evol_mean_solution_surface','pathname',pathname);
     
@@ -401,6 +402,71 @@ if displaySolution
         
         evolSensitivityIndices(pb.S,T,vt,i,'filename',['evol_sensitivity_indices_velocity_var_' num2str(i)],'pathname',pathname);
         evolSensitivityIndices(pb.S,T,vt,i,'surface',true,'filename',['evol_sensitivity_indices_velocity_var_' num2str(i) '_surface'],'pathname',pathname);
+    end
+    
+    %% Display statistical outputs at differents instants for transient solution
+    [t,rep] = gettevol(pb.timeSolver);
+    for k=1:floor(length(rep)/4):length(rep)
+        close all
+        uk_data = ut.data(:,:,rep(k));
+        vk_data = vt.data(:,:,rep(k));
+        vk_data_tot = vt_tot.data(:,:,rep(k));
+        uk = FunctionalBasisArray(uk_data,ut.basis,ut.sz(1));
+        vk = FunctionalBasisArray(vk_data,vt.basis,vt.sz(1));
+        vk_tot = FunctionalBasisArray(vk_data_tot,vt_tot.basis,vt_tot.sz(1));
+        
+        plotMean(pb.S,uk);
+        mysaveas(pathname,['mean_solution_t' num2str(k-1)],formats,renderer);
+        plotMean(pb.S,uk,'surface',true);
+        mysaveas(pathname,['mean_solution_t' num2str(k-1) '_surface'],formats,renderer);
+        
+        plotMean(pb.S,vk_tot);
+        mysaveas(pathname,['mean_velocity_t' num2str(k-1)],formats,renderer);
+        plotMean(pb.S,vk_tot,'surface',true);
+        mysaveas(pathname,['mean_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+        
+        plotVariance(pb.S,uk);
+        mysaveas(pathname,['var_solution_t' num2str(k-1)],formats,renderer);
+        plotVariance(pb.S,uk,'surface',true);
+        mysaveas(pathname,['var_solution_t' num2str(k-1) '_surface'],formats,renderer);
+        
+        plotVariance(pb.S,vk);
+        mysaveas(pathname,['var_velocity_t' num2str(k-1)],formats,renderer);
+        plotVariance(pb.S,vk,'surface',true);
+        mysaveas(pathname,['var_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+        
+        plotStd(pb.S,uk);
+        mysaveas(pathname,['std_solution_t' num2str(k-1)],formats,renderer);
+        plotStd(pb.S,uk,'surface',true);
+        mysaveas(pathname,['std_solution_t' num2str(k-1) '_surface'],formats,renderer);
+        
+        plotStd(pb.S,vk);
+        mysaveas(pathname,['std_velocity_t' num2str(k-1)],formats,renderer);
+        plotStd(pb.S,vk,'surface',true);
+        mysaveas(pathname,['std_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+        
+        d = ndims(uk.basis);
+        for i=1:d
+            plotSobolIndices(pb.S,uk,i);
+            mysaveas(pathname,['sobol_indices_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+            plotSobolIndices(pb.S,uk,i,'surface',true);
+            mysaveas(pathname,['sobol_indices_solution_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
+            
+            plotSobolIndices(pb.S,vk,i);
+            mysaveas(pathname,['sobol_indices_velocity_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+            plotSobolIndices(pb.S,vk,i,'surface',true);
+            mysaveas(pathname,['sobol_indices_velocity_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
+            
+            plotSensitivityIndices(pb.S,uk,i);
+            mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+            plotSensitivityIndices(pb.S,uk,i,'surface',true);
+            mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
+            
+            plotSensitivityIndices(pb.S,vk,i);
+            mysaveas(pathname,['sensitivity_indices_velocity_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+            plotSensitivityIndices(pb.S,vk,i,'surface',true);
+            mysaveas(pathname,['sensitivity_indices_velocity_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
+        end
     end
     
     %% Display quantity of interest
