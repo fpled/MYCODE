@@ -485,12 +485,14 @@ if iterativeSolver
     
     % Stationary solution
     s.tol = 1e-4;
+    % s.tol = 10^(-tol-1);
     IS.maxIterations = 20;
     IS.referenceSolution = {U_ref,w_ref,lambda_ref};
     [U,w,lambda,output] = IS.solveRandom(glob_sta,patches_sta,interfaces,s,bases,ls,rv);
     
     % Transient solution
     s.tol = 1e-2;
+    % s.tol = 10^(-tol);
     IS.maxIterations = 20;
     IS.referenceSolution = {Ut_ref,wt_ref,lambdat_ref};
     [Ut,wt,lambdat,outputt] = IS.solveRandom(glob,patches,interfaces,s,bases,ls,rv);
