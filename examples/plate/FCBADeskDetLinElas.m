@@ -10,12 +10,12 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-test = 'Stability'; % stability test under vertical load
+% test = 'Stability'; % stability test under vertical load
 % test = 'StaticHori1'; % test under static horizontal load 1
 % test = 'StaticHori2'; % test under static horizontal load 2
 % test = 'StaticHori3'; % test under static horizontal load 3 (soulèvement)
 % test = 'StaticHori4'; % test under static horizontal load 4 (soulèvement)
-% test = 'StaticVert'; % test under static vertical load
+test = 'StaticVert'; % test under static vertical load
 % test = 'Fatigue1'; % fatigue test under horizontal load 1
 % test = 'Fatigue2'; % fatigue test under horizontal load 2
 % test = 'Fatigue3'; % fatigue test under horizontal load 3 (soulèvement)
@@ -189,7 +189,7 @@ if solveProblem
             p = 100; % F1 F2: 100N 200N; F3 F4: 100N
             slope = 0;
         case 'staticvert'
-            p = 400; % 300N, 400N, 500N
+            p = 300; % 300N, 400N, 500N
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
             masse = 50.5;
             Sec_masse = pi*r_masse^2;

@@ -231,10 +231,10 @@ if solveProblem
             masse = 50.5;
             Sec_masse = pi*r_masse^2;
             p_masse = masse*g/Sec_masse;
-            p = 200; % F1 F2: 100N 200N; F3 F4: 100N
+            p = 100; % F1 F2: 100N 200N; F3 F4: 100N
             slope = 0;
         case 'staticvert'
-            p = 500; % 300N, 400N, 500N
+            p = 300; % 300N, 400N, 500N
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
             masse = 50.5;
             Sec_masse = pi*r_masse^2;
