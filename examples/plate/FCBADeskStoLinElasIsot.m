@@ -259,8 +259,10 @@ if solveProblem
     S = final(S);
     switch lower(test)
         case 'stability'
-            S = addcl(S,P1_S1);
-            S = addcl(S,P1_S2,'U');
+            % S = addcl(S,P1_S1);
+            % S = addcl(S,P1_S2,'U');
+            S = addcl(S,union(numnode1,numnode2));
+            S = addcl(S,numnode5b,'UZ');
         case {'statichori1','statichori2'}
             S = addcl(S,numnode2);
             S = addcl(S,union(numnode1,numnode5b),{'UY','UZ'});

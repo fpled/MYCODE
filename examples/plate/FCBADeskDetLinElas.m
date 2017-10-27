@@ -10,11 +10,11 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-% test = 'Stability'; % stability test under vertical load
+test = 'Stability'; % stability test under vertical load
 % test = 'StaticHori1'; % test under static horizontal load 1
 % test = 'StaticHori2'; % test under static horizontal load 2
 % test = 'StaticHori3'; % test under static horizontal load 3 (soulèvement)
-test = 'StaticHori4'; % test under static horizontal load 4 (soulèvement)
+% test = 'StaticHori4'; % test under static horizontal load 4 (soulèvement)
 % test = 'StaticVert'; % test under static vertical load
 % test = 'Fatigue1'; % fatigue test under horizontal load 1
 % test = 'Fatigue2'; % fatigue test under horizontal load 2
@@ -214,8 +214,10 @@ if solveProblem
     S = final(S);
     switch lower(test)
         case 'stability'
-            S = addcl(S,P1_S1);
-            S = addcl(S,P1_S2,'U');
+            % S = addcl(S,P1_S1);
+            % S = addcl(S,P1_S2,'U');
+            S = addcl(S,union(numnode1,numnode2));
+            S = addcl(S,numnode5b,'UZ');
         case {'statichori1','statichori2'}
             S = addcl(S,numnode2);
             S = addcl(S,union(numnode1,numnode5b),{'UY','UZ'});
