@@ -651,15 +651,15 @@ switch lower(test)
         fprintf('mean(uz) = %g, std(uz) = %g\n',mean_uz_P_ver,std_uz_P_ver);
         if p == 300
             uz_exp_start = -0.69*1e-3;
-            uz_exp_fini = -[10.10 9.88 9.64 9.88 9.94 9.79 9.92 9.93 9.82 9.95]*1e-3;
+            uz_exp_end = -[10.10 9.88 9.64 9.88 9.94 9.79 9.92 9.93 9.82 9.95]*1e-3;
         elseif p == 400
             uz_exp_start = -0.75*1e-3;
-            uz_exp_fini = -[13.45 13.52 13.56 13.64 13.65 13.74 13.75 13.44 13.74 13.53]*1e-3;
+            uz_exp_end = -[13.45 13.52 13.56 13.64 13.65 13.74 13.75 13.44 13.74 13.53]*1e-3;
         elseif p == 500
             uz_exp_start = -0.78*1e-3;
-            uz_exp_fini = -[16.66 16.57 16.59 16.78 16.55 16.69 16.75 16.59 16.73 16.76]*1e-3;
+            uz_exp_end = -[16.66 16.57 16.59 16.78 16.55 16.69 16.75 16.59 16.73 16.76]*1e-3;
         end
-        uz_exp = mean(uz_exp_fini - uz_exp_start);
+        uz_exp = mean(uz_exp_end - uz_exp_start);
         err_uz = norm(mean_uz_P_ver-uz_exp)/norm(uz_exp);
         fprintf('uz_exp   = %g, error    = %.3e\n',uz_exp,err_uz);
         fprintf('\n');
@@ -674,8 +674,8 @@ switch lower(test)
         fprintf('mean(uy) = %g, std(uy) = %g\n',mean_uy_P_stability,std_uy_P_stability);
         fprintf('mean(uz) = %g, std(uz) = %g\n',mean_uz_P_stability,std_uz_P_stability);
         uz_exp_start = -1.93*1e-3;
-        uz_exp_fini = -[18.46 18.44 18.53 18.58 18.59 18.7 18.77 18.73 18.85 18.76]*1e-3;
-        uz_exp = mean(uz_exp_fini - uz_exp_start);
+        uz_exp_end = -[18.46 18.44 18.53 18.58 18.59 18.7 18.77 18.73 18.85 18.76]*1e-3;
+        uz_exp = mean(uz_exp_end - uz_exp_start);
         err_uz = norm(mean_uz_P_stability-uz_exp)/norm(uz_exp);
         fprintf('uz_exp   = %g, error    = %.3e\n',uz_exp,err_uz);
         fprintf('\n');
@@ -690,13 +690,13 @@ switch lower(test)
         fprintf('mean(uy) = %g, std(uy) = %g\n',mean_uy_P_hori2,std_uy_P_hori2);
         fprintf('mean(uz) = %g, std(uz) = %g\n',mean_uz_P_hori2,std_uz_P_hori2);
         if p==100
-        ux_exp_start = -6.88*1e-3;
-        ux_exp_fini = -[10.5 10.51 10.44 10.8 10.72 10.62 10.67 10.65 10.66 10.87 10.86]*1e-3;
+            ux_exp_start = -6.88*1e-3;
+            ux_exp_end = -[10.5 10.51 10.44 10.8 10.72 10.62 10.67 10.65 10.66 10.87 10.86]*1e-3;
         elseif p==200
-        ux_exp_start = -6.16*1e-3;
-        ux_exp_fini = -[16.78 16.74 16.72 17.13 17 16.8 16.87 16.78 17.04 16.82 16.71 17.17]*1e-3;
+            ux_exp_start = -6.16*1e-3;
+            ux_exp_end = -[16.78 16.74 16.72 17.13 17 16.8 16.87 16.78 17.04 16.82 16.71 17.17]*1e-3;
         end
-        ux_exp = mean(ux_exp_fini - ux_exp_start);
+        ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(mean_ux_P_hori2-ux_exp)/norm(ux_exp);
         fprintf('ux_exp   = %g, error    = %.3e\n',ux_exp,err_ux);
         fprintf('\n');
@@ -711,13 +711,13 @@ switch lower(test)
         fprintf('mean(uy) = %g, std(uy) = %g\n',mean_uy_P_hori1,std_uy_P_hori1);
         fprintf('mean(uz) = %g, std(uz) = %g\n',mean_uz_P_hori1,std_uz_P_hori1);
         if p==100
-        ux_exp_start = 2.12*1e-3;
-        ux_exp_fini = [6.22 6.17 6.26 6.31 6.33 6.24 6.26 6.4 6.26 6.49 6.48 6.42 6.36 6.56 6.37 6.39]*1e-3;
+            ux_exp_start = 2.12*1e-3;
+            ux_exp_end = [6.22 6.17 6.26 6.31 6.33 6.24 6.26 6.4 6.26 6.49 6.48 6.42 6.36 6.56 6.37 6.39]*1e-3;
         elseif p==200
-        ux_exp_start = 1.91*1e-3;
-        ux_exp_fini = [12.45 12.68 12.66 12.65 12.71 12.64 12.82 12.73 12.89 12.86 12.79 12.86]*1e-3;    
-        end    
-        ux_exp = mean(ux_exp_fini - ux_exp_start);
+            ux_exp_start = 1.91*1e-3;
+            ux_exp_end = [12.45 12.68 12.66 12.65 12.71 12.64 12.82 12.73 12.89 12.86 12.79 12.86]*1e-3;
+        end
+        ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(mean_ux_P_hori1-ux_exp)/norm(ux_exp);
         fprintf('ux_exp   = %g, error    = %.3e\n',ux_exp,err_ux);
         fprintf('\n');
@@ -732,8 +732,8 @@ switch lower(test)
         fprintf('mean(uy) = %g, std(uy) = %g\n',mean_uy_P_fati2,std_uy_P_fati2);
         fprintf('mean(uz) = %g, std(uz) = %g\n',mean_uz_P_fati2,std_uz_P_fati2);
         ux_exp_start = -4.42*1e-3;
-        ux_exp_fini = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;   
-        ux_exp = mean(ux_exp_fini - ux_exp_start);
+        ux_exp_end = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;   
+        ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(mean_ux_P_fati2-ux_exp)/norm(ux_exp);
         fprintf('ux_exp   = %g, error    = %.3e\n',ux_exp,err_ux);
         fprintf('\n');
@@ -748,8 +748,8 @@ switch lower(test)
         fprintf('mean(uy) = %g, std(uy) = %g\n',mean_uy_P_fati1,std_uy_P_fati1);
         fprintf('mean(uz) = %g, std(uz) = %g\n',mean_uz_P_fati1,std_uz_P_fati1);
         ux_exp_start = 3.48*1e-3;
-        ux_exp_fini = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;   
-        ux_exp = mean(ux_exp_fini - ux_exp_start);
+        ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;   
+        ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(mean_ux_P_fati1-ux_exp)/norm(ux_exp);
         fprintf('ux_exp   = %g, error    = %.3e\n',ux_exp,err_ux);
         fprintf('\n');
@@ -800,12 +800,18 @@ if displaySolution
             
             plotSolution(S,std_u,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Uz',formats,renderer);
-        case {'statichori1','statichori2','statichori3','statichori4'}
+        case {'statichori1','statichori2'}
             plotSolution(S,mean_u,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Ux',formats,renderer);
             
             plotSolution(S,std_u,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Ux',formats,renderer);
+        case {'statichori3','statichori4'}
+            plotSolution(S,mean_u,'displ',2,'ampl',ampl,options{:});
+            mysaveas(pathname,'mean_Uy',formats,renderer);
+            
+            plotSolution(S,std_u,'displ',2,'ampl',ampl,options{:});
+            mysaveas(pathname,'std_Uy',formats,renderer);
         case 'staticvert'
             plotSolution(S,mean_u,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Uz',formats,renderer);

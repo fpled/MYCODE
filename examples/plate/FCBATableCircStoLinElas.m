@@ -554,12 +554,18 @@ if displaySolution
             
             plotSolution(S,std_u,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Uz',formats,renderer);
-        case {'statichori1','statichori2','statichori3','statichori4'}
+        case {'statichori1','statichori2'}
             plotSolution(S,mean_u,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Ux',formats,renderer);
             
             plotSolution(S,std_u,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Ux',formats,renderer);
+        case {'statichori3','statichori4'}
+            plotSolution(S,mean_u,'displ',2,'ampl',ampl,options{:});
+            mysaveas(pathname,'mean_Uy',formats,renderer);
+            
+            plotSolution(S,std_u,'displ',2,'ampl',ampl,options{:});
+            mysaveas(pathname,'std_Uy',formats,renderer);
         case 'staticvert'
             plotSolution(S,mean_u,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Uz',formats,renderer);

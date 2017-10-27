@@ -479,9 +479,12 @@ if displaySolution
         case 'stability'
             plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'Uz',formats,renderer);
-        case {'statichori1','statichori2','statichori3','statichori4'}
+        case {'statichori1','statichori2'}
             plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'Ux',formats,renderer);
+        case {'statichori3','statichori4'}
+            plotSolution(S,u,'displ',2,'ampl',ampl,options{:});
+            mysaveas(pathname,'Uy',formats,renderer);
         case 'staticvert'
             plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'Uz',formats,renderer);
