@@ -3,7 +3,7 @@
 
 % clc
 clear all
-close all
+% close all
 % set(0,'DefaultFigureVisible','off');
 
 %% Input data

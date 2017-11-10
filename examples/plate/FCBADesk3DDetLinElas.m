@@ -105,12 +105,12 @@ if solveProblem
     
     % Plates meshes
     elemtype = 'TET4';
-    cl_12 = min(b12/10,h/3);
-    cl_3 = min(b3/10,h/3);
-    cl_5 = min(b5/5,h/3);
-%     cl_12 = b12/10;
-%     cl_3 = b3/10;
-%     cl_5 = b5/5;
+%     cl_12 = min(b12/10,h/2);
+%     cl_3 = min(b3/10,h/2);
+%     cl_5 = min(b5/5,h/2);
+    cl_12 = b12/10;
+    cl_3 = b3/10;
+    cl_5 = b5/5;
     r_masse = 100e-3;
     C_masse = CIRCLE(0.0,y3_12+b3/2,z3+h/2,r_masse);
     r_load = 40e-3;
@@ -283,10 +283,10 @@ if solveProblem
                 f = surfload(S,S3_9,{'FX','FZ'},-p*[cosd(slope);sind(slope)]);
             elseif strcmpi(test,'statichori2')
                 S3_17 = getfacet(S3,17);
-                f = surfload(S,F3_17,{'FX','FZ'},p*[cosd(slope);-sind(slope)]);
+                f = surfload(S,S3_17,{'FX','FZ'},p*[cosd(slope);-sind(slope)]);
             elseif strcmpi(test,'statichori3')
-                S3_27 = getfacet(S3,27);
-                f = surfload(S,S3_27,{'FY','FZ'},-p*[cosd(slope);sind(slope)]);
+                S3_14 = getfacet(S3,14);
+                f = surfload(S,S3_14,{'FY','FZ'},-p*[cosd(slope);sind(slope)]);
             elseif strcmpi(test,'statichori4')
                 S3_2 = getfacet(S3,2);
                 f = surfload(S,S3_2,{'FY','FZ'},p*[cosd(slope);-sind(slope)]);
@@ -496,9 +496,9 @@ switch lower(test)
         fprintf('\n');
     case 'fatigue2'
         disp('Displacement u at point'); disp(P_fati{1});
-        fprintf('ux = %g\n',ux_P_fati{1});
-        fprintf('uy = %g\n',uy_P_fati{1});
-        fprintf('uz = %g\n',uz_P_fati{1});
+        fprintf('ux = %g\n',ux_P_fati(1));
+        fprintf('uy = %g\n',uy_P_fati(1));
+        fprintf('uz = %g\n',uz_P_fati(1));
         ux_exp_start = 3.48*1e-3;
         ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;   
         ux_exp = mean(ux_exp_end - ux_exp_start);
