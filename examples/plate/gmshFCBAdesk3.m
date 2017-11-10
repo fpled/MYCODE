@@ -1,28 +1,32 @@
-function varargout = gmshFCBAdesk3(Q,I,PL,PbQ,PiQeI,PiI,clQ,clI,clPL,clPbQ,clPiQeI,clPiI,filename,indim,varargin)
-% function varargout = gmshFCBAdesk3(Q,I,PL,PbQ,PiQeI,PiI,clQ,clI,clPL,clPbQ,clPiQeI,clPiI,filename,indim,varargin)
+function varargout = gmshFCBAdesk3(Q,I,L1,L2,PbQ,PiQeI,PiI,clQ,clI,clL1,clL2,clPbQ,clPiQeI,clPiI,filename,indim,varargin)
+% function varargout = gmshFCBAdesk3(Q,I,L1,L2,PbQ,PiQeI,PiI,clQ,clI,clL1,clL2,clPbQ,clPiQeI,clPiI,filename,indim,varargin)
 % Q : QUADRANGLE
 % I : DOMAIN or CIRCLE or ELLIPSE or QUADRANGLE
-% PL, PbQ, PiQeI, PiI : POINT
-% clQ, clI, clPL, clPbQ, clPiQeI, clPiI : characteristic lengths
+% L1, L2 : LIGNE
+% PbQ, PiQeI, PiI : POINT
+% clQ, clI, clL1, clL2, clPbQ, clPiQeI, clPiI : characteristic lengths
 % filename : file name (optional)
-% indim : space dimension (optional, getdim(D) by default)
+% indim : space dimension (optional, getdim(Q) by default)
 
-if nargin<8
+if nargin<9
     clI = clQ;
 end
-if nargin<9
-    clPL = clQ;
-end
 if nargin<10
-    clPbQ = clQ;
+    clL1 = clQ;
 end
 if nargin<11
-    clPiQeI = clQ;
+    clL2 = clQ;
 end
 if nargin<12
-    clPiI = clI;
+    clPbQ = clQ;
+end
+if nargin<13
+    clPiQeI = clQ;
 end
 if nargin<14
+    clPiI = clI;
+end
+if nargin<16
     indim = getdim(Q);
 end
 
@@ -48,13 +52,15 @@ if length(clPiI)==1
 end
 
 G = GMSHFILE();
-if nargin>=13 && ischar(filename)
+if nargin>=15 && ischar(filename)
     G = setfile(G,filename);
 end
 
-numpoints = 1:length(PbQ);
-numlines = 1:length(PbQ);
-G = createpoints(G,PbQ,clPbQ,numpoints);
+PQ = getvertices(Q);
+numpoints = 1:(length(PQ)+length(PbQ));
+numlines = 1:(length(PQ)+length(PbQ));
+G = createpoints(G,PQ,clQ,numpoints(1:3:end));
+G = createpoints(G,PbQ,clPbQ,setdiff(numpoints,numpoints(1:3:end)));
 G = createcontour(G,numpoints,numlines,1);
 
 numpoints = numpoints(end)+(1:5);
@@ -66,7 +72,7 @@ elseif isa(I,'CIRCLE') || isa(I,'ELLIPSE')
 end
 G = G+GI;
 
-numlineloop = [1:length(PbQ),-numlines];
+numlineloop = [1:(length(PQ)+length(PbQ)),-numlines];
 G = createlineloop(G,numlineloop,3);
 G = createplanesurface(G,3,1);
 G = createplanesurface(G,2,2);
@@ -88,11 +94,14 @@ if ischarin('recombine',varargin)
     G = recombinesurface(G,1);
 end
 
+PL1 = getvertices(L1);
+PL2 = getvertices(L2);
 numpoints = numpoints(end)+(1:4);
 numlines = numlines(end)+(1:2);
 seg = [1:2;3:4];
 seg = numpoints(seg);
-G = createpoints(G,PL,clPL,numpoints);
+G = createpoints(G,PL1,clL1,numpoints(1:2));
+G = createpoints(G,PL2,clL2,numpoints(3:4));
 G = createlines(G,seg,numlines);
 G = embedlinesinsurface(G,numlines,1);
 

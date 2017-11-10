@@ -1,5 +1,5 @@
-%% FCBA table circular deterministic linear elasticity %%
-%%-----------------------------------------------------%%
+%% FCBA table circular stochastic linear elasticity %%
+%%--------------------------------------------------%%
 
 % clc
 clear all
@@ -21,8 +21,8 @@ displayCv = true;
 % test = 'StaticHori2'; % test under static horizontal load 2
 % test = 'StaticHori3'; % test under static horizontal load 3
 % test = 'StaticHori4'; % test under static horizontal load 4
-% test = 'StaticVert'; % test under static vertical load
-test = 'Fatigue1'; % fatigue test under horizontal load 1
+test = 'StaticVert'; % test under static vertical load
+% test = 'Fatigue1'; % fatigue test under horizontal load 1
 % test = 'Fatigue2'; % fatigue test under horizontal load 2
 % test = 'Fatigue3'; % fatigue test under horizontal load 3
 % test = 'Fatigue4'; % fatigue test under horizontal load 4
@@ -117,22 +117,25 @@ if solveProblem
     S_belt = cellfun(@(L,n) build_model(L,'cl',cl_belt,'elemtype','BEAM','filename',fullfile(pathname,['gmsh_belt_' num2str(n) '_cl_' num2str(cl_belt)])),L_belt,num2cell(1:length(L_belt)),'UniformOutput',false);
     
     %% Random variables
-    % Experimental data
-    samples_E = [4.211 4.057 3.685 3.921 3.839 3.845 3.795...
+    % Data
+    E_data = [4.211 4.057 3.685 3.921 3.839 3.845 3.795...
         3.406 3.389 3.299 3.485 3.319 3.267 3.349 3.307...
         4.684 4.245 4.076 4.407 4.283 4.054 4.226 4.041...
         4.104 4.075 3.556 3.319 3.848 3.707 3.664 3.493 3.550]*1e9;
-    % samples_E = [2.7116 2.8945 2.9689 3.022 3.014 3.0069 2.9952 2.9711...
+    % E_data = [2.7116 2.8945 2.9689 3.022 3.014 3.0069 2.9952 2.9711...
     %     2.7807 2.9541 2.9618 3.0014 2.9562 2.8909 2.8874 2.8923...
     %     2.6636 3.2635 3.1073 3.1657 3.1424 3.1731 3.1416 3.155...
     %     2.7356 2.8797 2.7230 2.7851 2.8312 2.8018 2.7592 2.743 2.7241 2.7055 2.7073...
     %     3.8267 3.2860 3.3753 3.1742 3.3089 3.2461 3.1331 3.0817	3.0093 3.0528]*1e9;
+    
+    % Maximum likelihood estimation
     % Parameters for Gamma distribution
-    phat = gamfit(samples_E);
+    phat = gamfit(E_data);
+    
     % Number of samples
     N = 1e3;
     % Sample set
-    e = gamrnd(phat(1),phat(2),N,1);
+    E_sample = gamrnd(phat(1),phat(2),N,1);
     
     %% Materials
     % Gravitational acceleration
@@ -140,7 +143,7 @@ if solveProblem
     
     % Plate
     % Young modulus
-    E = mean(e);
+    E = mean(E_sample);
     % Poisson ratio
     NU = 0.3;
     % Density
@@ -192,25 +195,25 @@ if solveProblem
     end
     
     %% Neumann boundary conditions
-    p_plate = RHO*g*h;
-    p_beam = RHO_beam*g*Sec_beam;
-    p_belt = RHO_beam*g*Sec_belt;
+    p_plate = RHO*g*h; % surface load (body load for plates)
+    p_beam = RHO_beam*g*Sec_beam; % line load (body load for beams)
+    p_belt = RHO_beam*g*Sec_belt; % line load (body load for beams)
     switch lower(test)
         case {'stability1','stability2','stability3','stability4'}
-            p = 400;
+            p = 400; % pointwise load, pmin = 668N
         case {'statichori1','statichori2','statichori3','statichori4'}
-            masse = 50;
+            masse = 50.5;
             Sec_masse = pi*r_masse^2;
-            p_masse = masse*g/Sec_masse;
-            p = 400;
+            p_masse = masse*g/Sec_masse; % surface load (body load for plates)
+            p = 400; % pointwise load
             slope = 0;
         case 'staticvert'
-            p = 1200;
+            p = 1200; % pointwise load
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-            masse = 50;
+            masse = 50.5;
             Sec_masse = pi*r_masse^2;
-            p_masse = masse*g/Sec_masse;
-            p = 300;
+            p_masse = masse*g/Sec_masse; % surface load (body load for plates)
+            p = 300; % pointwise load
         case 'impact'
             H = 180e-3;
         case 'drop'
@@ -225,64 +228,60 @@ if solveProblem
     S = final(S);
     switch lower(test)
         case 'stability1'
-            S = addcl(S,P_support(4)); % S = addcl(S,P_support(4),{'U','R'},0);
-            S = addcl(S,P_support(1),'U'); % S = addcl(S,P_support(1),'U',0);
+            S = addcl(S,P_support([1;4]));
             pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-a/2),a/2,r,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2-x),0,a/2,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
                 +p_belt*a*(a+b)+2*p_beam*a*l)/(-x_load_stab{1}(1)-a/2);
             if p < pmin % no lifting
-                S = addcl(S,P_support([2 3]),'UZ'); % S = addcl(S,P_support([2 3]),'UZ',0);
+                S = addcl(S,P_support([2;3]),'UZ');
             end
         case 'stability2'
-            S = addcl(S,P_support(1)); % S = addcl(S,P_support(4),{'U','R'},0);
-            S = addcl(S,P_support(2),'U'); % S = addcl(S,P_support(1),'U',0);
+            S = addcl(S,P_support([1;2]));
             pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-b/2),b/2,r,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2-x),0,b/2,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
                 +p_belt*b*(b+a)+2*p_beam*b*l)/(-x_load_stab{2}(2)-b/2);
             if p < pmin % no lifting
-                S = addcl(S,P_support([3 4]),'UZ'); % S = addcl(S,P_support([3 4]),'UZ',0);
+                S = addcl(S,P_support([3;4]),'UZ');
             end
         case 'stability3'
-            S = addcl(S,P_support(2)); % S = addcl(S,P_support(4),{'U','R'},0);
-            S = addcl(S,P_support(3),'U'); % S = addcl(S,P_support(1),'U',0);
+            S = addcl(S,P_support([2;3]));
             pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-a/2),a/2,r,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2-x),0,a/2,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
                 +p_belt*a*(a+b)+2*p_beam*a*l)/(x_load_stab{3}(1)-a/2);
             if p < pmin % no lifting
-                S = addcl(S,P_support([1 4]),'UZ'); % S = addcl(S,P_support([1 4]),'UZ',0);
+                S = addcl(S,P_support([1;4]),'UZ');
             end
         case 'stability4'
-            S = addcl(S,P_support(3)); % S = addcl(S,P_support(4),{'U','R'},0);
-            S = addcl(S,P_support(4),'U'); % S = addcl(S,P_support(1),'U',0);
+            S = addcl(S,P_support([3;4]));
             pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-b/2),b/2,r,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2-x),0,b/2,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
                 +p_belt*b*(b+a)+2*p_beam*b*l)/(x_load_stab{4}(2)-b/2);
             if p < pmin % no lifting
-                S = addcl(S,P_support([1 2]),'UZ'); % S = addcl(S,P_support([1 2]),'UZ',0);
+                S = addcl(S,P_support([1;2]),'UZ');
             end
         case {'statichori1','statichori2'}
-            S = addcl(S,P_support([3 4])); % S = addcl(S,P_support([3 4]),{'U','R'},0);
-            S = addcl(S,P_support([1 2]),'UZ'); % S = addcl(S,P_support([1 2]),'UZ',0);
+            S = addcl(S,P_support([3;4]));
+            S = addcl(S,P_support([1;2]),'UZ');
         case {'statichori3','statichori4'}
-            S = addcl(S,P_support([4 1])); % S = addcl(S,P_support([4 1]),{'U','R'},0);
-            S = addcl(S,P_support([2 3]),'UZ'); % S = addcl(S,P_support([2 3]),'UZ',0);
+            S = addcl(S,P_support([1;4]));
+            S = addcl(S,P_support([2;3]),'UZ');
         case 'staticvert'
-            S = addcl(S,P_support,'U'); % S = addcl(S,P_support,'U',0);
+            S = addcl(S,P_support,'U');
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-            S = addcl(S,P_support); % S = addcl(S,P_support,{'U','R'},0);
+            S = addcl(S,P_support);
         case {'impact','drop'}
-            S = addcl(S,P_support); % S = addcl(S,P_support,{'U','R'},0);
+            S = addcl(S,P_support);
     end
     
     %% Stiffness matrices
     A = cell(N,1);
     for i=1:N
         % Young modulus
-        Ei = e(i);
+        Ei = E_sample(i);
         % Material
         mat_platei = setparam(mat_plate,'E',Ei);
         Si = setmaterial(S,mat_platei,[1,2,3]);
@@ -528,17 +527,17 @@ if displaySolution
     % legend([hD,hN],[legD,legN])
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
-    plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true,'legend',false);
+    plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
     ampl = getsize(S)/max(abs(mean_u))/10;
-    plotModelDeflection(S,mean_u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true,'legend',false);
+    plotModelDeflection(S,mean_u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
-    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true);
-    plot(S+ampl*mean_u,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true);
+    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
+    plot(S+ampl*mean_u,'Color','b','FaceColor','b','FaceAlpha',0.1);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display solution
@@ -613,13 +612,13 @@ end
 
 %% Display convergence Monte-Carlo
 if displayCv
-    N = size(u,2);
-    means_u = arrayfun(@(x) norm(mean(u(:,1:x),2)),1:N);
-    stds_u = arrayfun(@(x) norm(std(u(:,1:x),0,2)),1:N);
+    n = size(u,2);
+    means_u = arrayfun(@(x) norm(mean(u(:,1:x),2)),1:n);
+    stds_u = arrayfun(@(x) norm(std(u(:,1:x),0,2)),1:n);
     
     figure('Name','Convergence empirical mean')
     clf
-    plot(1:N,means_u,'-b','LineWidth',1)
+    plot(1:n,means_u,'-b','LineWidth',1)
     grid on
     box on
     set(gca,'FontSize',16)
@@ -632,7 +631,7 @@ if displayCv
     
     figure('Name','Convergence empirical standard deviation')
     clf
-    plot(1:N,stds_u,'-r','LineWidth',1)
+    plot(1:n,stds_u,'-r','LineWidth',1)
     grid on
     box on
     set(gca,'FontSize',16)
@@ -644,4 +643,4 @@ if displayCv
     mymatlab2tikz(pathname,'convergence_empirical_std.tex');
 end
 
-% myparallel('stop');
+myparallel('stop');

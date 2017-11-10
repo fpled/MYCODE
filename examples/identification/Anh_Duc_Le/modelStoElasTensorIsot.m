@@ -25,7 +25,7 @@ pdf_C0 = @(x,y) 1/(phat0(2)^phat0(1)*gamma(phat0(1)))*(x^(phat0(1)-1))*exp(-x/ph
 ResulIdent=[];
 x_exp=[e_0 n_0];
 for i=1:N
-    U_exp(:,i)=ThreePointsBendingIsot(x_exp(i,:));
+    U_exp(:,i)=solveThreePointBendingIsot(x_exp(i,:));
     ampl = 1e-2;
     noise = ampl*(2*rand(length(U_exp(:,i)),1)-1).*U_exp(:,i);    
     x=functionIdentificationIsot(U_exp(:,i),noise);
@@ -59,7 +59,7 @@ xlabel('\''Echantillon','Interpreter',interpreter);
 ylabel('Shear modulus (GPa)','Interpreter',interpreter);
 
 
-%% Maximization of Log-likelihood function
+%% Maximum likelihood estimation
 opts = statset('TolFun',eps,'TolX',eps,'FunValCheck','off','MaxIter',1e3,'MaxFunEvals',1e3);
 data=[k;m];
 nloglf = @(phat,data,cens,freq) length(k)*log(gamma(phat(1)))+length(k)*phat(1)*log(phat(2))...

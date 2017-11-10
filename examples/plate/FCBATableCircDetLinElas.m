@@ -10,7 +10,7 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-% test = 'Stability1'; % stability test under vertical load 1
+test = 'Stability1'; % stability test under vertical load 1
 % test = 'Stability2'; % stability test under vertical load 2
 % test = 'Stability3'; % stability test under vertical load 3
 % test = 'Stability4'; % stability test under vertical load 4
@@ -19,7 +19,7 @@ displaySolution = true;
 % test = 'StaticHori3'; % test under static horizontal load 3
 % test = 'StaticHori4'; % test under static horizontal load 4
 % test = 'StaticVert'; % test under static vertical load
-test = 'Fatigue1'; % fatigue test under horizontal load 1
+% test = 'Fatigue1'; % fatigue test under horizontal load 1
 % test = 'Fatigue2'; % fatigue test under horizontal load 2
 % test = 'Fatigue3'; % fatigue test under horizontal load 3
 % test = 'Fatigue4'; % fatigue test under horizontal load 4
@@ -171,25 +171,25 @@ if solveProblem
     end
     
     %% Neumann boundary conditions
-    p_plate = RHO*g*h;
-    p_beam = RHO_beam*g*Sec_beam;
-    p_belt = RHO_beam*g*Sec_belt;
+    p_plate = RHO*g*h; % surface load (body load for plates)
+    p_beam = RHO_beam*g*Sec_beam; % line load (body load for beams)
+    p_belt = RHO_beam*g*Sec_belt; % line load (body load for beams)
     switch lower(test)
         case {'stability1','stability2','stability3','stability4'}
-            p = 400; % pmin = 668;
+            p = 400; % pointwise load, pmin = 668N
         case {'statichori1','statichori2','statichori3','statichori4'}
-            masse = 50;
+            masse = 50.5;
             Sec_masse = pi*r_masse^2;
-            p_masse = masse*g/Sec_masse;
-            p = 400;
+            p_masse = masse*g/Sec_masse; % surface load (body load for plates)
+            p = 400; % pointwise load
             slope = 0;
         case 'staticvert'
-            p = 1200;
+            p = 1200; % pointwise load
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-            masse = 50;
+            masse = 50.5;
             Sec_masse = pi*r_masse^2;
-            p_masse = masse*g/Sec_masse;
-            p = 300;
+            p_masse = masse*g/Sec_masse; % surface load (body load for plates)
+            p = 300; % pointwise load
         case 'impact'
             H = 180e-3;
         case 'drop'
@@ -204,57 +204,53 @@ if solveProblem
     S = final(S);
     switch lower(test)
         case 'stability1'
-            S = addcl(S,P_support(4)); % S = addcl(S,P_support(4),{'U','R'},0);
-            S = addcl(S,P_support(1),'U'); % S = addcl(S,P_support(1),'U',0);
+            S = addcl(S,P_support([1;4]));
             pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-a/2),a/2,r,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2-x),0,a/2,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
                 +p_belt*a*(a+b)+2*p_beam*a*l)/(-x_load_stab{1}(1)-a/2);
             if p < pmin % no lifting
-                S = addcl(S,P_support([2 3]),'UZ'); % S = addcl(S,P_support([2 3]),'UZ',0);
+                S = addcl(S,P_support([2;3]),'UZ');
             end
         case 'stability2'
-            S = addcl(S,P_support(1)); % S = addcl(S,P_support(4),{'U','R'},0);
-            S = addcl(S,P_support(2),'U'); % S = addcl(S,P_support(1),'U',0);
+            S = addcl(S,P_support([1;2]));
             pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-b/2),b/2,r,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2-x),0,b/2,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
                 +p_belt*b*(b+a)+2*p_beam*b*l)/(-x_load_stab{2}(2)-b/2);
             if p < pmin % no lifting
-                S = addcl(S,P_support([3 4]),'UZ'); % S = addcl(S,P_support([3 4]),'UZ',0);
+                S = addcl(S,P_support([3;4]),'UZ');
             end
         case 'stability3'
-            S = addcl(S,P_support(2)); % S = addcl(S,P_support(4),{'U','R'},0);
-            S = addcl(S,P_support(3),'U'); % S = addcl(S,P_support(1),'U',0);
+            S = addcl(S,P_support([2;3]));
             pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-a/2),a/2,r,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2-x),0,a/2,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
                 +p_belt*a*(a+b)+2*p_beam*a*l)/(x_load_stab{3}(1)-a/2);
             if p < pmin % no lifting
-                S = addcl(S,P_support([1 4]),'UZ'); % S = addcl(S,P_support([1 4]),'UZ',0);
+                S = addcl(S,P_support([1;4]),'UZ');
             end
         case 'stability4'
-            S = addcl(S,P_support(3)); % S = addcl(S,P_support(4),{'U','R'},0);
-            S = addcl(S,P_support(4),'U'); % S = addcl(S,P_support(1),'U',0);
+            S = addcl(S,P_support([3;4]));
             pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-b/2),b/2,r,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2-x),0,b/2,'RelTol',eps,'AbsTol',eps)...
                 +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
                 +p_belt*b*(b+a)+2*p_beam*b*l)/(x_load_stab{4}(2)-b/2);
             if p < pmin % no lifting
-                S = addcl(S,P_support([1 2]),'UZ'); % S = addcl(S,P_support([1 2]),'UZ',0);
+                S = addcl(S,P_support([1;2]),'UZ');
             end
         case {'statichori1','statichori2'}
-            S = addcl(S,P_support([3 4])); % S = addcl(S,P_support([3 4]),{'U','R'},0);
-            S = addcl(S,P_support([1 2]),'UZ'); % S = addcl(S,P_support([1 2]),'UZ',0);
+            S = addcl(S,P_support([3;4]));
+            S = addcl(S,P_support([1;2]),'UZ');
         case {'statichori3','statichori4'}
-            S = addcl(S,P_support([4 1])); % S = addcl(S,P_support([4 1]),{'U','R'},0);
-            S = addcl(S,P_support([2 3]),'UZ'); % S = addcl(S,P_support([2 3]),'UZ',0);
+            S = addcl(S,P_support([1;4]));
+            S = addcl(S,P_support([2;3]),'UZ');
         case 'staticvert'
-            S = addcl(S,P_support,'U'); % S = addcl(S,P_support,'U',0);
+            S = addcl(S,P_support,'U');
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-            S = addcl(S,P_support); % S = addcl(S,P_support,{'U','R'},0);
+            S = addcl(S,P_support);
         case {'impact','drop'}
-            S = addcl(S,P_support); % S = addcl(S,P_support,{'U','R'},0);
+            S = addcl(S,P_support);
     end
     
     %% Stiffness matrices and sollicitation vectors
@@ -456,17 +452,17 @@ if displaySolution
     % legend([hD,hN],[legD,legN])
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
-    plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true,'legend',false);
+    plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
     ampl = getsize(S)/max(abs(u))/10;
-    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true,'legend',false);
+    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
-    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true);
-    plot(S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true);
+    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
+    plot(S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display solution

@@ -66,6 +66,7 @@ end
 numcenter = 1;
 numpoints = 1+(1:length(PbC));
 numlines = 1:length(PbC);
+numlineloop = numlines;
 % PC = getvertices(C);
 Pc = double(getcenter(C));
 G = createpoint(G,Pc,clC,numcenter);
@@ -76,7 +77,7 @@ numpoints = numpoints(end)+(1:4);
 numlines = numlines(end)+(1:4);
 GQ = gmshfile(Q,clQ,numpoints,numlines,2);
 G = G+GQ;
-numlineloop = [1:length(PbC),-numlines];
+numlineloop = [numlineloop,-numlines];
 G = createlineloop(G,numlineloop,3);
 G = createplanesurface(G,3,1);
 if ~isempty([PiCeQ{:}])

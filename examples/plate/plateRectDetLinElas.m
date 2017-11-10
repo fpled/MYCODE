@@ -100,17 +100,17 @@ if solveProblem
     S = final(S);
     switch lower(boundary)
         case 'clamped'
-            S = addcl(S,[]); % S = addcl(S,[],{'U','R'},0);
+            S = addcl(S,[]);
         case 'simplysupported'
             % Soft support
-            S = addcl(S,[],'U'); % S = addcl(S,[],{'UX','UY','UZ'},0);
+            S = addcl(S,[],'U');
             % Hard support
             % S = addcl(S,L{1},{'U','RY'});
             % S = addcl(S,L{2},{'U','RX'});
             % S = addcl(S,L{3},{'U','RY'});
             % S = addcl(S,L{4},{'U','RX'});
     end
-    % S = addcl(S,[],'R'); % S = addcl(S,[],{'RX','RY','RZ'},0);
+    % S = addcl(S,[],'R');
     
     %% Stiffness matrices and sollicitation vectors
     switch lower(loading)

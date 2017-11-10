@@ -11,7 +11,7 @@ close all
 E_exp = 11.55;
 nu_exp = 0.4;
 x_exp = [E_exp nu_exp];
-U_exp = ThreePointsBendingIsot(x_exp);
+U_exp = solveThreePointBendingIsot(x_exp);
 fprintf('Exp values\n');
 fprintf('----------\n');
 fprintf('E_exp  = %g GPa\n',x_exp(1));

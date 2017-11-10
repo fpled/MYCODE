@@ -134,7 +134,7 @@ if solveProblem
     P_support = POINT(x_support);
     
     S = final(S);
-    S = addcl(S,P_support); % S = addcl(S,P_support,{'U','R'},0);
+    S = addcl(S,P_support);
     
     %% Stiffness matrices and sollicitation vectors
     % Uniform or Concentrated load

@@ -118,22 +118,22 @@ if solveProblem
     switch lower(boundary)
         case 'clamped'
             % No locking
-            S = addcl(S,[]); % S = addcl(S,[],{'U','R'},0);
+            S = addcl(S,[]);
             % Shear locking for element COQ4
-            % S = addcl(S,P_support(:));
+            % S = addcl(S,P_support);
             % Partial shear locking for element COQ4
-            % S = addcl(S,getfacet(S,2),'U');
-            % S = addcl(S,P_support([1 4]),'U');
+            % S = addcl(S,getfacet(S,2));
+            % S = addcl(S,P_support([1;4]));
         case 'simplysupported'
             % No locking
-            S = addcl(S,[],'U'); % S = addcl(S,[],{'UX','UY','UZ'},0);
+            S = addcl(S,[],'U');
             % Shear locking for element COQ4
-            % S = addcl(S,P_support(:),'U');
+            % S = addcl(S,P_support,'U');
             % Partial shear locking for element COQ4
             % S = addcl(S,getfacet(S,2),'U');
-            % S = addcl(S,P_support([1 4]),'U');
+            % S = addcl(S,P_support([1;4]),'U');
     end
-    % S = addcl(S,[],'R'); % S = addcl(S,[],{'RX','RY','RZ'},0);
+    % S = addcl(S,[],'R');
     
     %% Stiffness matrices and sollicitation vectors
     switch lower(loading)
