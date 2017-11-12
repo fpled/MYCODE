@@ -1,5 +1,4 @@
 *~
 *.o
-*.mat
 .DS_Store
 results/
