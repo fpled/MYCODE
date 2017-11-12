@@ -10,7 +10,7 @@ clear all
 close all
 
 %% Input data
-displaySolution = true;
+displaySolution = false;
 
 filename = 'data_ET_GL.mat';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...

@@ -7,7 +7,7 @@ clear all
 close all
 
 %% Input data
-displaySolution = true;
+displaySolution = false;
 
 filenameAna = 'data_ET_GL.mat';
 filenameNum = 'data_EL_NUL.mat';
