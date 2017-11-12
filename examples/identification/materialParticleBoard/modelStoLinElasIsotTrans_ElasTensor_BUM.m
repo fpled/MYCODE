@@ -11,6 +11,8 @@ clear all
 close all
 
 %% Input data
+displaySolution = true;
+
 filename = 'modelStoElasIsotTransTensor_BUM';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification',filename);
@@ -140,99 +142,103 @@ ET_sample = 4./(k1+k2);
 NUT_sample = (ET_sample./GT_sample)/2-1;
 
 %% Plot samples
-figure('name','Samples of (ET,GL,NUT)')
-clf
-scatter3(ET_sample,GL_sample,NUT_sample,'b.')
-hold on
-scatter3(ET_data,GL_data,NUT_data,'r+')
-hold off
-grid on
-box on
-set(gca,'FontSize',fontsize)
-xlabel('Young modulus $E^T$ (GPa)','Interpreter',interpreter);
-ylabel('Shear modulus $G^L$ (GPa)','Interpreter',interpreter);
-zlabel('Poisson ratio $\nu^T$','Interpreter',interpreter);
-mysaveas(pathname,'samples_ET_GL_NUT',formats);
-mymatlab2tikz(pathname,'samples_ET_GL_NUT.tex');
+if displaySolution
+    figure('name','Samples of (ET,GL,NUT)')
+    clf
+    scatter3(ET_sample,GL_sample,NUT_sample,'b.')
+    hold on
+    scatter3(ET_data,GL_data,NUT_data,'r+')
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Young modulus $E^T$ (GPa)','Interpreter',interpreter);
+    ylabel('Shear modulus $G^L$ (GPa)','Interpreter',interpreter);
+    zlabel('Poisson ratio $\nu^T$','Interpreter',interpreter);
+    mysaveas(pathname,'samples_ET_GL_NUT',formats);
+    mymatlab2tikz(pathname,'samples_ET_GL_NUT.tex');
+end
 
 %% Plot pdfs and cdfs
-pdf_C4 = @(c4) gampdf(c4,1-2*lambda,1/lambda4); % Gamma probability density function of C4
-pdf_C5 = @(c5) gampdf(c5,1-2*lambda,1/lambda5); % Gamma probability density function of C5
-cdf_C4 = @(c4) gamcdf(c4,1-2*lambda,1/lambda4); % Gamma cumulative density function of C4
-cdf_C5 = @(c5) gamcdf(c5,1-2*lambda,1/lambda5); % Gamma cumulative density function of C5
-
-N = 100;
-x4_min = max(0,mean(C4_data)-8*std(C4_data));
-x4_max = mean(C4_data)+8*std(C4_data);
-x5_min = max(0,mean(C5_data)-8*std(C5_data));
-x5_max = mean(C5_data)+8*std(C5_data);
-
-% Plot pdf of C4
-figure('Name','Probability density function of C4')
-clf
-x4 = linspace(x4_min,x4_max,N);
-y4 = pdf_C4(x4);
-plot(x4,y4,'-b');
-hold on
-plot(C4_data,pdf_C4(C4_data),'r+');
-hold off
-grid on
-box on
-set(gca,'FontSize',fontsize)
-set(gca,'XLim',[min(x4),max(x4)])
-xlabel('$c_4$ (GPa)','Interpreter',interpreter)
-ylabel('$p_{C_4}(c_4)$','Interpreter',interpreter)
-mysaveas(pathname,'pdf_C4',formats);
-mymatlab2tikz(pathname,'pdf_C4.tex');
-
-% Plot pdf of C5
-figure('Name','Probability density function of C5')
-clf
-x5 = linspace(x5_min,x5_max,N);
-y5 = pdf_C5(x5);
-plot(x5,y5,'-b');
-hold on
-plot(C5_data,pdf_C5(C5_data),'r+');
-hold off
-grid on
-box on
-set(gca,'FontSize',fontsize)
-set(gca,'XLim',[min(x5),max(x5)])
-xlabel('$c_5$ (GPa)','Interpreter',interpreter)
-ylabel('$p_{C_5}(c_5)$','Interpreter',interpreter)
-mysaveas(pathname,'pdf_C5',formats);
-mymatlab2tikz(pathname,'pdf_C5.tex');
-
-% Plot cdf of C4
-figure('name','cumulative distribution function of C4')
-clf
-z4 = cdf_C4(x4);
-plot(x4,z4,'-b');
-hold on
-plot(C4_data,cdf_C4(C4_data),'r+');
-hold off
-grid on
-box on
-set(gca,'FontSize',fontsize)
-set(gca,'XLim',[min(x4),max(x4)])
-xlabel('$c_4$ (GPa)','Interpreter',interpreter)
-ylabel('$F_{C_4}(c_4)$','Interpreter',interpreter)
-mysaveas(pathname,'cdf_C4',formats);
-mymatlab2tikz(pathname,'cdf_C4.tex');
-
-% Plot cdf of C5
-figure('name','cumulative distribution function of C5')
-clf
-z5 = cdf_C5(x5);
-plot(x5,z5,'-b');
-hold on
-plot(C5_data,cdf_C5(C5_data),'r+');
-hold off
-grid on
-box on
-set(gca,'FontSize',fontsize)
-set(gca,'XLim',[min(x5),max(x5)])
-xlabel('$c_5$ (GPa)','Interpreter',interpreter)
-ylabel('$F_{C_5}(c_5)$','Interpreter',interpreter)
-mysaveas(pathname,'cdf_C5',formats);
-mymatlab2tikz(pathname,'cdf_C5.tex');
+if displaySolution
+    pdf_C4 = @(c4) gampdf(c4,1-2*lambda,1/lambda4); % Gamma probability density function of C4
+    pdf_C5 = @(c5) gampdf(c5,1-2*lambda,1/lambda5); % Gamma probability density function of C5
+    cdf_C4 = @(c4) gamcdf(c4,1-2*lambda,1/lambda4); % Gamma cumulative density function of C4
+    cdf_C5 = @(c5) gamcdf(c5,1-2*lambda,1/lambda5); % Gamma cumulative density function of C5
+    
+    N = 100;
+    x4_min = max(0,mean(C4_data)-8*std(C4_data));
+    x4_max = mean(C4_data)+8*std(C4_data);
+    x5_min = max(0,mean(C5_data)-8*std(C5_data));
+    x5_max = mean(C5_data)+8*std(C5_data);
+    
+    % Plot pdf of C4
+    figure('Name','Probability density function of C4')
+    clf
+    x4 = linspace(x4_min,x4_max,N);
+    y4 = pdf_C4(x4);
+    plot(x4,y4,'-b');
+    hold on
+    plot(C4_data,pdf_C4(C4_data),'r+');
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    set(gca,'XLim',[min(x4),max(x4)])
+    xlabel('$c_4$ (GPa)','Interpreter',interpreter)
+    ylabel('$p_{C_4}(c_4)$','Interpreter',interpreter)
+    mysaveas(pathname,'pdf_C4',formats);
+    mymatlab2tikz(pathname,'pdf_C4.tex');
+    
+    % Plot pdf of C5
+    figure('Name','Probability density function of C5')
+    clf
+    x5 = linspace(x5_min,x5_max,N);
+    y5 = pdf_C5(x5);
+    plot(x5,y5,'-b');
+    hold on
+    plot(C5_data,pdf_C5(C5_data),'r+');
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    set(gca,'XLim',[min(x5),max(x5)])
+    xlabel('$c_5$ (GPa)','Interpreter',interpreter)
+    ylabel('$p_{C_5}(c_5)$','Interpreter',interpreter)
+    mysaveas(pathname,'pdf_C5',formats);
+    mymatlab2tikz(pathname,'pdf_C5.tex');
+    
+    % Plot cdf of C4
+    figure('name','cumulative distribution function of C4')
+    clf
+    z4 = cdf_C4(x4);
+    plot(x4,z4,'-b');
+    hold on
+    plot(C4_data,cdf_C4(C4_data),'r+');
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    set(gca,'XLim',[min(x4),max(x4)])
+    xlabel('$c_4$ (GPa)','Interpreter',interpreter)
+    ylabel('$F_{C_4}(c_4)$','Interpreter',interpreter)
+    mysaveas(pathname,'cdf_C4',formats);
+    mymatlab2tikz(pathname,'cdf_C4.tex');
+    
+    % Plot cdf of C5
+    figure('name','cumulative distribution function of C5')
+    clf
+    z5 = cdf_C5(x5);
+    plot(x5,z5,'-b');
+    hold on
+    plot(C5_data,cdf_C5(C5_data),'r+');
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    set(gca,'XLim',[min(x5),max(x5)])
+    xlabel('$c_5$ (GPa)','Interpreter',interpreter)
+    ylabel('$F_{C_5}(c_5)$','Interpreter',interpreter)
+    mysaveas(pathname,'cdf_C5',formats);
+    mymatlab2tikz(pathname,'cdf_C5.tex');
+end

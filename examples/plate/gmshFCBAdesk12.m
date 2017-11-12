@@ -35,7 +35,11 @@ G = createplanesurface(G,1,1);
 seg = [5 6;7 8];
 G = createlines(G,seg,6:7);
 G = embedlinesinsurface(G,6:7,1);
+if ischarin('recombine',varargin)
+    G = recombinesurface(G,1);
+end
+varargin = delonlycharin('recombine',varargin);
 
 n=max(nargout,1);
 varargout = cell(1,n);
-[varargout{:}] = gmsh2femobject(indim,G,getdim(Q):-1:getdim(Q)-n+1);
+[varargout{:}] = gmsh2femobject(indim,G,getdim(Q):-1:getdim(Q)-n+1,varargin{:});

@@ -13,7 +13,7 @@ Dir_qsub = /usr/local/pbs/default/bin
 Cluster_Name = cluster
 # Problem name
 #Pb_Name = multiscaleDetLinDiffForm
-Pb_Name = multiscaleDetLinDiff
+#Pb_Name = multiscaleDetLinDiff
 #Pb_Name = multiscaleDetLinDiffCircHoles
 #Pb_Name = multiscaleDetLinElas
 #Pb_Name = multiscaleDetLinElasCircHoles
@@ -64,13 +64,20 @@ Pb_Name = multiscaleDetLinDiff
 #Pb_Name = FCBATableCircStoLinElas
 #Pb_Name = FCBADeskDetLinElas
 #Pb_Name = FCBADeskStoLinElas
+#Pb_Name = FCBADesk3DDetLinElas
+#Pb_Name = FCBADesk3DStoLinElas
+
+#Pb_Name = identification_ET_GL
+#Pb_Name = identification_EL_NUL
 
 # Default ---------------------------
 default:
 #	matlab -nodesktop -nosplash -noFigureWindows -r "$(Pb_Name); exit" -logfile results/$(Pb_Name).log
 #	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoLinDiffAlignInclusionsIso; exit" -logfile results/multiscaleSto/linDiffAlignInclusionsIso.log
 #	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoLinDiffAlignInclusionsAniso; exit" -logfile results/multiscaleSto/linDiffAlignInclusionsAniso.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoTransientLinAdvDiffReac; exit" -logfile results/multiscaleSto/transientLinAdvDiffReac.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoTransientLinAdvDiffReac; exit" -logfile results/multiscaleSto/transientLinAdvDiffReac.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskDetLinElas; exit" -logfile results/plate/FCBADeskDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADesk3DDetLinElas; exit" -logfile results/plate/FCBADesk3DDetLinElas.log
 
 # All ---------------------------
 all: sparse monosto multidet multisto plate
@@ -89,7 +96,7 @@ multidet:
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleDetLinElasInteriorCracks; exit" -logfile results/multiscaleDet/linElasInteriorCracks.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleDetNonlinDiffReac; exit" -logfile results/multiscaleDet/nonlinDiffReac.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleDetTransientLinAdvDiffReac; exit" -logfile results/multiscaleDet/transientLinAdvDiffReac.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoDynLinElas; exit" -logfile results/multiscaleDet/dynLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleDetDynLinElas; exit" -logfile results/multiscaleDet/dynLinElas.log
 
 # Multiscale Stochastic ---------------------------
 multisto:
@@ -138,6 +145,13 @@ plate:
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBATableCircStoLinElas; exit" -logfile results/plate/FCBATableCircStoLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskDetLinElas; exit" -logfile results/plate/FCBADeskDetLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskStoLinElas; exit" -logfile results/plate/FCBADeskStoLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADesk3DDetLinElas; exit" -logfile results/plate/FCBADesk3DDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADesk3DStoLinElas; exit" -logfile results/plate/FCBADesk3DStoLinElas.log
+
+# Identification ---------------------------
+identification:
+	matlab -nodesktop -nosplash -noFigureWindows -r "identification_ET_GL; exit" -logfile results/plate/identification_ET_GL.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "identification_EL_NUL; exit" -logfile results/plate/identification_EL_NUL.log
 
 # Clean ---------------------------
 clean:

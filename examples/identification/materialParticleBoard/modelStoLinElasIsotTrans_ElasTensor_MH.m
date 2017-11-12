@@ -6,6 +6,8 @@ clear all
 close all
 
 %% Input data
+displaySolution = true;
+
 filename = 'modelStoElasIsotTransTensor_MH';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification',filename);

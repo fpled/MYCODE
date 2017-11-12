@@ -118,7 +118,8 @@ end
 if ischarin('recombine',varargin)
     G = recombinesurface(G,2);
 end
+varargin = delonlycharin('recombine',varargin);
 
 n=max(nargout,1);
 varargout = cell(1,n);
-[varargout{:}] = gmsh2femobject(indim,G,getdim(C):-1:getdim(C)-n+1);
+[varargout{:}] = gmsh2femobject(indim,G,getdim(C):-1:getdim(C)-n+1,varargin{:});

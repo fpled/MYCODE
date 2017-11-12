@@ -4,7 +4,7 @@ function varargout = gmshFCBAdesk3D3(D,I,Q1,Q2,LbD,CiDeI,CiI,clD,clI,clQ1,clQ2,c
 % I : DOMAIN or CIRCLE or ELLIPSE or QUADRANGLE
 % Q1, Q2 : QUADRANGLE
 % LbD : LIGNE
-% CbQ, CiQeI, CiI : CIRCLE
+% CiDeI, CiI : CIRCLE
 % clD, clI, clQ1, clQ2, clLbD, clCiDeI, clCiI : characteristic lengths
 % filename : file name (optional)
 % indim : space dimension (optional, getdim(D) by default)
@@ -196,4 +196,4 @@ G = createvolume(G,1,1);
 
 n=max(nargout,1);
 varargout = cell(1,n);
-[varargout{:}] = gmsh2femobject(indim,G,getdim(D):-1:getdim(D)-n+1);
+[varargout{:}] = gmsh2femobject(indim,G,getdim(D):-1:getdim(D)-n+1,varargin{:});

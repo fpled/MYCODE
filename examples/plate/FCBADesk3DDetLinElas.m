@@ -8,14 +8,14 @@ clear all
 
 %% Input data
 solveProblem = true;
-displaySolution = true;
+displaySolution = false;
 
-% test = 'Stability'; % stability test under vertical load
+test = 'Stability'; % stability test under vertical load
 % test = 'StaticHori1'; % test under static horizontal load 1
 % test = 'StaticHori2'; % test under static horizontal load 2
 % test = 'StaticHori3'; % test under static horizontal load 3 (lifting)
 % test = 'StaticHori4'; % test under static horizontal load 4 (lifting)
-test = 'StaticVert'; % test under static vertical load
+% test = 'StaticVert'; % test under static vertical load
 % test = 'Fatigue1'; % fatigue test under horizontal load 1
 % test = 'Fatigue2'; % fatigue test under horizontal load 2
 % test = 'Fatigue3'; % fatigue test under horizontal load 3 (lifting)
@@ -105,17 +105,14 @@ if solveProblem
     
     % Plates meshes
     elemtype = 'TET4';
-%     cl_12 = min(b12/10,h/2);
-%     cl_3 = min(b3/10,h/2);
-%     cl_5 = min(b5/5,h/2);
-    cl_12 = b12/10;
-    cl_3 = b3/10;
-    cl_5 = b5/5;
+    cl_12 = h/3;
+    cl_3 = h/3;
+    cl_5 = h/3;
     r_masse = 100e-3;
     C_masse = CIRCLE(0.0,y3_12+b3/2,z3+h/2,r_masse);
     r_load = 40e-3;
-    C_vert = CIRCLE(0.0,y3_12+50e-3,z3+h/2,r_load);
-    C_stab = CIRCLE(0.0,y3_12+b3/2,z3+h/2,r_load);
+    C_vert = CIRCLE(x_vert(1),x_vert(2),x_vert(3)+h,r_load);
+    C_stab = CIRCLE(x_stab(1),x_stab(2),x_stab(3)+h,r_load);
     %
     Q1_a = QUADRANGLE([x5a_23-h/2,y5a+h/2,z5a_12],[x5a_23-h/2,y5a-h/2,z5a_12],[x5a_23-h/2,y5a-h/2,z5a_34],[x5a_23-h/2,y5a+h/2,z5a_34]);
     Q1_b = QUADRANGLE([x5b_23-h/2,y5b+h/2,z5b_12],[x5b_23-h/2,y5b-h/2,z5b_12],[x5b_23-h/2,y5b-h/2,z5b_34],[x5b_23-h/2,y5b+h/2,z5b_34]);
@@ -145,8 +142,8 @@ if solveProblem
         LIGNE(x_fati{2}+[0,-r_load,-h/2],x_fati{2}+[0,-r_load,h/2])};
     Q3_1 = QUADRANGLE([x1-h/2,y1_14,z1_34-h/2],[x1+h/2,y1_14,z1_34-h/2],[x1+h/2,y1_23,z1_34-h/2],[x1-h/2,y1_23,z1_34-h/2]);
     Q3_2 = QUADRANGLE([x2-h/2,y2_14,z2_34-h/2],[x2+h/2,y2_14,z2_34-h/2],[x2+h/2,y2_23,z2_34-h/2],[x2-h/2,y2_23,z2_34-h/2]);
-    CiD3eI = C_vert;
-    CiI = C_stab;
+    CiD3eI = C_stab;
+    CiI = C_vert;
     S3 = gmshFCBAdesk3D3(D3,C_masse,Q3_1,Q3_2,LbD3,CiD3eI,CiI,cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
         fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3);
     %
@@ -225,10 +222,10 @@ if solveProblem
             masse = 50.5;
             Sec_masse = pi*r_masse^2;
             p_masse = masse*g/Sec_masse; % surface load
-            p = 100/Sec_hori_fati; % surface load, F1 F2 = 100N 200N, F3 F4 = 100N
+            p = 100/Sec_hori_fati; % surface load, F1=F2=100N or 200N, F3=F4=100N
             slope = 0;
         case 'staticvert'
-            p = 300/Sec_stab_vert; % surface load, 300N, 400N, 500N
+            p = 300/Sec_stab_vert; % surface load, 300N, 400N or 500N
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
             masse = 50.5;
             Sec_masse = pi*r_masse^2;
@@ -363,7 +360,8 @@ if solveProblem
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S','S1','S2','S3','S5a','S5b',...
-        'elemtype','a12','b12','a3','b3','a5','b5','h','f','p','Sec_stab_vert','Sec_hori_fati');
+        'elemtype','a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','Sec_hori_fati',...
+        'f','p');
     save(fullfile(pathname,'solution.mat'),'u','time',...
         'U','Ux','Uy','Uz');
     save(fullfile(pathname,'test_solution.mat'),'P_vert','P_stab',...

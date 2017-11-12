@@ -63,4 +63,4 @@ G = createvolume(G,1,1);
 
 n=max(nargout,1);
 varargout = cell(1,n);
-[varargout{:}] = gmsh2femobject(indim,G,getdim(D):-1:getdim(D)-n+1);
+[varargout{:}] = gmsh2femobject(indim,G,getdim(D):-1:getdim(D)-n+1,varargin{:});
