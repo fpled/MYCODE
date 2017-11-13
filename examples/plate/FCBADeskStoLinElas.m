@@ -31,7 +31,11 @@ pointwiseLoading = 0; % pointwise loading
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-filename = ['FCBADeskStoLinElasIsot' test];
+if pointwiseLoading
+    filename = ['FCBADeskStoLinElasIsot' test 'PointwiseLoading'];
+else
+    filename = ['FCBADeskStoLinElasIsot' test];
+end
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','plate',filename);
 if ~exist(pathname,'dir')
@@ -112,10 +116,11 @@ if solveProblem
     P_meas = cellfun(@(x) POINT(x),x_meas,'UniformOutput',false);
     
     % Plates meshes
-    elemtype = 'DKT';
-    cl_12 = h;
-    cl_3 = h;
-    cl_5 = h;
+    elemtype = 'DST';
+    cl = h;
+    cl_12 = cl;
+    cl_3 = cl;
+    cl_5 = cl;
     r_load = 40e-3;
     r_masse = 100e-3;
     C_masse = CIRCLE(0.0,y3_12+b3/2,z3,r_masse);

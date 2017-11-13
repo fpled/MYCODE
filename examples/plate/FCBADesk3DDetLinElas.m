@@ -3,7 +3,7 @@
 
 % clc
 clear all
-% close all
+close all
 % set(0,'DefaultFigureVisible','off');
 
 %% Input data
@@ -105,9 +105,10 @@ if solveProblem
     
     % Plates meshes
     elemtype = 'TET4';
-    cl_12 = h/3;
-    cl_3 = h/3;
-    cl_5 = h/3;
+    cl = h;
+    cl_12 = cl;
+    cl_3 = cl;
+    cl_5 = cl;
     r_masse = 100e-3;
     C_masse = CIRCLE(0.0,y3_12+b3/2,z3+h/2,r_masse);
     r_load = 40e-3;
@@ -179,11 +180,13 @@ if solveProblem
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = eval(['mean_ET_' sampleNum '_data;'])/2.1*1e9; % Pa
+            %E = eval(['mean_ET_' sampleNum '_data;'])/2.1*1e9; % Pa
+            E = 1.9e9; % Pa
             % Shear modulus
             G = eval(['mean_GL_' sampleNum '_data;'])*7*1e6; % Pa
             % Poisson ratio
-            NU = E./(2*G)-1;
+            %NU = E./(2*G)-1;
+            NU = 0.25;
             % Material
             mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO);
         case 'isottrans'
