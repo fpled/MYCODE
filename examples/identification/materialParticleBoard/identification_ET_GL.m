@@ -146,7 +146,7 @@ for j = 1:20
         legend(sampleNum,-1);
         xlabel('Image number','Interpreter',interpreter);
         ylabel('Young modulus $E^T$ (GPa)','Interpreter',interpreter);
-        mysaveas(pathname,['data°ET_' sampleNum],formats);
+        mysaveas(pathname,['data_ET_' sampleNum],formats);
         mymatlab2tikz(pathname,['data_ET_' sampleNum '.tex']);
         
         figure

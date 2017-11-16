@@ -8,7 +8,7 @@ close all
 
 %% Input data
 solveProblem = true;
-displaySolution = false;
+displaySolution = true;
 
 test = 'Stability'; % stability test under vertical load
 % test = 'StaticHori1'; % test under static horizontal load 1
