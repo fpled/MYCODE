@@ -178,7 +178,7 @@ for j = 3
             hg = hggroup;
             set([h(:),hD],'Parent',hg);
             axis image
-            l = legend(hD,'$U_{\mathrm{exp}}$',-1);
+            l = legend(hD,'$U_{\mathrm{exp}}$','Location','northeastoutside');
             % l = legend(hD,legD);
             set(l,'Interpreter',interpreter);
             mysaveas(pathname,'boundary_conditions',formats,renderer);
