@@ -23,7 +23,7 @@ test = 'StaticVert'; % test under static vertical load
 % test = 'Impact'; % vertical impact test
 % test = 'Drop'; % drop test
 
-pointwiseLoading = 0; % pointwise loading
+pointwiseLoading = 1; % pointwise loading
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
@@ -113,7 +113,7 @@ if solveProblem
     P_meas = cellfun(@(x) POINT(x),x_meas,'UniformOutput',false);
     
     % Plates meshes
-    elemtype = 'DST';
+    elemtype = 'DKT';
     cl = h;
     cl_12 = cl;
     cl_3 = cl;
