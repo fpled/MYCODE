@@ -10,12 +10,12 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-test = 'Stability'; % stability test under vertical load
+% test = 'Stability'; % stability test under vertical load
 % test = 'StaticHori1'; % test under static horizontal load 1
 % test = 'StaticHori2'; % test under static horizontal load 2
 % test = 'StaticHori3'; % test under static horizontal load 3 (lifting)
 % test = 'StaticHori4'; % test under static horizontal load 4 (lifting)
-% test = 'StaticVert'; % test under static vertical load
+test = 'StaticVert'; % test under static vertical load
 % test = 'Fatigue1'; % fatigue test under horizontal load 1
 % test = 'Fatigue2'; % fatigue test under horizontal load 2
 % test = 'Fatigue3'; % fatigue test under horizontal load 3 (lifting)
