@@ -66,26 +66,15 @@ for j = 1:20
             'examples','identification','materialParticleBoard','resultsDIC');
         load(fullfile(pathnameDIC,filenameDIC));
         
-        X = real(Mesh.Znode);
-        Y = imag(Mesh.Znode);
-        Coordx = (X+Job.ROI(1)-1);
-        Coordy = (Y+Job.ROI(2)-1);
-        scaleFactor = h/(max(Coordx)-min(Coordx));
-        coordx = (Coordy-min(Coordy))*scaleFactor+d;
-        coordy = -(Coordx-1/2*(min(Coordx)+max(Coordx)))*scaleFactor;
-        coord = [coordx coordy];
-        Ux = U(1:2:end);
-        Uy = U(2:2:end);
-        u_exp = [Uy -Ux]'*scaleFactor;
-        u_exp = u_exp(:);
+        [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d);
         
         funlsqnonlin = @(x) funlsqnonlinAna(x,u_exp,coord,F(k),Iz,h);
         % funoptim = @(x) funoptimAna(x,u_exp,coord,F(imageList),Iz,h);
         
-        [x,err(k),~,exitflag,output] = lsqnonlin(@(x) funlsqnonlin(x),x0,lb,ub,optionslsqnonlin);
-        % [x,err(k),exitflag,output] = fminsearch(@(x) funoptim(x),x0,optionsfminsearch);
-        % [x,err(k),exitflag,output] = fminunc(@(x) funoptim(x),x0,optionsfminunc);
-        % [x,err(k),exitflag,output] = fmincon(@(x) funoptim(x),x0,[],[],[],[],lb,ub,[],optionsfmincon);
+        [x,err(k),~,exitflag,output] = lsqnonlin(funlsqnonlin,x0,lb,ub,optionslsqnonlin);
+        % [x,err(k),exitflag,output] = fminsearch(funoptim,x0,optionsfminsearch);
+        % [x,err(k),exitflag,output] = fminunc(funoptim,x0,optionsfminunc);
+        % [x,err(k),exitflag,output] = fmincon(funoptim,x0,[],[],[],[],lb,ub,[],optionsfmincon);
         
         ET(k) = x(1)*1e-3; % GPa
         GL(k) = x(2); % MPa

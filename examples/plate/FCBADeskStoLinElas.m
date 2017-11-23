@@ -116,7 +116,7 @@ if solveProblem
     P_meas = cellfun(@(x) POINT(x),x_meas,'UniformOutput',false);
     
     % Plates meshes
-    elemtype = 'DST';
+    elemtype = 'DKT';
     cl = h;
     cl_12 = cl;
     cl_3 = cl;
@@ -846,7 +846,7 @@ if displaySolution
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 8;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
-    % legend([hD,hN],[legD,legN])
+    % legend([hD,hN],[legD,legN],'Location','northeastoutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);

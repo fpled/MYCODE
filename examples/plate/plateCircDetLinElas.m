@@ -1,9 +1,9 @@
 %% Circular plate - Deterministic linear elasticity problem %%
 %%----------------------------------------------------------%%
 % Code_Aster v3.03.100.pdf
-% SSLS100 - Plaque circulaire encastrée soumise à une pression uniforme
+% SSLS100 - Plaque circulaire encastrï¿½e soumise ï¿½ une pression uniforme
 % Code_Aster v3.03.101.pdf
-% SSLS101 - Plaque circulaire posée soumise à une pression uniforme
+% SSLS101 - Plaque circulaire posï¿½e soumise ï¿½ une pression uniforme
 
 % clc
 clear all
@@ -350,7 +350,7 @@ if displaySolution
             ampl = 0.2;
     end
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
-    % legend([hD,hN],[legD,legN])
+    % legend([hD,hN],[legD,legN],'Location','northeastoutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);

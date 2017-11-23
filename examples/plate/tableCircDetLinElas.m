@@ -246,7 +246,7 @@ if displaySolution
             ampl = 0.2;
     end
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
-    % legend([hD,hN],[legD,legN])
+    % legend([hD,hN],[legD,legN],'Location','northeastoutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true,'legend',false);

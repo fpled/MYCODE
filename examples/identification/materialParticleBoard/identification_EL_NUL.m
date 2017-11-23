@@ -59,23 +59,9 @@ for j = 1:20
             'examples','identification','materialParticleBoard','resultsDIC');
         load(fullfile(pathnameDIC,filenameDIC));
         
-        X = real(Mesh.Znode);
-        Y = imag(Mesh.Znode);
-        Coordx = (X+Job.ROI(1)-1);
-        Coordy = (Y+Job.ROI(2)-1);
-        scaleFactor = h/(max(Coordx)-min(Coordx));
-        coordx = (Coordy-min(Coordy))*scaleFactor+d;
-        coordy = -(Coordx-1/2*(min(Coordx)+max(Coordx)))*scaleFactor;
-        coord = [coordx coordy];
-        Ux = U(1:2:end);
-        Uy = U(2:2:end);
-        % ux_exp = Uy*scaleFactor;
-        % uy_exp = -Ux*scaleFactor;
-        % u_exp = [ux_exp uy_exp]';
-        u_exp = [Uy -Ux]'*scaleFactor;
-        u_exp = u_exp(:);
+        [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d);
         
-        node = NODE([coordx,coordy],1:numel(coordx));
+        node = NODE(coord,1:size(coord,1));
         elem = Mesh.TRI;
         elemtype = 'TRI3';
         % option = 'DEFO'; % plane strain
@@ -97,21 +83,13 @@ for j = 1:20
         S = addcl(S,[],'U',u_exp_b);
         u_exp_in = freevector(S,u_exp);
         
-        % nodes_b = getnumber(getnode(create_boundary(S)));
-        % u_exp_b = [ux_exp(nodes_b) uy_exp(nodes_b)]';
-        % u_exp_b = u_exp_b(:);
-        
-        % nodes_in = setdiff(1:Mesh.NNodeTot,nodes_b);
-        % u_exp_in = [ux_exp(nodes_in) uy_exp(nodes_in)]';
-        % u_exp_in = u_exp_in(:);
-        
         funlsqnonlin = @(x) funlsqnonlinNum(x,u_exp_in,S);
         % funoptim = @(x) funoptimNum(x,u_exp_in,S);
         
-        [x,err(k),~,exitflag,output] = lsqnonlin(@(x) funlsqnonlin(x),x0,lb,ub,optionslsqnonlin);
-        % [x,err(k),exitflag,output] = fminsearch(@(x) funoptim(x),x0,optionsfminsearch);
-        % [x,err(k),exitflag,output] = fminunc(@(x) funoptim(x),x0,optionsfminunc);
-        % [x,err(k),exitflag,output] = fmincon(@(x) funoptim(x),x0,[],[],[],[],lb,ub,[],optionsfmincon);
+        [x,err(k),~,exitflag,output] = lsqnonlin(funlsqnonlin,x0,lb,ub,optionslsqnonlin);
+        % [x,err(k),exitflag,output] = fminsearch(funoptim,x0,optionsfminsearch);
+        % [x,err(k),exitflag,output] = fminunc(funoptim,x0,optionsfminunc);
+        % [x,err(k),exitflag,output] = fmincon(funoptim,x0,[],[],[],[],lb,ub,[],optionsfmincon);
         
         EL(k) = x(1); % MPa
         NUL(k) = x(2);

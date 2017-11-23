@@ -54,29 +54,15 @@ for j = 1:20
             'examples','identification','materialParticleBoard','resultsDIC');
         load(fullfile(pathnameDIC,filenameDIC));
         
-        X = real(Mesh.Znode);
-        Y = imag(Mesh.Znode);
-        Coordx = (X+Job.ROI(1)-1);
-        Coordy = (Y+Job.ROI(2)-1);
-        scaleFactor = h/(max(Coordx)-min(Coordx));
-        coordx = (Coordy-min(Coordy))*scaleFactor+d;
-        coordy = -(Coordx-1/2*(min(Coordx)+max(Coordx)))*scaleFactor;
-        coord = [coordx coordy];
-        Ux = U(1:2:end);
-        Uy = U(2:2:end);
-        ux_exp = Uy*scaleFactor;
-        uy_exp = -Ux*scaleFactor;
-        u_exp = [ux_exp uy_exp]';
-        % u_exp = [Uy -Ux]'*scaleFactor;
-        u_exp = u_exp(:);
+        [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d);
         
         A = zeros(5);
         B = zeros(5,1);
         for i=1:Mesh.NNodeTot
-            xi = coordx(i);
-            yi = coordy(i);
-            ui = ux_exp(i);
-            vi = uy_exp(i);
+            xi = coord(i,1);
+            yi = coord(i,2);
+            ui = u_exp(2*i-1);
+            vi = u_exp(2*i);
             
             A_UE = -F(k)/(4*Iz)*yi*xi^2;
             A_UG = F(k)/(12*Iz)*yi^3;
@@ -158,7 +144,7 @@ for j = 1:20
         eval(['bar(ET_' sampleNum '_data);']);
         grid on
         set(gca,'FontSize',fontsize)
-        legend(sampleNum,-1);
+        legend(sampleNum,'Location','northeastoutside');
         xlabel('Image number','Interpreter',interpreter);
         ylabel('Young modulus $E^T$ (GPa)','Interpreter',interpreter);
         mysaveas(pathname,['data_ET_' sampleNum],formats);
@@ -168,7 +154,7 @@ for j = 1:20
         eval(['bar(GL_' sampleNum '_data);']);
         grid on
         set(gca,'FontSize',fontsize)
-        legend(sampleNum,-1);
+        legend(sampleNum,'Location','northeastoutside');
         xlabel('Image number','Interpreter',interpreter);
         ylabel('Shear modulus $G^L$ (MPa)','Interpreter',interpreter);
         mysaveas(pathname,['data_GL_' sampleNum],formats);

@@ -47,7 +47,7 @@ funlsqnonlin = @(x) funlsqnonlinIsotTrans(x,U_exp,noise);
 funoptim = @(x) funoptimIsotTrans(x,U_exp,noise);
 
 t1 = tic;
-[x1,err1,~,exitflag1,output1] = lsqnonlin(@(x) funlsqnonlin(x),x0,lb,ub,optionslsqnonlin);
+[x1,err1,~,exitflag1,output1] = lsqnonlin(funlsqnonlin,x0,lb,ub,optionslsqnonlin);
 fprintf('\nlsqnonlin');
 fprintf('\n---------\n');
 fprintf('EL  = %g GPa\n',x1(1));
@@ -60,7 +60,7 @@ fprintf('err = %g\n',sqrt(err1)/norm(U_exp));
 toc(t1)
 
 t2 = tic;
-[x2,err2,exitflag2,output2] = fminsearch(@(x) funoptim(x),x0,optionsfminsearch);
+[x2,err2,exitflag2,output2] = fminsearch(funoptim,x0,optionsfminsearch);
 fprintf('\nfminsearch');
 fprintf('\n----------\n');
 fprintf('EL  = %g GPa\n',x2(1));
@@ -73,7 +73,7 @@ fprintf('err = %g\n',sqrt(err2)/norm(U_exp));
 toc(t2)
 
 t3 = tic;
-[x3,err3,exitflag3,output3] = fminunc(@(x) funoptim(x),x0,optionsfminunc);
+[x3,err3,exitflag3,output3] = fminunc(funoptim,x0,optionsfminunc);
 fprintf('\nfminunc');
 fprintf('\n-------\n');
 fprintf('EL  = %g GPa\n',x3(1));
@@ -86,7 +86,7 @@ fprintf('err = %g\n',sqrt(err3)/norm(U_exp));
 toc(t3)
 
 t4 = tic;
-[x4,err4,exitflag4,output4] = fmincon(@(x) funoptim(x),x0,[],[],[],[],lb,ub,[],optionsfmincon);
+[x4,err4,exitflag4,output4] = fmincon(funoptim,x0,[],[],[],[],lb,ub,[],optionsfmincon);
 fprintf('\nfmincon');
 fprintf('\n-------\n');
 fprintf('EL  = %g GPa\n',x4(1));
