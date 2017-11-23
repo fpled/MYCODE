@@ -34,8 +34,10 @@ cl = min(getsize(D)./nbelem);
 
 if strcmp(structure,'plate')
     S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
+    % S = build_model(D,'cl',cl,'elemtype',elemtype,'option',option,'filename',fullfile(pathname,'gmsh_plate'));
 elseif strcmp(structure,'plate_hole')
     G = GMSHFILE();
+    G = setfile(G,fullfile(pathname,'gmsh_plate_hole'));
     PD = getvertices(D);
     PC = getvertices(C);
     G = createpoint(G,getcenter(C),cl,1);
@@ -46,6 +48,7 @@ elseif strcmp(structure,'plate_hole')
     G = createlineloop(G,[-1 2:5],1);
     G = createplanesurface(G,1,1);
     S = gmsh2femobject(2,G,2);
+    S = convertelem(S,elemtype,'elemtype');
 end
 
 %% Materials
