@@ -38,18 +38,7 @@ for k = 1:length(F)
     disp(['File = ',filenameDIC]);
     load(fullfile(pathnameDIC,filenameDIC));
     
-    X = real(Mesh.Znode);
-    Y = imag(Mesh.Znode);
-    Coordx = (X+Job.ROI(1)-1);
-    Coordy = (Y+Job.ROI(2)-1);
-    scaleFactor = h/(max(Coordx)-min(Coordx));
-    coordx = (Coordy-min(Coordy))*scaleFactor+d;
-    coordy = -(Coordx-1/2*(min(Coordx)+max(Coordx)))*scaleFactor;
-    coord = [coordx coordy];
-    Ux = U(1:2:end);
-    Uy = U(2:2:end);
-    u_exp = [Uy -Ux]'*scaleFactor;
-    u_exp = u_exp(:);
+    [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d);
     
     ET = eval(['ET_' sampleNum '(' imageNum ');'])*1e3; % MPa
     GL = eval(['GL_' sampleNum '(' imageNum ');']); % MPa
