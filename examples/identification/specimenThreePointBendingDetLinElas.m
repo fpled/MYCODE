@@ -3,9 +3,8 @@
 % Call after Digital Image Correlation RT3 and Identification of ET, GL, EL and NUL
 
 % clc
-clear all
+clearvars
 close all
-% set(0,'DefaultFigureVisible','off');
 
 %% Input data
 setProblem = true;

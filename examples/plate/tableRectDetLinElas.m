@@ -2,9 +2,8 @@
 %%---------------------------------------------------%%
 
 % clc
-clear all
+clearvars
 close all
-% set(0,'DefaultFigureVisible','off');
 
 %% Input data
 solveProblem = true;

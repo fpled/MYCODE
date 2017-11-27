@@ -6,7 +6,7 @@
 % MATLAB:     right     up
 
 % clc
-clear all
+clearvars
 close all
 
 %% Input data

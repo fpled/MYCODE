@@ -3,9 +3,8 @@
 % [Beck, Nobile, Tamellini, Tempone, 2011,2014]
 
 % clc
-clear all
+clearvars
 close all
-% set(0,'DefaultFigureVisible','off');
 % rng('default');
 myparallel('start');
 

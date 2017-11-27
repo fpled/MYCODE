@@ -6,11 +6,11 @@
 % MATLAB:     right     up
 
 % clc
-clear all
+clearvars
 close all
 
 %% Input data
-displaySolution = false;
+displaySolution = true;
 
 filename = 'data_ET_GL.mat';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...

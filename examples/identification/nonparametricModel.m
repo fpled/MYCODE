@@ -3,9 +3,8 @@
 % [Soize, 2000]
 
 % clc
-clear all
+clearvars
 close all
-% set(0,'DefaultFigureVisible','off');
 % rng('default');
 myparallel('start');
 

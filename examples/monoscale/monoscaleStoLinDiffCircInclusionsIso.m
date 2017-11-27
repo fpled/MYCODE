@@ -3,9 +3,8 @@
 % [Beck, Nobile, Tamellini, Tempone, 2011,2014], [Chkifa, Cohen, Migliorati, Tempone, 2015]
 
 % clc
-clear all
+clearvars
 close all
-% set(0,'DefaultFigureVisible','off');
 % rng('default');
 myparallel('start');
 

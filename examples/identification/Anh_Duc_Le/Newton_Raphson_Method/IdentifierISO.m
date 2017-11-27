@@ -1,8 +1,10 @@
 %% NEWTON_RAPHSON POUR LE PROBLEME ISOTROPE
-clear all 
+
+% clc
+clearvars
 close all 
 
-%% Générer un champ de déplacement expérimental
+%% Generer un champ de deplacement experimental
 
 E_exp=11.550;
 nu_exp=0.4;
@@ -13,7 +15,7 @@ Bruit=Amplitude.*(2*rand(length(U_vec),1)-1);
 U_exp=U_vec+Bruit;
 
 
-%% Identifier les coefficients élastique par la méthode Newton-Raphson
+%% Identifier les coefficients elastique par la methode Newton-Raphson
 
 E_o=10.000;
 nu_o=0.2;

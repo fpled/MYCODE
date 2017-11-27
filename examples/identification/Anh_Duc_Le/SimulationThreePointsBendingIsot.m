@@ -1,6 +1,7 @@
-clear all
+% clc
+clearvars
 close all
-format long
+
 %% Construction le maillage
 % L=input('La longueur de la poutre L= ');
 % h=input('La haute de la poutre h= ');
@@ -80,7 +81,7 @@ ListX12=find(round((Nx(:) - (L-l))* 1e5)/1e5 >= 0  & round((Ny(:) - 0)* 1e5)/1e5
 ListX1=[ListX11; ListX12];
 
 
-%) Chercher le noeud appliqué la force
+%) Chercher le noeud appliquï¿½ la force
 
 ListX2=find(round((Nx(:) - L/2)* 1e5)/1e5 >= -l/2 & round((Nx(:) - L/2)* 1e5)/1e5...
     <= l/2 & round((Ny(:) - h)* 1e5)/1e5 == 0);
@@ -90,7 +91,7 @@ plot(Nx(ListX11),Ny(ListX11),'r^')
 plot(Nx(ListX12),Ny(ListX12),'ro')
 plot(Nx(ListX2),Ny(ListX2),'gv')
 
-%% Define les properiétés élastique du matériau
+%% Define les properiï¿½tï¿½s ï¿½lastique du matï¿½riau
 
 E=11.550; %GPa
 nu=0.4; 
@@ -127,7 +128,7 @@ for i=1:size(Connect,1)
     X=(Nx(n1)+Nx(n2)+Nx(n3))/3;
     Y=(Ny(n1)+Ny(n2)+Ny(n3))/3;
         
-    % Calculer la section élementaire Ae 
+    % Calculer la section ï¿½lementaire Ae 
     
     ae = ((x1-x3)*(y2-y3)-(x2-x3)*(y1-y3))/2;
     Ae = sqrt(ae*ae);
@@ -177,7 +178,7 @@ Noeud_bloques = [(ListX11*2-1); (ListX11*2); (ListX12*2)];
 Uvec(Noeud_bloques)=0;
 Liste = setdiff(Liste,Noeud_bloques);
 
-%% Résoudre le problème
+%% Rï¿½soudre le problï¿½me
 
 Uvec(Liste)= K_glob(Liste,Liste)\vecF(Liste);
 
@@ -193,7 +194,7 @@ triplot(Connect,Nx,Ny,'b')
 hold on
 triplot(Connect,Nx2,Ny2,'r')
 axis equal
-title('\bfDéformation forme de la poutre','FontSize',17, 'FontName','latex')
+title('\bfDï¿½formation forme de la poutre','FontSize',17, 'FontName','latex')
 
 
 %% Compte U_ef et U_theo
@@ -203,20 +204,20 @@ U_max=mean(Uvec1)
 I=b*h^3/12;
 U_max_theo=-(600e-9*L^3)/(48*E*I)
 
-% calculer la contrainte et la déformation
-% Chercher la quantité d'éléments communs à chaque noeud
+% calculer la contrainte et la dï¿½formation
+% Chercher la quantitï¿½ d'ï¿½lï¿½ments communs ï¿½ chaque noeud
 [a1,b1]=hist(Connect(:,1),unique(Connect));
 [a2,b2]=hist(Connect(:,2),unique(Connect));
 [a3,b3]=hist(Connect(:,3),unique(Connect));
 num_element_per_node = (a1+a2+a3)';
-% Trouver le nombre d'élements communs à chaque noeud 
+% Trouver le nombre d'ï¿½lements communs ï¿½ chaque noeud 
 max = max(num_element_per_node);
 node_to_element = zeros(length(Nx),max);
 for i = 1 : length(Nx)
     num = num_element_per_node(i);
     node_to_element(i,1:num) = find(Connect(:,1)==i|Connect(:,2)==i|Connect(:,3)==i);
 end
-%calculer la contrainte et la déformation
+%calculer la contrainte et la dï¿½formation
 Mat_sigma = zeros(length(Nx),3);
 Mat_epsilon = zeros(length(Nx),3);
 for i = 1 : length(Nx)
@@ -226,8 +227,8 @@ for i = 1 : length(Nx)
     num_element = num_element_per_node(i);
     element_node = node_to_element(i,1:num_element);
     for j = 1 : num_element
-        e = element_node(j);% nombre d'élements au noeud i
-        %3 noeudes d'élements e
+        e = element_node(j);% nombre d'ï¿½lements au noeud i
+        %3 noeudes d'ï¿½lements e
         n1 = Connect(e,1);
         n2 = Connect(e,2);
         n3 = Connect(e,3);
@@ -242,7 +243,7 @@ for i = 1 : length(Nx)
         X=(Nx(n1)+Nx(n2)+Nx(n3))/3;
         Y=(Ny(n1)+Ny(n2)+Ny(n3))/3;
         
-    % calculer la section élementaire Ae 
+    % calculer la section ï¿½lementaire Ae 
     
         ae = ((x1-x3)*(y2-y3)-(x2-x3)*(y1-y3))/2;
         Ae = sqrt(ae*ae);
@@ -257,12 +258,12 @@ for i = 1 : length(Nx)
     
         % Vecteur assemblage
         assemblage=MatAssemble(e,:);
-        % Calculer la matrice d'élasticite C_e
+        % Calculer la matrice d'ï¿½lasticite C_e
         MatS=[1/E -nu/E 0
             -nu/E 1/E 0
             0 0 1/G];
         MatC=MatS^(-1);
-        % Calculer le champ de déplacement Ui
+        % Calculer le champ de dï¿½placement Ui
         U_i = Uvec(assemblage);
         sigma_terme = MatC*Be*U_i*Ae;
         epsilon_terme = Be*U_i*Ae;
@@ -270,8 +271,8 @@ for i = 1 : length(Nx)
         epsilon = epsilon + epsilon_terme';
         V=V+Ae;
     end
-    % Calculer la contrainte et la déformation
-    % Enregistrer des données 
+    % Calculer la contrainte et la dï¿½formation
+    % Enregistrer des donnï¿½es 
     sigma_moyen=(1e9/V)*sigma;
     epsilon_moyen=(1e9/V)*epsilon;
     Mat_sigma(i,:) = sigma_moyen(:);

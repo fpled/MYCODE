@@ -3,9 +3,8 @@
 % [Sobol, 2003], [Sudret, 2008]
 
 % clc
-clear all
+clearvars
 close all
-% set(0,'DefaultFigureVisible','off');
 % rng('default');
 
 %% Input data

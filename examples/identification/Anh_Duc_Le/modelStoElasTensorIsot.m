@@ -1,5 +1,7 @@
-clear all
-clc
+% clc
+clearvars
+close all
+
 %% number of simulation
 N=30; % number of simulations
 %% Select  values

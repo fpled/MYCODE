@@ -3,9 +3,8 @@
 % [Nouy, Pled 2017]
 
 % clc
-clear all
+clearvars
 close all
-% set(0,'DefaultFigureVisible','off');
 % rng('default');
 myparallel('start');
 

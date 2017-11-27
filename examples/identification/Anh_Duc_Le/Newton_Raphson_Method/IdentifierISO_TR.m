@@ -1,8 +1,10 @@
 %% NEWTON_RAPHSON POUR LE PROBLEME ISOTROPE TRANVERSE
-clear all 
-close all 
 
-%% Générer un champ de déplacement expérimental
+% clc
+clearvars
+close all
+
+%% Generer un champ de deplacement experimental
 
 E_l_exp=11.550;
 E_t_exp=0.500;
@@ -14,7 +16,7 @@ Amplitude=(p/100)*U_vec;
 Bruit=Amplitude.*(2*rand(length(U_vec),1)-1);
 U_exp=U_vec+Bruit;
 
-%% Identifier les coefficients élastique par la méthode Newton-Raphson
+%% Identifier les coefficients elastique par la methode Newton-Raphson
 
 E_l_o=10.000;
 E_t_o=0.3;

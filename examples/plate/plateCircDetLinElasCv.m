@@ -1,14 +1,13 @@
 %% Circular plate - Deterministic linear elasticity problem %%
 %%----------------------------------------------------------%%
 % Code_Aster v3.03.100.pdf
-% SSLS100 - Plaque circulaire encastr�e soumise � une pression uniforme
+% SSLS100 - Plaque circulaire encastree soumise a une pression uniforme
 % Code_Aster v3.03.101.pdf
-% SSLS101 - Plaque circulaire pos�e soumise � une pression uniforme
+% SSLS101 - Plaque circulaire posee soumise a une pression uniforme
 
 % clc
-clear all
+clearvars
 close all
-% set(0,'DefaultFigureVisible','off');
 
 %% Input data
 solveProblem = true;

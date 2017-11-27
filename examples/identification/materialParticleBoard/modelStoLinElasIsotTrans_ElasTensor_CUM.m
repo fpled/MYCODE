@@ -5,7 +5,7 @@
 % See page 31 in 'Computational Statistics with Matlab' 
 
 % clc
-clear all
+clearvars
 close all
 
 %% Input data

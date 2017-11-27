@@ -3,9 +3,8 @@
 % [Chkifa, Cohen, Schwab, 2014]
 
 % clc
-clear all
+clearvars
 close all
-% set(0,'DefaultFigureVisible','off');
 % rng('default');
 
 %% Input data

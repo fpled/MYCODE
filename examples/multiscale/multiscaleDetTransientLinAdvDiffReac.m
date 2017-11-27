@@ -3,9 +3,8 @@
 % [Pares, Diez, Huerta, 2008], [Nouy, 2010]
 
 % clc
-clear all
+clearvars
 close all
-% set(0,'DefaultFigureVisible','off');
 % myparallel('start');
 
 %% Input data

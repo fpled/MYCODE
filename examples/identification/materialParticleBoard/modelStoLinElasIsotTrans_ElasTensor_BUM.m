@@ -7,7 +7,7 @@
 % See also page 4 in 'Metropolis-Hastings sampling using multivariate gaussian tangents'
 
 % clc
-clear all
+clearvars
 close all
 
 %% Input data

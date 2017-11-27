@@ -3,9 +3,8 @@
 % [Ishigami, Homma, 1990], [Saltelli, Chan, Scott, 2000], [Sudret, 2008], [Blatman, Sudret, 2010, 2011]
 
 % clc
-clear all
+clearvars
 close all
-% set(0,'DefaultFigureVisible','off');
 % rng('default');
 
 %% Input data

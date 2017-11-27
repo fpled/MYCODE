@@ -3,11 +3,11 @@
 % Call after Digital Image Correlation (DIC) RT3 and Identification of ET and GL
 
 % clc
-clear all
+clearvars
 close all
 
 %% Input data
-displaySolution = false;
+displaySolution = true;
 
 filenameAna = 'data_ET_GL.mat';
 filenameNum = 'data_EL_NUL.mat';

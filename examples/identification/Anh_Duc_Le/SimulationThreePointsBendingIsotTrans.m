@@ -1,6 +1,6 @@
-clear all
+% clc
+clearvars
 close all
-format long
 
 %% Construction le maillage
 % L=input('La longueur de la poutre L= ');
@@ -81,7 +81,7 @@ ListX12=find(round((Nx(:) - (L-l))* 1e5)/1e5 >= 0  & round((Ny(:) - 0)* 1e5)/1e5
 ListX1=[ListX11; ListX12];
 
 
-%) Chercher le noeud appliqué la force
+%) Chercher le noeud appliquï¿½ la force
 
 ListX2=find(round((Nx(:) - L/2)* 1e5)/1e5 >= -l/2 & round((Nx(:) - L/2)* 1e5)/1e5...
     <= l/2 & round((Ny(:) - h)* 1e5)/1e5 == 0);
@@ -91,7 +91,7 @@ plot(Nx(ListX11),Ny(ListX11),'r^')
 plot(Nx(ListX12),Ny(ListX12),'ro')
 plot(Nx(ListX2),Ny(ListX2),'gv')
 
-%% Define les properiétés élastique du matériau
+%% Define les properiï¿½tï¿½s ï¿½lastique du matï¿½riau
 
 E_l=11.550;%GPa
 E_t=0.500;%GPa
@@ -128,7 +128,7 @@ for i=1:size(Connect,1)
     X=(Nx(n1)+Nx(n2)+Nx(n3))/3;
     Y=(Ny(n1)+Ny(n2)+Ny(n3))/3;
         
-    % Calculer la section élementaire Ae
+    % Calculer la section ï¿½lementaire Ae
     
     ae = ((x1-x3)*(y2-y3)-(x2-x3)*(y1-y3))/2;
     Ae = sqrt(ae*ae);
@@ -179,7 +179,7 @@ Noeud_bloques = [(ListX11*2-1);(ListX11*2); (ListX12*2)];
 Uvec(Noeud_bloques)=0;
 Liste = setdiff(Liste,Noeud_bloques);
 
-%% Résoudre le problème
+%% Rï¿½soudre le problï¿½me
 
 Uvec(Liste)= K_glob(Liste,Liste)\vecF(Liste);
 
@@ -195,7 +195,7 @@ triplot(Connect,Nx,Ny,'b')
 hold on
 triplot(Connect,Nx2,Ny2,'r')
 axis equal
-title('\bfDéformation forme de la poutre','FontSize',17, 'FontName','Times New Roman')
+title('\bfDï¿½formation forme de la poutre','FontSize',17, 'FontName','Times New Roman')
 
 
 
