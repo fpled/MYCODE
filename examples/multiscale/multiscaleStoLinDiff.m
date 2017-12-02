@@ -13,8 +13,9 @@ directSolver = true;
 iterativeSolver = true;
 displaySolution = true;
 
+Dim = 2; % space dimension Dim = 2, 3
 n = 4; % number of patches n = 1, 2, 4
-filename = ['linDiff' num2str(n) 'Patches'];
+filename = ['linDiff' num2str(n) 'Patches_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','multiscaleSto',filename);
 if ~exist(pathname,'dir')
@@ -30,9 +31,13 @@ if setProblem
     glob = Global();
     globOut = GlobalOutside();
     
-    D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
+    if Dim==2
+        D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
+    elseif Dim==3
+        D = DOMAIN(3,[0.0,0.0,0.0],[1.0,1.0,1.0]);
+    end
     
-    nbelem = [20,20];
+    nbelem = repmat(20,1,Dim);
     glob.S = build_model(D,'nbelem',nbelem);
     % cl = 0.05;
     % glob.S = build_model(D,'cl',cl,'filename',fullfile(pathname,'gmsh_domain'));
@@ -43,20 +48,36 @@ if setProblem
     D_patch = cell(1,n);
     switch n
         case 1
-            D_patch{1} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
+            if Dim==2
+                D_patch{1} = DOMAIN(2,[0.4,0.4],[0.6,0.6]);
+            elseif Dim==3
+                D_patch{1} = DOMAIN(3,[0.4,0.4,0.4],[0.6,0.6,0.6]);
+            end
         case 2
-            D_patch{1} = DOMAIN(2,[0.1,0.1],[0.3,0.3]);
-            D_patch{2} = DOMAIN(2,[0.7,0.7],[0.9,0.9]);
+            if Dim==2
+                D_patch{1} = DOMAIN(2,[0.1,0.1],[0.3,0.3]);
+                D_patch{2} = DOMAIN(2,[0.7,0.7],[0.9,0.9]);
+            elseif Dim==3
+                D_patch{1} = DOMAIN(3,[0.1,0.1,0.1],[0.3,0.3,0.3]);
+                D_patch{2} = DOMAIN(3,[0.7,0.7,0.7],[0.9,0.9,0.9]);
+            end
         case 4
-            D_patch{1} = DOMAIN(2,[0.1,0.1],[0.3,0.3]);
-            D_patch{2} = DOMAIN(2,[0.1,0.7],[0.3,0.9]);
-            D_patch{3} = DOMAIN(2,[0.7,0.7],[0.9,0.9]);
-            D_patch{4} = DOMAIN(2,[0.7,0.1],[0.9,0.3]);
+            if Dim==2
+                D_patch{1} = DOMAIN(2,[0.1,0.1],[0.3,0.3]);
+                D_patch{2} = DOMAIN(2,[0.1,0.7],[0.3,0.9]);
+                D_patch{3} = DOMAIN(2,[0.7,0.7],[0.9,0.9]);
+                D_patch{4} = DOMAIN(2,[0.7,0.1],[0.9,0.3]);
+            elseif Dim==3
+                D_patch{1} = DOMAIN(3,[0.1,0.1,0.1],[0.3,0.3,0.3]);
+                D_patch{2} = DOMAIN(3,[0.1,0.7,0.1],[0.3,0.9,0.3]);
+                D_patch{3} = DOMAIN(3,[0.7,0.7,0.7],[0.9,0.9,0.9]);
+                D_patch{4} = DOMAIN(3,[0.7,0.1,0.7],[0.9,0.3,0.9]);
+            end
         otherwise
             error('Wrong number of patches')
     end
     
-    nbelem_patch = [40,40];
+    nbelem_patch = repmat(40,Dim);
     for k=1:n
         patches.patches{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
     end
@@ -203,7 +224,7 @@ if setProblem
     glob.P_out = calcProjection(glob);
     for k=1:n
         interfaces.interfaces{k}.P_glob = calcProjection(glob,interfaces.interfaces{k});
-        interfaces.interfaces{k}.P_globOut = calcProjection(globOut,interfaces.interfaces{k});
+        interfaces.interfaces{k}.P_globOut = interfaces.interfaces{k}.P_glob*glob.P_out';
         interfaces.interfaces{k}.P_patch = calcProjection(patches.patches{k},interfaces.interfaces{k});
     end
     

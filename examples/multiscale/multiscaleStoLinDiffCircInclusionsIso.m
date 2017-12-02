@@ -199,7 +199,7 @@ if setProblem
     glob.P_out = calcProjection(glob);
     for k=1:n
         interfaces.interfaces{k}.P_glob = calcProjection(glob,interfaces.interfaces{k});
-        interfaces.interfaces{k}.P_globOut = calcProjection(globOut,interfaces.interfaces{k});
+        interfaces.interfaces{k}.P_globOut = interfaces.interfaces{k}.P_glob*glob.P_out';
         interfaces.interfaces{k}.P_patch = calcProjection(patches.patches{k},interfaces.interfaces{k});
     end
     
