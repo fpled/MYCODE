@@ -192,6 +192,7 @@ if setProblem
     glob.P_out = calcProjection(glob);
     for k=1:n
         [interfaces.interfaces{k}.P_glob,numnode] = calcProjection(glob,interfaces.interfaces{k});
+        % [interfaces.interfaces{k}.P_glob,numnode] = calcProjection(glob,interfaces.interfaces{k},'all','full',true);
         interfaces.interfaces{k}.P_globOut = interfaces.interfaces{k}.P_glob*glob.P_out';
         interfaces.interfaces{k}.P_patch = calcProjection(patches.patches{k},interfaces.interfaces{k});
         % plotProjectionOperator(glob,patches.patches{k},numnode);
