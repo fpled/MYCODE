@@ -132,7 +132,7 @@ for j = 1:20
         eval(['bar(ET_' sampleNum '_data);']);
         grid on
         set(gca,'FontSize',fontsize)
-        legend(sampleNum,'Location','northeastoutside');
+        legend(sampleNum,'Location','NorthEastOutside');
         xlabel('Image number','Interpreter',interpreter);
         ylabel('Young modulus $E^T$ (GPa)','Interpreter',interpreter);
         mysaveas(pathname,['data_ET_' sampleNum],formats);
@@ -142,7 +142,7 @@ for j = 1:20
         eval(['bar(GL_' sampleNum '_data);']);
         grid on
         set(gca,'FontSize',fontsize)
-        legend(sampleNum,'Location','northeastoutside');
+        legend(sampleNum,'Location','NorthEastOutside');
         xlabel('Image number','Interpreter',interpreter);
         ylabel('Shear modulus $G^L$ (MPa)','Interpreter',interpreter);
         mysaveas(pathname,['data_GL_' sampleNum],formats);

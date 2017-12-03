@@ -404,7 +404,7 @@ if displaySolution
     h5 = plotfacets(glob.S,17,'FaceColor',[1 0.5 0],'EdgeColor','none');
     hold off
     set(gca,'FontSize',16)
-    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$');
+    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$','Location','NorthEastOutside');
     set(l,'Interpreter','latex')
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
@@ -466,7 +466,7 @@ if displaySolution
     hold off
     set(gca,'FontSize',16)
     l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h_patch{:}],...
-        '$\Omega_1 \setminus \Lambda$','$\Omega_2$','$\Omega_0$','$\Gamma_D^1$','$\Gamma_D^2$',leg_patch{:});
+        '$\Omega_1 \setminus \Lambda$','$\Omega_2$','$\Omega_0$','$\Gamma_D^1$','$\Gamma_D^2$',leg_patch{:},'Location','NorthEastOutside');
     set(l,'Interpreter','latex')
     mysaveas(pathname,'domain_global_patches',formats,renderer);
     mymatlab2tikz(pathname,'domain_global_patches.tex');
@@ -494,7 +494,7 @@ if displaySolution
     hold off
     set(gca,'FontSize',16)
     l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h_patch{:}],...
-        '$\Omega_1 \setminus \Lambda$','$\Omega_2$','$\Omega_0$','$\Gamma_D^1$','$\Gamma_D^2$',leg_patch{:});
+        '$\Omega_1 \setminus \Lambda$','$\Omega_2$','$\Omega_0$','$\Gamma_D^1$','$\Gamma_D^2$',leg_patch{:},'Location','NorthEastOutside');
     set(l,'Interpreter','latex')
     mysaveas(pathname,'mesh_global_patches',formats,renderer);
     

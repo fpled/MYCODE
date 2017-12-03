@@ -142,7 +142,7 @@ if displaySolution
             v = calc_init_dirichlet(S);
             [hN,legN] = vectorplot(S,'U',v,ampl,'r','LineWidth',1);
     end
-    % legend([hD,hN],[legD,legN],'Location','northeastoutside')
+    % legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     % plotModel(S,'legend',false);

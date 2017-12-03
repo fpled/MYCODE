@@ -313,7 +313,7 @@ if displaySolution
     end
     hold off
     set(gca,'FontSize',16)
-    l = legend([h1(1),h2(1),h3(1),h_patch{:}],'$\Omega \setminus \Lambda$','$\Gamma_D$','$\Gamma_N$',leg_patch{:});
+    l = legend([h1(1),h2(1),h3(1),h_patch{:}],'$\Omega \setminus \Lambda$','$\Gamma_D$','$\Gamma_N$',leg_patch{:},'Location','NorthEastOutside');
     set(l,'Interpreter','latex')
     axis image
     axis off
@@ -341,7 +341,7 @@ if displaySolution
     hold off
     set(gca,'FontSize',16)
     % l = legend([h1(1),h2(1),h3(1),h_patch{:}],...
-    %     '$\Omega \setminus \Lambda$','$\Gamma_D$','$\Gamma_N$',leg_patch{:});
+    %     '$\Omega \setminus \Lambda$','$\Gamma_D$','$\Gamma_N$',leg_patch{:},'Location','NorthEastOutside');
     % set(l,'Interpreter','latex')
     mysaveas(pathname,'mesh_global_patches',formats,renderer);
     

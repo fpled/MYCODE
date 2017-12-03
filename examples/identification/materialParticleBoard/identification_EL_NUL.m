@@ -139,7 +139,7 @@ for j = 1:20
         eval(['bar(EL_' sampleNum '_data);']);
         grid on
         set(gca,'FontSize',fontsize)
-        legend(sampleNum,'Location','northeastoutside');
+        legend(sampleNum,'Location','NorthEastOutside');
         xlabel('Image number','Interpreter',interpreter);
         ylabel('Young modulus $E^L$ (MPa)','Interpreter',interpreter);
         mysaveas(pathname,['data_EL_' sampleNum],formats);
@@ -149,7 +149,7 @@ for j = 1:20
         eval(['bar(NUL_' sampleNum '_data);']);
         grid on
         set(gca,'FontSize',fontsize)
-        legend(sampleNum,'Location','northeastoutside');
+        legend(sampleNum,'Location','NorthEastOutside');
         xlabel('Image number','Interpreter',interpreter);
         ylabel('Poisson ratio $\nu^L$','Interpreter',interpreter);
         mysaveas(pathname,['data_NUL_' sampleNum],formats);

@@ -539,7 +539,7 @@ if displaySolution
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 8;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
-    % legend([hD,hN],[legD,legN],'Location','northeastoutside')
+    % legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     plotModel(S,'legend',false);

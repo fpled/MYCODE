@@ -99,7 +99,7 @@ u_exp_in = freevector(S,u_exp);
 [hD,legD] = plotBoundaryConditions(S_exp,'legend',false);
 ampl = 1;
 [hN,legN] = vectorplot(S_exp,'F',b,ampl,'r','LineWidth',1);
-legend([hD,hN],[legD,legN],'Location','northeastoutside')
+legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
 mysaveas(pathname,'boundary_conditions_exp',formats,renderer);
 
 plotModel(S_exp,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
@@ -177,7 +177,7 @@ set(gca,'FontSize',fontsize)
 hg = hggroup;
 set([h(:),hD],'Parent',hg);
 axis image
-l = legend(hD,'$U_{\mathrm{exp}}$','Location','northeastoutside');
+l = legend(hD,'$U_{\mathrm{exp}}$','Location','NorthEastOutside');
 % l = legend(hD,legD);
 set(l,'Interpreter',interpreter);
 mysaveas(pathname,'boundary_conditions',formats,renderer);

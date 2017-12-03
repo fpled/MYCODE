@@ -119,7 +119,7 @@ if displaySolution
     h3 = plot(L2,'EdgeColor',getfacecolor(6));
     hold off
     set(gca,'FontSize',16)
-    l = legend([h1(1),h2(1),h3(1)],'$\Omega$','$\Gamma_D$','$\Gamma_N$');
+    l = legend([h1(1),h2(1),h3(1)],'$\Omega$','$\Gamma_D$','$\Gamma_N$','Location','NorthEastOutside');
     set(l,'Interpreter','latex')
     axis image
     axis off
@@ -134,7 +134,7 @@ if displaySolution
     h3 = plot(L2,'EdgeColor',getfacecolor(6));
     hold off
     set(gca,'FontSize',16)
-    % l = legend([h1(1),h2(1),h3(1)],'$\Omega$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$');
+    % l = legend([h1(1),h2(1),h3(1)],'$\Omega$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$','Location','NorthEastOutside');
     % set(l,'Interpreter','latex')
     mysaveas(pathname,'mesh',formats,renderer);
     

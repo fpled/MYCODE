@@ -97,7 +97,7 @@ if displaySolution
     xlabel('$e$ (GPa)','Interpreter',interpreter)
     ylabel('$p_E(e)$','Interpreter',interpreter)
     % l = legend('$p_E(e)$','$(e_i,p_E(e_i))_{i=1}^n$');
-    % set(l,'Interpreter',interpreter,'Location','northwest');
+    % set(l,'Interpreter',interpreter,'Location','NorthWest');
     mysaveas(pathname,'pdf_E',formats);
     mymatlab2tikz(pathname,'pdf_E.tex',...
         'extraAxisOptions',{'ylabel style={overlay}'});
@@ -117,7 +117,7 @@ if displaySolution
     xlabel('$e$ (GPa)','Interpreter',interpreter)
     ylabel('$F_E(e)$','Interpreter',interpreter)
     % l = legend('$F_E(e)$','$(e_i,F_E(e_i))_{i=1}^n$');
-    % set(l,'Interpreter',interpreter,'Location','northwest');
+    % set(l,'Interpreter',interpreter,'Location','NorthWest');
     mysaveas(pathname,'cdf_E',formats);
     mymatlab2tikz(pathname,'cdf_E.tex',...
         'extraAxisOptions',{'ylabel style={overlay}'});

@@ -152,7 +152,7 @@ for j = 3
         if displaySolution
             %% Display domains, boundary conditions and meshes
             % [hD,legD] = plotBoundaryConditions(S,'legend',false);
-            % legend(hD,legD,'Location','northeastoutside')
+            % legend(hD,legD,'Location','NorthEastOutside')
             ampl = 0.5;
             v_exp = calc_init_dirichlet(S);
             figure('Name','Imposed experimental displacement')
@@ -165,8 +165,8 @@ for j = 3
             hg = hggroup;
             set([h(:),hD],'Parent',hg);
             axis image
-            l = legend(hD,'$U_{\mathrm{exp}}$','Location','northeastoutside');
-            % l = legend(hD,legD,'Location','northeastoutside');
+            l = legend(hD,'$U_{\mathrm{exp}}$','Location','NorthEastOutside');
+            % l = legend(hD,legD,'Location','NorthEastOutside');
             set(l,'Interpreter',interpreter);
             mysaveas(pathname,'boundary_conditions',formats,renderer);
             
