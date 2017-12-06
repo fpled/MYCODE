@@ -171,25 +171,25 @@ if solveProblem
     load(fullfile(pathnameIdentification,filenameNum));
     
     % Sample number
-    sampleNum = 'C3';
+    sampleNum = 'B13';
     
     % Material symmetry
     materialSym = 'isot';
     
     switch lower(materialSym)
         case 'isot'
-            % Young modulus
-            %E = eval(['mean_ET_' sampleNum '_data;'])/2.1*1e9; % Pa
-            E = 1.9e9; % Pa
+           % Young modulus
+            E = eval(['mean_ET_' sampleNum '_data;'])*1e9; % Pa
+            %E = 1.7e9; % Pa
             % Shear modulus
-            G = eval(['mean_GL_' sampleNum '_data;'])*7*1e6; % Pa
+            G = eval(['mean_GL_' sampleNum '_data;'])*13*1e6; % Pa
             % Poisson ratio
-            %NU = E./(2*G)-1;
-            NU = 0.25;
+            NU = E./(2*G)-1;
+            %NU = 0.25
             % Material
             mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO);
         case 'isottrans'
-            % Transverse Young modulus
+           % Transverse Young modulus
             ET = eval(['mean_ET_' sampleNum '_data;'])*1e9; % Pa
             % Longitudinal shear modulus
             GL = eval(['mean_GL_' sampleNum '_data;'])*1e6; % Pa
