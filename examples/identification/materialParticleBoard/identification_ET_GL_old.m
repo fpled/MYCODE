@@ -24,8 +24,8 @@ interpreter = 'latex';
 formats = {'fig','epsc2'};
 
 %% Identification
-sample = 'C';
-for j = 1:20
+sample = 'B';
+for j = 1:27
     
     sampleNum = [sample num2str(j)];
     

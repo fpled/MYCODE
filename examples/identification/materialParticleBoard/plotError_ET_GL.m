@@ -17,7 +17,7 @@ formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
 %% Plot error
-sampleNum = 'C3';
+sampleNum = 'B8';
 
 F = appliedLoad(sampleNum);
 [b,h,d,Iz] = dimSample(sampleNum);

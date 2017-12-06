@@ -27,9 +27,9 @@ pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification','materialParticleBoard');
 load(fullfile(pathnameIdentification,filenameAna));
 
-sample = 'C';
+sample = 'B';
 E_data = zeros(1,20);
-for j=1:20
+for j=1:27
     sampleNum = [sample num2str(j)];
     E_data(j) = eval(['mean_ET_' sampleNum '_data;']); % GPa
 end

@@ -32,8 +32,8 @@ optionsfminsearch = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
 optionsfminunc    = optimoptions('fminunc','Display',display,'TolX',tolX,'TolFun',tolFun,'Algorithm','quasi-newton');
 optionsfmincon    = optimoptions('fmincon','Display',display,'TolX',tolX,'TolFun',tolFun);
 
-sample = 'C';
-for j = 1:20
+sample = 'B';
+for j = 1:27
     
     sampleNum = [sample num2str(j)];
     
@@ -114,7 +114,7 @@ for j = 1:20
     eval(['NUL_' sampleNum '= NUL;']);
     eval(['err_num_' sampleNum '= err;']);
     
-    imageInit = 8;
+    imageInit = 3;
     eval(['EL_' sampleNum '_data = EL_' sampleNum '(imageInit:end);']);
     eval(['NUL_' sampleNum '_data = NUL_' sampleNum '(imageInit:end);']);
     eval(['mean_EL_' sampleNum '_data = mean(EL_' sampleNum '_data);']);
@@ -125,12 +125,14 @@ for j = 1:20
     %% Save variables
     if isempty(dir(fullfile(pathname,filenameNum)))
         save(fullfile(pathname,filenameNum),['EL_' sampleNum],['NUL_' sampleNum],['err_num_' sampleNum],...
-            ['EL_' sampleNum '_data'],['GL_' sampleNum '_data'],...
-            ['mean_EL_' sampleNum '_data'],['mean_NUL_' sampleNum '_data']);
+            ['EL_' sampleNum '_data'],['NUL_' sampleNum '_data'],...
+            ['mean_EL_' sampleNum '_data'],['mean_NUL_' sampleNum '_data'],...
+            ['std_EL_' sampleNum '_data'],['std_NUL_' sampleNum '_data']);
     else
         save(fullfile(pathname,filenameNum),['EL_' sampleNum],['NUL_' sampleNum],['err_num_' sampleNum],...
-            ['EL_' sampleNum '_data'],['GL_' sampleNum '_data'],...
-            ['mean_EL_' sampleNum '_data'],['mean_NUL_' sampleNum '_data'],'-append');
+            ['EL_' sampleNum '_data'],['NUL_' sampleNum '_data'],...
+            ['mean_EL_' sampleNum '_data'],['mean_NUL_' sampleNum '_data'],...
+            ['std_EL_' sampleNum '_data'],['std_NUL_' sampleNum '_data'],'-append');
     end
     
     %% Plot data

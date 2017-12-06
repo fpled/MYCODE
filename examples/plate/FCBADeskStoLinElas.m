@@ -25,7 +25,7 @@ test = 'StaticVert'; % test under static vertical load
 % test = 'Impact'; % vertical impact test
 % test = 'Drop'; % drop test
 
-pointwiseLoading = 0; % pointwise loading
+pointwiseLoading = 1; % pointwise loading
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
@@ -181,23 +181,23 @@ if solveProblem
     load(fullfile(pathnameIdentification,filenameNum));
     
     % Sample number
-    sample = 'C';
+    sample = 'B';
     
     % Material symmetry
     materialSym = 'isot';
     
     % Number of samples
-    N = 3;
+    N = 2000;
     
     switch lower(materialSym)
         case 'isot'
             % Data
-            E_data = zeros(1,20);
-            G_data = zeros(1,20);
-            for j=1:20
+            E_data = zeros(1,27);
+            G_data = zeros(1,27);
+            for j=1:27
                 sampleNum = [sample num2str(j)];
-                E_data(j) = eval(['mean_ET_' sampleNum '_data;'])/2.1; % GPa
-                G_data(j) = eval(['mean_GL_' sampleNum '_data;'])*7*1e-3; % GPa
+                E_data(j) = eval(['mean_ET_' sampleNum '_data;']); % GPa
+                G_data(j) = eval(['mean_GL_' sampleNum '_data;'])*13*1e-3; % GPa
             end
             NU_data = E_data./(2*G_data)-1;
             lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data));
@@ -229,11 +229,11 @@ if solveProblem
             NU_sample = (3*C1_sample-2*C2_sample)./(6*C1_sample+2*C2_sample);
         case 'isottrans'
             % Data
-            ET_data = zeros(1,20);
-            GL_data = zeros(1,20);
-            EL_data = zeros(1,20);
-            NUL_data = zeros(1,20);
-            for j=1:20
+            ET_data = zeros(1,27);
+            GL_data = zeros(1,27);
+            EL_data = zeros(1,27);
+            NUL_data = zeros(1,27);
+            for j=1:27
                 sampleNum = [sample num2str(j)];
                 ET_data(j) = eval(['mean_ET_' sampleNum '_data;']); % GPa
                 GL_data(j) = eval(['mean_GL_' sampleNum '_data;'])*1e-3; % GPa

@@ -6,8 +6,8 @@ clearvars
 close all
 
 %% Input data
-sampleNum = 'C3'; % sample number
-imageNum = '01'; % image number
+sampleNum = 'B8'; % sample number
+imageNum = '08'; % image number
 
 F = appliedLoad(sampleNum);
 [b,h,d,Iz] = dimSample(sampleNum);

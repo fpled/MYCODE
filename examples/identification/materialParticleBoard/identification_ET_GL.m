@@ -36,8 +36,8 @@ optionsfminsearch = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
 optionsfminunc    = optimoptions('fminunc','Display',display,'TolX',tolX,'TolFun',tolFun,'Algorithm','quasi-newton');
 optionsfmincon    = optimoptions('fmincon','Display',display,'TolX',tolX,'TolFun',tolFun);
 
-sample = 'C';
-for j = 1:20
+sample = 'B';
+for j = 1:27
     
     sampleNum = [sample num2str(j)];
     
@@ -105,7 +105,7 @@ for j = 1:20
     eval(['V0_' sampleNum '= V0;']);
     eval(['err_ana_' sampleNum '= err;']);
     
-    initIm = 8;
+    initIm = 3;
     eval(['ET_' sampleNum '_data = ET_' sampleNum '(initIm:end);']);
     eval(['GL_' sampleNum '_data = GL_' sampleNum '(initIm:end);']);
     eval(['mean_ET_' sampleNum '_data = mean(ET_' sampleNum '_data);']);
@@ -118,12 +118,14 @@ for j = 1:20
         save(fullfile(pathname,filename),['ET_' sampleNum],['GL_' sampleNum],...
             ['Phi_' sampleNum],['U0_' sampleNum],['V0_' sampleNum],['err_ana_' sampleNum],...
             ['ET_' sampleNum '_data'],['GL_' sampleNum '_data'],...
-            ['mean_ET_' sampleNum '_data'],['mean_GL_' sampleNum '_data']);
+            ['mean_ET_' sampleNum '_data'],['mean_GL_' sampleNum '_data'],...
+            ['std_ET_' sampleNum '_data'],['std_GL_' sampleNum '_data']);
     else
         save(fullfile(pathname,filename),['ET_' sampleNum],['GL_' sampleNum],...
             ['Phi_' sampleNum],['U0_' sampleNum],['V0_' sampleNum],['err_ana_' sampleNum],...
             ['ET_' sampleNum '_data'],['GL_' sampleNum '_data'],...
-            ['mean_ET_' sampleNum '_data'],['mean_GL_' sampleNum '_data'],'-append');
+            ['mean_ET_' sampleNum '_data'],['mean_GL_' sampleNum '_data'],...
+            ['std_ET_' sampleNum '_data'],['std_GL_' sampleNum '_data'],'-append');
     end
     
     %% Plot data

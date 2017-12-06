@@ -30,13 +30,13 @@ pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
 load(fullfile(pathnameIdentification,filenameAna));
 load(fullfile(pathnameIdentification,filenameNum));
 
-sample = 'C';
+sample = 'B';
 E_data = zeros(1,20);  
 G_data = zeros(1,20);  
-for j=1:20
+for j=1:27
     sampleNum = [sample num2str(j)];
-    E_data(j) = eval(['mean_ET_' sampleNum '_data;'])/2.1; % GPa
-    G_data(j) = eval(['mean_GL_' sampleNum '_data;'])*7*1e-3; % GPa
+    E_data(j) = eval(['mean_ET_' sampleNum '_data;']); % GPa
+    G_data(j) = eval(['mean_GL_' sampleNum '_data;'])*13*1e-3; % GPa
 end
 NU_data = E_data./(2*G_data)-1;
 lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data)); 
