@@ -13,7 +13,8 @@ solveProblem = true;
 displaySolution = true;
 testSolution = true;
 
-filename = 'linDiff';
+Dim = 2; % space dimension Dim = 2, 3
+filename = ['linDiff_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','monoscaleSto',filename);
 if ~exist(pathname,'dir')
@@ -25,9 +26,13 @@ renderer = 'OpenGL';
 %% Problem
 if setProblem
     %% Domains and meshes
-    D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
+    if Dim==2
+        D = DOMAIN(2,[0.0,0.0],[1.0,1.0]);
+    elseif Dim==3
+        D = DOMAIN(3,[0.0,0.0,0.0],[1.0,1.0,1.0]);
+    end
     
-    nbelem = [20,20];
+    nbelem = repmat(20,1,Dim);
     pb.S = build_model(D,'nbelem',nbelem);
     % cl = 0.05;
     % pb.S = build_model(D,'cl',cl,'filename',fullfile(pathname,'gmsh_domain'));
