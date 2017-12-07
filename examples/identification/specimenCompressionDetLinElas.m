@@ -10,7 +10,8 @@ setProblem = true;
 solveProblem = true;
 displaySolution = true;
 
-filename = 'specimenCompressionDetLinElas';
+Dim = 3; % space dimension Dim = 2, 3
+filename = ['specimenCompressionDetLinElas_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification',filename);
 if ~exist(pathname,'dir')
@@ -26,13 +27,20 @@ renderer = 'OpenGL';
 if setProblem
     %% Domains and meshes
     L = 1e-2;
-    D = DOMAIN(2,[0.0,0.0],[L,L]);
-    
-    % elemtype = 'TRI3';
-    elemtype = 'QUA4';
+    if Dim==2
+        D = DOMAIN(2,[0.0,0.0],[L,L]);
+        % elemtype = 'TRI3';
+        elemtype = 'QUA4';
+        % elemtype = 'TRI6';
+    elseif Dim==3
+        D = DOMAIN(3,[0.0,0.0,0.0],[L,L,L]);
+        % elemtype = 'TET4';
+        elemtype = 'CUB8';
+        % elemtype = 'TET10';
+    end
     % option = 'DEFO'; % plane strain
     option = 'CONT'; % plane stress
-    nbelem = [50,50];
+    nbelem = repmat(20,1,Dim);
     S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
     % cl = 0.05;
     % S = build_model(D,'cl',cl,'elemtype',elemtype,'option',option,'filename',fullfile(pathname,'gmsh_domain'));
@@ -53,11 +61,16 @@ if setProblem
     S = setmaterial(S,mat);
     
     %% Dirichlet boundary conditions
-    LU = LIGNE([0.0,L],[L,L]);
-    LL = LIGNE([0.0,0.0],[L,0.0]);
+    if Dim==2
+        BU = LIGNE([0.0,L],[L,L]);
+        BL = LIGNE([0.0,0.0],[L,0.0]);
+    elseif Dim==3
+        BU = PLAN([0.0,0.0,L],[L,0.0,L],[0.0,L,L]);
+        BL = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
+    end
     
     S = final(S);
-    S = addcl(S,LL);
+    S = addcl(S,BL);
     
     % loading = 'Dirichlet'; % Imposed displacement
     loading = 'Neumann'; % Traction force density
@@ -70,11 +83,15 @@ if setProblem
             case 'cst'
                 ud = udmax;
             case 'lin'
-                ud = @(x) udmax*(L-x(:,1));
+                ud = @(x) udmax*(L-x(:,1))/L;
             case 'qua'
-                ud = @(x) 4*udmax/L^2*x(:,1).*(L-x(:,1));
+                ud = @(x) 4*udmax*x(:,1).*(L-x(:,1))/L^2;
         end
-        S = addcl(S,LU,'UY',ud);
+        if Dim==2
+            S = addcl(S,BU,'UY',ud);
+        elseif Dim==3
+            S = addcl(S,BU,'UZ',ud);
+        end
     end
     
     %% Stiffness matrices and sollicitation vectors
@@ -86,11 +103,15 @@ if setProblem
                 case 'cst'
                     f = fmax;
                 case 'lin'
-                    f = @(x) fmax*(L-x(:,1));
+                    f = @(x) fmax*(L-x(:,1))/L;
                 case 'qua'
-                    f = @(x) fmax*4/L^2*x(:,1).*(L-x(:,1));
+                    f = @(x) 4*fmax*x(:,1).*(L-x(:,1))/L^2;
             end
-            b = surfload(S,LU,'FY',f);
+            if Dim==2
+                b = surfload(S,BU,'FY',f);
+            elseif Dim==3
+                b = surfload(S,BU,'FZ',f);
+            end
         case 'dirichlet'
             [A,b] = calc_rigi(S);
             b = -b;
