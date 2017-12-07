@@ -132,7 +132,7 @@ if solveProblem
     end
     % S = addcl(S,[],'R');
     
-    %% Stiffness matrices and sollicitation vectors
+    %% Stiffness matrix and sollicitation vector
     switch lower(loading)
         case 'uniform' % Uniform transverse load per unit area applied on the plate surface
             p = RHO*g*h;
@@ -141,6 +141,7 @@ if solveProblem
     end
     
     A = calc_rigi(S);
+    
     switch lower(loading)
         case 'uniform'
             f = bodyload(S,[],'FZ',-p);

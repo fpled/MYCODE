@@ -187,17 +187,17 @@ if solveProblem
     materialSym = 'isot';
     
     % Number of samples
-    N = 2000;
+    N = 1e3;
     
     switch lower(materialSym)
         case 'isot'
             % Data
             E_data = zeros(1,27);
             G_data = zeros(1,27);
-            for j=1:27
-                sampleNum = [sample num2str(j)];
-                E_data(j) = eval(['mean_ET_' sampleNum '_data;']); % GPa
-                G_data(j) = eval(['mean_GL_' sampleNum '_data;'])*13*1e-3; % GPa
+            for i=1:27
+                sampleNum = [sample num2str(i)];
+                E_data(i) = eval(['mean_ET_' sampleNum '_data;']); % GPa
+                G_data(i) = eval(['mean_GL_' sampleNum '_data;'])*13*1e-3; % GPa
             end
             NU_data = E_data./(2*G_data)-1;
             lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data));
@@ -233,12 +233,12 @@ if solveProblem
             GL_data = zeros(1,27);
             EL_data = zeros(1,27);
             NUL_data = zeros(1,27);
-            for j=1:27
-                sampleNum = [sample num2str(j)];
-                ET_data(j) = eval(['mean_ET_' sampleNum '_data;']); % GPa
-                GL_data(j) = eval(['mean_GL_' sampleNum '_data;'])*1e-3; % GPa
-                EL_data(j) = eval(['mean_EL_' sampleNum '_data;'])*1e-3; % GPa
-                NUL_data(j) = eval(['mean_NUL_' sampleNum '_data;']);
+            for i=1:27
+                sampleNum = [sample num2str(i)];
+                ET_data(i) = eval(['mean_ET_' sampleNum '_data;']); % GPa
+                GL_data(i) = eval(['mean_GL_' sampleNum '_data;'])*1e-3; % GPa
+                EL_data(i) = eval(['mean_EL_' sampleNum '_data;'])*1e-3; % GPa
+                NUL_data(i) = eval(['mean_NUL_' sampleNum '_data;']);
             end
             % NUT_data = ;
             
@@ -365,21 +365,7 @@ if solveProblem
             S = addcl(S,numnode5b,'UZ');
     end
     
-    %% Stiffness matrices and sollicitation vectors
-    A = cell(N,1);
-    for j=1:N
-        % Young modulus
-        Ei = E_sample(j);
-        NUi = NU_sample(j);
-        % Material
-        mati = setparam(mat,'NU',NUi);
-        Si = setmaterial(S,mati);
-        mati = setparam(mati,'E',Ei);
-        Si = setmaterial(Si,mati);
-        % Stiffness matrix
-        A{j} = calc_rigi(Si);
-    end
-    
+    %% Sollicitation vector
     switch lower(test)
         case 'stability'
             if pointwiseLoading
@@ -491,10 +477,40 @@ if solveProblem
     end
     f = f + bodyload(S,[],'FZ',-p_plate);
     
-    %% Solution
+    %% Stiffness matrix and solution
     t = tic;
-    parfor j=1:N
-        u(:,j) = A{j}\f;
+    u = sparse(getnbddlfree(S),N);
+    parfor i=1:N
+        switch lower(materialSym)
+            case 'isot'
+                % Young modulus
+                Ei = E_sample(i);
+                % Poisson ratio
+                NUi = NU_sample(i);
+                % Material
+                mati = setparam(mat,'E',Ei);
+                mati = setparam(mati,'NU',NUi);
+            case 'isottrans'
+                % Transverse Young modulus
+                ETi = ET_sample(i);
+                % Longitudinal shear modulus
+                GLi = GL_sample(i);
+                % Longitudinal Young modulus
+                % ELi = EL_sample(i);
+                % Longitudinal Poisson ratio
+                % NULi = NUL_sample(i);
+                % Transverse Poisson ratio
+                NUTi = 0.25;
+                % Material
+                mati = setparam(mat,'ET',NUi);
+                mati = setparam(mati,'GL',Ei);
+                mati = setparam(mati,'NUT',NUTi);
+        end
+        Si = setmaterial(S,mati);
+        % Stiffness matrix
+        Ai = calc_rigi(Si);
+        % Solution
+        u(:,i) = Ai\f;
     end
     time = toc(t);
     

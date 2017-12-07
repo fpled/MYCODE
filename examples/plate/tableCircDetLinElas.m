@@ -119,7 +119,7 @@ if solveProblem
     S = final(S);
     S = addcl(S,P_support);
     
-    %% Stiffness matrices and sollicitation vectors
+    %% Stiffness matrix and sollicitation vector
     % Uniform or Concentrated load
     switch lower(loading)
         case 'uniform'
@@ -130,6 +130,7 @@ if solveProblem
     end
     
     A = calc_rigi(S);
+    
     switch lower(loading)
         case 'uniform'
             f = bodyload(keepgroupelem(S,1),[],'FZ',-p);

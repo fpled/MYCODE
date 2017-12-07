@@ -276,18 +276,7 @@ if solveProblem
             S = addcl(S,P_support);
     end
     
-    %% Stiffness matrices
-    A = cell(N,1);
-    for i=1:N
-        % Young modulus
-        Ei = E_sample(i);
-        % Material
-        mat_platei = setparam(mat_plate,'E',Ei);
-        Si = setmaterial(S,mat_platei,[1,2,3]);
-        % Stiffness matrix
-        A{i} = calc_rigi(Si);
-    end
-    
+    %% Sollicitation vector
     switch lower(test)
         case 'stability1'
             f = nodalload(S,P_load_stab{1},'FZ',-p);
@@ -372,10 +361,19 @@ if solveProblem
     f = f + bodyload(keepgroupelem(S,3+length(L_beam)+3),[],'FZ',-p_belt);
     f = f + bodyload(keepgroupelem(S,3+length(L_beam)+4),[],'FZ',-p_belt);
     
-    %% Solution
+    %% Stiffness matrix and solution
     t = tic;
+    u = sparse(getnbddlfree(S),N);
     parfor i=1:N
-        u(:,i) = A{i}\f;
+        % Young modulus
+        Ei = E_sample(i);
+        % Material
+        mati_plate = setparam(mat_plate,'E',Ei);
+        Si = setmaterial(S,mati_plate,[1,2,3]);
+        % Stiffness matrix
+        Ai = calc_rigi(Si);
+        % Solution
+        u(:,i) = Ai\f;
     end
     time = toc(t);
     

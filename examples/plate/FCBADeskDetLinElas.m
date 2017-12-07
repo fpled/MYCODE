@@ -296,7 +296,7 @@ if solveProblem
             S = addcl(S,numnode5b,'UZ');
     end
     
-    %% Stiffness matrices and sollicitation vectors
+    %% Stiffness matrix and sollicitation vector
     A = calc_rigi(S);
     
     switch lower(test)

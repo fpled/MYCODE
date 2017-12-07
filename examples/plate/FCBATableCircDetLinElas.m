@@ -252,7 +252,7 @@ if solveProblem
             S = addcl(S,P_support);
     end
     
-    %% Stiffness matrices and sollicitation vectors
+    %% Stiffness matrix and sollicitation vector
     A = calc_rigi(S);
     
     switch lower(test)
