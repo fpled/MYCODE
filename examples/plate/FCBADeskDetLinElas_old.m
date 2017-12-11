@@ -121,17 +121,42 @@ if solveProblem
     r_masse = 100e-3;
     C_masse = CIRCLE(0.0,y3_12+b3/2,z3,r_masse);
     x_masse = double(getcoord(getcenter(C_masse)));
+    %
+    L1_a = LIGNE([x5a_23,y5a,z5a_12],[x5a_23,y5a,z5a_34]);
+    L1_b = LIGNE([x5b_23,y5b,z5b_12],[x5b_23,y5b,z5b_34]);
+    if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
+        S1 = gmshFCBAdesk12(Q1,L1_a,L1_b,cl_12,cl_5,cl_5,...
+            fullfile(pathname,['gmsh_desk_1_' elemtype '_cl_' num2str(cl_12)]),3);
+    else
+        S1 = gmshFCBAdesk12(Q1,L1_a,L1_b,cl_12,cl_5,cl_5,...
+            fullfile(pathname,['gmsh_desk_1_' elemtype '_cl_' num2str(cl_12)]),3,'recombine');
+    end
+    S1 = convertelem(S1,elemtype);
+    %
+    L2_a = LIGNE([x5a_14,y5a,z5a_12],[x5a_14,y5a,z5a_34]);
+    L2_b = LIGNE([x5b_14,y5b,z5b_12],[x5b_14,y5b,z5b_34]);
+    if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
+        S2 = gmshFCBAdesk12(Q2,L2_a,L2_b,cl_12,cl_5,cl_5,...
+            fullfile(pathname,['gmsh_desk_2_' elemtype '_cl_' num2str(cl_12)]),3);
+    else
+        S2 = gmshFCBAdesk12(Q2,L2_a,L2_b,cl_12,cl_5,cl_5,...
+            fullfile(pathname,['gmsh_desk_2_' elemtype '_cl_' num2str(cl_12)]),3,'recombine');
+    end
+    S2 = convertelem(S2,elemtype);
+    %
+    L3_1 = LIGNE([x1,y1_23,z1_34],[x1,y1_14,z1_34]);
+    L3_2 = LIGNE([x2,y2_23,z2_34],[x2,y2_14,z2_34]);
     if pointwiseLoading
         PbQ3 = {x_hori{4},x_fati{3},x_fati{1},x_hori{1},...
                 x_fati{4},x_hori{3},x_hori{2},x_fati{2}};
         if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-            S = gmshFCBAdesksimplified(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
-                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3);
+            S3 = gmshFCBAdesk3simplified(Q3,C_masse,L3_1,L3_2,PbQ3,x_stab,x_masse,...
+                cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3);
         else
-            S = gmshFCBAdesksimplified(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
-                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3,'recombine');
+            S3 = gmshFCBAdesk3simplified(Q3,C_masse,L3_1,L3_2,PbQ3,x_stab,x_masse,...
+                cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3,'recombine');
         end
     else
         L_hori{1} = LIGNE(x_hori{1}+[0,-r_load,0],x_hori{1}+[0,r_load,0]);
@@ -147,16 +172,22 @@ if solveProblem
         C_vert = CIRCLE(x_vert(1),x_vert(2),x_vert(3),r_load);
         C_stab = CIRCLE(x_stab(1),x_stab(2),x_stab(3),r_load);
         if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-            S = gmshFCBAdesk(Q1,Q2,Q3,Q5a,Q5b,C_masse,LbQ3,C_stab,C_vert,...
-                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3);
+            S3 = gmshFCBAdesk3(Q3,C_masse,L3_1,L3_2,LbQ3,C_stab,C_vert,...
+                cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3);
         else
-            S = gmshFCBAdesk(Q1,Q2,Q3,Q5a,Q5b,C_masse,LbQ3,C_stab,C_vert,...
-                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3,'recombine');
+            S3 = gmshFCBAdesk3(Q3,C_masse,L3_1,L3_2,LbQ3,C_stab,C_vert,...
+                cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3,'recombine');
         end
     end
-    S = convertelem(S,elemtype);
+    S3 = convertelem(S3,elemtype);
+    %
+    S5a = build_model(Q5a,'cl',cl_5,'elemtype',elemtype,...
+        'filename',fullfile(pathname,['gmsh_desk_5a_' elemtype '_cl_' num2str(cl_5)]));
+    %
+    S5b = build_model(Q5b,'cl',cl_5,'elemtype',elemtype,...
+        'filename',fullfile(pathname,['gmsh_desk_5b_' elemtype '_cl_' num2str(cl_5)]));
     
     %% Materials
     % Gravitational acceleration
@@ -210,6 +241,7 @@ if solveProblem
             error('Wrong material symmetry !')
     end
     mat = setnumber(mat,1);
+    S = union(S1,S2,S3,S5a,S5b);
     S = setmaterial(S,mat);
     
     %% Neumann boundary conditions

@@ -10,7 +10,7 @@ setProblem = true;
 solveProblem = true;
 displaySolution = true;
 
-Dim = 3; % space dimension Dim = 2, 3
+Dim = 2; % space dimension Dim = 2, 3
 filename = ['specimenCompressionDetLinElas_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification',filename);
@@ -42,7 +42,7 @@ if setProblem
     option = 'CONT'; % plane stress
     nbelem = repmat(20,1,Dim);
     S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
-    % cl = 0.05;
+    % cl = L/20;
     % S = build_model(D,'cl',cl,'elemtype',elemtype,'option',option,'filename',fullfile(pathname,'gmsh_domain'));
     
     %% Materials

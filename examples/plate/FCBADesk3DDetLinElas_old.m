@@ -1,5 +1,5 @@
-%% FCBA desk deterministic linear elasticity %%
-%%-------------------------------------------%%
+%% FCBA desk 3D deterministic linear elasticity %%
+%%----------------------------------------------%%
 
 % clc
 clearvars
@@ -22,16 +22,10 @@ test = 'StaticVert'; % test under static vertical load
 % test = 'Impact'; % vertical impact test
 % test = 'Drop'; % drop test
 
-pointwiseLoading = 1; % pointwise loading
-
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-if pointwiseLoading
-    filename = ['FCBADeskDetLinElas' test 'PointwiseLoading'];
-else
-    filename = ['FCBADeskDetLinElas' test];
-end
+filename = ['FCBADesk3DDetLinElas' test];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','plate',filename);
 if ~exist(pathname,'dir')
@@ -65,45 +59,42 @@ if solveProblem
     y1_23 = c;
     z1_12 = 0;
     z1_34 = a12+h/2;
-    Q1 = QUADRANGLE([x1,y1_14,z1_12],[x1,y1_23,z1_12],...
-                    [x1,y1_23,z1_34],[x1,y1_14,z1_34]);
+    D1 = DOMAIN(3,[x1-h/2,y1_14,z1_12],[x1+h/2,y1_23,z1_34-h/2]);
+    %
     x2 = -(a5+h)/2;
     y2_14 = -b12+c;
     y2_23 = c;
     z2_12 = 0;
     z2_34 = a12+h/2;
-    Q2 = QUADRANGLE([x2,y2_14,z2_12],[x2,y2_23,z2_12],...
-                    [x2,y2_23,z2_34],[x2,y2_14,z2_34]);
+    D2 = DOMAIN(3,[x2-h/2,y2_14,z2_12],[x2+h/2,y2_23,z2_34-h/2]);
+    %
     x3_14 = -a3/2;
     x3_23 = a3/2;
     y3_12 = c-(b3+b12)/2;
     y3_34 = c+(b3-b12)/2;
     z3 = a12+h/2;
-    Q3 = QUADRANGLE([x3_14,y3_12,z3],[x3_23,y3_12,z3],...
-                    [x3_23,y3_34,z3],[x3_14,y3_34,z3]);
+    D3 = DOMAIN(3,[x3_14,y3_12,z3-h/2],[x3_23,y3_34,z3+h/2]);
+    %
     x5a_14 = -(a5+h)/2;
     x5a_23 = (a5+h)/2;
     y5a = 0;
     z5a_12 = a12-d-e-b;
     z5a_34 = a12-d+a;
-    Q5a = QUADRANGLE([x5a_14,y5a,z5a_12],[x5a_23,y5a,z5a_12],...
-                     [x5a_23,y5a,z5a_34],[x5a_14,y5a,z5a_34]);
+    D5a = DOMAIN(3,[x5a_14+h/2,y5a-h/2,z5a_12],[x5a_23-h/2,y5a+h/2,z5a_34]);
+    %
     x5b_14 = -(a5+h)/2;
     x5b_23 = (a5+h)/2;
     y5b = 0;
     z5b_12 = f-b;
     z5b_34 = f-b+b5;
-    Q5b = QUADRANGLE([x5b_14,y5b,z5b_12],[x5b_23,y5b,z5b_12],...
-                     [x5b_23,y5b,z5b_34],[x5b_14,y5b,z5b_34]);
+    D5b = DOMAIN(3,[x5b_14+h/2,y5b-h/2,z5b_12],[x5b_23-h/2,y5b+h/2,z5b_34]);
     
     % Points
-    L3 = getedges(Q3);
-    x_hori = {double(getcenter(L3{2})),double(getcenter(L3{4})),...
-                   double(getcenter(L3{3})),double(getcenter(L3{1}))};
-    x_vert = double(getcenter(Q3));
-    x_fati = {[x3_23,y3_12+50e-3,z3],[x3_14,y3_12+50e-3,z3],...
-                   [x3_23-50e-3,y3_12,z3],[x3_23-50e-3,y3_34,z3]};
-    x_stab = double(getcenter(L3{1}))+[0.0,50e-3,0.0];
+    x_hori = {[x3_23,(y3_12+y3_34)/2,z3],[x3_14,(y3_12+y3_34)/2,z3],...
+        [(x3_23+x3_14)/2,y3_34,z3],[(x3_23+x3_14)/2,y3_12,z3]};
+    x_vert = double(getcenter(D3))-[0.0,0.0,h/2];
+    x_fati = {[x3_23,y3_12+50e-3,z3-h/2],[x3_14,y3_12+50e-3,z3-h/2],[x3_23-50e-3,y3_12,z3-h/2],[x3_23-50e-3,y3_34,z3-h/2]};
+    x_stab = double(POINT([x_hori{4}(1),x_hori{4}(2)+50e-3,x_hori{4}(3)-h/2]));
     x_meas = [x_hori,x_vert,x_fati,x_stab];
     P_hori = cellfun(@(x) POINT(x),x_hori,'UniformOutput',false);
     P_vert = POINT(x_vert);
@@ -112,51 +103,73 @@ if solveProblem
     P_meas = cellfun(@(x) POINT(x),x_meas,'UniformOutput',false);
     
     % Plates meshes
-    elemtype = 'DKT';
+    elemtype = 'TET4';
     cl = h;
     cl_12 = cl;
     cl_3 = cl;
     cl_5 = cl;
-    r_load = 40e-3;
     r_masse = 100e-3;
-    C_masse = CIRCLE(0.0,y3_12+b3/2,z3,r_masse);
-    x_masse = double(getcoord(getcenter(C_masse)));
-    if pointwiseLoading
-        PbQ3 = {x_hori{4},x_fati{3},x_fati{1},x_hori{1},...
-                x_fati{4},x_hori{3},x_hori{2},x_fati{2}};
-        if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-            S = gmshFCBAdesksimplified(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
-                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3);
-        else
-            S = gmshFCBAdesksimplified(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
-                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3,'recombine');
-        end
+    C_masse = CIRCLE(0.0,y3_12+b3/2,z3+h/2,r_masse);
+    r_load = 40e-3;
+    C_vert = CIRCLE(x_vert(1),x_vert(2),x_vert(3)+h,r_load);
+    C_stab = CIRCLE(x_stab(1),x_stab(2),x_stab(3)+h,r_load);
+    %
+    Q1_a = QUADRANGLE([x5a_23-h/2,y5a+h/2,z5a_12],[x5a_23-h/2,y5a-h/2,z5a_12],[x5a_23-h/2,y5a-h/2,z5a_34],[x5a_23-h/2,y5a+h/2,z5a_34]);
+    Q1_b = QUADRANGLE([x5b_23-h/2,y5b+h/2,z5b_12],[x5b_23-h/2,y5b-h/2,z5b_12],[x5b_23-h/2,y5b-h/2,z5b_34],[x5b_23-h/2,y5b+h/2,z5b_34]);
+    if ~strcmp(elemtype,'CUB8')
+        S1 = gmshFCBAdesk3D1(D1,Q1_a,Q1_b,cl_12,cl_5,cl_5,...
+            fullfile(pathname,['gmsh_desk_1_' elemtype '_cl_' num2str(cl_12)]),3);
     else
-        L_hori{1} = LIGNE(x_hori{1}+[0,-r_load,0],x_hori{1}+[0,r_load,0]);
-        L_hori{2} = LIGNE(x_hori{2}+[0,r_load,0],x_hori{2}+[0,-r_load,0]);
-        L_hori{3} = LIGNE(x_hori{3}+[r_load,0,0],x_hori{3}+[-r_load,0,0]);
-        L_hori{4} = LIGNE(x_hori{4}+[-r_load,0,0],x_hori{4}+[r_load,0,0]);
-        L_fati{1} = LIGNE(x_fati{1}+[0,-r_load,0],x_fati{1}+[0,r_load,0]);
-        L_fati{2} = LIGNE(x_fati{2}+[0,r_load,0],x_fati{2}+[0,-r_load,0]);
-        L_fati{3} = LIGNE(x_fati{3}+[-r_load,0,0],x_fati{3}+[r_load,0,0]);
-        L_fati{4} = LIGNE(x_fati{4}+[r_load,0,0],x_fati{4}+[-r_load,0,0]);
-        LbQ3 = {L_hori{4},L_fati{3},L_fati{1},L_hori{1},...
-                L_fati{4},L_hori{3},L_hori{2},L_fati{2}};
-        C_vert = CIRCLE(x_vert(1),x_vert(2),x_vert(3),r_load);
-        C_stab = CIRCLE(x_stab(1),x_stab(2),x_stab(3),r_load);
-        if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-            S = gmshFCBAdesk(Q1,Q2,Q3,Q5a,Q5b,C_masse,LbQ3,C_stab,C_vert,...
-                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3);
-        else
-            S = gmshFCBAdesk(Q1,Q2,Q3,Q5a,Q5b,C_masse,LbQ3,C_stab,C_vert,...
-                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3,'recombine');
-        end
+        S1 = gmshFCBAdesk3D1(D1,Q1_a,Q1_b,cl_12,cl_5,cl_5,...
+            fullfile(pathname,['gmsh_desk_1_' elemtype '_cl_' num2str(cl_12)]),3,'recombine');
     end
-    S = convertelem(S,elemtype);
+    S1 = convertelem(S1,elemtype);
+    %
+    Q2_a = QUADRANGLE([x5a_14+h/2,y5a-h/2,z5a_12],[x5a_14+h/2,y5a+h/2,z5a_12],[x5a_14+h/2,y5a+h/2,z5a_34],[x5a_14+h/2,y5a-h/2,z5a_34]);
+    Q2_b = QUADRANGLE([x5b_14+h/2,y5b-h/2,z5b_12],[x5b_14+h/2,y5b+h/2,z5b_12],[x5b_14+h/2,y5b+h/2,z5b_34],[x5b_14+h/2,y5b-h/2,z5b_34]);
+    if ~strcmp(elemtype,'CUB8')
+        S2 = gmshFCBAdesk3D2(D2,Q2_a,Q2_b,cl_12,cl_5,cl_5,...
+            fullfile(pathname,['gmsh_desk_2_' elemtype '_cl_' num2str(cl_12)]),3);
+    else
+        S2 = gmshFCBAdesk3D2(D2,Q2_a,Q2_b,cl_12,cl_5,cl_5,...
+            fullfile(pathname,['gmsh_desk_2_' elemtype '_cl_' num2str(cl_12)]),3,'recombine');
+    end    
+    S2 = convertelem(S2,elemtype);
+    %
+    LbD3 = {LIGNE(x_hori{4}+[-r_load,0,-h/2],x_hori{4}+[-r_load,0,h/2]),...
+        LIGNE(x_hori{4}+[r_load,0,-h/2],x_hori{4}+[r_load,0,h/2]),...
+        LIGNE(x_fati{3}+[-r_load,0,-h/2],x_fati{3}+[-r_load,0,h/2]),...
+        LIGNE(x_fati{3}+[r_load,0,-h/2],x_fati{3}+[r_load,0,h/2]),...
+        LIGNE(x_fati{1}+[0,-r_load,-h/2],x_fati{1}+[0,-r_load,h/2]),...
+        LIGNE(x_fati{1}+[0,r_load,-h/2],x_fati{1}+[0,r_load,h/2]),...
+        LIGNE(x_hori{1}+[0,-r_load,-h/2],x_hori{1}+[0,-r_load,h/2]),...
+        LIGNE(x_hori{1}+[0,r_load,-h/2],x_hori{1}+[0,r_load,h/2]),...
+        LIGNE(x_fati{4}+[r_load,0,-h/2],x_fati{4}+[r_load,0,h/2]),...
+        LIGNE(x_fati{4}+[-r_load,0,-h/2],x_fati{4}+[-r_load,0,h/2]),...
+        LIGNE(x_hori{3}+[r_load,0,-h/2],x_hori{3}+[r_load,0,h/2]),...
+        LIGNE(x_hori{3}+[-r_load,0,-h/2],x_hori{3}+[-r_load,0,h/2]),...
+        LIGNE(x_hori{2}+[0,r_load,-h/2],x_hori{2}+[0,r_load,h/2]),...
+        LIGNE(x_hori{2}+[0,-r_load,-h/2],x_hori{2}+[0,-r_load,h/2]),...
+        LIGNE(x_fati{2}+[0,r_load,-h/2],x_fati{2}+[0,r_load,h/2]),...
+        LIGNE(x_fati{2}+[0,-r_load,-h/2],x_fati{2}+[0,-r_load,h/2])};
+    Q3_1 = QUADRANGLE([x1-h/2,y1_14,z1_34-h/2],[x1+h/2,y1_14,z1_34-h/2],[x1+h/2,y1_23,z1_34-h/2],[x1-h/2,y1_23,z1_34-h/2]);
+    Q3_2 = QUADRANGLE([x2-h/2,y2_14,z2_34-h/2],[x2+h/2,y2_14,z2_34-h/2],[x2+h/2,y2_23,z2_34-h/2],[x2-h/2,y2_23,z2_34-h/2]);
+    CiD3eI = C_stab;
+    CiI = C_vert;
+    if ~strcmp(elemtype,'CUB8')
+        S3 = gmshFCBAdesk3D3(D3,C_masse,Q3_1,Q3_2,LbD3,CiD3eI,CiI,cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
+            fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3);
+    else
+        S3 = gmshFCBAdesk3D3(D3,C_masse,Q3_1,Q3_2,LbD3,CiD3eI,CiI,cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
+            fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3,'recombine');
+    end
+    S3 = convertelem(S3,elemtype);
+    %
+    S5a = build_model(D5a,'cl',cl_5,'elemtype',elemtype,...
+        'filename',fullfile(pathname,['gmsh_desk_5a_' elemtype '_cl_' num2str(cl_5)]));
+    %
+    S5b = build_model(D5b,'cl',cl_5,'elemtype',elemtype,...
+        'filename',fullfile(pathname,['gmsh_desk_5b_' elemtype '_cl_' num2str(cl_5)]));
     
     %% Materials
     % Gravitational acceleration
@@ -183,67 +196,56 @@ if solveProblem
     
     switch lower(materialSym)
         case 'isot'
-            % Young modulus
+           % Young modulus
             E = eval(['mean_ET_' sampleNum '_data;'])*1e9; % Pa
             %E = 1.7e9; % Pa
             % Shear modulus
             G = eval(['mean_GL_' sampleNum '_data;'])*13*1e6; % Pa
             % Poisson ratio
             NU = E./(2*G)-1;
-            %NU = 0.25;
+            %NU = 0.25
             % Material
-            mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
+            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO);
         case 'isottrans'
-            % Transverse Young modulus
+           % Transverse Young modulus
             ET = eval(['mean_ET_' sampleNum '_data;'])*1e9; % Pa
             % Longitudinal shear modulus
             GL = eval(['mean_GL_' sampleNum '_data;'])*1e6; % Pa
             % Longitudinal Young modulus
-            % EL = eval(['mean_EL_' sampleNum '_data;'])*1e6; % Pa
+            EL = eval(['mean_EL_' sampleNum '_data;'])*1e6; % Pa
             % Longitudinal Poisson ratio
-            % NUL = eval(['mean_NUL_' sampleNum '_data;']);
+            NUL = eval(['mean_NUL_' sampleNum '_data;']);
             % Transverse Poisson ratio
             NUT = 0.25;
             % Material
-            mat = ELAS_SHELL_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'RHO',RHO,'DIM3',h,'k',5/6);
+            mat = ELAS_ISOT_TRANS('EL',EL,'ET',ET,'NUL',NUL,'NUT',NUT,'GL',GL,'RHO',RHO);
         otherwise
             error('Wrong material symmetry !')
     end
     mat = setnumber(mat,1);
+    S = union(S1,S2,S3,S5a,S5b);
     S = setmaterial(S,mat);
     
     %% Neumann boundary conditions
-    p_plate = RHO*g*h; % surface load (body load for plates)
+    p_plate = RHO*g; % body load
     Sec_stab_vert = pi*r_load^2;
-    L_hori_fati = 2*r_load;
+    Sec_hori_fati = 2*r_load*h;
     switch lower(test)
         case 'stability'
-            p = 400; % pointwise load
-            if ~pointwiseLoading
-                p = p/Sec_stab_vert; % surface load (body load for plates)
-            end
+            p = 400/Sec_stab_vert; % surface load
         case {'statichori1','statichori2','statichori3','statichori4'}
             masse = 50.5;
             Sec_masse = pi*r_masse^2;
-            p_masse = masse*g/Sec_masse; % surface load (body load for plates)
-            p = 100; % pointwise load, F1=F2=100N or 200N, F3=F4=100N
-            if ~pointwiseLoading
-                p = p/L_hori_fati; % line load (surface load for plates)
-            end
+            p_masse = masse*g/Sec_masse; % surface load
+            p = 100/Sec_hori_fati; % surface load, F1=F2=100N or 200N, F3=F4=100N
             slope = 0;
         case 'staticvert'
-            p = 300; % pointwise load, 300N, 400N or 500N
-            if ~pointwiseLoading
-                p = p/Sec_stab_vert; % surface load (body load for plates)
-            end
+            p = 300/Sec_stab_vert; % surface load, 300N, 400N or 500N
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
             masse = 50.5;
             Sec_masse = pi*r_masse^2;
-            p_masse = masse*g/Sec_masse; % surface load (body load for plates)
-            p = 100; % pointwise load
-            if ~pointwiseLoading
-                p = p/L_hori_fati; % line load (surface load for plates)
-            end
+            p_masse = masse*g/Sec_masse; % surface load 
+            p = 100/Sec_hori_fati; % surface load
         case 'impact'
             H = 180e-3;
         case 'drop'
@@ -252,12 +254,12 @@ if solveProblem
     
     %% Dirichlet boundary conditions
     S = final(S);
-    L1 = getedge(Q1,1);
-    L2 = getedge(Q2,1);
-    L5b = getedge(Q5b,1);
-    [~,numnode1] = intersect(S,L1);
-    [~,numnode2] = intersect(S,L2);
-    [~,numnode5b] = intersect(S,L5b);
+    S1_5 = getfacet(S1,5);
+    S2_5 = getfacet(S2,5);
+    S5b_1 = getfacet(S5b,1);
+    [~,numnode1] = intersect(S,S1_5);
+    [~,numnode2] = intersect(S,S2_5);
+    [~,numnode5b] = intersect(S,S5b_1);
     switch lower(test)
         case 'stability'
             S = addcl(S,union(numnode1,numnode2));
@@ -279,115 +281,48 @@ if solveProblem
             S = addcl(S,numnode5b,'UZ');
     end
     
-    %% Stiffness matrix and sollicitation vector
+    %% Stiffness matrices and sollicitation vectors
     A = calc_rigi(S);
     
     switch lower(test)
         case 'stability'
-            if pointwiseLoading
-                f = nodalload(S,P_stab,'FZ',-p);
-                if isempty(ispointin(P_stab,POINT(S.node)))
-                    error('Pointwise load must be applied to a node of the mesh')
-                end
-            else
-                f = bodyload(keepgroupelem(S,6),[],'FZ',-p);
-            end
+            S3_26 = getfacet(S3,26);
+            f = surfload(S,S3_26,'FZ',-p);
         case {'statichori1','statichori2','statichori3','statichori4'}
             if strcmpi(test,'statichori1')
-                if pointwiseLoading
-                    f = nodalload(S,P_hori{1},{'FX','FZ'},-p*[cosd(slope);sind(slope)]);
-                    if isempty(ispointin(P_hori{1},POINT(S.node)))
-                        error('Pointwise load must be applied to a node of the mesh')
-                    end
-                else
-                    f = surfload(S,L_hori{1},{'FX','FZ'},-p*[cosd(slope);sind(slope)]);
-                end
+                S3_9 = getfacet(S3,9);
+                f = surfload(S,S3_9,{'FX','FZ'},-p*[cosd(slope);sind(slope)]);
             elseif strcmpi(test,'statichori2')
-                if pointwiseLoading
-                    f = nodalload(S,P_hori{2},{'FX','FZ'},p*[cosd(slope);-sind(slope)]);
-                    if isempty(ispointin(P_hori{2},POINT(S.node)))
-                        error('Pointwise load must be applied to a node of the mesh')
-                    end
-                else
-                    f = surfload(S,L_hori{2},{'FX','FZ'},p*[cosd(slope);-sind(slope)]);
-                end
+                S3_17 = getfacet(S3,17);
+                f = surfload(S,S3_17,{'FX','FZ'},p*[cosd(slope);-sind(slope)]);
             elseif strcmpi(test,'statichori3')
-                if pointwiseLoading
-                    f = nodalload(S,P_hori{3},{'FY','FZ'},-p*[cosd(slope);sind(slope)]);
-                    if isempty(ispointin(P_hori{3},POINT(S.node)))
-                        error('Pointwise load must be applied to a node of the mesh')
-                    end
-                else
-                    f = surfload(S,L_hori{3},{'FY','FZ'},-p*[cosd(slope);sind(slope)]);
-                end
+                S3_14 = getfacet(S3,14);
+                f = surfload(S,S3_14,{'FY','FZ'},-p*[cosd(slope);sind(slope)]);
             elseif strcmpi(test,'statichori4')
-                if pointwiseLoading
-                    f = nodalload(S,P_hori{4},{'FY','FZ'},p*[cosd(slope);-sind(slope)]);
-                    if isempty(ispointin(P_hori{4},POINT(S.node)))
-                        error('Pointwise load must be applied to a node of the mesh')
-                    end
-                else
-                    f = surfload(S,L_hori{4},{'FY','FZ'},p*[cosd(slope);-sind(slope)]);
-                end
+                S3_2 = getfacet(S3,2);
+                f = surfload(S,S3_2,{'FY','FZ'},p*[cosd(slope);-sind(slope)]);
             end
-            if pointwiseLoading
-                f = f + bodyload(keepgroupelem(S,4),[],'FZ',-p_masse);
-            else
-                f = f + bodyload(keepgroupelem(S,[4,5]),[],'FZ',-p_masse);
-            end
+            S3_masse = union(getfacet(S3,24),getfacet(S3,25));
+            f = f + surfload(S,S3_masse,'FZ',-p_masse);
         case 'staticvert'
-            if pointwiseLoading
-                f = nodalload(S,P_vert,'FZ',-p);
-                if isempty(ispointin(P_vert,POINT(S.node)))
-                    error('Pointwise load must be applied to a node of the mesh')
-                end
-            else
-                f = bodyload(keepgroupelem(S,4),[],'FZ',-p);
-            end
+            S3_24 = getfacet(S3,24);
+            f = surfload(S,S3_24,'FZ',-p);
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
             if strcmpi(test,'fatigue1')
-                if pointwiseLoading
-                    f = nodalload(S,P_fati{1},'FX',-p);
-                    if isempty(ispointin(P_fati{1},POINT(S.node)))
-                        error('Pointwise load must be applied to a node of the mesh')
-                    end
-                else
-                    f = surfload(S,L_fati{1},'FX',-p);
-                end
+                S3_7 = getfacet(S3,7);
+                f = surfload(S,S3_7,'FX',-p);
             elseif strcmpi(test,'fatigue2')
-                if pointwiseLoading
-                    f = nodalload(S,P_fati{2},'FX',p);
-                    if isempty(ispointin(P_fati{2},POINT(S.node)))
-                        error('Pointwise load must be applied to a node of the mesh')
-                    end
-                else
-                    f = surfload(S,L_fati{2},'FX',p);
-                end
+                S3_19 = getfacet(S3,19);
+                f = surfload(S,S3_19,'FX',p);
             elseif strcmpi(test,'fatigue3')
-                if pointwiseLoading
-                    f = nodalload(S,P_fati{3},'FY',p);
-                    if isempty(ispointin(P_fati{3},POINT(S.node)))
-                        error('Pointwise load must be applied to a node of the mesh')
-                    end
-                else
-                    f = surfload(S,L_fati{3},'FY',p);
-                end
+                S3_4 = getfacet(S3,4);
+                f = surfload(S,S3_4,'FY',p);
             elseif strcmpi(test,'fatigue4')
-                if pointwiseLoading
-                    f = nodalload(S,P_fati{4},'FY',-p);
-                    if isempty(ispointin(P_fati{4},POINT(S.node)))
-                        error('Pointwise load must be applied to a node of the mesh')
-                    end
-                    
-                else
-                    f = surfload(S,L_fati{4},'FY',-p);
-                end
+                S3_12 = getfacet(S3,12);
+                f = surfload(S,S3_12,'FY',-p);
             end
-            if pointwiseLoading
-                f = f + bodyload(keepgroupelem(S,4),[],'FZ',-p_masse);
-            else
-                f = f + bodyload(keepgroupelem(S,[4,5]),[],'FZ',-p_masse);
-            end
+            S3_masse = union(getfacet(S3,24),getfacet(S3,25));
+            f = f + surfload(S,S3_masse,'FZ',-p_masse);
         case {'impact','drop'}
             error('Not implemented')
     end
@@ -400,15 +335,10 @@ if solveProblem
     
     u = unfreevector(S,u);
     
-    U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+    U = u(findddl(S,DDL(DDLVECT('U',S.syscoord))),:);
     Ux = u(findddl(S,'UX'),:); % Ux = double(squeeze(eval_sol(S,u,S.node,'UX')));
     Uy = u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,u,S.node,'UY')));
     Uz = u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,u,S.node,'UZ')));
-    
-    R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
-    Rx = u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,u,S.node,'RX')));
-    Ry = u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,u,S.node,'RY')));
-    Rz = u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,u,S.node,'RZ')));
     
     %% Test solution
     ux_P_vert = eval_sol(S,u,P_vert,'UX');
@@ -442,71 +372,29 @@ if solveProblem
     uy_P_fati(4) = eval_sol(S,u,P_fati{4},'UY');
     uz_P_fati(4) = eval_sol(S,u,P_fati{4},'UZ');
     
-    rx_P_vert = eval_sol(S,u,P_vert,'RX');
-    ry_P_vert = eval_sol(S,u,P_vert,'RY');
-    rz_P_vert = eval_sol(S,u,P_vert,'RZ');
-    rx_P_stab = eval_sol(S,u,P_stab,'RX');
-    ry_P_stab = eval_sol(S,u,P_stab,'RY');
-    rz_P_stab = eval_sol(S,u,P_stab,'RZ');
-    rx_P_hori(1) = eval_sol(S,u,P_hori{1},'RX');
-    ry_P_hori(1) = eval_sol(S,u,P_hori{1},'RY');
-    rz_P_hori(1) = eval_sol(S,u,P_hori{1},'RZ');
-    rx_P_hori(2) = eval_sol(S,u,P_hori{2},'RX');
-    ry_P_hori(2) = eval_sol(S,u,P_hori{2},'RY');
-    rz_P_hori(2) = eval_sol(S,u,P_hori{2},'RZ');
-    rx_P_hori(3) = eval_sol(S,u,P_hori{3},'RX');
-    ry_P_hori(3) = eval_sol(S,u,P_hori{3},'RY');
-    rz_P_hori(3) = eval_sol(S,u,P_hori{3},'RZ');
-    rx_P_hori(4) = eval_sol(S,u,P_hori{4},'RX');
-    ry_P_hori(4) = eval_sol(S,u,P_hori{4},'RY');
-    rz_P_hori(4) = eval_sol(S,u,P_hori{4},'RZ');
-    rx_P_fati(1) = eval_sol(S,u,P_fati{1},'RX');
-    ry_P_fati(1) = eval_sol(S,u,P_fati{1},'RY');
-    rz_P_fati(1) = eval_sol(S,u,P_fati{1},'RZ');
-    rx_P_fati(2) = eval_sol(S,u,P_fati{2},'RX');
-    ry_P_fati(2) = eval_sol(S,u,P_fati{2},'RY');
-    rz_P_fati(2) = eval_sol(S,u,P_fati{2},'RZ');
-    rx_P_fati(3) = eval_sol(S,u,P_fati{3},'RX');
-    ry_P_fati(3) = eval_sol(S,u,P_fati{3},'RY');
-    rz_P_fati(3) = eval_sol(S,u,P_fati{3},'RZ');
-    rx_P_fati(4) = eval_sol(S,u,P_fati{4},'RX');
-    ry_P_fati(4) = eval_sol(S,u,P_fati{4},'RY');
-    rz_P_fati(4) = eval_sol(S,u,P_fati{4},'RZ');
-    
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S','elemtype',...
-        'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','L_hori_fati',...
-        'f','p','pointwiseLoading');
+        'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','Sec_hori_fati',...
+        'f','p');
     save(fullfile(pathname,'solution.mat'),'u','time',...
-        'U','Ux','Uy','Uz',...
-        'R','Rx','Ry','Rz');
+        'U','Ux','Uy','Uz');
     save(fullfile(pathname,'test_solution.mat'),'P_vert','P_stab',...
         'P_hori','P_fati',...
         'ux_P_vert','uy_P_vert','uz_P_vert',...
         'ux_P_stab','uy_P_stab','uz_P_stab',...
         'ux_P_hori','uy_P_hori','uz_P_hori',...        
-        'ux_P_fati','uy_P_fati','uz_P_fati',...      
-        'rx_P_vert','ry_P_vert','rz_P_vert',...
-        'rx_P_stab','ry_P_stab','rz_P_stab',...
-        'rx_P_hori','ry_P_hori','rz_P_hori',...
-        'rx_P_fati','ry_P_fati','rz_P_fati');
+        'ux_P_fati','uy_P_fati','uz_P_fati');
 else
     load(fullfile(pathname,'problem.mat'),'S','elemtype',...
-        'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','L_hori_fati',...
-        'f','p','pointwiseLoading');
+        'a12','b12','a3','b3','a5','b5','h','f','p','Sec_stab_vert','Sec_hori_fati');
     load(fullfile(pathname,'solution.mat'),'u','time',...
-        'U','Ux','Uy','Uz',...
-        'R','Rx','Ry','Rz');
+        'U','Ux','Uy','Uz');
     load(fullfile(pathname,'test_solution.mat'),'P_vert','P_stab',...
         'P_hori','P_fati',...
         'ux_P_vert','uy_P_vert','uz_P_vert',...
         'ux_P_stab','uy_P_stab','uz_P_stab',...
         'ux_P_hori','uy_P_hori','uz_P_hori',...        
-        'ux_P_fati','uy_P_fati','uz_P_fati',...      
-        'rx_P_vert','ry_P_vert','rz_P_vert',...
-        'rx_P_stab','ry_P_stab','rz_P_stab',...
-        'rx_P_hori','ry_P_hori','rz_P_hori',...
-        'rx_P_fati','ry_P_fati','rz_P_fati');
+        'ux_P_fati','uy_P_fati','uz_P_fati');
 end
 
 %% Outputs
@@ -528,24 +416,19 @@ switch lower(test)
         fprintf('ux = %g\n',ux_P_vert);
         fprintf('uy = %g\n',uy_P_vert);
         fprintf('uz = %g\n',uz_P_vert);
-        if (pointwiseLoading && p==300) || (~pointwiseLoading && p==300/Sec_stab_vert)
+        if p == 300/Sec_stab_vert
             uz_exp_start = -0.69*1e-3;
             uz_exp_end = -[10.10 9.88 9.64 9.88 9.94 9.79 9.92 9.93 9.82 9.95]*1e-3;
-        elseif (pointwiseLoading && p==400) || (~pointwiseLoading && p==400/Sec_stab_vert)
+        elseif p == 400/Sec_stab_vert
             uz_exp_start = -0.75*1e-3;
             uz_exp_end = -[13.45 13.52 13.56 13.64 13.65 13.74 13.75 13.44 13.74 13.53]*1e-3;
-        elseif (pointwiseLoading && p==500) || (~pointwiseLoading && p==500/Sec_stab_vert)
+        elseif p == 500/Sec_stab_vert
             uz_exp_start = -0.78*1e-3;
             uz_exp_end = -[16.66 16.57 16.59 16.78 16.55 16.69 16.75 16.59 16.73 16.76]*1e-3;
         end
         uz_exp = mean(uz_exp_end - uz_exp_start);
         err_uz = norm(uz_P_vert-uz_exp)/norm(uz_exp);
         fprintf('uz_exp   = %g, error    = %.3e\n',uz_exp,err_uz);
-        fprintf('\n');
-        disp('Rotation r at point'); disp(P_vert);
-        fprintf('rx = %g\n',rx_P_vert);
-        fprintf('ry = %g\n',ry_P_vert);
-        fprintf('rz = %g\n',rz_P_vert);
         fprintf('\n');
     case 'stability'
         disp('Displacement u at point'); disp(P_stab);
@@ -558,20 +441,15 @@ switch lower(test)
         err_uz = norm(uz_P_stab-uz_exp)/norm(uz_exp);
         fprintf('uz_exp   = %g, error    = %.3e\n',uz_exp,err_uz);
         fprintf('\n');
-        disp('Rotation r at point'); disp(P_stab);
-        fprintf('rx = %g\n',rx_P_stab);
-        fprintf('ry = %g\n',ry_P_stab);
-        fprintf('rz = %g\n',rz_P_stab);
-        fprintf('\n');
     case 'statichori1'
         disp('Displacement u at point'); disp(P_hori{2});
         fprintf('ux = %g\n',ux_P_hori(2));
         fprintf('uy = %g\n',uy_P_hori(2));
         fprintf('uz = %g\n',uz_P_hori(2));
-        if (pointwiseLoading && p==100) || (~pointwiseLoading && p==100/L_hori_fati)
+        if p==100/Sec_hori_fati
             ux_exp_start = -6.88*1e-3;
             ux_exp_end = -[10.5 10.51 10.44 10.8 10.72 10.62 10.67 10.65 10.66 10.87 10.86]*1e-3;
-        elseif (pointwiseLoading && p==200) || (~pointwiseLoading && p==200/L_hori_fati)
+        elseif p==200/Sec_hori_fati
             ux_exp_start = -6.16*1e-3;
             ux_exp_end = -[16.78 16.74 16.72 17.13 17 16.8 16.87 16.78 17.04 16.82 16.71 17.17]*1e-3;
         end
@@ -579,31 +457,21 @@ switch lower(test)
         err_ux = norm(ux_P_hori(2)-ux_exp)/norm(ux_exp);
         fprintf('ux_exp   = %g, error    = %.3e\n',ux_exp,err_ux);
         fprintf('\n');
-        disp('Rotation r at point'); disp(P_hori{2});
-        fprintf('rx = %g\n',rx_P_hori(2));
-        fprintf('ry = %g\n',ry_P_hori(2));
-        fprintf('rz = %g\n',rz_P_hori(2));
-        fprintf('\n');
     case 'statichori2'
         disp('Displacement u at point'); disp(P_hori{1});
         fprintf('ux = %g\n',ux_P_hori(1));
         fprintf('uy = %g\n',uy_P_hori(1));
         fprintf('uz = %g\n',uz_P_hori(1));
-        if (pointwiseLoading && p==100) || (~pointwiseLoading && p==100/L_hori_fati)
+        if p==100/Sec_hori_fati
             ux_exp_start = 2.12*1e-3;
             ux_exp_end = [6.22 6.17 6.26 6.31 6.33 6.24 6.26 6.4 6.26 6.49 6.48 6.42 6.36 6.56 6.37 6.39]*1e-3;
-        elseif (pointwiseLoading && p==200) || (~pointwiseLoading && p==200/L_hori_fati)
+        elseif p==200/Sec_hori_fati
             ux_exp_start = 1.91*1e-3;
             ux_exp_end = [12.45 12.68 12.66 12.65 12.71 12.64 12.82 12.73 12.89 12.86 12.79 12.86]*1e-3;
         end
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux_P_hori(1)-ux_exp)/norm(ux_exp);
         fprintf('ux_exp   = %g, error    = %.3e\n',ux_exp,err_ux);
-        fprintf('\n');
-        disp('Rotation r at point'); disp(P_hori{1});
-        fprintf('rx = %g\n',rx_P_hori(1));
-        fprintf('ry = %g\n',ry_P_hori(1));
-        fprintf('rz = %g\n',rz_P_hori(1));
         fprintf('\n'); 
     case 'statichori3'
         disp('Displacement u at point'); disp(P_hori{4});
@@ -615,11 +483,6 @@ switch lower(test)
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy_P_hori(4)-uy_exp)/norm(uy_exp);
         fprintf('uy_exp   = %g, error    = %.3e\n',uy_exp,err_uy);
-        fprintf('\n');
-        disp('Rotation r at point'); disp(P_hori{4});
-        fprintf('rx = %g\n',rx_P_hori(4));
-        fprintf('ry = %g\n',ry_P_hori(4));
-        fprintf('rz = %g\n',rz_P_hori(4));
         fprintf('\n'); 
     case 'statichori4'
         disp('Displacement u at point'); disp(P_hori{3});
@@ -632,11 +495,6 @@ switch lower(test)
         err_uy = norm(uy_P_hori(3)-uy_exp)/norm(uy_exp);
         fprintf('uy_exp   = %g, error    = %.3e\n',uy_exp,err_uy);
         fprintf('\n');
-        disp('Rotation r at point'); disp(P_hori{3});
-        fprintf('rx = %g\n',rx_P_hori(3));
-        fprintf('ry = %g\n',ry_P_hori(3));
-        fprintf('rz = %g\n',rz_P_hori(3));
-        fprintf('\n');
     case 'fatigue1'
         disp('Displacement u at point'); disp(P_fati{2});
         fprintf('ux = %g\n',ux_P_fati(2));
@@ -648,11 +506,6 @@ switch lower(test)
         err_ux = norm(ux_P_fati(2)-ux_exp)/norm(ux_exp);
         fprintf('ux_exp   = %g, error    = %.3e\n',ux_exp,err_ux);
         fprintf('\n');
-        disp('Rotation r at point'); disp(P_fati{2});
-        fprintf('rx = %g\n',rx_P_fati(2));
-        fprintf('ry = %g\n',ry_P_fati(2));
-        fprintf('rz = %g\n',rz_P_fati(2));
-        fprintf('\n');
     case 'fatigue2'
         disp('Displacement u at point'); disp(P_fati{1});
         fprintf('ux = %g\n',ux_P_fati(1));
@@ -663,11 +516,6 @@ switch lower(test)
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux_P_fati(1)-ux_exp)/norm(ux_exp);
         fprintf('ux_exp   = %g, error    = %.3e\n',ux_exp,err_ux);
-        fprintf('\n');
-        disp('Rotation r at point'); disp(P_fati{1});
-        fprintf('rx = %g\n',rx_P_fati(1));
-        fprintf('ry = %g\n',ry_P_fati(1));
-        fprintf('rz = %g\n',rz_P_fati(1));
         fprintf('\n'); 
     case 'fatigue3'
         disp('Displacement u at point'); disp(P_fati{4});
@@ -680,11 +528,6 @@ switch lower(test)
         err_uy = norm(uy_P_fati(1)-uy_exp)/norm(uy_exp);
         fprintf('uy_exp   = %g, error    = %.3e\n',uy_exp,err_uy);
         fprintf('\n');
-        disp('Rotation r at point'); disp(P_fati{4});
-        fprintf('rx = %g\n',rx_P_fati(4));
-        fprintf('ry = %g\n',ry_P_fati(4));
-        fprintf('rz = %g\n',rz_P_fati(4));
-        fprintf('\n');
      case 'fatigue4'
         disp('Displacement u at point'); disp(P_fati{3});
         fprintf('ux = %g\n',ux_P_fati(3));
@@ -695,11 +538,6 @@ switch lower(test)
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy_P_fati(1)-uy_exp)/norm(uy_exp);
         fprintf('uy_exp   = %g, error    = %.3e\n',uy_exp,err_uy);
-        fprintf('\n');
-        disp('Rotation r at point'); disp(P_fati{3});
-        fprintf('rx = %g\n',rx_P_fati(3));
-        fprintf('ry = %g\n',ry_P_fati(3));
-        fprintf('rz = %g\n',rz_P_fati(3));
         fprintf('\n');
 end
 
@@ -716,17 +554,17 @@ if displaySolution
     % legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
-    plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+    plotModel(S,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
     ampl = getsize(S)/max(abs(u))/10;
-    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+    plotModelDeflection(S,u,'ampl',ampl,'FaceColor','b','legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
-    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-    plot(S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1);
+    plot(S);
+    plot(S+ampl*u,'FaceColor','b');
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display solution
@@ -761,10 +599,4 @@ if displaySolution
             plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'Uz',formats,renderer);
     end
-    
-    % plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
-    % mysaveas(pathname,'Rx',formats,renderer);
-    %
-    % plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
-    % mysaveas(pathname,'Ry',formats,renderer);
 end

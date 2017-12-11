@@ -56,9 +56,8 @@ G = createcontour(G,numpoints,numlines,1);
 
 numpoints = numpoints(end)+(1:5);
 numlines = numlines(end)+(1:4);
-GCiI = gmshfile(CiI,clCiI,numpoints(1),numpoints(2:end),numlines,2);
+GCiI = gmshfile(CiI,clCiI,numpoints(1),numpoints(2:end),numlines,2,2,varargin{:});
 G = G+GCiI;
-G = createplanesurface(G,2,2);
 
 numpoints = numpoints(end)+(1:5);
 numlines = numlines(end)+(1:4);
@@ -75,9 +74,8 @@ end
 
 numpoints = numpoints(end)+(1:5);
 numlines = numlines(end)+(1:4);
-CiQeI = gmshfile(CiQeI,clCiQeI,numpoints(1),numpoints(2:end),numlines,4);
+CiQeI = gmshfile(CiQeI,clCiQeI,numpoints(1),numpoints(2:end),numlines,4,4,varargin{:});
 G = G+CiQeI;
-G = createplanesurface(G,4,4);
 
 G = createplanesurface(G,[1 3 4],1);
 

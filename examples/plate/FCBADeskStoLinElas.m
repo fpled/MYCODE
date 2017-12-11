@@ -124,27 +124,18 @@ if solveProblem
     r_masse = 100e-3;
     C_masse = CIRCLE(0.0,y3_12+b3/2,z3,r_masse);
     x_masse = double(getcoord(getcenter(C_masse)));
-    %
-    L1_a = LIGNE([x5a_23,y5a,z5a_12],[x5a_23,y5a,z5a_34]);
-    L1_b = LIGNE([x5b_23,y5b,z5b_12],[x5b_23,y5b,z5b_34]);
-    S1 = gmshFCBAdesk12(Q1,L1_a,L1_b,cl_12,cl_5,cl_5,...
-        fullfile(pathname,['gmsh_desk_1_' elemtype '_cl_' num2str(cl_12)]),3);
-    S1 = convertelem(S1,elemtype);
-    %
-    L2_a = LIGNE([x5a_14,y5a,z5a_12],[x5a_14,y5a,z5a_34]);
-    L2_b = LIGNE([x5b_14,y5b,z5b_12],[x5b_14,y5b,z5b_34]);
-    S2 = gmshFCBAdesk12(Q2,L2_a,L2_b,cl_12,cl_5,cl_5,...
-        fullfile(pathname,['gmsh_desk_2_' elemtype '_cl_' num2str(cl_12)]),3);
-    S2 = convertelem(S2,elemtype);
-    %
-    L3_1 = LIGNE([x1,y1_23,z1_34],[x1,y1_14,z1_34]);
-    L3_2 = LIGNE([x2,y2_23,z2_34],[x2,y2_14,z2_34]);
     if pointwiseLoading
         PbQ3 = {x_hori{4},x_fati{3},x_fati{1},x_hori{1},...
                 x_fati{4},x_hori{3},x_hori{2},x_fati{2}};
-        S3 = gmshFCBAdesk3simplified(Q3,C_masse,L3_1,L3_2,PbQ3,x_stab,x_masse,...
-            cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-            fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3);
+        if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
+            S = gmshFCBAdesksimplified(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
+                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3);
+        else
+            S = gmshFCBAdesksimplified(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
+                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3,'recombine');
+        end
     else
         L_hori{1} = LIGNE(x_hori{1}+[0,-r_load,0],x_hori{1}+[0,r_load,0]);
         L_hori{2} = LIGNE(x_hori{2}+[0,r_load,0],x_hori{2}+[0,-r_load,0]);
@@ -154,22 +145,21 @@ if solveProblem
         L_fati{2} = LIGNE(x_fati{2}+[0,r_load,0],x_fati{2}+[0,-r_load,0]);
         L_fati{3} = LIGNE(x_fati{3}+[-r_load,0,0],x_fati{3}+[r_load,0,0]);
         L_fati{4} = LIGNE(x_fati{4}+[r_load,0,0],x_fati{4}+[-r_load,0,0]);
-        LbQ3 = {L_hori{4},L_fati{3},L_fati{1},L_hori{1},L_fati{4},L_hori{3},L_hori{2},L_fati{2}};
+        LbQ3 = {L_hori{4},L_fati{3},L_fati{1},L_hori{1},...
+                L_fati{4},L_hori{3},L_hori{2},L_fati{2}};
         C_vert = CIRCLE(x_vert(1),x_vert(2),x_vert(3),r_load);
         C_stab = CIRCLE(x_stab(1),x_stab(2),x_stab(3),r_load);
-        S3 = gmshFCBAdesk3(Q3,C_masse,L3_1,L3_2,LbQ3,C_stab,C_vert,...
-            cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-            fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3);
+        if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
+            S = gmshFCBAdesk(Q1,Q2,Q3,Q5a,Q5b,C_masse,LbQ3,C_stab,C_vert,...
+                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3);
+        else
+            S = gmshFCBAdesk(Q1,Q2,Q3,Q5a,Q5b,C_masse,LbQ3,C_stab,C_vert,...
+                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3,'recombine');
+        end
     end
-    S3 = convertelem(S3,elemtype);
-    %
-    S5a = build_model(Q5a,'cl',cl_5,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_desk_5a_' elemtype '_cl_' num2str(cl_5)]));
-    S5a = convertelem(S5a,elemtype);
-    %
-    S5b = build_model(Q5b,'cl',cl_5,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_desk_5b_' elemtype '_cl_' num2str(cl_5)]));
-    S5b = convertelem(S5b,elemtype);
+    S = convertelem(S,elemtype);
     
     %% Random variables
     % Data
@@ -289,13 +279,7 @@ if solveProblem
             mat = ELAS_SHELL_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'RHO',RHO,'DIM3',h,'k',5/6);
     end
     mat = setnumber(mat,1);
-    S1 = setmaterial(S1,mat);
-    S2 = setmaterial(S2,mat);
-    S3 = setmaterial(S3,mat);
-    S5a = setmaterial(S5a,mat);
-    S5b = setmaterial(S5b,mat);
-    
-    S = union(S1,S2,S3,S5a,S5b);
+    S = setmaterial(S,mat);
     
     %% Neumann boundary conditions
     p_plate = RHO*g*h; % surface load (body load for plates)
@@ -336,14 +320,13 @@ if solveProblem
     end
     
     %% Dirichlet boundary conditions
-    L1_1 = getedge(Q1,1);
-    L2_1 = getedge(Q2,1);
-    L5b_1 = getedge(Q5b,1);
-    [~,numnode1] = intersect(S,L1_1);
-    [~,numnode2] = intersect(S,L2_1);
-    [~,numnode5b] = intersect(S,L5b_1);
-    
     S = final(S);
+    L1 = getedge(Q1,1);
+    L2 = getedge(Q2,1);
+    L5b = getedge(Q5b,1);
+    [~,numnode1] = intersect(S,L1);
+    [~,numnode2] = intersect(S,L2);
+    [~,numnode5b] = intersect(S,L5b);
     switch lower(test)
         case 'stability'
             S = addcl(S,union(numnode1,numnode2));
@@ -666,8 +649,8 @@ if solveProblem
     std_rz_P_fati(4) = eval_sol(S,std_u,P_fati{4},'RZ');
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'S','S1','S2','S3','S5a','S5b',...
-        'elemtype','a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','L_hori_fati',...
+    save(fullfile(pathname,'problem.mat'),'S','elemtype',...
+        'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','L_hori_fati',...
         'f','p','pointwiseLoading');
     save(fullfile(pathname,'solution.mat'),'u','mean_u','std_u','time',...
         'mean_U','mean_Ux','mean_Uy','mean_Uz',...
@@ -693,8 +676,8 @@ if solveProblem
         'std_rx_P_hori','std_ry_P_hori','std_rz_P_hori',...
         'std_rx_P_fati','std_ry_P_fati','std_rz_P_fati');
 else
-    load(fullfile(pathname,'problem.mat'),'S','S1','S2','S3','S5a','S5b',...
-        'elemtype','a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','L_hori_fati',...
+    load(fullfile(pathname,'problem.mat'),'S','elemtype',...
+        'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','L_hori_fati',...
         'f','p','pointwiseLoading');
     load(fullfile(pathname,'solution.mat'),'u','mean_u','std_u','time',...
         'mean_U','mean_Ux','mean_Uy','mean_Uz',...

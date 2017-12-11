@@ -909,7 +909,7 @@ if displaySolution
         evolSensitivityIndicesMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,i,'surface',true,'filename',['sensitivity_indices_multiscale_solution_var_' num2str(i) '_surface'],'pathname',pathname);
     end
     
-    %% Display statistical outputs for stationary solutions
+    %% Display statistical outputs for transient solutions at different instants
     [t,rep] = gettevol(N);
     for k=1:floor(length(rep)/4):length(rep)
         close all

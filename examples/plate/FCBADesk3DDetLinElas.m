@@ -113,17 +113,6 @@ if solveProblem
     r_load = 40e-3;
     C_vert = CIRCLE(x_vert(1),x_vert(2),x_vert(3)+h,r_load);
     C_stab = CIRCLE(x_stab(1),x_stab(2),x_stab(3)+h,r_load);
-    %
-    Q1_a = QUADRANGLE([x5a_23-h/2,y5a+h/2,z5a_12],[x5a_23-h/2,y5a-h/2,z5a_12],[x5a_23-h/2,y5a-h/2,z5a_34],[x5a_23-h/2,y5a+h/2,z5a_34]);
-    Q1_b = QUADRANGLE([x5b_23-h/2,y5b+h/2,z5b_12],[x5b_23-h/2,y5b-h/2,z5b_12],[x5b_23-h/2,y5b-h/2,z5b_34],[x5b_23-h/2,y5b+h/2,z5b_34]);
-    S1 = gmshFCBAdesk3D1(D1,Q1_a,Q1_b,cl_12,cl_5,cl_5,...
-        fullfile(pathname,['gmsh_desk_1_' elemtype '_cl_' num2str(cl_12)]),3);
-    %
-    Q2_a = QUADRANGLE([x5a_14+h/2,y5a-h/2,z5a_12],[x5a_14+h/2,y5a+h/2,z5a_12],[x5a_14+h/2,y5a+h/2,z5a_34],[x5a_14+h/2,y5a-h/2,z5a_34]);
-    Q2_b = QUADRANGLE([x5b_14+h/2,y5b-h/2,z5b_12],[x5b_14+h/2,y5b+h/2,z5b_12],[x5b_14+h/2,y5b+h/2,z5b_34],[x5b_14+h/2,y5b-h/2,z5b_34]);
-    S2 = gmshFCBAdesk3D2(D2,Q2_a,Q2_b,cl_12,cl_5,cl_5,...
-        fullfile(pathname,['gmsh_desk_2_' elemtype '_cl_' num2str(cl_12)]),3);
-    %
     LbD3 = {LIGNE(x_hori{4}+[-r_load,0,-h/2],x_hori{4}+[-r_load,0,h/2]),...
         LIGNE(x_hori{4}+[r_load,0,-h/2],x_hori{4}+[r_load,0,h/2]),...
         LIGNE(x_fati{3}+[-r_load,0,-h/2],x_fati{3}+[-r_load,0,h/2]),...
@@ -140,18 +129,16 @@ if solveProblem
         LIGNE(x_hori{2}+[0,-r_load,-h/2],x_hori{2}+[0,-r_load,h/2]),...
         LIGNE(x_fati{2}+[0,r_load,-h/2],x_fati{2}+[0,r_load,h/2]),...
         LIGNE(x_fati{2}+[0,-r_load,-h/2],x_fati{2}+[0,-r_load,h/2])};
-    Q3_1 = QUADRANGLE([x1-h/2,y1_14,z1_34-h/2],[x1+h/2,y1_14,z1_34-h/2],[x1+h/2,y1_23,z1_34-h/2],[x1-h/2,y1_23,z1_34-h/2]);
-    Q3_2 = QUADRANGLE([x2-h/2,y2_14,z2_34-h/2],[x2+h/2,y2_14,z2_34-h/2],[x2+h/2,y2_23,z2_34-h/2],[x2-h/2,y2_23,z2_34-h/2]);
-    CiD3eI = C_stab;
-    CiI = C_vert;
-    S3 = gmshFCBAdesk3D3(D3,C_masse,Q3_1,Q3_2,LbD3,CiD3eI,CiI,cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-        fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3);
-    %
-    S5a = build_model(D5a,'cl',cl_5,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_desk_5a_' elemtype '_cl_' num2str(cl_5)]));
-    %
-    S5b = build_model(D5b,'cl',cl_5,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_desk_5b_' elemtype '_cl_' num2str(cl_5)]));
+    if ~strcmp(elemtype,'CUB8')
+        S = gmshFCBAdesk3D(D1,D2,D3,D5a,D5b,C_masse,LbD3,C_stab,C_vert,...
+            cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
+            fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3);
+    else
+        S = gmshFCBAdesk3D(D1,D2,D3,D5a,D5b,C_masse,LbD3,C_stab,C_vert,...
+            cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
+            fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3,'recombine');
+    end
+    S = convertelem(S,elemtype);
     
     %% Materials
     % Gravitational acceleration
@@ -205,13 +192,7 @@ if solveProblem
             error('Wrong material symmetry !')
     end
     mat = setnumber(mat,1);
-    S1 = setmaterial(S1,mat);
-    S2 = setmaterial(S2,mat);
-    S3 = setmaterial(S3,mat);
-    S5a = setmaterial(S5a,mat);
-    S5b = setmaterial(S5b,mat);
-    
-    S = union(S1,S2,S3,S5a,S5b);
+    S = setmaterial(S,mat);
     
     %% Neumann boundary conditions
     p_plate = RHO*g; % body load
@@ -240,14 +221,13 @@ if solveProblem
     end
     
     %% Dirichlet boundary conditions
-    S1_5 = getfacet(S1,5);
-    S2_5 = getfacet(S2,5);
-    S5b_1 = getfacet(S5b,1);
-    [~,numnode1] = intersect(S,S1_5);
-    [~,numnode2] = intersect(S,S2_5);
-    [~,numnode5b] = intersect(S,S5b_1);
-    
     S = final(S);
+    S1 = getfacet(S,17);
+    S2 = getfacet(S,23);
+    S5b = getfacet(S,5);
+    [~,numnode1] = intersect(S,S1);
+    [~,numnode2] = intersect(S,S2);
+    [~,numnode5b] = intersect(S,S5b);
     switch lower(test)
         case 'stability'
             S = addcl(S,union(numnode1,numnode2));
@@ -274,43 +254,43 @@ if solveProblem
     
     switch lower(test)
         case 'stability'
-            S3_26 = getfacet(S3,26);
-            f = surfload(S,S3_26,'FZ',-p);
+            S3 = getfacet(S,48);
+            f = surfload(S,S3,'FZ',-p);
         case {'statichori1','statichori2','statichori3','statichori4'}
             if strcmpi(test,'statichori1')
-                S3_9 = getfacet(S3,9);
-                f = surfload(S,S3_9,{'FX','FZ'},-p*[cosd(slope);sind(slope)]);
+                S3 = getfacet(S,33);
+                f = surfload(S,S3,{'FX','FZ'},-p*[cosd(slope);sind(slope)]);
             elseif strcmpi(test,'statichori2')
-                S3_17 = getfacet(S3,17);
-                f = surfload(S,S3_17,{'FX','FZ'},p*[cosd(slope);-sind(slope)]);
+                S3 = getfacet(S,41);
+                f = surfload(S,S3,{'FX','FZ'},p*[cosd(slope);-sind(slope)]);
             elseif strcmpi(test,'statichori3')
-                S3_14 = getfacet(S3,14);
-                f = surfload(S,S3_14,{'FY','FZ'},-p*[cosd(slope);sind(slope)]);
+                S3 = getfacet(S,38);
+                f = surfload(S,S3,{'FY','FZ'},-p*[cosd(slope);sind(slope)]);
             elseif strcmpi(test,'statichori4')
-                S3_2 = getfacet(S3,2);
-                f = surfload(S,S3_2,{'FY','FZ'},p*[cosd(slope);-sind(slope)]);
+                S3 = getfacet(S,26);
+                f = surfload(S,S3,{'FY','FZ'},p*[cosd(slope);-sind(slope)]);
             end
-            f = f + bodyload(keepgroupelem(S,4),[],'FZ',-p_masse);
+            S3_masse = union(getfacet(S,46),getfacet(S,47));
+            f = f + surfload(S,S3_masse,'FZ',-p_masse);
         case 'staticvert'
-            S3_24 = getfacet(S3,24);
-            f = surfload(S,S3_24,'FZ',-p);
+            S3 = getfacet(S,46);
+            f = surfload(S,S3,'FZ',-p);
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
             if strcmpi(test,'fatigue1')
-                S3_7 = getfacet(S3,7);
-                f = surfload(S,S3_7,'FX',-p);
+                S3 = getfacet(S,31);
+                f = surfload(S,S3,'FX',-p);
             elseif strcmpi(test,'fatigue2')
-                S3_19 = getfacet(S3,19);
-                f = surfload(S,S3_19,'FX',p);
+                S3 = getfacet(S,43);
+                f = surfload(S,S3,'FX',p);
             elseif strcmpi(test,'fatigue3')
-                S3_4 = getfacet(S3,4);
-                f = surfload(S,S3_4,'FY',p);
+                S3 = getfacet(S,28);
+                f = surfload(S,S3,'FY',p);
             elseif strcmpi(test,'fatigue4')
-                S3_12 = getfacet(S3,12);
-                f = surfload(S,S3_12,'FY',-p);
+                S3 = getfacet(S3,36);
+                f = surfload(S,S3,'FY',-p);
             end
-            S3_24 = getfacet(S3,24);
-            S3_25 = getfacet(S3,25);
-            f = f + surfload(S,union(S3_24,S3_25),'FZ',-p_masse);
+            S3_masse = union(getfacet(S,46),getfacet(S,47));
+            f = f + surfload(S,S3_masse,'FZ',-p_masse);
         case {'impact','drop'}
             error('Not implemented')
     end
@@ -361,8 +341,8 @@ if solveProblem
     uz_P_fati(4) = eval_sol(S,u,P_fati{4},'UZ');
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'S','S1','S2','S3','S5a','S5b',...
-        'elemtype','a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','Sec_hori_fati',...
+    save(fullfile(pathname,'problem.mat'),'S','elemtype',...
+        'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','Sec_hori_fati',...
         'f','p');
     save(fullfile(pathname,'solution.mat'),'u','time',...
         'U','Ux','Uy','Uz');
@@ -373,8 +353,8 @@ if solveProblem
         'ux_P_hori','uy_P_hori','uz_P_hori',...        
         'ux_P_fati','uy_P_fati','uz_P_fati');
 else
-    load(fullfile(pathname,'problem.mat'),'S','S1','S2','S3','S5a','S5b',...
-        'elemtype','a12','b12','a3','b3','a5','b5','h','f','p','Sec_stab_vert','Sec_hori_fati');
+    load(fullfile(pathname,'problem.mat'),'S','elemtype',...
+        'a12','b12','a3','b3','a5','b5','h','f','p','Sec_stab_vert','Sec_hori_fati');
     load(fullfile(pathname,'solution.mat'),'u','time',...
         'U','Ux','Uy','Uz');
     load(fullfile(pathname,'test_solution.mat'),'P_vert','P_stab',...
