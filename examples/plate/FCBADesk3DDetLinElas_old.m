@@ -22,8 +22,8 @@ displaySolution = true;
 % tests = {'Impact'}; % vertical impact test
 % tests = {'Drop'}; % drop test
 tests = {'Stability','StaticVert',...
-    'StaticHori1','StaticHori2',...
-    'Fatigue1','Fatigue2'};
+    'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
+    'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';

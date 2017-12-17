@@ -25,8 +25,8 @@ displayCv = true;
 % tests = {'Impact'}; % vertical impact test
 % tests = {'Drop'}; % drop test
 tests = {'Stability','StaticVert',...
-    'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
-    'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
+    'StaticHori1','StaticHori2',...
+    'Fatigue1','Fatigue2'};
 
 pointwiseLoading = 1; % pointwise loading
 
