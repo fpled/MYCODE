@@ -9,27 +9,32 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-test = 'Stability1'; % stability test under vertical load 1
-% test = 'Stability2'; % stability test under vertical load 2
-% test = 'Stability3'; % stability test under vertical load 3
-% test = 'Stability4'; % stability test under vertical load 4
-% test = 'StaticHori1'; % test under static horizontal load 1
-% test = 'StaticHori2'; % test under static horizontal load 2
-% test = 'StaticHori3'; % test under static horizontal load 3
-% test = 'StaticHori4'; % test under static horizontal load 4
-% test = 'StaticVert'; % test under static vertical load
-% test = 'Fatigue1'; % fatigue test under horizontal load 1
-% test = 'Fatigue2'; % fatigue test under horizontal load 2
-% test = 'Fatigue3'; % fatigue test under horizontal load 3
-% test = 'Fatigue4'; % fatigue test under horizontal load 4
-% test = 'Impact'; % vertical impact test
-% test = 'Drop'; % drop test
+% tests = {'Stability1'}; % stability test under vertical load 1
+% tests = {'Stability2'}; % stability test under vertical load 2
+% tests = {'Stability3'}; % stability test under vertical load 3
+% tests = {'Stability4'}; % stability test under vertical load 4
+% tests = {'StaticHori1'}; % test under static horizontal load 1
+% tests = {'StaticHori2'}; % test under static horizontal load 2
+% tests = {'StaticHori3'}; % test under static horizontal load 3 (lifting)
+% tests = {'StaticHori4'}; % test under static horizontal load 4 (lifting)
+% tests = {'StaticVert'}; % test under static vertical load
+% tests = {'Fatigue1'}; % fatigue test under horizontal load 1
+% tests = {'Fatigue2'}; % fatigue test under horizontal load 2
+% tests = {'Fatigue3'}; % fatigue test under horizontal load 3 (lifting)
+% tests = {'Fatigue4'}; % fatigue test under horizontal load 4 (lifting)
+% tests = {'Impact'}; % vertical impact test
+% tests = {'Drop'}; % drop test
+tests = {'Stability1','Stability2','Stability3','Stability4','StaticVert',...
+    'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
+    'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
 
 belt = 1; % belt modelisation
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
+for it=1:length(tests)
+    test = tests{it};
 filename = ['FCBATableCircDetLinElas' test];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','plate',filename);
@@ -272,7 +277,7 @@ if solveProblem
                 error('Pointwise load must be applied to a node of the mesh')
             end
         case 'stability4'
-            f = nodalload(S,P_load_stab{4},'FZ',-p*cosd(slope));
+            f = nodalload(S,P_load_stab{4},'FZ',-p);
             if isempty(ispointin(P_load_stab{4},POINT(S.node)))
                 error('Pointwise load must be applied to a node of the mesh')
             end
@@ -353,19 +358,19 @@ if solveProblem
     
     u = unfreevector(S,u);
     
-    U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
-    Ux = u(findddl(S,'UX'),:); % Ux = double(squeeze(eval_sol(S,u,S.node,'UX')));
-    Uy = u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,u,S.node,'UY')));
-    Uz = u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,u,S.node,'UZ')));
-    Ur = funr(Ux,Uy,t);
-    Ut = funt(Ux,Uy,t);
+    % U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+    % Ux = u(findddl(S,'UX'),:);
+    % Uy = u(findddl(S,'UY'),:);
+    % Uz = u(findddl(S,'UZ'),:);
+    % Ur = funr(Ux,Uy,t);
+    % Ut = funt(Ux,Uy,t);
     
-    R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
-    Rx = u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,u,S.node,'RX')));
-    Ry = u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,u,S.node,'RY')));
-    Rz = u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,u,S.node,'RZ')));
-    Rr = funr(Rx,Ry,t);
-    Rt = funt(Rx,Ry,t);
+    % R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
+    % Rx = u(findddl(S,'RX'),:);
+    % Ry = u(findddl(S,'RY'),:);
+    % Rz = u(findddl(S,'RZ'),:);
+    % Rr = funr(Rx,Ry,t);
+    % Rt = funt(Rx,Ry,t);
     
     %% Test solution
     P = getcenter(C);
@@ -386,17 +391,13 @@ if solveProblem
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S','S_plate','elemtype','C','L_beam','L_belt','r','h','f');
-    save(fullfile(pathname,'solution.mat'),'u','time',...
-        'U','Ux','Uy','Uz','Ur','Ut',...
-        'R','Rx','Ry','Rz','Rr','Rt');
+    save(fullfile(pathname,'solution.mat'),'u','time');
     save(fullfile(pathname,'test_solution.mat'),'P',...
         'ux','uy','uz','ur','ut',...
         'rx','ry','rz','rr','rt');
 else
     load(fullfile(pathname,'problem.mat'),'S','S_plate','elemtype','C','L_beam','L_belt','r','h','f');
-    load(fullfile(pathname,'solution.mat'),'u','time',...
-        'U','Ux','Uy','Uz','Ur','Ut',...
-        'R','Rx','Ry','Rz','Rr','Rt');
+    load(fullfile(pathname,'solution.mat'),'u','time');
     load(fullfile(pathname,'test_solution.mat'),'P',...
         'ux','uy','uz','ur','ut',...
         'rx','ry','rz','rr','rt');
@@ -414,24 +415,24 @@ fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
 disp('Displacement u at point'); disp(P);
-fprintf('ux    = %g\n',ux);
-fprintf('uy    = %g\n',uy);
-fprintf('uz    = %g\n',uz);
+fprintf('ux     = %g\n',ux);
+fprintf('uy     = %g\n',uy);
+fprintf('uz     = %g\n',uz);
 if strcmpi(test,'staticvert')
     uz_exp = -2.35e-3;
     err_uz = norm(uz-uz_exp)/norm(uz_exp);
-    fprintf('uz_exp= %g, error = %.3e\n',uz_exp,err_uz);
+    fprintf('uz_exp = %g, error = %.3e\n',uz_exp,err_uz);
 end
-fprintf('ur    = %g\n',ur);
-fprintf('ut    = %g\n',ut);
+fprintf('ur     = %g\n',ur);
+fprintf('ut     = %g\n',ut);
 fprintf('\n');
 
 disp('Rotation r at point'); disp(P);
-fprintf('rx    = %g\n',rx);
-fprintf('ry    = %g\n',ry);
-fprintf('rz    = %g\n',rz);
-fprintf('rr    = %g\n',rr);
-fprintf('rt    = %g\n',rt);
+fprintf('rx     = %g\n',rx);
+fprintf('ry     = %g\n',ry);
+fprintf('rz     = %g\n',rz);
+fprintf('rr     = %g\n',rr);
+fprintf('rt     = %g\n',rt);
 fprintf('\n');
 
 %% Display
@@ -448,7 +449,8 @@ if displaySolution
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 5;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
-    % legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
+    hP = plot(P,'g+');
+    % legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
@@ -471,30 +473,16 @@ if displaySolution
     % options = {};
     
     switch lower(test)
-        case 'stability'
+        case {'stability1','stability2','stability3','stability4',...
+                'staticvert','impact','drop'}
             plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'Uz',formats,renderer);
-        case {'statichori1','statichori2'}
-            plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
-            mysaveas(pathname,'Ux',formats,renderer);
-        case {'statichori3','statichori4'}
+        case {'statichori1','statichori2','fatigue1','fatigue2'}
             plotSolution(S,u,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'Uy',formats,renderer);
-        case 'staticvert'
-            plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
-            mysaveas(pathname,'Uz',formats,renderer);
-        case {'fatigue1','fatigue2'}
-            plotSolution(S,u,'displ',2,'ampl',ampl,options{:});
-            mysaveas(pathname,'Uy',formats,renderer);
-        case {'fatigue3','fatigue4'}
+        case {'statichori3','statichori4','fatigue3','fatigue4'}
             plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'Ux',formats,renderer);
-        case 'impact'
-            plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
-            mysaveas(pathname,'Uz',formats,renderer);
-        case 'drop'
-            plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
-            mysaveas(pathname,'Uz',formats,renderer);
     end
     
     % plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
@@ -502,4 +490,6 @@ if displaySolution
     %
     % plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
     % mysaveas(pathname,'Ry',formats,renderer);
+end
+
 end

@@ -155,19 +155,19 @@ if solveProblem
     
     u = unfreevector(S,u);
     
-    U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
-    Ux = u(findddl(S,'UX'),:); % Ux = double(squeeze(eval_sol(S,u,S.node,'UX')));
-    Uy = u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,u,S.node,'UY')));
-    Uz = u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,u,S.node,'UZ')));
-    Ur = funr(Ux,Uy,t);
-    Ut = funt(Ux,Uy,t);
+    % U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+    % Ux = u(findddl(S,'UX'),:);
+    % Uy = u(findddl(S,'UY'),:);
+    % Uz = u(findddl(S,'UZ'),:);
+    % Ur = funr(Ux,Uy,t);
+    % Ut = funt(Ux,Uy,t);
     
-    R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
-    Rx = u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,u,S.node,'RX')));
-    Ry = u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,u,S.node,'RY')));
-    Rz = u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,u,S.node,'RZ')));
-    Rr = funr(Rx,Ry,t);
-    Rt = funt(Rx,Ry,t);
+    % R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
+    % Rx = u(findddl(S,'RX'),:);
+    % Ry = u(findddl(S,'RY'),:);
+    % Rz = u(findddl(S,'RZ'),:);
+    % Rr = funr(Rx,Ry,t);
+    % Rt = funt(Rx,Ry,t);
     
     %% Test solution
     P = getcenter(C);
@@ -188,17 +188,13 @@ if solveProblem
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S','S_plate','C','L_beam','r','h','f');
-    save(fullfile(pathname,'solution.mat'),'u','time',...
-        'U','Ux','Uy','Uz','Ur','Ut',...
-        'R','Rx','Ry','Rz','Rr','Rt');
+    save(fullfile(pathname,'solution.mat'),'u','time');
     save(fullfile(pathname,'test_solution.mat'),'P',...
         'ux','uy','uz','ur','ut',...
         'rx','ry','rz','rr','rt');
 else
     load(fullfile(pathname,'problem.mat'),'S','S_plate','C','L_beam','r','h','f');
-    load(fullfile(pathname,'solution.mat'),'u','time',...
-        'U','Ux','Uy','Uz','Ur','Ut',...
-        'R','Rx','Ry','Rz','Rr','Rt');
+    load(fullfile(pathname,'solution.mat'),'u','time');
     load(fullfile(pathname,'test_solution.mat'),'P',...
         'ux','uy','uz','ur','ut',...
         'rx','ry','rz','rr','rt');

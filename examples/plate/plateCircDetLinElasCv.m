@@ -175,18 +175,18 @@ if solveProblem
     
     u = unfreevector(S,u);
     
-    U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
-    Ux = u(findddl(S,'UX'),:); % Ux = double(squeeze(eval_sol(S,u,S.node,'UX')));
-    Uy = u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,u,S.node,'UY')));
-    Uz = u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,u,S.node,'UZ')));
-    Ur = funr(Ux,Uy,t);
-    Ut = funt(Ux,Uy,t);
+    % U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+    % Ux = u(findddl(S,'UX'),:);
+    % Uy = u(findddl(S,'UY'),:);
+    Uz = u(findddl(S,'UZ'),:);
+    % Ur = funr(Ux,Uy,t);
+    % Ut = funt(Ux,Uy,t);
     
-    R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
-    Rx = u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,u,S.node,'RX')));
-    Ry = u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,u,S.node,'RY')));
-    Rz = u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,u,S.node,'RZ')));
-    Rr = funr(Rx,Ry,t);
+    % R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
+    Rx = u(findddl(S,'RX'),:);
+    Ry = u(findddl(S,'RY'),:);
+    % Rz = u(findddl(S,'RZ'),:);
+    % Rr = funr(Rx,Ry,t);
     Rt = funt(Rx,Ry,t);
     
     %% Reference solution
@@ -297,8 +297,7 @@ if solveProblem
     %% Save variables
     save(fullfile(pathname,['problem_' num2str(i) '.mat']),'S','C','r','h','f');
     save(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','time_i',...
-        'U','Ux','Uy','Uz','Ur','Ut',...
-        'R','Rx','Ry','Rz','Rr','Rt');
+        'Uz','Rt','Rx','Ry');
     save(fullfile(pathname,['reference_solution_' num2str(i) '.mat']),...
         'Uz_ex','Rt_ex','Rx_ex','Ry_ex',...
         'err_Uz_i','err_Rt_i','err_Rx_i','err_Ry_i');
@@ -310,8 +309,7 @@ if solveProblem
 else
     load(fullfile(pathname,['problem_' num2str(i) '.mat']),'S','C','r','h','f');
     load(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','time_i',...
-        'U','Ux','Uy','Uz','Ur','Ut',...
-        'R','Rx','Ry','Rz','Rr','Rt');
+        'Uz','Rt','Rx','Ry');
     load(fullfile(pathname,['reference_solution_' num2str(i) '.mat']),...
         'Uz_ex','Rt_ex','Rx_ex','Ry_ex',...
         'err_Uz_i','err_Rt_i','err_Rx_i','err_Ry_i');

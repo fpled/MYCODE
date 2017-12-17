@@ -159,15 +159,15 @@ if solveProblem
     
     u = unfreevector(S,u);
     
-    U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
-    Ux = u(findddl(S,'UX'),:); % Ux = double(squeeze(eval_sol(S,u,S.node,'UX')));
-    Uy = u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,u,S.node,'UY')));
-    Uz = u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,u,S.node,'UZ')));
+    % U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+    % Ux = u(findddl(S,'UX'),:);
+    % Uy = u(findddl(S,'UY'),:);
+    Uz = u(findddl(S,'UZ'),:);
     
-    R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
-    Rx = u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,u,S.node,'RX')));
-    Ry = u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,u,S.node,'RY')));
-    Rz = u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,u,S.node,'RZ')));
+    % R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
+    Rx = u(findddl(S,'RX'),:);
+    Ry = u(findddl(S,'RY'),:);
+    % Rz = u(findddl(S,'RZ'),:);
     
     %% Reference solution
     switch lower(boundary)
@@ -268,8 +268,7 @@ if solveProblem
     %% Save variables
     save(fullfile(pathname,['problem_' num2str(i) '.mat']),'S','Q','a','b','h','f','-v7.3');
     save(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','time_i',...
-        'U','Ux','Uy','Uz',...
-        'R','Rx','Ry','Rz');
+        'Uz','Rx','Ry');
     save(fullfile(pathname,['reference_solution_' num2str(i) '.mat']),...
         'Uz_ex','Rx_ex','Ry_ex',...
         'err_Uz_i','err_Rx_i','err_Ry_i');
@@ -281,8 +280,7 @@ if solveProblem
 else
     load(fullfile(pathname,['problem_' num2str(i) '.mat']),'S','Q','a','b','h','f');
     load(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','time_i',...
-        'U','Ux','Uy','Uz',...
-        'R','Rx','Ry','Rz');
+        'Uz','Rx','Ry');
     load(fullfile(pathname,['reference_solution_' num2str(i) '.mat']),...
         'Uz_ex','Rx_ex','Ry_ex',...
         'err_Uz_i','err_Rx_i','err_Ry_i');

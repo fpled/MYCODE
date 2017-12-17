@@ -164,15 +164,15 @@ if solveProblem
     
     u = unfreevector(S,u);
     
-    U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
-    Ux = u(findddl(S,'UX'),:); % Ux = double(squeeze(eval_sol(S,u,S.node,'UX')));
-    Uy = u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,u,S.node,'UY')));
-    Uz = u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,u,S.node,'UZ')));
+    % U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+    % Ux = u(findddl(S,'UX'),:);
+    % Uy = u(findddl(S,'UY'),:);
+    % Uz = u(findddl(S,'UZ'),:);
     
-    R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
-    Rx = u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,u,S.node,'RX')));
-    Ry = u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,u,S.node,'RY')));
-    Rz = u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,u,S.node,'RZ')));
+    % R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
+    % Rx = u(findddl(S,'RX'),:);
+    % Ry = u(findddl(S,'RY'),:);
+    % Rz = u(findddl(S,'RZ'),:);
     
     %% Test solution
     P = getcenter(Q);
@@ -187,17 +187,13 @@ if solveProblem
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S','S_plate','Q','L_beam','a','b','h','f');
-    save(fullfile(pathname,'solution.mat'),'u','time',...
-        'U','Ux','Uy','Uz',...
-        'R','Rx','Ry','Rz');
+    save(fullfile(pathname,'solution.mat'),'u','time');
     save(fullfile(pathname,'test_solution.mat'),'P',...
         'ux','uy','uz',...
         'rx','ry','rz');
 else
     load(fullfile(pathname,'problem.mat'),'S','S_plate','Q','L_beam','a','b','h','f');
-    load(fullfile(pathname,'solution.mat'),'u','time',...
-        'U','Ux','Uy','Uz',...
-        'R','Rx','Ry','Rz');
+    load(fullfile(pathname,'solution.mat'),'u');
     load(fullfile(pathname,'test_solution.mat'),'P',...
         'ux','uy','uz',...
         'rx','ry','rz');

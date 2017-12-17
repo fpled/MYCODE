@@ -12,28 +12,33 @@ solveProblem = true;
 displaySolution = true;
 displayCv = true;
 
-% test = 'Stability'; % stability test under vertical load
-% test = 'StaticHori1'; % test under static horizontal load 1
-% test = 'StaticHori2'; % test under static horizontal load 2
-% test = 'StaticHori3'; % test under static horizontal load 3 (lifting)
-% test = 'StaticHori4'; % test under static horizontal load 4 (lifting)
-test = 'StaticVert'; % test under static vertical load
-% test = 'Fatigue1'; % fatigue test under horizontal load 1 
-% test = 'Fatigue2'; % fatigue test under horizontal load 2 
-% test = 'Fatigue3'; % fatigue test under horizontal load 3 (lifting) 
-% test = 'Fatigue4'; % fatigue test under horizontal load 4 (lifting)
-% test = 'Impact'; % vertical impact test
-% test = 'Drop'; % drop test
+% tests = {'Stability'}; % stability test under vertical load
+% tests = {'StaticHori1'}; % test under static horizontal load 1
+% tests = {'StaticHori2'}; % test under static horizontal load 2
+% tests = {'StaticHori3'}; % test under static horizontal load 3 (lifting)
+% tests = {'StaticHori4'}; % test under static horizontal load 4 (lifting)
+% tests = {'StaticVert'}; % test under static vertical load
+% tests = {'Fatigue1'}; % fatigue test under horizontal load 1
+% tests = {'Fatigue2'}; % fatigue test under horizontal load 2
+% tests = {'Fatigue3'}; % fatigue test under horizontal load 3 (lifting)
+% tests = {'Fatigue4'}; % fatigue test under horizontal load 4 (lifting)
+% tests = {'Impact'}; % vertical impact test
+% tests = {'Drop'}; % drop test
+tests = {'Stability','StaticVert',...
+    'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
+    'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
 
 pointwiseLoading = 1; % pointwise loading
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
+for it=1:length(tests)
+    test = tests{it};
 if pointwiseLoading
-    filename = ['FCBADeskStoLinElasIsot' test 'PointwiseLoading'];
+    filename = ['FCBADeskStoLinElas' test 'PointwiseLoading'];
 else
-    filename = ['FCBADeskStoLinElasIsot' test];
+    filename = ['FCBADeskStoLinElas' test];
 end
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','plate',filename);
@@ -102,10 +107,10 @@ if solveProblem
     % Points
     L3 = getedges(Q3);
     x_hori = {double(getcenter(L3{2})),double(getcenter(L3{4})),...
-                   double(getcenter(L3{3})),double(getcenter(L3{1}))};
+              double(getcenter(L3{3})),double(getcenter(L3{1}))};
     x_vert = double(getcenter(Q3));
     x_fati = {[x3_23,y3_12+50e-3,z3],[x3_14,y3_12+50e-3,z3],...
-                   [x3_23-50e-3,y3_12,z3],[x3_23-50e-3,y3_34,z3]};
+              [x3_23-50e-3,y3_12,z3],[x3_23-50e-3,y3_34,z3]};
     x_stab = double(getcenter(L3{1}))+[0.0,50e-3,0.0];
     x_meas = [x_hori,x_vert,x_fati,x_stab];
     P_hori = cellfun(@(x) POINT(x),x_hori,'UniformOutput',false);
@@ -277,6 +282,8 @@ if solveProblem
             NUT = 0.25;
             % Material
             mat = ELAS_SHELL_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'RHO',RHO,'DIM3',h,'k',5/6);
+        otherwise
+            error('Wrong material symmetry !')
     end
     mat = setnumber(mat,1);
     S = setmaterial(S,mat);
@@ -357,7 +364,7 @@ if solveProblem
                     error('Pointwise load must be applied to a node of the mesh')
                 end
             else
-                f = bodyload(S,C_stab,'FZ',-p);
+                f = bodyload(keepgroupelem(S,6),[],'FZ',-p);
             end
         case {'statichori1','statichori2','statichori3','statichori4'}
             if strcmpi(test,'statichori1')
@@ -409,7 +416,7 @@ if solveProblem
                     error('Pointwise load must be applied to a node of the mesh')
                 end
             else
-                f = bodyload(S,C_vert,'FZ',-p);
+                f = bodyload(keepgroupelem(S,4),[],'FZ',-p);
             end
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
             if strcmpi(test,'fatigue1')
@@ -503,205 +510,111 @@ if solveProblem
     std_u = std(u,0,2);
     std_u = unfreevector(S,std_u);
     
-    mean_U = mean_u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
-    mean_Ux = mean_u(findddl(S,'UX'),:); % Ux = double(squeeze(eval_sol(S,mean_u,S.node,'UX')),:);
-    mean_Uy = mean_u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,mean_u,S.node,'UY')),:);
-    mean_Uz = mean_u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,mean_u,S.node,'UZ')),:);
+    probs = [0.025 0.975];
+    ci_u = quantile(u,probs,2);
+    ci_u = unfreevector(S,ci_u);
     
-    mean_R = mean_u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
-    mean_Rx = mean_u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,mean_u,S.node,'RX')),:);
-    mean_Ry = mean_u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,mean_u,S.node,'RY')),:);
-    mean_Rz = mean_u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,mean_u,S.node,'RZ')),:);
+    % mean_U = mean_u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+    % mean_Ux = mean_u(findddl(S,'UX'),:);
+    % mean_Uy = mean_u(findddl(S,'UY'),:);
+    % mean_Uz = mean_u(findddl(S,'UZ'),:);
     
-    std_U = std_u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
-    std_Ux = std_u(findddl(S,'UX'),:); % Ux = double(squeeze(eval_sol(S,std_u,S.node,'UX')),:);
-    std_Uy = std_u(findddl(S,'UY'),:); % Uy = double(squeeze(eval_sol(S,std_u,S.node,'UY')),:);
-    std_Uz = std_u(findddl(S,'UZ'),:); % Uz = double(squeeze(eval_sol(S,std_u,S.node,'UZ')),:);
+    % mean_R = mean_u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
+    % mean_Rx = mean_u(findddl(S,'RX'),:);
+    % mean_Ry = mean_u(findddl(S,'RY'),:);
+    % mean_Rz = mean_u(findddl(S,'RZ'),:);
     
-    std_R = std_u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
-    std_Rx = std_u(findddl(S,'RX'),:); % Rx = double(squeeze(eval_sol(S,std_u,S.node,'RX')),:);
-    std_Ry = std_u(findddl(S,'RY'),:); % Ry = double(squeeze(eval_sol(S,std_u,S.node,'RY')),:);
-    std_Rz = std_u(findddl(S,'RZ'),:); % Rz = double(squeeze(eval_sol(S,std_u,S.node,'RZ')),:);
+    % std_U = std_u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+    % std_Ux = std_u(findddl(S,'UX'),:);
+    % std_Uy = std_u(findddl(S,'UY'),:);
+    % std_Uz = std_u(findddl(S,'UZ'),:);
+    
+    % std_R = std_u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
+    % std_Rx = std_u(findddl(S,'RX'),:);
+    % std_Ry = std_u(findddl(S,'RY'),:);
+    % std_Rz = std_u(findddl(S,'RZ'),:);
+    
+    % ci_U = ci_u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+    % ci_Ux = ci_u(findddl(S,'UX'),:);
+    % ci_Uy = ci_u(findddl(S,'UY'),:);
+    % ci_Uz = ci_u(findddl(S,'UZ'),:);
+    
+    % ci_R = ci_u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
+    % ci_Rx = ci_u(findddl(S,'RX'),:);
+    % ci_Ry = ci_u(findddl(S,'RY'),:);
+    % ci_Rz = ci_u(findddl(S,'RZ'),:);
     
     %% Test solution
-    mean_ux_P_vert = eval_sol(S,mean_u,P_vert,'UX');
-    mean_uy_P_vert = eval_sol(S,mean_u,P_vert,'UY');
-    mean_uz_P_vert = eval_sol(S,mean_u,P_vert,'UZ');
-    mean_ux_P_stab = eval_sol(S,mean_u,P_stab,'UX');
-    mean_uy_P_stab = eval_sol(S,mean_u,P_stab,'UY');
-    mean_uz_P_stab = eval_sol(S,mean_u,P_stab,'UZ');
-    mean_ux__P_hori(1) = eval_sol(S,mean_u,P_hori{1},'UX');
-    mean_uy__P_hori(1) = eval_sol(S,mean_u,P_hori{1},'UY');
-    mean_uz__P_hori(1) = eval_sol(S,mean_u,P_hori{1},'UZ');
-    mean_ux_P_hori(2) = eval_sol(S,mean_u,P_hori{2},'UX');
-    mean_uy_P_hori(2) = eval_sol(S,mean_u,P_hori{2},'UY');
-    mean_uz_P_hori(2) = eval_sol(S,mean_u,P_hori{2},'UZ');
-    mean_ux_P_hori(3) = eval_sol(S,mean_u,P_hori{3},'UX');
-    mean_uy_P_hori(3) = eval_sol(S,mean_u,P_hori{3},'UY');
-    mean_uz_P_hori(3) = eval_sol(S,mean_u,P_hori{3},'UZ');
-    mean_ux_P_hori(4) = eval_sol(S,mean_u,P_hori{4},'UX');
-    mean_uy_P_hori(4) = eval_sol(S,mean_u,P_hori{4},'UY');
-    mean_uz_P_hori(4) = eval_sol(S,mean_u,P_hori{4},'UZ');    
-    mean_ux_P_fati(1) = eval_sol(S,mean_u,P_fati{1},'UX');
-    mean_uy_P_fati(1) = eval_sol(S,mean_u,P_fati{1},'UY');
-    mean_uz_P_fati(1) = eval_sol(S,mean_u,P_fati{1},'UZ');
-    mean_ux_P_fati(2) = eval_sol(S,mean_u,P_fati{2},'UX');
-    mean_uy_P_fati(2) = eval_sol(S,mean_u,P_fati{2},'UY');
-    mean_uz_P_fati(2) = eval_sol(S,mean_u,P_fati{2},'UZ');
-    mean_ux_P_fati(3) = eval_sol(S,mean_u,P_fati{3},'UX');
-    mean_uy_P_fati(3) = eval_sol(S,mean_u,P_fati{3},'UY');
-    mean_uz_P_fati(3) = eval_sol(S,mean_u,P_fati{3},'UZ');
-    mean_ux_P_fati(4) = eval_sol(S,mean_u,P_fati{4},'UX');
-    mean_uy_P_fati(4) = eval_sol(S,mean_u,P_fati{4},'UY');
-    mean_uz_P_fati(4) = eval_sol(S,mean_u,P_fati{4},'UZ');
+    switch lower(test)
+        case 'staticvert'
+            P = P_vert;
+        case 'stability'
+            P = P_stab;
+        case 'statichori1'
+            P = P_hori{2};
+        case 'statichori2'
+            P = P_hori{1};
+        case 'statichori3'
+            P = P_hori{4};
+        case 'statichori4'
+            P = P_hori{3};
+        case 'fatigue1'
+            P = P_fati{2};
+        case 'fatigue2'
+            P = P_fati{1};
+        case 'fatigue3'
+            P = P_fati{4};
+        case 'fatigue4'
+            P = P_fati{3};
+    end
+    mean_ux = eval_sol(S,mean_u,P,'UX');
+    mean_uy = eval_sol(S,mean_u,P,'UY');
+    mean_uz = eval_sol(S,mean_u,P,'UZ');
     
-    mean_rx_P_vert = eval_sol(S,mean_u,P_vert,'RX');
-    mean_ry_P_vert = eval_sol(S,mean_u,P_vert,'RY');
-    mean_rz_P_vert = eval_sol(S,mean_u,P_vert,'RZ');
-    mean_rx_P_stab = eval_sol(S,mean_u,P_stab,'RX');
-    mean_ry_P_stab = eval_sol(S,mean_u,P_stab,'RY');
-    mean_rz_P_stab = eval_sol(S,mean_u,P_stab,'RZ');
-    mean_rx__P_hori(1) = eval_sol(S,mean_u,P_hori{1},'RX');
-    mean_ry__P_hori(1) = eval_sol(S,mean_u,P_hori{1},'RY');
-    mean_rz__P_hori(1) = eval_sol(S,mean_u,P_hori{1},'RZ');
-    mean_rx_P_hori(2) = eval_sol(S,mean_u,P_hori{2},'RX');
-    mean_ry_P_hori(2) = eval_sol(S,mean_u,P_hori{2},'RY');
-    mean_rz_P_hori(2) = eval_sol(S,mean_u,P_hori{2},'RZ');
-    mean_rx_P_hori(3) = eval_sol(S,mean_u,P_hori{3},'RX');
-    mean_ry_P_hori(3) = eval_sol(S,mean_u,P_hori{3},'RY');
-    mean_rz_P_hori(3) = eval_sol(S,mean_u,P_hori{3},'RZ');
-    mean_rx_P_hori(4) = eval_sol(S,mean_u,P_hori{4},'RX');
-    mean_ry_P_hori(4) = eval_sol(S,mean_u,P_hori{4},'RY');
-    mean_rz_P_hori(4) = eval_sol(S,mean_u,P_hori{4},'RZ');   
-    mean_rx_P_fati(1) = eval_sol(S,mean_u,P_fati{1},'RX');
-    mean_ry_P_fati(1) = eval_sol(S,mean_u,P_fati{1},'RY');
-    mean_rz_P_fati(1) = eval_sol(S,mean_u,P_fati{1},'RZ');
-    mean_rx_P_fati(2) = eval_sol(S,mean_u,P_fati{2},'RX');
-    mean_ry_P_fati(2) = eval_sol(S,mean_u,P_fati{2},'RY');
-    mean_rz_P_fati(2) = eval_sol(S,mean_u,P_fati{2},'RZ');
-    mean_rx_P_fati(3) = eval_sol(S,mean_u,P_fati{3},'RX');
-    mean_ry_P_fati(3) = eval_sol(S,mean_u,P_fati{3},'RY');
-    mean_rz_P_fati(3) = eval_sol(S,mean_u,P_fati{3},'RZ');
-    mean_rx_P_fati(4) = eval_sol(S,mean_u,P_fati{4},'RX');
-    mean_ry_P_fati(4) = eval_sol(S,mean_u,P_fati{4},'RY');
-    mean_rz_P_fati(4) = eval_sol(S,mean_u,P_fati{4},'RZ');
+    mean_rx = eval_sol(S,mean_u,P,'RX');
+    mean_ry = eval_sol(S,mean_u,P,'RY');
+    mean_rz = eval_sol(S,mean_u,P,'RZ');
     
-    std_ux_P_vert = eval_sol(S,std_u,P_vert,'UX');
-    std_uy_P_vert = eval_sol(S,std_u,P_vert,'UY');
-    std_uz_P_vert = eval_sol(S,std_u,P_vert,'UZ');
-    std_ux_P_stab = eval_sol(S,std_u,P_stab,'UX');
-    std_uy_P_stab = eval_sol(S,std_u,P_stab,'UY');
-    std_uz_P_stab = eval_sol(S,std_u,P_stab,'UZ');
-    std_ux__P_hori(1) = eval_sol(S,std_u,P_hori{1},'UX');
-    std_uy__P_hori(1) = eval_sol(S,std_u,P_hori{1},'UY');
-    std_uz__P_hori(1) = eval_sol(S,std_u,P_hori{1},'UZ');
-    std_ux_P_hori(2) = eval_sol(S,std_u,P_hori{2},'UX');
-    std_uy_P_hori(2) = eval_sol(S,std_u,P_hori{2},'UY');
-    std_uz_P_hori(2) = eval_sol(S,std_u,P_hori{2},'UZ');
-    std_ux_P_hori(3) = eval_sol(S,std_u,P_hori{3},'UX');
-    std_uy_P_hori(3) = eval_sol(S,std_u,P_hori{3},'UY');
-    std_uz_P_hori(3) = eval_sol(S,std_u,P_hori{3},'UZ');
-    std_ux_P_hori(4) = eval_sol(S,std_u,P_hori{4},'UX');
-    std_uy_P_hori(4) = eval_sol(S,std_u,P_hori{4},'UY');
-    std_uz_P_hori(4) = eval_sol(S,std_u,P_hori{4},'UZ');    
-    std_ux_P_fati(1) = eval_sol(S,std_u,P_fati{1},'UX');
-    std_uy_P_fati(1) = eval_sol(S,std_u,P_fati{1},'UY');
-    std_uz_P_fati(1) = eval_sol(S,std_u,P_fati{1},'UZ');
-    std_ux_P_fati(2) = eval_sol(S,std_u,P_fati{2},'UX');
-    std_uy_P_fati(2) = eval_sol(S,std_u,P_fati{2},'UY');
-    std_uz_P_fati(2) = eval_sol(S,std_u,P_fati{2},'UZ');
-    std_ux_P_fati(3) = eval_sol(S,std_u,P_fati{3},'UX');
-    std_uy_P_fati(3) = eval_sol(S,std_u,P_fati{3},'UY');
-    std_uz_P_fati(3) = eval_sol(S,std_u,P_fati{3},'UZ');
-    std_ux_P_fati(4) = eval_sol(S,std_u,P_fati{4},'UX');
-    std_uy_P_fati(4) = eval_sol(S,std_u,P_fati{4},'UY');
-    std_uz_P_fati(4) = eval_sol(S,std_u,P_fati{4},'UZ');
+    std_ux = eval_sol(S,std_u,P,'UX');
+    std_uy = eval_sol(S,std_u,P,'UY');
+    std_uz = eval_sol(S,std_u,P,'UZ');
     
-    std_rx_P_vert = eval_sol(S,std_u,P_vert,'RX');
-    std_ry_P_vert = eval_sol(S,std_u,P_vert,'RY');
-    std_rz_P_vert = eval_sol(S,std_u,P_vert,'RZ');
-    std_rx_P_stab = eval_sol(S,std_u,P_stab,'RX');
-    std_ry_P_stab = eval_sol(S,std_u,P_stab,'RY');
-    std_rz_P_stab = eval_sol(S,std_u,P_stab,'RZ');
-    std_rx__P_hori(1) = eval_sol(S,std_u,P_hori{1},'RX');
-    std_ry__P_hori(1) = eval_sol(S,std_u,P_hori{1},'RY');
-    std_rz__P_hori(1) = eval_sol(S,std_u,P_hori{1},'RZ');
-    std_rx_P_hori(2) = eval_sol(S,std_u,P_hori{2},'RX');
-    std_ry_P_hori(2) = eval_sol(S,std_u,P_hori{2},'RY');
-    std_rz_P_hori(2) = eval_sol(S,std_u,P_hori{2},'RZ');
-    std_rx_P_hori(3) = eval_sol(S,std_u,P_hori{3},'RX');
-    std_ry_P_hori(3) = eval_sol(S,std_u,P_hori{3},'RY');
-    std_rz_P_hori(3) = eval_sol(S,std_u,P_hori{3},'RZ');
-    std_rx_P_hori(4) = eval_sol(S,std_u,P_hori{4},'RX');
-    std_ry_P_hori(4) = eval_sol(S,std_u,P_hori{4},'RY');
-    std_rz_P_hori(4) = eval_sol(S,std_u,P_hori{4},'RZ');    
-    std_rx_P_fati(1) = eval_sol(S,std_u,P_fati{1},'RX');
-    std_ry_P_fati(1) = eval_sol(S,std_u,P_fati{1},'RY');
-    std_rz_P_fati(1) = eval_sol(S,std_u,P_fati{1},'RZ');
-    std_rx_P_fati(2) = eval_sol(S,std_u,P_fati{2},'RX');
-    std_ry_P_fati(2) = eval_sol(S,std_u,P_fati{2},'RY');
-    std_rz_P_fati(2) = eval_sol(S,std_u,P_fati{2},'RZ');
-    std_rx_P_fati(3) = eval_sol(S,std_u,P_fati{3},'RX');
-    std_ry_P_fati(3) = eval_sol(S,std_u,P_fati{3},'RY');
-    std_rz_P_fati(3) = eval_sol(S,std_u,P_fati{3},'RZ');
-    std_rx_P_fati(4) = eval_sol(S,std_u,P_fati{4},'RX');
-    std_ry_P_fati(4) = eval_sol(S,std_u,P_fati{4},'RY');
-    std_rz_P_fati(4) = eval_sol(S,std_u,P_fati{4},'RZ');
+    std_rx = eval_sol(S,std_u,P,'RX');
+    std_ry = eval_sol(S,std_u,P,'RY');
+    std_rz = eval_sol(S,std_u,P,'RZ');
+    
+    ci_ux = eval_sol(S,ci_u,P,'UX');
+    ci_uy = eval_sol(S,ci_u,P,'UY');
+    ci_uz = eval_sol(S,ci_u,P,'UZ');
+    
+    ci_rx = eval_sol(S,ci_u,P,'RX');
+    ci_ry = eval_sol(S,ci_u,P,'RY');
+    ci_rz = eval_sol(S,ci_u,P,'RZ');
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S','elemtype',...
         'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','L_hori_fati',...
         'f','p','pointwiseLoading');
-    save(fullfile(pathname,'solution.mat'),'u','mean_u','std_u','time',...
-        'mean_U','mean_Ux','mean_Uy','mean_Uz',...
-        'mean_R','mean_Rx','mean_Ry','mean_Rz',...
-        'std_U','std_Ux','std_Uy','std_Uz',...
-        'std_R','std_Rx','std_Ry','std_Rz');
-    save(fullfile(pathname,'test_solution.mat'),'P_vert','P_stab',...
-        'P_hori','P_fati',...
-        'mean_ux_P_vert','mean_uy_P_vert','mean_uz_P_vert',...
-        'mean_ux_P_stab','mean_uy_P_stab','mean_uz_P_stab',...
-        'mean_ux_P_hori','mean_uy_P_hori','mean_uz_P_hori',...        
-        'mean_ux_P_fati','mean_uy_P_fati','mean_uz_P_fati',...      
-        'mean_rx_P_vert','mean_ry_P_vert','mean_rz_P_vert',...
-        'mean_rx_P_stab','mean_ry_P_stab','mean_rz_P_stab',...
-        'mean_rx_P_hori','mean_ry_P_hori','mean_rz_P_hori',...
-        'mean_rx_P_fati','mean_ry_P_fati','mean_rz_P_fati',...
-        'std_ux_P_vert','std_uy_P_vert','std_uz_P_vert',...
-        'std_ux_P_stab','std_uy_P_stab','std_uz_P_stab',...
-        'std_ux_P_hori','std_uy_P_hori','std_uz_P_hori',...
-        'std_ux_P_fati','std_uy_P_fati','std_uz_P_fati',...
-        'std_rx_P_vert','std_ry_P_vert','std_rz_P_vert',...
-        'std_rx_P_stab','std_ry_P_stab','std_rz_P_stab',...
-        'std_rx_P_hori','std_ry_P_hori','std_rz_P_hori',...
-        'std_rx_P_fati','std_ry_P_fati','std_rz_P_fati');
+    save(fullfile(pathname,'solution.mat'),'u','mean_u','std_u','ci_u','probs','time');
+    save(fullfile(pathname,'test_solution.mat'),'P',...
+        'mean_ux','mean_uy','mean_uz',...
+        'mean_rx','mean_ry','mean_rz',...
+        'std_ux','std_uy','std_uz',...
+        'std_rx','std_ry','std_rz',...
+        'ci_ux','ci_uy','ci_uz',...
+        'ci_rx','ci_ry','ci_rz');
 else
     load(fullfile(pathname,'problem.mat'),'S','elemtype',...
         'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','L_hori_fati',...
         'f','p','pointwiseLoading');
-    load(fullfile(pathname,'solution.mat'),'u','mean_u','std_u','time',...
-        'mean_U','mean_Ux','mean_Uy','mean_Uz',...
-        'mean_R','mean_Rx','mean_Ry','mean_Rz',...
-        'std_U','std_Ux','std_Uy','std_Uz',...
-        'std_R','std_Rx','std_Ry','std_Rz');
-    load(fullfile(pathname,'test_solution.mat'),'P_vert','P_stab',...
-        'P_hori','P_fati',...
-        'mean_ux_P_vert','mean_uy_P_vert','mean_uz_P_vert',...
-        'mean_ux_P_stab','mean_uy_P_stab','mean_uz_P_stab',...
-        'mean_ux_P_hori','mean_uy_P_hori','mean_uz_P_hori',...        
-        'mean_ux_P_fati','mean_uy_P_fati','mean_uz_P_fati',...      
-        'mean_rx_P_vert','mean_ry_P_vert','mean_rz_P_vert',...
-        'mean_rx_P_stab','mean_ry_P_stab','mean_rz_P_stab',...
-        'mean_rx_P_hori','mean_ry_P_hori','mean_rz_P_hori',...
-        'mean_rx_P_fati','mean_ry_P_fati','mean_rz_P_fati',...
-        'std_ux_P_vert','std_uy_P_vert','std_uz_P_vert',...
-        'std_ux_P_stab','std_uy_P_stab','std_uz_P_stab',...
-        'std_ux_P_hori','std_uy_P_hori','std_uz_P_hori',...
-        'std_ux_P_fati','std_uy_P_fati','std_uz_P_fati',...
-        'std_rx_P_vert','std_ry_P_vert','std_rz_P_vert',...
-        'std_rx_P_stab','std_ry_P_stab','std_rz_P_stab',...
-        'std_rx_P_hori','std_ry_P_hori','std_rz_P_hori',...
-        'std_rx_P_fati','std_ry_P_fati','std_rz_P_fati');
+    load(fullfile(pathname,'solution.mat'),'u','mean_u','std_u','ci_u','probs','time');
+    load(fullfile(pathname,'test_solution.mat'),'P',...
+        'mean_ux','mean_uy','mean_uz',...
+        'mean_rx','mean_ry','mean_rz',...
+        'std_ux','std_uy','std_uz',...
+        'std_rx','std_ry','std_rz',...
+        'ci_ux','ci_uy','ci_uz',...
+        'ci_rx','ci_ry','ci_rz');
 end
 
 %% Outputs
@@ -719,10 +632,6 @@ fprintf('\n');
 
 switch lower(test)
     case 'staticvert'
-        disp('Displacement u at point'); disp(P_vert);
-        fprintf('mean(ux) = %g, std(ux) = %g\n',mean_ux_P_vert,std_ux_P_vert);
-        fprintf('mean(uy) = %g, std(uy) = %g\n',mean_uy_P_vert,std_uy_P_vert);
-        fprintf('mean(uz) = %g, std(uz) = %g\n',mean_uz_P_vert,std_uz_P_vert);
         if (pointwiseLoading && p==300) || (~pointwiseLoading && p==300/Sec_stab_vert)
             uz_exp_start = -0.69*1e-3;
             uz_exp_end = -[10.10 9.88 9.64 9.88 9.94 9.79 9.92 9.93 9.82 9.95]*1e-3;
@@ -734,35 +643,27 @@ switch lower(test)
             uz_exp_end = -[16.66 16.57 16.59 16.78 16.55 16.69 16.75 16.59 16.73 16.76]*1e-3;
         end
         uz_exp = mean(uz_exp_end - uz_exp_start);
-        err_uz = norm(mean_uz_P_vert-uz_exp)/norm(uz_exp);
-        fprintf('uz_exp   = %g, error    = %.3e\n',uz_exp,err_uz);
-        fprintf('\n');
-        disp('Rotation r at point'); disp(P_vert);
-        fprintf('mean(rx) = %g, std(rx) = %g\n',mean_rx_P_vert,std_rx_P_vert);
-        fprintf('mean(ry) = %g, std(ry) = %g\n',mean_ry_P_vert,std_ry_P_vert);
-        fprintf('mean(rz) = %g, std(rz) = %g\n',mean_rz_P_vert,std_rz_P_vert);
+        err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
+        
+        disp('Displacement u at point'); disp(P);
+        fprintf('mean(ux) = %g, std(ux) = %g, ci(ux) = [%g %g]\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('mean(uy) = %g, std(uy) = %g, ci(uy) = [%g %g]\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('mean(uz) = %g, std(uz) = %g, ci(uz) = [%g %g]\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
+        fprintf('uz_exp   = %g, error = %.3e\n',uz_exp,err_uz);
         fprintf('\n');
     case 'stability'
-        disp('Displacement u at point'); disp(P_stab);
-        fprintf('mean(ux) = %g, std(ux) = %g\n',mean_ux_P_stab,std_ux_P_stab);
-        fprintf('mean(uy) = %g, std(uy) = %g\n',mean_uy_P_stab,std_uy_P_stab);
-        fprintf('mean(uz) = %g, std(uz) = %g\n',mean_uz_P_stab,std_uz_P_stab);
         uz_exp_start = -1.93*1e-3;
         uz_exp_end = -[18.46 18.44 18.53 18.58 18.59 18.7 18.77 18.73 18.85 18.76]*1e-3;
         uz_exp = mean(uz_exp_end - uz_exp_start);
-        err_uz = norm(mean_uz_P_stab-uz_exp)/norm(uz_exp);
-        fprintf('uz_exp   = %g, error    = %.3e\n',uz_exp,err_uz);
-        fprintf('\n');
-        disp('Rotation r at point'); disp(P_stab);
-        fprintf('mean(rx) = %g, std(rx) = %g\n',mean_rx_P_stab,std_rx_P_stab);
-        fprintf('mean(ry) = %g, std(ry) = %g\n',mean_ry_P_stab,std_ry_P_stab);
-        fprintf('mean(rz) = %g, std(rz) = %g\n',mean_rz_P_stab,std_rz_P_stab);
+        err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
+        
+        disp('Displacement u at point'); disp(P);
+        fprintf('mean(ux) = %g, std(ux) = %g, ci(ux) = [%g %g]\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('mean(uy) = %g, std(uy) = %g, ci(uy) = [%g %g]\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('mean(uz) = %g, std(uz) = %g, ci(uz) = [%g %g]\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
+        fprintf('uz_exp   = %g, error = %.3e\n',uz_exp,err_uz);
         fprintf('\n');
     case 'statichori1'
-        disp('Displacement u at point'); disp(P_hori{2});
-        fprintf('mean(ux) = %g, std(ux) = %g\n',mean_ux_P_hori(2),std_ux_P_hori(2));
-        fprintf('mean(uy) = %g, std(uy) = %g\n',mean_uy_P_hori(2),std_uy_P_hori(2));
-        fprintf('mean(uz) = %g, std(uz) = %g\n',mean_uz_P_hori(2),std_uz_P_hori(2));
         if (pointwiseLoading && p==100) || (~pointwiseLoading && p==100/L_hori_fati)
             ux_exp_start = -6.88*1e-3;
             ux_exp_end = -[10.5 10.51 10.44 10.8 10.72 10.62 10.67 10.65 10.66 10.87 10.86]*1e-3;
@@ -771,19 +672,15 @@ switch lower(test)
             ux_exp_end = -[16.78 16.74 16.72 17.13 17 16.8 16.87 16.78 17.04 16.82 16.71 17.17]*1e-3;
         end
         ux_exp = mean(ux_exp_end - ux_exp_start);
-        err_ux = norm(mean_ux_P_hori(2)-ux_exp)/norm(ux_exp);
-        fprintf('ux_exp   = %g, error    = %.3e\n',ux_exp,err_ux);
-        fprintf('\n');
-        disp('Rotation r at point'); disp(P_hori{2});
-        fprintf('mean(rx) = %g, std(rx) = %g\n',mean_rx_P_hori(2),std_rx_P_hori(2));
-        fprintf('mean(ry) = %g, std(ry) = %g\n',mean_ry_P_hori(2),std_ry_P_hori(2));
-        fprintf('mean(rz) = %g, std(rz) = %g\n',mean_rz_P_hori(2),std_rz_P_hori(2));
+        err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+        
+        disp('Displacement u at point'); disp(P);
+        fprintf('mean(ux) = %g, std(ux) = %g, ci(ux) = [%g %g]\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('ux_exp   = %g, error = %.3e\n',ux_exp,err_ux);
+        fprintf('mean(uy) = %g, std(uy) = %g, ci(uy) = [%g %g]\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('mean(uz) = %g, std(uz) = %g, ci(uz) = [%g %g]\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         fprintf('\n');
     case 'statichori2'
-        disp('Displacement u at point'); disp(P_hori{1});
-        fprintf('mean(ux) = %g, std(ux) = %g\n',mean_ux__P_hori(1),std_ux__P_hori(1));
-        fprintf('mean(uy) = %g, std(uy) = %g\n',mean_uy__P_hori(1),std_uy__P_hori(1));
-        fprintf('mean(uz) = %g, std(uz) = %g\n',mean_uz__P_hori(1),std_uz__P_hori(1));
         if (pointwiseLoading && p==100) || (~pointwiseLoading && p==100/L_hori_fati)
             ux_exp_start = 2.12*1e-3;
             ux_exp_end = [6.22 6.17 6.26 6.31 6.33 6.24 6.26 6.4 6.26 6.49 6.48 6.42 6.36 6.56 6.37 6.39]*1e-3;
@@ -792,47 +689,45 @@ switch lower(test)
             ux_exp_end = [12.45 12.68 12.66 12.65 12.71 12.64 12.82 12.73 12.89 12.86 12.79 12.86]*1e-3;
         end
         ux_exp = mean(ux_exp_end - ux_exp_start);
-        err_ux = norm(mean_ux__P_hori(1)-ux_exp)/norm(ux_exp);
-        fprintf('ux_exp   = %g, error    = %.3e\n',ux_exp,err_ux);
+        err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+        
+        disp('Displacement u at point'); disp(P);
+        fprintf('mean(ux) = %g, std(ux) = %g, ci(ux) = [%g %g]\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('ux_exp   = %g, error = %.3e\n',ux_exp,err_ux);
+        fprintf('mean(uy) = %g, std(uy) = %g, ci(uy) = [%g %g]\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('mean(uz) = %g, std(uz) = %g, ci(uz) = [%g %g]\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         fprintf('\n');
-        disp('Rotation r at point'); disp(P_hori{1});
-        fprintf('mean(rx) = %g, std(rx) = %g\n',mean_rx__P_hori(1),std_rx__P_hori(1));
-        fprintf('mean(ry) = %g, std(ry) = %g\n',mean_ry__P_hori(1),std_ry__P_hori(1));
-        fprintf('mean(rz) = %g, std(rz) = %g\n',mean_rz__P_hori(1),std_rz__P_hori(1));
-        fprintf('\n'); 
     case 'fatigue1'
-        disp('Displacement u at point'); disp(P_fati{2});
-        fprintf('mean(ux) = %g, std(ux) = %g\n',mean_ux_P_fati(2),std_ux_P_fati(2));
-        fprintf('mean(uy) = %g, std(uy) = %g\n',mean_uy_P_fati(2),std_uy_P_fati(2));
-        fprintf('mean(uz) = %g, std(uz) = %g\n',mean_uz_P_fati(2),std_uz_P_fati(2));
         ux_exp_start = -4.42*1e-3;
         ux_exp_end = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;   
         ux_exp = mean(ux_exp_end - ux_exp_start);
-        err_ux = norm(mean_ux_P_fati(2)-ux_exp)/norm(ux_exp);
-        fprintf('ux_exp   = %g, error    = %.3e\n',ux_exp,err_ux);
-        fprintf('\n');
-        disp('Rotation r at point'); disp(P_fati{2});
-        fprintf('mean(rx) = %g, std(rx) = %g\n',mean_rx_P_fati(2),std_rx_P_fati(2));
-        fprintf('mean(ry) = %g, std(ry) = %g\n',mean_ry_P_fati(2),std_ry_P_fati(2));
-        fprintf('mean(rz) = %g, std(rz) = %g\n',mean_rz_P_fati(2),std_rz_P_fati(2));
+        err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+        
+        disp('Displacement u at point'); disp(P);
+        fprintf('mean(ux) = %g, std(ux) = %g, ci(ux) = [%g %g]\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('ux_exp   = %g, error = %.3e\n',ux_exp,err_ux);
+        fprintf('mean(uy) = %g, std(uy) = %g, ci(uy) = [%g %g]\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('mean(uz) = %g, std(uz) = %g, ci(uz) = [%g %g]\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         fprintf('\n');
     case 'fatigue2'
-        disp('Displacement u at point'); disp(P_fati{1});
-        fprintf('mean(ux) = %g, std(ux) = %g\n',mean_ux_P_fati(1),std_ux_P_fati(1));
-        fprintf('mean(uy) = %g, std(uy) = %g\n',mean_uy_P_fati(1),std_uy_P_fati(1));
-        fprintf('mean(uz) = %g, std(uz) = %g\n',mean_uz_P_fati(1),std_uz_P_fati(1));
         ux_exp_start = 3.48*1e-3;
         ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;   
         ux_exp = mean(ux_exp_end - ux_exp_start);
-        err_ux = norm(mean_ux_P_fati(1)-ux_exp)/norm(ux_exp);
-        fprintf('ux_exp   = %g, error    = %.3e\n',ux_exp,err_ux);
+        err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+        
+        disp('Displacement u at point'); disp(P);
+        fprintf('mean(ux) = %g, std(ux) = %g, ci(ux) = [%g %g]\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('ux_exp   = %g, error = %.3e\n',ux_exp,err_ux);
+        fprintf('mean(uy) = %g, std(uy) = %g, ci(uy) = [%g %g]\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('mean(uz) = %g, std(uz) = %g, ci(uz) = [%g %g]\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         fprintf('\n');
-        disp('Rotation r at point'); disp(P_fati{1});
-        fprintf('mean(rx) = %g, std(rx) = %g\n',mean_rx_P_fati(1),std_rx_P_fati(1));
-        fprintf('mean(ry) = %g, std(ry) = %g\n',mean_ry_P_fati(1),std_ry_P_fati(1));
-        fprintf('mean(rz) = %g, std(rz) = %g\n',mean_rz_P_fati(1),std_rz_P_fati(1));
-        fprintf('\n');   
 end
+
+disp('Rotation r at point'); disp(P);
+fprintf('mean(rx) = %g, std(rx) = %g, ci(rx) = [%g %g]\n',mean_rx,std_rx,ci_rx(1),ci_rx(2));
+fprintf('mean(ry) = %g, std(ry) = %g, ci(ry) = [%g %g]\n',mean_ry,std_ry,ci_ry(1),ci_ry(2));
+fprintf('mean(rz) = %g, std(rz) = %g, ci(rz) = [%g %g]\n',mean_rz,std_rz,ci_rz(1),ci_rz(2));
+fprintf('\n');
 
 %% Display
 if displaySolution
@@ -844,15 +739,15 @@ if displaySolution
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 8;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
-    % legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
+    hP = plot(P,'g+');
+    % legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
     ampl = getsize(S)/max(abs(mean_u))/10;
-    plotModelDeflection(S,mean_u,'ampl',ampl,'Color','b','FaceColor','b',...
-        'FaceAlpha',0.1,'legend',false);
+    plotModelDeflection(S,mean_u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
@@ -868,54 +763,24 @@ if displaySolution
     % options = {};
     
     switch lower(test)
-        case 'stability'
+        case {'stability','staticvert','impact','drop'}
             plotSolution(S,mean_u,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Uz',formats,renderer);
             
             plotSolution(S,std_u,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Uz',formats,renderer);
-        case {'statichori1','statichori2'}
+        case {'statichori1','statichori2','fatigue1','fatigue2'}
             plotSolution(S,mean_u,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Ux',formats,renderer);
             
             plotSolution(S,std_u,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Ux',formats,renderer);
-        case {'statichori3','statichori4'}
+        case {'statichori3','statichori4','fatigue3','fatigue4'}
             plotSolution(S,mean_u,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Uy',formats,renderer);
             
             plotSolution(S,std_u,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Uy',formats,renderer);
-        case 'staticvert'
-            plotSolution(S,mean_u,'displ',3,'ampl',ampl,options{:});
-            mysaveas(pathname,'mean_Uz',formats,renderer);
-            
-            plotSolution(S,std_u,'displ',3,'ampl',ampl,options{:});
-            mysaveas(pathname,'std_Uz',formats,renderer);
-        case {'fatigue1','fatigue2'}
-            plotSolution(S,mean_u,'displ',1,'ampl',ampl,options{:});
-            mysaveas(pathname,'mean_Ux',formats,renderer);
-            
-            plotSolution(S,std_u,'displ',1,'ampl',ampl,options{:});
-            mysaveas(pathname,'std_Ux',formats,renderer);
-        case {'fatigue3','fatigue4'}
-            plotSolution(S,mean_u,'displ',2,'ampl',ampl,options{:});
-            mysaveas(pathname,'mean_Uy',formats,renderer);
-            
-            plotSolution(S,std_u,'displ',1,'ampl',ampl,options{:});
-            mysaveas(pathname,'std_Uy',formats,renderer);
-        case 'impact'
-            plotSolution(S,mean_u,'displ',3,'ampl',ampl,options{:});
-            mysaveas(pathname,'mean_Uz',formats,renderer);
-            
-            plotSolution(S,std_u,'displ',3,'ampl',ampl,options{:});
-            mysaveas(pathname,'std_Uz',formats,renderer);
-        case 'drop'
-            plotSolution(S,mean_u,'displ',3,'ampl',ampl,options{:});
-            mysaveas(pathname,'mean_Uz',formats,renderer);
-            
-            plotSolution(S,std_u,'displ',3,'ampl',ampl,options{:});
-            mysaveas(pathname,'std_Uz',formats,renderer);
     end
     
     % plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
@@ -928,34 +793,77 @@ end
 %% Display convergence Monte-Carlo
 if displayCv
     N = size(u,2);
-    means_u = arrayfun(@(x) norm(mean(u(:,1:x),2)),1:N);
-    stds_u = arrayfun(@(x) norm(std(u(:,1:x),0,2)),1:N);
+    switch lower(test)
+        case {'stability','staticvert','impact','drop'}
+            means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UZ'),1:N);
+            stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UZ'),1:N);
+            lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UZ'),1:N);
+            uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UZ'),1:N);
+            
+        case {'statichori1','statichori2','fatigue3','fatigue4'}
+            means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UX'),1:N);
+            stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UX'),1:N);
+            lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UX'),1:N);
+            uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UX'),1:N);
+        case {'statichori3','statichori4','fatigue1','fatigue2'}
+            means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UY'),1:N);
+            stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UY'),1:N);
+            lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UY'),1:N);
+            uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UY'),1:N);
+    end
     
-    figure('Name','Convergence empirical mean')
+    figure('Name','Convergence solution')
+    clf
+    ciplot(lowercis_u,uppercis_u,1:N,'g');
+    hold on
+    ciplot(means_u-stds_u,means_u+stds_u,1:N,'b');
+    alpha(0.2)
+    plot(1:N,means_u,'-b','LineWidth',1)
+    if strcmpi(test,'staticvert')
+        plot(1:N,repmat(uz_exp,1,N),'-r','LineWidth',1)
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',16)
+    % xlabel('Nombre de r\''ealisations','Interpreter','latex')
+    xlabel('Number of samples','Interpreter','latex')
+    ylabel('Solution','Interpreter','latex')
+    if strcmpi(test,'staticvert')
+        legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean \pm std','mean','experimental value'})
+    else
+        legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean \pm std','mean'})
+    end
+    mysaveas(pathname,'convergence_solution','fig');
+    mymatlab2tikz(pathname,'convergence_solution.tex');
+    
+    figure('Name','Convergence mean')
     clf
     plot(1:N,means_u,'-b','LineWidth',1)
     grid on
     box on
     set(gca,'FontSize',16)
     % xlabel('Nombre de r\''ealisations','Interpreter','latex')
-    % ylabel('Moyenne empirique','Interpreter','latex')
+    % ylabel('Moyenne','Interpreter','latex')
     xlabel('Number of samples','Interpreter','latex')
-    ylabel('Empirical mean','Interpreter','latex')
-    mysaveas(pathname,'convergence_empirical_mean','fig');
-    mymatlab2tikz(pathname,'convergence_empirical_mean.tex');
+    ylabel('Mean','Interpreter','latex')
+    mysaveas(pathname,'convergence_mean','fig');
+    mymatlab2tikz(pathname,'convergence_mean.tex');
     
-    figure('Name','Convergence empirical standard deviation')
+    figure('Name','Convergence standard deviation')
     clf
     plot(1:N,stds_u,'-r','LineWidth',1)
     grid on
     box on
     set(gca,'FontSize',16)
     % xlabel('Nombre de r\''ealisations','Interpreter','latex')
-    % ylabel('Ecart-type empirique','Interpreter','latex')
+    % ylabel('Ecart-type','Interpreter','latex')
     xlabel('Number of samples','Interpreter','latex')
-    ylabel('Empirical standard deviation','Interpreter','latex')
-    mysaveas(pathname,'convergence_empirical_std','fig');
-    mymatlab2tikz(pathname,'convergence_empirical_std.tex');
+    ylabel('Standard deviation','Interpreter','latex')
+    mysaveas(pathname,'convergence_std','fig');
+    mymatlab2tikz(pathname,'convergence_std.tex');
+end
+
 end
 
 myparallel('stop');
