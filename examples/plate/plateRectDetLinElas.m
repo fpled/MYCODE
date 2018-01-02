@@ -347,6 +347,13 @@ if displaySolution
     set(gca,'FontSize',16)
     mysaveas(pathname,'Uz_ex',formats,renderer);
     
+%     figure('Name','Error u_3 - u_3_ex')
+%     clf
+%     plot(FENODEFIELD(Uz-Uz_ex),S+ampl*u,options{:});
+%     colorbar
+%     set(gca,'FontSize',16)
+%     mysaveas(pathname,['err_Uz_' num2str(i)],formats,renderer);
+    
     plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
     mysaveas(pathname,'Rx',formats,renderer);
     
