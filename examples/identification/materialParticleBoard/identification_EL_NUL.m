@@ -20,7 +20,7 @@ interpreter = 'latex';
 formats = {'fig','epsc2'};
 
 %% Identification
-x0 = [1e2 1e-3];
+x0 = [1e2 1e-2];
 lb = [0 0];
 ub = [Inf 0.5];
 tolX = 1e-14;
@@ -72,7 +72,7 @@ for j = 1:27
         
         ET = eval(['ET_' sampleNum '(' imageNum ')'])*1e3; % MPa
         GL = eval(['GL_' sampleNum '(' imageNum ')']); % MPa
-        mat = ELAS_ISOT_TRANS('EL',[],'ET',ET,'NUL',[],'GL',GL,'DIM3',h);
+        mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',[],'ET',ET,'NUL',[],'GL',GL,'DIM3',h);
         mat = setnumber(mat,1);
         S = setmaterial(S,mat);
         S = final(S);

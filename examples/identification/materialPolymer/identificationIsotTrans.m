@@ -64,7 +64,7 @@ DIM3 = 1;
 RHO = 1;
 
 % Material
-mat = ELAS_ISOT_TRANS('EL',EL_exp,'ET',ET_exp,'NUL',NUL_exp,'GL',GL_exp,'RHO',RHO,'DIM3',DIM3);
+mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',EL_exp,'ET',ET_exp,'NUL',NUL_exp,'GL',GL_exp,'RHO',RHO,'DIM3',DIM3);
 mat = setnumber(mat,1);
 S = setmaterial(S,mat);
 

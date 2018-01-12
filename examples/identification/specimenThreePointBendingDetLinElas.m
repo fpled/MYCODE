@@ -98,7 +98,7 @@ for j = 3
                     % Transverse Poisson ratio
                     NUT = 0.25;
                     % Material
-                    mat = ELAS_ISOT_TRANS('EL',EL,'ET',ET,'NUL',NUL,'NUT',NUT,'GL',GL,'RHO',RHO,'DIM3',DIM3);
+                    mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',EL,'ET',ET,'NUL',NUL,'NUT',NUT,'GL',GL,'RHO',RHO,'DIM3',DIM3);
                 otherwise
                     error('Wrong material symmetry !')
             end

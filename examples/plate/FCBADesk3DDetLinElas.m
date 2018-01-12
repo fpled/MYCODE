@@ -166,7 +166,7 @@ if solveProblem
     sampleNum = 'B13';
     
     % Material symmetry
-    materialSym = 'isot';
+    materialSym = 'isottrans';
     
     switch lower(materialSym)
         case 'isot'
@@ -180,6 +180,8 @@ if solveProblem
             %NU = 0.25;
             % Material
             mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO);
+            mat = setnumber(mat,1);
+            S = setmaterial(S,mat);
         case 'isottrans'
             % Transverse Young modulus
             ET = eval(['mean_ET_' sampleNum '_data;'])*1e9; % Pa
@@ -192,12 +194,18 @@ if solveProblem
             % Transverse Poisson ratio
             NUT = 0.25;
             % Material
-            mat = ELAS_ISOT_TRANS('EL',EL,'ET',ET,'NUL',NUL,'NUT',NUT,'GL',GL,'RHO',RHO);
+            mat_12 = ELAS_ISOT_TRANS('AXISL',[1;0;0],'AXIST',[0;1;0],'EL',EL,'ET',ET,'NUL',NUL,'NUT',NUT,'GL',GL,'RHO',RHO);
+            mat_3 = ELAS_ISOT_TRANS('AXISL',[0;0;1],'AXIST',[1;0;0],'EL',EL,'ET',ET,'NUL',NUL,'NUT',NUT,'GL',GL,'RHO',RHO);
+            mat_5 = ELAS_ISOT_TRANS('AXISL',[0;1;0],'AXIST',[0;0;1],'EL',EL,'ET',ET,'NUL',NUL,'NUT',NUT,'GL',GL,'RHO',RHO);
+            mat_12 = setnumber(mat_12,1);
+            mat_3 = setnumber(mat_3,2);
+            mat_5 = setnumber(mat_5,3);
+            S = setmaterial(S,mat_12,[1 2]);
+            S = setmaterial(S,mat_3,3);
+            S = setmaterial(S,mat_5,[4 5]);
         otherwise
             error('Wrong material symmetry !')
     end
-    mat = setnumber(mat,1);
-    S = setmaterial(S,mat);
     
     %% Neumann boundary conditions
     p_plate = RHO*g; % body load
