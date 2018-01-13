@@ -30,9 +30,9 @@ interpreter = 'latex';
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
-sample = 'C';
-% for j = 1:20
-for j = 3
+sample = 'B';
+% for j = 1:27
+for j = 8
     
     sampleNum = [sample num2str(j)];
     

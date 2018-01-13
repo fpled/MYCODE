@@ -166,7 +166,7 @@ if solveProblem
     sampleNum = 'B13';
     
     % Material symmetry
-    materialSym = 'isottrans';
+    materialSym = 'isotTrans';
     
     switch lower(materialSym)
         case 'isot'

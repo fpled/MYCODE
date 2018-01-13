@@ -40,10 +40,10 @@ load(fullfile(pathnameIdentification,filenameAna));
 load(fullfile(pathnameIdentification,filenameNum));
 
 sample = 'B';
-ET_data = zeros(1,20);
-GL_data = zeros(1,20);
-EL_data = zeros(1,20);
-NUL_data = zeros(1,20);
+ET_data = zeros(1,27);
+GL_data = zeros(1,27);
+EL_data = zeros(1,27);
+NUL_data = zeros(1,27);
 for j=1:27
     sampleNum = [sample num2str(j)];
     ET_data(j) = eval(['mean_ET_' sampleNum '_data;']); % GPa

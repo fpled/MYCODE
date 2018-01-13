@@ -28,7 +28,7 @@ pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
 load(fullfile(pathnameIdentification,filenameAna));
 
 sample = 'B';
-E_data = zeros(1,20);
+E_data = zeros(1,27);
 for j=1:27
     sampleNum = [sample num2str(j)];
     E_data(j) = eval(['mean_ET_' sampleNum '_data;']); % GPa
