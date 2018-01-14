@@ -672,7 +672,8 @@ if displaySolution
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
-    ampl = getsize(S)/max(abs(u))/10;
+    U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+    ampl = getsize(S)/max(abs(U))/10;
     plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
@@ -684,7 +685,7 @@ if displaySolution
     
     %% Display solution
     % ampl = 0;
-    ampl = getsize(S)/max(abs(u))/10;
+    ampl = getsize(S)/max(abs(U))/10;
     options = {'solid',true};
     % options = {};
     

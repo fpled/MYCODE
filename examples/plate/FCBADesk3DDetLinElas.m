@@ -532,17 +532,17 @@ if displaySolution
     % legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
-    plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+    plotModel(S,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
     ampl = getsize(S)/max(abs(u))/10;
-    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+    plotModelDeflection(S,u,'ampl',ampl,'FaceColor','b','legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
-    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-    plot(S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1);
+    plot(S);
+    plot(S+ampl*u,'FaceColor','b');
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display solution
