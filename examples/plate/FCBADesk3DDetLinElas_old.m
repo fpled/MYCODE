@@ -595,6 +595,9 @@ if displaySolution
             plotSolution(S,u,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'Uy',formats,renderer);
     end
+    
+    plotSolution(S,u,'sigma','mises','ampl',ampl,options{:});
+    mysaveas(pathname,'SigmaVM',formats,renderer);
 end
 
 end

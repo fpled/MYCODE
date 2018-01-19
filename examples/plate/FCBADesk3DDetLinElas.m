@@ -195,8 +195,11 @@ if solveProblem
             NUT = 0.25;
             % Material
             mat_12 = ELAS_ISOT_TRANS('AXISL',[1;0;0],'AXIST',[0;1;0],'EL',EL,'ET',ET,'NUL',NUL,'NUT',NUT,'GL',GL,'RHO',RHO);
+            %mat_12 = ELAS_ISOT('E',ET,'NU',NUT,'RHO',RHO);
             mat_3 = ELAS_ISOT_TRANS('AXISL',[0;0;1],'AXIST',[1;0;0],'EL',EL,'ET',ET,'NUL',NUL,'NUT',NUT,'GL',GL,'RHO',RHO);
+            %mat_3 = ELAS_ISOT('E',ET,'NU',NUT,'RHO',RHO);
             mat_5 = ELAS_ISOT_TRANS('AXISL',[0;1;0],'AXIST',[0;0;1],'EL',EL,'ET',ET,'NUL',NUL,'NUT',NUT,'GL',GL,'RHO',RHO);
+            %mat_5 = ELAS_ISOT('E',ET,'NU',NUT,'RHO',RHO);
             mat_12 = setnumber(mat_12,1);
             mat_3 = setnumber(mat_3,2);
             mat_5 = setnumber(mat_5,3);
@@ -562,6 +565,9 @@ if displaySolution
             plotSolution(S,u,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'Uy',formats,renderer);
     end
+    
+    plotSolution(S,u,'sigma','mises','ampl',ampl,options{:});
+    mysaveas(pathname,'SigmaVM',formats,renderer);
 end
 
 end

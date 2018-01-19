@@ -782,12 +782,6 @@ if displaySolution
             plotSolution(S,std_u,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Uy',formats,renderer);
     end
-    
-    % plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
-    % mysaveas(pathname,'Rx',formats,renderer);
-    %
-    % plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
-    % mysaveas(pathname,'Ry',formats,renderer);
 end
 
 %% Display convergence Monte-Carlo
