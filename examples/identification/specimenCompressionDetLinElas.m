@@ -186,12 +186,12 @@ if displaySolution
     ampl = 0;
     % ampl = getsize(S)/max(abs(u))/5;
     
-    for i=1:2
+    for i=1:Dim
         plotSolution(S,u,'displ',i,'ampl',ampl);
         mysaveas(pathname,['u_' num2str(i)],formats,renderer);
     end
     
-    for i=1:3
+    for i=1:(Dim*(Dim+1)/2)
         plotSolution(S,u,'epsilon',i,'ampl',ampl);
         mysaveas(pathname,['eps_' num2str(i)],formats,renderer);
         
