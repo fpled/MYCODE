@@ -35,7 +35,7 @@ tolFun = 1e-14;
 display = 'off';
 optionslsqnonlin  = optimoptions('lsqnonlin','Display',display,'TolX',tolX,'TolFun',tolFun);
 optionsfminsearch = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
-optionsfminunc    = optimoptions('fminunc','Display',display,'TolX',tolX,'TolFun',tolFun,'Algorithm','quasi-newton');
+optionsfminunc    = optimoptions('fminunc','Display',display,'TolX',tolX,'TolFun',tolFun);
 optionsfmincon    = optimoptions('fmincon','Display',display,'TolX',tolX,'TolFun',tolFun);
 
 ampl = 1e-2;

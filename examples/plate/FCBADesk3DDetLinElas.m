@@ -14,16 +14,16 @@ displaySolution = true;
 % tests = {'StaticHori2'}; % test under static horizontal load 2
 % tests = {'StaticHori3'}; % test under static horizontal load 3 (lifting)
 % tests = {'StaticHori4'}; % test under static horizontal load 4 (lifting)
-% tests = {'StaticVert'}; % test under static vertical load
+tests = {'StaticVert'}; % test under static vertical load
 % tests = {'Fatigue1'}; % fatigue test under horizontal load 1
 % tests = {'Fatigue2'}; % fatigue test under horizontal load 2
 % tests = {'Fatigue3'}; % fatigue test under horizontal load 3 (lifting)
 % tests = {'Fatigue4'}; % fatigue test under horizontal load 4 (lifting)
 % tests = {'Impact'}; % vertical impact test
 % tests = {'Drop'}; % drop test
-tests = {'Stability','StaticVert',...
-    'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
-    'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
+% tests = {'Stability','StaticVert',...
+%     'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
+%     'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
 
 formats = {'fig','epsc2'};
 renderer = 'OpenGL';
