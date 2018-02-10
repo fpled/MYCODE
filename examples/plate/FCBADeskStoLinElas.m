@@ -179,7 +179,7 @@ if solveProblem
     materialSym = 'isot';
     
     % Number of samples
-    N = 1e2;
+    N = 1e3;
     
     switch lower(materialSym)
         case 'isot'
