@@ -19,22 +19,20 @@ formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
 %% Plot error
-sampleNum = 'B8';
+sample = 'B';
+j = 8; % sample number
+numSample = [sample num2str(j)];
 
-F = appliedLoad(sampleNum);
-[b,h,d,Iz] = dimSample(sampleNum);
+F = appliedLoad(numSample);
+[b,h,d,Iz] = dimSample(numSample);
 
-for k = 1:length(F)
-    
-    if k<10
-        imageNum = ['0' num2str(k)];
-    else
-        imageNum = num2str(k);
-    end
+numImages = length(F);
+for k=1:numImages
     
     t = tic;
     
-    filenameDIC = [sampleNum '_00-' imageNum '-Mesh'];
+    numImage = num2str(k,'%02d');
+    filenameDIC = [numSample '_00-' numImage '-Mesh'];
     pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
         'examples','identification','materialParticleBoard','resultsDIC');
     disp(['File = ',filenameDIC]);
@@ -51,10 +49,10 @@ for k = 1:length(F)
     S = addnode(S,node);
     S = addelem(S,elemtype,elem,'option',option);
     
-    ET = eval(['ET_' sampleNum '(' imageNum ');'])*1e3; % MPa
-    GL = eval(['GL_' sampleNum '(' imageNum ');']); % MPa
-    EL = eval(['EL_' sampleNum '(' imageNum ');']); % MPa
-    NUL = eval(['NUL_' sampleNum '(' imageNum ');']);
+    ET = ET_data{j}(k); % MPa
+    GL = GL_data{j}(k); % MPa
+    EL = EL_data{j}(k); % MPa
+    NUL = NUL_data{j}(k);
     mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',EL,'ET',ET,'NUL',NUL,'GL',GL,'DIM3',h);
     mat = setnumber(mat,1);
     S = setmaterial(S,mat);
@@ -82,8 +80,8 @@ for k = 1:length(F)
         EL = EL_series(m);
         for n=1:length(NUL_series)
             NUL = NUL_series(n);
-            param = [EL NUL];
-            u_num_in = solveThreePointBendingNum(param,S);
+            x = [EL NUL];
+            u_num_in = solveThreePointBendingNum(x,S);
             err(m,n) = norm(u_exp_in - u_num_in);
         end
     end
@@ -103,7 +101,7 @@ for k = 1:length(F)
     xlabel('$\nu^L$','Interpreter',interpreter)
     ylabel('$E^L$ (MPa)','Interpreter',interpreter)
     zlabel('$\varepsilon$','Interpreter',interpreter)
-    mysaveas(pathname,['error_EL_NUL_' sampleNum '_image_' imageNum '_3D'],formats,renderer);
+    mysaveas(pathname,['error_EL_NUL_' numSample '_image_' numImage '_3D'],formats,renderer);
     
     figure
     contourf(NUL_series,EL_series,err,30);
@@ -115,7 +113,7 @@ for k = 1:length(F)
     % set(gca,'ZScale','log')
     xlabel('$\nu^L$','Interpreter',interpreter)
     ylabel('$E^L$ (MPa)','Interpreter',interpreter)
-    mysaveas(pathname,['error_EL_NUL_' sampleNum '_image_' imageNum '_2D'],formats,renderer);
+    mysaveas(pathname,['error_EL_NUL_' numSample '_image_' numImage '_2D'],formats,renderer);
     
     toc(t)
 end

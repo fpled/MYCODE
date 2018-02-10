@@ -181,7 +181,8 @@ if solveProblem
     load(fullfile(pathnameIdentification,filenameNum));
     
     % Sample number
-    sampleNum = 'B13';
+    sample = 'B';
+    numSample = 13;
     
     % Material symmetry
     materialSym = 'isotTrans';
@@ -189,10 +190,10 @@ if solveProblem
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = eval(['mean_ET_' sampleNum '_data;'])*1e9; % Pa
+            E = mean_ET_data(numSample)*1e6; % Pa
             %E = 1.7e9; % Pa
             % Shear modulus
-            G = eval(['mean_GL_' sampleNum '_data;'])*13*1e6; % Pa
+            G = mean_GL_data(numSample)*1e6*13; % Pa
             % Poisson ratio
             NU = E./(2*G)-1;
             %NU = 0.25;
@@ -200,13 +201,13 @@ if solveProblem
             mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
         case 'isottrans'
             % Transverse Young modulus
-            ET = eval(['mean_ET_' sampleNum '_data;'])*1e9; % Pa
+            ET = mean_ET_data(numSample)*1e6; % Pa
             % Longitudinal shear modulus
-            GL = eval(['mean_GL_' sampleNum '_data;'])*1e6; % Pa
+            GL = mean_GL_data(numSample)*1e6; % Pa
             % Longitudinal Young modulus
-            % EL = eval(['mean_EL_' sampleNum '_data;'])*1e6; % Pa
+            % EL = mean_EL_data(numSample)*1e6; % Pa
             % Longitudinal Poisson ratio
-            % NUL = eval(['mean_NUL_' sampleNum '_data;']);
+            % NUL = mean_NUL_data(numSample);
             % Transverse Poisson ratio
             NUT = 0.25;
             % Material

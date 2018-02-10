@@ -175,25 +175,17 @@ if solveProblem
     load(fullfile(pathnameIdentification,filenameAna));
     load(fullfile(pathnameIdentification,filenameNum));
     
-    % Sample number
-    sample = 'B';
-    
     % Material symmetry
     materialSym = 'isot';
     
     % Number of samples
-    N = 1e3;
+    N = 1e2;
     
     switch lower(materialSym)
         case 'isot'
             % Data
-            E_data = zeros(1,27);
-            G_data = zeros(1,27);
-            for i=1:27
-                sampleNum = [sample num2str(i)];
-                E_data(i) = eval(['mean_ET_' sampleNum '_data;']); % GPa
-                G_data(i) = eval(['mean_GL_' sampleNum '_data;'])*13*1e-3; % GPa
-            end
+            E_data = mean_ET_data*1e-3; % GPa
+            G_data = mean_GL_data*1e-3*13; % GPa
             NU_data = E_data./(2*G_data)-1;
             lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data));
             C1_data = lambda_data + 2/3*G_data;
@@ -202,7 +194,7 @@ if solveProblem
             % Maximum likelihood estimation
             n_data = length(C1_data);
             m_data = length(C2_data);
-            data = [C1_data C2_data];
+            data = [C1_data; C2_data];
             
             nloglf = @(lambda,data,cens,freq) -n_data*( (1-lambda(3))*log(lambda(1))...
                 - gammaln(1-lambda(3)) ) - m_data*( (1-5*lambda(3))*log(lambda(2))...
@@ -224,17 +216,10 @@ if solveProblem
             NU_sample = (3*C1_sample-2*C2_sample)./(6*C1_sample+2*C2_sample);
         case 'isottrans'
             % Data
-            ET_data = zeros(1,27);
-            GL_data = zeros(1,27);
-            EL_data = zeros(1,27);
-            NUL_data = zeros(1,27);
-            for i=1:27
-                sampleNum = [sample num2str(i)];
-                ET_data(i) = eval(['mean_ET_' sampleNum '_data;']); % GPa
-                GL_data(i) = eval(['mean_GL_' sampleNum '_data;'])*1e-3; % GPa
-                EL_data(i) = eval(['mean_EL_' sampleNum '_data;'])*1e-3; % GPa
-                NUL_data(i) = eval(['mean_NUL_' sampleNum '_data;']);
-            end
+            ET_data = mean_ET_data*1e-3; % GPa
+            GL_data = mean_GL_data*1e-3; % GPa
+            EL_data = mean_EL_data*1e-3; % GPa
+            NUL_data = mean_NUL_data;
             % NUT_data = ;
             
             % Markov Chain Monte-Carlo (MCMC) method based on 

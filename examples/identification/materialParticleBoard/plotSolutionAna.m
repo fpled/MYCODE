@@ -6,13 +6,16 @@ clearvars
 close all
 
 %% Input data
-sampleNum = 'B8'; % sample number
-imageNum = '08'; % image number
+sample = 'B';
+j = 8; % sample number
+k = 8; % image number
+numSample = [sample num2str(j)];
+numImage = num2str(k,'%02d'); 
 
-F = appliedLoad(sampleNum);
-[b,h,d,Iz] = dimSample(sampleNum);
+F = appliedLoad(numSample);
+[b,h,d,Iz] = dimSample(numSample);
 
-filenameDIC = [sampleNum '_00-' imageNum '-Mesh'];
+filenameDIC = [numSample '_00-' numImage '-Mesh'];
 pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'examples','identification','materialParticleBoard','resultsDIC');
 disp(['File = ',filenameDIC]);
@@ -40,38 +43,38 @@ S = MODEL('PLAN');
 S = addnode(S,node);
 S = addelem(S,elemtype,elem,'option',option);
 
-ET = eval(['ET_' sampleNum '(' imageNum ');'])*1e3; % MPa
-GL = eval(['GL_' sampleNum '(' imageNum ');']); % MPa
-Phi = eval(['Phi_' sampleNum '(' imageNum ');']);
-U0 = eval(['U0_' sampleNum '(' imageNum ');']); % mm
-V0 = eval(['V0_' sampleNum '(' imageNum ');']); % mm
+ET = ET_data{j}(k); % MPa
+GL = GL_data{j}(k); % MPa
+Phi = Phi_data{j}(k);
+U0 = U0_data{j}(k); % mm
+V0 = V0_data{j}(k); % mm
 mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',[],'ET',ET,'NUL',[],'GL',GL,'DIM3',h);
 mat = setnumber(mat,1);
 S = setmaterial(S,mat);
 S = final(S);
 
 x = [ET GL Phi U0 V0];
-u_ana = solveThreePointBendingAna(x,coord,F(str2double(imageNum)),Iz,h);
+u = solveThreePointBendingAna(x,coord,F(k),Iz,h);
 
 %% Display solutions
 ampl = 0;
-% ampl = getsize(S)/max(max(abs(u_ana)),max(abs(u_exp)))/5;
+% ampl = getsize(S)/max(max(abs(u)),max(abs(u_exp)))/5;
 
 for i=1:2
-    plotSolution(S,u_ana,'displ',i,'ampl',ampl);
-    mysaveas(pathname,['u_ana_' num2str(i)],formats,renderer);
+    plotSolution(S,u,'displ',i,'ampl',ampl);
+    mysaveas(pathname,['displ_ana_' num2str(i)],formats,renderer);
     plotSolution(S,u_exp,'displ',i,'ampl',ampl);
-    mysaveas(pathname,['u_exp_' num2str(i)],formats,renderer);
+    mysaveas(pathname,['displ_exp_' num2str(i)],formats,renderer);
 end
 
 % for i=1:3
-%     plotSolution(S,u_ana,'epsilon',i,'ampl',ampl);
+%     plotSolution(S,u,'epsilon',i,'ampl',ampl);
 %     mysaveas(pathname,['eps_ana_' num2str(i)],formats,renderer);
 %     plotSolution(S,u_exp,'epsilon',i,'ampl',ampl);
 %     mysaveas(pathname,['eps_exp_' num2str(i)],formats,renderer);
 % end
 % 
-% plotSolution(S,u_ana,'epsilon','mises','ampl',ampl);
+% plotSolution(S,u,'epsilon','mises','ampl',ampl);
 % mysaveas(pathname,'eps_von_mises_ana',formats,renderer);
 % plotSolution(S,u_exp,'epsilon','mises','ampl',ampl);
 % mysaveas(pathname,'eps_von_mises_exp',formats,renderer);

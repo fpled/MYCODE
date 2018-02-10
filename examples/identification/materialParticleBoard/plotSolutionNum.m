@@ -6,12 +6,15 @@ clearvars
 close all
 
 %% Input data
-sampleNum = 'B8'; % sample number
-imageNum = '08'; % image number
+sample = 'B';
+j = 8; % sample number
+k = 8; % image number
+numSample = [sample num2str(j)];
+numImage = num2str(k,'%02d');
 
-[b,h,d,Iz] = dimSample(sampleNum);
+[b,h,d,Iz] = dimSample(numSample);
 
-filenameDIC = [sampleNum '_00-' imageNum '-Mesh'];
+filenameDIC = [numSample '_00-' numImage '-Mesh'];
 pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'examples','identification','materialParticleBoard','resultsDIC');
 disp(['File = ',filenameDIC]);
@@ -41,10 +44,10 @@ S = MODEL('PLAN');
 S = addnode(S,node);
 S = addelem(S,elemtype,elem,'option',option);
 
-ET = eval(['ET_' sampleNum '(' imageNum ');'])*1e3; % MPa
-GL = eval(['GL_' sampleNum '(' imageNum ');']); % MPa
-EL = eval(['EL_' sampleNum '(' imageNum ');']); % MPa
-NUL = eval(['NUL_' sampleNum '(' imageNum ');']);
+ET = ET_data{j}(k); % MPa
+GL = GL_data{j}(k); % MPa
+EL = EL_data{j}(k); % MPa
+NUL = NUL_data{j}(k);
 mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',EL,'ET',ET,'NUL',NUL,'GL',GL,'DIM3',h);
 mat = setnumber(mat,1);
 S = setmaterial(S,mat);
@@ -56,44 +59,39 @@ u_exp_b = P*u_exp;
 S = addcl(S,[],'U',u_exp_b);
 u_exp_in = freevector(S,u_exp);
 
-% [A,b] = calc_rigi(S);
-% b = -b;
-% u_num_in = A\b;
-% u_num = unfreevector(S,u_num_in);
-
-param = [EL NUL];
-[u_num_in,S] = solveThreePointBendingNum(param,S);
-u_num = unfreevector(S,u_num_in);
+x = [EL NUL];
+[u_in,S] = solveThreePointBendingNum(x,S);
+u = unfreevector(S,u_in);
 
 %% Display solutions
 ampl = 0;
-% ampl = getsize(S)/max(max(abs(u_num)),max(abs(u_exp)))/5;
+% ampl = getsize(S)/max(max(abs(u)),max(abs(u_exp)))/5;
 
 for i=1:2
-    plotSolution(S,u_num,'displ',i,'ampl',ampl);
-    mysaveas(pathname,['u_num_' num2str(i)],formats,renderer);
+    plotSolution(S,u,'displ',i,'ampl',ampl);
+    mysaveas(pathname,['displ_num_' num2str(i)],formats,renderer);
     plotSolution(S,u_exp,'displ',i,'ampl',ampl);
-    mysaveas(pathname,['u_exp_' num2str(i)],formats,renderer);
+    mysaveas(pathname,['displ_exp_' num2str(i)],formats,renderer);
 end
 
 % for i=1:3
-%     plotSolution(S,u_num,'epsilon',i,'ampl',ampl);
+%     plotSolution(S,u,'epsilon',i,'ampl',ampl);
 %     mysaveas(pathname,['eps_num_' num2str(i)],formats,renderer);
 %     plotSolution(S,u_exp,'epsilon',i,'ampl',ampl);
 %     mysaveas(pathname,['eps_exp_' num2str(i)],formats,renderer);
 %     
-%     plotSolution(S,u_num,'sigma',i,'ampl',ampl);
+%     plotSolution(S,u,'sigma',i,'ampl',ampl);
 %     mysaveas(pathname,['sig_num_' num2str(i)],formats,renderer);
 %     plotSolution(S,u_exp,'sigma',i,'ampl',ampl);
 %     mysaveas(pathname,['sig_exp_' num2str(i)],formats,renderer);
 % end
 % 
-% plotSolution(S,u_num,'epsilon','mises','ampl',ampl);
+% plotSolution(S,u,'epsilon','mises','ampl',ampl);
 % mysaveas(pathname,'eps_von_mises_num',formats,renderer);
 % plotSolution(S,u_exp,'epsilon','mises','ampl',ampl);
 % mysaveas(pathname,'eps_von_mises_exp',formats,renderer);
 % 
-% plotSolution(S,u_num,'sigma','mises','ampl',ampl);
+% plotSolution(S,u,'sigma','mises','ampl',ampl);
 % mysaveas(pathname,'sig_von_mises_num',formats,renderer);
 % plotSolution(S,u_exp,'sigma','mises','ampl',ampl);
 % mysaveas(pathname,'sig_von_mises_exp',formats,renderer);

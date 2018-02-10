@@ -1,5 +1,5 @@
-function [u_num_in,S] = solveThreePointBendingNum(param,S)
-% function [u_num_in,S] = solveThreePointBendingNum(param,S)
+function [u_in,S] = solveThreePointBendingNum(param,S)
+% function [u_in,S] = solveThreePointBendingNum(param,S)
 
 EL = param(1);
 NUL = param(2);
@@ -13,6 +13,6 @@ S = actualisematerials(S,mats);
 
 [A,b] = calc_rigi(S);
 b = -b;
-u_num_in = A\b;
+u_in = A\b;
 
 end

@@ -29,19 +29,12 @@ pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
 load(fullfile(pathnameIdentification,filenameAna));
 load(fullfile(pathnameIdentification,filenameNum));
 
-sample = 'B';
-ET_data = zeros(1,27);
-GL_data = zeros(1,27);
-EL_data = zeros(1,27);
-NUL_data = zeros(1,27);
-for j=1:27
-   sampleNum = [sample num2str(j)];
-   ET_data(j) = eval(['mean_ET_' sampleNum '_data;']); % GPa
-   GL_data(j) = eval(['mean_GL_' sampleNum '_data;'])*1e-3; % GPa
-   EL_data(j) = eval(['mean_EL_' sampleNum '_data;'])*1e-3; % GPa
-   NUL_data(j) = eval(['mean_NUL_' sampleNum '_data;']);
-end
-NUT_data = 0.1+0.2*rand(1,27); % 20 artificial datas for NUT varying from 0.1 to 0.3
+numSamples = 27;
+ET_data = mean_ET_data*1e-3; % GPa
+GL_data = mean_GL_data*1e-3; % GPa
+EL_data = mean_EL_data*1e-3; % GPa
+NUL_data = mean_NUL_data;
+NUT_data = 0.1+0.2*rand(numSamples,1); % 27 artificial datas for NUT varying from 0.1 to 0.3
 GT_data = ET_data./(2*(1+NUT_data));
 kT_data = (EL_data.*ET_data)./(2*(1-NUT_data).*EL_data-4*ET_data.*(NUL_data).^2);
 C1_data = EL_data + 4*(NUL_data.^2).*kT_data;

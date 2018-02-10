@@ -16,45 +16,61 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
 load(fullfile(pathname,filenameAna));
 
 fontsize = 16;
+linewidth = 1;
 interpreter = 'latex';
 formats = {'fig','epsc2'};
 
 %% Identification
-x0 = [1e2 1e-2];
+EL0 = 1e2; % MPa
+NUL0 = 1e-2;
+x0 = [EL0 NUL0];
 lb = [0 0];
 ub = [Inf 0.5];
+optimFun = 'lsqnonlin';
+% optimFun = 'fminsearch';
+% optimFun = 'fminunc';
+% optimFun = 'fmincon';
+display = 'off';
 tolX = 1e-14;
 tolFun = 1e-14;
-display = 'off';
 
-optionslsqnonlin  = optimoptions('lsqnonlin','Display',display,'TolX',tolX,'TolFun',tolFun);
-optionsfminsearch = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
-optionsfminunc    = optimoptions('fminunc','Display',display,'TolX',tolX,'TolFun',tolFun);
-optionsfmincon    = optimoptions('fmincon','Display',display,'TolX',tolX,'TolFun',tolFun);
+switch optimFun
+    case {'lsqnonlin','fminunc','fmincon'}
+        options  = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun);
+    case 'fminsearch'
+        options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
+    otherwise
+        error(['Wrong optimization function' optimFun])
+end
 
 sample = 'B';
-for j = 1:27
+numSamples = 27;
+EL_data = cell(numSamples,1);
+NUL_data = cell(numSamples,1);
+err_num_data = cell(numSamples,1);
+
+mean_EL_data = zeros(numSamples,1);
+mean_NUL_data = zeros(numSamples,1);
+std_EL_data = zeros(numSamples,1);
+std_NUL_data = zeros(numSamples,1);
+
+for j=1:numSamples
     
-    sampleNum = [sample num2str(j)];
-    
-    F = appliedLoad(sampleNum);
-    [b,h,d,Iz] = dimSample(sampleNum);
+    numSample = [sample num2str(j)];
+    F = appliedLoad(numSample);
+    [b,h,d,Iz] = dimSample(numSample);
     
     t = tic;
     
-    EL = zeros(length(F),1);
-    NUL = zeros(length(F),1);
-    err = zeros(length(F),1);
+    numImages = length(F);
+    EL = zeros(numImages,1);
+    NUL = zeros(numImages,1);
+    err = zeros(numImages,1);
     
-    for k = 1:length(F)
+    for k=1:numImages
         
-        if k<10
-            imageNum = ['0' num2str(k)];
-        else
-            imageNum = num2str(k);
-        end
-        
-        filenameDIC = [sampleNum '_00-' imageNum '-Mesh'];
+        numImage = num2str(k,'%02d');
+        filenameDIC = [numSample '_00-' numImage '-Mesh'];
         pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
             'examples','identification','materialParticleBoard','resultsDIC');
         load(fullfile(pathnameDIC,filenameDIC));
@@ -70,8 +86,8 @@ for j = 1:27
         S = addnode(S,node);
         S = addelem(S,elemtype,elem,'option',option);
         
-        ET = eval(['ET_' sampleNum '(' imageNum ')'])*1e3; % MPa
-        GL = eval(['GL_' sampleNum '(' imageNum ')']); % MPa
+        ET = ET_data{j}(k); % MPa
+        GL = GL_data{j}(k); % MPa
         mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',[],'ET',ET,'NUL',[],'GL',GL,'DIM3',h);
         mat = setnumber(mat,1);
         S = setmaterial(S,mat);
@@ -83,19 +99,25 @@ for j = 1:27
         S = addcl(S,[],'U',u_exp_b);
         u_exp_in = freevector(S,u_exp);
         
-        funlsqnonlin = @(x) funlsqnonlinNum(x,u_exp_in,S);
-        % funoptim = @(x) funoptimNum(x,u_exp_in,S);
-        
-        [x,err(k),~,exitflag,output] = lsqnonlin(funlsqnonlin,x0,lb,ub,optionslsqnonlin);
-        % [x,err(k),exitflag,output] = fminsearch(funoptim,x0,optionsfminsearch);
-        % [x,err(k),exitflag,output] = fminunc(funoptim,x0,optionsfminunc);
-        % [x,err(k),exitflag,output] = fmincon(funoptim,x0,[],[],[],[],lb,ub,[],optionsfmincon);
+        switch optimFun
+            case 'lsqnonlin'
+                fun = @(x) funlsqnonlin(x,u_exp_in,S);
+                [x,err(k),~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
+            case 'fminsearch'
+                fun = @(x) funoptim(x,u_exp_in,S);
+                [x,err(k),exitflag,output] = fminsearch(fun,x0,options);
+            case 'fminunc'
+                fun = @(x) funoptim(x,u_exp_in,S);
+                [x,err(k),exitflag,output] = fminunc(fun,x0,options);
+            case 'fmincon'
+                fun = @(x) funoptim(x,u_exp_in,S);
+                [x,err(k),exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
+        end
         
         EL(k) = x(1); % MPa
         NUL(k) = x(2);
         err(k) = sqrt(err(k))./norm(u_exp_in);
     end
-    toc(t)
     
     %% Outputs
     fprintf('\n')
@@ -105,56 +127,82 @@ for j = 1:27
     disp('| Young modulus | Poisson ratio |  Error between  |')
     disp('|    EL (MPa)   |      NUL      | U_num and U_exp |')
     disp('+---------------+---------------+-----------------+')
-    for k=1:length(F)
+    for k=1:numImages
         fprintf('| %13.4f | %13.4f | %15.4e |\n',EL(k),NUL(k),err(k))
     end
     disp('+---------------+---------------+-----------------+')
     
-    eval(['EL_' sampleNum '= EL;']);
-    eval(['NUL_' sampleNum '= NUL;']);
-    eval(['err_num_' sampleNum '= err;']);
+    toc(t)
     
-    imageInit = 3;
-    eval(['EL_' sampleNum '_data = EL_' sampleNum '(imageInit:end);']);
-    eval(['NUL_' sampleNum '_data = NUL_' sampleNum '(imageInit:end);']);
-    eval(['mean_EL_' sampleNum '_data = mean(EL_' sampleNum '_data);']);
-    eval(['mean_NUL_' sampleNum '_data = mean(NUL_' sampleNum  '_data);']);
-    eval(['std_EL_' sampleNum '_data = std(EL_' sampleNum '_data);']);
-    eval(['std_NUL_' sampleNum '_data = std(NUL_' sampleNum '_data);']);
+    EL_data{j} = EL;
+    NUL_data{j} = NUL;
+    err_num_data{j} = err;
+    mean_EL_data(j) = mean(EL(initImage:end));
+    mean_NUL_data(j) = mean(NUL(initImage:end));
+    std_EL_data(j) = std(EL(initImage:end));
+    std_NUL_data(j) = std(NUL(initImage:end));
     
-    %% Save variables
-    if isempty(dir(fullfile(pathname,filenameNum)))
-        save(fullfile(pathname,filenameNum),['EL_' sampleNum],['NUL_' sampleNum],['err_num_' sampleNum],...
-            ['EL_' sampleNum '_data'],['NUL_' sampleNum '_data'],...
-            ['mean_EL_' sampleNum '_data'],['mean_NUL_' sampleNum '_data'],...
-            ['std_EL_' sampleNum '_data'],['std_NUL_' sampleNum '_data']);
-    else
-        save(fullfile(pathname,filenameNum),['EL_' sampleNum],['NUL_' sampleNum],['err_num_' sampleNum],...
-            ['EL_' sampleNum '_data'],['NUL_' sampleNum '_data'],...
-            ['mean_EL_' sampleNum '_data'],['mean_NUL_' sampleNum '_data'],...
-            ['std_EL_' sampleNum '_data'],['std_NUL_' sampleNum '_data'],'-append');
-    end
+end
+
+%% Save variables
+save(fullfile(pathname,filenameNum),'EL_data','NUL_data','err_num_data',...
+    'mean_EL_data','mean_NUL_data','std_EL_data','std_NUL_data');
+
+%% Plot data
+if displaySolution
+%     for j=1:numSamples
+%         numSample = ['B' num2str(j)];
+%         
+%         figure
+%         clf
+%         bar(EL_data{j}(initImage:end));
+%         grid on
+%         set(gca,'FontSize',fontsize)
+%         legend(numSample,'Location','NorthEastOutside');
+%         xlabel('Image number','Interpreter',interpreter);
+%         ylabel('Young modulus $E^L$ (MPa)','Interpreter',interpreter);
+%         mysaveas(pathname,['data_EL_' numSample],formats);
+%         mymatlab2tikz(pathname,['data_EL_' numSample '.tex']);
+%         
+%         figure
+%         clf
+%         bar(NUL_data{j}(initImage:end));
+%         grid on
+%         set(gca,'FontSize',fontsize)
+%         legend(numSample,'Location','NorthEastOutside');
+%         xlabel('Image number','Interpreter',interpreter);
+%         ylabel('Poisson ratio $\nu^L$','Interpreter',interpreter);
+%         mysaveas(pathname,['data_NUL_' numSample],formats);
+%         mymatlab2tikz(pathname,['data_NUL_' numSample '.tex']);
+%     end
     
-    %% Plot data
-    if displaySolution
-        figure
-        eval(['bar(EL_' sampleNum '_data);']);
-        grid on
-        set(gca,'FontSize',fontsize)
-        legend(sampleNum,'Location','NorthEastOutside');
-        xlabel('Image number','Interpreter',interpreter);
-        ylabel('Young modulus $E^L$ (MPa)','Interpreter',interpreter);
-        mysaveas(pathname,['data_EL_' sampleNum],formats);
-        mymatlab2tikz(pathname,['data_EL_' sampleNum '.tex']);
-        
-        figure
-        eval(['bar(NUL_' sampleNum '_data);']);
-        grid on
-        set(gca,'FontSize',fontsize)
-        legend(sampleNum,'Location','NorthEastOutside');
-        xlabel('Image number','Interpreter',interpreter);
-        ylabel('Poisson ratio $\nu^L$','Interpreter',interpreter);
-        mysaveas(pathname,['data_NUL_' sampleNum],formats);
-        mymatlab2tikz(pathname,['data_NUL_' sampleNum '.tex']);
-    end
+    figure
+    clf
+    bar(mean_EL_data,'LineWidth',linewidth);
+    grid on
+    set(gca,'FontSize',fontsize)
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Young modulus $E^L$ (MPa)','Interpreter',interpreter);
+    mysaveas(pathname,'data_EL',formats);
+    mymatlab2tikz(pathname,'data_EL.tex');
+    
+    figure
+    clf
+    bar(mean_NUL_data,'LineWidth',linewidth);
+    grid on
+    set(gca,'FontSize',fontsize)
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Poisson ratio $\nu^L$','Interpreter',interpreter);
+    mysaveas(pathname,'data_NUL',formats);
+    mymatlab2tikz(pathname,'data_NUL.tex');
+end
+
+function f = funlsqnonlin(x,u_exp,varargin)
+u = solveThreePointBendingNum(x,varargin{:});
+f = u - u_exp;
+end
+
+function f = funoptim(x,u_exp,varargin)
+u = solveThreePointBendingNum(x,varargin{:});
+f = norm(u - u_exp)^2;
 end

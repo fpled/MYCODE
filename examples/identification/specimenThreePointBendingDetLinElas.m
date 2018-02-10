@@ -31,24 +31,20 @@ formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
 sample = 'B';
-% for j = 1:27
-for j = 8
+numSamples = 27;
+% for j=1:numSamples
+for j=8
     
-    sampleNum = [sample num2str(j)];
+    numSample = [sample num2str(j)];
+    F = appliedLoad(numSample);
+    [b,h,d,Iz] = dimSample(numSample);
     
-    F = appliedLoad(sampleNum);
-    [b,h,d,Iz] = dimSample(sampleNum);
-    
-    % for k = 1:length(F)
-    for k = 1
+    numImages = length(F);
+    % for k=1:numImages
+    for k=8
         
-        if k<10
-            imageNum = ['0' num2str(k)];
-        else
-            imageNum = num2str(k);
-        end
-
-        filenameDIC = [sampleNum '_00-' num2str(imageNum) '-Mesh'];
+        numImage = num2str(k,'%02d');
+        filenameDIC = [numSample '_00-' num2str(numImage) '-Mesh'];
         pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
             'examples','identification','materialParticleBoard','resultsDIC');
         disp(['File = ',filenameDIC]);
@@ -79,22 +75,22 @@ for j = 8
             switch lower(materialSym)
                 case 'isot'
                     % Young modulus
-                    E = eval(['ET_' sampleNum '(' imageNum ')*1e3']); % MPa
+                    E = ET_data{j}(k); % MPa
                     % Shear modulus
-                    G = eval(['GL_' sampleNum '(' imageNum ')']); % MPa
+                    G = GL_data{j}(k); % MPa
                     % Poisson ratio
                     NU = E/G/2-1;
                     % Material
                     mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3);
                 case 'isottrans'
                     % Transverse Young modulus
-                    ET = eval(['ET_' sampleNum '(' imageNum ')'])*1e3; % MPa
+                    ET = ET_data{j}(k); % MPa
                     % Longitudinal shear modulus
-                    GL = eval(['GL_' sampleNum '(' imageNum ')']); % MPa
+                    GL = GL_data{k}(k); % MPa
                     % Longitudinal Young modulus
-                    EL = eval(['EL_' sampleNum '(' imageNum ');']); % MPa
+                    EL = EL_data{j}(k); % MPa
                     % Longitudinal Poisson ratio
-                    NUL = eval(['NUL_' sampleNum '(' imageNum ');']);
+                    NUL = NUL_data{j}(k);
                     % Transverse Poisson ratio
                     NUT = 0.25;
                     % Material

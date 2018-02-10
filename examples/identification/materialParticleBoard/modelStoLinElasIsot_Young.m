@@ -27,12 +27,7 @@ pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification','materialParticleBoard');
 load(fullfile(pathnameIdentification,filenameAna));
 
-sample = 'B';
-E_data = zeros(1,27);
-for j=1:27
-    sampleNum = [sample num2str(j)];
-    E_data(j) = eval(['mean_ET_' sampleNum '_data;']); % GPa
-end
+E_data = mean_ET_data*1e-3; % GPa
 mean_E = mean(E_data);
 std_E = std(E_data);
 
@@ -43,7 +38,7 @@ if displaySolution
     bar(1:length(E_data),E_data)
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[0,length(E_data)+1])
-    xlabel('Sample','Interpreter',interpreter);
+    xlabel('Sample number','Interpreter',interpreter);
     ylabel('Young modulus $E$ (GPa)','Interpreter',interpreter);
     mysaveas(pathname,'data_E',formats);
     mymatlab2tikz(pathname,'data_E.tex');
@@ -66,9 +61,9 @@ mE = phat(1)*phat(2);
 vE = phat(1)*phat(2)^2;
 sE = sqrt(vE);
 dE = sE/mE; % dE = 1/sqrt(phat(1));
-fprintf('\nmean(E) = %.4f',mE);
-fprintf('\nvar(E)  = %.4f',vE);
-fprintf('\nstd(E)  = %.4f',sE);
+fprintf('\nmean(E) = %.4f GPa',mE);
+fprintf('\nvar(E)  = %.4f (GPa)^2',vE);
+fprintf('\nstd(E)  = %.4f GPa',sE);
 fprintf('\ndisp(E) = %.4f',dE);
 fprintf('\n');
 
@@ -142,6 +137,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('Number of samples','Interpreter',interpreter)
     ylabel('Young modulus $E$ (GPa)','Interpreter',interpreter)
+    legend('samples','mean');
     mysaveas(pathname,'samples_E',formats);
     mymatlab2tikz(pathname,'samples_E.tex');
 end

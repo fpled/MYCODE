@@ -30,14 +30,8 @@ pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
 load(fullfile(pathnameIdentification,filenameAna));
 load(fullfile(pathnameIdentification,filenameNum));
 
-sample = 'B';
-E_data = zeros(1,27);
-G_data = zeros(1,27);
-for j=1:27
-    sampleNum = [sample num2str(j)];
-    E_data(j) = eval(['mean_ET_' sampleNum '_data;']); % GPa
-    G_data(j) = eval(['mean_GL_' sampleNum '_data;'])*13*1e-3; % GPa
-end
+E_data = mean_ET_data*1e-3; % GPa
+G_data = mean_GL_data*1e-3*13; % GPa
 NU_data = E_data./(2*G_data)-1;
 lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data)); 
 C1_data = lambda_data + 2/3*G_data; 
@@ -50,7 +44,7 @@ if displaySolution
     bar(1:length(E_data),E_data)
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[0,length(E_data)+1])
-    xlabel('Sample','Interpreter',interpreter);
+    xlabel('Sample number','Interpreter',interpreter);
     ylabel('Young modulus $E$ (GPa)','Interpreter',interpreter);
     mysaveas(pathname,'data_E','fig');
     mymatlab2tikz(pathname,'data_E.tex');
@@ -60,7 +54,7 @@ if displaySolution
     bar(1:length(G_data),G_data)
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[0,length(G_data)+1])
-    xlabel('Sample','Interpreter',interpreter);
+    xlabel('Sample number','Interpreter',interpreter);
     ylabel('Shear modulus $G$ (GPa)','Interpreter',interpreter);
     mysaveas(pathname,'data_G','fig');
     mymatlab2tikz(pathname,'data_G.tex');
@@ -69,7 +63,7 @@ end
 %% Maximum likelihood estimation
 n_data = length(C1_data);
 m_data = length(C2_data);
-data = [C1_data C2_data];
+data = [C1_data; C2_data];
 
 nloglf = @(lambda,data,cens,freq) -n_data*( (1-lambda(3))*log(lambda(1))...
     - gammaln(1-lambda(3)) ) - m_data*( (1-5*lambda(3))*log(lambda(2))...
@@ -294,6 +288,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('Poisson ratio $\nu$','Interpreter',interpreter);
     ylabel('Young modulus $E$ (GPa)','Interpreter',interpreter);
+    legend('sample','data')
     mysaveas(pathname,'samples_EN',formats);
     mymatlab2tikz(pathname,'samples_EN.tex');
 end

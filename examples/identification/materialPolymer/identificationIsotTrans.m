@@ -129,24 +129,40 @@ GL0 = 5e2; % MPa
 x0 = [EL0 NUL0 GL0];
 lb = [0 0 0];
 ub = [Inf 0.5 Inf];
+optimFun = 'lsqnonlin';
+% optimFun = 'fminsearch';
+% optimFun = 'fminunc';
+% optimFun = 'fmincon';
+display = 'off';
 tolX = 1e-14;
 tolFun = 1e-14;
-display = 'off';
 
-optionslsqnonlin  = optimoptions('lsqnonlin','Display',display,'TolX',tolX,'TolFun',tolFun);
-optionsfminsearch = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
-optionsfminunc    = optimoptions('fminunc','Display',display,'TolX',tolX,'TolFun',tolFun);
-optionsfmincon    = optimoptions('fmincon','Display',display,'TolX',tolX,'TolFun',tolFun);
-
-funlsqnonlin = @(x) funlsqnonlinNum(x,u_exp_in,S);
-% funoptim = @(x) funoptimNum(x,u_exp_in,S);
+switch optimFun
+    case {'lsqnonlin','fminunc','fmincon'}
+        options  = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun);
+    case 'fminsearch'
+        options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
+    otherwise
+        error(['Wrong optimization function' optimFun])
+end
 
 t = tic;
-[x,err,~,exitflag,output] = lsqnonlin(funlsqnonlin,x0,lb,ub,optionslsqnonlin);
-% [x,err,exitflag,output] = fminsearch(funoptim,x0,optionsfminsearch);
-% [x,err,exitflag,output] = fminunc(funoptim,x0,optionsfminunc);
-% [x,err,exitflag,output] = fmincon(funoptim,x0,[],[],[],[],lb,ub,[],optionsfmincon);
+switch optimFun
+    case 'lsqnonlin'
+        fun = @(x) funlsqnonlin(x,u_exp_in,S);
+        [x,err,~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
+    case 'fminsearch'
+        fun = @(x) funoptim(x,u_exp_in,S);
+        [x,err,exitflag,output] = fminsearch(fun,x0,options);
+    case 'fminunc'
+        fun = @(x) funoptim(x,u_exp_in,S);
+        [x,err,exitflag,output] = fminunc(fun,x0,options);
+    case 'fmincon'
+        fun = @(x) funoptim(x,u_exp_in,S);
+        [x,err,exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
+end
 toc(t)
+
 EL = x(1); % MPa
 NUL = x(2);
 GL = x(3); % MPa
@@ -160,11 +176,10 @@ fprintf('err = %g\n',err);
 % disp(output);
 
 %% Numerical solution
-param = [EL NUL GL];
-[u_in,S] = solveTractionIsotTrans(param,S);
+[u_in,S] = solveTractionIsotTrans(x,S);
 u = unfreevector(S,u_in);
 
-%% Display numerical solution 
+%% Display numerical solution
 ampl = 0.5;
 v_exp = calc_init_dirichlet(S);
 figure('Name','Imposed experimental displacement')
@@ -211,8 +226,8 @@ GL_series = linspace(GL*0.5,GL*1.5,50); % MPa
 err = zeros(length(EL_series),length(GL_series));
 for m=1:length(EL_series)
     for n=1:length(GL_series)
-        param = [EL_series(m) NUL GL_series(n)];
-        u_in = solveTractionIsotTrans(param,S);
+        x = [EL_series(m) NUL GL_series(n)];
+        u_in = solveTractionIsotTrans(x,S);
         err(m,n) = norm(u_exp_in - u_in);
     end
 end
@@ -250,8 +265,8 @@ mysaveas(pathname,'error_EL_GL_2D',formats,renderer);
 err = zeros(length(EL_series),length(NUL_series));
 for m=1:length(EL_series)
     for n=1:length(NUL_series)
-        param = [EL_series(m) NUL_series(n) GL];
-        u_in = solveTractionIsotTrans(param,S);
+        x = [EL_series(m) NUL_series(n) GL];
+        u_in = solveTractionIsotTrans(x,S);
         err(m,n) = norm(u_exp_in - u_in);
     end
 end
@@ -289,8 +304,8 @@ mysaveas(pathname,'error_EL_NUL_2D',formats,renderer);
 err = zeros(length(NUL_series),length(GL_series));
 for m=1:length(NUL_series)
     for n=1:length(GL_series)
-        param = [EL NUL_series(m) GL_series(n)];
-        u_in = solveTractionIsotTrans(param,S);
+        x = [EL NUL_series(m) GL_series(n)];
+        u_in = solveTractionIsotTrans(x,S);
         err(m,n) = norm(u_exp_in - u_in);
     end
 end
@@ -323,3 +338,13 @@ set(gca,'FontSize',fontsize)
 xlabel('$G^L$ (MPa)','Interpreter',interpreter)
 ylabel('$\nu$','Interpreter',interpreter)
 mysaveas(pathname,'error_NUL_GL_2D',formats,renderer);
+
+function f = funlsqnonlin(x,u_exp,varargin)
+u = solveTractionIsotTrans(x,varargin{:});
+f = u - u_exp;
+end
+
+function f = funoptim(x,u_exp,varargin)
+u = solveTractionIsotTrans(x,varargin{:});
+f = norm(u - u_exp)^2;
+end

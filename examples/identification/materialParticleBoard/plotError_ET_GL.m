@@ -17,22 +17,20 @@ formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
 %% Plot error
-sampleNum = 'B8';
+sample = 'B';
+j = 8; % sample number
+numSample = [sample num2str(j)];
 
-F = appliedLoad(sampleNum);
-[b,h,d,Iz] = dimSample(sampleNum);
+F = appliedLoad(numSample);
+[b,h,d,Iz] = dimSample(numSample);
 
-for k = 1:length(F)
-    
-    if k<10
-        imageNum = ['0' num2str(k)];
-    else
-        imageNum = num2str(k);
-    end
+numImages = length(F);
+for k=1:numImages
     
     t = tic;
     
-    filenameDIC = [sampleNum '_00-' imageNum '-Mesh'];
+    numImage = num2str(k,'%02d');
+    filenameDIC = [numSample '_00-' numImage '-Mesh'];
     pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
         'examples','identification','materialParticleBoard','resultsDIC');
     disp(['File = ',filenameDIC]);
@@ -40,11 +38,11 @@ for k = 1:length(F)
     
     [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d);
     
-    ET = eval(['ET_' sampleNum '(' imageNum ');'])*1e3; % MPa
-    GL = eval(['GL_' sampleNum '(' imageNum ');']); % MPa
-    Phi = eval(['Phi_' sampleNum '(' imageNum ');']);
-    U0 = eval(['U0_' sampleNum '(' imageNum ');']);
-    V0 = eval(['V0_' sampleNum '(' imageNum ');']);
+    ET = ET_data{j}(k); % MPa
+    GL = GL_data{j}(k); % MPa
+    Phi = Phi_data{j}(k);
+    U0 = U0_data{j}(k); % mm
+    V0 = V0_data{j}(k); % mm
     ET_series = linspace(ET*0.5,ET*1.5,1e2); % MPa
     GL_series = linspace(GL*0.5,GL*1.5,1e2); % MPa
     
@@ -53,8 +51,8 @@ for k = 1:length(F)
         ET = ET_series(m);
         for n=1:length(GL_series)
             GL = GL_series(n);
-            param = [ET GL Phi U0 V0];
-            u_ana = solveThreePointBendingAna(param,coord,F(k),Iz,h);
+            x = [ET GL Phi U0 V0];
+            u_ana = solveThreePointBendingAna(x,coord,F(k),Iz,h);
             err(m,n) = norm(u_exp - u_ana);
         end
     end
@@ -74,7 +72,7 @@ for k = 1:length(F)
     xlabel('$G^L$ (MPa)','Interpreter',interpreter)
     ylabel('$E^T$ (MPa)','Interpreter',interpreter)
     zlabel('$\varepsilon$','Interpreter',interpreter)
-    mysaveas(pathname,['error_ET_GL_' sampleNum '_image_' imageNum '_3D'],formats,renderer);
+    mysaveas(pathname,['error_ET_GL_' numSample '_image_' numImage '_3D'],formats,renderer);
     
     figure
     contourf(GL_series,ET_series,err,30);
@@ -86,7 +84,7 @@ for k = 1:length(F)
     % set(gca,'ZScale','log')
     xlabel('$G^L$ (MPa)','Interpreter',interpreter)
     ylabel('$E^T$ (MPa)','Interpreter',interpreter)
-    mysaveas(pathname,['error_ET_GL_' sampleNum '_image_' imageNum '_2D'],formats,renderer);
+    mysaveas(pathname,['error_ET_GL_' numSample '_image_' numImage '_2D'],formats,renderer);
     
     toc(t)
 end

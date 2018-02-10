@@ -20,70 +20,100 @@ if ~exist(pathname,'dir')
 end
 
 fontsize = 16;
+linewidth = 1;
 interpreter = 'latex';
 formats = {'fig','epsc2'};
 
 %% Identification
-x0 = [1e3 1e2 0 0 0];
+ET0 = 1e3; % MPa
+GL0 = 1e2; % MPa
+Phi0 = 0;
+U0 = 0; % mm
+V0 = 0; % mm
+x0 = [ET0 GL0 Phi0 U0 V0];
 lb = [0 0 -Inf -Inf -Inf];
 ub = [Inf Inf Inf Inf Inf];
+optimFun = 'lsqnonlin';
+% optimFun = 'fminsearch';
+% optimFun = 'fminunc';
+% optimFun = 'fmincon';
+display = 'off';
 tolX = 1e-14;
 tolFun = 1e-14;
-display = 'off';
 
-optionslsqnonlin  = optimoptions('lsqnonlin','Display',display,'TolX',tolX,'TolFun',tolFun);
-optionsfminsearch = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
-optionsfminunc    = optimoptions('fminunc','Display',display,'TolX',tolX,'TolFun',tolFun);
-optionsfmincon    = optimoptions('fmincon','Display',display,'TolX',tolX,'TolFun',tolFun);
+switch optimFun
+    case {'lsqnonlin','fminunc','fmincon'}
+        options  = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun);
+    case 'fminsearch'
+        options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
+    otherwise
+        error(['Wrong optimization function' optimFun])
+end
 
 sample = 'B';
-for j = 1:27
+numSamples = 27;
+ET_data = cell(numSamples,1);
+GL_data = cell(numSamples,1);
+Phi_data = cell(numSamples,1);
+U0_data = cell(numSamples,1);
+V0_data = cell(numSamples,1);
+err_ana_data = cell(numSamples,1);
+
+mean_ET_data = zeros(numSamples,1);
+mean_GL_data = zeros(numSamples,1);
+std_ET_data = zeros(numSamples,1);
+std_GL_data = zeros(numSamples,1);
+
+initImage = 3;
+
+for j=1:numSamples
     
-    sampleNum = [sample num2str(j)];
-    
-    F = appliedLoad(sampleNum);
-    [b,h,d,Iz] = dimSample(sampleNum);
+    numSample = [sample num2str(j)];
+    F = appliedLoad(numSample);
+    [b,h,d,Iz] = dimSample(numSample);
     
     t = tic;
     
-    ET = zeros(length(F),1);
-    GL = zeros(length(F),1);
-    Phi = zeros(length(F),1);
-    U0 = zeros(length(F),1);
-    V0 = zeros(length(F),1);
-    err = zeros(length(F),1);
+    numImages = length(F);
+    ET = zeros(numImages,1);
+    GL = zeros(numImages,1);
+    Phi = zeros(numImages,1);
+    U0 = zeros(numImages,1);
+    V0 = zeros(numImages,1);
+    err = zeros(numImages,1);
     
-    for k = 1:length(F)
+    for k=1:numImages
         
-        if k<10
-            imageNum = ['0' num2str(k)];
-        else
-            imageNum = num2str(k);
-        end
-        
-        filenameDIC = [sampleNum '_00-' imageNum '-Mesh'];
+        numImage = num2str(k,'%02d');
+        filenameDIC = [numSample '_00-' numImage '-Mesh'];
         pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
             'examples','identification','materialParticleBoard','resultsDIC');
         load(fullfile(pathnameDIC,filenameDIC));
         
         [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d);
         
-        funlsqnonlin = @(x) funlsqnonlinAna(x,u_exp,coord,F(k),Iz,h);
-        % funoptim = @(x) funoptimAna(x,u_exp,coord,F(imageList),Iz,h);
+        switch optimFun
+            case 'lsqnonlin'
+                fun = @(x) funlsqnonlin(x,u_exp,coord,F(k),Iz,h);
+                [x,err(k),~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
+            case 'fminsearch'
+                fun = @(x) funoptim(x,u_exp,coord,F(k),Iz,h);
+                [x,err(k),exitflag,output] = fminsearch(fun,x0,options);
+            case 'fminunc'
+                fun = @(x) funoptim(x,u_exp,coord,F(k),Iz,h);
+                [x,err(k),exitflag,output] = fminunc(fun,x0,options);
+            case 'fmincon'
+                fun = @(x) funoptim(x,u_exp,coord,F(k),Iz,h);
+                [x,err(k),exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
+        end
         
-        [x,err(k),~,exitflag,output] = lsqnonlin(funlsqnonlin,x0,lb,ub,optionslsqnonlin);
-        % [x,err(k),exitflag,output] = fminsearch(funoptim,x0,optionsfminsearch);
-        % [x,err(k),exitflag,output] = fminunc(funoptim,x0,optionsfminunc);
-        % [x,err(k),exitflag,output] = fmincon(funoptim,x0,[],[],[],[],lb,ub,[],optionsfmincon);
-        
-        ET(k) = x(1)*1e-3; % GPa
+        ET(k) = x(1); % MPa
         GL(k) = x(2); % MPa
         Phi(k) = x(3);
-        U0(k) = x(4);
-        V0(k) = x(5);
+        U0(k) = x(4); % mm
+        V0(k) = x(5); % mm
         err(k) = sqrt(err(k))./norm(u_exp);
     end
-    toc(t)
     
     %% Outputs
     fprintf('\n')
@@ -93,61 +123,85 @@ for j = 1:27
     disp('| Young modulus | Shear modulus |  Error between  |')
     disp('|    ET (GPa)   |    GL (MPa)   | U_ana and U_exp |')
     disp('+---------------+---------------+-----------------+')
-    for k=1:length(F)
-        fprintf('| %13.4f | %13.4f | %15.4e |\n',ET(k),GL(k),err(k))
+    for k=1:numImages
+        fprintf('| %13.4f | %13.4f | %15.4e |\n',ET(k)*1e-3,GL(k),err(k))
     end
     disp('+---------------+---------------+-----------------+')
     
-    eval(['ET_' sampleNum '= ET;']);
-    eval(['GL_' sampleNum '= GL;']);
-    eval(['Phi_' sampleNum '= Phi;']);
-    eval(['U0_' sampleNum '= U0;']);
-    eval(['V0_' sampleNum '= V0;']);
-    eval(['err_ana_' sampleNum '= err;']);
+    toc(t)
     
-    initIm = 3;
-    eval(['ET_' sampleNum '_data = ET_' sampleNum '(initIm:end);']);
-    eval(['GL_' sampleNum '_data = GL_' sampleNum '(initIm:end);']);
-    eval(['mean_ET_' sampleNum '_data = mean(ET_' sampleNum '_data);']);
-    eval(['mean_GL_' sampleNum '_data = mean(GL_' sampleNum '_data);']);
-    eval(['std_ET_' sampleNum '_data = std(ET_' sampleNum '_data);']);
-    eval(['std_GL_' sampleNum '_data = std(GL_' sampleNum '_data);']);
+    ET_data{j} = ET;
+    GL_data{j} = GL;
+    Phi_data{j} = Phi;
+    U0_data{j} = U0;
+    V0_data{j} = V0;
+    err_ana_data{j} = err;
+    mean_ET_data(j) = mean(ET(initImage:end));
+    mean_GL_data(j) = mean(GL(initImage:end));
+    std_ET_data(j) = std(ET(initImage:end));
+    std_GL_data(j) = std(GL(initImage:end));
+end
+
+%% Save variables
+save(fullfile(pathname,filename),'ET_data','GL_data',...
+    'Phi_data','U0_data','V0_data','err_ana_data','initImage',...
+    'mean_ET_data','mean_GL_data','std_ET_data','std_GL_data');
+
+%% Plot data
+if displaySolution
+%     for j=1:numSamples
+%         numSample = ['B' num2str(j)];
+%         
+%         figure
+%         clf
+%         bar(ET_data{j}(initImage:end)*1e-3);
+%         grid on
+%         set(gca,'FontSize',fontsize)
+%         legend(numSample,'Location','NorthEastOutside');
+%         xlabel('Image number','Interpreter',interpreter);
+%         ylabel('Young modulus $E^T$ (GPa)','Interpreter',interpreter);
+%         mysaveas(pathname,['data_ET_' numSample],formats);
+%         mymatlab2tikz(pathname,['data_ET_' numSample '.tex']);
+%         
+%         figure
+%         clf
+%         bar(GL_data{j}(initImage:end));
+%         grid on
+%         set(gca,'FontSize',fontsize)
+%         legend(numSample,'Location','NorthEastOutside');
+%         xlabel('Image number','Interpreter',interpreter);
+%         ylabel('Shear modulus $G^L$ (MPa)','Interpreter',interpreter);
+%         mysaveas(pathname,['data_GL_' numSample],formats);
+%         mymatlab2tikz(pathname,['data_GL_' numSample '.tex']);
+%     end
     
-    %% Save variables
-    if isempty(dir(fullfile(pathname,filename)))
-        save(fullfile(pathname,filename),['ET_' sampleNum],['GL_' sampleNum],...
-            ['Phi_' sampleNum],['U0_' sampleNum],['V0_' sampleNum],['err_ana_' sampleNum],...
-            ['ET_' sampleNum '_data'],['GL_' sampleNum '_data'],...
-            ['mean_ET_' sampleNum '_data'],['mean_GL_' sampleNum '_data'],...
-            ['std_ET_' sampleNum '_data'],['std_GL_' sampleNum '_data']);
-    else
-        save(fullfile(pathname,filename),['ET_' sampleNum],['GL_' sampleNum],...
-            ['Phi_' sampleNum],['U0_' sampleNum],['V0_' sampleNum],['err_ana_' sampleNum],...
-            ['ET_' sampleNum '_data'],['GL_' sampleNum '_data'],...
-            ['mean_ET_' sampleNum '_data'],['mean_GL_' sampleNum '_data'],...
-            ['std_ET_' sampleNum '_data'],['std_GL_' sampleNum '_data'],'-append');
-    end
+    figure
+    clf
+    bar(mean_ET_data*1e-3,'LineWidth',linewidth);
+    grid on
+    set(gca,'FontSize',fontsize)
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Young modulus $E^T$ (GPa)','Interpreter',interpreter);
+    mysaveas(pathname,'data_ET',formats);
+    mymatlab2tikz(pathname,'data_ET.tex');
     
-    %% Plot data
-    if displaySolution
-        figure
-        eval(['bar(ET_' sampleNum '_data);']);
-        grid on
-        set(gca,'FontSize',fontsize)
-        legend(sampleNum,'Location','NorthEastOutside');
-        xlabel('Image number','Interpreter',interpreter);
-        ylabel('Young modulus $E^T$ (GPa)','Interpreter',interpreter);
-        mysaveas(pathname,['data_ET_' sampleNum],formats);
-        mymatlab2tikz(pathname,['data_ET_' sampleNum '.tex']);
-        
-        figure
-        eval(['bar(GL_' sampleNum '_data);']);
-        grid on
-        set(gca,'FontSize',fontsize)
-        legend(sampleNum,'Location','NorthEastOutside');
-        xlabel('Image number','Interpreter',interpreter);
-        ylabel('Shear modulus $G^L$ (MPa)','Interpreter',interpreter);
-        mysaveas(pathname,['data_GL_' sampleNum],formats);
-        mymatlab2tikz(pathname,['data_GL_' sampleNum '.tex']);
-    end
+    figure
+    clf
+    bar(mean_GL_data,'LineWidth',linewidth);
+    grid on
+    set(gca,'FontSize',fontsize)
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Shear modulus $G^L$ (MPa)','Interpreter',interpreter);
+    mysaveas(pathname,'data_GL',formats);
+    mymatlab2tikz(pathname,'data_GL.tex');
+end
+
+function f = funlsqnonlin(x,u_exp,varargin)
+u = solveThreePointBendingAna(x,varargin{:});
+f = u - u_exp;
+end
+
+function f = funoptim(x,u_exp,varargin)
+u = solveThreePointBendingAna(x,varargin{:});
+f = norm(u - u_exp)^2;
 end
