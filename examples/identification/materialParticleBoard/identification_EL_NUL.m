@@ -101,16 +101,16 @@ for j=1:numSamples
         
         switch optimFun
             case 'lsqnonlin'
-                fun = @(x) funlsqnonlin(x,u_exp_in,S);
+                fun = @(x) funlsqnonlin(x,@solveThreePointBendingNum,u_exp_in,S);
                 [x,err(k),~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
             case 'fminsearch'
-                fun = @(x) funoptim(x,u_exp_in,S);
+                fun = @(x) funoptim(x,@solveThreePointBendingNum,u_exp_in,S);
                 [x,err(k),exitflag,output] = fminsearch(fun,x0,options);
             case 'fminunc'
-                fun = @(x) funoptim(x,u_exp_in,S);
+                fun = @(x) funoptim(x,@solveThreePointBendingNum,u_exp_in,S);
                 [x,err(k),exitflag,output] = fminunc(fun,x0,options);
             case 'fmincon'
-                fun = @(x) funoptim(x,u_exp_in,S);
+                fun = @(x) funoptim(x,@solveThreePointBendingNum,u_exp_in,S);
                 [x,err(k),exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
         end
         
@@ -195,14 +195,4 @@ if displaySolution
     ylabel('Poisson ratio $\nu^L$','Interpreter',interpreter);
     mysaveas(pathname,'data_NUL',formats);
     mymatlab2tikz(pathname,'data_NUL.tex');
-end
-
-function f = funlsqnonlin(x,u_exp,varargin)
-u = solveThreePointBendingNum(x,varargin{:});
-f = u - u_exp;
-end
-
-function f = funoptim(x,u_exp,varargin)
-u = solveThreePointBendingNum(x,varargin{:});
-f = norm(u - u_exp)^2;
 end

@@ -94,16 +94,16 @@ for j=1:numSamples
         
         switch optimFun
             case 'lsqnonlin'
-                fun = @(x) funlsqnonlin(x,u_exp,coord,F(k),Iz,h);
+                fun = @(x) funlsqnonlin(x,@solveThreePointBendingAna,u_exp,coord,F(k),Iz,h);
                 [x,err(k),~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
             case 'fminsearch'
-                fun = @(x) funoptim(x,u_exp,coord,F(k),Iz,h);
+                fun = @(x) funoptim(x,@solveThreePointBendingAna,u_exp,coord,F(k),Iz,h);
                 [x,err(k),exitflag,output] = fminsearch(fun,x0,options);
             case 'fminunc'
-                fun = @(x) funoptim(x,u_exp,coord,F(k),Iz,h);
+                fun = @(x) funoptim(x,@solveThreePointBendingAna,u_exp,coord,F(k),Iz,h);
                 [x,err(k),exitflag,output] = fminunc(fun,x0,options);
             case 'fmincon'
-                fun = @(x) funoptim(x,u_exp,coord,F(k),Iz,h);
+                fun = @(x) funoptim(x,@solveThreePointBendingAna,u_exp,coord,F(k),Iz,h);
                 [x,err(k),exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
         end
         
@@ -194,14 +194,4 @@ if displaySolution
     ylabel('Shear modulus $G^L$ (MPa)','Interpreter',interpreter);
     mysaveas(pathname,'data_GL',formats);
     mymatlab2tikz(pathname,'data_GL.tex');
-end
-
-function f = funlsqnonlin(x,u_exp,varargin)
-u = solveThreePointBendingAna(x,varargin{:});
-f = u - u_exp;
-end
-
-function f = funoptim(x,u_exp,varargin)
-u = solveThreePointBendingAna(x,varargin{:});
-f = norm(u - u_exp)^2;
 end

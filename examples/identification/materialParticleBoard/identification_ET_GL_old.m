@@ -188,13 +188,3 @@ if displaySolution
     mysaveas(pathname,'data_GL',formats);
     mymatlab2tikz(pathname,'data_GL.tex');
 end
-
-function f = funlsqnonlin(x,u_exp,varargin)
-u = solveThreePointBendingAna(x,varargin{:});
-f = u - u_exp;
-end
-
-function f = funoptim(x,u_exp,varargin)
-u = solveThreePointBendingAna(x,varargin{:});
-f = norm(u - u_exp)^2;
-end

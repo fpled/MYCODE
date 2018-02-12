@@ -149,16 +149,16 @@ end
 t = tic;
 switch optimFun
     case 'lsqnonlin'
-        fun = @(x) funlsqnonlin(x,u_exp_in,S);
+        fun = @(x) funlsqnonlin(x,@solveTractionIsotTrans,u_exp_in,S);
         [x,err,~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
     case 'fminsearch'
-        fun = @(x) funoptim(x,u_exp_in,S);
+        fun = @(x) funoptim(x,@solveTractionIsotTrans,u_exp_in,S);
         [x,err,exitflag,output] = fminsearch(fun,x0,options);
     case 'fminunc'
-        fun = @(x) funoptim(x,u_exp_in,S);
+        fun = @(x) funoptim(x,@solveTractionIsotTrans,u_exp_in,S);
         [x,err,exitflag,output] = fminunc(fun,x0,options);
     case 'fmincon'
-        fun = @(x) funoptim(x,u_exp_in,S);
+        fun = @(x) funoptim(x,@solveTractionIsotTrans,u_exp_in,S);
         [x,err,exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
 end
 toc(t)
@@ -338,13 +338,3 @@ set(gca,'FontSize',fontsize)
 xlabel('$G^L$ (MPa)','Interpreter',interpreter)
 ylabel('$\nu$','Interpreter',interpreter)
 mysaveas(pathname,'error_NUL_GL_2D',formats,renderer);
-
-function f = funlsqnonlin(x,u_exp,varargin)
-u = solveTractionIsotTrans(x,varargin{:});
-f = u - u_exp;
-end
-
-function f = funoptim(x,u_exp,varargin)
-u = solveTractionIsotTrans(x,varargin{:});
-f = norm(u - u_exp)^2;
-end
