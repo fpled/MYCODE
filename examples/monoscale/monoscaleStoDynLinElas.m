@@ -51,9 +51,10 @@ if setProblem
     p = 1;
     basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
     bases = FunctionalBases.duplicate(basis,d);
+    vb = basis.basis.randomVariable;
     rvb = getRandomVector(bases);
     H = FullTensorProductFunctionalBasis(bases);
-    I = gaussIntegrationRule(v,2);
+    I = gaussIntegrationRule(vb,2);
     I = I.tensorize(d);
     
     % Density

@@ -3,13 +3,13 @@ function plotGeometricBrownianKL(Xref,Xpc,varargin)
 % Display geometric Brownian motion
 
 p = ImprovedInputParser;
-addParamValue(p,'legend',true,@islogical);
-addParamValue(p,'label',true,@islogical);
-addParamValue(p,'grid',true,@islogical);
-addParamValue(p,'box',true,@islogical);
-addParamValue(p,'FontSize',16,@isscalar);
-addParamValue(p,'LineWidth',1,@isscalar);
-addParamValue(p,'Interpreter','latex',@ischar);
+addParameter(p,'legend',true,@islogical);
+addParameter(p,'label',true,@islogical);
+addParameter(p,'grid',true,@islogical);
+addParameter(p,'box',true,@islogical);
+addParameter(p,'FontSize',16,@isscalar);
+addParameter(p,'LineWidth',1,@isscalar);
+addParameter(p,'Interpreter','latex',@ischar);
 parse(p,varargin{:})
 
 figure('Name','Evolution of Brownian motion w.r.t. time')
