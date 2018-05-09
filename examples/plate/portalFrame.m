@@ -18,7 +18,7 @@ formats = {'fig','epsc2'};
 renderer = 'OpenGL';
 
 %% Domains and meshes
-% Beam 1 and 2 (rounded dimensions mm)
+% Beams 1 and 2 (rounded dimensions in mm)
 L1 = 750;
 b1 = 400;
 L2 = 1000;
@@ -95,27 +95,35 @@ Mz = s(2);
 N_max = max(abs(N));
 Mz_max = max(abs(Mz));
 
-[~,numnode2,~] = intersect(S,P2,'strict',false);
-N2 = 0;
-Mz2 = 0;
-for p=1:getnbgroupelem(S)
-    Np = reshape(abs(N{p}),[getnbnode(S),1]);
-    Mzp = reshape(abs(Mz{p}),[getnbnode(S),1]);
-    Np2 = double(Np(numnode2));
-    Mzp2 = double(Mzp(numnode2));
-    N2 = max(N2,Np2);
-    Mz2 = max(Mz2,Mzp2);
+[~,numnode,~] = intersect(S,P2,'strict',false);
+N_corner = 0;
+Mz_corner = 0;
+for i=1:getnbgroupelem(S)
+    Ni = reshape(abs(N{i}),[getnbnode(S),1]);
+    Mzi = reshape(abs(Mz{i}),[getnbnode(S),1]);
+    Ni_corner = double(Ni(numnode));
+    Mzi_corner = double(Mzi(numnode));
+    N_corner = max(N_corner,Ni_corner);
+    Mz_corner = max(Mz_corner,Mzi_corner);
 end
-N = N2;
-Mz = Mz2;
+N = N_corner;
+Mz = Mz_corner;
 
-N_ex = 0;
-Mz_ex = 0;
+N1_ex = 3*p*IZ1*L2^2/(8*L1*(2*IZ1*L2+IZ2*L1));
+N2_ex = p/2;
+N3_ex = p*IZ1*L2^2/(8*(2*IZ1*L2+IZ2*L1));
+
+Mz2_ex = p*IZ1*L2^2/(8*IZ1*L2+4*IZ2*L1);
+Mz1_max_ex = abs(p*L2/2+L1/2*N1_ex-L2*N2_ex-N3_ex);
+Mz2_max_ex = abs(L1*N1_ex-L2/2*N2_ex-N3_ex);
+
+N_ex = N2_ex;
+Mz_ex = Mz2_ex;
 err_N = norm(N-N_ex)/norm(N_ex);
 err_Mz = norm(Mz-Mz_ex)/norm(Mz_ex);
 
-N_max_ex = 0;
-Mz_max_ex = 0;
+N_max_ex = max(N1_ex,N2_ex);
+Mz_max_ex = max(Mz1_max_ex,Mz2_max_ex);
 err_N_max = norm(N_max-N_max_ex)/norm(N_max_ex);
 err_Mz_max = norm(Mz_max-Mz_max_ex)/norm(Mz_max_ex);
 
