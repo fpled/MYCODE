@@ -30,7 +30,7 @@ tests = {'Stability','StaticVert',...
 
 pointwiseLoading = 1; % pointwise loading
 
-formats = {'fig','epsc2'};
+formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 for it=1:length(tests)

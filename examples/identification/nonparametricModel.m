@@ -22,7 +22,7 @@ fontsize = 16;
 linewidth = 1;
 markersize = 36;
 interpreter = 'latex';
-formats = {'fig','epsc2'};
+formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 %% Nonparametric model

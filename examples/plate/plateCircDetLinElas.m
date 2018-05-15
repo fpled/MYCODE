@@ -28,7 +28,7 @@ loadings = {'Uniform','Concentrated'};
 % elemtypes = {'DST','DSQ','COQ4'}; % Reissner-Mindlin (first-order shear) plate theory
 elemtypes = {'DKT','DKQ','DST','DSQ','COQ4'}; % Both plate theories
 
-formats = {'fig','epsc2'};
+formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 for ib=1:length(boundaries)

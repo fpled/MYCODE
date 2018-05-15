@@ -25,7 +25,7 @@ tests = {'StaticVert'}; % test under static vertical load
 %     'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
 %     'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
 
-formats = {'fig','epsc2'};
+formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 for it=1:length(tests)

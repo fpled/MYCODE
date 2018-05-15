@@ -24,7 +24,7 @@ fontsize = 16;
 linewidth = 1;
 markersize = 36;
 interpreter = 'latex';
-formats = {'fig','epsc2'};
+formats = {'fig','epsc'};
 
 % syms c1 c2 c3 lambda lambda1 lambda2 lambda3
 % PHI = -lambda1*c1 - lambda2*c2 - lambda3*c3 - lambda*log(c1*c2-c3^2);

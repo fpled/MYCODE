@@ -30,7 +30,7 @@ tests = {'Stability1','Stability2','Stability3','Stability4','StaticVert',...
 
 belt = 1; % belt modelisation
 
-formats = {'fig','epsc2'};
+formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 for it=1:length(tests)

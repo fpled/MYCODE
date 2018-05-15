@@ -18,7 +18,7 @@ load(fullfile(pathname,filenameAna));
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-formats = {'fig','epsc2'};
+formats = {'fig','epsc'};
 
 %% Identification
 EL0 = 1e2; % MPa

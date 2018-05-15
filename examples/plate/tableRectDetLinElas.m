@@ -24,7 +24,7 @@ elemtypes = {'DKT','DKQ','DST','DSQ','COQ4'}; % Both plate theories
 % meshtypes = {'Unstructured'};
 meshtypes = {'Structured','Unstructured'};
 
-formats = {'fig','epsc2'};
+formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 for il=1:length(loadings)

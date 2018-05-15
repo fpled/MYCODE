@@ -15,7 +15,7 @@ load(fullfile(pathname,filenameNum));
 
 fontsize = 16;
 interpreter = 'latex';
-formats = {'fig','epsc2'};
+formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 %% Plot error

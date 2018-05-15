@@ -14,7 +14,7 @@ end
 
 fontsize = 16;
 interpreter = 'latex';
-formats = {'fig','epsc2'};
+formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 %% Domains and meshes
