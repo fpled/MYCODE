@@ -5,7 +5,7 @@
 clearvars
 close all
 
-formats = {'fig','epsc2'};
+formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 filename = 'junctionScrewDowel';
