@@ -29,13 +29,13 @@ h = 15;
 P1 = POINT([0.0,0.0]);
 P2 = POINT([0.0,L1]);
 P_load = POINT([L2/2,L1]);
-P3 = POINT([L2,0.0]);
-P4 = POINT([L2,L1]);
+P3 = POINT([L2,L1]);
+P4 = POINT([L2,0.0]);
 
 L_beam{1} = LIGNE(P1,P2);
 L_beam{2} = LIGNE(P2,P_load);
-L_beam{3} = LIGNE(P_load,P4);
-L_beam{4} = LIGNE(P3,P4);
+L_beam{3} = LIGNE(P_load,P3);
+L_beam{4} = LIGNE(P4,P3);
 
 cl_beam = h/2;
 S_beam = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','filename',fullfile(pathname,['gmsh_beam_' num2str(n) '_cl_' num2str(cl_beam)])),L_beam,num2cell(1:length(L_beam)),'UniformOutput',false);
@@ -50,8 +50,8 @@ NU_beam = 0.3;
 % Density
 RHO_beam = 1;
 % Cross-section area
-Sec_beam1 = b1*h;
-Sec_beam2 = b2*h;
+S1 = b1*h;
+S2 = b2*h;
 % Planar second moment of area (or Planar area moment of inertia)
 IY1 = h*b1^3/12;
 IY2 = h*b1^3/12;
@@ -60,9 +60,9 @@ IZ2 = b2*h^3/12;
 IX1 = IY1+IZ1;
 IX2 = IY2+IZ2;
 
-mat_beam{1} = ELAS_BEAM('E',E_beam,'NU',NU_beam,'S',Sec_beam1,'IZ',IZ1,'IY',IY1,'IX',IX1,'RHO',RHO_beam);
+mat_beam{1} = ELAS_BEAM('E',E_beam,'NU',NU_beam,'S',S1,'IZ',IZ1,'IY',IY1,'IX',IX1,'RHO',RHO_beam);
 mat_beam{1} = setnumber(mat_beam{1},1);
-mat_beam{2} = ELAS_BEAM('E',E_beam,'NU',NU_beam,'S',Sec_beam2,'IZ',IZ2,'IY',IY2,'IX',IX2,'RHO',RHO_beam);
+mat_beam{2} = ELAS_BEAM('E',E_beam,'NU',NU_beam,'S',S2,'IZ',IZ2,'IY',IY2,'IX',IX2,'RHO',RHO_beam);
 mat_beam{2} = setnumber(mat_beam{2},2);
 S_beam([1,4]) = cellfun(@(S) setmaterial(S,mat_beam{1}),S_beam([1,4]),'UniformOutput',false);
 S_beam([2,3]) = cellfun(@(S) setmaterial(S,mat_beam{2}),S_beam([2,3]),'UniformOutput',false);
@@ -73,13 +73,21 @@ S = union(S_beam{:});
 p = 1;
 
 %% Dirichlet boundary conditions
-P_support = [P1 P3];
+P_support = [P1 P4];
 S = final(S);
 S = addcl(S,P_support);
 
 %% Stiffness matrix and sollicitation vector
 A = calc_rigi(S);
 f = nodalload(S,P_load,'FY',-p);
+
+a_add = 0; % additonal junction rigidity
+% [~,numnode2,~] = intersect(S,P2,'strict',false);
+% [~,numnode3,~] = intersect(S,P3,'strict',false);
+numddl2 = findddl(S,'RZ',P2,'free');
+numddl3 = findddl(S,'RZ',P3,'free');
+A(numddl2,numddl2) = A(numddl2,numddl2) + a_add;
+A(numddl3,numddl3) = A(numddl3,numddl3) + a_add;
 
 %% Solution
 t = tic;
@@ -90,6 +98,10 @@ e = calc_epsilon(S,u,'smooth');
 s = calc_sigma(S,u,'smooth');
 
 %% Test solution
+ux = eval_sol(S,u,P2,'UX');
+uy = eval_sol(S,u,P2,'UY');
+rz = eval_sol(S,u,P2,'RZ');
+
 N = s(1);
 Mz = s(2);
 N_max = max(abs(N));
@@ -109,20 +121,48 @@ end
 N = N_corner;
 Mz = Mz_corner;
 
-N1_ex = 3*p*IZ1*L2^2/(8*L1*(2*IZ1*L2+IZ2*L1));
-N2_ex = p/2;
-N3_ex = p*IZ1*L2^2/(8*(2*IZ1*L2+IZ2*L1));
+XA = 3/8*p*L2^2*IZ1/(L1*(L1*IZ2+2*L2*IZ1) + 3/S2*L2/L1*IZ1*(2*IZ2+L2/L1*IZ1));
+YA = p/2;
+MA = XA*(-L1/3+L2/L1^2*IZ1/S2);
+% MA = p/8*L2^2*IZ1*(-L1+3*L2/L1^2*IZ1/S2)/(L1*(L1*IZ2+2*L2*IZ1) + 3/S2*L2/L1*IZ1*(2*IZ2+L2/L1*IZ1));
 
-Mz2_ex = p*IZ1*L2^2/(8*IZ1*L2+4*IZ2*L1);
-Mz1_max_ex = abs(p*L2/2+L1/2*N1_ex-L2*N2_ex-N3_ex);
-Mz2_max_ex = abs(L1*N1_ex-L2/2*N2_ex-N3_ex);
+ux1_ex = @(x) -p/(2*E_beam*S1)*x;
+ux2_ex = @(x) XA/(E_beam*S2)*(-x+L2/2);
+rz1_ex = @(x) -1/(E_beam*IZ1)*(XA*x.^2/2+MA*x);
+rz2_ex = @(x) 1/(E_beam*IZ2)*(p/4*(x+L2/2) - (XA*L1+MA)).*(x-L2/2);
+% rz2_ex = @(x) 1/(E_beam*IZ2)*(p/4*x.^2 - (XA*L1+MA)*x) - 1/(E_beam*IZ1)*(XA*L1^2/2+MA*L1);
+uy1_ex = @(x) -1/(E_beam*IZ1)*(XA*x.^3/6+MA*x.^2/2);
+uy2_ex = @(x) 1/(E_beam*IZ2)*(p/2*x.^3/6 - (XA*L1+MA)*x.^2/2) - L1/(E_beam*IZ1)*(XA*L1/2+MA)*x - p/(2*E_beam*S1)*L1;
 
-N_ex = N2_ex;
-Mz_ex = Mz2_ex;
+ux_ex = ux2_ex(0); % ux_ex = -uy1_ex(L1);
+uy_ex = uy2_ex(0); % uy_ex = ux1_ex(L1);
+rz_ex = rz2_ex(0); % rz_ex = rz1_ex(L1);
+err_ux = norm(ux-ux_ex)/norm(ux_ex);
+err_uy = norm(uy-uy_ex)/norm(uy_ex);
+err_rz = norm(rz-rz_ex)/norm(rz_ex);
+
+N1_ex = @(x) -YA;
+N2_ex = @(x) -XA;
+Ty1_ex = @(x) XA;
+Ty2_ex = @(x) -YA;
+Mz1_ex = @(x) -XA*x-MA;
+Mz2_ex = @(x) p/2*x-XA*L1-MA;
+
+[~,N1_max_ex] = fminbnd(@(x) -abs(N1_ex(x)),0,L1);
+[~,N2_max_ex] = fminbnd(@(x) -abs(N2_ex(x)),0,L2/2);
+[~,Mz1_max_ex] = fminbnd(@(x) -abs(Mz1_ex(x)),0,L1);
+[~,Mz2_max_ex] = fminbnd(@(x) -abs(Mz2_ex(x)),0,L2/2);
+N1_max_ex = -N1_max_ex;
+N2_max_ex = -N2_max_ex;
+Mz1_max_ex = -Mz1_max_ex;
+Mz2_max_ex = -Mz2_max_ex;
+
+N_ex = max(abs(N1_ex(L1)),abs(N2_ex(0)));
+Mz_ex = max(abs(Mz1_ex(L1)),abs(Mz2_ex(0)));
 err_N = norm(N-N_ex)/norm(N_ex);
 err_Mz = norm(Mz-Mz_ex)/norm(Mz_ex);
 
-N_max_ex = max(N1_ex,N2_ex);
+N_max_ex = max(N1_max_ex,N2_max_ex);
 Mz_max_ex = max(Mz1_max_ex,Mz2_max_ex);
 err_N_max = norm(N_max-N_max_ex)/norm(N_max_ex);
 err_Mz_max = norm(Mz_max-Mz_max_ex)/norm(Mz_max_ex);
@@ -133,6 +173,15 @@ fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('elapsed time = %f s\n',time);
+fprintf('\n');
+
+disp('Displacement u and rotation r at point'); disp(P2);
+fprintf('ux    = %g mm\n',ux);
+fprintf('ux_ex = %g mm, error = %g\n',ux_ex,err_ux);
+fprintf('uy    = %g mm\n',uy);
+fprintf('uy_ex = %g mm, error = %g\n',uy_ex,err_uy);
+fprintf('rz    = %g rad = %g deg\n',rz,rad2deg(rz));
+fprintf('rz_ex = %g rad = %g deg, error = %g\n',rz_ex,rad2deg(rz_ex),err_rz);
 fprintf('\n');
 
 disp('Force N and moment Mz at point'); disp(P2);
