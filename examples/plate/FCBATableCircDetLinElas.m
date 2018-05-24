@@ -28,7 +28,7 @@ tests = {'Stability1','Stability2','Stability3','Stability4','StaticVert',...
     'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
     'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
 
-belt = 1; % belt modelisation
+belt = 1; % belt modeling
 
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
@@ -491,6 +491,12 @@ if displaySolution
     %
     % plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
     % mysaveas(pathname,'Ry',formats,renderer);
+    
+    % plotSolution(S,u,'epsilon','mises','ampl',ampl,options{:});
+    % mysaveas(pathname,'EpsilonVM',formats,renderer);
+    %
+    % plotSolution(S,u,'sigma','mises','ampl',ampl,options{:});
+    % mysaveas(pathname,'SigmaVM',formats,renderer);
 end
 
 end

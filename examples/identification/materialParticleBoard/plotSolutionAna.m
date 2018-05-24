@@ -72,9 +72,19 @@ end
 %     mysaveas(pathname,['eps_ana_' num2str(i)],formats,renderer);
 %     plotSolution(S,u_exp,'epsilon',i,'ampl',ampl);
 %     mysaveas(pathname,['eps_exp_' num2str(i)],formats,renderer);
+%     
+%     plotSolution(S,u,'sigma',i,'ampl',ampl);
+%     mysaveas(pathname,['sig_ana_' num2str(i)],formats,renderer);
+%     plotSolution(S,u_exp,'sigma',i,'ampl',ampl);
+%     mysaveas(pathname,['sig_exp_' num2str(i)],formats,renderer);
 % end
 % 
 % plotSolution(S,u,'epsilon','mises','ampl',ampl);
 % mysaveas(pathname,'eps_von_mises_ana',formats,renderer);
 % plotSolution(S,u_exp,'epsilon','mises','ampl',ampl);
 % mysaveas(pathname,'eps_von_mises_exp',formats,renderer);
+% 
+% plotSolution(S,u,'sigma','mises','ampl',ampl);
+% mysaveas(pathname,'sig_von_mises_ana',formats,renderer);
+% plotSolution(S,u_exp,'sigma','mises','ampl',ampl);
+% mysaveas(pathname,'sig_von_mises_exp',formats,renderer);

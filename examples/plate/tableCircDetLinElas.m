@@ -273,6 +273,12 @@ if displaySolution
     %
     % plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
     % mysaveas(pathname,'Ry',formats,renderer);
+    
+    % plotSolution(S,u,'epsilon','mises','ampl',ampl,options{:});
+    % mysaveas(pathname,'EpsilonVM',formats,renderer);
+    %
+    % plotSolution(S,u,'sigma','mises','ampl',ampl,options{:});
+    % mysaveas(pathname,'SigmaVM',formats,renderer);
 end
 
 end

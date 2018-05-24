@@ -1,5 +1,5 @@
-%% FCBA desk deterministic linear elasticity %%
-%%-------------------------------------------%%
+%% FCBA desk plate deterministic linear elasticity %%
+%%-------------------------------------------------%%
 
 % clc
 clearvars
@@ -33,9 +33,9 @@ renderer = 'OpenGL';
 for it=1:length(tests)
     test = tests{it};
 if pointwiseLoading
-    filename = ['FCBADeskDetLinElas' test 'PointwiseLoading'];
+    filename = ['FCBADeskPlateDetLinElas' test 'PointwiseLoading'];
 else
-    filename = ['FCBADeskDetLinElas' test];
+    filename = ['FCBADeskPlateDetLinElas' test];
 end
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','plate',filename);
@@ -46,7 +46,7 @@ end
 %% Problem
 if solveProblem
     %% Domains and meshes
-    % Plates Dimensions
+    % Plates dimensions
     a12 = 750e-3; % m
     b12 = 396e-3;
     a3 = 1006e-3;
@@ -635,7 +635,7 @@ if displaySolution
     ampl = 8;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
     hP = plot(P,'g+');
-    % legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
+    legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
@@ -676,8 +676,11 @@ if displaySolution
     % plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
     % mysaveas(pathname,'Ry',formats,renderer);
     
-    plotSolution(S,u,'sigma','mises','ampl',ampl,options{:});
-    mysaveas(pathname,'SigmaVM',formats,renderer);
+    % plotSolution(S,u,'epsilon','mises','ampl',ampl,options{:});
+    % mysaveas(pathname,'EpsilonVM',formats,renderer);
+    %
+    % plotSolution(S,u,'sigma','mises','ampl',ampl,options{:});
+    % mysaveas(pathname,'SigmaVM',formats,renderer);
 end
 
 end
