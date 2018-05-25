@@ -1,7 +1,9 @@
 function F = appliedLoad(sample)
 % function F = appliedLoad(sample)
 % input :
-% sample = 'B1',...,'B27'
+% sample = 'B1',...,'B27'   Beam sample 
+%          'S1',...,'S4'    Screw junction sample    
+%          'D1','D2'        Dowel junction sample
 % output :
 % F = applied load (N)
 
@@ -61,6 +63,18 @@ switch sample
         F = [17 68 118 159 208 257 313 355 410 447]*0.7;
     case 'B27'
         F = [19 57 114 159 218 257 316 355 393 366]*0.7;
+    case 'S1' 
+        F = [24 65 114 163 200 252 291]; 
+    case 'S2' 
+        F = [14 54 113 159 199 249 299];
+    case 'S3' 
+        F = [15 65 111 153 203 243 295 341]; 
+    case 'S4' 
+        F = [23 34 91 141 180 229 290];
+    case 'D1'
+        F = [40 46 101 146];    
+    case 'D2' 
+        F = [6 63 110 175];    
     otherwise
         error(['Wrong sample' sample])
         
