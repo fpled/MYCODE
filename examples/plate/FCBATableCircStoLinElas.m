@@ -31,7 +31,7 @@ tests = {'Stability1','Stability2','Stability3','Stability4','StaticVert',...
     'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
     'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
 
-belt = 1; % belt modelisation
+belt = 1; % belt modeling
 
 formats = {'fig','epsc'};
 renderer = 'OpenGL';

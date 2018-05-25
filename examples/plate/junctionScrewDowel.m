@@ -163,3 +163,30 @@ clf
 plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
 plot(S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1);
 mysaveas(pathname,'meshes_deflected',formats,renderer);
+
+%% Display solution
+% ampl = 0;
+ampl = getsize(S)/max(abs(U))/10;
+options = {'solid',true};
+% options = {};
+
+% plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
+% mysaveas(pathname,'Ux',formats,renderer);
+% 
+% plotSolution(S,u,'displ',2,'ampl',ampl,options{:});
+% mysaveas(pathname,'Uy',formats,renderer);
+% 
+plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
+mysaveas(pathname,'Uz',formats,renderer);
+
+% plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
+% mysaveas(pathname,'Rx',formats,renderer);
+%
+% plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
+% mysaveas(pathname,'Ry',formats,renderer);
+
+% plotSolution(S,u,'epsilon','mises','ampl',ampl,options{:});
+% mysaveas(pathname,'EpsilonVM',formats,renderer);
+% 
+% plotSolution(S,u,'sigma','mises','ampl',ampl,options{:});
+% mysaveas(pathname,'SigmaVM',formats,renderer);

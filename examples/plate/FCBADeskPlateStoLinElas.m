@@ -1,29 +1,32 @@
-%% FCBA desk deterministic linear elasticity %%
-%%-------------------------------------------%%
+%% FCBA desk plate stochastic linear elasticity %%
+%%----------------------------------------------%%
 
 % clc
 clearvars
 close all
+% rng('default');
+myparallel('start');
 
 %% Input data
 solveProblem = true;
 displaySolution = true;
+displayCv = true;
 
 % tests = {'Stability'}; % stability test under vertical load
 % tests = {'StaticHori1'}; % test under static horizontal load 1
 % tests = {'StaticHori2'}; % test under static horizontal load 2
 % tests = {'StaticHori3'}; % test under static horizontal load 3 (lifting)
 % tests = {'StaticHori4'}; % test under static horizontal load 4 (lifting)
-tests = {'StaticVert'}; % test under static vertical load
+% tests = {'StaticVert'}; % test under static vertical load
 % tests = {'Fatigue1'}; % fatigue test under horizontal load 1
 % tests = {'Fatigue2'}; % fatigue test under horizontal load 2
 % tests = {'Fatigue3'}; % fatigue test under horizontal load 3 (lifting)
 % tests = {'Fatigue4'}; % fatigue test under horizontal load 4 (lifting)
 % tests = {'Impact'}; % vertical impact test
 % tests = {'Drop'}; % drop test
-% tests = {'Stability','StaticVert',...
-%     'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
-%     'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
+tests = {'Stability','StaticVert',...
+    'StaticHori1','StaticHori2',...
+    'Fatigue1','Fatigue2'};
 
 pointwiseLoading = 1; % pointwise loading
 
@@ -33,9 +36,9 @@ renderer = 'OpenGL';
 for it=1:length(tests)
     test = tests{it};
 if pointwiseLoading
-    filename = ['FCBADeskDetLinElas' test 'PointwiseLoading'];
+    filename = ['FCBADeskPlateStoLinElas' test 'PointwiseLoading'];
 else
-    filename = ['FCBADeskDetLinElas' test];
+    filename = ['FCBADeskPlateStoLinElas' test];
 end
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','plate',filename);
@@ -46,7 +49,7 @@ end
 %% Problem
 if solveProblem
     %% Domains and meshes
-    % Plates Dimensions
+    % Plates dimensions
     a12 = 750e-3; % m
     b12 = 396e-3;
     a3 = 1006e-3;
@@ -126,42 +129,17 @@ if solveProblem
     r_masse = 100e-3;
     C_masse = CIRCLE(0.0,y3_12+b3/2,z3,r_masse);
     x_masse = double(getcoord(getcenter(C_masse)));
-    %
-    L1_a = LIGNE([x5a_23,y5a,z5a_12],[x5a_23,y5a,z5a_34]);
-    L1_b = LIGNE([x5b_23,y5b,z5b_12],[x5b_23,y5b,z5b_34]);
-    if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-        S1 = gmshFCBAdesk12(Q1,L1_a,L1_b,cl_12,cl_5,cl_5,...
-            fullfile(pathname,['gmsh_desk_1_' elemtype '_cl_' num2str(cl_12)]),3);
-    else
-        S1 = gmshFCBAdesk12(Q1,L1_a,L1_b,cl_12,cl_5,cl_5,...
-            fullfile(pathname,['gmsh_desk_1_' elemtype '_cl_' num2str(cl_12)]),3,'recombine');
-    end
-    S1 = convertelem(S1,elemtype);
-    %
-    L2_a = LIGNE([x5a_14,y5a,z5a_12],[x5a_14,y5a,z5a_34]);
-    L2_b = LIGNE([x5b_14,y5b,z5b_12],[x5b_14,y5b,z5b_34]);
-    if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-        S2 = gmshFCBAdesk12(Q2,L2_a,L2_b,cl_12,cl_5,cl_5,...
-            fullfile(pathname,['gmsh_desk_2_' elemtype '_cl_' num2str(cl_12)]),3);
-    else
-        S2 = gmshFCBAdesk12(Q2,L2_a,L2_b,cl_12,cl_5,cl_5,...
-            fullfile(pathname,['gmsh_desk_2_' elemtype '_cl_' num2str(cl_12)]),3,'recombine');
-    end
-    S2 = convertelem(S2,elemtype);
-    %
-    L3_1 = LIGNE([x1,y1_23,z1_34],[x1,y1_14,z1_34]);
-    L3_2 = LIGNE([x2,y2_23,z2_34],[x2,y2_14,z2_34]);
     if pointwiseLoading
         PbQ3 = {x_hori{4},x_fati{3},x_fati{1},x_hori{1},...
                 x_fati{4},x_hori{3},x_hori{2},x_fati{2}};
         if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-            S3 = gmshFCBAdesk3simplified(Q3,C_masse,L3_1,L3_2,PbQ3,x_stab,x_masse,...
-                cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3);
+            S = gmshFCBAdesksimplified(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
+                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3);
         else
-            S3 = gmshFCBAdesk3simplified(Q3,C_masse,L3_1,L3_2,PbQ3,x_stab,x_masse,...
-                cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3,'recombine');
+            S = gmshFCBAdesksimplified(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
+                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3,'recombine');
         end
     else
         L_hori{1} = LIGNE(x_hori{1}+[0,-r_load,0],x_hori{1}+[0,r_load,0]);
@@ -177,22 +155,86 @@ if solveProblem
         C_vert = CIRCLE(x_vert(1),x_vert(2),x_vert(3),r_load);
         C_stab = CIRCLE(x_stab(1),x_stab(2),x_stab(3),r_load);
         if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-            S3 = gmshFCBAdesk3(Q3,C_masse,L3_1,L3_2,LbQ3,C_stab,C_vert,...
-                cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3);
+            S = gmshFCBAdesk(Q1,Q2,Q3,Q5a,Q5b,C_masse,LbQ3,C_stab,C_vert,...
+                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3);
         else
-            S3 = gmshFCBAdesk3(Q3,C_masse,L3_1,L3_2,LbQ3,C_stab,C_vert,...
-                cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3,'recombine');
+            S = gmshFCBAdesk(Q1,Q2,Q3,Q5a,Q5b,C_masse,LbQ3,C_stab,C_vert,...
+                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3,'recombine');
         end
     end
-    S3 = convertelem(S3,elemtype);
-    %
-    S5a = build_model(Q5a,'cl',cl_5,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_desk_5a_' elemtype '_cl_' num2str(cl_5)]));
-    %
-    S5b = build_model(Q5b,'cl',cl_5,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_desk_5b_' elemtype '_cl_' num2str(cl_5)]));
+    S = convertelem(S,elemtype);
+    
+    %% Random variables
+    % Data
+    filenameAna = 'data_ET_GL.mat';
+    filenameNum = 'data_EL_NUL.mat';
+    pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
+        'results','identification','materialParticleBoard');
+    load(fullfile(pathnameIdentification,filenameAna));
+    load(fullfile(pathnameIdentification,filenameNum));
+    
+    % Material symmetry
+    materialSym = 'isot';
+    
+    % Number of samples
+    N = 1e3;
+    
+    switch lower(materialSym)
+        case 'isot'
+            % Data
+            E_data = mean_ET_data*1e-3; % GPa
+            G_data = mean_GL_data*1e-3*13; % GPa
+            NU_data = E_data./(2*G_data)-1;
+            lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data));
+            C1_data = lambda_data + 2/3*G_data;
+            C2_data = G_data;
+            
+            % Maximum likelihood estimation
+            n_data = length(C1_data);
+            m_data = length(C2_data);
+            data = [C1_data; C2_data];
+            
+            nloglf = @(lambda,data,cens,freq) -n_data*( (1-lambda(3))*log(lambda(1))...
+                - gammaln(1-lambda(3)) ) - m_data*( (1-5*lambda(3))*log(lambda(2))...
+                - gammaln(1-5*lambda(3)) ) + lambda(3)*( sum(log(data(1:n_data)))...
+                + 5*sum(log(data(n_data+1:end))) ) + lambda(1)*sum(data(1:n_data))...
+                + lambda(2)*sum(data(n_data+1:end));
+            lambda = mle(data,'nloglf',nloglf,'start',[1 1 0],...
+                'lowerbound',[0 0 -Inf],'upperbound',[Inf Inf 1/5]);
+            a1 = 1-lambda(3);
+            b1 = 1/lambda(1);
+            a2 = 1-5*lambda(3);
+            b2 = 1/lambda(2);
+            
+            % Sample set
+            C1_sample = gamrnd(a1,b1,N,1)*1e9; % Pa
+            C2_sample = gamrnd(a2,b2,N,1)*1e9; % Pa
+            lambda_sample = C1_sample-2/3*C2_sample; % Pa
+            E_sample = (9*C1_sample.*C2_sample)./(3*C1_sample+C2_sample); % Pa
+            NU_sample = (3*C1_sample-2*C2_sample)./(6*C1_sample+2*C2_sample);
+        case 'isottrans'
+            % Data
+            ET_data = mean_ET_data*1e-3; % GPa
+            GL_data = mean_GL_data*1e-3; % GPa
+            EL_data = mean_EL_data*1e-3; % GPa
+            NUL_data = mean_NUL_data;
+            % NUT_data = ;
+            
+            % Markov Chain Monte-Carlo (MCMC) method based on 
+            % Metropolis-Hasting algorithm
+            
+            % Sample set
+            % ET_sample = ;
+            % GL_sample = ;
+            % EL_sample = ;
+            % NUL_sample = ;
+            % NUT_sample = ;
+            
+        otherwise
+            error('Wrong material symmetry !')
+    end
     
     %% Materials
     % Gravitational acceleration
@@ -203,42 +245,24 @@ if solveProblem
     Vol_total = h*(a12*b12*2+a3*b3+a5*b5*2);
     RHO = Mass_total/(Vol_total);
     
-    % Data
-    filenameAna = 'data_ET_GL.mat';
-    filenameNum = 'data_EL_NUL.mat';
-    pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
-        'results','identification','materialParticleBoard');
-    load(fullfile(pathnameIdentification,filenameAna));
-    load(fullfile(pathnameIdentification,filenameNum));
-    
-    % Sample number
-    sample = 'B';
-    numSample = 13;
-    
     % Material symmetry
-    materialSym = 'isotTrans';
-    
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = mean_ET_data(numSample)*1e6; % Pa
-            %E = 1.7e9; % Pa
-            % Shear modulus
-            G = mean_GL_data(numSample)*1e6*13; % Pa
+            E = mean(E_sample);
             % Poisson ratio
-            NU = E./(2*G)-1;
-            %NU = 0.25;
+            NU = mean(NU_sample);
             % Material
             mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
         case 'isottrans'
             % Transverse Young modulus
-            ET = mean_ET_data(numSample)*1e6; % Pa
+            ET = mean(ET_sample);
             % Longitudinal shear modulus
-            GL = mean_GL_data(numSample)*1e6; % Pa
+            GL = mean(GL_sample);
             % Longitudinal Young modulus
-            % EL = mean_EL_data(numSample)*1e6; % Pa
+            % EL = mean(EL_sample);
             % Longitudinal Poisson ratio
-            % NUL = mean_NUL_data(numSample);
+            % NUL = mean(NUL_sample);
             % Transverse Poisson ratio
             NUT = 0.25;
             % Material
@@ -247,7 +271,6 @@ if solveProblem
             error('Wrong material symmetry !')
     end
     mat = setnumber(mat,1);
-    S = union(S1,S2,S3,S5a,S5b);
     S = setmaterial(S,mat);
     
     %% Neumann boundary conditions
@@ -317,9 +340,7 @@ if solveProblem
             S = addcl(S,numnode5b,'UZ');
     end
     
-    %% Stiffness matrix and sollicitation vector
-    A = calc_rigi(S);
-    
+    %% Sollicitation vector
     switch lower(test)
         case 'stability'
             if pointwiseLoading
@@ -431,22 +452,82 @@ if solveProblem
     end
     f = f + bodyload(S,[],'FZ',-p_plate);
     
-    %% Solution
+    %% Stiffness matrix and solution
     t = tic;
-    u = A\f;
+    u = sparse(getnbddlfree(S),N);
+    parfor i=1:N
+        switch lower(materialSym)
+            case 'isot'
+                % Young modulus
+                Ei = E_sample(i);
+                % Poisson ratio
+                NUi = NU_sample(i);
+                % Material
+                mati = setparam(mat,'E',Ei);
+                mati = setparam(mati,'NU',NUi);
+            case 'isottrans'
+                % Transverse Young modulus
+                ETi = ET_sample(i);
+                % Longitudinal shear modulus
+                GLi = GL_sample(i);
+                % Longitudinal Young modulus
+                % ELi = EL_sample(i);
+                % Longitudinal Poisson ratio
+                % NULi = NUL_sample(i);
+                % Transverse Poisson ratio
+                NUTi = 0.25;
+                % Material
+                mati = setparam(mat,'ET',NUi);
+                mati = setparam(mati,'GL',Ei);
+                mati = setparam(mati,'NUT',NUTi);
+        end
+        Si = setmaterial(S,mati);
+        % Stiffness matrix
+        Ai = calc_rigi(Si);
+        % Solution
+        u(:,i) = Ai\f;
+    end
     time = toc(t);
     
-    u = unfreevector(S,u);
+    mean_u = mean(u,2);
+    mean_u = unfreevector(S,mean_u);
     
-    % U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
-    % Ux = u(findddl(S,'UX'),:);
-    % Uy = u(findddl(S,'UY'),:);
-    % Uz = u(findddl(S,'UZ'),:);
+    std_u = std(u,0,2);
+    std_u = unfreevector(S,std_u);
     
-    % R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
-    % Rx = u(findddl(S,'RX'),:);
-    % Ry = u(findddl(S,'RY'),:);
-    % Rz = u(findddl(S,'RZ'),:);
+    probs = [0.025 0.975];
+    ci_u = quantile(u,probs,2);
+    ci_u = unfreevector(S,ci_u);
+    
+    % mean_U = mean_u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+    % mean_Ux = mean_u(findddl(S,'UX'),:);
+    % mean_Uy = mean_u(findddl(S,'UY'),:);
+    % mean_Uz = mean_u(findddl(S,'UZ'),:);
+    
+    % mean_R = mean_u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
+    % mean_Rx = mean_u(findddl(S,'RX'),:);
+    % mean_Ry = mean_u(findddl(S,'RY'),:);
+    % mean_Rz = mean_u(findddl(S,'RZ'),:);
+    
+    % std_U = std_u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+    % std_Ux = std_u(findddl(S,'UX'),:);
+    % std_Uy = std_u(findddl(S,'UY'),:);
+    % std_Uz = std_u(findddl(S,'UZ'),:);
+    
+    % std_R = std_u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
+    % std_Rx = std_u(findddl(S,'RX'),:);
+    % std_Ry = std_u(findddl(S,'RY'),:);
+    % std_Rz = std_u(findddl(S,'RZ'),:);
+    
+    % ci_U = ci_u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+    % ci_Ux = ci_u(findddl(S,'UX'),:);
+    % ci_Uy = ci_u(findddl(S,'UY'),:);
+    % ci_Uz = ci_u(findddl(S,'UZ'),:);
+    
+    % ci_R = ci_u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
+    % ci_Rx = ci_u(findddl(S,'RX'),:);
+    % ci_Ry = ci_u(findddl(S,'RY'),:);
+    % ci_Rz = ci_u(findddl(S,'RZ'),:);
     
     %% Test solution
     switch lower(test)
@@ -471,29 +552,54 @@ if solveProblem
         case 'fatigue4'
             P = P_fati{3};
     end
-    ux = eval_sol(S,u,P,'UX');
-    uy = eval_sol(S,u,P,'UY');
-    uz = eval_sol(S,u,P,'UZ');
-    rx = eval_sol(S,u,P,'RX');
-    ry = eval_sol(S,u,P,'RY');
-    rz = eval_sol(S,u,P,'RZ');
+    mean_ux = eval_sol(S,mean_u,P,'UX');
+    mean_uy = eval_sol(S,mean_u,P,'UY');
+    mean_uz = eval_sol(S,mean_u,P,'UZ');
+    
+    mean_rx = eval_sol(S,mean_u,P,'RX');
+    mean_ry = eval_sol(S,mean_u,P,'RY');
+    mean_rz = eval_sol(S,mean_u,P,'RZ');
+    
+    std_ux = eval_sol(S,std_u,P,'UX');
+    std_uy = eval_sol(S,std_u,P,'UY');
+    std_uz = eval_sol(S,std_u,P,'UZ');
+    
+    std_rx = eval_sol(S,std_u,P,'RX');
+    std_ry = eval_sol(S,std_u,P,'RY');
+    std_rz = eval_sol(S,std_u,P,'RZ');
+    
+    ci_ux = eval_sol(S,ci_u,P,'UX');
+    ci_uy = eval_sol(S,ci_u,P,'UY');
+    ci_uz = eval_sol(S,ci_u,P,'UZ');
+    
+    ci_rx = eval_sol(S,ci_u,P,'RX');
+    ci_ry = eval_sol(S,ci_u,P,'RY');
+    ci_rz = eval_sol(S,ci_u,P,'RZ');
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S','elemtype',...
         'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','L_hori_fati',...
         'f','p','pointwiseLoading');
-    save(fullfile(pathname,'solution.mat'),'u','time');
+    save(fullfile(pathname,'solution.mat'),'u','mean_u','std_u','ci_u','probs','time');
     save(fullfile(pathname,'test_solution.mat'),'P',...
-        'ux','uy','uz',...
-        'rx','ry','rz');
+        'mean_ux','mean_uy','mean_uz',...
+        'mean_rx','mean_ry','mean_rz',...
+        'std_ux','std_uy','std_uz',...
+        'std_rx','std_ry','std_rz',...
+        'ci_ux','ci_uy','ci_uz',...
+        'ci_rx','ci_ry','ci_rz');
 else
     load(fullfile(pathname,'problem.mat'),'S','elemtype',...
         'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','L_hori_fati',...
         'f','p','pointwiseLoading');
-    load(fullfile(pathname,'solution.mat'),'u','time');
+    load(fullfile(pathname,'solution.mat'),'u','mean_u','std_u','ci_u','probs','time');
     load(fullfile(pathname,'test_solution.mat'),'P',...
-        'ux','uy','uz',...
-        'rx','ry','rz');
+        'mean_ux','mean_uy','mean_uz',...
+        'mean_rx','mean_ry','mean_rz',...
+        'std_ux','std_uy','std_uz',...
+        'std_rx','std_ry','std_rz',...
+        'ci_ux','ci_uy','ci_uz',...
+        'ci_rx','ci_ry','ci_rz');
 end
 
 %% Outputs
@@ -522,25 +628,25 @@ switch lower(test)
             uz_exp_end = -[16.66 16.57 16.59 16.78 16.55 16.69 16.75 16.59 16.73 16.76]*1e-3;
         end
         uz_exp = mean(uz_exp_end - uz_exp_start);
-        err_uz = norm(uz-uz_exp)/norm(uz_exp);
+        err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uz     = %g\n',uz);
-        fprintf('uz_exp = %g, error = %.3e\n',uz_exp,err_uz);
+        fprintf('mean(ux) = %g, std(ux) = %g, ci(ux) = [%g %g]\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('mean(uy) = %g, std(uy) = %g, ci(uy) = [%g %g]\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('mean(uz) = %g, std(uz) = %g, ci(uz) = [%g %g]\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
+        fprintf('uz_exp   = %g, error = %.3e\n',uz_exp,err_uz);
         fprintf('\n');
     case 'stability'
         uz_exp_start = -1.93*1e-3;
         uz_exp_end = -[18.46 18.44 18.53 18.58 18.59 18.7 18.77 18.73 18.85 18.76]*1e-3;
         uz_exp = mean(uz_exp_end - uz_exp_start);
-        err_uz = norm(uz-uz_exp)/norm(uz_exp);
+        err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uz     = %g\n',uz);
-        fprintf('uz_exp = %g, error = %.3e\n',uz_exp,err_uz);
+        fprintf('mean(ux) = %g, std(ux) = %g, ci(ux) = [%g %g]\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('mean(uy) = %g, std(uy) = %g, ci(uy) = [%g %g]\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('mean(uz) = %g, std(uz) = %g, ci(uz) = [%g %g]\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
+        fprintf('uz_exp   = %g, error = %.3e\n',uz_exp,err_uz);
         fprintf('\n');
     case 'statichori1'
         if (pointwiseLoading && p==100) || (~pointwiseLoading && p==100/L_hori_fati)
@@ -551,13 +657,13 @@ switch lower(test)
             ux_exp_end = -[16.78 16.74 16.72 17.13 17 16.8 16.87 16.78 17.04 16.82 16.71 17.17]*1e-3;
         end
         ux_exp = mean(ux_exp_end - ux_exp_start);
-        err_ux = norm(ux-ux_exp)/norm(ux_exp);
+        err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('ux_exp = %g, error = %.3e\n',ux_exp,err_ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uz     = %g\n',uz);
+        fprintf('mean(ux) = %g, std(ux) = %g, ci(ux) = [%g %g]\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('ux_exp   = %g, error = %.3e\n',ux_exp,err_ux);
+        fprintf('mean(uy) = %g, std(uy) = %g, ci(uy) = [%g %g]\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('mean(uz) = %g, std(uz) = %g, ci(uz) = [%g %g]\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         fprintf('\n');
     case 'statichori2'
         if (pointwiseLoading && p==100) || (~pointwiseLoading && p==100/L_hori_fati)
@@ -568,92 +674,44 @@ switch lower(test)
             ux_exp_end = [12.45 12.68 12.66 12.65 12.71 12.64 12.82 12.73 12.89 12.86 12.79 12.86]*1e-3;
         end
         ux_exp = mean(ux_exp_end - ux_exp_start);
-        err_ux = norm(ux-ux_exp)/norm(ux_exp);
+        err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('ux_exp = %g, error = %.3e\n',ux_exp,err_ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uz     = %g\n',uz);
-        fprintf('\n');
-    case 'statichori3'
-        uy_exp_start = -3.77*1e-3;
-        uy_exp_end = -[4.71 4.73 4.69 4.56 4.47 4.73]*1e-3;   
-        uy_exp = mean(uy_exp_end - uy_exp_start);
-        err_uy = norm(uy-uy_exp)/norm(uy_exp);
-        
-        disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uy_exp = %g, error = %.3e\n',uy_exp,err_uy);
-        fprintf('uz     = %g\n',uz);
-        fprintf('\n'); 
-    case 'statichori4'
-        uy_exp_start = 9.71*1e-3;
-        uy_exp_end = [12.21 12.2 12.2 12.23 12.2 12.19 12.21]*1e-3;   
-        uy_exp = mean(uy_exp_end - uy_exp_start);
-        err_uy = norm(uy-uy_exp)/norm(uy_exp);
-        
-        disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uy_exp = %g, error = %.3e\n',uy_exp,err_uy);
-        fprintf('uz     = %g\n',uz);
+        fprintf('mean(ux) = %g, std(ux) = %g, ci(ux) = [%g %g]\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('ux_exp   = %g, error = %.3e\n',ux_exp,err_ux);
+        fprintf('mean(uy) = %g, std(uy) = %g, ci(uy) = [%g %g]\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('mean(uz) = %g, std(uz) = %g, ci(uz) = [%g %g]\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         fprintf('\n');
     case 'fatigue1'
         ux_exp_start = -4.42*1e-3;
         ux_exp_end = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;   
         ux_exp = mean(ux_exp_end - ux_exp_start);
-        err_ux = norm(ux-ux_exp)/norm(ux_exp);
+        err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('ux_exp = %g, error = %.3e\n',ux_exp,err_ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uz     = %g\n',uz);
+        fprintf('mean(ux) = %g, std(ux) = %g, ci(ux) = [%g %g]\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('ux_exp   = %g, error = %.3e\n',ux_exp,err_ux);
+        fprintf('mean(uy) = %g, std(uy) = %g, ci(uy) = [%g %g]\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('mean(uz) = %g, std(uz) = %g, ci(uz) = [%g %g]\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         fprintf('\n');
     case 'fatigue2'
         ux_exp_start = 3.48*1e-3;
         ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;   
         ux_exp = mean(ux_exp_end - ux_exp_start);
-        err_ux = norm(ux-ux_exp)/norm(ux_exp);
+        err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('ux_exp = %g, error = %.3e\n',ux_exp,err_ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uz     = %g\n',uz);
-        fprintf('\n');
-    case 'fatigue3'
-        uy_exp_start = 3.35*1e-3;
-        uy_exp_end = [6.16 5.76 5.97 5.81 5.84 5.61 5.86 5.64 5.62 5.68]*1e-3;   
-        uy_exp = mean(uy_exp_end - uy_exp_start);
-        err_uy = norm(uy-uy_exp)/norm(uy_exp);
-        
-        disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uy_exp = %g, error = %.3e\n',uy_exp,err_uy);
-        fprintf('uz     = %g\n',uz);
-        fprintf('\n');
-    case 'fatigue4'
-        uy_exp_start = -3.75*1e-3;
-        uy_exp_end = -[3.89 3.88 3.89 3.88 3.89]*1e-3;
-        uy_exp = mean(uy_exp_end - uy_exp_start);
-        err_uy = norm(uy-uy_exp)/norm(uy_exp);
-        
-        disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uy_exp = %g, error = %.3e\n',uy_exp,err_uy);
-        fprintf('uz     = %g\n',uz);
+        fprintf('mean(ux) = %g, std(ux) = %g, ci(ux) = [%g %g]\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('ux_exp   = %g, error = %.3e\n',ux_exp,err_ux);
+        fprintf('mean(uy) = %g, std(uy) = %g, ci(uy) = [%g %g]\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('mean(uz) = %g, std(uz) = %g, ci(uz) = [%g %g]\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         fprintf('\n');
 end
 
 disp('Rotation r at point'); disp(P);
-fprintf('rx     = %g\n',rx);
-fprintf('ry     = %g\n',ry);
-fprintf('rz     = %g\n',rz);
+fprintf('mean(rx) = %g, std(rx) = %g, ci(rx) = [%g %g]\n',mean_rx,std_rx,ci_rx(1),ci_rx(2));
+fprintf('mean(ry) = %g, std(ry) = %g, ci(ry) = [%g %g]\n',mean_ry,std_ry,ci_ry(1),ci_ry(2));
+fprintf('mean(rz) = %g, std(rz) = %g, ci(rz) = [%g %g]\n',mean_rz,std_rz,ci_rz(1),ci_rz(2));
 fprintf('\n');
 
 %% Display
@@ -667,49 +725,124 @@ if displaySolution
     ampl = 8;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
     hP = plot(P,'g+');
-    % legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
+    legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
-    U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
-    ampl = getsize(S)/max(abs(U))/10;
-    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+    ampl = getsize(S)/max(abs(mean_u))/10;
+    plotModelDeflection(S,mean_u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
     plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-    plot(S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1);
+    plot(S+ampl*mean_u,'Color','b','FaceColor','b','FaceAlpha',0.1);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display solution
     % ampl = 0;
-    ampl = getsize(S)/max(abs(U))/10;
+    ampl = getsize(S)/max(abs(mean_u))/10;
     options = {'solid',true};
     % options = {};
     
     switch lower(test)
         case {'stability','staticvert','impact','drop'}
-            plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
-            mysaveas(pathname,'Uz',formats,renderer);
+            plotSolution(S,mean_u,'displ',3,'ampl',ampl,options{:});
+            mysaveas(pathname,'mean_Uz',formats,renderer);
+            
+            plotSolution(S,std_u,'displ',3,'ampl',ampl,options{:});
+            mysaveas(pathname,'std_Uz',formats,renderer);
         case {'statichori1','statichori2','fatigue1','fatigue2'}
-            plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
-            mysaveas(pathname,'Ux',formats,renderer);
+            plotSolution(S,mean_u,'displ',1,'ampl',ampl,options{:});
+            mysaveas(pathname,'mean_Ux',formats,renderer);
+            
+            plotSolution(S,std_u,'displ',1,'ampl',ampl,options{:});
+            mysaveas(pathname,'std_Ux',formats,renderer);
         case {'statichori3','statichori4','fatigue3','fatigue4'}
-            plotSolution(S,u,'displ',2,'ampl',ampl,options{:});
-            mysaveas(pathname,'Uy',formats,renderer);
+            plotSolution(S,mean_u,'displ',2,'ampl',ampl,options{:});
+            mysaveas(pathname,'mean_Uy',formats,renderer);
+            
+            plotSolution(S,std_u,'displ',2,'ampl',ampl,options{:});
+            mysaveas(pathname,'std_Uy',formats,renderer);
+    end
+end
+
+%% Display convergence Monte-Carlo
+if displayCv
+    N = size(u,2);
+    switch lower(test)
+        case {'stability','staticvert','impact','drop'}
+            means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UZ'),1:N);
+            stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UZ'),1:N);
+            lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UZ'),1:N);
+            uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UZ'),1:N);
+            
+        case {'statichori1','statichori2','fatigue1','fatigue2'}
+            means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UX'),1:N);
+            stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UX'),1:N);
+            lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UX'),1:N);
+            uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UX'),1:N);
+        case {'statichori3','statichori4','fatigue3','fatigue4'}
+            means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UY'),1:N);
+            stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UY'),1:N);
+            lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UY'),1:N);
+            uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UY'),1:N);
     end
     
-    % plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
-    % mysaveas(pathname,'Rx',formats,renderer);
-    %
-    % plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
-    % mysaveas(pathname,'Ry',formats,renderer);
+    figure('Name','Convergence solution')
+    clf
+    ciplot(lowercis_u,uppercis_u,1:N,'g');
+    hold on
+    ciplot(means_u-stds_u,means_u+stds_u,1:N,'b');
+    alpha(0.2)
+    plot(1:N,means_u,'-b','LineWidth',1)
+    if strcmpi(test,'staticvert')
+        plot(1:N,repmat(uz_exp,1,N),'-r','LineWidth',1)
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',16)
+    % xlabel('Nombre de r\''ealisations','Interpreter','latex')
+    xlabel('Number of samples','Interpreter','latex')
+    ylabel('Solution','Interpreter','latex')
+    if strcmpi(test,'staticvert')
+        legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean \pm std','mean','experimental value'})
+    else
+        legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean \pm std','mean'})
+    end
+    mysaveas(pathname,'convergence_solution','fig');
+    mymatlab2tikz(pathname,'convergence_solution.tex');
     
-    plotSolution(S,u,'sigma','mises','ampl',ampl,options{:});
-    mysaveas(pathname,'SigmaVM',formats,renderer);
+    figure('Name','Convergence mean')
+    clf
+    plot(1:N,means_u,'-b','LineWidth',1)
+    grid on
+    box on
+    set(gca,'FontSize',16)
+    % xlabel('Nombre de r\''ealisations','Interpreter','latex')
+    % ylabel('Moyenne','Interpreter','latex')
+    xlabel('Number of samples','Interpreter','latex')
+    ylabel('Mean','Interpreter','latex')
+    mysaveas(pathname,'convergence_mean','fig');
+    mymatlab2tikz(pathname,'convergence_mean.tex');
+    
+    figure('Name','Convergence standard deviation')
+    clf
+    plot(1:N,stds_u,'-r','LineWidth',1)
+    grid on
+    box on
+    set(gca,'FontSize',16)
+    % xlabel('Nombre de r\''ealisations','Interpreter','latex')
+    % ylabel('Ecart-type','Interpreter','latex')
+    xlabel('Number of samples','Interpreter','latex')
+    ylabel('Standard deviation','Interpreter','latex')
+    mysaveas(pathname,'convergence_std','fig');
+    mymatlab2tikz(pathname,'convergence_std.tex');
 end
 
 end
+
+myparallel('stop');

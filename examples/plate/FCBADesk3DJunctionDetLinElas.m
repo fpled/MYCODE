@@ -1,5 +1,5 @@
-%% FCBA desk 3D deterministic linear elasticity %%
-%%----------------------------------------------%%
+%% FCBA desk 3D junction deterministic linear elasticity %%
+%%-------------------------------------------------------%%
 
 % clc
 clearvars
@@ -30,7 +30,7 @@ renderer = 'OpenGL';
 
 for it=1:length(tests)
     test = tests{it};
-filename = ['FCBADesk3DDetLinElas' test];
+filename = ['FCBADesk3DJunctionDetLinElas' test];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','plate',filename);
 if ~exist(pathname,'dir')
@@ -563,7 +563,7 @@ if displaySolution
     ampl = 8;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
     hP = plot(P,'g+');
-    % legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
+    legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     plotModel(S,'legend',false);
@@ -597,8 +597,11 @@ if displaySolution
             mysaveas(pathname,'Uy',formats,renderer);
     end
     
-    plotSolution(S,u,'sigma','mises','ampl',ampl,options{:});
-    mysaveas(pathname,'SigmaVM',formats,renderer);
+    % plotSolution(S,u,'epsilon','mises','ampl',ampl,options{:});
+    % mysaveas(pathname,'EpsilonVM',formats,renderer);
+    %
+    % plotSolution(S,u,'sigma','mises','ampl',ampl,options{:});
+    % mysaveas(pathname,'SigmaVM',formats,renderer);
 end
 
 end
