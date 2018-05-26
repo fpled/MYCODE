@@ -237,9 +237,14 @@ if solveProblem
     fun_Ry.evaluationAtMultiplePoints = true;
     
     x = getcoord(S.node);
+    Ux_ex = sparse(getnbnode(S),1);
+    Uy_ex = sparse(getnbnode(S),1);
     Uz_ex = fun_Uz(x);
     Rx_ex = fun_Rx(x);
     Ry_ex = fun_Ry(x);
+    Rz_ex = sparse(getnbnode(S),1);
+    u_ex = [Ux_ex Uy_ex Uz_ex Rx_ex Ry_ex Rz_ex]';
+    u_ex = u_ex(:);
     
     err_Uz_i = norm(Uz-Uz_ex)/norm(Uz_ex);
     err_Rx_i = norm(Rx-Rx_ex)/norm(Rx_ex);
@@ -269,7 +274,7 @@ if solveProblem
     save(fullfile(pathname,['problem_' num2str(i) '.mat']),'S','Q','a','b','h','f','-v7.3');
     save(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','time_i',...
         'Uz','Rx','Ry');
-    save(fullfile(pathname,['reference_solution_' num2str(i) '.mat']),...
+    save(fullfile(pathname,['reference_solution_' num2str(i) '.mat']),'u_ex',...
         'Uz_ex','Rx_ex','Ry_ex',...
         'err_Uz_i','err_Rx_i','err_Ry_i');
     save(fullfile(pathname,['test_solution_' num2str(i) '.mat']),'P',...
@@ -281,7 +286,7 @@ else
     load(fullfile(pathname,['problem_' num2str(i) '.mat']),'S','Q','a','b','h','f');
     load(fullfile(pathname,['solution_' num2str(i) '.mat']),'u','time_i',...
         'Uz','Rx','Ry');
-    load(fullfile(pathname,['reference_solution_' num2str(i) '.mat']),...
+    load(fullfile(pathname,['reference_solution_' num2str(i) '.mat']),'u_ex',...
         'Uz_ex','Rx_ex','Ry_ex',...
         'err_Uz_i','err_Rx_i','err_Ry_i');
     load(fullfile(pathname,['test_solution_' num2str(i) '.mat']),'P',...
@@ -350,14 +355,24 @@ if displaySolution
     
     U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
     ampl = getsize(S)/max(abs(U))/10;
+    
     plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,['mesh_deflected_' num2str(i)],formats,renderer);
+    
+    plotModelDeflection(S,u_ex,'ampl',ampl,'Color','r','FaceColor','r','FaceAlpha',0.1,'legend',false);
+    mysaveas(pathname,['mesh_deflected_ex_' num2str(i)],formats,renderer);
     
     figure('Name','Meshes')
     clf
     plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
     plot(S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1);
     mysaveas(pathname,['meshes_deflected_' num2str(i)],formats,renderer);
+    
+    figure('Name','Meshes')
+    clf
+    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
+    plot(S+ampl*u_ex,'Color','r','FaceColor','r','FaceAlpha',0.1);
+    mysaveas(pathname,['meshes_deflected_ex_' num2str(i)],formats,renderer);
     
     %% Display solution
     % ampl = 0;
@@ -368,39 +383,29 @@ if displaySolution
     plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
     mysaveas(pathname,['Uz_' num2str(i)],formats,renderer);
     
-    figure('Name','Solution u_3_ex')
-    clf
-    plot(FENODEFIELD(Uz_ex),S+ampl*u,options{:});
-    colorbar
-    set(gca,'FontSize',16)
+    plotSolution(S,u_ex,'displ',3,'ampl',ampl,options{:});
     mysaveas(pathname,['Uz_ex_' num2str(i)],formats,renderer);
     
-%     figure('Name','Error u_3 - u_3_ex')
-%     clf
-%     plot(FENODEFIELD(Uz-Uz_ex),S+ampl*u,options{:});
-%     colorbar
-%     set(gca,'FontSize',16)
+%     plotSolution(S,norm(u-u_ex),'displ',3,'ampl',ampl,options{:});
 %     mysaveas(pathname,['err_Uz_' num2str(i)],formats,renderer);
     
     plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
     mysaveas(pathname,['Rx_' num2str(i)],formats,renderer);
     
-    figure('Name','Solution r_1_ex')
-    clf
-    plot(FENODEFIELD(Rx_ex),S+ampl*u,options{:});
-    colorbar
-    set(gca,'FontSize',16)
+    plotSolution(S,u_ex,'rotation',1,'ampl',ampl,options{:});
     mysaveas(pathname,['Rx_ex_' num2str(i)],formats,renderer);
+    
+%     plotSolution(S,norm(u-u_ex),'rotation',1,'ampl',ampl,options{:});
+%     mysaveas(pathname,['err_Rx_' num2str(i)],formats,renderer);
     
     plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
     mysaveas(pathname,['Ry_' num2str(i)],formats,renderer);
     
-    figure('Name','Solution r_2_ex')
-    clf
-    plot(FENODEFIELD(Ry_ex),S+ampl*u,options{:});
-    colorbar
-    set(gca,'FontSize',16)
+    plotSolution(S,u_ex,'rotation',2,'ampl',ampl,options{:});
     mysaveas(pathname,['Ry_ex_' num2str(i)],formats,renderer);
+    
+%     plotSolution(S,norm(u-u_ex),'rotation',2,'ampl',ampl,options{:});
+%     mysaveas(pathname,['err_Ry_' num2str(i)],formats,renderer);
 end
 
 end

@@ -22,8 +22,8 @@ tests = {'StaticVert'}; % test under static vertical load
 % tests = {'Impact'}; % vertical impact test
 % tests = {'Drop'}; % drop test
 % tests = {'Stability','StaticVert',...
-%     'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
-%     'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
+%     'StaticHori1','StaticHori2',...
+%     'Fatigue1','Fatigue2'};
 
 pointwiseLoading = 1; % pointwise loading
 
@@ -222,12 +222,12 @@ if solveProblem
         case 'isot'
             % Young modulus
             E = mean_ET_data(numSample)*1e6; % Pa
-            %E = 1.7e9; % Pa
+            %E = 2e9; % Pa
             % Shear modulus
-            G = mean_GL_data(numSample)*1e6*13; % Pa
+            %G = mean_GL_data(numSample)*1e6*13; % Pa
             % Poisson ratio
-            NU = E./(2*G)-1;
-            %NU = 0.25;
+            %NU = E./(2*G)-1;
+            NU = 0.25;
             % Material
             mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
         case 'isottrans'
@@ -525,10 +525,10 @@ switch lower(test)
         err_uz = norm(uz-uz_exp)/norm(uz_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uz     = %g\n',uz);
-        fprintf('uz_exp = %g, error = %.3e\n',uz_exp,err_uz);
+        fprintf('ux     = %g m\n',ux);
+        fprintf('uy     = %g m\n',uy);
+        fprintf('uz     = %g m\n',uz);
+        fprintf('uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
         fprintf('\n');
     case 'stability'
         uz_exp_start = -1.93*1e-3;
@@ -537,10 +537,10 @@ switch lower(test)
         err_uz = norm(uz-uz_exp)/norm(uz_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uz     = %g\n',uz);
-        fprintf('uz_exp = %g, error = %.3e\n',uz_exp,err_uz);
+        fprintf('ux     = %g m\n',ux);
+        fprintf('uy     = %g m\n',uy);
+        fprintf('uz     = %g m\n',uz);
+        fprintf('uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
         fprintf('\n');
     case 'statichori1'
         if (pointwiseLoading && p==100) || (~pointwiseLoading && p==100/L_hori_fati)
@@ -554,10 +554,10 @@ switch lower(test)
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('ux_exp = %g, error = %.3e\n',ux_exp,err_ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uz     = %g\n',uz);
+        fprintf('ux     = %g m\n',ux);
+        fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
+        fprintf('uy     = %g m\n',uy);
+        fprintf('uz     = %g m\n',uz);
         fprintf('\n');
     case 'statichori2'
         if (pointwiseLoading && p==100) || (~pointwiseLoading && p==100/L_hori_fati)
@@ -571,10 +571,10 @@ switch lower(test)
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('ux_exp = %g, error = %.3e\n',ux_exp,err_ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uz     = %g\n',uz);
+        fprintf('ux     = %g m\n',ux);
+        fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
+        fprintf('uy     = %g m\n',uy);
+        fprintf('uz     = %g m\n',uz);
         fprintf('\n');
     case 'statichori3'
         uy_exp_start = -3.77*1e-3;
@@ -583,10 +583,10 @@ switch lower(test)
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uy_exp = %g, error = %.3e\n',uy_exp,err_uy);
-        fprintf('uz     = %g\n',uz);
+        fprintf('ux     = %g m\n',ux);
+        fprintf('uy     = %g m\n',uy);
+        fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
+        fprintf('uz     = %g m\n',uz);
         fprintf('\n'); 
     case 'statichori4'
         uy_exp_start = 9.71*1e-3;
@@ -595,10 +595,10 @@ switch lower(test)
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uy_exp = %g, error = %.3e\n',uy_exp,err_uy);
-        fprintf('uz     = %g\n',uz);
+        fprintf('ux     = %g m\n',ux);
+        fprintf('uy     = %g m\n',uy);
+        fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
+        fprintf('uz     = %g m\n',uz);
         fprintf('\n');
     case 'fatigue1'
         ux_exp_start = -4.42*1e-3;
@@ -607,10 +607,10 @@ switch lower(test)
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('ux_exp = %g, error = %.3e\n',ux_exp,err_ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uz     = %g\n',uz);
+        fprintf('ux     = %g m\n',ux);
+        fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
+        fprintf('uy     = %g m\n',uy);
+        fprintf('uz     = %g m\n',uz);
         fprintf('\n');
     case 'fatigue2'
         ux_exp_start = 3.48*1e-3;
@@ -619,10 +619,10 @@ switch lower(test)
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('ux_exp = %g, error = %.3e\n',ux_exp,err_ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uz     = %g\n',uz);
+        fprintf('ux     = %g m\n',ux);
+        fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
+        fprintf('uy     = %g m\n',uy);
+        fprintf('uz     = %g m\n',uz);
         fprintf('\n');
     case 'fatigue3'
         uy_exp_start = 3.35*1e-3;
@@ -631,10 +631,10 @@ switch lower(test)
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uy_exp = %g, error = %.3e\n',uy_exp,err_uy);
-        fprintf('uz     = %g\n',uz);
+        fprintf('ux     = %g m\n',ux);
+        fprintf('uy     = %g m\n',uy);
+        fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
+        fprintf('uz     = %g m\n',uz);
         fprintf('\n');
     case 'fatigue4'
         uy_exp_start = -3.75*1e-3;
@@ -643,17 +643,17 @@ switch lower(test)
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
         disp('Displacement u at point'); disp(P);
-        fprintf('ux     = %g\n',ux);
-        fprintf('uy     = %g\n',uy);
-        fprintf('uy_exp = %g, error = %.3e\n',uy_exp,err_uy);
-        fprintf('uz     = %g\n',uz);
+        fprintf('ux     = %g m\n',ux);
+        fprintf('uy     = %g m\n',uy);
+        fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
+        fprintf('uz     = %g m\n',uz);
         fprintf('\n');
 end
 
 disp('Rotation r at point'); disp(P);
-fprintf('rx     = %g\n',rx);
-fprintf('ry     = %g\n',ry);
-fprintf('rz     = %g\n',rz);
+fprintf('rx     = %g rad = %g deg\n',rx,rad2deg(rx));
+fprintf('ry     = %g rad = %g deg\n',ry,rad2deg(ry));
+fprintf('rz     = %g rad = %g deg\n',rz,rad2deg(rz));
 fprintf('\n');
 
 %% Display
@@ -709,10 +709,10 @@ if displaySolution
     % mysaveas(pathname,'Ry',formats,renderer);
     
     % plotSolution(S,u,'epsilon','mises','ampl',ampl,options{:});
-    % mysaveas(pathname,'EpsilonVM',formats,renderer);
+    % mysaveas(pathname,'EpsVM',formats,renderer);
     %
     % plotSolution(S,u,'sigma','mises','ampl',ampl,options{:});
-    % mysaveas(pathname,'SigmaVM',formats,renderer);
+    % mysaveas(pathname,'SigVM',formats,renderer);
 end
 
 end

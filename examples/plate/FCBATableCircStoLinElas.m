@@ -20,16 +20,16 @@ displayCv = true;
 % tests = {'StaticHori2'}; % test under static horizontal load 2
 % tests = {'StaticHori3'}; % test under static horizontal load 3 (lifting)
 % tests = {'StaticHori4'}; % test under static horizontal load 4 (lifting)
-% tests = {'StaticVert'}; % test under static vertical load
+tests = {'StaticVert'}; % test under static vertical load
 % tests = {'Fatigue1'}; % fatigue test under horizontal load 1
 % tests = {'Fatigue2'}; % fatigue test under horizontal load 2
 % tests = {'Fatigue3'}; % fatigue test under horizontal load 3 (lifting)
 % tests = {'Fatigue4'}; % fatigue test under horizontal load 4 (lifting)
 % tests = {'Impact'}; % vertical impact test
 % tests = {'Drop'}; % drop test
-tests = {'Stability1','Stability2','Stability3','Stability4','StaticVert',...
-    'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
-    'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
+% tests = {'Stability1','Stability2','Stability3','Stability4','StaticVert',...
+%     'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
+%     'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
 
 belt = 1; % belt modeling
 
@@ -125,12 +125,12 @@ if solveProblem
     E_data = [4.211 4.057 3.685 3.921 3.839 3.845 3.795...
         3.406 3.389 3.299 3.485 3.319 3.267 3.349 3.307...
         4.684 4.245 4.076 4.407 4.283 4.054 4.226 4.041...
-        4.104 4.075 3.556 3.319 3.848 3.707 3.664 3.493 3.550]*1e9;
+        4.104 4.075 3.556 3.319 3.848 3.707 3.664 3.493 3.550]*1e9; % GPa
     % E_data = [2.7116 2.8945 2.9689 3.022 3.014 3.0069 2.9952 2.9711...
     %     2.7807 2.9541 2.9618 3.0014 2.9562 2.8909 2.8874 2.8923...
     %     2.6636 3.2635 3.1073 3.1657 3.1424 3.1731 3.1416 3.155...
     %     2.7356 2.8797 2.7230 2.7851 2.8312 2.8018 2.7592 2.743 2.7241 2.7055 2.7073...
-    %     3.8267 3.2860 3.3753 3.1742 3.3089 3.2461 3.1331 3.0817	3.0093 3.0528]*1e9;
+    %     3.8267 3.2860 3.3753 3.1742 3.3089 3.2461 3.1331 3.0817 3.0093 3.0528]*1e9; % GPa
     
     % Maximum likelihood estimation
     % Parameters for Gamma distribution
@@ -534,24 +534,24 @@ fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
 disp('Displacement u at point'); disp(P);
-fprintf('mean(ux) = %g, std(ux) = %g, ci(ux) = [%g %g]\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
-fprintf('mean(uy) = %g, std(uy) = %g, ci(uy) = [%g %g]\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
-fprintf('mean(uz) = %g, std(uz) = %g, ci(uz) = [%g %g]\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
+fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
 if strcmpi(test,'staticvert')
     uz_exp = -2.35e-3;
     err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
-    fprintf('uz_exp   = %g, error    = %.3e\n',uz_exp,err_uz);
+    fprintf('uz_exp   = %g m, error    = %.3e\n',uz_exp,err_uz);
 end
-fprintf('mean(ur) = %g, std(ur) = %g, ci(ur) = [%g %g]\n',mean_ur,std_ur,ci_ur(1),ci_ur(2));
-fprintf('mean(ut) = %g, std(ut) = %g, ci(ut) = [%g %g]\n',mean_ut,std_ut,ci_ut(1),ci_ut(2));
+fprintf('mean(ur) = %g m, std(ur) = %g m, ci(ur) = [%g %g] m\n',mean_ur,std_ur,ci_ur(1),ci_ur(2));
+fprintf('mean(ut) = %g m, std(ut) = %g m, ci(ut) = [%g %g] m\n',mean_ut,std_ut,ci_ut(1),ci_ut(2));
 fprintf('\n');
 
 disp('Rotation r at point'); disp(P);
-fprintf('mean(rx) = %g, std(rx) = %g, ci(rx) = [%g %g]\n',mean_rx,std_rx,ci_rx(1),ci_rx(2));
-fprintf('mean(ry) = %g, std(ry) = %g, ci(ry) = [%g %g]\n',mean_ry,std_ry,ci_ry(1),ci_ry(2));
-fprintf('mean(rz) = %g, std(rz) = %g, ci(rz) = [%g %g]\n',mean_rz,std_rz,ci_rz(1),ci_rz(2));
-fprintf('mean(rr) = %g, std(rr) = %g, ci(rr) = [%g %g]\n',mean_rr,std_rr,ci_rr(1),ci_rr(2));
-fprintf('mean(rt) = %g, std(rt) = %g, ci(rt) = [%g %g]\n',mean_rt,std_rt,ci_rt(1),ci_rt(2));
+fprintf('mean(rx) = %g rad = %g deg, std(rx) = %g rad = %g deg, ci(rx) = [%g %g] rad = [%g %g] deg\n',mean_rx,rad2deg(mean_rx),std_rx,rad2deg(std_rx),ci_rx(1),ci_rx(2),rad2deg(ci_rx(1)),rad2deg(ci_rx(2)));
+fprintf('mean(ry) = %g rad = %g deg, std(ry) = %g rad = %g deg, ci(ry) = [%g %g] rad = [%g %g] deg\n',mean_ry,rad2deg(mean_ry),std_ry,rad2deg(std_ry),ci_ry(1),ci_ry(2),rad2deg(ci_ry(1)),rad2deg(ci_ry(2)));
+fprintf('mean(rz) = %g rad = %g deg, std(rz) = %g rad = %g deg, ci(rz) = [%g %g] rad = [%g %g] deg\n',mean_rz,rad2deg(mean_rz),std_rz,rad2deg(std_rz),ci_rz(1),ci_rz(2),rad2deg(ci_rz(1)),rad2deg(ci_rz(2)));
+fprintf('mean(rr) = %g rad = %g deg, std(rr) = %g rad = %g deg, ci(rr) = [%g %g] rad = [%g %g] deg\n',mean_rr,rad2deg(mean_rr),std_rr,rad2deg(std_rr),ci_rr(1),ci_rr(2),rad2deg(ci_rr(1)),rad2deg(ci_rr(2)));
+fprintf('mean(rt) = %g rad = %g deg, std(rt) = %g rad = %g deg, ci(rt) = [%g %g] rad = [%g %g] deg\n',mean_rt,rad2deg(mean_rt),std_rt,rad2deg(std_rt),ci_rt(1),ci_rt(2),rad2deg(ci_rt(1)),rad2deg(ci_rt(2)));
 fprintf('\n');
 
 %% Display

@@ -17,16 +17,16 @@ displaySolution = true;
 % tests = {'StaticHori2'}; % test under static horizontal load 2
 % tests = {'StaticHori3'}; % test under static horizontal load 3 (lifting)
 % tests = {'StaticHori4'}; % test under static horizontal load 4 (lifting)
-% tests = {'StaticVert'}; % test under static vertical load
+tests = {'StaticVert'}; % test under static vertical load
 % tests = {'Fatigue1'}; % fatigue test under horizontal load 1
 % tests = {'Fatigue2'}; % fatigue test under horizontal load 2
 % tests = {'Fatigue3'}; % fatigue test under horizontal load 3 (lifting)
 % tests = {'Fatigue4'}; % fatigue test under horizontal load 4 (lifting)
 % tests = {'Impact'}; % vertical impact test
 % tests = {'Drop'}; % drop test
-tests = {'Stability1','Stability2','Stability3','Stability4','StaticVert',...
-    'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
-    'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
+% tests = {'Stability1','Stability2','Stability3','Stability4','StaticVert',...
+%     'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
+%     'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
 
 belt = 1; % belt modeling
 
@@ -123,7 +123,7 @@ if solveProblem
     
     % Plate
     % Young modulus
-    E = 2.9914e9;
+    E = 2.9914e9; % GPa
     % Poisson ratio
     NU = 0.3;
     % Density
@@ -415,24 +415,24 @@ fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
 disp('Displacement u at point'); disp(P);
-fprintf('ux     = %g\n',ux);
-fprintf('uy     = %g\n',uy);
-fprintf('uz     = %g\n',uz);
+fprintf('ux     = %g m\n',ux);
+fprintf('uy     = %g m\n',uy);
+fprintf('uz     = %g m\n',uz);
 if strcmpi(test,'staticvert')
     uz_exp = -2.35e-3;
     err_uz = norm(uz-uz_exp)/norm(uz_exp);
-    fprintf('uz_exp = %g, error = %.3e\n',uz_exp,err_uz);
+    fprintf('uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
 end
-fprintf('ur     = %g\n',ur);
-fprintf('ut     = %g\n',ut);
+fprintf('ur     = %g m\n',ur);
+fprintf('ut     = %g m\n',ut);
 fprintf('\n');
 
 disp('Rotation r at point'); disp(P);
-fprintf('rx     = %g\n',rx);
-fprintf('ry     = %g\n',ry);
-fprintf('rz     = %g\n',rz);
-fprintf('rr     = %g\n',rr);
-fprintf('rt     = %g\n',rt);
+fprintf('rx     = %g rad = %g deg\n',rx,rad2deg(rx));
+fprintf('ry     = %g rad = %g deg\n',ry,rad2deg(ry));
+fprintf('rz     = %g rad = %g deg\n',rz,rad2deg(rz));
+fprintf('rr     = %g rad = %g deg\n',rr,rad2deg(rr));
+fprintf('rt     = %g rad = %g deg\n',rt,rad2deg(rt));
 fprintf('\n');
 
 %% Display
@@ -493,10 +493,10 @@ if displaySolution
     % mysaveas(pathname,'Ry',formats,renderer);
     
     % plotSolution(S,u,'epsilon','mises','ampl',ampl,options{:});
-    % mysaveas(pathname,'EpsilonVM',formats,renderer);
+    % mysaveas(pathname,'EpsVM',formats,renderer);
     %
     % plotSolution(S,u,'sigma','mises','ampl',ampl,options{:});
-    % mysaveas(pathname,'SigmaVM',formats,renderer);
+    % mysaveas(pathname,'SigVM',formats,renderer);
 end
 
 end

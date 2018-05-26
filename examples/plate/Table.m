@@ -143,23 +143,23 @@ mysaveas(pathname,'Uz',formats,renderer);
 
 % Stresses
 plotSolution(S,u,'sigma',1,'ampl',ampl,options{:});
-mysaveas(pathname,'Sigmaxx',formats,renderer);
+mysaveas(pathname,'Sigxx',formats,renderer);
 
 plotSolution(S,u,'sigma',2,'ampl',ampl,options{:});
-mysaveas(pathname,'Sigmayy',formats,renderer);
+mysaveas(pathname,'Sigyy',formats,renderer);
 
 plotSolution(S,u,'sigma',3,'ampl',ampl,options{:});
-mysaveas(pathname,'Sigmazz',formats,renderer);
+mysaveas(pathname,'Sigzz',formats,renderer);
 
 plotSolution(S,u,'sigma',4,'ampl',ampl,options{:});
-mysaveas(pathname,'Sigmayz',formats,renderer);
+mysaveas(pathname,'Sigyz',formats,renderer);
 
 plotSolution(S,u,'sigma',5,'ampl',ampl,options{:});
-mysaveas(pathname,'Sigmaxz',formats,renderer);
+mysaveas(pathname,'Sigxz',formats,renderer);
 
 plotSolution(S,u,'sigma',6,'ampl',ampl,options{:});
-mysaveas(pathname,'Sigmaxy',formats,renderer);
+mysaveas(pathname,'Sigxy',formats,renderer);
 
 plotSolution(S,u,'sigma','mises','ampl',ampl,options{:});
-mysaveas(pathname,'SigmaVM',formats,renderer);
+mysaveas(pathname,'SigVM',formats,renderer);
 

@@ -22,8 +22,8 @@ tests = {'StaticVert'}; % test under static vertical load
 % tests = {'Impact'}; % vertical impact test
 % tests = {'Drop'}; % drop test
 % tests = {'Stability','StaticVert',...
-%     'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
-%     'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
+%     'StaticHori1','StaticHori2',...
+%     'Fatigue1','Fatigue2'};
 
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
@@ -206,12 +206,12 @@ if solveProblem
         case 'isot'
             % Young modulus
             E = mean_ET_data(numSample)*1e6; % Pa
-            %E = 1.7e9; % Pa
+            %E = 2e9; % Pa
             % Shear modulus
-            G = mean_GL_data(numSample)*1e6*13; % Pa
+            %G = mean_GL_data(numSample)*1e6*13; % Pa
             % Poisson ratio
-            NU = E./(2*G)-1;
-            %NU = 0.25;
+            %NU = E./(2*G)-1;
+            NU = 0.25;
             % Material
             mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO);
             mat = setnumber(mat,1);
@@ -598,10 +598,10 @@ if displaySolution
     end
     
     % plotSolution(S,u,'epsilon','mises','ampl',ampl,options{:});
-    % mysaveas(pathname,'EpsilonVM',formats,renderer);
+    % mysaveas(pathname,'EpsVM',formats,renderer);
     %
     % plotSolution(S,u,'sigma','mises','ampl',ampl,options{:});
-    % mysaveas(pathname,'SigmaVM',formats,renderer);
+    % mysaveas(pathname,'SigVM',formats,renderer);
 end
 
 end

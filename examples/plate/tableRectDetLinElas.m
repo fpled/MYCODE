@@ -270,10 +270,10 @@ if displaySolution
     % mysaveas(pathname,'Ry',formats,renderer);
     
     % plotSolution(S,u,'epsilon','mises','ampl',ampl,options{:});
-    % mysaveas(pathname,'EpsilonVM',formats,renderer);
+    % mysaveas(pathname,'EpsVM',formats,renderer);
     %
     % plotSolution(S,u,'sigma','mises','ampl',ampl,options{:});
-    % mysaveas(pathname,'SigmaVM',formats,renderer);
+    % mysaveas(pathname,'SigVM',formats,renderer);
 end
 
 end
