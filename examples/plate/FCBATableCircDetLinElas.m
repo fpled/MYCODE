@@ -28,7 +28,7 @@ tests = {'StaticVert'}; % test under static vertical load
 %     'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
 %     'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
 
-belt = 1; % belt modeling
+belt = true; % belt modeling
 
 formats = {'fig','epsc'};
 renderer = 'OpenGL';

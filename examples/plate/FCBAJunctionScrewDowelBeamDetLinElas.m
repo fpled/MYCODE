@@ -1,5 +1,5 @@
-%% FCBA desk beam deterministic linear elasticity %%
-%%------------------------------------------------%%
+%% FCBA junction screw dowel beam deterministic linear elasticity %%
+%%----------------------------------------------------------------%%
 
 % clc
 clearvars
@@ -9,9 +9,7 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-tests = {'StaticVert'}; % test under static vertical load
-
-filename = 'FCBADeskBeamDetLinElas';
+filename = 'FCBAJunctionScrewDowelBeamDetLinElas';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','plate',filename);
 if ~exist(pathname,'dir')
@@ -24,36 +22,30 @@ formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 junction = true; % junction modeling
+sym = false; % symmetry boundary conditions
 
 %% Problem
 if solveProblem
     %% Domains and meshes
     % Beams dimensions
-    a1 = 750e-3; % m
-    b1 = 396e-3;
-    a2 = 940e-3;
-    b2 = 501e-3;
-    b3 = 113e-3;
-    % Same thickness for all the beams
+    L1 = 142.5e-3; % m
+    L2 = 67.5e-3;
+    b = 113e-3;
+    b1 = b;
+    b2 = b;
     h = 15e-3;
-    
-    L1 = a1+h/2;
-    L2 = (a2+h)/2;
     
     % Points
     P1 = POINT([0.0,0.0]);
     P2 = POINT([0.0,L1]);
     P_load = POINT([L2,L1]);
-    P3 = POINT([2*L2,L1]);
-    P4 = POINT([2*L2,0.0]);
     
-    L_beam{1} = LIGNE(P1,P2);
-    L_beam{2} = LIGNE(P2,P_load);
-    L_beam{3} = LIGNE(P_load,P3);
-    L_beam{4} = LIGNE(P4,P3);
+    Line1 = LIGNE(P1,P2);
+    Line2 = LIGNE(P2,P_load);
     
-    cl_beam = h/20;
-    S_beam = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','filename',fullfile(pathname,['gmsh_beam_' num2str(n) '_cl_' num2str(cl_beam)])),L_beam,num2cell(1:length(L_beam)),'UniformOutput',false);
+    cl = h/20;
+    S1 = build_model(Line1,'cl',cl,'elemtype','BEAM','filename',fullfile(pathname,['gmsh_beam_1_cl_' num2str(cl)]));
+    S2 = build_model(Line2,'cl',cl,'elemtype','BEAM','filename',fullfile(pathname,['gmsh_beam_2_cl_' num2str(cl)]));
     
     %% Materials
     % Gravitational acceleration
@@ -61,7 +53,7 @@ if solveProblem
     
     % Density
     RHO = 707.1384; % kg/m3
-    Vol_total = 2*(L1*b1+L2*(b2+2*b3))*h;
+    Vol_total = (L1*b1+L2*b2)*h;
     Mass_total = Vol_total*RHO; % kg
     
     % Cross-section area
@@ -102,11 +94,7 @@ if solveProblem
             NU = 0.25;
             % Material
             mat_1 = ELAS_BEAM('E',E,'NU',NU,'S',Sec1,'IZ',IZ1,'IY',IY1,'IX',IX1,'RHO',RHO);
-            mat_1 = setnumber(mat_1,1);
             mat_2 = ELAS_BEAM('E',E,'NU',NU,'S',Sec2,'IZ',IZ2,'IY',IY2,'IX',IX2,'RHO',RHO);
-            mat_2 = setnumber(mat_2,2);
-            S_beam([1,4]) = cellfun(@(S) setmaterial(S,mat_1),S_beam([1,4]),'UniformOutput',false);
-            S_beam([2,3]) = cellfun(@(S) setmaterial(S,mat_2),S_beam([2,3]),'UniformOutput',false);
         case 'isottrans'
             % Transverse Young modulus
             ET = mean_ET_data(numSample)*1e6; % Pa
@@ -120,55 +108,69 @@ if solveProblem
             NUT = 0.25;
             % Material
             mat_1 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec1,'IZ',IZ1,'IY',IY1,'IX',IX1,'RHO',RHO);
-            mat_1 = setnumber(mat_1,1);
             mat_2 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec2,'IZ',IZ2,'IY',IY2,'IX',IX2,'RHO',RHO);
-            mat_2 = setnumber(mat_2,2);
-            S_beam([1,4]) = cellfun(@(S) setmaterial(S,mat_1),S_beam([1,4]),'UniformOutput',false);
-            S_beam([2,3]) = cellfun(@(S) setmaterial(S,mat_2),S_beam([2,3]),'UniformOutput',false);
         otherwise
             error('Wrong material symmetry !')
     end
     
+    mat_1 = setnumber(mat_1,1);
+    mat_2 = setnumber(mat_2,2);
+    S1 = setmaterial(S1,mat_1);
+    S2 = setmaterial(S2,mat_2);
+    
     if junction
-        S23 = union(S_beam{2:3});
-        S = union(S_beam{1},S23,S_beam{4},'duplicate');
+        S = union(S1,S2,'duplicate');
     else
-        S = union(S_beam{:});
+        S = union(S1,S2);
     end
     
     %% Neumann boundary conditions
     p1 = RHO*g*Sec1; % line load (body load for beams)
     p2 = RHO*g*Sec2; % line load (body load for beams)
-    p = 300; % pointwise load, 300N, 400N or 500N
+    
+    junction_type = 'S1';
+    
+    switch lower(junction_type)
+        case 's1'
+            p = [24 65 114 163 200 252 291];
+        case 's2'
+            p = [14 54 113 159 199 249 299];
+        case 's3'
+            p = [15 65 111 153 203 243 295 341];
+        case 's4'
+            p = [23 34 91 141 180 229 290];
+        case 'd1'
+            p = [40 46 101 146];
+        case 'd2'
+            p = [6 63 110 175];
+    end
+    p = p(1);
     
     %% Dirichlet boundary conditions
     if junction
         S = final(S,'duplicate');
         % [~,numnode2,~] = intersect(S,P2,'strict',false);
-        % [~,numnode3,~] = intersect(S,P3,'strict',false);
         numnode2 = find(S.node==P2);
-        numnode3 = find(S.node==P3);
         S = addclperiodic(S,numnode2(1),numnode2(2),'U');
-        S = addclperiodic(S,numnode3(1),numnode3(2),'U');
     else
         S = final(S);
     end
-    P_support = [P1 P4];
-    S = addcl(S,P_support);
+    S = addcl(S,P1);
+    if sym
+        S = addcl(S,P_load,{'UX','RZ'});
+    end
     
     %% Stiffness matrix and sollicitation vector
     A = calc_rigi(S);
     f = nodalload(S,P_load,'FY',-p);
-    f = f + bodyload(keepgroupelem(S,[1,4]),[],'FY',-p1);
-    f = f + bodyload(keepgroupelem(S,[2,3]),[],'FY',-p2);
+    f = f + bodyload(keepgroupelem(S,1),[],'FY',-p1);
+    f = f + bodyload(keepgroupelem(S,2),[],'FY',-p2);
     
     if junction
-        k = 1e3; % additonal junction rotational stiffness
+        k = 1e2; % additonal junction rotational stiffness
         numddl2 = findddl(S,'RZ',numnode2,'free');
-        numddl3 = findddl(S,'RZ',numnode3,'free');
         A_add = [k -k;-k k];
         A(numddl2,numddl2) = A(numddl2,numddl2) + A_add;
-        A(numddl3,numddl3) = A(numddl3,numddl3) + A_add;
     end
     
     %% Solution
@@ -195,15 +197,20 @@ if solveProblem
     Mz = s(2);
     
     %% Reference solution
-    if junction
-        XA = (3*p+4*p2*L2)/2*L2^2*IZ1/(L1*(L1*IZ2+4*L2*IZ1*(1+E*IZ2/(k*L2))) + 12*L2/L1*IZ1/Sec2*(IZ2*(1+E*IZ1/(k*L1))+L2/L1*IZ1));
-        % MA = (p+4/3*p2*L2)/2*L2^2*IZ1*(-L1+6*L2/L1^2*IZ1/Sec2)/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2*(1+E*IZ1/(k*L1))+L2/L1*IZ1));
+    if sym
+        if junction
+            XA = 2*(3*p+2*p2*L2)/2*L2^2*IZ1/(L1*(L1*IZ2+4*L2*IZ1*(1+E*IZ2/(k*L2))) + 12*L2/L1*IZ1/Sec2*(IZ2*(1+E*IZ1/(k*L1))+L2/L1*IZ1));
+            % MA = 2*(p+2/3*p2*L2)/2*L2^2*IZ1*(-L1+6*L2/L1^2*IZ1/Sec2)/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2*(1+E*IZ1/(k*L1))+L2/L1*IZ1));
+        else
+            XA = 2*(3*p+2*p2*L2)/2*L2^2*IZ1/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2+L2/L1*IZ1));
+            % MA = 2*(p+2/3*p2*L2)/2*L2^2*IZ1*(-L1+6*L2/L1^2*IZ1/Sec2)/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2+L2/L1*IZ1));
+        end
+        MA = XA*(-L1/3+2*L2/L1^2*IZ1/Sec2);
     else
-        XA = (3*p+4*p2*L2)/2*L2^2*IZ1/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2+L2/L1*IZ1));
-        % MA = (p+4/3*p2*L2)/2*L2^2*IZ1*(-L1+6*L2/L1^2*IZ1/Sec2)/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2+L2/L1*IZ1));
+        XA = 0;
+        MA = (p2*L2/2+p)*L2;
     end
-    YA = p1*L1+p2*L2+p/2;
-    MA = XA*(-L1/3+2*L2/L1^2*IZ1/Sec2);
+    YA = p1*L1+p2*L2+p;
     
     fun_Ux = cell(2,1);
     fun_Uy = cell(2,1);
@@ -213,31 +220,50 @@ if solveProblem
     fun_Epsx = cell(2,1);
     fun_Gamz = cell(2,1);
     
-    % Horizontal beam in local coordinates system
+    % Beam 1
     fun_Ux{1} = @(x) 1/(E*Sec1)*(p1*x/2-YA).*x;
     fun_Uy{1} = @(x) -1/(E*IZ1)*(XA*x.^3/6+MA*x.^2/2);
     fun_Rz{1} = @(x) -1/(E*IZ1)*(XA*x.^2/2+MA*x);
     fun_N{1}  = @(x) p1*x-YA;
-    fun_Ty{1} = @(x) XA*ones(size(x));
-    fun_Mz{1} = @(x) -XA*x-MA;
+    if sym
+        fun_Ty{1} = @(x) XA*ones(size(x));
+        fun_Mz{1} = @(x) -XA*x-MA;
+    else
+        fun_Ty{1} = @(x) zeros(size(x));
+        fun_Mz{1} = @(x) -MA*ones(size(x));
+    end
+    
+    % Beam 2
+    fun_Ty{2} = @(x) p2*(x-L2)-p;
+    % fun_Ty{2} = @(x) p2*x+p1*L1-YA;
+    if sym
+        fun_Ux{2} = @(x) XA/(E*Sec2)*(L2-x);
+        fun_Uy{2} = @(x) 1/(E*IZ2)*(-p2*x.^4/24 + (p2*L2+p)*x.^3/6 - (XA*L1+MA)*x.^2/2) - L1/(E*IZ1)*(XA*L1/2+MA)*x - L1/(E*Sec1)*(p1*L1/2+p2*L2+p);
+        if junction
+            fun_Uy{2} = @(x) fun_Uy{2}(x) - 1/k*(XA*L1+MA)*x;
+        end
+        fun_Rz{2} = @(x) 1/(E*IZ2)*(p2/6*(3*L2^2-(x-L2).^2) + p/2*(x+L2) - (XA*L1+MA)).*(x-L2);
+        % fun_Rz{2} = @(x) 1/(E*IZ2)*(-p2*x.^3/6 + (p2*L2+p)*x.^2/2 - (XA*L1+MA)*x) - L1/(E*IZ1)*(XA*L1/2+MA);
+        % if junction
+        %     fun_Rz{2} = @(x) fun_Rz{2}(x) - 1/k*(XA*L1+MA);
+        % end
+        fun_N{2}  = @(x) -XA*ones(size(x));
+        fun_Mz{2} = @(x) -p2*x.^2/2+(p2*L2+p)*x-XA*L1-MA;
+    else
+        fun_Ux{2} = @(x) MA*L1^2/(2*E*IZ2)*ones(size(x));
+        fun_Uy{2} = @(x) 1/(E*IZ2)*(-p2*(x-L2).^4/24 + p*(x-L2).^3/6 - (p2*L2/3+p)*L2^2/2*x + (p2*L2/4+p)*L2^3/6) - MA*L1/(E*IZ1)*x - L1/(E*Sec1)*(p1*L1/2+p2*L2+p);
+        if junction
+            fun_Uy{2} = @(x) fun_Uy{2}(x) - MA/k*x;
+        end
+        fun_Rz{2} = @(x) 1/(E*IZ2)*(-p2*(x-L2).^3/6 + p*(x-L2).^2/2 - (p2*L2/3+p)*L2^2/2) - MA*L1/(E*IZ1);
+        if junction
+            fun_Rz{2} = @(x) fun_Rz{2}(x) - MA/k;
+        end
+        fun_N{2}  = @(x) zeros(size(x));
+        fun_Mz{2} = @(x) -p2*(x-L2).^2/2+p*(x-L2);
+    end
     fun_Epsx{1} = @(x) fun_N{1}(x)/(E*Sec1);
     fun_Gamz{1} = @(x) fun_Mz{1}(x)/(E*IZ1);
-    
-    % Vertical beam in local coordinates system
-    fun_Ux{2} = @(x) XA/(E*Sec2)*(L2-x);
-    fun_Uy{2} = @(x) 1/(E*IZ2)*(-p2*x.^4/24 + (p2*L2+p/2)*x.^3/6 - (XA*L1+MA)*x.^2/2) - L1/(E*IZ1)*(XA*L1/2+MA)*x - L1/(E*Sec1)*(p1*L1/2+p2*L2+p/2);
-    if junction
-        fun_Uy{2} = @(x) fun_Uy{2}(x) - 1/k*(XA*L1+MA)*x;
-    end
-    fun_Rz{2} = @(x) 1/(E*IZ2)*(p2/6*(3*L2^2-(x-L2).^2) + p/4*(x+L2) - (XA*L1+MA)).*(x-L2);
-    % fun_Rz{2} = @(x) 1/(E*IZ2)*(-p2*x.^3/6 + (p2*L2+p/2)*x.^2/2 - (XA*L1+MA)*x) - L1/(E*IZ1)*(XA*L1/2+MA);
-    % if junction
-    %     fun_Rz{2} = @(x) fun_Rz{2}(x) - 1/k*(XA*L1+MA);
-    % end
-    fun_N{2}  = @(x) -XA*ones(size(x));
-    fun_Ty{2} = @(x) p2*(x-L2)-p/2;
-    % fun_Ty{2} = @(x) p2*x+p1*L1-YA;
-    fun_Mz{2} = @(x) -p2*x.^2/2+(p2*L2+p/2)*x-XA*L1-MA;
     fun_Epsx{2} = @(x) fun_N{2}(x)/(E*Sec2);
     fun_Gamz{2} = @(x) fun_Mz{2}(x)/(E*IZ2);
     
@@ -291,24 +317,6 @@ if solveProblem
             Mz_ex{i}(:,:,numnode) = fun_Mz{2}(xi);
             Epsx_ex{i}(:,:,numnode) = fun_Epsx{2}(xi);
             Gamz_ex{i}(:,:,numnode) = fun_Gamz{2}(xi);
-        elseif i==3
-            xi = 2*L2-fliplr(x(numnode,1));
-            Ux_ex(numnode) = -fun_Ux{2}(xi);
-            Uy_ex(numnode) = fun_Uy{2}(xi);
-            Rz_ex(numnode) = -fun_Rz{2}(xi);
-            N_ex{i}(:,:,numnode)  = fun_N{2}(xi);
-            Mz_ex{i}(:,:,numnode) = fun_Mz{2}(xi);
-            Epsx_ex{i}(:,:,numnode) = fun_Epsx{2}(xi);
-            Gamz_ex{i}(:,:,numnode) = fun_Gamz{2}(xi);
-        elseif i==4
-            xi = x(numnode,2);
-            Ux_ex(numnode) = fun_Uy{1}(xi);
-            Uy_ex(numnode) = fun_Ux{1}(xi);
-            Rz_ex(numnode) = -fun_Rz{1}(xi);
-            N_ex{i}(:,:,numnode)  = fun_N{1}(xi);
-            Mz_ex{i}(:,:,numnode) = -fun_Mz{1}(xi);
-            Epsx_ex{i}(:,:,numnode) = fun_Epsx{1}(xi);
-            Gamz_ex{i}(:,:,numnode) = -fun_Gamz{1}(xi);
         end
         s_ex{i}(1,:,numnode) = N_ex{i}(1,:,numnode);
         s_ex{i}(2,:,numnode) = Mz_ex{i}(1,:,numnode);
@@ -341,9 +349,9 @@ if solveProblem
         Epsxi_ex = reshape(Epsx_ex{i},[getnbnode(S),1]);
         Gamzi    = reshape(Gamz{i},[getnbnode(S),1]);
         Gamzi_ex = reshape(Gamz_ex{i},[getnbnode(S),1]);
-        err_N(i)  = norm(Ni-Ni_ex)/norm(Ni_ex);
+        err_N(i)  = norm(Ni-Ni_ex);%/norm(Ni_ex);
         err_Mz(i) = norm(Mzi-Mzi_ex)/norm(Mzi_ex);
-        err_Epsx(i) = norm(Epsxi-Epsxi_ex)/norm(Epsxi_ex);
+        err_Epsx(i) = norm(Epsxi-Epsxi_ex);%/norm(Epsxi_ex);
         err_Gamz(i) = norm(Gamzi-Gamzi_ex)/norm(Gamzi_ex);
     end
     
@@ -430,8 +438,8 @@ if solveProblem
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S',...
-        'L1','L2','b1','b2','b3','h',...
-        'f','p','junction');
+        'L1','L2','b','h',...
+        'f','p','junction','junction_type');
     save(fullfile(pathname,'solution.mat'),'u','s','e','time',...
         'Ux','Uy','Rz','N','Mz','Epsx','Gamz');
     save(fullfile(pathname,'reference_solution.mat'),'u_ex','s_ex','e_ex',...
@@ -443,8 +451,8 @@ if solveProblem
         'err_ux','err_uy','err_rz','err_n','err_mz','err_epsx','err_gamz');
 else
     load(fullfile(pathname,'problem.mat'),'S',...
-        'L1','L2','b1','b2','b3','h',...
-        'f','p','junction');
+        'L1','L2','b','h',...
+        'f','p','junction','junction_type');
     load(fullfile(pathname,'solution.mat'),'u','s','e','time',...
         'Ux','Uy','Rz','N','Mz','Epsx','Gamz');
     load(fullfile(pathname,'reference_solution.mat'),'u_ex','s_ex','e_ex',...
@@ -519,7 +527,7 @@ if displaySolution
     mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
-    ampl = 5;
+    ampl = 3;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
     hP = plot(P2,'g+');
     legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
@@ -574,41 +582,41 @@ if displaySolution
     
     % DO NOT WORK WITH BEAM ELEMENTS
     % plotSolution(S,u,'epsilon',1,'ampl',ampl,options{:});
-    % mysaveas(pathname,'eps_x',formats,renderer);
+    % mysaveas(pathname,'Epsx',formats,renderer);
     %
     % plotSolution(S,u,'epsilon',2,'ampl',ampl,options{:});
-    % mysaveas(pathname,'gam_z',formats,renderer);
+    % mysaveas(pathname,'Gamz',formats,renderer);
     %
     % plotSolution(S,u,'sigma',1,'ampl',ampl,options{:});
-    % mysaveas(pathname,'eff_x',formats,renderer);
+    % mysaveas(pathname,'N',formats,renderer);
     %
     % plotSolution(S,u,'sigma',2,'ampl',ampl,options{:});
-    % mysaveas(pathname,'mom_z',formats,renderer);
+    % mysaveas(pathname,'Mz',formats,renderer);
     
     u = unfreevector(S,u);
     
-    figure('Name','Solution eps_x')
+    figure('Name','Solution Epsx')
     clf
     plot(e,S+ampl*u,'compo','EPSX')
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Epsx',formats,renderer);
     
-    figure('Name','Solution eps_x_ex')
+    figure('Name','Solution Epsx_ex')
     clf
     plot(e_ex,S+ampl*u_ex,'compo','EPSX')
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Epsx_ex',formats,renderer);
     
-    figure('Name','Solution gam_z')
+    figure('Name','Solution Gamz')
     clf
     plot(e,S+ampl*u,'compo','GAMZ')
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Gamz',formats,renderer);
     
-    figure('Name','Solution gam_z_ex')
+    figure('Name','Solution Gamz_ex')
     clf
     plot(e_ex,S+ampl*u_ex,'compo','GAMZ')
     colorbar

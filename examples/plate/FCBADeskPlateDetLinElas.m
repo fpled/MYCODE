@@ -25,7 +25,7 @@ tests = {'StaticVert'}; % test under static vertical load
 %     'StaticHori1','StaticHori2',...
 %     'Fatigue1','Fatigue2'};
 
-pointwiseLoading = 1; % pointwise loading
+pointwiseLoading = true; % pointwise loading
 
 formats = {'fig','epsc'};
 renderer = 'OpenGL';

@@ -40,7 +40,7 @@ end
 %% Problem
 if solveProblem
     %% Domains and meshes
-    % Plates Dimensions
+    % Plates dimensions
     a12 = 750e-3; % m
     b12 = 396e-3;
     a3 = 1006e-3;
