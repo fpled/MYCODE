@@ -163,7 +163,7 @@ if solveProblem
     f = f + bodyload(keepgroupelem(S,[2,3]),[],'FY',-p2);
     
     if junction
-        k = 1e3; % additonal junction rotational stiffness
+        k = 1e2; % additonal junction rotational stiffness
         numddl2 = findddl(S,'RZ',numnode2,'free');
         numddl3 = findddl(S,'RZ',numnode3,'free');
         A_add = [k -k;-k k];

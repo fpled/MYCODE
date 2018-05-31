@@ -438,7 +438,7 @@ if solveProblem
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S',...
-        'L1','L2','b','h',...
+        'L1','L2','b1','b2','h',...
         'f','p','junction','junction_type');
     save(fullfile(pathname,'solution.mat'),'u','s','e','time',...
         'Ux','Uy','Rz','N','Mz','Epsx','Gamz');
@@ -451,7 +451,7 @@ if solveProblem
         'err_ux','err_uy','err_rz','err_n','err_mz','err_epsx','err_gamz');
 else
     load(fullfile(pathname,'problem.mat'),'S',...
-        'L1','L2','b','h',...
+        'L1','L2','b1','b2','h',...
         'f','p','junction','junction_type');
     load(fullfile(pathname,'solution.mat'),'u','s','e','time',...
         'Ux','Uy','Rz','N','Mz','Epsx','Gamz');
@@ -465,7 +465,7 @@ else
 end
 
 %% Outputs
-fprintf('\nDesk\n');
+fprintf('\nJunction %s\n',junction_type);
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
