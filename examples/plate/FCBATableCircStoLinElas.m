@@ -652,9 +652,8 @@ if displayCv
     
     figure('Name','Convergence solution')
     clf
-    ciplot(lowercis_u,uppercis_u,1:N,'g');
+    ciplot(lowercis_u,uppercis_u,1:N,'b');
     hold on
-    ciplot(means_u-stds_u,means_u+stds_u,1:N,'b');
     alpha(0.2)
     plot(1:N,means_u,'-b','LineWidth',1)
     if strcmpi(test,'staticvert')
@@ -668,9 +667,9 @@ if displayCv
     xlabel('Number of samples','Interpreter','latex')
     ylabel('Solution','Interpreter','latex')
     if strcmpi(test,'staticvert')
-        legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean \pm std','mean','experimental value'})
+        legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean value','experimental value'})
     else
-        legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean \pm std','mean'})
+        legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean value'})
     end
     mysaveas(pathname,'convergence_solution','fig');
     mymatlab2tikz(pathname,'convergence_solution.tex');
