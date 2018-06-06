@@ -475,10 +475,10 @@ if solveProblem
                 % Longitudinal Poisson ratio
                 % NULi = NUL_sample(i);
                 % Transverse Poisson ratio
-                NUTi = 0.25;
+                NUTi = NUT_sample(i);
                 % Material
-                mati = setparam(mat,'ET',NUi);
-                mati = setparam(mati,'GL',Ei);
+                mati = setparam(mat,'ET',ETi);
+                mati = setparam(mati,'GL',GLi);
                 mati = setparam(mati,'NUT',NUTi);
         end
         Si = setmaterial(S,mati);
