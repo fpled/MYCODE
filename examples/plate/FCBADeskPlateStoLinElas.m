@@ -574,6 +574,7 @@ for it=1:length(tests)
                     mati = setparam(mati,'GL',GLi);
                     mati = setparam(mati,'NUT',NUTi);
             end
+<<<<<<< HEAD
             Si = setmaterial(S,mati);
             % Stiffness matrix
             Ai = calc_rigi(Si);
@@ -644,6 +645,46 @@ for it=1:length(tests)
                 P = P_fati{4};
             case 'fatigue4'
                 P = P_fati{3};
+=======
+            if pointwiseLoading
+                f = f + bodyload(keepgroupelem(S,4),[],'FZ',-p_masse);
+            else
+                f = f + bodyload(keepgroupelem(S,[4,5]),[],'FZ',-p_masse);
+            end
+        case {'impact','drop'}
+            error('Not implemented')
+    end
+    f = f + bodyload(S,[],'FZ',-p_plate);
+    
+    %% Stiffness matrix and solution
+    t = tic;
+    u = sparse(getnbddlfree(S),N);
+    parfor i=1:N
+        switch lower(materialSym)
+            case 'isot'
+                % Young modulus
+                Ei = E_sample(i);
+                % Poisson ratio
+                NUi = NU_sample(i);
+                % Material
+                mati = setparam(mat,'E',Ei);
+                mati = setparam(mati,'NU',NUi);
+            case 'isottrans'
+                % Transverse Young modulus
+                ETi = ET_sample(i);
+                % Longitudinal shear modulus
+                GLi = GL_sample(i);
+                % Longitudinal Young modulus
+                % ELi = EL_sample(i);
+                % Longitudinal Poisson ratio
+                % NULi = NUL_sample(i);
+                % Transverse Poisson ratio
+                NUTi = NUT_sample(i);
+                % Material
+                mati = setparam(mat,'ET',ETi);
+                mati = setparam(mati,'GL',GLi);
+                mati = setparam(mati,'NUT',NUTi);
+>>>>>>> 40eeaf31e822f49b689516b3ee2c0deb4c55516e
         end
         mean_ux = eval_sol(S,mean_u,P,'UX');
         mean_uy = eval_sol(S,mean_u,P,'UY');
