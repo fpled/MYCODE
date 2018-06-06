@@ -179,7 +179,7 @@ for it=1:length(tests)
         materialSym = 'isottrans';
         
         % Number of samples
-        N = 3;
+        N = 1;
         
         switch lower(materialSym)
             case 'isot'
@@ -214,6 +214,7 @@ for it=1:length(tests)
                 lambda_sample = C1_sample-2/3*C2_sample; % Pa
                 E_sample = (9*C1_sample.*C2_sample)./(3*C1_sample+C2_sample); % Pa
                 NU_sample = (3*C1_sample-2*C2_sample)./(6*C1_sample+2*C2_sample);
+                
             case 'isottrans'
                 % Data
                 numSamples = 27;
@@ -303,6 +304,7 @@ for it=1:length(tests)
                 C_sample(4,:) = gamrnd(1-2*lambda,1/lambda4,T,1);
                 C_sample(5,:) = gamrnd(1-2*lambda,1/lambda5,T,1);
                 
+                % Sample set
                 kT_sample = C_sample(2,:)/2;
                 NUL_sample = (C_sample(3,:)./kT_sample)/(2*sqrt(2));
                 EL_sample = C_sample(1,:) - 4*(NUL_sample.^2).*kT_sample;
@@ -312,17 +314,10 @@ for it=1:length(tests)
                 k2 = 1./GT_sample;
                 ET_sample = 4./(k1+k2);
                 NUT_sample = (ET_sample./GT_sample)/2-1;
-                % NUT_data = ;
                 
                 % Markov Chain Monte-Carlo (MCMC) method based on
                 % Metropolis-Hasting algorithm
                 
-                % Sample set
-                % ET_sample = ;
-                % GL_sample = ;
-                % EL_sample = ;
-                % NUL_sample = ;
-                % NUT_sample = ;
                 
             otherwise
                 error('Wrong material symmetry !')
@@ -574,7 +569,6 @@ for it=1:length(tests)
                     mati = setparam(mati,'GL',GLi);
                     mati = setparam(mati,'NUT',NUTi);
             end
-<<<<<<< HEAD
             Si = setmaterial(S,mati);
             % Stiffness matrix
             Ai = calc_rigi(Si);
@@ -645,46 +639,6 @@ for it=1:length(tests)
                 P = P_fati{4};
             case 'fatigue4'
                 P = P_fati{3};
-=======
-            if pointwiseLoading
-                f = f + bodyload(keepgroupelem(S,4),[],'FZ',-p_masse);
-            else
-                f = f + bodyload(keepgroupelem(S,[4,5]),[],'FZ',-p_masse);
-            end
-        case {'impact','drop'}
-            error('Not implemented')
-    end
-    f = f + bodyload(S,[],'FZ',-p_plate);
-    
-    %% Stiffness matrix and solution
-    t = tic;
-    u = sparse(getnbddlfree(S),N);
-    parfor i=1:N
-        switch lower(materialSym)
-            case 'isot'
-                % Young modulus
-                Ei = E_sample(i);
-                % Poisson ratio
-                NUi = NU_sample(i);
-                % Material
-                mati = setparam(mat,'E',Ei);
-                mati = setparam(mati,'NU',NUi);
-            case 'isottrans'
-                % Transverse Young modulus
-                ETi = ET_sample(i);
-                % Longitudinal shear modulus
-                GLi = GL_sample(i);
-                % Longitudinal Young modulus
-                % ELi = EL_sample(i);
-                % Longitudinal Poisson ratio
-                % NULi = NUL_sample(i);
-                % Transverse Poisson ratio
-                NUTi = NUT_sample(i);
-                % Material
-                mati = setparam(mat,'ET',ETi);
-                mati = setparam(mati,'GL',GLi);
-                mati = setparam(mati,'NUT',NUTi);
->>>>>>> 40eeaf31e822f49b689516b3ee2c0deb4c55516e
         end
         mean_ux = eval_sol(S,mean_u,P,'UX');
         mean_uy = eval_sol(S,mean_u,P,'UY');
