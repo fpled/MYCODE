@@ -18,7 +18,7 @@ renderer = 'OpenGL';
 
 %% Plot error
 sample = 'B';
-j = 8; % sample number
+j = 18; % sample number
 numSample = [sample num2str(j)];
 
 F = appliedLoad(numSample);

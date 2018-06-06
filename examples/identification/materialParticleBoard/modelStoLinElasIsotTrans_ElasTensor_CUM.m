@@ -58,7 +58,7 @@ sc3 = std(C3_data);
 
 %% Sample generation
 % Method to calculate lambda which controls the level of fluctuations
-lambda = -20; % negative number
+lambda = -200; % negative number
 lambda1 = -(mc2*lambda)/(-mc3^2+mc1*mc2);
 lambda2 = -(mc1*lambda)/(-mc3^2+mc1*mc2);
 lambda3 = (2*mc3*lambda)/(-mc3^2+mc1*mc2);
@@ -140,10 +140,13 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('Young modulus $E^T$ (GPa)','Interpreter',interpreter);
-    ylabel('Shear modulus $G^L$ (GPa)','Interpreter',interpreter);
-    zlabel('Poisson ratio $\nu^T$','Interpreter',interpreter);
-    legend('samples','mean');
+    xlabel('$E^T$ (GPa)','Interpreter',interpreter);
+    ylabel('$G^L$ (GPa)','Interpreter',interpreter);
+    zlabel('$\nu^T$','Interpreter',interpreter);
+%     xlabel('Young modulus $E^T$ (GPa)','Interpreter',interpreter);
+%     ylabel('Shear modulus $G^L$ (GPa)','Interpreter',interpreter);
+%     zlabel('Poisson ratio $\nu^T$','Interpreter',interpreter);
+%     legend('samples','mean');
     mysaveas(pathname,'samples_ET_GL_NUT',formats);
     mymatlab2tikz(pathname,'samples_ET_GL_NUT.tex');
 end
