@@ -30,8 +30,8 @@ NumDowel = 2;
 
 F_screw = cell(NumScrew,1);
 Var_angle_screw = cell(NumScrew,1);
-% for j = 1:NumScrew
-for j = 2
+for j = 1:NumScrew
+% for j = 4
     sampleNum = ['S' num2str(j)];
     sampleNuma = ['S' num2str(j) 'a'];
     sampleNumb = ['S' num2str(j) 'b'];
@@ -123,10 +123,10 @@ for j = 2
 
         points_a_screw = find(coordx_a_screw>max(coordx_a_screw)-...
             Mesh.CharLength*scaleFactor/3&coordy_a_screw>...
-            1/2*(min(coordy_b_screw)+max(coordy_b_screw)));
+            min(coordy_b_screw));
         points_b_screw = find(coordx_b_screw<min(coordx_b_screw)+...
             Mesh.CharLength*scaleFactor/3&coordy_b_screw>...
-            1/2*(min(coordy_b_screw)+max(coordy_b_screw)));
+            min(coordy_b_screw));
         
         % primary line1 and line 2
         L1x0 = coordx_a_screw(points_a_screw);

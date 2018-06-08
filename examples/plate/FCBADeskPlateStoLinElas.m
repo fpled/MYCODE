@@ -13,11 +13,11 @@ displaySolution = true;
 displayCv = true;
 
 % tests = {'Stability'}; % stability test under vertical load
-% tests = {'StaticHori1'}; % test under static horizontal load 1
+tests = {'StaticHori1'}; % test under static horizontal load 1
 % tests = {'StaticHori2'}; % test under static horizontal load 2
 % tests = {'StaticHori3'}; % test under static horizontal load 3 (lifting)
 % tests = {'StaticHori4'}; % test under static horizontal load 4 (lifting)
-tests = {'StaticVert'}; % test under static vertical load
+% tests = {'StaticVert'}; % test under static vertical load
 % tests = {'Fatigue1'}; % fatigue test under horizontal load 1
 % tests = {'Fatigue2'}; % fatigue test under horizontal load 2
 % tests = {'Fatigue3'}; % fatigue test under horizontal load 3 (lifting)
@@ -179,7 +179,7 @@ for it=1:length(tests)
         materialSym = 'isottrans';
         
         % Number of samples
-        N = 1;
+        N = 5e3;
         
         switch lower(materialSym)
             case 'isot'
@@ -716,7 +716,8 @@ for it=1:length(tests)
                 uz_exp_end = -[16.66 16.57 16.59 16.78 16.55 16.69 16.75 16.59 16.73 16.76]*1e-3;
             end
             uz_exp = mean(uz_exp_end - uz_exp_start);
-            err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
+            err_uz = norm(mean_uz - uz_exp)/norm(uz_exp);
+            ci_u_exp = quantile(uz_exp_end - uz_exp_start,probs);
             
             disp('Displacement u at point'); disp(P);
             fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
@@ -728,7 +729,8 @@ for it=1:length(tests)
             uz_exp_start = -1.93*1e-3;
             uz_exp_end = -[18.46 18.44 18.53 18.58 18.59 18.7 18.77 18.73 18.85 18.76]*1e-3;
             uz_exp = mean(uz_exp_end - uz_exp_start);
-            err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
+            err_uz = norm(mean_uz - uz_exp)/norm(uz_exp);
+            ci_u_exp = quantile(uz_exp_end - uz_exp_start,probs);
             
             disp('Displacement u at point'); disp(P);
             fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
@@ -745,7 +747,8 @@ for it=1:length(tests)
                 ux_exp_end = -[16.78 16.74 16.72 17.13 17 16.8 16.87 16.78 17.04 16.82 16.71 17.17]*1e-3;
             end
             ux_exp = mean(ux_exp_end - ux_exp_start);
-            err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+            err_ux = norm(mean_ux - ux_exp)/norm(ux_exp);
+            ci_u_exp = quantile(ux_exp_end - ux_exp_start,probs);
             
             disp('Displacement u at point'); disp(P);
             fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
@@ -763,6 +766,7 @@ for it=1:length(tests)
             end
             ux_exp = mean(ux_exp_end - ux_exp_start);
             err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+            ci_u_exp = quantile(ux_exp_end - ux_exp_start,probs);
             
             disp('Displacement u at point'); disp(P);
             fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
@@ -775,6 +779,7 @@ for it=1:length(tests)
             ux_exp_end = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;
             ux_exp = mean(ux_exp_end - ux_exp_start);
             err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+            ci_u_exp = quantile(ux_exp_end - ux_exp_start,probs);
             
             disp('Displacement u at point'); disp(P);
             fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
@@ -787,6 +792,7 @@ for it=1:length(tests)
             ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;
             ux_exp = mean(ux_exp_end - ux_exp_start);
             err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+            ci_u_exp = quantile(ux_exp_end - ux_exp_start,probs);
             
             disp('Displacement u at point'); disp(P);
             fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
@@ -810,7 +816,7 @@ for it=1:length(tests)
         mymatlab2tikz(pathname,'domain.tex');
         
         [hD,legD] = plotBoundaryConditions(S,'legend',false);
-        ampl = 8;
+        ampl = 20;
         [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
         hP = plot(P,'g+');
         legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
@@ -878,15 +884,23 @@ for it=1:length(tests)
                 lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UY'),1:N);
                 uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UY'),1:N);
         end
+        uppercis_u_exp = ci_u_exp(1);
+        lowercis_u_exp = ci_u_exp(2);
         
         figure('Name','Convergence solution')
         clf
         ciplot(lowercis_u,uppercis_u,1:N,'b');
         hold on
+        ciplot(repmat(lowercis_u_exp,1,N),repmat(uppercis_u_exp,1,N),1:N,'r');
         alpha(0.2)
         plot(1:N,means_u,'-b','LineWidth',1)
-        if strcmpi(test,'staticvert')
-            plot(1:N,repmat(uz_exp,1,N),'-r','LineWidth',1)
+        switch lower(test)
+            case {'stability','staticvert'}
+                plot(1:N,repmat(uz_exp,1,N),'-r','LineWidth',1)
+            case {'statichori1','statichori2','fatigue1','fatigue2'}
+                plot(1:N,repmat(ux_exp,1,N),'-r','LineWidth',1)
+            case {'statichori3','statichori4','fatigue3','fatigue4'}
+                plot(1:N,repmat(uy_exp,1,N),'-r','LineWidth',1)
         end
         hold off
         grid on
@@ -895,10 +909,14 @@ for it=1:length(tests)
         % xlabel('Nombre de r\''ealisations','Interpreter','latex')
         xlabel('Number of samples','Interpreter','latex')
         ylabel('Solution','Interpreter','latex')
-        if strcmpi(test,'staticvert')
-            legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean value','experimental value'})
-        else
-            legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean value'})
+        switch lower(test)
+            case {'stability','staticvert','statichori1','statichori2','fatigue1','fatigue2',...
+                    'statichori3','statichori4','fatigue3','fatigue4'}
+                legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],...
+                    [num2str((probs(2)-probs(1))*100) '% confidence interval'],...
+                    'mean value','experimental value'})
+            case{'impact','drop'}
+                
         end
         mysaveas(pathname,'convergence_solution','fig');
         mymatlab2tikz(pathname,'convergence_solution.tex');

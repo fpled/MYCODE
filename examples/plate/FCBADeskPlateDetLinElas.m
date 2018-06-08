@@ -632,7 +632,7 @@ if displaySolution
     mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
-    ampl = 8;
+    ampl = 20;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
     hP = plot(P,'g+');
     legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
