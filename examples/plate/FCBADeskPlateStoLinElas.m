@@ -13,11 +13,11 @@ displaySolution = true;
 displayCv = true;
 
 % tests = {'Stability'}; % stability test under vertical load
-tests = {'StaticHori1'}; % test under static horizontal load 1
+% tests = {'StaticHori1'}; % test under static horizontal load 1
 % tests = {'StaticHori2'}; % test under static horizontal load 2
 % tests = {'StaticHori3'}; % test under static horizontal load 3 (lifting)
 % tests = {'StaticHori4'}; % test under static horizontal load 4 (lifting)
-% tests = {'StaticVert'}; % test under static vertical load
+tests = {'StaticVert'}; % test under static vertical load
 % tests = {'Fatigue1'}; % fatigue test under horizontal load 1
 % tests = {'Fatigue2'}; % fatigue test under horizontal load 2
 % tests = {'Fatigue3'}; % fatigue test under horizontal load 3 (lifting)
@@ -176,10 +176,11 @@ for it=1:length(tests)
         load(fullfile(pathnameIdentification,filenameNum));
         
         % Material symmetry
-        materialSym = 'isottrans';
+        materialSym = 'isotTrans';
         
         % Number of samples
-        N = 5e3;
+        N = 5e2;
+        MCMC = 'CUM'; % 'MH', 'BUM' or 'CUM' for materialSym = 'isotTrans'
         
         switch lower(materialSym)
             case 'isot'
@@ -187,22 +188,13 @@ for it=1:length(tests)
                 E_data = mean_ET_data*1e-3; % GPa
                 G_data = mean_GL_data*1e-3*13; % GPa
                 NU_data = E_data./(2*G_data)-1;
-                lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data));
-                C1_data = lambda_data + 2/3*G_data;
-                C2_data = G_data;
+                lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data)); % GPa
+                C1_data = lambda_data + 2/3*G_data; % GPa
+                C2_data = G_data; % GPa
                 
                 % Maximum likelihood estimation
-                n_data = length(C1_data);
-                m_data = length(C2_data);
-                data = [C1_data; C2_data];
+                lambda = mleStoLinElasTensorIsot(C1_data,C2_data);
                 
-                nloglf = @(lambda,data,cens,freq) -n_data*( (1-lambda(3))*log(lambda(1))...
-                    - gammaln(1-lambda(3)) ) - m_data*( (1-5*lambda(3))*log(lambda(2))...
-                    - gammaln(1-5*lambda(3)) ) + lambda(3)*( sum(log(data(1:n_data)))...
-                    + 5*sum(log(data(n_data+1:end))) ) + lambda(1)*sum(data(1:n_data))...
-                    + lambda(2)*sum(data(n_data+1:end));
-                lambda = mle(data,'nloglf',nloglf,'start',[1 1 0],...
-                    'lowerbound',[0 0 -Inf],'upperbound',[Inf Inf 1/5]);
                 a1 = 1-lambda(3);
                 b1 = 1/lambda(1);
                 a2 = 1-5*lambda(3);
@@ -217,92 +209,28 @@ for it=1:length(tests)
                 
             case 'isottrans'
                 % Data
-                numSamples = 27;
                 ET_data = mean_ET_data*1e6; % Pa
                 GL_data = mean_GL_data*1e6; % Pa
                 EL_data = mean_EL_data*1e6; % Pa
                 NUL_data = mean_NUL_data;
-                NUT_data = 0.1+0.2*rand(numSamples,1); % 27 artificial datas for NUT varying from 0.1 to 0.3
-                GT_data = ET_data./(2*(1+NUT_data));
-                kT_data = (EL_data.*ET_data)./(2*(1-NUT_data).*EL_data-4*ET_data.*(NUL_data).^2);
-                C1_data = EL_data + 4*(NUL_data.^2).*kT_data;
-                C2_data = 2*kT_data;
-                C3_data = 2*sqrt(2)*kT_data.*NUL_data;
-                C4_data = 2*GT_data;
-                C5_data = 2*GL_data;
+                NUT_data = 0.1+0.2*rand(length(ET_data),1); % artificial data for NUT varying from 0.1 to 0.3
+                GT_data = ET_data./(2*(1+NUT_data)); % Pa
+                kT_data = (EL_data.*ET_data)./(2*(1-NUT_data).*EL_data-4*ET_data.*(NUL_data).^2); % Pa
+                C1_data = EL_data + 4*(NUL_data.^2).*kT_data; % Pa
+                C2_data = 2*kT_data; % Pa
+                C3_data = 2*sqrt(2)*kT_data.*NUL_data; % Pa
+                C4_data = 2*GT_data; % Pa
+                C5_data = 2*GL_data; % Pa
                 
-                mc1 = mean(C1_data);
-                mc2 = mean(C2_data);
-                mc3 = mean(C3_data);
-                mc4 = mean(C4_data);
-                mc5 = mean(C5_data);
-                
-                sc1 = std(C1_data);
-                sc2 = std(C2_data);
-                sc3 = std(C3_data);
-                
-                %% Sample generation
-                % Method to calculate lambda which controls the level of fluctuations
-                lambda = -200; % negative number
-                lambda1 = -(mc2*lambda)/(-mc3^2+mc1*mc2);
-                lambda2 = -(mc1*lambda)/(-mc3^2+mc1*mc2);
-                lambda3 = (2*mc3*lambda)/(-mc3^2+mc1*mc2);
-                lambda4 = (1-2*lambda)/mc4;
-                lambda5 = (1-2*lambda)/mc5;
-                
-                % Parameters of the trivariate normal distribution
-                Mu_mean = [mc1 mc2 mc3];
-                Sigma_mean = [-mc1^2/lambda -mc3^2/lambda -(mc1*mc3)/lambda
-                    -mc3^2/lambda -mc2^2/lambda -(mc2*mc3)/lambda
-                    -(mc1*mc3)/lambda -(mc2*mc3)/lambda -(mc3^2+mc1*mc2)/(2*lambda)];
-                
-                % Initial values for c1, c2, c3
-                c1 = unifrnd( min(C1_data), max(C1_data) );
-                c2 = unifrnd( min(C2_data), max(C2_data) );
-                c3 = unifrnd( min(C3_data), max(C3_data) );
-                T = N;
-                t = 1;
-                C_sample = zeros(5,T);
-                C_sample(1:3,t) = [c1 c2 c3]';
-                while t<T
-                    t = t+1;
-                    
-                    new_c1 = normrnd(c1,sc1);
-                    pratio = mvnpdf([new_c1 c2 c3],Mu_mean,Sigma_mean)/...
-                        mvnpdf([    c1 c2 c3],Mu_mean,Sigma_mean);
-                    alpha_mh = min([1 pratio]);
-                    u = rand;
-                    if u<alpha_mh
-                        C_sample(1,t) = new_c1;
-                    else
-                        C_sample(1,t) = C_sample(1,t-1);
-                    end
-                    
-                    new_c2 = normrnd(c2,sc2);
-                    pratio = mvnpdf([c1 new_c2 c3],Mu_mean, Sigma_mean)/...
-                        mvnpdf([c1     c2 c3],Mu_mean, Sigma_mean );
-                    alpha_mh = min([1 pratio]);
-                    u = rand;
-                    if u<alpha_mh
-                        C_sample(2,t) = new_c2;
-                    else
-                        C_sample(2,t) = C_sample(2,t-1);
-                    end
-                    
-                    new_c3 = normrnd(c3,sc3);
-                    pratio = mvnpdf([c1 c2 new_c3],Mu_mean,Sigma_mean)/...
-                        mvnpdf([c1 c2     c3],Mu_mean,Sigma_mean);
-                    alpha_mh = min([1 pratio]);
-                    u = rand;
-                    if u<alpha_mh
-                        C_sample(3,t) = new_c3;
-                    else
-                        C_sample(3,t) = C_sample(3,t-1);
-                    end
-                    
+                % Sample generation
+                switch lower(MCMC)
+                    case 'mh'
+                        C_sample = mhsampleStoLinElasTensorIsotTrans(C1_data,C2_data,C3_data,C4_data,C5_data,N);
+                    case 'bum'
+                        C_sample = mhsampleStoLinElasTensorIsotTrans_BUM(C1_data,C2_data,C3_data,C4_data,C5_data,N);
+                    case 'cum'
+                        C_sample = mhsampleStoLinElasTensorIsotTrans_CUM(C1_data,C2_data,C3_data,C4_data,C5_data,N);
                 end
-                C_sample(4,:) = gamrnd(1-2*lambda,1/lambda4,T,1);
-                C_sample(5,:) = gamrnd(1-2*lambda,1/lambda5,T,1);
                 
                 % Sample set
                 kT_sample = C_sample(2,:)/2;
@@ -314,10 +242,6 @@ for it=1:length(tests)
                 k2 = 1./GT_sample;
                 ET_sample = 4./(k1+k2);
                 NUT_sample = (ET_sample./GT_sample)/2-1;
-                
-                % Markov Chain Monte-Carlo (MCMC) method based on
-                % Metropolis-Hasting algorithm
-                
                 
             otherwise
                 error('Wrong material symmetry !')
@@ -872,7 +796,6 @@ for it=1:length(tests)
                 stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UZ'),1:N);
                 lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UZ'),1:N);
                 uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UZ'),1:N);
-                
             case {'statichori1','statichori2','fatigue1','fatigue2'}
                 means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UX'),1:N);
                 stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UX'),1:N);
@@ -908,7 +831,13 @@ for it=1:length(tests)
         set(gca,'FontSize',16)
         % xlabel('Nombre de r\''ealisations','Interpreter','latex')
         xlabel('Number of samples','Interpreter','latex')
-        ylabel('Solution','Interpreter','latex')
+        switch lower(test)
+            case {'stability','staticvert'}
+                ylabel('Vertical displacement','Interpreter','latex')
+            case {'statichori1','statichori2','fatigue1','fatigue2',...
+                    'statichori3','statichori4','fatigue3','fatigue4'}
+                ylabel('Horizontal displacement','Interpreter','latex')
+        end
         switch lower(test)
             case {'stability','staticvert','statichori1','statichori2','fatigue1','fatigue2',...
                     'statichori3','statichori4','fatigue3','fatigue4'}

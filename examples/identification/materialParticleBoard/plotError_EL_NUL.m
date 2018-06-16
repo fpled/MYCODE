@@ -72,8 +72,8 @@ for k=1:numImages
     % u_exp_in = [ux_exp(nodes_in) uy_exp(nodes_in)]';
     % u_exp_in = u_exp_in(:);
     
-    EL_series=linspace(EL*0.5,EL*1.5,10);
-    NUL_series=linspace(NUL*0.5,NUL*1.5,10);
+    EL_series=linspace(EL*0.5,EL*1.5,1e2);
+    NUL_series=linspace(NUL*0.5,NUL*1.5,1e2);
     
     err=zeros(length(EL_series),length(NUL_series));
     for m=1:length(EL_series)
@@ -100,7 +100,7 @@ for k=1:numImages
     % set(gca,'ZScale','log')
     xlabel('$\nu^L$','Interpreter',interpreter)
     ylabel('$E^L$ (MPa)','Interpreter',interpreter)
-    zlabel('$\varepsilon$','Interpreter',interpreter)
+    zlabel('Error','Interpreter',interpreter)
     mysaveas(pathname,['error_EL_NUL_' numSample '_image_' numImage '_3D'],formats,renderer);
     
     figure

@@ -135,11 +135,13 @@ if solveProblem
     % Maximum likelihood estimation
     % Parameters for Gamma distribution
     phat = gamfit(E_data);
+    a = phat(1);
+    b = phat(2);
     
     % Number of samples
     N = 1e3;
     % Sample set
-    E_sample = gamrnd(phat(1),phat(2),N,1);
+    E_sample = gamrnd(a,b,N,1);
     
     %% Materials
     % Gravitational acceleration

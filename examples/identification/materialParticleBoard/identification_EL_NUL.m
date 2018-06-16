@@ -121,16 +121,16 @@ for j=1:numSamples
     
     %% Outputs
     fprintf('\n')
-    disp('+---------------+')
-    fprintf('| Sample %s%2d    |\n',sample,j)
-    disp('+---------------+---------------+-----------------+')
-    disp('| Young modulus | Poisson ratio |  Error between  |')
-    disp('|    EL (MPa)   |      NUL      | U_num and U_exp |')
-    disp('+---------------+---------------+-----------------+')
+    disp('+-----------------+')
+    fprintf('| Sample %s%2d      |\n',sample,j)
+    disp('+-----------------+-----------------+-----------------+')
+    disp('| Young''s modulus | Poisson''s ratio |  Error between  |')
+    disp('|     EL (MPa)    |       NUL       | U_num and U_exp |')
+    disp('+-----------------+-----------------+-----------------+')
     for k=1:numImages
-        fprintf('| %13.4f | %13.4f | %15.4e |\n',EL(k),NUL(k),err(k))
+        fprintf('| %15.4f | %15.4f | %15.4e |\n',EL(k),NUL(k),err(k))
     end
-    disp('+---------------+---------------+-----------------+')
+    disp('+-----------------+-----------------+-----------------+')
     
     toc(t)
     
@@ -160,7 +160,7 @@ if displaySolution
 %         set(gca,'FontSize',fontsize)
 %         legend(numSample,'Location','NorthEastOutside');
 %         xlabel('Image number','Interpreter',interpreter);
-%         ylabel('Young modulus $E^L$ (MPa)','Interpreter',interpreter);
+%         ylabel('Young''s modulus $E^L$ (MPa)','Interpreter',interpreter);
 %         mysaveas(pathname,['data_EL_' numSample],formats);
 %         mymatlab2tikz(pathname,['data_EL_' numSample '.tex']);
 %         
@@ -171,7 +171,7 @@ if displaySolution
 %         set(gca,'FontSize',fontsize)
 %         legend(numSample,'Location','NorthEastOutside');
 %         xlabel('Image number','Interpreter',interpreter);
-%         ylabel('Poisson ratio $\nu^L$','Interpreter',interpreter);
+%         ylabel('Poisson''s ratio $\nu^L$','Interpreter',interpreter);
 %         mysaveas(pathname,['data_NUL_' numSample],formats);
 %         mymatlab2tikz(pathname,['data_NUL_' numSample '.tex']);
 %     end
@@ -182,7 +182,7 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Young modulus $E^L$ (MPa)','Interpreter',interpreter);
+    ylabel('Young''s modulus $E^L$ (MPa)','Interpreter',interpreter);
     mysaveas(pathname,'data_EL',formats);
     mymatlab2tikz(pathname,'data_EL.tex');
     
@@ -192,7 +192,7 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Poisson ratio $\nu^L$','Interpreter',interpreter);
+    ylabel('Poisson''s ratio $\nu^L$','Interpreter',interpreter);
     mysaveas(pathname,'data_NUL',formats);
     mymatlab2tikz(pathname,'data_NUL.tex');
 end

@@ -1,5 +1,5 @@
-%% Stochastic modeling of Young modulus %%
-%%--------------------------------------%%
+%% Stochastic modeling of Young's modulus %%
+%%----------------------------------------%%
 
 % clc
 clearvars
@@ -9,7 +9,7 @@ close all
 %% Input data
 displaySolution = true;
 
-filename = 'modelStoElasIsotYoung';
+filename = 'modelStoLinElasIsot_YoungModulus';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification',filename);
 if ~exist(pathname,'dir')
@@ -18,6 +18,7 @@ end
 
 fontsize = 16;
 linewidth = 1;
+markersize = 36;
 interpreter = 'latex';
 formats = {'fig','epsc'};
 
@@ -28,52 +29,61 @@ pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
 load(fullfile(pathnameIdentification,filenameAna));
 
 E_data = mean_ET_data*1e-3; % GPa
-mean_E = mean(E_data);
-std_E = std(E_data);
-
-%% Plot data
-if displaySolution
-    figure('Name','Data')
-    clf
-    bar(1:length(E_data),E_data)
-    set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[0,length(E_data)+1])
-    xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Young modulus $E$ (GPa)','Interpreter',interpreter);
-    mysaveas(pathname,'data_E',formats);
-    mymatlab2tikz(pathname,'data_E.tex');
-end
+% mean_E = mean(E_data);
+% std_E = std(E_data);
+fprintf('\nnb data = %d',length(E_data));
 
 %% Maximum likelihood estimation
 phat = gamfit(E_data);
 % phat = mle(E_data,'distribution','gam');
-% nloglf = @(phat,data,cens,freq) length(data)*gammaln(phat(1))...
-%     +length(data)*phat(1)*log(phat(2))...
-%     +(1-phat(1))*sum(log(data))...
-%     +1/phat(2)*sum(data);
+% nloglf = @(phat,data,cens,freq) length(data)*gammaln(a)...
+%     +length(data)*a*log(b)...
+%     +(1-a)*sum(log(data))...
+%     +1/b*sum(data);
 % phat = mle(E_data,'nloglf',nloglf,'start',[2 0],'lowerbound',[2 0]);
 
-fprintf('\nnb samples = %d',length(E_data));
-fprintf('\nalpha = %.4f',phat(1));
-fprintf('\nbeta  = %.4f',phat(2));
+a = phat(1);
+b = phat(2);
+fprintf('\nalpha = %.4f',a);
+fprintf('\nbeta  = %.4f',b);
+fprintf('\n');
 
-mE = phat(1)*phat(2);
-vE = phat(1)*phat(2)^2;
+mE = a*b;
+vE = a*b^2;
 sE = sqrt(vE);
-dE = sE/mE; % dE = 1/sqrt(phat(1));
+dE = sE/mE; % dE = 1/sqrt(a);
 fprintf('\nmean(E) = %.4f GPa',mE);
 fprintf('\nvar(E)  = %.4f (GPa)^2',vE);
 fprintf('\nstd(E)  = %.4f GPa',sE);
 fprintf('\ndisp(E) = %.4f',dE);
 fprintf('\n');
 
-%% Plot pdf and cdf
+%% Pdf and cdf
+pdf_E = @(x) gampdf(x,a,b);
+% pdf_E = @(x) pdf('gam',x,a,b);
+% pdf_E = @(x) 1/(b^a*gamma(a))*(x.^(a-1)).*exp(-x./b);
+cdf_E = @(x) gamcdf(x,a,b);
+
+%% Sample generation
+N = 1e4; % number of samples
+e = gamrnd(a,b,N,1);
+% u = randn(N,1);
+% e = gaminv(normcdf(u),a,b);
+
+%% Display
 if displaySolution
-    pdf_E = @(x) gampdf(x,phat(1),phat(2));
-    % pdf_E = @(x) pdf('gam',x,phat(1),phat(2));
-    % pdf_E = @(x) 1/(phat(2)^phat(1)*gamma(phat(1)))*(x.^(phat(1)-1)).*exp(-x./phat(2));
-    cdf_E = @(x) gamcdf(x,phat(1),phat(2));
+    %% Plot data
+    figure('Name','Data')
+    clf
+    bar(1:length(E_data),E_data)
+    set(gca,'FontSize',fontsize)
+    set(gca,'XLim',[0,length(E_data)+1])
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Young''s modulus $E$ (GPa)','Interpreter',interpreter);
+    mysaveas(pathname,'data_E',formats);
+    mymatlab2tikz(pathname,'data_E.tex');
     
+    %% Plot pdf and cdf
     xmin = max(0,mE-5*sE);
     xmax = mE+5*sE;
     x = linspace(xmin,xmax,1e3);
@@ -116,16 +126,8 @@ if displaySolution
     mysaveas(pathname,'cdf_E',formats);
     mymatlab2tikz(pathname,'cdf_E.tex',...
         'extraAxisOptions',{'ylabel style={overlay}'});
-end
-
-%% Sample generation
-N = 1e4; % number of samples
-e = gamrnd(phat(1),phat(2),N,1);
-% u = randn(N,1);
-% e = gaminv(normcdf(u),phat(1),phat(2));
-
-%% Plot samples
-if displaySolution
+    
+    %% Plot samples
     figure('Name','Samples')
     clf
     scatter(1:N,e,'b.')
@@ -136,8 +138,9 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Number of samples','Interpreter',interpreter)
-    ylabel('Young modulus $E$ (GPa)','Interpreter',interpreter)
+    ylabel('Young''s modulus $E$ (GPa)','Interpreter',interpreter)
     legend('samples','mean');
     mysaveas(pathname,'samples_E',formats);
     mymatlab2tikz(pathname,'samples_E.tex');
+    
 end

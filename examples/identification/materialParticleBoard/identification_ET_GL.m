@@ -117,16 +117,16 @@ for j=1:numSamples
     
     %% Outputs
     fprintf('\n')
-    disp('+---------------+')
-    fprintf('| Sample %s%2d    |\n',sample,j)
-    disp('+---------------+---------------+-----------------+')
-    disp('| Young modulus | Shear modulus |  Error between  |')
-    disp('|    ET (GPa)   |    GL (MPa)   | U_ana and U_exp |')
-    disp('+---------------+---------------+-----------------+')
+    disp('+-----------------+')
+    fprintf('| Sample %s%2d      |\n',sample,j)
+    disp('+-----------------+---------------+-----------------+')
+    disp('| Young''s modulus | Shear modulus |  Error between  |')
+    disp('|     ET (GPa)    |    GL (MPa)   | U_ana and U_exp |')
+    disp('+-----------------+---------------+-----------------+')
     for k=1:numImages
-        fprintf('| %13.4f | %13.4f | %15.4e |\n',ET(k)*1e-3,GL(k),err(k))
+        fprintf('| %15.4f | %13.4f | %15.4e |\n',ET(k)*1e-3,GL(k),err(k))
     end
-    disp('+---------------+---------------+-----------------+')
+    disp('+-----------------+---------------+-----------------+')
     
     toc(t)
     
@@ -159,7 +159,7 @@ if displaySolution
 %         set(gca,'FontSize',fontsize)
 %         legend(numSample,'Location','NorthEastOutside');
 %         xlabel('Image number','Interpreter',interpreter);
-%         ylabel('Young modulus $E^T$ (GPa)','Interpreter',interpreter);
+%         ylabel('Young''s modulus $E^T$ (GPa)','Interpreter',interpreter);
 %         mysaveas(pathname,['data_ET_' numSample],formats);
 %         mymatlab2tikz(pathname,['data_ET_' numSample '.tex']);
 %         
@@ -181,7 +181,7 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Young modulus $E^T$ (GPa)','Interpreter',interpreter);
+    ylabel('Young''s modulus $E^T$ (GPa)','Interpreter',interpreter);
     mysaveas(pathname,'data_ET',formats);
     mymatlab2tikz(pathname,'data_ET.tex');
     
