@@ -208,8 +208,9 @@ if solveProblem
     
     %% Test solution
     [~,numnode3] = intersect(S,L3);
-    xP3 = x(numnode3(2),:);
-    P3 = POINT(xP3);
+    % xP3 = x(numnode3(2),:);
+    % P3 = POINT(xP3);
+    P3 = getcenter(L3);
     
     ux = eval_sol(S,u,P3,'UX');
     uy = eval_sol(S,u,P3,'UY');
