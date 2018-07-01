@@ -153,7 +153,7 @@ if displaySolution
     h5 = plotfacets(pb.S,17,'FaceColor',getfacecolor(5),'EdgeColor','none');
     hold off
     set(gca,'FontSize',16)
-    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$','Location','NorthEastOutside');
+    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$','Location','NorthEast');
     set(l,'Interpreter','latex')
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
@@ -180,8 +180,8 @@ if displaySolution
     h5 = plotfacets(pb.S,17,'FaceColor',getfacecolor(5));
     hold off
     set(gca,'FontSize',16)
-    % l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$','Location','NorthEastOutside');
-    % set(l,'Interpreter','latex')
+    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$','Location','NorthEast');
+    set(l,'Interpreter','latex')
     mysaveas(pathname,'mesh',formats,renderer);
     
     %% Display stationary solution
@@ -238,7 +238,7 @@ if displaySolution
     box on
     set(gca,'FontSize',16)
     xlabel('Time (s)')
-    ylabel('Concentration of polluant in trap domain')
+    ylabel('Concentration of pollutant in trap domain')
     mysaveas(pathname,'quantity_of_interest',formats,renderer);
     mymatlab2tikz(pathname,'quantity_of_interest.tex');
     
