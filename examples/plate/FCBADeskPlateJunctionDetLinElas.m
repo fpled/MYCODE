@@ -550,8 +550,8 @@ if solveProblem
     end
     f = f + bodyload(S,[],'FZ',-p_plate);
     
-    kS = 1e10;
-    kD = 1e10; % additonal junction rotational stiffness
+    kS = 1e2; % additonal junction rotational stiffness for junction screw
+    kD = 1e2; % additonal junction rotational stiffness for junction dowel
     numddl131 = findddl(S,'RY',numnode13{1},'free');
     numddl132 = findddl(S,'RY',numnode13{2},'free');
     numddl13 = [numddl131 numddl132];
