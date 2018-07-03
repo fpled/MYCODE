@@ -247,7 +247,7 @@ if solveProblem
             error('Wrong material symmetry !')
     end
     mat = setnumber(mat,1);
-    S = union(S1,S2,S3,S5a,S5b);
+    S = union(S1,S2,S3,S5a,S5b,'duplicate');
     S = setmaterial(S,mat);
     
     %% Neumann boundary conditions
@@ -289,32 +289,151 @@ if solveProblem
     end
     
     %% Dirichlet boundary conditions
-    S = final(S);
+    S = final(S,'duplicate');
     L1 = getedge(Q1,1);
     L2 = getedge(Q2,1);
     L5b = getedge(Q5b,1);
-    [~,numnode1] = intersect(S,L1);
-    [~,numnode2] = intersect(S,L2);
-    [~,numnode5b] = intersect(S,L5b);
+    L13 = getedge(Q1,3);
+    L23 = getedge(Q2,3);
+    L15a = getedge(Q5a,2);
+    L15b = getedge(Q5b,2);
+    L25a = getedge(Q5a,4);
+    L25b = getedge(Q5b,4);
+    
+    [~,numnodeL13] = intersect(S,L13);
+    numnode13 = cell(2,1);
+    xnode13 = cell(2,1);
+    for i=1:2
+        numnode13{i} = double(getnumnodeingroupelem(S,2*i-1));
+        numnode13{i} = intersect(numnodeL13,numnode13{i});
+        xnode13{i} = double(getcoord(getnode(S),numnode13{i}));
+    end
+    for i=1:size(xnode13{1},2)
+        [xnode13{1},I1] = sortrows(xnode13{1},i);
+        numnode13{1} = numnode13{1}(I1);
+        [xnode13{2},I2] = sortrows(xnode13{2},i);
+        numnode13{2} = numnode13{2}(I2);
+    end
+    S = addclperiodic(S,numnode13{1},numnode13{2},{'U','RX','RZ'});
+    
+    [~,numnodeL23] = intersect(S,L23);
+    numnode23 = cell(2,1);
+    xnode23 = cell(2,1);
+    for i=1:2
+        numnode23{i} = double(getnumnodeingroupelem(S,i+1));
+        numnode23{i} = intersect(numnodeL23,numnode23{i});
+        xnode23{i} = double(getcoord(getnode(S),numnode23{i}));
+    end
+    for i=1:size(xnode23{1},2)
+        [xnode23{1},I1] = sortrows(xnode23{1},i);
+        numnode23{1} = numnode23{1}(I1);
+        [xnode23{2},I2] = sortrows(xnode23{2},i);
+        numnode23{2} = numnode23{2}(I2);
+    end
+    S = addclperiodic(S,numnode23{1},numnode23{2},{'U','RX','RZ'});
+    
+    [~,numnodeL15a] = intersect(S,L15a);
+    numnode15a = cell(2,1);
+    xnode15a = cell(2,1);
+    for i=1:2
+        if pointwiseLoading
+            numnode15a{i} = double(getnumnodeingroupelem(S,4*i-3));
+        else
+            numnode15a{i} = double(getnumnodeingroupelem(S,6*i-5));
+        end
+        numnode15a{i} = intersect(numnodeL15a,numnode15a{i});
+        xnode15a{i} = double(getcoord(getnode(S),numnode15a{i}));
+    end
+    for i=1:size(xnode15a{1},2)
+        [xnode15a{1},I1] = sortrows(xnode15a{1},i);
+        numnode15a{1} = numnode15a{1}(I1);
+        [xnode15a{2},I2] = sortrows(xnode15a{2},i);
+        numnode15a{2} = numnode15a{2}(I2);
+    end
+    S = addclperiodic(S,numnode15a{1},numnode15a{2},{'U','RX','RY'});
+    
+    [~,numnodeL15b] = intersect(S,L15b);
+    numnode15b = cell(2,1);
+    xnode15b = cell(2,1);
+    for i=1:2
+        if pointwiseLoading
+            numnode15b{i} = double(getnumnodeingroupelem(S,5*i-4));
+        else
+            numnode15b{i} = double(getnumnodeingroupelem(S,7*i-6));
+        end
+        numnode15b{i} = intersect(numnodeL15b,numnode15b{i});
+        xnode15b{i} = double(getcoord(getnode(S),numnode15b{i}));
+    end
+    for i=1:size(xnode15b{1},2)
+        [xnode15b{1},I1] = sortrows(xnode15b{1},i);
+        numnode15b{1} = numnode15b{1}(I1);
+        [xnode15b{2},I2] = sortrows(xnode15b{2},i);
+        numnode15b{2} = numnode15b{2}(I2);
+    end
+    S = addclperiodic(S,numnode15b{1},numnode15b{2},{'U','RX','RY'});
+    
+    [~,numnodeL25a] = intersect(S,L25a);
+    numnode25a = cell(2,1);
+    xnode25a = cell(2,1);
+    for i=1:2
+        if pointwiseLoading
+            numnode25a{i} = double(getnumnodeingroupelem(S,3*i-1));
+        else
+            numnode25a{i} = double(getnumnodeingroupelem(S,5*i-3));
+        end
+        numnode25a{i} = intersect(numnodeL25a,numnode25a{i});
+        xnode25a{i} = double(getcoord(getnode(S),numnode25a{i}));
+    end
+    for i=1:size(xnode25a{1},2)
+        [xnode25a{1},I1] = sortrows(xnode25a{1},i);
+        numnode25a{1} = numnode25a{1}(I1);
+        [xnode25a{2},I2] = sortrows(xnode25a{2},i);
+        numnode25a{2} = numnode25a{2}(I2);
+    end
+    S = addclperiodic(S,numnode25a{1},numnode25a{2},{'U','RX','RY'});
+    
+    [~,numnodeL25b] = intersect(S,L25b);
+    numnode25b = cell(2,1);
+    xnode25b = cell(2,1);
+    for i=1:2
+        if pointwiseLoading
+            numnode25b{i} = double(getnumnodeingroupelem(S,4*i-2));
+        else
+            numnode25b{i} = double(getnumnodeingroupelem(S,6*i-4));
+        end
+        numnode25b{i} = intersect(numnodeL25b,numnode25b{i});
+        xnode25b{i} = double(getcoord(getnode(S),numnode25b{i}));
+    end
+    for i=1:size(xnode25b{1},2)
+        [xnode25b{1},I1] = sortrows(xnode25b{1},i);
+        numnode25b{1} = numnode25b{1}(I1);
+        [xnode25b{2},I2] = sortrows(xnode25b{2},i);
+        numnode25b{2} = numnode25b{2}(I2);
+    end
+    S = addclperiodic(S,numnode25b{1},numnode25b{2},{'U','RX','RY'});
+    
+    [~,numnodeL1] = intersect(S,L1);
+    [~,numnodeL2] = intersect(S,L2);
+    [~,numnodeL5b] = intersect(S,L5b);
     switch lower(test)
         case 'stability'
-            S = addcl(S,union(numnode1,numnode2));
-            S = addcl(S,numnode5b,'UZ');
+            S = addcl(S,union(numnodeL1,numnodeL2));
+            S = addcl(S,numnodeL5b,'UZ');
         case {'statichori1','statichori2'}
-            S = addcl(S,numnode2);
-            S = addcl(S,union(numnode1,numnode5b),{'UY','UZ'});
+            S = addcl(S,numnodeL2);
+            S = addcl(S,union(numnodeL1,numnodeL5b),{'UY','UZ'});
         case {'statichori3','statichori4'}
-            S = addcl(S,union(numnode1,numnode2));
-            S = addcl(S,numnode5b,'UZ');
+            S = addcl(S,union(numnodeL1,numnodeL2));
+            S = addcl(S,numnodeL5b,'UZ');
         case 'staticvert'
-            S = addcl(S,union(numnode1,numnode2));
-            S = addcl(S,numnode5b,'UZ');
+            S = addcl(S,union(numnodeL1,numnodeL2));
+            S = addcl(S,numnodeL5b,'UZ');
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-            S = addcl(S,union(numnode1,numnode2));
-            S = addcl(S,numnode5b,'UZ');
+            S = addcl(S,union(numnodeL1,numnodeL2));
+            S = addcl(S,numnodeL5b,'UZ');
         case {'impact','drop'}
-            S = addcl(S,union(numnode1,numnode2));
-            S = addcl(S,numnode5b,'UZ');
+            S = addcl(S,union(numnodeL1,numnodeL2));
+            S = addcl(S,numnodeL5b,'UZ');
     end
     
     %% Stiffness matrix and sollicitation vector
@@ -431,6 +550,50 @@ if solveProblem
     end
     f = f + bodyload(S,[],'FZ',-p_plate);
     
+    kS = 1e10;
+    kD = 1e10; % additonal junction rotational stiffness
+    numddl131 = findddl(S,'RY',numnode13{1},'free');
+    numddl132 = findddl(S,'RY',numnode13{2},'free');
+    numddl13 = [numddl131 numddl132];
+    A_add = [kD -kD;-kD kD];
+    for i=1:size(numddl13,1)
+        A(numddl13(i,:),numddl13(i,:)) = A(numddl13(i,:),numddl13(i,:)) + A_add;
+    end
+    numddl231 = findddl(S,'RY',numnode23{1},'free');
+    numddl232 = findddl(S,'RY',numnode23{2},'free');
+    numddl23 = [numddl231 numddl232];
+    A_add = [kD -kD;-kD kD];
+    for i=1:size(numddl23,1)
+        A(numddl23(i,:),numddl23(i,:)) = A(numddl23(i,:),numddl23(i,:)) + A_add;
+    end
+    numddl15a1 = findddl(S,'RZ',numnode15a{1},'free');
+    numddl15a2 = findddl(S,'RZ',numnode15a{2},'free');
+    numddl15a = [numddl15a1 numddl15a2];
+    A_add = [kS -kS;-kS kS];
+    for i=1:size(numddl15a,1)
+        A(numddl15a(i,:),numddl15a(i,:)) = A(numddl15a(i,:),numddl15a(i,:)) + A_add;
+    end
+    numddl15b1 = findddl(S,'RZ',numnode15b{1},'free');
+    numddl15b2 = findddl(S,'RZ',numnode15b{2},'free');
+    numddl15b = [numddl15b1 numddl15b2];
+    A_add = [kS -kS;-kS kS];
+    for i=1:size(numddl15b,1)
+        A(numddl15b(i,:),numddl15b(i,:)) = A(numddl15b(i,:),numddl15b(i,:)) + A_add;
+    end
+    numddl25a1 = findddl(S,'RZ',numnode25a{1},'free');
+    numddl25a2 = findddl(S,'RZ',numnode25a{2},'free');
+    numddl25a = [numddl25a1 numddl25a2];
+    A_add = [kS -kS;-kS kS];
+    for i=1:size(numddl25a,1)
+        A(numddl25a(i,:),numddl25a(i,:)) = A(numddl25a(i,:),numddl25a(i,:)) + A_add;
+    end
+    numddl25b1 = findddl(S,'RZ',numnode25b{1},'free');
+    numddl25b2 = findddl(S,'RZ',numnode25b{2},'free');
+    numddl25b = [numddl25b1 numddl25b2];
+    A_add = [kS -kS;-kS kS];
+    for i=1:size(numddl25b,1)
+        A(numddl25b(i,:),numddl25b(i,:)) = A(numddl25b(i,:),numddl25b(i,:)) + A_add;
+    end
     %% Solution
     t = tic;
     u = A\f;

@@ -485,7 +485,7 @@ if displaySolution
         hold on
         grid on
         box on
-        xlabel('Moment per unit length (N)','Interpreter',interpreter);
+        xlabel('Moment per unit length (N*mm/mm)','Interpreter',interpreter);
         ylabel('Variation of angle ($^\circ$)','Interpreter',interpreter);
     end
     
@@ -505,7 +505,7 @@ if displaySolution
         hold on
         grid on
         box on
-        xlabel('Moment per unit length (N)','Interpreter',interpreter);
+        xlabel('Moment per unit length (N*mm/mm)','Interpreter',interpreter);
         ylabel('Variation of angle ($^\circ$)','Interpreter',interpreter);
     end
     
