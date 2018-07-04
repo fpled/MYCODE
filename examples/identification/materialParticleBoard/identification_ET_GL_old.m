@@ -18,6 +18,8 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
+pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'examples','identification','materialParticleBoard','resultsDIC');
 
 fontsize = 16;
 linewidth = 1;
@@ -61,8 +63,6 @@ for j=1:numSamples
         
         numImage = num2str(k,'%02d');
         filenameDIC = [numSample '_00-' numImage '-Mesh'];
-        pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
-            'examples','identification','materialParticleBoard','resultsDIC');
         load(fullfile(pathnameDIC,filenameDIC));
         
         [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d);

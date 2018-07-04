@@ -12,6 +12,8 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification','materialParticleBoard');
 load(fullfile(pathname,filenameAna));
 load(fullfile(pathname,filenameNum));
+pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'examples','identification','materialParticleBoard','resultsDIC');
 
 fontsize = 16;
 interpreter = 'latex';
@@ -33,8 +35,6 @@ for k=1:numImages
     
     numImage = num2str(k,'%02d');
     filenameDIC = [numSample '_00-' numImage '-Mesh'];
-    pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
-        'examples','identification','materialParticleBoard','resultsDIC');
     disp(['File = ',filenameDIC]);
     load(fullfile(pathnameDIC,filenameDIC));
     

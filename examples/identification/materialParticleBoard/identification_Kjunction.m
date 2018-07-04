@@ -20,6 +20,7 @@ if ~exist(pathname,'dir')
 end
 pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'examples','identification','materialParticleBoard','resultsDIC');
+
 fontsize = 16;
 interpreter = 'latex';
 formats = {'fig','epsc2'};
