@@ -354,7 +354,7 @@ for j=1:numDowel
         fit20 = polyfit(L2x0_sort,L2y0_sort,1);
         val20 = polyval(fit20,L2x0_sort);
         
-        % deformed line1 and lne2
+        % deformed line1 and line2
         L1x = coordx_a_dowel(points_a_dowel)+u_exp_a_dowel(2*points_a_dowel-1);
         L1y = coordy_a_dowel(points_a_dowel)+u_exp_a_dowel(2*points_a_dowel);
         [L1x_sort,index] = sort(L1x);
