@@ -105,8 +105,8 @@ if solveProblem
     % s.adaptiveSampling = true;
     % s.adaptationRule = 'reducedmargin';
     s.maxIndex = p;
-    % s.display = true;
-    % s.displayIterations = true;
+    s.display = true;
+    s.displayIterations = true;
     
     ls = LeastSquaresSolver();
     ls.regularization = false;

@@ -60,9 +60,9 @@ if setProblem
     K2 = 0.01;
     
     % Thermal capacity
-    % c1(xi) = 1 * (1 + 0.05 * (2 * xi - 1))
+    % c1(xi) = 1 * (1 + 0.25 * (2 * xi - 1))
     % c2 = 1
-    fun = @(xi) 1 * (1 + 0.05 * (2 * xi(:,2) - 1));
+    fun = @(xi) 1 * (1 + 0.25 * (2 * xi(:,2) - 1));
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;
@@ -168,8 +168,8 @@ if solveProblem
     % s.adaptiveSampling = true;
     % s.adaptationRule = 'reducedmargin';
     s.maxIndex = p;
-    % s.display = true;
-    % s.displayIterations = true;
+    s.display = true;
+    s.displayIterations = true;
     
     ls = LeastSquaresSolver();
     ls.regularization = false;
@@ -405,69 +405,69 @@ if displaySolution
     end
     
     %% Display statistical outputs at differents instants for transient solution
-    [t,rep] = gettevol(pb.timeSolver);
-    for k=1:floor(length(rep)/4):length(rep)
-        close all
-        uk_data = ut.data(:,:,rep(k));
-        vk_data = vt.data(:,:,rep(k));
-        vk_data_tot = vt_tot.data(:,:,rep(k));
-        uk = FunctionalBasisArray(uk_data,ut.basis,ut.sz(1));
-        vk = FunctionalBasisArray(vk_data,vt.basis,vt.sz(1));
-        vk_tot = FunctionalBasisArray(vk_data_tot,vt_tot.basis,vt_tot.sz(1));
-        
-        plotMean(pb.S,uk);
-        mysaveas(pathname,['mean_solution_t' num2str(k-1)],formats,renderer);
-        plotMean(pb.S,uk,'surface',true);
-        mysaveas(pathname,['mean_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        plotMean(pb.S,vk_tot);
-        mysaveas(pathname,['mean_velocity_t' num2str(k-1)],formats,renderer);
-        plotMean(pb.S,vk_tot,'surface',true);
-        mysaveas(pathname,['mean_velocity_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        plotVariance(pb.S,uk);
-        mysaveas(pathname,['var_solution_t' num2str(k-1)],formats,renderer);
-        plotVariance(pb.S,uk,'surface',true);
-        mysaveas(pathname,['var_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        plotVariance(pb.S,vk);
-        mysaveas(pathname,['var_velocity_t' num2str(k-1)],formats,renderer);
-        plotVariance(pb.S,vk,'surface',true);
-        mysaveas(pathname,['var_velocity_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        plotStd(pb.S,uk);
-        mysaveas(pathname,['std_solution_t' num2str(k-1)],formats,renderer);
-        plotStd(pb.S,uk,'surface',true);
-        mysaveas(pathname,['std_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        plotStd(pb.S,vk);
-        mysaveas(pathname,['std_velocity_t' num2str(k-1)],formats,renderer);
-        plotStd(pb.S,vk,'surface',true);
-        mysaveas(pathname,['std_velocity_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        d = ndims(uk.basis);
-        for i=1:d
-            plotSobolIndices(pb.S,uk,i);
-            mysaveas(pathname,['sobol_indices_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
-            plotSobolIndices(pb.S,uk,i,'surface',true);
-            mysaveas(pathname,['sobol_indices_solution_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
-            
-            plotSobolIndices(pb.S,vk,i);
-            mysaveas(pathname,['sobol_indices_velocity_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
-            plotSobolIndices(pb.S,vk,i,'surface',true);
-            mysaveas(pathname,['sobol_indices_velocity_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
-            
-            plotSensitivityIndices(pb.S,uk,i);
-            mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
-            plotSensitivityIndices(pb.S,uk,i,'surface',true);
-            mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
-            
-            plotSensitivityIndices(pb.S,vk,i);
-            mysaveas(pathname,['sensitivity_indices_velocity_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
-            plotSensitivityIndices(pb.S,vk,i,'surface',true);
-            mysaveas(pathname,['sensitivity_indices_velocity_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
-        end
-    end
+%     [t,rep] = gettevol(pb.timeSolver);
+%     for k=1:floor(length(rep)/4):length(rep)
+%         close all
+%         uk_data = ut.data(:,:,rep(k));
+%         vk_data = vt.data(:,:,rep(k));
+%         vk_data_tot = vt_tot.data(:,:,rep(k));
+%         uk = FunctionalBasisArray(uk_data,ut.basis,ut.sz(1));
+%         vk = FunctionalBasisArray(vk_data,vt.basis,vt.sz(1));
+%         vk_tot = FunctionalBasisArray(vk_data_tot,vt_tot.basis,vt_tot.sz(1));
+%         
+%         plotMean(pb.S,uk);
+%         mysaveas(pathname,['mean_solution_t' num2str(k-1)],formats,renderer);
+%         plotMean(pb.S,uk,'surface',true);
+%         mysaveas(pathname,['mean_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         plotMean(pb.S,vk_tot);
+%         mysaveas(pathname,['mean_velocity_t' num2str(k-1)],formats,renderer);
+%         plotMean(pb.S,vk_tot,'surface',true);
+%         mysaveas(pathname,['mean_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         plotVariance(pb.S,uk);
+%         mysaveas(pathname,['var_solution_t' num2str(k-1)],formats,renderer);
+%         plotVariance(pb.S,uk,'surface',true);
+%         mysaveas(pathname,['var_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         plotVariance(pb.S,vk);
+%         mysaveas(pathname,['var_velocity_t' num2str(k-1)],formats,renderer);
+%         plotVariance(pb.S,vk,'surface',true);
+%         mysaveas(pathname,['var_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         plotStd(pb.S,uk);
+%         mysaveas(pathname,['std_solution_t' num2str(k-1)],formats,renderer);
+%         plotStd(pb.S,uk,'surface',true);
+%         mysaveas(pathname,['std_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         plotStd(pb.S,vk);
+%         mysaveas(pathname,['std_velocity_t' num2str(k-1)],formats,renderer);
+%         plotStd(pb.S,vk,'surface',true);
+%         mysaveas(pathname,['std_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         d = ndims(uk.basis);
+%         for i=1:d
+%             plotSobolIndices(pb.S,uk,i);
+%             mysaveas(pathname,['sobol_indices_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+%             plotSobolIndices(pb.S,uk,i,'surface',true);
+%             mysaveas(pathname,['sobol_indices_solution_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
+%             
+%             plotSobolIndices(pb.S,vk,i);
+%             mysaveas(pathname,['sobol_indices_velocity_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+%             plotSobolIndices(pb.S,vk,i,'surface',true);
+%             mysaveas(pathname,['sobol_indices_velocity_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
+%             
+%             plotSensitivityIndices(pb.S,uk,i);
+%             mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+%             plotSensitivityIndices(pb.S,uk,i,'surface',true);
+%             mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
+%             
+%             plotSensitivityIndices(pb.S,vk,i);
+%             mysaveas(pathname,['sensitivity_indices_velocity_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+%             plotSensitivityIndices(pb.S,vk,i,'surface',true);
+%             mysaveas(pathname,['sensitivity_indices_velocity_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
+%         end
+%     end
     
     %% Display quantity of interest
     % boutput: mean of concentration of pollutant captured by the trap domain
@@ -491,19 +491,42 @@ if displaySolution
     mean_boutput = foutput'*mean_ut;
     std_boutput = foutput'*std_ut;
     
+    probs = [0.025 0.975];
+    nbSamples = 100;
+    x = random(rv,nbSamples);
+    samples_ut = ut(x);
+    samples_boutput = zeros(nbSamples,ut.sz(2));
+    for i=1:nbSamples
+        sample_ut = reshape(samples_ut(i,:,:),ut.sz);
+        sample_ut = TIMEMATRIX(sample_ut,T);
+        sample_ut = unfreevector(pb.S,sample_ut)-calc_init_dirichlet(pb.S)*one(T);
+        samples_boutput(i,:) = foutput'*sample_ut;
+    end
+    ci_boutput = quantile(samples_boutput,probs);
+    
     figure('Name','Quantity of interest')
     clf
+    [t,rep] = gettplot(pb.timeSolver);
+    ciplot(ci_boutput(1,:),ci_boutput(2,:),t,'b');
+    alpha(0.2)
+    hold on
     plot(mean_boutput,'-b','LineWidth',1);
+    hold off
     grid on
     box on
     set(gca,'FontSize',16)
     xlabel('Time (s)')
-    ylabel('Mean concentration of pollutant in trap domain')
+    ylabel('Concentration of pollutant in trap domain')
+    legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],...
+        'mean value'})
     mysaveas(pathname,'quantity_of_interest',formats,renderer);
     mymatlab2tikz(pathname,'quantity_of_interest.tex');
     
     mean_Ioutput = integrate(mean_boutput);
     std_Ioutput = integrate(std_boutput);
+    lowerci_Ioutput = integrate(TIMEMATRIX(ci_boutput(1,:),T));
+    upperci_Ioutput = integrate(TIMEMATRIX(ci_boutput(2,:),T));
     fprintf('mean of quantity of interest = %e\n',mean_Ioutput);
     fprintf('std  of quantity of interest = %e\n',std_Ioutput);
+    fprintf('%d%% confidence interval of quantity of interest = [%e,%e]\n',(probs(2)-probs(1))*100,lowerci_Ioutput,upperci_Ioutput);
 end

@@ -236,8 +236,8 @@ if directSolver
     % s.adaptiveSampling = true;
     % s.adaptationRule = 'reducedmargin';
     s.maxIndex = p;
-    % s.display = true;
-    % s.displayIterations = true;
+    s.display = true;
+    s.displayIterations = true;
     
     ls = LeastSquaresSolver();
     ls.regularization = false;
@@ -477,8 +477,8 @@ if displaySolution
     end
     
     %% Display random evaluations
-    % nbsamples = 3;
-    % for i=1:nbsamples
+    % nbSamples = 3;
+    % for i=1:nbSamples
     %     xi = random(rv,1);
     %     U_xi = U(xi);
     %     w_xi = cellfun(@(x) x(xi),w,'UniformOutput',false);
