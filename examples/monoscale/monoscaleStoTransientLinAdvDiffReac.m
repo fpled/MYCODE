@@ -60,9 +60,9 @@ if setProblem
     K2 = 0.01;
     
     % Thermal capacity
-    % c1(xi) = 1 * (1 + 0.25 * (2 * xi - 1))
+    % c1(xi) = 1 * (1 + 0.1 * (2 * xi - 1))
     % c2 = 1
-    fun = @(xi) 1 * (1 + 0.25 * (2 * xi(:,2) - 1));
+    fun = @(xi) 1 * (1 + 0.1 * (2 * xi(:,2) - 1));
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;

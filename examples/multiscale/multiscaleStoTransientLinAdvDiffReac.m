@@ -139,7 +139,7 @@ if setProblem
         patch = patches.patches{k};
         % K_patch(x,xi) = K_out * (1 + 0.25 * (2 * xi - 1) * f(x))
         % K_in(x)       = K_out
-        % c_patch(x,xi) = c_out * (1 + 0.25 * (2 * xi - 1) * f(x))
+        % c_patch(x,xi) = c_out * (1 + 0.1 * (2 * xi - 1) * f(x))
         % c_in(x)       = c_out
         % R_patch(x,xi) = R1_out * (1 + 0.25 * (2 * xi - 1) * f(x))
         % R_in(x)       = R1_out
@@ -156,7 +156,7 @@ if setProblem
         
         K_patch{k} = FENODEFIELD(H.projection(fun,I));
         
-        fun = @(xi) c_out * (ones(size(xi,1),patch.S.nbnode) + 0.25 * (2 * xi(:,3*k-1) - 1) * double(squeeze(f(patch.S.node)))');
+        fun = @(xi) c_out * (ones(size(xi,1),patch.S.nbnode) + 0.1 * (2 * xi(:,3*k-1) - 1) * double(squeeze(f(patch.S.node)))');
         funtr = @(xi) fun(transfer(rvb,rv,xi));
         fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
         fun.evaluationAtMultiplePoints = true;
