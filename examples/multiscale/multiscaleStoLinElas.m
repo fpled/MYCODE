@@ -459,8 +459,8 @@ if displaySolution
         mysaveas(pathname,['std_global_local_solution_' num2str(i) '_view3'],formats,renderer);
         
         for j=1:d
-            plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,j,'displ',i);
-            mysaveas(pathname,['sobol_indices_multiscale_solution_' num2str(i) '_var_' num2str(j)],formats,renderer);
+            % plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,j,'displ',i);
+            % mysaveas(pathname,['sobol_indices_multiscale_solution_' num2str(i) '_var_' num2str(j)],formats,renderer);
             
             plotSensitivityIndicesMultiscaleSolution(glob,patches,interfaces,U,w,j,'displ',i);
             mysaveas(pathname,['sensitivity_indices_multiscale_solution_' num2str(i) '_var_' num2str(j)],formats,renderer);

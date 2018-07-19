@@ -26,10 +26,10 @@ renderer = 'OpenGL';
 %% Problem
 if setProblem
     %% Domains and meshes
-    cl1 = 0.025;
-    cl2 = 0.05;
-    cl0 = 0.025;
-    cltip = 0.015;
+    cl1 = 0.02;
+    cl2 = 0.04;
+    cl0 = 0.02;
+    cltip = 0.01;
     pb.S = gmshcanister(cl1,cl2,cl0,cltip,fullfile(pathname,'gmsh_canister'));
     
     %% Random variables
@@ -361,8 +361,8 @@ if displaySolution
     
     d = ndims(u.basis);
     for i=1:d
-        plotSobolIndices(pb.S,u,i);
-        mysaveas(pathname,['sobol_indices_solution_var_' num2str(i)],formats,renderer);
+        % plotSobolIndices(pb.S,u,i);
+        % mysaveas(pathname,['sobol_indices_solution_var_' num2str(i)],formats,renderer);
         
         plotSensitivityIndices(pb.S,u,i);
         mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i)],formats,renderer);
@@ -371,37 +371,37 @@ if displaySolution
     %% Display evolution of statistical outputs for transient solution
     T = gettimemodel(pb.timeSolver);
     
-    evolMean(pb.S,T,ut,'filename','evol_mean_solution','pathname',pathname);
-    evolMean(pb.S,T,ut,'surface',true,'filename','evol_mean_solution_surface','pathname',pathname);
+    evolMean(pb.S,T,ut,'filename','mean_solution','pathname',pathname);
+    evolMean(pb.S,T,ut,'surface',true,'filename','mean_solution_surface','pathname',pathname);
     
-    evolMean(pb.S,T,vt_tot,'rescale',false,'filename','evol_mean_velocity','pathname',pathname);
-    evolMean(pb.S,T,vt_tot,'rescale',false,'surface',true,'filename','evol_mean_velocity_surface','pathname',pathname);
+    evolMean(pb.S,T,vt_tot,'rescale',false,'filename','mean_velocity','pathname',pathname);
+    evolMean(pb.S,T,vt_tot,'rescale',false,'surface',true,'filename','mean_velocity_surface','pathname',pathname);
     
-    evolVariance(pb.S,T,ut,'filename','evol_var_solution','pathname',pathname);
-    evolVariance(pb.S,T,ut,'surface',true,'filename','evol_var_solution_surface','pathname',pathname);
+    evolVariance(pb.S,T,ut,'filename','var_solution','pathname',pathname);
+    evolVariance(pb.S,T,ut,'surface',true,'filename','var_solution_surface','pathname',pathname);
     
-    evolVariance(pb.S,T,vt,'rescale',false,'filename','evol_var_velocity','pathname',pathname);
-    evolVariance(pb.S,T,vt,'rescale',false,'surface',true,'filename','evol_var_velocity_surface','pathname',pathname);
+    evolVariance(pb.S,T,vt,'rescale',false,'filename','var_velocity','pathname',pathname);
+    evolVariance(pb.S,T,vt,'rescale',false,'surface',true,'filename','var_velocity_surface','pathname',pathname);
     
-    evolStd(pb.S,T,ut,'filename','evol_std_solution','pathname',pathname);
-    evolStd(pb.S,T,ut,'surface',true,'filename','evol_std_solution_surface','pathname',pathname);
+    evolStd(pb.S,T,ut,'filename','std_solution','pathname',pathname);
+    evolStd(pb.S,T,ut,'surface',true,'filename','std_solution_surface','pathname',pathname);
     
-    evolStd(pb.S,T,vt,'rescale',false,'filename','evol_std_velocity','pathname',pathname);
-    evolStd(pb.S,T,vt,'rescale',false,'surface',true,'filename','evol_std_velocity_surface','pathname',pathname);
+    evolStd(pb.S,T,vt,'rescale',false,'filename','std_velocity','pathname',pathname);
+    evolStd(pb.S,T,vt,'rescale',false,'surface',true,'filename','std_velocity_surface','pathname',pathname);
     
     d = ndims(ut.basis);
     for i=1:d
-        evolSobolIndices(pb.S,T,ut,i,'filename',['evol_sobol_indices_solution_var_' num2str(i)],'pathname',pathname);
-        evolSobolIndices(pb.S,T,ut,i,'surface',true,'filename',['evol_sobol_indices_solution_var_' num2str(i) '_surface'],'pathname',pathname);
+        % evolSobolIndices(pb.S,T,ut,i,'filename',['sobol_indices_solution_var_' num2str(i)],'pathname',pathname);
+        % evolSobolIndices(pb.S,T,ut,i,'surface',true,'filename',['sobol_indices_solution_var_' num2str(i) '_surface'],'pathname',pathname);
         
-        evolSobolIndices(pb.S,T,vt,i,'filename',['evol_sobol_indices_velocity_var_' num2str(i)],'pathname',pathname);
-        evolSobolIndices(pb.S,T,vt,i,'surface',true,'filename',['evol_sobol_indices_velocity_var_' num2str(i) '_surface'],'pathname',pathname);
+        % evolSobolIndices(pb.S,T,vt,i,'filename',['sobol_indices_velocity_var_' num2str(i)],'pathname',pathname);
+        % evolSobolIndices(pb.S,T,vt,i,'surface',true,'filename',['sobol_indices_velocity_var_' num2str(i) '_surface'],'pathname',pathname);
         
-        evolSensitivityIndices(pb.S,T,ut,i,'filename',['evol_sensitivity_indices_solution_var_' num2str(i)],'pathname',pathname);
-        evolSensitivityIndices(pb.S,T,ut,i,'surface',true,'filename',['evol_sensitivity_indices_solution_var_' num2str(i) '_surface'],'pathname',pathname);
+        evolSensitivityIndices(pb.S,T,ut,i,'filename',['sensitivity_indices_solution_var_' num2str(i)],'pathname',pathname);
+        evolSensitivityIndices(pb.S,T,ut,i,'surface',true,'filename',['sensitivity_indices_solution_var_' num2str(i) '_surface'],'pathname',pathname);
         
-        evolSensitivityIndices(pb.S,T,vt,i,'filename',['evol_sensitivity_indices_velocity_var_' num2str(i)],'pathname',pathname);
-        evolSensitivityIndices(pb.S,T,vt,i,'surface',true,'filename',['evol_sensitivity_indices_velocity_var_' num2str(i) '_surface'],'pathname',pathname);
+        evolSensitivityIndices(pb.S,T,vt,i,'filename',['sensitivity_indices_velocity_var_' num2str(i)],'pathname',pathname);
+        evolSensitivityIndices(pb.S,T,vt,i,'surface',true,'filename',['sensitivity_indices_velocity_var_' num2str(i) '_surface'],'pathname',pathname);
     end
     
     %% Display statistical outputs at differents instants for transient solution
@@ -517,8 +517,9 @@ if displaySolution
     set(gca,'FontSize',16)
     xlabel('Time (s)')
     ylabel('Concentration of pollutant in trap domain')
-    legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],...
-        'mean value'})
+    l = legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+        'mean value'});
+    set(l,'Interpreter','latex')
     mysaveas(pathname,'quantity_of_interest',formats,renderer);
     mymatlab2tikz(pathname,'quantity_of_interest.tex');
     

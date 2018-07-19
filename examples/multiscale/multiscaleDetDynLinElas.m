@@ -373,47 +373,47 @@ if displaySolution
     %% Display evolutions of solutions
     i = 1;
     % for i=1:2
-        % evolAllSolutions(glob,patches,interfaces,Ut,wt,lambdat,'displ',i,'filename',['evol_all_solutions_' num2str(i)]],'pathname',pathname);
-        % evolAllSolutions(glob,patches,interfaces,Ut,wt,lambdat,'displ',i,'surface',true,'filename',['evol_all_solutions_' num2str(i) '_surface'],'pathname',pathname);
-        % evolAllSolutions(glob,patches,interfaces,outputt.vU,outputt.vw,outputt.vlambda,'displ',i,'filename',['evol_all_velocities_' num2str(i)]],'pathname',pathname);
-        % evolAllSolutions(glob,patches,interfaces,outputt.vU,outputt.vw,outputt.vlambda,'displ',i,'surface',true,'filename',['evol_all_velocities_' num2str(i) '_surface'],'pathname',pathname);
-        % evolAllSolutions(glob,patches,interfaces,outputt.aU,outputt.aw,outputt.alambda,'displ',i,'filename',['evol_all_accelerations_' num2str(i)]],'pathname',pathname);
-        % evolAllSolutions(glob,patches,interfaces,outputt.aU,outputt.aw,outputt.alambda,'displ',i,'surface',true,'filename',['evol_all_accelerations_' num2str(i) '_surface'],'pathname',pathname);
+        % evolAllSolutions(glob,patches,interfaces,Ut,wt,lambdat,'displ',i,'filename',['all_solutions_' num2str(i)]],'pathname',pathname);
+        % evolAllSolutions(glob,patches,interfaces,Ut,wt,lambdat,'displ',i,'surface',true,'filename',['all_solutions_' num2str(i) '_surface'],'pathname',pathname);
+        % evolAllSolutions(glob,patches,interfaces,outputt.vU,outputt.vw,outputt.vlambda,'displ',i,'filename',['all_velocities_' num2str(i)]],'pathname',pathname);
+        % evolAllSolutions(glob,patches,interfaces,outputt.vU,outputt.vw,outputt.vlambda,'displ',i,'surface',true,'filename',['all_velocities_' num2str(i) '_surface'],'pathname',pathname);
+        % evolAllSolutions(glob,patches,interfaces,outputt.aU,outputt.aw,outputt.alambda,'displ',i,'filename',['all_accelerations_' num2str(i)]],'pathname',pathname);
+        % evolAllSolutions(glob,patches,interfaces,outputt.aU,outputt.aw,outputt.alambda,'displ',i,'surface',true,'filename',['all_accelerations_' num2str(i) '_surface'],'pathname',pathname);
         
-        evolGlobalSolution(glob,Ut,'displ',i,'filename',['evol_global_solution_' num2str(i)],'pathname',pathname);
-        evolGlobalSolution(glob,Ut,'displ',i,'view3',true,'filename',['evol_global_solution_ ' num2str(i) '_view3'],'pathname',pathname);
-        evolGlobalSolution(glob,outputt.vU,'displ',i,'filename',['evol_global_solution_velocity_' num2str(i)],'pathname',pathname);
-        evolGlobalSolution(glob,outputt.vU,'displ',i,'view3',true,'filename',['evol_global_solution_velocity_' num2str(i) '_view3'],'pathname',pathname);
-        evolGlobalSolution(glob,outputt.aU,'displ',i,'filename',['evol_global_solution_acceleration_' num2str(i)],'pathname',pathname);
-        evolGlobalSolution(glob,outputt.aU,'displ',i,'view3',true,'filename',['evol_global_solution_acceleration_' num2str(i) '_view3'],'pathname',pathname);
+        evolGlobalSolution(glob,Ut,'displ',i,'filename',['global_solution_' num2str(i)],'pathname',pathname);
+        evolGlobalSolution(glob,Ut,'displ',i,'view3',true,'filename',['global_solution_ ' num2str(i) '_view3'],'pathname',pathname);
+        evolGlobalSolution(glob,outputt.vU,'displ',i,'filename',['global_solution_velocity_' num2str(i)],'pathname',pathname);
+        evolGlobalSolution(glob,outputt.vU,'displ',i,'view3',true,'filename',['global_solution_velocity_' num2str(i) '_view3'],'pathname',pathname);
+        evolGlobalSolution(glob,outputt.aU,'displ',i,'filename',['global_solution_acceleration_' num2str(i)],'pathname',pathname);
+        evolGlobalSolution(glob,outputt.aU,'displ',i,'view3',true,'filename',['global_solution_acceleration_' num2str(i) '_view3'],'pathname',pathname);
         
-        % evolLocalSolution(patches,wt,'displ',i,'filename',['evol_local_solution_' num2str(i)],'pathname',pathname);
-        % evolLocalSolution(patches,wt,'displ',i,'view3',true,'filename',['evol_local_solution_' num2str(i) '_view3'],'pathname',pathname);
-        % evolLocalSolution(patches,outputt.vw,'displ',i,'filename',['evol_local_solution_velocity_' num2str(i)],'pathname',pathname);
-        % evolLocalSolution(patches,outputt.vw,'displ',i,'view3',true,'filename',['evol_local_solution_velocity_' num2str(i) '_view3'],'pathname',pathname);
-        % evolLocalSolution(patches,outputt.aw,'displ',i,'filename',['evol_local_solution_acceleration_' num2str(i)],'pathname',pathname);
-        % evolLocalSolution(patches,outputt.aw,'displ',i,'view3',true,'filename',['evol_local_solution_acceleration_' num2str(i) '_view3'],'pathname',pathname);
+        % evolLocalSolution(patches,wt,'displ',i,'filename',['local_solution_' num2str(i)],'pathname',pathname);
+        % evolLocalSolution(patches,wt,'displ',i,'view3',true,'filename',['local_solution_' num2str(i) '_view3'],'pathname',pathname);
+        % evolLocalSolution(patches,outputt.vw,'displ',i,'filename',['local_solution_velocity_' num2str(i)],'pathname',pathname);
+        % evolLocalSolution(patches,outputt.vw,'displ',i,'view3',true,'filename',['local_solution_velocity_' num2str(i) '_view3'],'pathname',pathname);
+        % evolLocalSolution(patches,outputt.aw,'displ',i,'filename',['local_solution_acceleration_' num2str(i)],'pathname',pathname);
+        % evolLocalSolution(patches,outputt.aw,'displ',i,'view3',true,'filename',['local_solution_acceleration_' num2str(i) '_view3'],'pathname',pathname);
         
-        % evolLagrangeMultiplier(interfaces,lambdat,'displ',i,'filename',['evol_Lagrange_multiplier_' num2str(i)],'pathname',pathname);
-        % evolLagrangeMultiplier(interfaces,lambdat,'displ',i,'view3',true,'filename',['evol_Lagrange_multiplier_' num2str(i) '_view3'],'pathname',pathname);
-        % evolLagrangeMultiplier(interfaces,outputt.vlambda,'displ',i,'filename',['evol_Lagrange_multiplier_velocity_' num2str(i)],'pathname',pathname);
-        % evolLagrangeMultiplier(interfaces,outputt.vlambda,'displ',i,'view3',true,'filename',['evol_Lagrange_multiplier_velocity_' num2str(i) '_view3'],'pathname',pathname);
-        % evolLagrangeMultiplier(interfaces,outputt.alambda,'displ',i,'filename',['evol_Lagrange_multiplier_acceleration_' num2str(i)],'pathname',pathname);
-        % evolLagrangeMultiplier(interfaces,outputt.alambda,'displ',i,'view3',true,'filename',['evol_Lagrange_multiplier_acceleration_' num2str(i) '_view3'],'pathname',pathname);
+        % evolLagrangeMultiplier(interfaces,lambdat,'displ',i,'filename',['Lagrange_multiplier_' num2str(i)],'pathname',pathname);
+        % evolLagrangeMultiplier(interfaces,lambdat,'displ',i,'view3',true,'filename',['Lagrange_multiplier_' num2str(i) '_view3'],'pathname',pathname);
+        % evolLagrangeMultiplier(interfaces,outputt.vlambda,'displ',i,'filename',['Lagrange_multiplier_velocity_' num2str(i)],'pathname',pathname);
+        % evolLagrangeMultiplier(interfaces,outputt.vlambda,'displ',i,'view3',true,'filename',['Lagrange_multiplier_velocity_' num2str(i) '_view3'],'pathname',pathname);
+        % evolLagrangeMultiplier(interfaces,outputt.alambda,'displ',i,'filename',['Lagrange_multiplier_acceleration_' num2str(i)],'pathname',pathname);
+        % evolLagrangeMultiplier(interfaces,outputt.alambda,'displ',i,'view3',true,'filename',['Lagrange_multiplier_acceleration_' num2str(i) '_view3'],'pathname',pathname);
         
-        evolMultiscaleSolution(glob,patches,interfaces,Ut,wt,'displ',i,'filename',['evol_multiscale_solution_' num2str(i)],'pathname',pathname);
-        evolMultiscaleSolution(glob,patches,interfaces,Ut,wt,'displ',i,'view3',true,'filename',['evol_multiscale_solution_' num2str(i) '_view3'],'pathname',pathname);
-        evolMultiscaleSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'displ',i,'filename',['evol_multiscale_solution_velocity_' num2str(i)],'pathname',pathname);
-        evolMultiscaleSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'displ',i,'view3',true,'filename',['evol_multiscale_solution_velocity_' num2str(i) '_view3'],'pathname',pathname);
-        evolMultiscaleSolution(glob,patches,interfaces,outputt.aU,outputt.aw,'displ',i,'filename',['evol_multiscale_solution_acceleration_' num2str(i)],'pathname',pathname);
-        evolMultiscaleSolution(glob,patches,interfaces,outputt.aU,outputt.aw,'displ',i,'view3',true,'filename',['evol_multiscale_solution_acceleration_' num2str(i) '_view3'],'pathname',pathname);
+        evolMultiscaleSolution(glob,patches,interfaces,Ut,wt,'displ',i,'filename',['multiscale_solution_' num2str(i)],'pathname',pathname);
+        evolMultiscaleSolution(glob,patches,interfaces,Ut,wt,'displ',i,'view3',true,'filename',['multiscale_solution_' num2str(i) '_view3'],'pathname',pathname);
+        evolMultiscaleSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'displ',i,'filename',['multiscale_solution_velocity_' num2str(i)],'pathname',pathname);
+        evolMultiscaleSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'displ',i,'view3',true,'filename',['multiscale_solution_velocity_' num2str(i) '_view3'],'pathname',pathname);
+        evolMultiscaleSolution(glob,patches,interfaces,outputt.aU,outputt.aw,'displ',i,'filename',['multiscale_solution_acceleration_' num2str(i)],'pathname',pathname);
+        evolMultiscaleSolution(glob,patches,interfaces,outputt.aU,outputt.aw,'displ',i,'view3',true,'filename',['multiscale_solution_acceleration_' num2str(i) '_view3'],'pathname',pathname);
         
-        evolGlobalLocalSolution(glob,patches,interfaces,Ut,wt,'displ',i,'filename',['evol_global_local_solution_' num2str(i)],'pathname',pathname);
-        evolGlobalLocalSolution(glob,patches,interfaces,Ut,wt,'displ',i,'view3',true,'filename',['evol_global_local_solution_' num2str(i) '_view3'],'pathname',pathname);
-        evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'displ',i,'filename',['evol_global_local_solution_velocity_' num2str(i)],'pathname',pathname);
-        evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'displ',i,'view3',true,'filename',['evol_global_local_solution_velocity_' num2str(i) '_view3'],'pathname',pathname);
-        evolGlobalLocalSolution(glob,patches,interfaces,outputt.aU,outputt.aw,'displ',i,'filename',['evol_global_local_solution_acceleration_' num2str(i)],'pathname',pathname);
-        evolGlobalLocalSolution(glob,patches,interfaces,outputt.aU,outputt.aw,'displ',i,'view3',true,'filename',['evol_global_local_solution_acceleration_' num2str(i) '_view3'],'pathname',pathname);
+        evolGlobalLocalSolution(glob,patches,interfaces,Ut,wt,'displ',i,'filename',['global_local_solution_' num2str(i)],'pathname',pathname);
+        evolGlobalLocalSolution(glob,patches,interfaces,Ut,wt,'displ',i,'view3',true,'filename',['global_local_solution_' num2str(i) '_view3'],'pathname',pathname);
+        evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'displ',i,'filename',['global_local_solution_velocity_' num2str(i)],'pathname',pathname);
+        evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'displ',i,'view3',true,'filename',['global_local_solution_velocity_' num2str(i) '_view3'],'pathname',pathname);
+        evolGlobalLocalSolution(glob,patches,interfaces,outputt.aU,outputt.aw,'displ',i,'filename',['global_local_solution_acceleration_' num2str(i)],'pathname',pathname);
+        evolGlobalLocalSolution(glob,patches,interfaces,outputt.aU,outputt.aw,'displ',i,'view3',true,'filename',['global_local_solution_acceleration_' num2str(i) '_view3'],'pathname',pathname);
     % end
     
     %% Display solutions at different instants

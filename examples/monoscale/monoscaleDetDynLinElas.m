@@ -141,23 +141,23 @@ if displaySolution
     %% Display evolution of solution
     i = 1;
     % for i=1:2
-        evolSolution(pb.S,ut,'displ',i,'filename',['evol_solution_' num2str(i)],'pathname',pathname);
-        evolSolution(pb.S,ut,'displ',i,'view3',true,'filename',['evol_solution_' num2str(i) '_view3'],'pathname',pathname);
+        evolSolution(pb.S,ut,'displ',i,'filename',['solution_' num2str(i)],'pathname',pathname);
+        evolSolution(pb.S,ut,'displ',i,'view3',true,'filename',['solution_' num2str(i) '_view3'],'pathname',pathname);
         
-        evolSolution(pb.S,vt,'displ',i,'filename',['evol_velocity_' num2str(i)],'pathname',pathname);
-        evolSolution(pb.S,vt,'displ',i,'view3',true,'filename',['evol_velocity_' num2str(i) '_view3'],'pathname',pathname);
+        evolSolution(pb.S,vt,'displ',i,'filename',['velocity_' num2str(i)],'pathname',pathname);
+        evolSolution(pb.S,vt,'displ',i,'view3',true,'filename',['velocity_' num2str(i) '_view3'],'pathname',pathname);
         
-        evolSolution(pb.S,at,'displ',i,'filename',['evol_acceleration_' num2str(i)],'pathname',pathname);
-        evolSolution(pb.S,at,'displ',i,'view3',true,'filename',['evol_acceleration_' num2str(i) '_view3'],'pathname',pathname);
+        evolSolution(pb.S,at,'displ',i,'filename',['acceleration_' num2str(i)],'pathname',pathname);
+        evolSolution(pb.S,at,'displ',i,'view3',true,'filename',['acceleration_' num2str(i) '_view3'],'pathname',pathname);
     % end
     
     % for i=1:3
-    %     evolSolution(pb.S,ut,'epsilon',i,'filename',['evol_epsilon_' num2str(i)],'pathname',pathname);
-    %     evolSolution(pb.S,ut,'sigma',i,'filename',['evol_sigma_' num2str(i)],'pathname',pathname);
+    %     evolSolution(pb.S,ut,'epsilon',i,'filename',['epsilon_' num2str(i)],'pathname',pathname);
+    %     evolSolution(pb.S,ut,'sigma',i,'filename',['sigma_' num2str(i)],'pathname',pathname);
     % end
     
-    % evolSolution(pb.S,ut,'epsilon','mises','filename','evol_epsilon_von_mises','pathname',pathname);
-    % evolSolution(pb.S,ut,'sigma','mises','filename','evol_sigma_von_mises','pathname',pathname);
+    % evolSolution(pb.S,ut,'epsilon','mises','filename','epsilon_von_mises','pathname',pathname);
+    % evolSolution(pb.S,ut,'sigma','mises','filename','sigma_von_mises','pathname',pathname);
     
     %% Display solution at differents instants
     i = 1;

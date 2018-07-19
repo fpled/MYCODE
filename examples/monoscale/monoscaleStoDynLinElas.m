@@ -237,52 +237,52 @@ if displaySolution
     
     i = 1;
     % for i=1:2
-        evolMean(pb.S,T,ut,'displ',i,'filename',['evol_mean_solution_' num2str(i)],'pathname',pathname);
-        evolMean(pb.S,T,ut,'displ',i,'view3',true,'filename',['evol_mean_solution_' num2str(i) '_view3'],'pathname',pathname);
+        evolMean(pb.S,T,ut,'displ',i,'filename',['mean_solution_' num2str(i)],'pathname',pathname);
+        evolMean(pb.S,T,ut,'displ',i,'view3',true,'filename',['mean_solution_' num2str(i) '_view3'],'pathname',pathname);
         
-%         evolMean(pb.S,T,vt,'displ',i,'filename',['evol_mean_velocity_' num2str(i)],'pathname',pathname);
-%         evolMean(pb.S,T,vt,'displ',i,'view3',true,'filename',['evol_mean_velocity_' num2str(i) '_view3'],'pathname',pathname);
+%         evolMean(pb.S,T,vt,'displ',i,'filename',['mean_velocity_' num2str(i)],'pathname',pathname);
+%         evolMean(pb.S,T,vt,'displ',i,'view3',true,'filename',['mean_velocity_' num2str(i) '_view3'],'pathname',pathname);
         
-%         evolMean(pb.S,T,at,'displ',i,'filename',['evol_mean_acceleration_' num2str(i)],'pathname',pathname);
-%         evolMean(pb.S,T,at,'displ',i,'view3',true,'filename',['evol_mean_acceleration_' num2str(i) '_view3'],'pathname',pathname);
+%         evolMean(pb.S,T,at,'displ',i,'filename',['mean_acceleration_' num2str(i)],'pathname',pathname);
+%         evolMean(pb.S,T,at,'displ',i,'view3',true,'filename',['mean_acceleration_' num2str(i) '_view3'],'pathname',pathname);
         
-        evolVariance(pb.S,T,ut,'displ',i,'filename',['evol_var_solution_' num2str(i)],'pathname',pathname);
-        evolVariance(pb.S,T,ut,'displ',i,'view3',true,'filename',['evol_var_solution_' num2str(i) '_view3'],'pathname',pathname);
+        evolVariance(pb.S,T,ut,'displ',i,'filename',['var_solution_' num2str(i)],'pathname',pathname);
+        evolVariance(pb.S,T,ut,'displ',i,'view3',true,'filename',['var_solution_' num2str(i) '_view3'],'pathname',pathname);
         
-%         evolVariance(pb.S,T,vt,'displ',i,'filename',['evol_var_velocity_' num2str(i)],'pathname',pathname);
-%         evolVariance(pb.S,T,vt,'displ',i,'view3',true,'filename',['evol_var_velocity_' num2str(i) '_view3'],'pathname',pathname);
+%         evolVariance(pb.S,T,vt,'displ',i,'filename',['var_velocity_' num2str(i)],'pathname',pathname);
+%         evolVariance(pb.S,T,vt,'displ',i,'view3',true,'filename',['var_velocity_' num2str(i) '_view3'],'pathname',pathname);
         
-%         evolVariance(pb.S,T,at,'displ',i,'filename',['evol_var_acceleration_' num2str(i)],'pathname',pathname);
-%         evolVariance(pb.S,T,at,'displ',i,'view3',true,'filename',['evol_var_acceleration_' num2str(i) '_view3'],'pathname',pathname);
+%         evolVariance(pb.S,T,at,'displ',i,'filename',['var_acceleration_' num2str(i)],'pathname',pathname);
+%         evolVariance(pb.S,T,at,'displ',i,'view3',true,'filename',['var_acceleration_' num2str(i) '_view3'],'pathname',pathname);
         
-        evolStd(pb.S,T,ut,'displ',i,'filename',['evol_std_solution_' num2str(i)],'pathname',pathname);
-        evolStd(pb.S,T,ut,'displ',i,'view3',true,'filename',['evol_std_solution_' num2str(i) '_view3'],'pathname',pathname);
+        evolStd(pb.S,T,ut,'displ',i,'filename',['std_solution_' num2str(i)],'pathname',pathname);
+        evolStd(pb.S,T,ut,'displ',i,'view3',true,'filename',['std_solution_' num2str(i) '_view3'],'pathname',pathname);
         
-%         evolStd(pb.S,T,vt,'displ',i,'filename',['evol_std_velocity_' num2str(i)],'pathname',pathname);
-%         evolStd(pb.S,T,vt,'displ',i,'view3',true,'filename',['evol_std_velocity_' num2str(i) '_view3'],'pathname',pathname);
+%         evolStd(pb.S,T,vt,'displ',i,'filename',['std_velocity_' num2str(i)],'pathname',pathname);
+%         evolStd(pb.S,T,vt,'displ',i,'view3',true,'filename',['std_velocity_' num2str(i) '_view3'],'pathname',pathname);
         
-%         evolStd(pb.S,T,at,'displ',i,'filename',['evol_std_acceleration_' num2str(i)],'pathname',pathname);
-%         evolStd(pb.S,T,at,'displ',i,'view3',true,'filename',['evol_std_acceleration_' num2str(i) '_view3'],'pathname',pathname);
+%         evolStd(pb.S,T,at,'displ',i,'filename',['std_acceleration_' num2str(i)],'pathname',pathname);
+%         evolStd(pb.S,T,at,'displ',i,'view3',true,'filename',['std_acceleration_' num2str(i) '_view3'],'pathname',pathname);
         
         d = ndims(ut.basis);
         for j=1:d
-            evolSobolIndices(pb.S,T,ut,j,'displ',i,'filename',['evol_sobol_indices_solution_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
-            evolSobolIndices(pb.S,T,ut,j,'displ',i,'view3',true,'filename',['evol_sobol_indices_solution_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
+%             evolSobolIndices(pb.S,T,ut,j,'displ',i,'filename',['sobol_indices_solution_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
+%             evolSobolIndices(pb.S,T,ut,j,'displ',i,'view3',true,'filename',['sobol_indices_solution_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
+%             
+%             evolSobolIndices(pb.S,T,vt,j,'displ',i,'filename',['sobol_indices_velocity_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
+%             evolSobolIndices(pb.S,T,vt,j,'displ',i,'view3',true,'filename',['sobol_indices_velocity_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
             
-%             evolSobolIndices(pb.S,T,vt,j,'displ',i,'filename',['evol_sobol_indices_velocity_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
-%             evolSobolIndices(pb.S,T,vt,j,'displ',i,'view3',true,'filename',['evol_sobol_indices_velocity_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
+%             evolSobolIndices(pb.S,T,at,j,'displ',i,'filename',['sobol_indices_acceleration_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
+%             evolSobolIndices(pb.S,T,at,j,'displ',i,'view3',true,'filename',['sobol_indices_acceleration_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
             
-%             evolSobolIndices(pb.S,T,at,j,'displ',i,'filename',['evol_sobol_indices_acceleration_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
-%             evolSobolIndices(pb.S,T,at,j,'displ',i,'view3',true,'filename',['evol_sobol_indices_acceleration_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
+            evolSensitivityIndices(pb.S,T,ut,j,'displ',i,'filename',['sensitivity_indices_solution_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
+            evolSensitivityIndices(pb.S,T,ut,j,'displ',i,'view3',true,'filename',['sensitivity_indices_solution_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
             
-            evolSensitivityIndices(pb.S,T,ut,j,'displ',i,'filename',['evol_sensitivity_indices_solution_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
-            evolSensitivityIndices(pb.S,T,ut,j,'displ',i,'view3',true,'filename',['evol_sensitivity_indices_solution_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
+%             evolSensitivityIndices(pb.S,T,vt,j,'displ',i,'filename',['sensitivity_indices_velocity_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
+%             evolSensitivityIndices(pb.S,T,vt,j,'displ',i,'view3',true,'filename',['sensitivity_indices_velocity_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
             
-%             evolSensitivityIndices(pb.S,T,vt,j,'displ',i,'filename',['evol_sensitivity_indices_velocity_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
-%             evolSensitivityIndices(pb.S,T,vt,j,'displ',i,'view3',true,'filename',['evol_sensitivity_indices_velocity_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
-            
-%             evolSensitivityIndices(pb.S,T,at,j,'displ',i,'filename',['evol_sensitivity_indices_acceleration_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
-%             evolSensitivityIndices(pb.S,T,at,j,'displ',i,'view3',true,'filename',['evol_sensitivity_indices_acceleration_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
+%             evolSensitivityIndices(pb.S,T,at,j,'displ',i,'filename',['sensitivity_indices_acceleration_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
+%             evolSensitivityIndices(pb.S,T,at,j,'displ',i,'view3',true,'filename',['sensitivity_indices_acceleration_' num2str(i) '_var_' num2str(j) '_view3'],'pathname',pathname);
         end
     % end
     
@@ -346,8 +346,8 @@ if displaySolution
             
             d = ndims(uk.basis);
             for j=1:d
-                plotSobolIndices(pb.S,uk,j,'displ',i);
-                mysaveas(pathname,['sobol_indices_solution_' num2str(i) '_var_' num2str(j) '_t' num2str(k-1)],formats,renderer);
+%                 plotSobolIndices(pb.S,uk,j,'displ',i);
+%                 mysaveas(pathname,['sobol_indices_solution_' num2str(i) '_var_' num2str(j) '_t' num2str(k-1)],formats,renderer);
 %                 plotSobolIndices(pb.S,vk,j,'displ',i);
 %                 mysaveas(pathname,['sobol_indices_velocity_' num2str(i) '_var_' num2str(j) '_t' num2str(k-1)],formats,renderer);
 %                 plotSobolIndices(pb.S,ak,j,'displ',i);

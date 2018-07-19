@@ -226,8 +226,8 @@ if displaySolution
     
     d = ndims(u.basis);
     for i=1:d
-        plotSobolIndices(pb.S,u,i);
-        mysaveas(pathname,['sobol_indices_solution_var_' num2str(i)],formats,renderer);
+        % plotSobolIndices(pb.S,u,i);
+        % mysaveas(pathname,['sobol_indices_solution_var_' num2str(i)],formats,renderer);
         
         plotSensitivityIndices(pb.S,u,i);
         mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i)],formats,renderer);

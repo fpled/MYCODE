@@ -482,8 +482,8 @@ if displaySolution
     
     d = ndims(U.basis);
     for i=1:d
-        plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i);
-        mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i)],formats,renderer);
+        % plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i);
+        % mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i)],formats,renderer);
         
         plotSensitivityIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i);
         mysaveas(pathname,['sensitivity_indices_multiscale_solution_var_' num2str(i)],formats,renderer);

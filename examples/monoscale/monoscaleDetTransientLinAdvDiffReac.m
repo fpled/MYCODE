@@ -23,10 +23,10 @@ renderer = 'OpenGL';
 %% Problem
 if setProblem
     %% Domains and meshes
-    cl1 = 0.025;
-    cl2 = 0.05;
-    cl0 = 0.025;
-    cltip = 0.015;
+    cl1 = 0.02;
+    cl2 = 0.04;
+    cl0 = 0.02;
+    cltip = 0.01;
     pb.S = gmshcanister(cl1,cl2,cl0,cltip,fullfile(pathname,'gmsh_canister'));
     
     %% Materials
@@ -191,15 +191,15 @@ if displaySolution
     mysaveas(pathname,'solution_surface',formats);
     
     %% Display evolution of transient solution
-    evolSolution(pb.S,ut,'filename','evol_solution','pathname',pathname);
-    evolSolution(pb.S,ut,'surface',true,'filename','evol_solution_surface','pathname',pathname);
+    evolSolution(pb.S,ut,'filename','solution','pathname',pathname);
+    evolSolution(pb.S,ut,'surface',true,'filename','solution_surface','pathname',pathname);
     
-    evolSolution(pb.S,vt,'rescale',false,'filename','evol_velocity','pathname',pathname);
-    evolSolution(pb.S,vt,'rescale',false,'surface',true,'filename','evol_velocity_surface','pathname',pathname);
+    evolSolution(pb.S,vt,'rescale',false,'filename','velocity','pathname',pathname);
+    evolSolution(pb.S,vt,'rescale',false,'surface',true,'filename','velocity_surface','pathname',pathname);
     
 %     for i=1:2
-%         evolSolution(pb.S,ut,'epsilon',i,'filename',['evol_eps_' num2str(i)],'pathname',pathname);
-%         evolSolution(pb.S,ut,'sigma',i,'filename',['evol_sig_' num2str(i)],'pathname',pathname);
+%         evolSolution(pb.S,ut,'epsilon',i,'filename',['eps_' num2str(i)],'pathname',pathname);
+%         evolSolution(pb.S,ut,'sigma',i,'filename',['sig_' num2str(i)],'pathname',pathname);
 %     end
     
     %% Display transient solution at differents instants
