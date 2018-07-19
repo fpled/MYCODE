@@ -26,10 +26,10 @@ renderer = 'OpenGL';
 %% Problem
 if setProblem
     %% Domains and meshes
-    cl1 = 0.02;
-    cl2 = 0.04;
-    cl0 = 0.02;
-    cltip = 0.01;
+    cl1 = 0.025;
+    cl2 = 0.05;
+    cl0 = 0.025;
+    cltip = 0.015;
     pb.S = gmshcanister(cl1,cl2,cl0,cltip,fullfile(pathname,'gmsh_canister'));
     
     %% Random variables
@@ -49,9 +49,9 @@ if setProblem
     I = I.tensorize(d);
     
     % Linear diffusion coefficient
-    % K1(xi) = 0.01 * (1 + 0.25 * (2 * xi - 1))
+    % K1(xi) = 0.01 * (1 + 0.1 * (2 * xi - 1))
     % K2 = 0.01
-    fun = @(xi) 0.01 * (1 + 0.25 * (2 * xi(:,1) - 1));
+    fun = @(xi) 0.01 * (1 + 0.1 * (2 * xi(:,1) - 1));
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;
@@ -90,9 +90,9 @@ if setProblem
     V = {{FENODEFIELD(V(:,1)),FENODEFIELD(V(:,2))}};
     
     % Linear reaction parameter
-    % R1(xi) = 0.1 * (1 + 0.25 * (2 * xi - 1))
+    % R1(xi) = 0.1 * (1 + 0.1 * (2 * xi - 1))
     % R2 = 10
-    fun = @(xi) 0.1 * (1 + 0.25 * (2 * xi(:,3) - 1));
+    fun = @(xi) 0.1 * (1 + 0.1 * (2 * xi(:,3) - 1));
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;

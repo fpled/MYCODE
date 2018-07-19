@@ -23,10 +23,10 @@ renderer = 'OpenGL';
 %% Problem
 if setProblem
     %% Domains and meshes
-    cl1 = 0.02;
-    cl2 = 0.04;
-    cl0 = 0.02;
-    cltip = 0.01;
+    cl1 = 0.025;
+    cl2 = 0.05;
+    cl0 = 0.025;
+    cltip = 0.015;
     pb.S = gmshcanister(cl1,cl2,cl0,cltip,fullfile(pathname,'gmsh_canister'));
     
     %% Materials

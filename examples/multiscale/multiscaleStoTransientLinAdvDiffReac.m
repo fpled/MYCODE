@@ -49,13 +49,13 @@ if setProblem
     D_patch_star{2} = DOMAIN(2,[0.45,0.40],[0.65,0.60]);
     D_patch_star{3} = DOMAIN(2,[0.05,0.40],[0.25,0.60]);
     
-    cl1 = 0.02;
-    cl2 = 0.04;
-    cl0 = 0.02;
-    cltip = 0.01;
+    cl1 = 0.025;
+    cl2 = 0.05;
+    cl0 = 0.025;
+    cltip = 0.015;
     glob.S = gmshcanistermulti(D_patch,cl1,cl2,cl0,cltip,cl1,fullfile(pathname,'gmsh_canister_multi'));
     
-    nbelem_patch = [20,40];
+    nbelem_patch = [10,20];
     for k=1:n
         patches.patches{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
     end
@@ -137,11 +137,11 @@ if setProblem
     
     for k=1:n
         patch = patches.patches{k};
-        % K_patch(x,xi) = K_out * (1 + 0.25 * (2 * xi - 1) * f(x))
+        % K_patch(x,xi) = K_out * (1 + 0.1 * (2 * xi - 1) * f(x))
         % K_in(x)       = K_out
         % c_patch(x,xi) = c_out * (1 + 0.1 * (2 * xi - 1) * f(x))
         % c_in(x)       = c_out
-        % R_patch(x,xi) = R1_out * (1 + 0.25 * (2 * xi - 1) * f(x))
+        % R_patch(x,xi) = R1_out * (1 + 0.1 * (2 * xi - 1) * f(x))
         % R_in(x)       = R1_out
         % with f(x) = 1 if ||x-c||_Inf < L
         %           = 0 if ||x-c||_Inf >= L
@@ -149,7 +149,7 @@ if setProblem
         c = getcenter(D_patch_star{k});
         f = @(x) distance(x,c,Inf)<L;
         
-        fun = @(xi) K_out * (ones(size(xi,1),patch.S.nbnode) + 0.25 * (2 * xi(:,3*k-2) - 1) * double(squeeze(f(patch.S.node)))');
+        fun = @(xi) K_out * (ones(size(xi,1),patch.S.nbnode) + 0.1 * (2 * xi(:,3*k-2) - 1) * double(squeeze(f(patch.S.node)))');
         funtr = @(xi) fun(transfer(rvb,rv,xi));
         fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
         fun.evaluationAtMultiplePoints = true;
@@ -163,7 +163,7 @@ if setProblem
         
         c_patch{k} = FENODEFIELD(H.projection(fun,I));
         
-        fun = @(xi) R1_out * (ones(size(xi,1),patch.S.nbnode) + 0.25 * (2* xi(:,3*k) - 1) * double(squeeze(f(patch.S.node)))');
+        fun = @(xi) R1_out * (ones(size(xi,1),patch.S.nbnode) + 0.1 * (2* xi(:,3*k) - 1) * double(squeeze(f(patch.S.node)))');
         funtr = @(xi) fun(transfer(rvb,rv,xi));
         fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
         fun.evaluationAtMultiplePoints = true;
@@ -489,7 +489,7 @@ if iterativeSolver
     
     % Stationary solution
     s.tol = 1e-4;
-    % s.tol = 10^(-tol-1);
+    % s.tol = 10^(-tol-2);
     IS.maxIterations = 20;
     IS.referenceSolution = {U_ref,w_ref,lambda_ref};
     [U,w,lambda,output] = IS.solveRandom(glob_sta,patches_sta,interfaces,s,bases,ls,rv);
@@ -678,7 +678,7 @@ if displaySolution
     hold off
     set(gca,'FontSize',16)
     l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h_patch{:}],...
-        '$\Omega_1 \setminus \Lambda$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$',leg_patch{:},'Location','NorthEastOutside');
+        '$\Omega_1 \setminus \Lambda$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$',leg_patch{:},'Location','NorthEast');
     set(l,'Interpreter','latex')
     mysaveas(pathname,'mesh_global_patches',formats,renderer);
     

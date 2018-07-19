@@ -41,10 +41,10 @@ if setProblem
     D_patch{2} = DOMAIN(2,[0.45,0.40],[0.65,0.60]);
     D_patch{3} = DOMAIN(2,[0.05,0.40],[0.25,0.60]);
     
-    cl1 = 0.02;
-    cl2 = 0.04;
-    cl0 = 0.02;
-    cltip = 0.01;
+    cl1 = 0.025;
+    cl2 = 0.05;
+    cl0 = 0.025;
+    cltip = 0.015;
     glob.S = gmshcanistermulti(D_patch,cl1,cl2,cl0,cltip,cl1,fullfile(pathname,'gmsh_canister_multi'));
     
     nbelem_patch = [20,20];
