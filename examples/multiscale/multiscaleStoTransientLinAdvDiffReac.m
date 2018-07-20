@@ -15,12 +15,12 @@ displaySolution = true;
 
 n = 3; % number of patches
 filename = ['transientLinAdvDiffReac' num2str(n) 'Patches'];
-% for rho = 0.2:0.2:1.8
+% for rho = [0.2:0.2:1.8 0.9 1.1]
 % close all
-% filename = ['transientLinAdvDiffReac' num2str(n) 'PatchesTol2Rho' num2str(rho)];
+% filename = ['transientLinAdvDiffReac' num2str(n) 'PatchesRho' num2str(rho)];
 % for tol = 1:3
 % close all
-% filename = ['transientLinAdvDiffReac' num2str(n) 'PatchesTol'  num2str(tol) 'RhoAitken'];
+% filename = ['transientLinAdvDiffReac' num2str(n) 'PatchesRhoAitkenTol'  num2str(tol)];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','multiscaleSto',filename);
 if ~exist(pathname,'dir')
@@ -55,6 +55,7 @@ if setProblem
     cltip = 0.01;
     clI = 0.02;
     glob.S = gmshcanistermulti(D_patch,cl1,cl2,cl0,cltip,clI,fullfile(pathname,'gmsh_canister_multi'));
+    % glob.S = gmsh2femobject(2,fullfile(pathname,'gmsh_canister_multi.msh'),2);
     
     % nbelem_patch = [10,20];
     % for k=1:n
@@ -63,6 +64,7 @@ if setProblem
     cl_patch = 0.01;
     for k=1:n
         patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',fullfile(pathname,['gmsh_patch_' num2str(k)]));
+        % patches.patches{k}.S = gmsh2femobject(2,fullfile(pathname,['gmsh_patch_' num2str(k) '.msh']),2);
     end
     
     % Partition of global mesh

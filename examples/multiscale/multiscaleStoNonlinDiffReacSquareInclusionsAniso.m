@@ -20,7 +20,7 @@ filename = ['nonlinDiffReac' num2str(n) 'SquareInclusionsAniso'];
 % filename = ['nonlinDiffReac' num2str(n) 'SquareInclusionsAnisoTol3Rho' num2str(rho)];
 % for tol = 1:4
 % close all
-% filename = ['nonlinDiffReac' num2str(n) 'SquareInclusionsAnisoTol'  num2str(tol) 'RhoAitken'];
+% filename = ['nonlinDiffReac' num2str(n) 'SquareInclusionsAnisoRhoAitkenTol'  num2str(tol)];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','multiscaleSto',filename);
 if ~exist(pathname,'dir')
