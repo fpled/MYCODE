@@ -49,9 +49,9 @@ if setProblem
     I = I.tensorize(d);
     
     % Linear diffusion coefficient
-    % K1(xi) = 0.01 * (1 + 0.1 * (2 * xi - 1))
+    % K1(xi) = 0.01 * (1 + 0.25 * (2 * xi - 1))
     % K2 = 0.01
-    fun = @(xi) 0.01 * (1 + 0.1 * (2 * xi(:,1) - 1));
+    fun = @(xi) 0.01 * (1 + 0.25 * (2 * xi(:,1) - 1));
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;
@@ -90,9 +90,9 @@ if setProblem
     V = {{FENODEFIELD(V(:,1)),FENODEFIELD(V(:,2))}};
     
     % Linear reaction parameter
-    % R1(xi) = 0.1 * (1 + 0.1 * (2 * xi - 1))
+    % R1(xi) = 0.1 * (1 + 0.25 * (2 * xi - 1))
     % R2 = 10
-    fun = @(xi) 0.1 * (1 + 0.1 * (2 * xi(:,3) - 1));
+    fun = @(xi) 0.1 * (1 + 0.25 * (2 * xi(:,3) - 1));
     funtr = @(xi) fun(transfer(rvb,rv,xi));
     fun = MultiVariateFunction(funtr,d);
     fun.evaluationAtMultiplePoints = true;

@@ -446,7 +446,7 @@ if displaySolution
     % plotDomain(glob.S,D_patch);
     % mysaveas(pathname,'domain_global_patches',formats,renderer);
     % mymatlab2tikz(pathname,'domain_global_patches.tex');
-    examples/multiscale/multiscaleStoNonlinDiffReacAlignInclusionsAniso.m
+    
     numbers = getnumber(patches);
     figure('Name',['Complement subdomain and patches #' num2str([numbers{:}])])
     clf
