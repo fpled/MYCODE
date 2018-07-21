@@ -1097,7 +1097,7 @@ if displaySolution
     box on
     set(gca,'FontSize',16)
     xlabel('Time (s)')
-    ylabel('Concentration of pollutant in trap domain')
+    ylabel('Concentration of pollutant')
     l = legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval - multiscale'],...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval - monoscale'],...
         'mean value - multiscale','mean value - monoscale'});
