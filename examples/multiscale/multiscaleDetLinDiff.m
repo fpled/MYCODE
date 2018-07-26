@@ -322,8 +322,6 @@ if displaySolution
     
     plotGlobalLocalSolution(glob,patches,interfaces,U,w);
     mysaveas(pathname,'global_local_solution',formats,renderer);
-    plotGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-    mysaveas(pathname,'global_local_solution_view3',formats,renderer);
 end
 
 % myparallel('stop');

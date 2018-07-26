@@ -552,8 +552,6 @@ if displaySolution
     
     plotGlobalLocalSolution(glob,patches,interfaces,U,w);
     mysaveas(pathname,'global_local_solution',formats,renderer);
-    plotGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-    mysaveas(pathname,'global_local_solution_view3',formats,renderer);
     plotGlobalLocalSolution(glob,patches,interfaces,U,w,'surface',true);
     mysaveas(pathname,'global_local_solution_surface',formats,renderer);
     
@@ -610,10 +608,8 @@ if displaySolution
     
     evolGlobalLocalSolution(glob,patches,interfaces,Ut,wt,'filename','global_local_solution','pathname',pathname);
     evolGlobalLocalSolution(glob,patches,interfaces,Ut,wt,'surface',true,'filename','global_local_solution_surface','pathname',pathname);
-    evolGlobalLocalSolution(glob,patches,interfaces,Ut,wt,'view3',true,'filename','global_local_solution_view3','pathname',pathname);
     evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'filename','global_local_solution_velocity','pathname',pathname);
     evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'surface',true,'filename','global_local_solution_velocity_surface','pathname',pathname);
-    evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'view3',true,'filename','global_local_solution_velocity_view3','pathname',pathname);
     
     %% Display transient solutions at different instants
 %     [t,rep] = gettevol(N);
@@ -628,12 +624,8 @@ if displaySolution
 %         
 %         % plotAllSolutions(glob,patches,interfaces,Uk,wk,lambdak);
 %         % mysaveas(pathname,['all_solutions_t' num2str(k-1)],formats,renderer);
-%         % plotAllSolutions(glob,patches,interfaces,Uk,wk,lambdak,'view3',true);
-%         % mysaveas(pathname,['all_solutions_t' num2str(k-1) '_view3'],formats,renderer);
 %         % plotAllSolutions(glob,patches,interfaces,vUk,vwk,vlambdak);
 %         % mysaveas(pathname,['all_velocities_t' num2str(k-1)],formats,renderer);
-%         % plotAllSolutions(glob,patches,interfaces,vUk,vwk,vlambdak,'view3',true);
-%         % mysaveas(pathname,['all_velocities_t' num2str(k-1) '_surface'],formats,renderer);
 %         
 %         plotGlobalSolution(glob,Uk);
 %         mysaveas(pathname,['global_solution_t' num2str(k-1)],formats,renderer);
@@ -675,14 +667,10 @@ if displaySolution
 %         mysaveas(pathname,['global_local_solution_t' num2str(k-1)],formats,renderer);
 %         plotGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'surface',true);
 %         mysaveas(pathname,['global_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
-%         plotGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'view3',true);
-%         mysaveas(pathname,['global_local_solution_t' num2str(k-1) '_view3'],formats,renderer);
 %         plotGlobalLocalSolution(glob,patches,interfaces,vUk,vwk);
 %         mysaveas(pathname,['global_local_solution_velocity_t' num2str(k-1)],formats,renderer);
 %         plotGlobalLocalSolution(glob,patches,interfaces,vUk,vwk,'surface',true);
 %         mysaveas(pathname,['global_local_solution_velocity_t' num2str(k-1) '_surface'],formats,renderer);
-%         plotGlobalLocalSolution(glob,patches,interfaces,vUk,vwk,'view3',true);
-%         mysaveas(pathname,['global_local_solution_velocity_t' num2str(k-1) '_view3'],formats,renderer);
 %     end
     
     %% Display quantity of interest

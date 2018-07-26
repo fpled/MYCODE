@@ -750,8 +750,6 @@ if displaySolution
     mysaveas(pathname,'mean_global_local_solution',formats,renderer);
     plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'surface',true);
     mysaveas(pathname,'mean_global_local_solution_surface',formats,renderer);
-    plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-    mysaveas(pathname,'mean_global_local_solution_view3',formats,renderer);
     
     plotVarianceGlobalSolution(glob,U);
     mysaveas(pathname,'var_global_solution',formats,renderer);
@@ -777,8 +775,6 @@ if displaySolution
     mysaveas(pathname,'var_global_local_solution',formats,renderer);
     plotVarianceGlobalLocalSolution(glob,patches,interfaces,U,w,'surface',true);
     mysaveas(pathname,'var_global_local_solution_surface',formats,renderer);
-    plotVarianceGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-    mysaveas(pathname,'var_global_local_solution_view3',formats,renderer);
     
     plotStdGlobalSolution(glob,U);
     mysaveas(pathname,'std_global_solution',formats,renderer);
@@ -804,8 +800,6 @@ if displaySolution
     mysaveas(pathname,'std_global_local_solution',formats,renderer);
     plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'surface',true);
     mysaveas(pathname,'std_global_local_solution_surface',formats,renderer);
-    plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-    mysaveas(pathname,'std_global_local_solution_view3',formats,renderer);
     
     d = ndims(U.basis);
     for i=1:d
@@ -876,7 +870,6 @@ if displaySolution
     
     evolMeanGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'filename','mean_global_local_solution','pathname',pathname);
     evolMeanGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'surface',true,'filename','mean_global_local_solution_surface','pathname',pathname);
-    evolMeanGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'view3',true,'filename','mean_global_local_solution_view3','pathname',pathname);
     
     evolVarianceGlobalSolution(glob,T,Ut,'filename','var_global_solution','pathname',pathname);
     evolVarianceGlobalSolution(glob,T,Ut,'surface',true,'filename','var_global_solution_surface','pathname',pathname);
@@ -892,7 +885,6 @@ if displaySolution
     
     evolVarianceGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'filename','var_global_local_solution','pathname',pathname);
     evolVarianceGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'surface',true,'filename','var_global_local_solution_surface','pathname',pathname);
-    evolVarianceGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'view3',true,'filename','var_global_local_solution_view3','pathname',pathname);
     
     evolStdGlobalSolution(glob,T,Ut,'filename','std_global_solution','pathname',pathname);
     evolStdGlobalSolution(glob,T,Ut,'surface',true,'filename','std_global_solution_surface','pathname',pathname);
@@ -908,7 +900,6 @@ if displaySolution
     
     evolStdGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'filename','std_global_local_solution','pathname',pathname);
     evolStdGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'surface',true,'filename','std_global_local_solution_surface','pathname',pathname);
-    evolStdGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'view3',true,'filename','std_global_local_solution_view3','pathname',pathname);
     
     d = ndims(Ut.basis);
     for i=1:d
@@ -957,8 +948,6 @@ if displaySolution
 %         mysaveas(pathname,['mean_global_local_solution_t' num2str(k-1)],formats,renderer);
 %         plotMeanGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'surface',true);
 %         mysaveas(pathname,['mean_global_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
-%         plotMeanGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'view3',true);
-%         mysaveas(pathname,['mean_global_local_solution_t' num2str(k-1) '_view3'],formats,renderer);
 %         
 %         plotVarianceGlobalSolution(glob,Uk);
 %         mysaveas(pathname,['var_global_solution_t' num2str(k-1)],formats,renderer);
@@ -984,8 +973,6 @@ if displaySolution
 %         mysaveas(pathname,['var_global_local_solution_t' num2str(k-1)],formats,renderer);
 %         plotVarianceGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'surface',true);
 %         mysaveas(pathname,['var_global_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
-%         plotVarianceGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'view3',true);
-%         mysaveas(pathname,['var_global_local_solution_t' num2str(k-1) '_view3'],formats,renderer);
 %         
 %         plotStdGlobalSolution(glob,Uk);
 %         mysaveas(pathname,['std_global_solution_t' num2str(k-1)],formats,renderer);
@@ -1011,8 +998,6 @@ if displaySolution
 %         mysaveas(pathname,['std_global_local_solution_t' num2str(k-1)],formats,renderer);
 %         plotStdGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'surface',true);
 %         mysaveas(pathname,['std_global_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
-%         plotStdGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'view3',true);
-%         mysaveas(pathname,['std_global_local_solution_t' num2str(k-1) '_view3'],formats,renderer);
 %         
 %         d = ndims(Uk.basis);
 %         for i=1:d
