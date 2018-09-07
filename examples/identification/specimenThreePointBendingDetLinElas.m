@@ -164,6 +164,7 @@ for j=8
             l = legend(hD,'$U_{\mathrm{exp}}$','Location','NorthEastOutside');
             % l = legend(hD,legD,'Location','NorthEastOutside');
             set(l,'Interpreter',interpreter);
+            set(gcf,'position',[100,100, 450, 120])
             mysaveas(pathname,'boundary_conditions',formats,renderer);
             
             % plotModel(S,'legend',false);

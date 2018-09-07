@@ -7,7 +7,7 @@ close all
 
 %% Input data
 sample = 'B';
-j = 8; % sample number
+j = 14; % sample number
 k = 8; % image number
 numSample = [sample num2str(j)];
 numImage = num2str(k,'%02d');
@@ -69,8 +69,10 @@ ampl = 0;
 
 for i=1:2
     plotSolution(S,u,'displ',i,'ampl',ampl);
+    set(gcf,'position',[100,100, 500, 150])
     mysaveas(pathname,['displ_num_' num2str(i)],formats,renderer);
     plotSolution(S,u_exp,'displ',i,'ampl',ampl);
+    set(gcf,'position',[100,100, 500, 150])
     mysaveas(pathname,['displ_exp_' num2str(i)],formats,renderer);
 end
 
