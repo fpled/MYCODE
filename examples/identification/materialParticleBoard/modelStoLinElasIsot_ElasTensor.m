@@ -25,7 +25,7 @@ formats = {'fig','epsc'};
 
 %% Data
 filenameAna = 'data_ET_GL.mat';
-filenameNum = 'data_EL_nuL.mat';
+filenameNum = 'data_EL_NUL.mat';
 pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification','materialParticleBoard');
 load(fullfile(pathnameIdentification,filenameAna));
