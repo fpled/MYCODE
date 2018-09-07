@@ -236,8 +236,8 @@ if directSolver
     % s.adaptiveSampling = true;
     % s.adaptationRule = 'reducedmargin';
     s.maxIndex = p;
-    % s.display = true;
-    % s.displayIterations = true;
+    s.display = true;
+    s.displayIterations = true;
     
     ls = LeastSquaresSolver();
     ls.regularization = false;
@@ -430,8 +430,6 @@ if displaySolution
     
     plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w);
     mysaveas(pathname,'mean_global_local_solution',formats,renderer);
-    plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-    mysaveas(pathname,'mean_global_local_solution_view3',formats,renderer);
     
     plotVarianceGlobalSolution(glob,U);
     mysaveas(pathname,'var_global_solution',formats,renderer);
@@ -447,8 +445,6 @@ if displaySolution
     
     plotVarianceGlobalLocalSolution(glob,patches,interfaces,U,w);
     mysaveas(pathname,'var_global_local_solution',formats,renderer);
-    plotVarianceGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-    mysaveas(pathname,'var_global_local_solution_view3',formats,renderer);
     
     plotStdGlobalSolution(glob,U);
     mysaveas(pathname,'std_global_solution',formats,renderer);
@@ -464,21 +460,19 @@ if displaySolution
     
     plotStdGlobalLocalSolution(glob,patches,interfaces,U,w);
     mysaveas(pathname,'std_global_local_solution',formats,renderer);
-    plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-    mysaveas(pathname,'std_global_local_solution_view3',formats,renderer);
     
     d = ndims(U.basis);
     for i=1:d
-        plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i);
-        mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i)],formats,renderer);
+        % plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i);
+        % mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i)],formats,renderer);
         
         plotSensitivityIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i);
         mysaveas(pathname,['sensitivity_indices_multiscale_solution_var_' num2str(i)],formats,renderer);
     end
     
     %% Display random evaluations
-    % nbsamples = 3;
-    % for i=1:nbsamples
+    % nbSamples = 3;
+    % for i=1:nbSamples
     %     xi = random(rv,1);
     %     U_xi = U(xi);
     %     w_xi = cellfun(@(x) x(xi),w,'UniformOutput',false);

@@ -123,8 +123,8 @@ if solveProblem
     % s.adaptiveSampling = true;
     % s.adaptationRule = 'reducedmargin';
     s.maxIndex = p;
-    % s.display = true;
-    % s.displayIterations = true;
+    s.display = true;
+    s.displayIterations = true;
     
     ls = LeastSquaresSolver();
     ls.regularization = false;
@@ -206,8 +206,8 @@ if displaySolution
     
     d = ndims(u.basis);
     for i=1:d
-        plotSobolIndices(pb.S,u,i);
-        mysaveas(pathname,['sobol_indices_solution_var_' num2str(i)],formats,renderer);
+        % plotSobolIndices(pb.S,u,i);
+        % mysaveas(pathname,['sobol_indices_solution_var_' num2str(i)],formats,renderer);
         
         plotSensitivityIndices(pb.S,u,i);
         mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i)],formats,renderer);

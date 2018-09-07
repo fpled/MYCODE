@@ -191,34 +191,34 @@ if displaySolution
     mysaveas(pathname,'solution_surface',formats);
     
     %% Display evolution of transient solution
-    evolSolution(pb.S,ut,'filename','evol_solution','pathname',pathname);
-    evolSolution(pb.S,ut,'surface',true,'filename','evol_solution_surface','pathname',pathname);
+    evolSolution(pb.S,ut,'filename','solution','pathname',pathname);
+    evolSolution(pb.S,ut,'surface',true,'filename','solution_surface','pathname',pathname);
     
-    evolSolution(pb.S,vt,'rescale',false,'filename','evol_velocity','pathname',pathname);
-    evolSolution(pb.S,vt,'rescale',false,'surface',true,'filename','evol_velocity_surface','pathname',pathname);
+    evolSolution(pb.S,vt,'rescale',false,'filename','velocity','pathname',pathname);
+    evolSolution(pb.S,vt,'rescale',false,'surface',true,'filename','velocity_surface','pathname',pathname);
     
 %     for i=1:2
-%         evolSolution(pb.S,ut,'epsilon',i,'filename',['evol_eps_' num2str(i)],'pathname',pathname);
-%         evolSolution(pb.S,ut,'sigma',i,'filename',['evol_sig_' num2str(i)],'pathname',pathname);
+%         evolSolution(pb.S,ut,'epsilon',i,'filename',['eps_' num2str(i)],'pathname',pathname);
+%         evolSolution(pb.S,ut,'sigma',i,'filename',['sig_' num2str(i)],'pathname',pathname);
 %     end
     
     %% Display transient solution at differents instants
-    [t,rep] = gettevol(pb.N);
-    for k=1:floor(length(rep)/4):length(rep)
-        close all
-        uk = getmatrixatstep(ut,rep(k));
-        vk = getmatrixatstep(vt,rep(k));
-        
-        plotSolution(pb.S,uk);
-        mysaveas(pathname,['solution_t' num2str(k-1)],formats,renderer);
-        plotSolution(pb.S,uk,'surface',true);
-        mysaveas(pathname,['solution_t' num2str(k-1) '_surface'],formats);
-        
-        plotSolution(pb.S,vk);
-        mysaveas(pathname,['velocity_t' num2str(k-1)],formats,renderer);
-        plotSolution(pb.S,vk,'surface',true);
-        mysaveas(pathname,['velocity_t' num2str(k-1) '_surface'],formats);
-    end
+%     [t,rep] = gettevol(pb.N);
+%     for k=1:floor(length(rep)/4):length(rep)
+%         close all
+%         uk = getmatrixatstep(ut,rep(k));
+%         vk = getmatrixatstep(vt,rep(k));
+%         
+%         plotSolution(pb.S,uk);
+%         mysaveas(pathname,['solution_t' num2str(k-1)],formats,renderer);
+%         plotSolution(pb.S,uk,'surface',true);
+%         mysaveas(pathname,['solution_t' num2str(k-1) '_surface'],formats);
+%         
+%         plotSolution(pb.S,vk);
+%         mysaveas(pathname,['velocity_t' num2str(k-1)],formats,renderer);
+%         plotSolution(pb.S,vk,'surface',true);
+%         mysaveas(pathname,['velocity_t' num2str(k-1) '_surface'],formats);
+%     end
     
     %% Display quantity of interest
     % boutput: concentration of pollutant captured by the trap domain
@@ -238,7 +238,7 @@ if displaySolution
     box on
     set(gca,'FontSize',16)
     xlabel('Time (s)')
-    ylabel('Concentration of pollutant in trap domain')
+    ylabel('Concentration of pollutant')
     mysaveas(pathname,'quantity_of_interest',formats,renderer);
     mymatlab2tikz(pathname,'quantity_of_interest.tex');
     

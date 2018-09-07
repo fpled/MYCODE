@@ -15,12 +15,12 @@ displaySolution = true;
 
 n = 3; % number of patches
 filename = ['transientLinAdvDiffReac' num2str(n) 'Patches'];
-% for rho = 0.1:0.1:1.8
+% for rho = [0.2:0.2:1.8 0.9 1.1]
 % close all
-% filename = ['transientLinAdvDiffReac' num2str(n) 'PatchesTol2Rho' num2str(rho)];
+% filename = ['transientLinAdvDiffReac' num2str(n) 'PatchesRho' num2str(rho)];
 % for tol = 1:3
 % close all
-% filename = ['transientLinAdvDiffReac' num2str(n) 'PatchesTol'  num2str(tol) 'RhoAitken'];
+% filename = ['transientLinAdvDiffReac' num2str(n) 'PatchesRhoAitkenTol'  num2str(tol)];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','multiscaleSto',filename);
 if ~exist(pathname,'dir')
@@ -40,24 +40,32 @@ if setProblem
     patches = Patches(n);
     
     D_patch = cell(1,n);
-    D_patch{1} = DOMAIN(2,[0.85,0.40],[1.05,0.60]);
-    D_patch{2} = DOMAIN(2,[0.45,0.40],[0.65,0.60]);
-    D_patch{3} = DOMAIN(2,[0.05,0.40],[0.25,0.60]);
+    D_patch{1} = DOMAIN(2,[0.85,0.40],[1.05,0.80]);
+    D_patch{2} = DOMAIN(2,[0.45,0.20],[0.65,0.60]);
+    D_patch{3} = DOMAIN(2,[0.05,0.40],[0.25,0.80]);
+    
+    D_patch_star = cell(1,n);
+    D_patch_star{1} = DOMAIN(2,[0.85,0.40],[1.05,0.60]);
+    D_patch_star{2} = DOMAIN(2,[0.45,0.40],[0.65,0.60]);
+    D_patch_star{3} = DOMAIN(2,[0.05,0.40],[0.25,0.60]);
     
     cl1 = 0.02;
     cl2 = 0.04;
     cl0 = 0.02;
     cltip = 0.01;
-    glob.S = gmshcanistermulti(D_patch,cl1,cl2,cl0,cltip,cl1,fullfile(pathname,'gmsh_canister_multi'));
+    clI = 0.02;
+    glob.S = gmshcanistermulti(D_patch,cl1,cl2,cl0,cltip,clI,fullfile(pathname,'gmsh_canister_multi'));
+    % glob.S = gmsh2femobject(2,fullfile(pathname,'gmsh_canister_multi.msh'),2);
     
-    nbelem_patch = [20,20];
-    for k=1:n
-        patches.patches{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
-    end
-    % cl_patch = 0.005;
+    % nbelem_patch = [10,20];
     % for k=1:n
-    %     patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',fullfile(pathname,['gmsh_patch_' num2str(k)]));
+    %     patches.patches{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
     % end
+    cl_patch = 0.01;
+    for k=1:n
+        patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',fullfile(pathname,['gmsh_patch_' num2str(k)]));
+        % patches.patches{k}.S = gmsh2femobject(2,fullfile(pathname,['gmsh_patch_' num2str(k) '.msh']),2);
+    end
     
     % Partition of global mesh
     glob = partition(glob,D_patch);
@@ -140,8 +148,8 @@ if setProblem
         % R_in(x)       = R1_out
         % with f(x) = 1 if ||x-c||_Inf < L
         %           = 0 if ||x-c||_Inf >= L
-        L = norm(getsize(D_patch{k}),Inf)/4;
-        c = getcenter(D_patch{k});
+        L = norm(getsize(D_patch_star{k}))/4;
+        c = getcenter(D_patch_star{k});
         f = @(x) distance(x,c,Inf)<L;
         
         fun = @(xi) K_out * (ones(size(xi,1),patch.S.nbnode) + 0.25 * (2 * xi(:,3*k-2) - 1) * double(squeeze(f(patch.S.node)))');
@@ -359,8 +367,8 @@ if directSolver
     % s.adaptiveSampling = true;
     % s.adaptationRule = 'reducedmargin';
     s.maxIndex = p;
-    % s.display = true;
-    % s.displayIterations = true;
+    s.display = true;
+    s.displayIterations = true;
     
     ls = LeastSquaresSolver();
     ls.regularization = false;
@@ -374,13 +382,13 @@ if directSolver
     DS.display = true;
     
     % Stationary solution
-    s.tol = 1e-8;
+    s.tol = 1e-6;
     DS.timeSolver = [];
     DS.timeOrder = 0;
     [U_ref,w_ref,lambda_ref,output_ref] = DS.solveRandom(globOut_sta,patches_sta,interfaces_sta,s,bases,ls,rv);
     
     % Transient solution
-    s.tol = 1e-4;
+    s.tol = 1e-3;
     DS.timeSolver = N;
     DS.timeOrder = 1;
     [Ut_ref,wt_ref,lambdat_ref,outputt_ref] = DS.solveRandom(globOut,patches,interfaces,s,bases,ls,rv);
@@ -483,14 +491,14 @@ if iterativeSolver
     IS.displayIterations = true;
     
     % Stationary solution
-    s.tol = 1e-4;
-    % s.tol = 10^(-tol-1);
+    s.tol = 1e-3;
+    % s.tol = 10^(-tol-2);
     IS.maxIterations = 20;
     IS.referenceSolution = {U_ref,w_ref,lambda_ref};
     [U,w,lambda,output] = IS.solveRandom(glob_sta,patches_sta,interfaces,s,bases,ls,rv);
     
     % Transient solution
-    s.tol = 1e-2;
+    s.tol = 5e-2;
     % s.tol = 10^(-tol);
     IS.maxIterations = 20;
     IS.referenceSolution = {Ut_ref,wt_ref,lambdat_ref};
@@ -569,6 +577,8 @@ fprintf('elapsed time = %f s\n',outputt.totalTime)
 
 %% Display
 if displaySolution
+    close all
+    
     %% Display domains and meshes
     figure('Name','Domain')
     clf
@@ -671,7 +681,7 @@ if displaySolution
     hold off
     set(gca,'FontSize',16)
     l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h_patch{:}],...
-        '$\Omega_1 \setminus \Lambda$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$',leg_patch{:},'Location','NorthEastOutside');
+        '$\Omega_1 \setminus \Lambda$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$',leg_patch{:},'Location','NorthEast');
     set(l,'Interpreter','latex')
     mysaveas(pathname,'mesh_global_patches',formats,renderer);
     
@@ -740,8 +750,6 @@ if displaySolution
     mysaveas(pathname,'mean_global_local_solution',formats,renderer);
     plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'surface',true);
     mysaveas(pathname,'mean_global_local_solution_surface',formats,renderer);
-    plotMeanGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-    mysaveas(pathname,'mean_global_local_solution_view3',formats,renderer);
     
     plotVarianceGlobalSolution(glob,U);
     mysaveas(pathname,'var_global_solution',formats,renderer);
@@ -767,8 +775,6 @@ if displaySolution
     mysaveas(pathname,'var_global_local_solution',formats,renderer);
     plotVarianceGlobalLocalSolution(glob,patches,interfaces,U,w,'surface',true);
     mysaveas(pathname,'var_global_local_solution_surface',formats,renderer);
-    plotVarianceGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-    mysaveas(pathname,'var_global_local_solution_view3',formats,renderer);
     
     plotStdGlobalSolution(glob,U);
     mysaveas(pathname,'std_global_solution',formats,renderer);
@@ -794,15 +800,13 @@ if displaySolution
     mysaveas(pathname,'std_global_local_solution',formats,renderer);
     plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'surface',true);
     mysaveas(pathname,'std_global_local_solution_surface',formats,renderer);
-    plotStdGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-    mysaveas(pathname,'std_global_local_solution_view3',formats,renderer);
     
     d = ndims(U.basis);
     for i=1:d
-        plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i);
-        mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i)],formats,renderer);
-        plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i,'surface',true);
-        mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i) '_surface'],formats,renderer);
+        % plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i);
+        % mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i)],formats,renderer);
+        % plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i,'surface',true);
+        % mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i) '_surface'],formats,renderer);
         
         plotSensitivityIndicesMultiscaleSolution(glob,patches,interfaces,U,w,i);
         mysaveas(pathname,['sensitivity_indices_multiscale_solution_var_' num2str(i)],formats,renderer);
@@ -852,171 +856,162 @@ if displaySolution
     %% Display evolutions of statistical outputs for transient solutions
     T = gettimemodel(glob.timeSolver);
     
-    evolMeanGlobalSolution(glob,T,Ut,'filename','evol_mean_global_solution','pathname',pathname);
-    evolMeanGlobalSolution(glob,T,Ut,'surface',true,'filename','evol_mean_global_solution_surface','pathname',pathname);
+    evolMeanGlobalSolution(glob,T,Ut,'filename','mean_global_solution','pathname',pathname);
+    evolMeanGlobalSolution(glob,T,Ut,'surface',true,'filename','mean_global_solution_surface','pathname',pathname);
     
-    % evolMeanLocalSolution(patches,T,wt,'filename','evol_mean_local_solution','pathname',pathname);
-    % evolMeanLocalSolution(patches,T,wt,'surface',true,'filename','evol_mean_local_solution_surface','pathname',pathname);
+    % evolMeanLocalSolution(patches,T,wt,'filename','mean_local_solution','pathname',pathname);
+    % evolMeanLocalSolution(patches,T,wt,'surface',true,'filename','mean_local_solution_surface','pathname',pathname);
     
-    % evolMeanLagrangeMultiplier(interfaces,T,lambdat,'filename','evol_mean_Lagrange_multiplier','pathname',pathname);
-    % evolMeanLagrangeMultiplier(interfaces,T,lambdat,'surface',true,'filename','evol_mean_Lagrange_multiplier_surface','pathname',pathname);
+    % evolMeanLagrangeMultiplier(interfaces,T,lambdat,'filename','mean_Lagrange_multiplier','pathname',pathname);
+    % evolMeanLagrangeMultiplier(interfaces,T,lambdat,'surface',true,'filename','mean_Lagrange_multiplier_surface','pathname',pathname);
     
-    evolMeanMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,'filename','evol_mean_multiscale_solution','pathname',pathname);
-    evolMeanMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,'surface',true,'filename','evol_mean_multiscale_solution_surface','pathname',pathname);
+    evolMeanMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,'filename','mean_multiscale_solution','pathname',pathname);
+    evolMeanMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,'surface',true,'filename','mean_multiscale_solution_surface','pathname',pathname);
     
-    evolMeanGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'filename','evol_mean_global_local_solution','pathname',pathname);
-    evolMeanGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'surface',true,'filename','evol_mean_global_local_solution_surface','pathname',pathname);
-    evolMeanGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'view3',true,'filename','evol_mean_global_local_solution_view3','pathname',pathname);
+    evolMeanGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'filename','mean_global_local_solution','pathname',pathname);
+    evolMeanGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'surface',true,'filename','mean_global_local_solution_surface','pathname',pathname);
     
-    evolVarianceGlobalSolution(glob,T,Ut,'filename','evol_var_global_solution','pathname',pathname);
-    evolVarianceGlobalSolution(glob,T,Ut,'surface',true,'filename','evol_var_global_solution_surface','pathname',pathname);
+    evolVarianceGlobalSolution(glob,T,Ut,'filename','var_global_solution','pathname',pathname);
+    evolVarianceGlobalSolution(glob,T,Ut,'surface',true,'filename','var_global_solution_surface','pathname',pathname);
     
-    % evolVarianceLocalSolution(patches,T,wt,'filename','evol_var_local_solution','pathname',pathname);
-    % evolVarianceLocalSolution(patches,T,wt,'surface',true,'filename','evol_var_local_solution_surface','pathname',pathname);
+    % evolVarianceLocalSolution(patches,T,wt,'filename','var_local_solution','pathname',pathname);
+    % evolVarianceLocalSolution(patches,T,wt,'surface',true,'filename','var_local_solution_surface','pathname',pathname);
     
-    % evolVarianceLagrangeMultiplier(interfaces,T,lambdat,'filename','evol_var_Lagrange_multiplier','pathname',pathname);
-    % evolVarianceLagrangeMultiplier(interfaces,T,lambdat,'surface',true,'filename','evol_var_Lagrange_multiplier_surface','pathname',pathname);
+    % evolVarianceLagrangeMultiplier(interfaces,T,lambdat,'filename','var_Lagrange_multiplier','pathname',pathname);
+    % evolVarianceLagrangeMultiplier(interfaces,T,lambdat,'surface',true,'filename','var_Lagrange_multiplier_surface','pathname',pathname);
     
-    evolVarianceMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,'filename','evol_var_multiscale_solution','pathname',pathname);
-    evolVarianceMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,'surface',true,'filename','evol_var_multiscale_solution_surface','pathname',pathname);
+    evolVarianceMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,'filename','var_multiscale_solution','pathname',pathname);
+    evolVarianceMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,'surface',true,'filename','var_multiscale_solution_surface','pathname',pathname);
     
-    evolVarianceGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'filename','evol_var_global_local_solution','pathname',pathname);
-    evolVarianceGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'surface',true,'filename','evol_var_global_local_solution_surface','pathname',pathname);
-    evolVarianceGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'view3',true,'filename','evol_var_global_local_solution_view3','pathname',pathname);
+    evolVarianceGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'filename','var_global_local_solution','pathname',pathname);
+    evolVarianceGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'surface',true,'filename','var_global_local_solution_surface','pathname',pathname);
     
-    evolStdGlobalSolution(glob,T,Ut,'filename','evol_std_global_solution','pathname',pathname);
-    evolStdGlobalSolution(glob,T,Ut,'surface',true,'filename','evol_std_global_solution_surface','pathname',pathname);
+    evolStdGlobalSolution(glob,T,Ut,'filename','std_global_solution','pathname',pathname);
+    evolStdGlobalSolution(glob,T,Ut,'surface',true,'filename','std_global_solution_surface','pathname',pathname);
     
-    % evolStdLocalSolution(patches,T,wt,'filename','evol_std_local_solution','pathname',pathname);
-    % evolStdLocalSolution(patches,T,wt,'surface',true,'filename','evol_std_local_solution_surface','pathname',pathname);
+    % evolStdLocalSolution(patches,T,wt,'filename','std_local_solution','pathname',pathname);
+    % evolStdLocalSolution(patches,T,wt,'surface',true,'filename','std_local_solution_surface','pathname',pathname);
     
-    % evolStdLagrangeMultiplier(interfaces,T,lambdat,'filename','evol_std_Lagrange_multiplier','pathname',pathname);
-    % evolStdLagrangeMultiplier(interfaces,T,lambdat,'surface',true,'filename','evol_std_Lagrange_multiplier_surface','pathname',pathname);
+    % evolStdLagrangeMultiplier(interfaces,T,lambdat,'filename','std_Lagrange_multiplier','pathname',pathname);
+    % evolStdLagrangeMultiplier(interfaces,T,lambdat,'surface',true,'filename','std_Lagrange_multiplier_surface','pathname',pathname);
     
-    evolStdMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,'filename','evol_std_multiscale_solution','pathname',pathname);
-    evolStdMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,'surface',true,'filename','evol_std_multiscale_solution_surface','pathname',pathname);
+    evolStdMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,'filename','std_multiscale_solution','pathname',pathname);
+    evolStdMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,'surface',true,'filename','std_multiscale_solution_surface','pathname',pathname);
     
-    evolStdGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'filename','evol_std_global_local_solution','pathname',pathname);
-    evolStdGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'surface',true,'filename','evol_std_global_local_solution_surface','pathname',pathname);
-    evolStdGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'view3',true,'filename','evol_std_global_local_solution_view3','pathname',pathname);
+    evolStdGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'filename','std_global_local_solution','pathname',pathname);
+    evolStdGlobalLocalSolution(glob,patches,interfaces,T,Ut,wt,'surface',true,'filename','std_global_local_solution_surface','pathname',pathname);
     
     d = ndims(Ut.basis);
     for i=1:d
-        evolSobolIndicesMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,i,'filename',['sobol_indices_multiscale_solution_var_' num2str(i)],'pathname',pathname);
-        evolSobolIndicesMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,i,'surface',true,'filename',['sobol_indices_multiscale_solution_var_' num2str(i) '_surface'],'pathname',pathname);
+        % evolSobolIndicesMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,i,'filename',['sobol_indices_multiscale_solution_var_' num2str(i)],'pathname',pathname);
+        % evolSobolIndicesMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,i,'surface',true,'filename',['sobol_indices_multiscale_solution_var_' num2str(i) '_surface'],'pathname',pathname);
         
         evolSensitivityIndicesMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,i,'filename',['sensitivity_indices_multiscale_solution_var_' num2str(i)],'pathname',pathname);
         evolSensitivityIndicesMultiscaleSolution(glob,patches,interfaces,T,Ut,wt,i,'surface',true,'filename',['sensitivity_indices_multiscale_solution_var_' num2str(i) '_surface'],'pathname',pathname);
     end
     
     %% Display statistical outputs for transient solutions at different instants
-    [t,rep] = gettevol(N);
-    for k=1:floor(length(rep)/4):length(rep)
-        close all
-        Uk_data = Ut.data(:,:,rep(k));
-        wk_data = cellfun(@(x) x.data(:,:,rep(k)),wt,'UniformOutput',false);
-        lambdak_data = cellfun(@(x) x.data(:,:,rep(k)),lambdat,'UniformOutput',false);
-        Uk = FunctionalBasisArray(Uk_data,Ut.basis,Ut.sz(1));
-        wk = cellfun(@(data,x) FunctionalBasisArray(data,x.basis,x.sz(1)),wk_data,wt,'UniformOutput',false);
-        lambdak = cellfun(@(data,x) FunctionalBasisArray(data,x.basis,x.sz(1)),lambdak_data,lambdat,'UniformOutput',false);
-        
-        % plotStatsAllSolutions(glob,patches,interfaces,Uk,wk,lambdak);
-        % plotStatsAllSolutions(glob,patches,interfaces,Uk,wk,lambdak,'surface',true);
-        
-        plotMeanGlobalSolution(glob,Uk);
-        mysaveas(pathname,['mean_global_solution_t' num2str(k-1)],formats,renderer);
-        plotMeanGlobalSolution(glob,Uk,'surface',true);
-        mysaveas(pathname,['mean_global_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        % plotMeanLocalSolution(patches,wk);
-        % mysaveas(pathname,['mean_local_solution_t' num2str(k-1)],formats,renderer);
-        % plotMeanLocalSolution(patches,wk,'surface',true);
-        % mysaveas(pathname,['mean_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        % plotMeanLagrangeMultiplier(interfaces,lambdak);
-        % mysaveas(pathname,['mean_Lagrange_multiplier_t' num2str(k-1)],formats,renderer);
-        % plotMeanLagrangeMultiplier(interfaces,lambdak,'surface',true);
-        % mysaveas(pathname,['mean_Lagrange_multiplier_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        plotMeanMultiscaleSolution(glob,patches,interfaces,Uk,wk);
-        mysaveas(pathname,['mean_multiscale_solution_t' num2str(k-1)],formats,renderer);
-        plotMeanMultiscaleSolution(glob,patches,interfaces,Uk,wk,'surface',true);
-        mysaveas(pathname,['mean_multiscale_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        plotMeanGlobalLocalSolution(glob,patches,interfaces,Uk,wk);
-        mysaveas(pathname,['mean_global_local_solution_t' num2str(k-1)],formats,renderer);
-        plotMeanGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'surface',true);
-        mysaveas(pathname,['mean_global_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        plotMeanGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'view3',true);
-        mysaveas(pathname,['mean_global_local_solution_t' num2str(k-1) '_view3'],formats,renderer);
-        
-        plotVarianceGlobalSolution(glob,Uk);
-        mysaveas(pathname,['var_global_solution_t' num2str(k-1)],formats,renderer);
-        plotVarianceGlobalSolution(glob,Uk,'surface',true);
-        mysaveas(pathname,['var_global_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        % plotVarianceLocalSolution(patches,wk);
-        % mysaveas(pathname,['var_local_solution_t' num2str(k-1)],formats,renderer);
-        % plotVarianceLocalSolution(patches,wk,'surface',true);
-        % mysaveas(pathname,['var_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        % plotVarianceLagrangeMultiplier(interfaces,lambdak);
-        % mysaveas(pathname,['var_Lagrange_multiplier_t' num2str(k-1)],formats,renderer);
-        % plotVarianceLagrangeMultiplier(interfaces,lambdak,'surface',true);
-        % mysaveas(pathname,['var_Lagrange_multiplier_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        plotVarianceMultiscaleSolution(glob,patches,interfaces,Uk,wk);
-        mysaveas(pathname,['var_multiscale_solution_t' num2str(k-1)],formats,renderer);
-        plotVarianceMultiscaleSolution(glob,patches,interfaces,Uk,wk,'surface',true);
-        mysaveas(pathname,['var_multiscale_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        plotVarianceGlobalLocalSolution(glob,patches,interfaces,Uk,wk);
-        mysaveas(pathname,['var_global_local_solution_t' num2str(k-1)],formats,renderer);
-        plotVarianceGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'surface',true);
-        mysaveas(pathname,['var_global_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        plotVarianceGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'view3',true);
-        mysaveas(pathname,['var_global_local_solution_t' num2str(k-1) '_view3'],formats,renderer);
-        
-        plotStdGlobalSolution(glob,Uk);
-        mysaveas(pathname,['std_global_solution_t' num2str(k-1)],formats,renderer);
-        plotStdGlobalSolution(glob,Uk,'surface',true);
-        mysaveas(pathname,['std_global_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        % plotStdLocalSolution(patches,wk);
-        % mysaveas(pathname,['std_local_solution_t' num2str(k-1)],formats,renderer);
-        % plotStdLocalSolution(patches,wk,'surface',true);
-        % mysaveas(pathname,['std_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        % plotStdLagrangeMultiplier(interfaces,lambdak);
-        % mysaveas(pathname,['std_Lagrange_multiplier_t' num2str(k-1)],formats,renderer);
-        % plotStdLagrangeMultiplier(interfaces,lambdak,'surface',true);
-        % mysaveas(pathname,['std_Lagrange_multiplier_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        plotStdMultiscaleSolution(glob,patches,interfaces,Uk,wk);
-        mysaveas(pathname,['std_multiscale_solution_t' num2str(k-1)],formats,renderer);
-        plotStdMultiscaleSolution(glob,patches,interfaces,Uk,wk,'surface',true);
-        mysaveas(pathname,['std_multiscale_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        plotStdGlobalLocalSolution(glob,patches,interfaces,Uk,wk);
-        mysaveas(pathname,['std_global_local_solution_t' num2str(k-1)],formats,renderer);
-        plotStdGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'surface',true);
-        mysaveas(pathname,['std_global_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        plotStdGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'view3',true);
-        mysaveas(pathname,['std_global_local_solution_t' num2str(k-1) '_view3'],formats,renderer);
-        
-        d = ndims(Uk.basis);
-        for i=1:d
-            plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,Uk,wk,i);
-            mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
-            plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,Uk,wk,i,'surface',true);
-            mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
-            
-            plotSensitivityIndicesMultiscaleSolution(glob,patches,interfaces,Uk,wk,i);
-            mysaveas(pathname,['sensitivity_indices_multiscale_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
-            plotSensitivityIndicesMultiscaleSolution(glob,patches,interfaces,Uk,wk,i,'surface',true);
-            mysaveas(pathname,['sensitivity_indices_multiscale_solution_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
-        end
-    end
+%     [t,rep] = gettevol(N);
+%     for k=1:floor(length(rep)/4):length(rep)
+%         close all
+%         Uk_data = Ut.data(:,:,rep(k));
+%         wk_data = cellfun(@(x) x.data(:,:,rep(k)),wt,'UniformOutput',false);
+%         lambdak_data = cellfun(@(x) x.data(:,:,rep(k)),lambdat,'UniformOutput',false);
+%         Uk = FunctionalBasisArray(Uk_data,Ut.basis,Ut.sz(1));
+%         wk = cellfun(@(data,x) FunctionalBasisArray(data,x.basis,x.sz(1)),wk_data,wt,'UniformOutput',false);
+%         lambdak = cellfun(@(data,x) FunctionalBasisArray(data,x.basis,x.sz(1)),lambdak_data,lambdat,'UniformOutput',false);
+%         
+%         % plotStatsAllSolutions(glob,patches,interfaces,Uk,wk,lambdak);
+%         % plotStatsAllSolutions(glob,patches,interfaces,Uk,wk,lambdak,'surface',true);
+%         
+%         plotMeanGlobalSolution(glob,Uk);
+%         mysaveas(pathname,['mean_global_solution_t' num2str(k-1)],formats,renderer);
+%         plotMeanGlobalSolution(glob,Uk,'surface',true);
+%         mysaveas(pathname,['mean_global_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         % plotMeanLocalSolution(patches,wk);
+%         % mysaveas(pathname,['mean_local_solution_t' num2str(k-1)],formats,renderer);
+%         % plotMeanLocalSolution(patches,wk,'surface',true);
+%         % mysaveas(pathname,['mean_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         % plotMeanLagrangeMultiplier(interfaces,lambdak);
+%         % mysaveas(pathname,['mean_Lagrange_multiplier_t' num2str(k-1)],formats,renderer);
+%         % plotMeanLagrangeMultiplier(interfaces,lambdak,'surface',true);
+%         % mysaveas(pathname,['mean_Lagrange_multiplier_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         plotMeanMultiscaleSolution(glob,patches,interfaces,Uk,wk);
+%         mysaveas(pathname,['mean_multiscale_solution_t' num2str(k-1)],formats,renderer);
+%         plotMeanMultiscaleSolution(glob,patches,interfaces,Uk,wk,'surface',true);
+%         mysaveas(pathname,['mean_multiscale_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         plotMeanGlobalLocalSolution(glob,patches,interfaces,Uk,wk);
+%         mysaveas(pathname,['mean_global_local_solution_t' num2str(k-1)],formats,renderer);
+%         plotMeanGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'surface',true);
+%         mysaveas(pathname,['mean_global_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         plotVarianceGlobalSolution(glob,Uk);
+%         mysaveas(pathname,['var_global_solution_t' num2str(k-1)],formats,renderer);
+%         plotVarianceGlobalSolution(glob,Uk,'surface',true);
+%         mysaveas(pathname,['var_global_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         % plotVarianceLocalSolution(patches,wk);
+%         % mysaveas(pathname,['var_local_solution_t' num2str(k-1)],formats,renderer);
+%         % plotVarianceLocalSolution(patches,wk,'surface',true);
+%         % mysaveas(pathname,['var_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         % plotVarianceLagrangeMultiplier(interfaces,lambdak);
+%         % mysaveas(pathname,['var_Lagrange_multiplier_t' num2str(k-1)],formats,renderer);
+%         % plotVarianceLagrangeMultiplier(interfaces,lambdak,'surface',true);
+%         % mysaveas(pathname,['var_Lagrange_multiplier_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         plotVarianceMultiscaleSolution(glob,patches,interfaces,Uk,wk);
+%         mysaveas(pathname,['var_multiscale_solution_t' num2str(k-1)],formats,renderer);
+%         plotVarianceMultiscaleSolution(glob,patches,interfaces,Uk,wk,'surface',true);
+%         mysaveas(pathname,['var_multiscale_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         plotVarianceGlobalLocalSolution(glob,patches,interfaces,Uk,wk);
+%         mysaveas(pathname,['var_global_local_solution_t' num2str(k-1)],formats,renderer);
+%         plotVarianceGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'surface',true);
+%         mysaveas(pathname,['var_global_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         plotStdGlobalSolution(glob,Uk);
+%         mysaveas(pathname,['std_global_solution_t' num2str(k-1)],formats,renderer);
+%         plotStdGlobalSolution(glob,Uk,'surface',true);
+%         mysaveas(pathname,['std_global_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         % plotStdLocalSolution(patches,wk);
+%         % mysaveas(pathname,['std_local_solution_t' num2str(k-1)],formats,renderer);
+%         % plotStdLocalSolution(patches,wk,'surface',true);
+%         % mysaveas(pathname,['std_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         % plotStdLagrangeMultiplier(interfaces,lambdak);
+%         % mysaveas(pathname,['std_Lagrange_multiplier_t' num2str(k-1)],formats,renderer);
+%         % plotStdLagrangeMultiplier(interfaces,lambdak,'surface',true);
+%         % mysaveas(pathname,['std_Lagrange_multiplier_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         plotStdMultiscaleSolution(glob,patches,interfaces,Uk,wk);
+%         mysaveas(pathname,['std_multiscale_solution_t' num2str(k-1)],formats,renderer);
+%         plotStdMultiscaleSolution(glob,patches,interfaces,Uk,wk,'surface',true);
+%         mysaveas(pathname,['std_multiscale_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         plotStdGlobalLocalSolution(glob,patches,interfaces,Uk,wk);
+%         mysaveas(pathname,['std_global_local_solution_t' num2str(k-1)],formats,renderer);
+%         plotStdGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'surface',true);
+%         mysaveas(pathname,['std_global_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         d = ndims(Uk.basis);
+%         for i=1:d
+%             plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,Uk,wk,i);
+%             mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+%             plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,Uk,wk,i,'surface',true);
+%             mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
+%             
+%             plotSensitivityIndicesMultiscaleSolution(glob,patches,interfaces,Uk,wk,i);
+%             mysaveas(pathname,['sensitivity_indices_multiscale_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+%             plotSensitivityIndicesMultiscaleSolution(glob,patches,interfaces,Uk,wk,i,'surface',true);
+%             mysaveas(pathname,['sensitivity_indices_multiscale_solution_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
+%         end
+%     end
     
     %% Display quantity of interest
     % boutput: mean of concentration of pollutant captured by the trap domain
@@ -1054,17 +1049,44 @@ if displaySolution
     std_boutput = foutput'*std_Ut;
     std_boutput_ref = foutput_ref'*std_Ut_ref;
     
+    probs = [0.025 0.975];
+    nbSamples = 100;
+    x = random(rv,nbSamples);
+    samples_Ut = Ut(x);
+    samples_Ut_ref = Ut_ref(x);
+    samples_boutput = zeros(nbSamples,Ut.sz(2));
+    samples_boutput_ref = zeros(nbSamples,Ut_ref.sz(2));
+    for i=1:nbSamples
+        sample_Ut = reshape(samples_Ut(i,:,:),Ut.sz);
+        sample_Ut = TIMEMATRIX(sample_Ut,T);
+        sample_Ut = unfreevector(glob.S,sample_Ut)-calc_init_dirichlet(glob.S)*one(T);
+        sample_Ut_ref = reshape(samples_Ut_ref(i,:,:),Ut_ref.sz);
+        sample_Ut_ref = TIMEMATRIX(sample_Ut_ref,T);
+        sample_Ut_ref = unfreevector(globOut.S,sample_Ut_ref)-calc_init_dirichlet(globOut.S)*one(T);
+        samples_boutput(i,:) = foutput'*sample_Ut;
+        samples_boutput_ref(i,:) = foutput_ref'*sample_Ut_ref;
+    end
+    ci_boutput = quantile(samples_boutput,probs);
+    ci_boutput_ref = quantile(samples_boutput_ref,probs);
+    
     figure('Name','Quantity of interest')
     clf
-    plot(mean_boutput,'-b','LineWidth',1);
+    [t,rep] = gettplot(T);
+    ciplot(ci_boutput(1,:),ci_boutput(2,:),t,'b');
     hold on
+    ciplot(ci_boutput_ref(1,:),ci_boutput_ref(2,:),t,'r');
+    alpha(0.2)
+    plot(mean_boutput,'-b','LineWidth',1);
     plot(mean_boutput_ref,'-r','LineWidth',1);
     grid on
     box on
     set(gca,'FontSize',16)
     xlabel('Time (s)')
-    ylabel('Mean concentration of pollutant in trap domain')
-    legend('multiscale','monoscale')
+    ylabel('Concentration of pollutant')
+    l = legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval - multiscale'],...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval - monoscale'],...
+        'mean value - multiscale','mean value - monoscale'});
+    set(l,'Interpreter','latex')
     mysaveas(pathname,'quantity_of_interest',formats,renderer);
     mymatlab2tikz(pathname,'quantity_of_interest.tex');
     
@@ -1074,12 +1096,21 @@ if displaySolution
     std_Ioutput = integrate(std_boutput);
     std_Ioutput_ref = integrate(std_boutput_ref);
     std_errOutput = norm(std_Ioutput-std_Ioutput_ref)/std_Ioutput_ref;
+    lowerci_Ioutput = integrate(TIMEMATRIX(ci_boutput(1,:),T));
+    lowerci_Ioutput_ref = integrate(TIMEMATRIX(ci_boutput_ref(1,:),T));
+    lowerci_errOutput = norm(lowerci_Ioutput-lowerci_Ioutput_ref)/lowerci_Ioutput_ref;
+    upperci_Ioutput = integrate(TIMEMATRIX(ci_boutput(2,:),T));
+    upperci_Ioutput_ref = integrate(TIMEMATRIX(ci_boutput_ref(2,:),T));
+    upperci_errOutput = norm(upperci_Ioutput-upperci_Ioutput_ref)/upperci_Ioutput_ref;
     fprintf('mean of quantity of interest           = %e\n',mean_Ioutput);
     fprintf('mean of reference quantity of interest = %e\n',mean_Ioutput_ref);
     fprintf('error in mean of quantity of interest  = %e\n',mean_errOutput);
     fprintf('std of quantity of interest            = %e\n',std_Ioutput);
     fprintf('std of reference quantity of interest  = %e\n',std_Ioutput_ref);
     fprintf('error in std of quantity of interest   = %e\n',std_errOutput);
+    fprintf('%d%% confidence interval of quantity of interest            = [%e,%e]\n',(probs(2)-probs(1))*100,lowerci_Ioutput,upperci_Ioutput);
+    fprintf('%d%% confidence interval of reference quantity of interest  = [%e,%e]\n',(probs(2)-probs(1))*100,lowerci_Ioutput_ref,upperci_Ioutput_ref);
+    fprintf('error in %d%% confidence interval of quantity of interest   = [%e,%e]\n',(probs(2)-probs(1))*100,lowerci_errOutput,upperci_errOutput);
 end
 
 % end

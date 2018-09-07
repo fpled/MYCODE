@@ -15,7 +15,7 @@ displaySolution = true;
 
 n = 3; % number of patches
 filename = ['transientLinAdvDiffReac' num2str(n) 'Patches'];
-% for rho = 0.1:0.1:1.8
+% for rho = 0.2:0.2:1.8
 % close all
 % filename = ['transientLinAdvDiffReac' num2str(n) 'PatchesRho' num2str(rho)];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -45,16 +45,17 @@ if setProblem
     cl2 = 0.04;
     cl0 = 0.02;
     cltip = 0.01;
-    glob.S = gmshcanistermulti(D_patch,cl1,cl2,cl0,cltip,cl1,fullfile(pathname,'gmsh_canister_multi'));
+    clI = 0.02;
+    glob.S = gmshcanistermulti(D_patch,cl1,cl2,cl0,cltip,clI,fullfile(pathname,'gmsh_canister_multi'));
     
-    nbelem_patch = [20,20];
-    for k=1:n
-        patches.patches{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
-    end
-    % cl_patch = 0.005;
+    % nbelem_patch = [20,20];
     % for k=1:n
-    %     patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',fullfile(pathname,['gmsh_patch_' num2str(k)]));
+    %     patches.patches{k}.S = build_model(D_patch{k},'nbelem',nbelem_patch);
     % end
+    cl_patch = 0.01;
+    for k=1:n
+        patches.patches{k}.S = build_model(D_patch{k},'cl',cl_patch,'filename',fullfile(pathname,['gmsh_patch_' num2str(k)]));
+    end
     
     % Partition of global mesh
     glob = partition(glob,D_patch);
@@ -551,8 +552,6 @@ if displaySolution
     
     plotGlobalLocalSolution(glob,patches,interfaces,U,w);
     mysaveas(pathname,'global_local_solution',formats,renderer);
-    plotGlobalLocalSolution(glob,patches,interfaces,U,w,'view3',true);
-    mysaveas(pathname,'global_local_solution_view3',formats,renderer);
     plotGlobalLocalSolution(glob,patches,interfaces,U,w,'surface',true);
     mysaveas(pathname,'global_local_solution_surface',formats,renderer);
     
@@ -582,107 +581,97 @@ if displaySolution
     mymatlab2tikz(pathname,'relaxation_parameter_transient.tex');
     
     %% Display evolutions of transient solutions
-    % evolAllSolutions(glob,patches,interfaces,Ut,wt,lambdat,'filename','evol_all_solutions','pathname',pathname);
-    % evolAllSolutions(glob,patches,interfaces,Ut,wt,lambdat,'surface',true,'filename','evol_all_solutions_surface','pathname',pathname);
-    % evolAllSolutions(glob,patches,interfaces,outputt.vU,outputt.vw,outputt.vlambda,'filename','evol_all_velocities','pathname',pathname);
-    % evolAllSolutions(glob,patches,interfaces,outputt.vU,outputt.vw,outputt.vlambda,'surface',true,'filename','evol_all_velocities_surface','pathname',pathname);
+    % evolAllSolutions(glob,patches,interfaces,Ut,wt,lambdat,'filename','all_solutions','pathname',pathname);
+    % evolAllSolutions(glob,patches,interfaces,Ut,wt,lambdat,'surface',true,'filename','all_solutions_surface','pathname',pathname);
+    % evolAllSolutions(glob,patches,interfaces,outputt.vU,outputt.vw,outputt.vlambda,'filename','all_velocities','pathname',pathname);
+    % evolAllSolutions(glob,patches,interfaces,outputt.vU,outputt.vw,outputt.vlambda,'surface',true,'filename','all_velocities_surface','pathname',pathname);
     
-    evolGlobalSolution(glob,Ut,'filename','evol_global_solution','pathname',pathname);
-    evolGlobalSolution(glob,Ut,'surface',true,'filename','evol_global_solution_surface','pathname',pathname);
-    evolGlobalSolution(glob,outputt.vU,'rescale',false,'filename','evol_global_solution_velocity','pathname',pathname);
-    evolGlobalSolution(glob,outputt.vU,'rescale',false,'surface',true,'filename','evol_global_solution_velocity_surface','pathname',pathname);
+    evolGlobalSolution(glob,Ut,'filename','global_solution','pathname',pathname);
+    evolGlobalSolution(glob,Ut,'surface',true,'filename','global_solution_surface','pathname',pathname);
+    evolGlobalSolution(glob,outputt.vU,'rescale',false,'filename','global_solution_velocity','pathname',pathname);
+    evolGlobalSolution(glob,outputt.vU,'rescale',false,'surface',true,'filename','global_solution_velocity_surface','pathname',pathname);
     
-    % evolLocalSolution(patches,wt,'filename','evol_local_solution','pathname',pathname);
-    % evolLocalSolution(patches,wt,'surface',true,'filename','evol_local_solution_surface','pathname',pathname);
-    % evolLocalSolution(patches,outputt.vw,'rescale',false,'filename','evol_local_solution_velocity','pathname',pathname);
-    % evolLocalSolution(patches,outputt.vw,'rescale',false,'surface',true,'filename','evol_local_solution_velocity_surface','pathname',pathname);
+    % evolLocalSolution(patches,wt,'filename','local_solution','pathname',pathname);
+    % evolLocalSolution(patches,wt,'surface',true,'filename','local_solution_surface','pathname',pathname);
+    % evolLocalSolution(patches,outputt.vw,'rescale',false,'filename','local_solution_velocity','pathname',pathname);
+    % evolLocalSolution(patches,outputt.vw,'rescale',false,'surface',true,'filename','local_solution_velocity_surface','pathname',pathname);
     %
-    % evolLagrangeMultiplier(interfaces,lambdat,'filename','evol_Lagrange_multiplier','pathname',pathname);
-    % evolLagrangeMultiplier(interfaces,lambdat,'surface',true,'filename','evol_Lagrange_multiplier_surface','pathname',pathname);
-    % evolLagrangeMultiplier(interfaces,outputt.vlambda,'rescale',false,'filename','evol_Lagrange_multiplier_velocity','pathname',pathname);
-    % evolLagrangeMultiplier(interfaces,outputt.vlambda,'rescale',false,'surface',true,'filename','evol_Lagrange_multiplier_velocity_surface','pathname',pathname);
+    % evolLagrangeMultiplier(interfaces,lambdat,'filename','Lagrange_multiplier','pathname',pathname);
+    % evolLagrangeMultiplier(interfaces,lambdat,'surface',true,'filename','Lagrange_multiplier_surface','pathname',pathname);
+    % evolLagrangeMultiplier(interfaces,outputt.vlambda,'rescale',false,'filename','Lagrange_multiplier_velocity','pathname',pathname);
+    % evolLagrangeMultiplier(interfaces,outputt.vlambda,'rescale',false,'surface',true,'filename','Lagrange_multiplier_velocity_surface','pathname',pathname);
     
-    evolMultiscaleSolution(glob,patches,interfaces,Ut,wt,'filename','evol_multiscale_solution','pathname',pathname);
-    evolMultiscaleSolution(glob,patches,interfaces,Ut,wt,'surface',true,'filename','evol_multiscale_solution_surface','pathname',pathname);
-    evolMultiscaleSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'filename','evol_multiscale_solution_velocity','pathname',pathname);
-    evolMultiscaleSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'surface',true,'filename','evol_multiscale_solution_velocity_surface','pathname',pathname);
+    evolMultiscaleSolution(glob,patches,interfaces,Ut,wt,'filename','multiscale_solution','pathname',pathname);
+    evolMultiscaleSolution(glob,patches,interfaces,Ut,wt,'surface',true,'filename','multiscale_solution_surface','pathname',pathname);
+    evolMultiscaleSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'filename','multiscale_solution_velocity','pathname',pathname);
+    evolMultiscaleSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'surface',true,'filename','multiscale_solution_velocity_surface','pathname',pathname);
     
-    evolGlobalLocalSolution(glob,patches,interfaces,Ut,wt,'filename','evol_global_local_solution','pathname',pathname);
-    evolGlobalLocalSolution(glob,patches,interfaces,Ut,wt,'surface',true,'filename','evol_global_local_solution_surface','pathname',pathname);
-    evolGlobalLocalSolution(glob,patches,interfaces,Ut,wt,'view3',true,'filename','evol_global_local_solution_view3','pathname',pathname);
-    evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'filename','evol_global_local_solution_velocity','pathname',pathname);
-    evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'surface',true,'filename','evol_global_local_solution_velocity_surface','pathname',pathname);
-    evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'view3',true,'filename','evol_global_local_solution_velocity_view3','pathname',pathname);
+    evolGlobalLocalSolution(glob,patches,interfaces,Ut,wt,'filename','global_local_solution','pathname',pathname);
+    evolGlobalLocalSolution(glob,patches,interfaces,Ut,wt,'surface',true,'filename','global_local_solution_surface','pathname',pathname);
+    evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'filename','global_local_solution_velocity','pathname',pathname);
+    evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'surface',true,'filename','global_local_solution_velocity_surface','pathname',pathname);
     
     %% Display transient solutions at different instants
-    [t,rep] = gettevol(N);
-    for k=1:floor(length(rep)/4):length(rep)
-        close all
-        Uk = getmatrixatstep(Ut,rep(k));
-        wk = cellfun(@(x) getmatrixatstep(x,rep(k)),wt,'UniformOutput',false);
-        lambdak = cellfun(@(x) getmatrixatstep(x,rep(k)),lambdat,'UniformOutput',false);
-        vUk = getmatrixatstep(outputt.vU,rep(k));
-        vwk = cellfun(@(x) getmatrixatstep(x,rep(k)),outputt.vw,'UniformOutput',false);
-        vlambdak = cellfun(@(x) getmatrixatstep(x,rep(k)),outputt.vlambda,'UniformOutput',false);
-        
-        % plotAllSolutions(glob,patches,interfaces,Uk,wk,lambdak);
-        % mysaveas(pathname,['all_solutions_t' num2str(k-1)],formats,renderer);
-        % plotAllSolutions(glob,patches,interfaces,Uk,wk,lambdak,'view3',true);
-        % mysaveas(pathname,['all_solutions_t' num2str(k-1) '_view3'],formats,renderer);
-        % plotAllSolutions(glob,patches,interfaces,vUk,vwk,vlambdak);
-        % mysaveas(pathname,['all_velocities_t' num2str(k-1)],formats,renderer);
-        % plotAllSolutions(glob,patches,interfaces,vUk,vwk,vlambdak,'view3',true);
-        % mysaveas(pathname,['all_velocities_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        plotGlobalSolution(glob,Uk);
-        mysaveas(pathname,['global_solution_t' num2str(k-1)],formats,renderer);
-        plotGlobalSolution(glob,Uk,'surface',true);
-        mysaveas(pathname,['global_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        plotGlobalSolution(glob,vUk);
-        mysaveas(pathname,['global_solution_velocity_t' num2str(k-1)],formats,renderer);
-        plotGlobalSolution(glob,vUk,'surface',true);
-        mysaveas(pathname,['global_solution_velocity_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        % plotLocalSolution(patches,wk);
-        % mysaveas(pathname,['local_solution_t' num2str(k-1)],formats,renderer);
-        % plotLocalSolution(patches,wk,'surface',true);
-        % mysaveas(pathname,['local_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        % plotLocalSolution(patches,vwk);
-        % mysaveas(pathname,['local_solution_velocity_t' num2str(k-1)],formats,renderer);
-        % plotLocalSolution(patches,vwk,'surface',true);
-        % mysaveas(pathname,['local_solution_velocity_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        % plotLagrangeMultiplier(interfaces,lambdak);
-        % mysaveas(pathname,['Lagrange_multiplier_t' num2str(k-1)],formats,renderer);
-        % plotLagrangeMultiplier(interfaces,lambdak,'surface',true);
-        % mysaveas(pathname,['Lagrange_multiplier_t' num2str(k-1) '_surface'],formats,renderer);
-        % plotLagrangeMultiplier(interfaces,vlambdak);
-        % mysaveas(pathname,['Lagrange_multiplier_velocity_t' num2str(k-1)],formats,renderer);
-        % plotLagrangeMultiplier(interfaces,vlambdak,'surface',true);
-        % mysaveas(pathname,['Lagrange_multiplier_velocity_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        plotMultiscaleSolution(glob,patches,interfaces,Uk,wk);
-        mysaveas(pathname,['multiscale_solution_t' num2str(k-1)],formats,renderer);
-        plotMultiscaleSolution(glob,patches,interfaces,Uk,wk,'surface',true);
-        mysaveas(pathname,['multiscale_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        plotMultiscaleSolution(glob,patches,interfaces,vUk,vwk);
-        mysaveas(pathname,['multiscale_solution_velocity_t' num2str(k-1)],formats,renderer);
-        plotMultiscaleSolution(glob,patches,interfaces,vUk,vwk,'surface',true);
-        mysaveas(pathname,['multiscale_solution_velocity_t' num2str(k-1) '_surface'],formats,renderer);
-        
-        plotGlobalLocalSolution(glob,patches,interfaces,Uk,wk);
-        mysaveas(pathname,['global_local_solution_t' num2str(k-1)],formats,renderer);
-        plotGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'surface',true);
-        mysaveas(pathname,['global_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
-        plotGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'view3',true);
-        mysaveas(pathname,['global_local_solution_t' num2str(k-1) '_view3'],formats,renderer);
-        plotGlobalLocalSolution(glob,patches,interfaces,vUk,vwk);
-        mysaveas(pathname,['global_local_solution_velocity_t' num2str(k-1)],formats,renderer);
-        plotGlobalLocalSolution(glob,patches,interfaces,vUk,vwk,'surface',true);
-        mysaveas(pathname,['global_local_solution_velocity_t' num2str(k-1) '_surface'],formats,renderer);
-        plotGlobalLocalSolution(glob,patches,interfaces,vUk,vwk,'view3',true);
-        mysaveas(pathname,['global_local_solution_velocity_t' num2str(k-1) '_view3'],formats,renderer);
-    end
+%     [t,rep] = gettevol(N);
+%     for k=1:floor(length(rep)/4):length(rep)
+%         close all
+%         Uk = getmatrixatstep(Ut,rep(k));
+%         wk = cellfun(@(x) getmatrixatstep(x,rep(k)),wt,'UniformOutput',false);
+%         lambdak = cellfun(@(x) getmatrixatstep(x,rep(k)),lambdat,'UniformOutput',false);
+%         vUk = getmatrixatstep(outputt.vU,rep(k));
+%         vwk = cellfun(@(x) getmatrixatstep(x,rep(k)),outputt.vw,'UniformOutput',false);
+%         vlambdak = cellfun(@(x) getmatrixatstep(x,rep(k)),outputt.vlambda,'UniformOutput',false);
+%         
+%         % plotAllSolutions(glob,patches,interfaces,Uk,wk,lambdak);
+%         % mysaveas(pathname,['all_solutions_t' num2str(k-1)],formats,renderer);
+%         % plotAllSolutions(glob,patches,interfaces,vUk,vwk,vlambdak);
+%         % mysaveas(pathname,['all_velocities_t' num2str(k-1)],formats,renderer);
+%         
+%         plotGlobalSolution(glob,Uk);
+%         mysaveas(pathname,['global_solution_t' num2str(k-1)],formats,renderer);
+%         plotGlobalSolution(glob,Uk,'surface',true);
+%         mysaveas(pathname,['global_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         plotGlobalSolution(glob,vUk);
+%         mysaveas(pathname,['global_solution_velocity_t' num2str(k-1)],formats,renderer);
+%         plotGlobalSolution(glob,vUk,'surface',true);
+%         mysaveas(pathname,['global_solution_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         % plotLocalSolution(patches,wk);
+%         % mysaveas(pathname,['local_solution_t' num2str(k-1)],formats,renderer);
+%         % plotLocalSolution(patches,wk,'surface',true);
+%         % mysaveas(pathname,['local_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         % plotLocalSolution(patches,vwk);
+%         % mysaveas(pathname,['local_solution_velocity_t' num2str(k-1)],formats,renderer);
+%         % plotLocalSolution(patches,vwk,'surface',true);
+%         % mysaveas(pathname,['local_solution_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         % plotLagrangeMultiplier(interfaces,lambdak);
+%         % mysaveas(pathname,['Lagrange_multiplier_t' num2str(k-1)],formats,renderer);
+%         % plotLagrangeMultiplier(interfaces,lambdak,'surface',true);
+%         % mysaveas(pathname,['Lagrange_multiplier_t' num2str(k-1) '_surface'],formats,renderer);
+%         % plotLagrangeMultiplier(interfaces,vlambdak);
+%         % mysaveas(pathname,['Lagrange_multiplier_velocity_t' num2str(k-1)],formats,renderer);
+%         % plotLagrangeMultiplier(interfaces,vlambdak,'surface',true);
+%         % mysaveas(pathname,['Lagrange_multiplier_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         plotMultiscaleSolution(glob,patches,interfaces,Uk,wk);
+%         mysaveas(pathname,['multiscale_solution_t' num2str(k-1)],formats,renderer);
+%         plotMultiscaleSolution(glob,patches,interfaces,Uk,wk,'surface',true);
+%         mysaveas(pathname,['multiscale_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         plotMultiscaleSolution(glob,patches,interfaces,vUk,vwk);
+%         mysaveas(pathname,['multiscale_solution_velocity_t' num2str(k-1)],formats,renderer);
+%         plotMultiscaleSolution(glob,patches,interfaces,vUk,vwk,'surface',true);
+%         mysaveas(pathname,['multiscale_solution_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+%         
+%         plotGlobalLocalSolution(glob,patches,interfaces,Uk,wk);
+%         mysaveas(pathname,['global_local_solution_t' num2str(k-1)],formats,renderer);
+%         plotGlobalLocalSolution(glob,patches,interfaces,Uk,wk,'surface',true);
+%         mysaveas(pathname,['global_local_solution_t' num2str(k-1) '_surface'],formats,renderer);
+%         plotGlobalLocalSolution(glob,patches,interfaces,vUk,vwk);
+%         mysaveas(pathname,['global_local_solution_velocity_t' num2str(k-1)],formats,renderer);
+%         plotGlobalLocalSolution(glob,patches,interfaces,vUk,vwk,'surface',true);
+%         mysaveas(pathname,['global_local_solution_velocity_t' num2str(k-1) '_surface'],formats,renderer);
+%     end
     
     %% Display quantity of interest
     % boutput: concentration of pollutant captured by the trap domain
@@ -709,7 +698,7 @@ if displaySolution
     box on
     set(gca,'FontSize',16)
     xlabel('Time (s)')
-    ylabel('Concentration of pollutant in trap domain')
+    ylabel('Concentration of pollutant')
     legend('multiscale','monoscale')
     mysaveas(pathname,'quantity_of_interest',formats,renderer);
     mymatlab2tikz(pathname,'quantity_of_interest.tex');
