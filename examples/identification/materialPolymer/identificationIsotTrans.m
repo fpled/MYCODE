@@ -244,8 +244,8 @@ scatter3(GL_series(c),EL_series(r),errmin,'MarkerEdgeColor','k','MarkerFaceColor
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
-xlabel('$G^L$ (MPa)','Interpreter',interpreter)
-ylabel('$E^L$ (MPa)','Interpreter',interpreter)
+xlabel('$G^L$ [MPa]','Interpreter',interpreter)
+ylabel('$E^L$ [MPa]','Interpreter',interpreter)
 zlabel('$\varepsilon$','Interpreter',interpreter)
 mysaveas(pathname,'error_EL_GL_2D',formats,renderer);
 
@@ -257,8 +257,8 @@ scatter(GL_series(c),EL_series(r),'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
-xlabel('$G^L$ (MPa)','Interpreter',interpreter)
-ylabel('$E^L$ (MPa)','Interpreter',interpreter)
+xlabel('$G^L$ [MPa]','Interpreter',interpreter)
+ylabel('$E^L$ [MPa]','Interpreter',interpreter)
 mysaveas(pathname,'error_EL_GL_2D',formats,renderer);
 
 % Plot error EL NUL
@@ -284,7 +284,7 @@ hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
 xlabel('$\nu^L$','Interpreter',interpreter)
-ylabel('$E^L$ (MPa)','Interpreter',interpreter)
+ylabel('$E^L$ [MPa]','Interpreter',interpreter)
 zlabel('$\varepsilon$','Interpreter',interpreter)
 mysaveas(pathname,'error_EL_NUL_3D',formats,renderer);
 
@@ -297,7 +297,7 @@ hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
 xlabel('$\nu^L$','Interpreter',interpreter)
-ylabel('$E^L$ (MPa)','Interpreter',interpreter)
+ylabel('$E^L$ [MPa]','Interpreter',interpreter)
 mysaveas(pathname,'error_EL_NUL_2D',formats,renderer);
 
 % Plot error NUL GL
@@ -322,7 +322,7 @@ scatter3(GL_series(c),NUL_series(r),errmin,'MarkerEdgeColor','k','MarkerFaceColo
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
-xlabel('$G^L$ (MPa)','Interpreter',interpreter)
+xlabel('$G^L$ [MPa]','Interpreter',interpreter)
 ylabel('$\nu^L$','Interpreter',interpreter)
 zlabel('$\varepsilon$','Interpreter',interpreter)
 mysaveas(pathname,'error_NUL_GL_3D',formats,renderer);
@@ -335,6 +335,6 @@ scatter(GL_series(c),NUL_series(r),'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
-xlabel('$G^L$ (MPa)','Interpreter',interpreter)
+xlabel('$G^L$ [MPa]','Interpreter',interpreter)
 ylabel('$\nu$','Interpreter',interpreter)
 mysaveas(pathname,'error_NUL_GL_2D',formats,renderer);

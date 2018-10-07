@@ -114,7 +114,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(x4),max(x4)])
-    xlabel('$c_4$ (GPa)','Interpreter',interpreter)
+    xlabel('$c_4$ [GPa]','Interpreter',interpreter)
     ylabel('$p_{C_4}(c_4)$','Interpreter',interpreter)
     mysaveas(pathname,'pdf_C4',formats);
     mymatlab2tikz(pathname,'pdf_C4.tex');
@@ -132,7 +132,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(x5),max(x5)])
-    xlabel('$c_5$ (GPa)','Interpreter',interpreter)
+    xlabel('$c_5$ [GPa]','Interpreter',interpreter)
     ylabel('$p_{C_5}(c_5)$','Interpreter',interpreter)
     mysaveas(pathname,'pdf_C5',formats);
     mymatlab2tikz(pathname,'pdf_C5.tex');
@@ -149,7 +149,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(x4),max(x4)])
-    xlabel('$c_4$ (GPa)','Interpreter',interpreter)
+    xlabel('$c_4$ [GPa]','Interpreter',interpreter)
     ylabel('$F_{C_4}(c_4)$','Interpreter',interpreter)
     mysaveas(pathname,'cdf_C4',formats);
     mymatlab2tikz(pathname,'cdf_C4.tex');
@@ -166,7 +166,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(x5),max(x5)])
-    xlabel('$c_5$ (GPa)','Interpreter',interpreter)
+    xlabel('$c_5$ [GPa]','Interpreter',interpreter)
     ylabel('$F_{C_5}(c_5)$','Interpreter',interpreter)
     mysaveas(pathname,'cdf_C5',formats);
     mymatlab2tikz(pathname,'cdf_C5.tex');
@@ -181,11 +181,11 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('$E^T$ (GPa)','Interpreter',interpreter);
-    ylabel('$G^L$ (GPa)','Interpreter',interpreter);
+    xlabel('$E^T$ [GPa]','Interpreter',interpreter);
+    ylabel('$G^L$ [GPa]','Interpreter',interpreter);
     zlabel('$\nu^T$','Interpreter',interpreter);
-%     xlabel('Young''s modulus $E^T$ (GPa)','Interpreter',interpreter);
-%     ylabel('Shear modulus $G^L$ (GPa)','Interpreter',interpreter);
+%     xlabel('Young''s modulus $E^T$ [GPa]','Interpreter',interpreter);
+%     ylabel('Shear modulus $G^L$ [GPa]','Interpreter',interpreter);
 %     zlabel('Poisson''s ratio $\nu^T$','Interpreter',interpreter);
 %     legend('samples','data');
     mysaveas(pathname,'samples_ET_GL_NUT',formats);

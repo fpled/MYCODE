@@ -69,8 +69,8 @@ for k=1:numImages
     hold off
     set(gca,'FontSize',fontsize)
     % set(gca,'ZScale','log')
-    xlabel('$G^L$ (MPa)','Interpreter',interpreter)
-    ylabel('$E^T$ (MPa)','Interpreter',interpreter)
+    xlabel('$G^L$ [MPa]','Interpreter',interpreter)
+    ylabel('$E^T$ [MPa]','Interpreter',interpreter)
     zlabel('Error','Interpreter',interpreter)
     mysaveas(pathname,['error_ET_GL_' numSample '_image_' numImage '_3D'],formats,renderer);
     
@@ -82,8 +82,8 @@ for k=1:numImages
     hold off
     set(gca,'FontSize',fontsize)
     % set(gca,'ZScale','log')
-    xlabel('$G^L$ (MPa)','Interpreter',interpreter)
-    ylabel('$E^T$ (MPa)','Interpreter',interpreter)
+    xlabel('$G^L$ [MPa]','Interpreter',interpreter)
+    ylabel('$E^T$ [MPa]','Interpreter',interpreter)
     mysaveas(pathname,['error_ET_GL_' numSample '_image_' numImage '_2D'],formats,renderer);
     
     toc(t)

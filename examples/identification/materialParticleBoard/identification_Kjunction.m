@@ -180,8 +180,8 @@ for j=1:numScrew
         set(0,'DefaultAxesFontName','Times','DefaultAxesFontSize',16,...
             'DefaultTextInterpreter','tex');
         Scal = 1;
-        Unitx = '(mm)';
-        UnitU = '(mm)';
+        Unitx = '[mm]';
+        UnitU = '[mm]';
         
 %         figure('name','best fit line of initial mesh')
 %         fig1 = triplot(TRI_a_screw,coordx_a_screw,coordy_a_screw,'r');
@@ -469,8 +469,8 @@ if displaySolution
         hold on
         grid on
         box on
-        xlabel('Moment per unit length (N.mm/mm)','Interpreter',interpreter);
-        ylabel('Variation of angle ($^{\circ}$)','Interpreter',interpreter);
+        xlabel('Moment per unit length [N.mm/mm]','Interpreter',interpreter);
+        ylabel('Variation of angle [$^{\circ}$]','Interpreter',interpreter);
     end
     
     figure('name','Screw junction: Applied load w.r.t. Junction stiffness per unit length')
@@ -480,7 +480,7 @@ if displaySolution
         grid on
         box on
         xlabel('Applied load (N)','Interpreter',interpreter);
-        ylabel('Junction stiffness per unit length (N/rad)','Interpreter',interpreter);    
+        ylabel('Junction stiffness per unit length [N/rad]','Interpreter',interpreter);    
     end
     
     figure('name','Dowel junction: Moment per unit length w.r.t. Variation of angle')
@@ -490,7 +490,7 @@ if displaySolution
         grid on
         box on
         xlabel('Moment per unit length (N.mm/mm)','Interpreter',interpreter);
-        ylabel('Variation of angle ($^{\circ}$)','Interpreter',interpreter);
+        ylabel('Variation of angle [$^{\circ}$]','Interpreter',interpreter);
     end
     
     figure('name','Dowel junction: Applied load w.r.t. Junction stiffness per unit length')
@@ -500,6 +500,6 @@ if displaySolution
         grid on
         box on
         xlabel('Applied load (N)','Interpreter',interpreter);
-        ylabel('Junction stiffness per unit length (N/rad)','Interpreter',interpreter);
+        ylabel('Junction stiffness per unit length [N/rad]','Interpreter',interpreter);
     end
 end

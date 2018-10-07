@@ -99,7 +99,7 @@ for k=1:numImages
     set(gca,'FontSize',fontsize)
     % set(gca,'ZScale','log')
     xlabel('$\nu^L$','Interpreter',interpreter)
-    ylabel('$E^L$ (MPa)','Interpreter',interpreter)
+    ylabel('$E^L$ [MPa]','Interpreter',interpreter)
     zlabel('Error','Interpreter',interpreter)
     mysaveas(pathname,['error_EL_NUL_' numSample '_image_' numImage '_3D'],formats,renderer);
     
@@ -112,7 +112,7 @@ for k=1:numImages
     set(gca,'FontSize',fontsize)
     % set(gca,'ZScale','log')
     xlabel('$\nu^L$','Interpreter',interpreter)
-    ylabel('$E^L$ (MPa)','Interpreter',interpreter)
+    ylabel('$E^L$ [MPa]','Interpreter',interpreter)
     mysaveas(pathname,['error_EL_NUL_' numSample '_image_' numImage '_2D'],formats,renderer);
     
     toc(t)

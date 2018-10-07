@@ -117,7 +117,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[0,length(E_data)+1])
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Young''s modulus $E$ (GPa)','Interpreter',interpreter);
+    ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_E','fig');
     mymatlab2tikz(pathname,'data_E.tex');
     
@@ -127,7 +127,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[0,length(G_data)+1])
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Shear modulus $G$ (GPa)','Interpreter',interpreter);
+    ylabel('Shear modulus $G$ [GPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_G','fig');
     mymatlab2tikz(pathname,'data_G.tex');
     
@@ -155,7 +155,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(x1),max(x1)])
-    xlabel('$c_1$ (GPa)','Interpreter',interpreter)
+    xlabel('$c_1$ [GPa]','Interpreter',interpreter)
     ylabel('$p_{C_1}(c_1)$','Interpreter',interpreter)
     mysaveas(pathname,'pdf_C1',formats);
     mymatlab2tikz(pathname,'pdf_C1.tex');
@@ -173,7 +173,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(x2),max(x2)])
-    xlabel('$c_2$ (GPa)','Interpreter',interpreter)
+    xlabel('$c_2$ [GPa]','Interpreter',interpreter)
     ylabel('$p_{C_2}(c_2)$','Interpreter',interpreter)
     mysaveas(pathname,'pdf_C2',formats);
     mymatlab2tikz(pathname,'pdf_C2.tex');
@@ -191,8 +191,8 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(x1),max(x1)])
     set(gca,'YLim',[min(x2),max(x2)])
-    xlabel('$c_1$ (GPa)','Interpreter',interpreter)
-    ylabel('$c_2$ (GPa)','Interpreter',interpreter)
+    xlabel('$c_1$ [GPa]','Interpreter',interpreter)
+    ylabel('$c_2$ [GPa]','Interpreter',interpreter)
     zlabel('$p_{(C_1,C_2)}(c_1,c_2)$','Interpreter',interpreter)
     mysaveas(pathname,'pdf_C',formats);
     mymatlab2tikz(pathname,'pdf_C.tex');
@@ -212,7 +212,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(xe),max(xe)])
     set(gca,'YLim',[min(xn),max(xn)])
-    xlabel('$e$ (GPa)','Interpreter',interpreter)
+    xlabel('$e$ [GPa]','Interpreter',interpreter)
     ylabel('$n$','Interpreter',interpreter)
     zlabel('$p_{(E,N)}(e,n)$','Interpreter',interpreter)
     mysaveas(pathname,'pdf_EN',formats);
@@ -230,7 +230,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(x1),max(x1)])
-    xlabel('$c_1$ (GPa)','Interpreter',interpreter)
+    xlabel('$c_1$ [GPa]','Interpreter',interpreter)
     ylabel('$F_{C_1}(c_1)$','Interpreter',interpreter)
     mysaveas(pathname,'cdf_C1',formats);
     mymatlab2tikz(pathname,'cdf_C1.tex');
@@ -247,7 +247,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(x2),max(x2)])
-    xlabel('$c_2$ (GPa)','Interpreter',interpreter)
+    xlabel('$c_2$ [GPa]','Interpreter',interpreter)
     ylabel('$F_{C_2}(c_2)$','Interpreter',interpreter)
     mysaveas(pathname,'cdf_C2',formats);
     mymatlab2tikz(pathname,'cdf_C2.tex');
@@ -264,8 +264,8 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(x1),max(x1)])
     set(gca,'YLim',[min(x2),max(x2)])
-    xlabel('$c_1$ (GPa)','Interpreter',interpreter)
-    ylabel('$c_2$ (GPa)','Interpreter',interpreter)
+    xlabel('$c_1$ [GPa]','Interpreter',interpreter)
+    ylabel('$c_2$ [GPa]','Interpreter',interpreter)
     zlabel('$F_{(C_1,C_2)}(c_1,c_2)$','Interpreter',interpreter)
     mysaveas(pathname,'cdf_C',formats);
     mymatlab2tikz(pathname,'cdf_C.tex');
@@ -292,7 +292,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(xe),max(xe)])
     set(gca,'YLim',[min(xn),max(xn)])
-    xlabel('$e$ (GPa)','Interpreter',interpreter)
+    xlabel('$e$ [GPa]','Interpreter',interpreter)
     ylabel('$n$','Interpreter',interpreter)
     zlabel('$F_{(E,N)}(e,n)$','Interpreter',interpreter)
     mysaveas(pathname,'cdf_EN',formats);
@@ -309,7 +309,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Poisson''s ratio $\nu$','Interpreter',interpreter);
-    ylabel('Young''s modulus $E$ (GPa)','Interpreter',interpreter);
+    ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter);
     legend('sample','data')
     mysaveas(pathname,'samples_EN',formats);
     mymatlab2tikz(pathname,'samples_EN.tex');

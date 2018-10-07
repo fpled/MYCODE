@@ -125,7 +125,7 @@ for j=1:numSamples
     fprintf('| Sample %s%2d      |\n',sample,j)
     disp('+-----------------+-----------------+-----------------+')
     disp('| Young''s modulus | Poisson''s ratio |  Error between  |')
-    disp('|     EL (MPa)    |       NUL       | U_num and U_exp |')
+    disp('|     EL [MPa]    |       NUL       | U_num and U_exp |')
     disp('+-----------------+-----------------+-----------------+')
     for k=1:numImages
         fprintf('| %15.4f | %15.4f | %15.4e |\n',EL(k),NUL(k),err(k))
@@ -160,7 +160,7 @@ if displaySolution
 %         set(gca,'FontSize',fontsize)
 %         legend(numSample,'Location','NorthEastOutside');
 %         xlabel('Image number','Interpreter',interpreter);
-%         ylabel('Young''s modulus $E^L$ (MPa)','Interpreter',interpreter);
+%         ylabel('Young''s modulus $E^L$ [MPa]','Interpreter',interpreter);
 %         mysaveas(pathname,['data_EL_' numSample],formats);
 %         mymatlab2tikz(pathname,['data_EL_' numSample '.tex']);
 %         
@@ -182,7 +182,7 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Young''s modulus $E^L$ (MPa)','Interpreter',interpreter);
+    ylabel('Young''s modulus $E^L$ [MPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_EL',formats);
     mymatlab2tikz(pathname,'data_EL.tex');
     

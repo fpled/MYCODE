@@ -77,7 +77,7 @@ if solveProblem
     
     % Sample number
     sample = 'B';
-    numSample = 13;
+    numSample = 14;
     
     % Material symmetry
     materialSym = 'isot';
@@ -85,8 +85,8 @@ if solveProblem
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = mean_ET_data(numSample)*1e6; % Pa
-            %E = 2e9; % Pa
+            %E = mean_ET_data(numSample)*1e6; % Pa
+            E = 1.78e9; % Pa
             % Shear modulus
             %G = mean_GL_data(numSample)*1e6*13; % Pa
             % Poisson ratio
@@ -144,7 +144,7 @@ if solveProblem
         case 'd2'
             p = [6 63 110 175];
     end
-    p = p(1);
+    p = p(5);
     
     %% Dirichlet boundary conditions
     if junction

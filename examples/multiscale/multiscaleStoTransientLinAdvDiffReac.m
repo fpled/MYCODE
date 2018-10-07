@@ -1081,7 +1081,7 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',16)
-    xlabel('Time (s)')
+    xlabel('Time [s]')
     ylabel('Concentration of pollutant')
     l = legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval - multiscale'],...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval - monoscale'],...

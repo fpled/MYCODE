@@ -79,7 +79,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[0,length(E_data)+1])
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Young''s modulus $E$ (GPa)','Interpreter',interpreter);
+    ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_E',formats);
     mymatlab2tikz(pathname,'data_E.tex');
     
@@ -99,7 +99,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[xmin,xmax])
-    xlabel('$e$ (GPa)','Interpreter',interpreter)
+    xlabel('$e$ [GPa]','Interpreter',interpreter)
     ylabel('$p_E(e)$','Interpreter',interpreter)
     % l = legend('$p_E(e)$','$(e_i,p_E(e_i))_{i=1}^n$');
     % set(l,'Interpreter',interpreter,'Location','NorthWest');
@@ -119,7 +119,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[xmin,xmax])
     set(gca,'YLim',[0,1])
-    xlabel('$e$ (GPa)','Interpreter',interpreter)
+    xlabel('$e$ [GPa]','Interpreter',interpreter)
     ylabel('$F_E(e)$','Interpreter',interpreter)
     % l = legend('$F_E(e)$','$(e_i,F_E(e_i))_{i=1}^n$');
     % set(l,'Interpreter',interpreter,'Location','NorthWest');
@@ -138,7 +138,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Number of samples','Interpreter',interpreter)
-    ylabel('Young''s modulus $E$ (GPa)','Interpreter',interpreter)
+    ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter)
     legend('samples','mean');
     mysaveas(pathname,'samples_E',formats);
     mymatlab2tikz(pathname,'samples_E.tex');

@@ -10,7 +10,7 @@ if nargin<5
     clQa = clD;
 end
 if nargin<6
-    clQb = clD;
+    clQb = clD; 
 end
 if nargin<8
     indim = getdim(D);
