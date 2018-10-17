@@ -4,6 +4,7 @@
 % Coordinate system
 % CORRELI:    right     down
 % MATLAB:     right     up
+% the cell of 50kN is too large for the Dowel junction which is fragile
 
 clc
 clearvars
@@ -12,7 +13,7 @@ close all
 %% Input data
 displaySolution = true;
 
-filename = 'data_angle.mat';
+filename = 'data_Kjunction.mat';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification','materialParticleBoard');
 if ~exist(pathname,'dir')
@@ -22,16 +23,21 @@ pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'examples','identification','materialParticleBoard','resultsDIC');
 
 fontsize = 16;
+linewidth = 1;
 interpreter = 'latex';
-formats = {'fig','epsc2'};
+formats = {'fig','epsc'};
 
 %% Identification
 
-numScrew = 4;
-numDowel = 2;
+numScrewTotal = 16;
+sampleScrewDelete = [9 11 16]; 
+sampleNumScrew = setdiff([1:numScrewTotal],sampleScrewDelete);
+numScrew = length(sampleNumScrew);
+numDowel = 8;
+%3 samples to be deleted because of the manufacture drawbacks
 
-d = 67.5; % mm
-b = 113; % mm
+d = 67.5e-3; % m
+b = 113e-3; % m
 % Same Dimensions for the two assembly junctions
 % Moment per unit length: ml = F*d/b
 % Junction stiffness per unit length: k = ml/var_angle
@@ -40,8 +46,9 @@ F_screw = cell(numScrew,1);
 ml_screw = cell(numScrew,1);
 var_angle_screw = cell(numScrew,1);
 k_screw = cell(numScrew,1);
-for j=1:numScrew
-% for j=1
+mean_Kscrew_data = zeros(numScrew,1);
+for i = 1:numScrew
+    j = sampleNumScrew(i);
     
     numSample = ['S' num2str(j)];
     numSamplea = ['S' num2str(j) 'a'];
@@ -244,14 +251,16 @@ for j=1:numScrew
     ml_screw{j} = F*d/b;
     var_angle_screw{j} = var_angle;
     k_screw{j} = (F*d)./(deg2rad(var_angle)'*b);
+    mean_Kscrew_data(i) = mean( (F(2:end-1)*d)./(deg2rad(var_angle(2:end-1))'*b) );
 end
 
 F_dowel = cell(numDowel,1);
 ml_dowel = cell(numDowel,1);
 var_angle_dowel = cell(numDowel,1);
 k_dowel = cell(numDowel,1);
+mean_Kdowel_data = zeros(numDowel,1);
 for j=1:numDowel
-% for j=1
+% for j=4
     
     numSample = ['D' num2str(j)];
     numSamplea = ['D' num2str(j) 'a'];
@@ -454,12 +463,13 @@ for j=1:numDowel
     ml_dowel{j} = F*d/b;
     var_angle_dowel{j} = var_angle;
     k_dowel{j} = (F*d)./(deg2rad(var_angle)'*b);
+    mean_Kdowel_data(j) = mean(k_dowel{j});
 end
 
 %% Save variables
 save(fullfile(pathname,filename),'numScrew','numDowel',...
-    'F_screw','ml_screw','var_angle_screw','k_screw',...
-    'F_dowel','ml_dowel','var_angle_dowel','k_dowel');
+    'F_screw','ml_screw','var_angle_screw','k_screw','mean_Kscrew_data',...
+    'F_dowel','ml_dowel','var_angle_dowel','k_dowel','mean_Kdowel_data');
 
 %% Plot data
 if displaySolution
@@ -469,7 +479,7 @@ if displaySolution
         hold on
         grid on
         box on
-        xlabel('Moment per unit length [N.mm/mm]','Interpreter',interpreter);
+        xlabel('Moment per unit length [N.m/m]','Interpreter',interpreter);
         ylabel('Variation of angle [$^{\circ}$]','Interpreter',interpreter);
     end
     
@@ -489,7 +499,7 @@ if displaySolution
         hold on
         grid on
         box on
-        xlabel('Moment per unit length (N.mm/mm)','Interpreter',interpreter);
+        xlabel('Moment per unit length (N.m/m)','Interpreter',interpreter);
         ylabel('Variation of angle [$^{\circ}$]','Interpreter',interpreter);
     end
     
@@ -503,3 +513,23 @@ if displaySolution
         ylabel('Junction stiffness per unit length [N/rad]','Interpreter',interpreter);
     end
 end
+
+figure
+clf
+bar(mean_Kscrew_data);
+grid on
+set(gca,'FontSize',fontsize)
+xlabel('Sample number','Interpreter',interpreter);
+ylabel('Junction stiffness per unit length (N/rad)','Interpreter',interpreter);
+mysaveas(pathname,'KjuncVis',formats);
+mymatlab2tikz(pathname,'KjuncVis.tex');
+
+figure
+clf
+bar(mean_Kdowel_data);
+grid on
+set(gca,'FontSize',fontsize)
+xlabel('Sample number','Interpreter',interpreter);
+ylabel('Junction stiffness per unit length (N/rad)','Interpreter',interpreter);
+mysaveas(pathname,'KjuncTourillon',formats);
+mymatlab2tikz(pathname,'KjuncTourillon.tex');

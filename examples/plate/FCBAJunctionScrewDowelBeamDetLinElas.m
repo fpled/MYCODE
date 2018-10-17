@@ -77,7 +77,7 @@ if solveProblem
     
     % Sample number
     sample = 'B';
-    numSample = 14;
+    numSample = 13;
     
     % Material symmetry
     materialSym = 'isot';

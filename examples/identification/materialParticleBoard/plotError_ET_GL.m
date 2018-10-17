@@ -13,7 +13,7 @@ load(fullfile(pathname,filename));
 pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'examples','identification','materialParticleBoard','resultsDIC');
 
-fontsize = 16;
+fontsize = 12;
 interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
@@ -27,7 +27,8 @@ F = appliedLoad(numSample);
 [b,h,d,Iz] = dimSample(numSample);
 
 numImages = length(F);
-for k=1:numImages
+% for k=1:numImages
+for k=6
     
     t = tic;
     

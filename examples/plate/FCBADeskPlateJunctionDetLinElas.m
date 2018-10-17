@@ -215,7 +215,7 @@ if solveProblem
     
     % Sample number
     sample = 'B';
-    numSample = 14;
+    numSample = 13;
     
     % Material symmetry
     materialSym = 'isotTrans';
@@ -561,8 +561,8 @@ if solveProblem
     f = f + bodyload(S,[],'FZ',-p_plate);
     
     if junction
-        kS = 5e2; % additonal junction rotational stiffness for junction screw
-        kD = 5e2; % additonal junction rotational stiffness for junction dowel
+        kS = 5e4; % additonal junction rotational stiffness for junction screw
+        kD = 1.8e3; % additonal junction rotational stiffness for junction dowel
         numddl131 = findddl(S,'RY',numnode13{1},'free');
         numddl132 = findddl(S,'RY',numnode13{2},'free');
         numddl13 = [numddl131 numddl132];

@@ -67,6 +67,19 @@ for j=1:numSamples
         
         [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d);
         
+set(0,'DefaultAxesFontName','Times','DefaultAxesFontSize',20,'DefaultTextInterpreter','tex');
+figure('name','Reference and deformed mesh')
+Scal=10;
+Unitx=' (mm.)';
+UnitU=' (mm.)';
+triplot(Mesh.TRI,coord(:,1),coord(:,2),'r');
+hold on
+triplot(Mesh.TRI,coord(:,1)+Scal*u_exp(1:2:end),coord(:,2)+Scal*u_exp(2:2:end),'k');
+hold off
+axis equal
+xlabel(['$y$ ',Unitx],'Interpreter','latex')
+ylabel(['$z$ ',Unitx],'Interpreter','latex')
+        
         A = zeros(5);
         B = zeros(5,1);
         for i=1:Mesh.NNodeTot
