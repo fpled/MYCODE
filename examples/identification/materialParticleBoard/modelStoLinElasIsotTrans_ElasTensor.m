@@ -5,11 +5,12 @@
 % clc
 clearvars
 close all
+% rng('default');
 
 %% Input data
 displaySolution = true;
 
-MCMC = 'CUM';% Markov-Chain Monte Carlo (MCMC) method = 'MH', 'BUM' or 'CUM'
+MCMC = 'ss';% Markov-Chain Monte Carlo (MCMC) method = 'MH', 'BUM', 'CUM' or 'SS'
 filename = ['modelStoLinElasIsotTrans_ElasTensor_' MCMC];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification',filename);
@@ -43,27 +44,47 @@ C2_data = 2*kT_data; % GPa
 C3_data = 2*sqrt(2)*kT_data.*NUL_data; % GPa
 C4_data = 2*GT_data; % GPa
 C5_data = 2*GL_data; % GPa
+C_data = [C1_data(:) C2_data(:) C3_data(:) C4_data(:) C5_data(:)];
+clear C1_data C2_data C3_data C4_data C5_data
 fprintf('\nnb data = %d',length(ET_data));
 
 %% Sample generation
-N = 5e3; % number of samples
+N = 1e4; % number of samples
+
+mc1 = mean(C_data(:,1));
+mc2 = mean(C_data(:,2));
+mc3 = mean(C_data(:,3));
+mc4 = mean(C_data(:,4));
+mc5 = mean(C_data(:,5));
+
+lambda = -110; % lambda < 1/2
+lambda1 = -(mc2*lambda)/(mc1*mc2-mc3^2); % lambda1 > 0
+lambda2 = -(mc1*lambda)/(mc1*mc2-mc3^2); % lambda2 > 0
+lambda3 = (2*mc3*lambda)/(mc1*mc2-mc3^2);
+a = 1-2*lambda;
+lambda4 = a/mc4; % lambda4 > 0
+lambda5 = a/mc5; % lambda5 > 0
+lambda0 = [lambda1 lambda2 lambda3 lambda4 lambda5 lambda];
+
 switch lower(MCMC)
     case 'mh'
-        [C_sample,lambda] = mhsampleStoLinElasTensorIsotTrans(C1_data,C2_data,C3_data,C4_data,C5_data,N);
+        C_sample = mhsampleStoLinElasTensorIsotTrans(lambda0,C_data,N);
     case 'bum'
-        [C_sample,lambda] = mhsampleStoLinElasTensorIsotTrans_BUM(C1_data,C2_data,C3_data,C4_data,C5_data,N);
+        C_sample = mhsampleStoLinElasTensorIsotTrans_BUM(lambda0,C_data,N);
     case 'cum'
-        [C_sample,lambda] = mhsampleStoLinElasTensorIsotTrans_CUM(C1_data,C2_data,C3_data,C4_data,C5_data,N);
+        C_sample = mhsampleStoLinElasTensorIsotTrans_CUM(lambda0,C_data,N);
+    case 'ss'
+        C_sample = slicesampleStoLinElasTensorIsotTrans(lambda0,C_data,N);
 end
 
-kT_sample = C_sample(2,:)/2;
-NUL_sample = (C_sample(3,:)./kT_sample)/(2*sqrt(2));
-EL_sample = C_sample(1,:) - 4*(NUL_sample.^2).*kT_sample;
-GT_sample = C_sample(4,:)/2;
-GL_sample = C_sample(5,:)/2;
-k1 = 1./kT_sample+4*(NUL_sample.^2)./EL_sample;
-k2 = 1./GT_sample;
-ET_sample = 4./(k1+k2);
+lambda = lambda0;
+
+kT_sample = C_sample(:,2)/2;
+NUL_sample = (C_sample(:,3)./kT_sample)/(2*sqrt(2));
+EL_sample = C_sample(:,1) - 4*(NUL_sample.^2).*kT_sample;
+GT_sample = C_sample(:,4)/2;
+GL_sample = C_sample(:,5)/2;
+ET_sample = 4./(1./kT_sample+1./GT_sample+4*(NUL_sample.^2)./EL_sample);
 NUT_sample = (ET_sample./GT_sample)/2-1;
 
 fprintf('\nlambda_1 = %.4f',lambda(1));
@@ -96,10 +117,10 @@ cdf_C5 = @(c5) gamcdf(c5,a5,b5); % Gamma cumulative density function of C5
 if displaySolution
     %% Plot pdfs and cdfs
     N = 100;
-    x4_min = max(0,mean(C4_data)-8*std(C4_data));
-    x4_max = mean(C4_data)+8*std(C4_data);
-    x5_min = max(0,mean(C5_data)-8*std(C5_data));
-    x5_max = mean(C5_data)+8*std(C5_data);
+    x4_min = max(0,mean(C_data(:,4))-8*std(C_data(:,4)));
+    x4_max = mean(C_data(:,4))+8*std(C_data(:,4));
+    x5_min = max(0,mean(C_data(:,5))-8*std(C_data(:,5)));
+    x5_max = mean(C_data(:,5))+8*std(C_data(:,5));
     
     % Plot pdf of C4
     figure('Name','Probability density function of C4')
@@ -108,7 +129,7 @@ if displaySolution
     y4 = pdf_C4(x4);
     plot(x4,y4,'-b');
     hold on
-    plot(C4_data,pdf_C4(C4_data),'r+');
+    plot(C_data(:,4),pdf_C4(C_data(:,4)),'r+');
     hold off
     grid on
     box on
@@ -126,7 +147,7 @@ if displaySolution
     y5 = pdf_C5(x5);
     plot(x5,y5,'-b');
     hold on
-    plot(C5_data,pdf_C5(C5_data),'r+');
+    plot(C_data(:,5),pdf_C5(C_data(:,5)),'r+');
     hold off
     grid on
     box on
@@ -143,7 +164,7 @@ if displaySolution
     z4 = cdf_C4(x4);
     plot(x4,z4,'-b');
     hold on
-    plot(C4_data,cdf_C4(C4_data),'r+');
+    plot(C_data(:,4),cdf_C4(C_data(:,4)),'r+');
     hold off
     grid on
     box on
@@ -160,7 +181,7 @@ if displaySolution
     z5 = cdf_C5(x5);
     plot(x5,z5,'-b');
     hold on
-    plot(C5_data,cdf_C5(C5_data),'r+');
+    plot(C_data(:,5),cdf_C5(C_data(:,5)),'r+');
     hold off
     grid on
     box on
@@ -172,6 +193,57 @@ if displaySolution
     mymatlab2tikz(pathname,'cdf_C5.tex');
     
     %% Plot samples
+    % c1min = min(min(C_sample(:,1)),min(C_data(:,1)));
+    c1min = 0;
+    c1max = max(max(C_sample(:,1)),max(C_data(:,1)));
+    c1 = linspace(c1min,c1max,1e2);
+    
+    % c2min = min(min(C_sample(:,2)),min(C_data(:,2)));
+    c2min = 0;
+    c2max = max(max(C_sample(:,2)),max(C_data(:,2)));
+    c2 = linspace(c2min,c2max,1e2);
+    
+    [C1,C2] = meshgrid(c1,c2);
+    C3 = sqrt(C1.*C2);
+    
+    figure('name','Samples of (C_1,C_2,C_3)')
+    clf
+    scatter3(C_sample(:,1),C_sample(:,2),C_sample(:,3),'b.')
+    hold on
+    scatter3(C_data(:,1),C_data(:,2),C_data(:,3),'r+')
+    surf(C1,C2,C3,'FaceAlpha',0.5)
+    surf(C1,C2,-C3,'FaceAlpha',0.5)
+    hold off
+    grid on
+    box on
+    set(gca,'Xdir','reverse','Ydir','reverse','FontSize',fontsize)
+    xlabel('$C_1$ [GPa]','Interpreter',interpreter);
+    ylabel('$C_2$ [GPa]','Interpreter',interpreter);
+    zlabel('$C_3$ [GPa]','Interpreter',interpreter);
+%     xlabel('Component $C_1$ [GPa]','Interpreter',interpreter);
+%     ylabel('Component $C_2$ [GPa]','Interpreter',interpreter);
+%     zlabel('Component $C_3$ [GPa]','Interpreter',interpreter);
+    legend('samples','data','support');
+    mysaveas(pathname,'samples_C1_C2_C3',formats);
+    mymatlab2tikz(pathname,'samples_C1_C2_C3.tex');
+    
+    figure('name','Samples of (C_4,C_5)')
+    clf
+    scatter(C_sample(:,4),C_sample(:,5),'b.')
+    hold on
+    scatter(C_data(:,4),C_data(:,5),'r+')
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$C_4$ [GPa]','Interpreter',interpreter);
+    ylabel('$C_5$ [GPa]','Interpreter',interpreter);
+%     xlabel('Component $C_4$ [GPa]','Interpreter',interpreter);
+%     ylabel('Component $C_5$ [GPa]','Interpreter',interpreter);
+    legend('sample','data')
+    mysaveas(pathname,'samples_C4_C5',formats);
+    mymatlab2tikz(pathname,'samples_C4_C5.tex');
+    
     figure('name','Samples of (ET,GL,NUT)')
     clf
     scatter3(ET_sample,GL_sample,NUT_sample,'b.')
@@ -187,7 +259,7 @@ if displaySolution
 %     xlabel('Young''s modulus $E^T$ [GPa]','Interpreter',interpreter);
 %     ylabel('Shear modulus $G^L$ [GPa]','Interpreter',interpreter);
 %     zlabel('Poisson''s ratio $\nu^T$','Interpreter',interpreter);
-%     legend('samples','data');
+    legend('samples','data');
     mysaveas(pathname,'samples_ET_GL_NUT',formats);
     mymatlab2tikz(pathname,'samples_ET_GL_NUT.tex');
 end

@@ -19,7 +19,7 @@ grid on
 box on
 xlim([0 T]);
 set(gca,'FontSize',16)
-xlabel('Time $t$ (s)','Interpreter','latex')
+xlabel('Time $t$ [s]','Interpreter','latex')
 ylabel('Amplitude $r(t)$','Interpreter','latex')
 % title('Ricker wavelet in Time Domain')
 % mymatlab2tikz('./','Ricker_time.tex');
@@ -44,7 +44,7 @@ grid on
 box on
 xlim([0 2]);
 set(gca,'FontSize',16)
-xlabel('Frequency $f$ (Hz)','Interpreter','latex')
+xlabel('Frequency $f$ [Hz]','Interpreter','latex')
 ylabel('Amplitude $|\hat{r}(f)|$','Interpreter','latex')
 % title('Ricker wavelet in Frequency Domain')
 % mymatlab2tikz('./','Ricker_freq.tex');

@@ -37,10 +37,11 @@ NU_data = E_data./(2*G_data)-1;
 lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data)); % GPa
 C1_data = lambda_data + 2/3*G_data; % GPa
 C2_data = G_data; % GPa
+C_data = [C1_data(:) C2_data(:)];
 fprintf('\nnb data = %d',length(E_data));
 
 %% Maximum likelihood estimation
-lambda = mleStoLinElasTensorIsot(C1_data,C2_data);
+lambda = mleStoLinElasTensorIsot(C_data);
 fprintf('\nlambda_1 = %.4f',lambda(1));
 fprintf('\nlambda_2 = %.4f',lambda(2));
 fprintf('\nlambda   = %.4f',lambda(3));
@@ -104,7 +105,8 @@ cdf_EN = @(e,n) integral2(@(xe,xn) pdf_EN(xe,xn),0,e,-1,n);
 N = 1e3; % number of samples
 C1_sample = gamrnd(a1,b1,N,1);
 C2_sample = gamrnd(a2,b2,N,1);
-lambda_sample = C1_sample-2/3*C2_sample;
+C_sample = [C1_sample(:) C2_sample(:)];
+lambda_sample = C_sample(1,:)-2/3*C_sample(:,2);
 E_sample = (9*C1_sample.*C2_sample)./(3*C1_sample+C2_sample);
 NU_sample = (3*C1_sample-2*C2_sample)./(6*C1_sample+2*C2_sample);
 
@@ -183,7 +185,7 @@ if displaySolution
     clf
     [X1,X2] = meshgrid(x1,x2);
     Z = pdf_C(X1,X2);
-    surfc(X1,X2,Z);
+    surf(X1,X2,Z);
     hold on
     plot3(C1_data,C2_data,pdf_C(C1_data,C2_data),'r+');
     hold off
@@ -204,7 +206,7 @@ if displaySolution
     xn = linspace(xn_min,xn_max,1e2);
     [Xe,Xn] = meshgrid(xe,xn);
     Z = pdf_EN(Xe,Xn);
-    surfc(Xe,Xn,Z);
+    surf(Xe,Xn,Z);
     hold on
     plot3(E_data,NU_data,pdf_EN(E_data,NU_data),'r+');
     hold off
@@ -215,8 +217,8 @@ if displaySolution
     xlabel('$e$ [GPa]','Interpreter',interpreter)
     ylabel('$n$','Interpreter',interpreter)
     zlabel('$p_{(E,N)}(e,n)$','Interpreter',interpreter)
-    mysaveas(pathname,'pdf_EN',formats);
-    mymatlab2tikz(pathname,'pdf_EN.tex');
+    mysaveas(pathname,'pdf_E_N',formats);
+    mymatlab2tikz(pathname,'pdf_E_N.tex');
     
     % Plot cdf of C1
     figure('name','cumulative distribution function of C1')
@@ -295,10 +297,27 @@ if displaySolution
     xlabel('$e$ [GPa]','Interpreter',interpreter)
     ylabel('$n$','Interpreter',interpreter)
     zlabel('$F_{(E,N)}(e,n)$','Interpreter',interpreter)
-    mysaveas(pathname,'cdf_EN',formats);
-    mymatlab2tikz(pathname,'cdf_EN.tex');
+    mysaveas(pathname,'cdf_E_N',formats);
+    mymatlab2tikz(pathname,'cdf_E_N.tex');
 
     %% Plot samples
+    figure('name','Samples of C=(C_1,C_2)')
+    clf
+    scatter(C1_sample,C2_sample,'b.')
+    hold on
+    scatter(C1_data,C2_data,'r+')
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$C_1$ [GPa]','Interpreter',interpreter);
+    ylabel('$C_2$ [GPa]','Interpreter',interpreter);
+%     xlabel('Component $C_1$ [GPa]','Interpreter',interpreter);
+%     ylabel('Component $C_2$ [GPa]','Interpreter',interpreter);
+    legend('sample','data')
+    mysaveas(pathname,'samples_C1_C2',formats);
+    mymatlab2tikz(pathname,'samples_C1_C2.tex');
+    
     figure('name','Samples of (E,N)')
     clf
     scatter(NU_sample,E_sample,'b.')
@@ -308,10 +327,12 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('Poisson''s ratio $\nu$','Interpreter',interpreter);
-    ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter);
+    xlabel('$\nu$','Interpreter',interpreter);
+    ylabel('$E$ [GPa]','Interpreter',interpreter);
+%     xlabel('Poisson''s ratio $\nu$','Interpreter',interpreter);
+%     ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter);
     legend('sample','data')
-    mysaveas(pathname,'samples_EN',formats);
-    mymatlab2tikz(pathname,'samples_EN.tex');
+    mysaveas(pathname,'samples_E_N',formats);
+    mymatlab2tikz(pathname,'samples_E_N.tex');
     
 end

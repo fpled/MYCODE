@@ -20,7 +20,7 @@ grid on
 box on
 xlim([0 T*1e6]);
 set(gca,'FontSize',16)
-xlabel('Time $t$ ($\mu$s)','Interpreter','latex')
+xlabel('Time $t$ [$\mu$s]','Interpreter','latex')
 ylabel('Amplitude $F(t)$','Interpreter','latex')
 % title('Exponentially weighted sine wavelet in Time Domain')
 % mymatlab2tikz('./','source_time.tex');
@@ -45,7 +45,7 @@ grid on
 box on
 xlim([0 5]);
 set(gca,'FontSize',16)
-xlabel('Frequency $f$ (MHz)','Interpreter','latex')
+xlabel('Frequency $f$ [MHz]','Interpreter','latex')
 ylabel('Amplitude $|\hat{F}(f)|$','Interpreter','latex')
 % title('Exponentially weighted sine wavelet in Frequency Domain')
 % mymatlab2tikz('./','source_freq.tex');

@@ -1,6 +1,6 @@
-function C_sample = mhsampleStoLinElasTensorIsotTrans(param,C_data,N)
-% function C_sample = mhsampleStoLinElasTensorIsotTrans(param,C_data,N)
-% Metropolis-Hastings Sampling for stochastic linear elastic tensor with
+function C_sample = slicesampleStoLinElasTensorIsotTrans(param,C_data,N)
+% function C_sample = slicesampleStoLinElasTensorIsotTrans(param,C_data,N)
+% Slice Sampling for stochastic linear elastic tensor with
 % transversely isotropic symmetry
 % param = (lambda_1,lambda_2,lambda_3,lambda_4,lambda_5,lambda)
 % C_data(:,1): data for random coordinate C1
@@ -27,17 +27,10 @@ mc2 = mean(C_data(:,2));
 mc3 = mean(C_data(:,3));
 
 %% Sample generation
-% Parameters of the trivariate normal distribution
-Mu = [mc1 mc2 mc3];
-Sigma = [-mc1^2/lambda -mc3^2/lambda -(mc1*mc3)/lambda
-         -mc3^2/lambda -mc2^2/lambda -(mc2*mc3)/lambda
-         -(mc1*mc3)/lambda -(mc2*mc3)/lambda -(mc3^2+mc1*mc2)/(2*lambda)];
-proppdf = @(c,y) mvnpdf(c,Mu,Sigma);
-proprnd = @(c) mvnrnd(Mu,Sigma);
 pdf = @(c) (c(1)>0).*(c(2)>0).*(c(1)*c(2)-c(3)^2>0).*(c(1)*c(2)-c(3)^2)^(-lambda)*exp(-lambda1*c(1)-lambda2*c(2)-lambda3*c(3));
 nsamples = N;
-start = Mu;
-smpl = mhsample(start,nsamples,'pdf',pdf,'proppdf',proppdf, 'proprnd',proprnd);
+start = [mc1 mc2 mc3];
+smpl = slicesample(start,nsamples,'pdf',pdf);
 
 C_sample(:,1:3) = smpl;
 C_sample(:,4) = gamrnd(a,b4,N,1);

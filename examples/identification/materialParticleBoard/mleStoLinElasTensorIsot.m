@@ -1,14 +1,16 @@
-function lambda = mleStoLinElasTensorIsot(C1_data,C2_data)
-% function lambda = mleStoLinElasTensorIsot(C1_data,C2_data)
+function lambda = mleStoLinElasTensorIsot(C_data)
+% function lambda = mleStoLinElasTensorIsot(C_data)
 % Maximum likelihood estimation for stochastic linear elastic tensor with
 % isotropic symmetry
-% C1_data: data for random coordinate C1
-% C2_data: data for random coordinate C2
+% C_data(:,1): data for random coordinate C1
+% C_data(:,2): data for random coordinate C2
 % lambda: parameters (lambda1,lambda2,lambda)
 % lambda(1) = lambda_1 > 0
 % lambda(2) = lambda_2 > 0
 % lambda(3) = lambda < 1/5
 
+C1_data = C_data(:,1);
+C2_data = C_data(:,2);
 n1_data = length(C1_data);
 n2_data = length(C2_data);
 data = [C1_data; C2_data];

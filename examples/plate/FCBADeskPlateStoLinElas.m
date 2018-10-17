@@ -179,8 +179,8 @@ for it=1:length(tests)
         materialSym = 'isotTrans';
         
         % Number of samples
-        N = 5e2;
-        MCMC = 'CUM'; % 'MH', 'BUM' or 'CUM' for materialSym = 'isotTrans'
+        N = 1e3;
+        MCMC = 'MH'; % 'MH', 'BUM', 'CUM' or 'SS' for materialSym = 'isotTrans'
         
         switch lower(materialSym)
             case 'isot'
@@ -191,9 +191,10 @@ for it=1:length(tests)
                 lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data)); % GPa
                 C1_data = lambda_data + 2/3*G_data; % GPa
                 C2_data = G_data; % GPa
+                C_data = [C1_data(:) C2_data(:)]; % GPa
                 
                 % Maximum likelihood estimation
-                lambda = mleStoLinElasTensorIsot(C1_data,C2_data);
+                lambda = mleStoLinElasTensorIsot(C_data);
                 
                 a1 = 1-lambda(3);
                 b1 = 1/lambda(1);
@@ -209,38 +210,56 @@ for it=1:length(tests)
                 
             case 'isottrans'
                 % Data
-                ET_data = mean_ET_data*1e6; % Pa
-                GL_data = mean_GL_data*1e6; % Pa
-                EL_data = mean_EL_data*1e6; % Pa
+                ET_data = mean_ET_data*1e-3; % GPa
+                GL_data = mean_GL_data*1e-3; % GPa
+                EL_data = mean_EL_data*1e-3; % GPa
                 NUL_data = mean_NUL_data;
                 NUT_data = 0.1+0.2*rand(length(ET_data),1); % artificial data for NUT varying from 0.1 to 0.3
-                GT_data = ET_data./(2*(1+NUT_data)); % Pa
-                kT_data = (EL_data.*ET_data)./(2*(1-NUT_data).*EL_data-4*ET_data.*(NUL_data).^2); % Pa
-                C1_data = EL_data + 4*(NUL_data.^2).*kT_data; % Pa
-                C2_data = 2*kT_data; % Pa
-                C3_data = 2*sqrt(2)*kT_data.*NUL_data; % Pa
-                C4_data = 2*GT_data; % Pa
-                C5_data = 2*GL_data; % Pa
+                GT_data = ET_data./(2*(1+NUT_data)); % GPa
+                kT_data = (EL_data.*ET_data)./(2*(1-NUT_data).*EL_data-4*ET_data.*(NUL_data).^2); % GPa
+                C1_data = EL_data + 4*(NUL_data.^2).*kT_data; % GPa
+                C2_data = 2*kT_data; % GPa
+                C3_data = 2*sqrt(2)*kT_data.*NUL_data; % GPa
+                C4_data = 2*GT_data; % GPa
+                C5_data = 2*GL_data; % GPa
+                C_data = [C1_data(:) C2_data(:) C3_data(:) C4_data(:) C5_data(:)];
                 
+                % Maximum likelihood estimation with MCMC method
+                mc1 = mean(C_data(:,1));
+                mc2 = mean(C_data(:,2));
+                mc3 = mean(C_data(:,3));
+                mc4 = mean(C_data(:,4));
+                mc5 = mean(C_data(:,5));
+                
+                lambda = -110; % lambda < 1/2
+                lambda1 = -(mc2*lambda)/(mc1*mc2-mc3^2); % lambda1 > 0
+                lambda2 = -(mc1*lambda)/(mc1*mc2-mc3^2); % lambda2 > 0
+                lambda3 = (2*mc3*lambda)/(mc1*mc2-mc3^2);
+                a = 1-2*lambda;
+                lambda4 = a/mc4; % lambda4 > 0
+                lambda5 = a/mc5; % lambda5 > 0
+                lambda0 = [lambda1 lambda2 lambda3 lambda4 lambda5 lambda];
+
                 % Sample generation
                 switch lower(MCMC)
                     case 'mh'
-                        C_sample = mhsampleStoLinElasTensorIsotTrans(C1_data,C2_data,C3_data,C4_data,C5_data,N);
+                        C_sample = mhsampleStoLinElasTensorIsotTrans(lambda0,C_data,N);
                     case 'bum'
-                        C_sample = mhsampleStoLinElasTensorIsotTrans_BUM(C1_data,C2_data,C3_data,C4_data,C5_data,N);
+                        C_sample = mhsampleStoLinElasTensorIsotTrans_BUM(lambda0,C_data,N);
                     case 'cum'
-                        C_sample = mhsampleStoLinElasTensorIsotTrans_CUM(C1_data,C2_data,C3_data,C4_data,C5_data,N);
+                        C_sample = mhsampleStoLinElasTensorIsotTrans_CUM(lambda0,C_data,N);
+                    case 'ss'
+                        C_sample = slicesampleStoLinElasTensorIsotTrans(lambda0,C_data,N);
                 end
                 
                 % Sample set
-                kT_sample = C_sample(2,:)/2;
-                NUL_sample = (C_sample(3,:)./kT_sample)/(2*sqrt(2));
-                EL_sample = C_sample(1,:) - 4*(NUL_sample.^2).*kT_sample;
-                GT_sample = C_sample(4,:)/2;
-                GL_sample = C_sample(5,:)/2;
-                k1 = 1./kT_sample+4*(NUL_sample.^2)./EL_sample;
-                k2 = 1./GT_sample;
-                ET_sample = 4./(k1+k2);
+                C_sample = C_sample*1e9; % Pa
+                kT_sample = C_sample(:,2)/2; % Pa
+                NUL_sample = (C_sample(:,3)./kT_sample)/(2*sqrt(2));
+                EL_sample = C_sample(:,1) - 4*(NUL_sample.^2).*kT_sample; % Pa
+                GT_sample = C_sample(:,4)/2; % Pa
+                GL_sample = C_sample(:,5)/2; % Pa
+                ET_sample = 4./(1./kT_sample+1./GT_sample+4*(NUL_sample.^2)./EL_sample); % Pa
                 NUT_sample = (ET_sample./GT_sample)/2-1;
                 
             otherwise
