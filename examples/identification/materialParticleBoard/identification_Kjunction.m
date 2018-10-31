@@ -399,8 +399,8 @@ for j=1:numDowel
         set(0,'DefaultAxesFontName','Times','DefaultAxesFontSize',16,...
             'DefaultTextInterpreter','tex');
         Scal = 1;
-        Unitx = '(mm)';
-        UnitU = '(mm)';
+        Unitx = '[mm]';
+        UnitU = '[mm]';
         
 %         figure('name','best fit line of initial mesh')
 %         fig1 = triplot(TRI_a_dowel,coordx_a_dowel,coordy_a_dowel,'r');
@@ -489,7 +489,7 @@ if displaySolution
         hold on
         grid on
         box on
-        xlabel('Applied load (N)','Interpreter',interpreter);
+        xlabel('Applied load [N]','Interpreter',interpreter);
         ylabel('Junction stiffness per unit length [N/rad]','Interpreter',interpreter);    
     end
     
@@ -499,7 +499,7 @@ if displaySolution
         hold on
         grid on
         box on
-        xlabel('Moment per unit length (N.m/m)','Interpreter',interpreter);
+        xlabel('Moment per unit length [N.m/m]','Interpreter',interpreter);
         ylabel('Variation of angle [$^{\circ}$]','Interpreter',interpreter);
     end
     
@@ -509,7 +509,7 @@ if displaySolution
         hold on
         grid on
         box on
-        xlabel('Applied load (N)','Interpreter',interpreter);
+        xlabel('Applied load [N]','Interpreter',interpreter);
         ylabel('Junction stiffness per unit length [N/rad]','Interpreter',interpreter);
     end
 end
@@ -520,7 +520,7 @@ bar(mean_Kscrew_data);
 grid on
 set(gca,'FontSize',fontsize)
 xlabel('Sample number','Interpreter',interpreter);
-ylabel('Junction stiffness per unit length (N/rad)','Interpreter',interpreter);
+ylabel('Junction stiffness per unit length [N/rad]','Interpreter',interpreter);
 mysaveas(pathname,'KjuncVis',formats);
 mymatlab2tikz(pathname,'KjuncVis.tex');
 
@@ -530,6 +530,6 @@ bar(mean_Kdowel_data);
 grid on
 set(gca,'FontSize',fontsize)
 xlabel('Sample number','Interpreter',interpreter);
-ylabel('Junction stiffness per unit length (N/rad)','Interpreter',interpreter);
+ylabel('Junction stiffness per unit length [N/rad]','Interpreter',interpreter);
 mysaveas(pathname,'KjuncTourillon',formats);
 mymatlab2tikz(pathname,'KjuncTourillon.tex');

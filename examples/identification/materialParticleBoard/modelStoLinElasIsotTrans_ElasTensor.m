@@ -10,8 +10,8 @@ close all
 %% Input data
 displaySolution = true;
 
-MCMC = 'ss';% Markov-Chain Monte Carlo (MCMC) method = 'MH', 'BUM', 'CUM' or 'SS'
-filename = ['modelStoLinElasIsotTrans_ElasTensor_' MCMC];
+MCMCalg = 'MH'; % algorithm for Markov-Chain Monte Carlo (MCMC) method = 'MH', 'BUM', 'CUM' or 'SS'
+filename = ['modelStoLinElasIsotTrans_ElasTensor_' MCMCalg];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification',filename);
 if ~exist(pathname,'dir')
@@ -45,39 +45,42 @@ C3_data = 2*sqrt(2)*kT_data.*NUL_data; % GPa
 C4_data = 2*GT_data; % GPa
 C5_data = 2*GL_data; % GPa
 C_data = [C1_data(:) C2_data(:) C3_data(:) C4_data(:) C5_data(:)];
-clear C1_data C2_data C3_data C4_data C5_data
-fprintf('\nnb data = %d',length(ET_data));
+
+mC_data = mean(C_data,1);
+vC_data = var(C_data,0,1);
+% vC_data = size(C_data,1)/(size(C_data,1)-1)*moment(C_data,2,1);
+sC_data = sqrt(norm(vC_data));
+dC_data = sC_data/norm(mC_data);
+
+%% Least-Squares estimation
+lambda = lseStoLinElasTensorIsotTrans(C_data,MCMCalg);
+
+a = 1-2*lambda(6);
+b4 = 1/lambda(4);
+b5 = 1/lambda(5);
+
+%% Pdfs and cdfs
+pdf_C4 = @(c4) gampdf(c4,a,b4); % Gamma probability density function of C4
+pdf_C5 = @(c5) gampdf(c5,a,b5); % Gamma probability density function of C5
+cdf_C4 = @(c4) gamcdf(c4,a,b4); % Gamma cumulative density function of C4
+cdf_C5 = @(c5) gamcdf(c5,a,b5); % Gamma cumulative density function of C5
 
 %% Sample generation
-N = 1e4; % number of samples
-
-mc1 = mean(C_data(:,1));
-mc2 = mean(C_data(:,2));
-mc3 = mean(C_data(:,3));
-mc4 = mean(C_data(:,4));
-mc5 = mean(C_data(:,5));
-
-lambda = -110; % lambda < 1/2
-lambda1 = -(mc2*lambda)/(mc1*mc2-mc3^2); % lambda1 > 0
-lambda2 = -(mc1*lambda)/(mc1*mc2-mc3^2); % lambda2 > 0
-lambda3 = (2*mc3*lambda)/(mc1*mc2-mc3^2);
-a = 1-2*lambda;
-lambda4 = a/mc4; % lambda4 > 0
-lambda5 = a/mc5; % lambda5 > 0
-lambda0 = [lambda1 lambda2 lambda3 lambda4 lambda5 lambda];
-
-switch lower(MCMC)
+N = 1e3; % number of samples
+switch lower(MCMCalg)
     case 'mh'
-        C_sample = mhsampleStoLinElasTensorIsotTrans(lambda0,C_data,N);
+        C_sample(:,1:3) = mhsampleStoLinElasTensorIsotTrans(lambda,C_data(:,1:3),N);
     case 'bum'
-        C_sample = mhsampleStoLinElasTensorIsotTrans_BUM(lambda0,C_data,N);
+        C_sample(:,1:3) = mhsampleStoLinElasTensorIsotTrans_BUM(lambda,C_data(:,1:3),N);
     case 'cum'
-        C_sample = mhsampleStoLinElasTensorIsotTrans_CUM(lambda0,C_data,N);
+        C_sample(:,1:3) = mhsampleStoLinElasTensorIsotTrans_CUM(lambda,C_data(:,1:3),N);
     case 'ss'
-        C_sample = slicesampleStoLinElasTensorIsotTrans(lambda0,C_data,N);
+        C_sample = slicesampleStoLinElasTensorIsotTrans(lambda,C_data(:,1:3),N);
+    otherwise
+        error(['MCMC algorithm ' MCMC ' not implemented'])
 end
-
-lambda = lambda0;
+C_sample(:,4) = gamrnd(a,b4,N,1);
+C_sample(:,5) = gamrnd(a,b5,N,1);
 
 kT_sample = C_sample(:,2)/2;
 NUL_sample = (C_sample(:,3)./kT_sample)/(2*sqrt(2));
@@ -87,6 +90,17 @@ GL_sample = C_sample(:,5)/2;
 ET_sample = 4./(1./kT_sample+1./GT_sample+4*(NUL_sample.^2)./EL_sample);
 NUT_sample = (ET_sample./GT_sample)/2-1;
 
+mC_sample = mean(C_sample,1);
+vC_sample = var(C_sample,0,1);
+% vC_sample = size(C_sample,1)/(size(C_sample,1)-1)*moment(C_sample,2,1);
+sC_sample = sqrt(norm(vC_sample));
+dC_sample = sC_sample/norm(mC_sample);
+
+%% Ouputs
+fprintf('\nnb data   = %g',size(C_data,1));
+fprintf('\nnb sample = %g',N);
+fprintf('\n');
+
 fprintf('\nlambda_1 = %.4f',lambda(1));
 fprintf('\nlambda_2 = %.4f',lambda(2));
 fprintf('\nlambda_3 = %.4f',lambda(3));
@@ -94,33 +108,40 @@ fprintf('\nlambda_4 = %.4f',lambda(4));
 fprintf('\nlambda_5 = %.4f',lambda(5));
 fprintf('\nlambda   = %.4f',lambda(6));
 fprintf('\n');
-
-a4 = 1-2*lambda(6);
-b4 = 1/lambda(4);
-a5 = 1-2*lambda(6);
-b5 = 1/lambda(5);
-fprintf('\nalpha_4 = %.4f',a4);
+fprintf('\nalpha_4 = %.4f',a);
 fprintf('\nbeta_4  = %.4f',b4);
 fprintf('\n');
-
-fprintf('\nalpha_5 = %.4f',a5);
+fprintf('\nalpha_5 = %.4f',a);
 fprintf('\nbeta_5  = %.4f',b5);
 fprintf('\n');
 
-%% Pdfs and cdfs
-pdf_C4 = @(c4) gampdf(c4,a4,b4); % Gamma probability density function of C4
-pdf_C5 = @(c5) gampdf(c5,a5,b5); % Gamma probability density function of C5
-cdf_C4 = @(c4) gamcdf(c4,a4,b4); % Gamma cumulative density function of C4
-cdf_C5 = @(c5) gamcdf(c5,a5,b5); % Gamma cumulative density function of C5
+for i=1:5
+    fprintf('\nmean(C%u_sample) = %.4f GPa',i,mC_sample(i));
+    fprintf('\nmean(C%u_data)   = %.4f GPa',i,mC_data(i));
+    fprintf('\nvar(C%u_sample)  = %.4f (GPa)^2',i,vC_sample(i));
+    fprintf('\nvar(C%u_data)    = %.4f (GPa)^2',i,vC_data(i));
+    fprintf('\nstd(C%u_sample)  = %.4f GPa',i,sqrt(vC_sample(i)));
+    fprintf('\nstd(C%u_data)    = %.4f GPa',i,sqrt(vC_data(i)));
+    fprintf('\ndisp(C%u_sample) = %.4f',i,sqrt(vC_sample(i))/mC_sample(i));
+    fprintf('\ndisp(C%u_data)   = %.4f',i,sqrt(vC_data(i))/mC_data(i));
+    fprintf('\n');
+end
+
+alpha = 1/2;
+err = funoptimlseIsotTrans(lambda,C_data,mC_data,dC_data,MCMCalg);
+err_sample = alpha * norm(mC_sample - mC_data)^2/norm(mC_data)^2 + (1-alpha) * (dC_sample - dC_data)^2/(dC_data)^2;
+fprintf('\nmean-squared error mse        = %.4e',err);
+fprintf('\nmean-squared error mse_sample = %.4e',err_sample);
+fprintf('\n');
 
 %% Display
 if displaySolution
     %% Plot pdfs and cdfs
     N = 100;
-    x4_min = max(0,mean(C_data(:,4))-8*std(C_data(:,4)));
-    x4_max = mean(C_data(:,4))+8*std(C_data(:,4));
-    x5_min = max(0,mean(C_data(:,5))-8*std(C_data(:,5)));
-    x5_max = mean(C_data(:,5))+8*std(C_data(:,5));
+    x4_min = max(0,mean(C_data(:,4))-10*std(C_data(:,4)));
+    x4_max = mean(C_data(:,4))+10*std(C_data(:,4));
+    x5_min = max(0,mean(C_data(:,5))-10*std(C_data(:,5)));
+    x5_max = mean(C_data(:,5))+10*std(C_data(:,5));
     
     % Plot pdf of C4
     figure('Name','Probability density function of C4')

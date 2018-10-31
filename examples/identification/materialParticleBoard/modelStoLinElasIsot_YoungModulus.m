@@ -29,9 +29,13 @@ pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
 load(fullfile(pathnameIdentification,filenameAna));
 
 E_data = mean_ET_data*1e-3; % GPa
-% mean_E = mean(E_data);
-% std_E = std(E_data);
-fprintf('\nnb data = %d',length(E_data));
+
+mE_data = mean(E_data,1);
+vE_data = var(E_data,0,1);
+% vE_data = size(E_data,1)/(size(E_data,1)-1)*moment(E_data,2,1);
+sE_data = sqrt(vE_data);
+% sE_data = std(E_data,0,1);
+dE_data = sE_data/mE_data;
 
 %% Maximum likelihood estimation
 phat = gamfit(E_data);
@@ -44,19 +48,11 @@ phat = gamfit(E_data);
 
 a = phat(1);
 b = phat(2);
-fprintf('\nalpha = %.4f',a);
-fprintf('\nbeta  = %.4f',b);
-fprintf('\n');
 
 mE = a*b;
 vE = a*b^2;
 sE = sqrt(vE);
 dE = sE/mE; % dE = 1/sqrt(a);
-fprintf('\nmean(E) = %.4f GPa',mE);
-fprintf('\nvar(E)  = %.4f (GPa)^2',vE);
-fprintf('\nstd(E)  = %.4f GPa',sE);
-fprintf('\ndisp(E) = %.4f',dE);
-fprintf('\n');
 
 %% Pdf and cdf
 pdf_E = @(x) gampdf(x,a,b);
@@ -65,10 +61,47 @@ pdf_E = @(x) gampdf(x,a,b);
 cdf_E = @(x) gamcdf(x,a,b);
 
 %% Sample generation
-N = 1e4; % number of samples
-e = gamrnd(a,b,N,1);
+N = 1e3; % number of samples
+E_sample = gamrnd(a,b,N,1);
 % u = randn(N,1);
-% e = gaminv(normcdf(u),a,b);
+% E_sample = gaminv(normcdf(u),a,b);
+
+mE_sample = mean(E_sample,1);
+vE_sample = var(E_sample,0,1);
+% vE_sample = size(E_sample,1)/(size(E_sample,1)-1)*moment(E_sample,2,1);
+sE_sample = sqrt(vE_sample);
+% sE_sample = std(E_sample,0,1);
+dE_sample = sE_sample/mE_sample;
+
+%% Outputs
+fprintf('\nnb data = %g',length(E_data));
+fprintf('\nnb sample = %g',N);
+fprintf('\n');
+
+fprintf('\nalpha = %.4f',a);
+fprintf('\nbeta  = %.4f',b);
+fprintf('\n');
+
+fprintf('\nmean(E)        = %.4f GPa',mE);
+fprintf('\nmean(E_sample) = %.4f GPa',mE_sample);
+fprintf('\nmean(E_data)   = %.4f GPa',mE_data);
+fprintf('\nvar(E)         = %.4f (GPa)^2',vE);
+fprintf('\nvar(E_sample)  = %.4f (GPa)^2',vE_sample);
+fprintf('\nvar(E_data)    = %.4f (GPa)^2',vE_data);
+fprintf('\nstd(E)         = %.4f GPa',sE);
+fprintf('\nstd(E_sample)  = %.4f GPa',sE_sample);
+fprintf('\nstd(E_data)    = %.4f GPa',sE_data);
+fprintf('\ndisp(E)        = %.4f',dE);
+fprintf('\ndisp(E_sample) = %.4f',dE_sample);
+fprintf('\ndisp(E_data)   = %.4f',dE_data);
+fprintf('\n');
+    
+alpha = 1/2;
+mse = alpha * (mE - mE_data)^2/(mE_data)^2 + (1-alpha) * (dE - dE_data)^2/(dE_data)^2;
+mse_sample = alpha * (mE_sample - mE_data)^2/(mE_data)^2 + (1-alpha) * (dE_sample - dE_data)^2/(dE_data)^2;
+fprintf('\nmean-squared error mse        = %.4e',mse);
+fprintf('\nmean-squared error mse_sample = %.4e',mse_sample);
+fprintf('\n');
 
 %% Display
 if displaySolution
@@ -130,7 +163,7 @@ if displaySolution
     %% Plot samples
     figure('Name','Samples')
     clf
-    scatter(1:N,e,'b.')
+    scatter(1:N,E_sample,'b.')
     hold on
     plot([1 N],[mE mE],'-r','LineWidth',linewidth)
     hold off

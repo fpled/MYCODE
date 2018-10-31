@@ -38,46 +38,26 @@ lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data)); % GPa
 C1_data = lambda_data + 2/3*G_data; % GPa
 C2_data = G_data; % GPa
 C_data = [C1_data(:) C2_data(:)];
-fprintf('\nnb data = %d',length(E_data));
 
-%% Maximum likelihood estimation
-lambda = mleStoLinElasTensorIsot(C_data);
-fprintf('\nlambda_1 = %.4f',lambda(1));
-fprintf('\nlambda_2 = %.4f',lambda(2));
-fprintf('\nlambda   = %.4f',lambda(3));
-fprintf('\n');
+mC_data = mean(C_data,1);
+vC_data = var(C_data,0,1);
+% vC_data = size(C_data,1)/(size(C_data,1)-1)*moment(C_data,2,1);
+sC_data = sqrt(norm(vC_data));
+dC_data = sC_data/norm(mC_data);
+
+%% Parameter estimation
+lambda = mleStoLinElasTensorIsot(C_data); % Maximum likelihood estimation
+% lambda = lseStoLinElasTensorIsot(C_data); % Least-squares estimation
 
 a1 = 1-lambda(3);
 b1 = 1/lambda(1);
 a2 = 1-5*lambda(3);
 b2 = 1/lambda(2);
-fprintf('\nalpha_1 = %.4f',a1);
-fprintf('\nbeta_1  = %.4f',b1);
-fprintf('\n');
 
-fprintf('\nalpha_2 = %.4f',a2);
-fprintf('\nbeta_2  = %.4f',b2);
-fprintf('\n');
-
-mC1 = a1*b1;
-vC1 = a1*b1^2;
-sC1 = sqrt(vC1);
-dC1 = sC1/mC1; % dC1 = 1/sqrt(a1);
-fprintf('\nmean(C1) = %.4f GPa',mC1);
-fprintf('\nvar(C1)  = %.4f (GPa)^2',vC1);
-fprintf('\nstd(C1)  = %.4f GPa',sC1);
-fprintf('\ndisp(C1) = %.4f',dC1);
-fprintf('\n');
-
-mC2 = a2*b2;
-vC2 = a2*b2^2;
-sC2 = sqrt(vC2);
-dC2 = sC2/mC2; % dC2 = 1/sqrt(a2);
-fprintf('\nmean(C2) = %.4f GPa',mC2);
-fprintf('\nvar(C2)  = %.4f (GPa)^2',vC2);
-fprintf('\nstd(C2)  = %.4f GPa',sC2);
-fprintf('\ndisp(C2) = %.4f',dC2);
-fprintf('\n');
+mC = [a1*b1 a2*b2];
+vC = [a1*b1^2 a2*b2^2];
+sC = sqrt(norm(vC));
+dC = sC/norm(mC);
 
 k1ln = -gammaln(a1)-a1*log(b1);
 k2ln = -gammaln(a2)-a2*log(b2);
@@ -106,9 +86,56 @@ N = 1e3; % number of samples
 C1_sample = gamrnd(a1,b1,N,1);
 C2_sample = gamrnd(a2,b2,N,1);
 C_sample = [C1_sample(:) C2_sample(:)];
-lambda_sample = C_sample(1,:)-2/3*C_sample(:,2);
+
+lambda_sample = C1_sample-2/3*C2_sample;
 E_sample = (9*C1_sample.*C2_sample)./(3*C1_sample+C2_sample);
 NU_sample = (3*C1_sample-2*C2_sample)./(6*C1_sample+2*C2_sample);
+
+mC_sample = mean(C_sample,1);
+vC_sample = var(C_sample,0,1);
+% vC_sample = size(C_sample,1)/(size(C_sample,1)-1)*moment(C_sample,2,1);
+sC_sample = sqrt(norm(vC_sample));
+dC_sample = sC_sample/norm(mC_sample);
+
+%% Outputs
+fprintf('\nnb data   = %g',size(C_data,1));
+fprintf('\nnb sample = %g',N);
+fprintf('\n');
+
+fprintf('\nlambda_1 = %.4f',lambda(1));
+fprintf('\nlambda_2 = %.4f',lambda(2));
+fprintf('\nlambda   = %.4f',lambda(3));
+fprintf('\n');
+fprintf('\nalpha_1 = %.4f',a1);
+fprintf('\nbeta_1  = %.4f',b1);
+fprintf('\n');
+fprintf('\nalpha_2 = %.4f',a2);
+fprintf('\nbeta_2  = %.4f',b2);
+fprintf('\n');
+
+for i=1:2
+    fprintf('\nmean(C%u)        = %.4f GPa',i,mC(i));
+    fprintf('\nmean(C%u_sample) = %.4f GPa',i,mC_sample(i));
+    fprintf('\nmean(C%u_data)   = %.4f GPa',i,mC_data(i));
+    fprintf('\nvar(C%u)         = %.4f (GPa)^2',i,vC(i));
+    fprintf('\nvar(C%u_sample)  = %.4f (GPa)^2',i,vC_sample(i));
+    fprintf('\nvar(C%u_data)    = %.4f (GPa)^2',i,vC_data(i));
+    fprintf('\nstd(C%u)         = %.4f GPa',i,sqrt(vC(i)));
+    fprintf('\nstd(C%u_sample)  = %.4f GPa',i,sqrt(vC_sample(i)));
+    fprintf('\nstd(C%u_data)    = %.4f GPa',i,sqrt(vC_data(i)));
+    fprintf('\ndisp(C%u)        = %.4f',i,sqrt(vC(i))/mC(i));
+    fprintf('\ndisp(C%u_sample) = %.4f',i,sqrt(vC_sample(i))/mC_sample(i));
+    fprintf('\ndisp(C%u_data)   = %.4f',i,sqrt(vC_data(i))/mC_data(i));
+    fprintf('\n');
+end
+
+alpha = 1/2;
+err = funoptimlseIsot(lambda,mC_data,dC_data);
+% err = alpha * norm(mC - mC_data)^2/norm(mC_data)^2 + (1-alpha) * (dC - dC_data)^2/(dC_data)^2;
+err_sample = alpha * norm(mC_sample - mC_data)^2/norm(mC_data)^2 + (1-alpha) * (dC_sample - dC_data)^2/(dC_data)^2;
+fprintf('\nmean-squared error mse        = %.4e',err);
+fprintf('\nmean-squared error mse_sample = %.4e',err_sample);
+fprintf('\n');
 
 %% Display
 if displaySolution
@@ -134,10 +161,10 @@ if displaySolution
     mymatlab2tikz(pathname,'data_G.tex');
     
     %% Plot pdfs and cdfs
-    x1_min = max(0,mean(C1_data)-4*std(C1_data));
-    x1_max = mean(C1_data)+4*std(C1_data);
-    x2_min = max(0,mean(C2_data)-8*std(C2_data));
-    x2_max = mean(C2_data)+8*std(C2_data);
+    x1_min = max(0,mean(C1_data)-5*std(C1_data));
+    x1_max = mean(C1_data)+5*std(C1_data);
+    x2_min = max(0,mean(C2_data)-10*std(C2_data));
+    x2_max = mean(C2_data)+10*std(C2_data);
     
     xe_min = max(0,mean(E_data)-10*std(E_data));
     xe_max = mean(E_data)+10*std(E_data);
