@@ -180,7 +180,7 @@ for it=1:length(tests)
         
         % Number of samples
         N = 1e3;
-        MCMC = 'MH'; % 'MH', 'BUM', 'CUM' or 'SS' for materialSym = 'isotTrans'
+        MCMCalg = 'MH'; % 'MH', 'BUM', 'CUM' or 'SS' for materialSym = 'isotTrans'
         
         switch lower(materialSym)
             case 'isot'
@@ -196,17 +196,21 @@ for it=1:length(tests)
                 % Maximum likelihood estimation
                 lambda = mleStoLinElasTensorIsot(C_data);
                 
-                a1 = 1-lambda(3);
-                b1 = 1/lambda(1);
-                a2 = 1-5*lambda(3);
-                b2 = 1/lambda(2);
+                la1 = lambda(1); % la1 > 0
+                la2 = lambda(2); % la2 > 0
+                la  = lambda(3); % la < 1/5
+                
+                a1 = 1-la;
+                b1 = 1/la1;
+                a2 = 1-5*la;
+                b2 = 1/la2;
                 
                 % Sample set
-                C1_sample = gamrnd(a1,b1,N,1)*1e9; % Pa
-                C2_sample = gamrnd(a2,b2,N,1)*1e9; % Pa
-                lambda_sample = C1_sample-2/3*C2_sample; % Pa
-                E_sample = (9*C1_sample.*C2_sample)./(3*C1_sample+C2_sample); % Pa
-                NU_sample = (3*C1_sample-2*C2_sample)./(6*C1_sample+2*C2_sample);
+                C_sample(:,1) = gamrnd(a1,b1,N,1)*1e9; % Pa
+                C_sample(:,2) = gamrnd(a2,b2,N,1)*1e9; % Pa
+                lambda_sample = C_sample(:,1)-2/3*C_sample(:,2); % Pa
+                E_sample = (9*C_sample(:,1).*C_sample(:,2))./(3*C_sample(:,1)+C_sample(:,2)); % Pa
+                NU_sample = (3*C_sample(:,1)-2*C_sample(:,2))./(6*C_sample(:,1)+2*C_sample(:,2));
                 
             case 'isottrans'
                 % Data
@@ -225,32 +229,34 @@ for it=1:length(tests)
                 C_data = [C1_data(:) C2_data(:) C3_data(:) C4_data(:) C5_data(:)];
                 
                 % Maximum likelihood estimation with MCMC method
-                mc1 = mean(C_data(:,1));
-                mc2 = mean(C_data(:,2));
-                mc3 = mean(C_data(:,3));
-                mc4 = mean(C_data(:,4));
-                mc5 = mean(C_data(:,5));
+                mC_data = mean(C_data,1);
                 
-                lambda = -110; % lambda < 1/2
-                lambda1 = -(mc2*lambda)/(mc1*mc2-mc3^2); % lambda1 > 0
-                lambda2 = -(mc1*lambda)/(mc1*mc2-mc3^2); % lambda2 > 0
-                lambda3 = (2*mc3*lambda)/(mc1*mc2-mc3^2);
-                a = 1-2*lambda;
-                lambda4 = a/mc4; % lambda4 > 0
-                lambda5 = a/mc5; % lambda5 > 0
-                lambda0 = [lambda1 lambda2 lambda3 lambda4 lambda5 lambda];
-
+                la = -100; % la < 1/2
+                la1 = -(mC_data(2)*la)/(mC_data(1)*mC_data(2)-mC_data(3)^2); % la1 > 0
+                la2 = -(mC_data(1)*la)/(mC_data(1)*mC_data(2)-mC_data(3)^2); % la2 > 0
+                la3 = (2*mC_data(3)*la)/(mC_data(1)*mC_data(2)-mC_data(3)^2); % la3 in R such that 2*sqrt(la1*la2)-la3 > 0
+                a = 1-2*la; % a > 0
+                la4 = a/mC_data(4); % la4 > 0
+                la5 = a/mC_data(5); % la5 > 0
+                b4 = 1/la4; % b4 > 0
+                b5 = 1/la5; % b5 > 0
+                lambda0 = [la1 la2 la3 la4 la5 la];
+                
                 % Sample generation
-                switch lower(MCMC)
+                switch lower(MCMCalg)
                     case 'mh'
-                        C_sample = mhsampleStoLinElasTensorIsotTrans(lambda0,C_data,N);
+                        C_sample(:,1:3) = mhsampleStoLinElasTensorIsotTrans(lambda0,C_data(:,1:3),N);
                     case 'bum'
-                        C_sample = mhsampleStoLinElasTensorIsotTrans_BUM(lambda0,C_data,N);
+                        C_sample(:,1:3) = mhsampleStoLinElasTensorIsotTrans_BUM(lambda0,C_data(:,1:3),N);
                     case 'cum'
-                        C_sample = mhsampleStoLinElasTensorIsotTrans_CUM(lambda0,C_data,N);
+                        C_sample(:,1:3) = mhsampleStoLinElasTensorIsotTrans_CUM(lambda0,C_data(:,1:3),N);
                     case 'ss'
-                        C_sample = slicesampleStoLinElasTensorIsotTrans(lambda0,C_data,N);
+                        C_sample = slicesampleStoLinElasTensorIsotTrans(lambda0,C_data(:,1:3),N);
+                    otherwise
+                        error(['MCMC algorithm ' MCMC ' not implemented'])
                 end
+                C_sample(:,4) = gamrnd(a,b4,N,1);
+                C_sample(:,5) = gamrnd(a,b5,N,1);
                 
                 % Sample set
                 C_sample = C_sample*1e9; % Pa

@@ -1,5 +1,5 @@
-function f = funoptimlseIsot(lambda,mC_data,dC_data,varargin)
-% function f = funoptimlseIsot(lambda,mC_data,dC_data,varargin)
+function f = funoptimlseIsot(lambda,mC_data,nuC_data,varargin)
+% function f = funoptimlseIsot(lambda,mC_data,nuC_data,varargin)
 
 la1 = lambda(1);
 la2 = lambda(2);
@@ -14,13 +14,14 @@ mC1 = a1*b1;
 mC2 = a2*b2;
 mC = [mC1 mC2];
 
-vC1 = a1*b1^2;
-vC2 = a2*b2^2;
-vC = [vC1 vC2];
-sC = sqrt(norm(vC));
-dC = sC/norm(mC);
+% vC1 = a1*b1^2;
+% vC2 = a2*b2^2;
+% vC = [vC1 vC2];
+% sC = sqrt(norm(vC));
+% dC = sC/norm(mC);
 
-alpha = 1/2;
-f = alpha * norm(mC - mC_data)^2/norm(mC_data)^2 + (1-alpha) * (dC - dC_data)^2/(dC_data)^2;
+nuC = log(96) + psi(a1)+log(b1) + 5*(psi(a2)+log(b2));
+
+f = [mC nuC] - [mC_data nuC_data];
 
 end

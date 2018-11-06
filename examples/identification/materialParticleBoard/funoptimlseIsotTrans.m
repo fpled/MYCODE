@@ -1,5 +1,5 @@
-function f = funoptimlseIsotTrans(lambda,C_data,mC_data,dC_data,MCMCalg,varargin)
-% function f = funoptimlseIsotTrans(lambda,C_data,mC_data,dC_data,MCMCalg,varargin)
+function [f,C_sample] = funoptimlseIsotTrans(lambda,C_data,mC_data,nuC_data,MCMCalg,varargin)
+% function [f,C_sample] = funoptimlseIsotTrans(lambda,C_data,mC_data,nuC_data,MCMCalg,varargin)
 
 la4 = lambda(4);
 la5 = lambda(5);
@@ -9,8 +9,16 @@ a = 1-2*la;
 b4 = 1/la4;
 b5 = 1/la5;
 
-N = 1e3; % number of samples
+mC4 = a*b4;
+mC5 = a*b5;
+mphiC4 = 2*(psi(a)+log(b4));
+mphiC5 = 2*(psi(a)+log(b5));
 
+% convergence analysis
+N = 100; % initial number of samples
+addSamplesFactor = 0.1; % percentage of additional samples
+tol = 1e-6; % prescribed stagnation tolerance
+Nmax = 1e4; % maximal number of samples
 switch lower(MCMCalg)
     case 'mh'
         C_sample = mhsampleStoLinElasTensorIsotTrans(lambda,C_data(:,1:3),N);
@@ -25,21 +33,61 @@ switch lower(MCMCalg)
 end
 
 mC123 = mean(C_sample,1);
-mC4 = a*b4;
-mC5 = a*b5;
 mC = [mC123 mC4 mC5];
 
-vC123 = var(C_sample,0,1);
-% vC123 = size(C_sample,1)/(size(C_sample,2)-1)*moment(C_sample,2,1);
-vC4 = a*b4^2;
-vC5 = a*b5^2;
-vC = [vC123 vC4 vC5];
+% vC123 = var(C_sample,0,1);
+% % vC123 = size(C_sample,1)/(size(C_sample,2)-1)*moment(C_sample,2,1);
+% vC4 = a*b4^2;
+% vC5 = a*b5^2;
+% vC = [vC123 vC4 vC5];
+%
+% sC = sqrt(norm(vC));
+% dC = sC/norm(mC);
 
-sC = sqrt(norm(vC));
-dC = sC/norm(mC);
+phiC123 = log(C_sample(:,1).*C_sample(:,2)-C_sample(:,3).^2);
+mphiC123 = mean(phiC123,1);
+nuC = mphiC123 + mphiC4 + mphiC5;
 
-alpha = 1/2;
+err = norm([mC nuC] - [mC_data nuC_data])^2/norm([mC_data nuC_data])^2;
+err_stagn = 1;
+while (err_stagn > tol) && (err > tol) && (N < Nmax)
+    Nadd = ceil(addSamplesFactor*N);
+    N = N + Nadd;
+    switch lower(MCMCalg)
+        case 'mh'
+            C_sample_add = mhsampleStoLinElasTensorIsotTrans(lambda,C_data(:,1:3),Nadd);
+        case 'bum'
+            C_sample_add = mhsampleStoLinElasTensorIsotTrans_BUM(lambda,C_data(:,1:3),Nadd);
+        case 'cum'
+            C_sample_add = mhsampleStoLinElasTensorIsotTrans_CUM(lambda,C_data(:,1:3),Nadd);
+        case 'ss'
+            C_sample_add = slicesampleStoLinElasTensorIsotTrans(lambda,C_data(:,1:3),Nadd);
+        otherwise
+            error(['MCMC algorithm ' MCMC ' not implemented'])
+    end
+    C_sample = [C_sample;C_sample_add];
+    mC123 = mean(C_sample,1);
+    mC = [mC123 mC4 mC5];
+    
+    % vC123 = var(C_sample,0,1);
+    % % vC123 = size(C_sample,1)/(size(C_sample,2)-1)*moment(C_sample,2,1);
+    % vC4 = a*b4^2;
+    % vC5 = a*b5^2;
+    % vC = [vC123 vC4 vC5];
+    %
+    % sC = sqrt(norm(vC));
+    % dC = sC/norm(mC);
+    
+    phiC123 = log(C_sample(:,1).*C_sample(:,2)-C_sample(:,3).^2);
+    mphiC123 = mean(phiC123,1);
+    nuC = mphiC123 + mphiC4 + mphiC5;
+    
+    err_old = err;
+    err = norm([mC nuC] - [mC_data nuC_data])^2/norm([mC_data nuC_data])^2;
+    err_stagn = abs(err-err_old);
+end
 
-f = alpha * norm(mC - mC_data)^2/norm(mC_data)^2 + (1-alpha) * (dC - dC_data)^2/(dC_data)^2;
+f = norm([mC nuC] - [mC_data nuC_data])^2;
+% f = norm([mC nuC] - [mC_data nuC_data])^2/norm([mC_data nuC_data])^2;
 
 end

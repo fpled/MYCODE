@@ -1,5 +1,5 @@
-function C_sample = mhsampleStoLinElasTensorIsotTrans(lambda,C_data,N)
-% function C_sample = mhsampleStoLinElasTensorIsotTrans(lambda,C_data,N)
+function [C_sample,accept] = mhsampleStoLinElasTensorIsotTrans(lambda,C_data,N)
+% function [C_sample,accept] = mhsampleStoLinElasTensorIsotTrans(lambda,C_data,N)
 % Metropolis-Hastings Sampling for stochastic linear elastic tensor with
 % transversely isotropic symmetry
 % lambda = (la1,la2,la3,la4,la5,la)
@@ -16,8 +16,8 @@ function C_sample = mhsampleStoLinElasTensorIsotTrans(lambda,C_data,N)
 la1 = lambda(1);
 la2 = lambda(2);
 la3 = lambda(3);
-la4 = lambda(4);
-la5 = lambda(5);
+% la4 = lambda(4);
+% la5 = lambda(5);
 la  = lambda(6);
 
 mC = mean(C_data(:,1:3),1);
@@ -29,12 +29,23 @@ Sigma = [-mC(1)^2/la -mC(3)^2/la -(mC(1)*mC(3))/la
          -mC(3)^2/la -mC(2)^2/la -(mC(2)*mC(3))/la
          -(mC(1)*mC(3))/la -(mC(2)*mC(3))/la -(mC(3)^2+mC(1)*mC(2))/(2*la)];
 
+start = mC;
+nsamples = N;
 proppdf = @(c,y) mvnpdf(c,Mu,Sigma);
 proprnd = @(c) mvnrnd(Mu,Sigma);
-% pdf = @(c) (c(1)>0).*(c(2)>0).*(c(1)*c(2)-c(3)^2>0).*(c(1)*c(2)-c(3)^2)^(-la)*exp(-la1*c(1)-la2*c(2)-la3*c(3));
-pdf = @(c) (c(1)>0).*(c(2)>0).*(c(1)*c(2)-c(3)^2>0).*exp(-la*log(c(1)*c(2)-c(3)^2)-la1*c(1)-la2*c(2)-la3*c(3));
-nsamples = N;
-start = mC;
-C_sample = mhsample(start,nsamples,'pdf',pdf,'proppdf',proppdf,'proprnd',proprnd);
+% pdf = @(c) (c(1)>0).*(c(2)>0).*(c(1)*c(2)-c(3)^2>0)...
+%     .*(c(1)*c(2)-c(3)^2)^(-la)*exp(-la1*c(1)-la2*c(2)-la3*c(3));
+% pdf = @(c) (c(1)>0).*(c(2)>0).*(c(1)*c(2)-c(3)^2>0)...
+%     .*exp(-la*log(c(1)*c(2)-c(3)^2)-la1*c(1)-la2*c(2)-la3*c(3));
+[C_sample,accept] = mhsample(start,nsamples,'pdf',@(c) pdf(c,la1,la2,la3,la),'proppdf',proppdf,'proprnd',proprnd);
 
+end
+
+function p = pdf(c,la1,la2,la3,la)
+supp = (c(1)>0).*(c(2)>0).*(c(1)*c(2)-c(3)^2>0);
+p = (c(1)*c(2)-c(3)^2)^(-la)*exp(-la1*c(1)-la2*c(2)-la3*c(3));
+if p==0
+    p = exp(-745);
+end
+p = supp.*p;
 end

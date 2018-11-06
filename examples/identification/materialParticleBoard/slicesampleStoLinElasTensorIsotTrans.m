@@ -16,21 +16,28 @@ function C_sample = slicesampleStoLinElasTensorIsotTrans(lambda,C_data,N)
 la1 = lambda(1);
 la2 = lambda(2);
 la3 = lambda(3);
-la4 = lambda(4);
-la5 = lambda(5);
+% la4 = lambda(4);
+% la5 = lambda(5);
 la  = lambda(6);
 
 mC = mean(C_data(:,1:3),1);
-% mC1 = mC(1); % mC1 = mean(C_data(:,1));
-% mC2 = mC(2); % mC2 = mean(C_data(:,2));
-% mC3 = mC(3); % mC3 = mean(C_data(:,3));
 
 %% Sample generation
-pdf = @(c) (c(1)>0).*(c(2)>0).*(c(1)*c(2)-c(3)^2>0)...%.*(c(1)*c(2)-c(3)^2)^(-la)...
-    .*exp(-la*log(c(1)*c(2)-c(3)^2))...
-    .*exp(-la1*c(1)-la2*c(2)-la3*c(3));
-nsamples = N;
 start = mC;
-C_sample = slicesample(start,nsamples,'pdf',pdf);%,'burnin',1000);
+nsamples = N;
+% pdf = @(c) (c(1)>0).*(c(2)>0).*(c(1)*c(2)-c(3)^2>0)...
+%     .*(c(1)*c(2)-c(3)^2)^(-la).*exp(-la1*c(1)-la2*c(2)-la3*c(3));
+% pdf = @(c) (c(1)>0).*(c(2)>0).*(c(1)*c(2)-c(3)^2>0)...
+%     .*exp(-la*log(c(1)*c(2)-c(3)^2)-la1*c(1)-la2*c(2)-la3*c(3));
+C_sample = slicesample(start,nsamples,'pdf',@(c) pdf(c,la1,la2,la3,la));
 
+end
+
+function p = pdf(c,la1,la2,la3,la)
+supp = (c(1)>0).*(c(2)>0).*(c(1)*c(2)-c(3)^2>0);
+p = exp(-la*log(c(1)*c(2)-c(3)^2)-la1*c(1)-la2*c(2)-la3*c(3));
+if p==0
+    p = exp(-745);
+end
+p = supp.*p;
 end

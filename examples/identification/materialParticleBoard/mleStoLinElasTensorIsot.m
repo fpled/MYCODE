@@ -13,16 +13,14 @@ C1_data = C_data(:,1);
 C2_data = C_data(:,2);
 n1_data = length(C1_data);
 n2_data = length(C2_data);
-data = C_data(:);
-% data = [C1_data; C2_data];
+data = C_data(:); % data = [C1_data; C2_data];
 
-mC1 = mean(C1_data);
-mC2 = mean(C2_data);
+mC = mean(C_data,1);
 
 % initial guess
 la  = 0; % la < 1/5
-la1 = (1-la)/mC1; % la1 > 0
-la2 = (1-5*la)/mC2; % la2 > 0
+la1 = (1-la)/mC(1); % la1 > 0
+la2 = (1-5*la)/mC(2); % la2 > 0
 
 lambda0 = [la1 la2 la];
 lb = [0 0 -Inf];

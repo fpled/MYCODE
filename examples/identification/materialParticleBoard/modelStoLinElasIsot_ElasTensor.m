@@ -44,34 +44,41 @@ vC_data = var(C_data,0,1);
 % vC_data = size(C_data,1)/(size(C_data,1)-1)*moment(C_data,2,1);
 sC_data = sqrt(norm(vC_data));
 dC_data = sC_data/norm(mC_data);
+phiC_data = log(96*C_data(:,1).*C_data(:,2).^5);
+nuC_data = mean(phiC_data,1);
 
 %% Parameter estimation
-lambda = mleStoLinElasTensorIsot(C_data); % Maximum likelihood estimation
-% lambda = lseStoLinElasTensorIsot(C_data); % Least-squares estimation
+% lambda = mleStoLinElasTensorIsot(C_data); % Maximum likelihood estimation
+lambda = lseStoLinElasTensorIsot(C_data); % Least-squares estimation
 
-a1 = 1-lambda(3);
-b1 = 1/lambda(1);
-a2 = 1-5*lambda(3);
-b2 = 1/lambda(2);
+la1 = lambda(1);
+la2 = lambda(2);
+la  = lambda(3);
+
+a1 = 1-la;
+b1 = 1/la1;
+a2 = 1-5*la;
+b2 = 1/la2;
 
 mC = [a1*b1 a2*b2];
 vC = [a1*b1^2 a2*b2^2];
 sC = sqrt(norm(vC));
 dC = sC/norm(mC);
+nuC = log(96) + psi(a1)+log(b1) + 5*(psi(a2)+log(b2));
 
 k1ln = -gammaln(a1)-a1*log(b1);
 k2ln = -gammaln(a2)-a2*log(b2);
-% k1ln = (1-lambda(3))*log(lambda(1))-gammaln(1-lambda(3));
-% k2ln = (1-5*lambda(3))*log(lambda(2))-gammaln(1-5*lambda(3));
+% k1ln = (1-la)*log(la1)-gammaln(1-la);
+% k2ln = (1-5*la)*log(la2)-gammaln(1-5*la);
 
 %% Pdfs and cdfs
 pdf_C1 = @(c1) gampdf(c1,a1,b1); % Gamma probability density function of C1
 pdf_C2 = @(c2) gampdf(c2,a2,b2); % Gamma probability density function of C2
 pdf_C = @(c1,c2) pdf_C1(c1).*pdf_C2(c2); % joint probability density function of C=(C1,C2)
-% pdf_C = @(c1,c2) exp(k1ln+k2ln)*c1.^(-lambda(3))*c2.^(-5*lambda(3))*exp(-lambda(1)*c1-lambda(2)*c2);
-pdf_EN = @(e,n) exp(k1ln+k2ln)*(e./(3*(1-2*n))).^(-lambda(3)).*(e./(2*(1+n))).^(-5*lambda(3))...
+% pdf_C = @(c1,c2) exp(k1ln+k2ln)*c1.^(-la)*c2.^(-5*la)*exp(-la1*c1-la2*c2);
+pdf_EN = @(e,n) exp(k1ln+k2ln)*(e./(3*(1-2*n))).^(-la).*(e./(2*(1+n))).^(-5*la)...
     .*(e./(2*((1+n).^2).*((1-2*n).^2)))...
-    .*exp(-lambda(1)*e./(3*(1-2*n))-lambda(2)*e./(2*(1+n))); % joint probability density function of (E,N)
+    .*exp(-la1*e./(3*(1-2*n))-la2*e./(2*(1+n))); % joint probability density function of (E,N)
 
 cdf_C1 = @(c1) gamcdf(c1,a1,b1); % Gamma cumulative density function of C1
 cdf_C2 = @(c2) gamcdf(c2,a2,b2); % Gamma cumulative density function of C2
@@ -82,7 +89,7 @@ cdf_C = @(c1,c2) cdf_C1(c1).*cdf_C2(c2); % joint cumulative density function of 
 cdf_EN = @(e,n) integral2(@(xe,xn) pdf_EN(xe,xn),0,e,-1,n);
 
 %% Sample generation
-N = 1e3; % number of samples
+N = 1e4; % number of samples
 C1_sample = gamrnd(a1,b1,N,1);
 C2_sample = gamrnd(a2,b2,N,1);
 C_sample = [C1_sample(:) C2_sample(:)];
@@ -96,15 +103,17 @@ vC_sample = var(C_sample,0,1);
 % vC_sample = size(C_sample,1)/(size(C_sample,1)-1)*moment(C_sample,2,1);
 sC_sample = sqrt(norm(vC_sample));
 dC_sample = sC_sample/norm(mC_sample);
+phiC_sample = log(96*C1_sample.*C2_sample.^5);
+nuC_sample = mean(phiC_sample,1);
 
 %% Outputs
 fprintf('\nnb data   = %g',size(C_data,1));
 fprintf('\nnb sample = %g',N);
 fprintf('\n');
 
-fprintf('\nlambda_1 = %.4f',lambda(1));
-fprintf('\nlambda_2 = %.4f',lambda(2));
-fprintf('\nlambda   = %.4f',lambda(3));
+fprintf('\nlambda_1 = %.4f',la1);
+fprintf('\nlambda_2 = %.4f',la2);
+fprintf('\nlambda   = %.4f',la);
 fprintf('\n');
 fprintf('\nalpha_1 = %.4f',a1);
 fprintf('\nbeta_1  = %.4f',b1);
@@ -129,12 +138,14 @@ for i=1:2
     fprintf('\n');
 end
 
-alpha = 1/2;
-err = funoptimlseIsot(lambda,mC_data,dC_data);
-% err = alpha * norm(mC - mC_data)^2/norm(mC_data)^2 + (1-alpha) * (dC - dC_data)^2/(dC_data)^2;
-err_sample = alpha * norm(mC_sample - mC_data)^2/norm(mC_data)^2 + (1-alpha) * (dC_sample - dC_data)^2/(dC_data)^2;
-fprintf('\nmean-squared error mse        = %.4e',err);
-fprintf('\nmean-squared error mse_sample = %.4e',err_sample);
+err_mean = norm(mC - mC_data)^2/norm(mC_data)^2;
+err_nu = (nuC - nuC_data)^2/(nuC_data)^2;
+err_mean_sample = norm(mC_sample - mC_data)^2/norm(mC_data)^2;
+err_nu_sample = (nuC_sample - nuC_data)^2/(nuC_data)^2;
+fprintf('\nerror on mean(C) = %.4e',err_mean);
+fprintf('\nerror on mean(C_sample) = %.4e',err_mean_sample);
+fprintf('\nerror on mean(log(det([C])) = %.4e',err_nu);
+fprintf('\nerror on mean(log(det([C_sample])) = %.4e',err_nu_sample);
 fprintf('\n');
 
 %% Display

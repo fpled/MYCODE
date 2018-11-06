@@ -51,13 +51,22 @@ vC_data = var(C_data,0,1);
 % vC_data = size(C_data,1)/(size(C_data,1)-1)*moment(C_data,2,1);
 sC_data = sqrt(norm(vC_data));
 dC_data = sC_data/norm(mC_data);
+phiC_data = log((C_data(:,1).*C_data(:,2)-C_data(:,3).^2).*(C_data(:,4).^2).*(C_data(:,5).^2));
+nuC_data = mean(phiC_data,1);
 
 %% Least-Squares estimation
 lambda = lseStoLinElasTensorIsotTrans(C_data,MCMCalg);
 
-a = 1-2*lambda(6);
-b4 = 1/lambda(4);
-b5 = 1/lambda(5);
+la1 = lambda(1);
+la2 = lambda(2);
+la3 = lambda(3);
+la4 = lambda(4);
+la5 = lambda(5);
+la  = lambda(6);
+
+a = 1-2*la;
+b4 = 1/la4;
+b5 = 1/la5;
 
 %% Pdfs and cdfs
 pdf_C4 = @(c4) gampdf(c4,a,b4); % Gamma probability density function of C4
@@ -66,7 +75,7 @@ cdf_C4 = @(c4) gamcdf(c4,a,b4); % Gamma cumulative density function of C4
 cdf_C5 = @(c5) gamcdf(c5,a,b5); % Gamma cumulative density function of C5
 
 %% Sample generation
-N = 1e3; % number of samples
+N = 1e4; % number of samples
 switch lower(MCMCalg)
     case 'mh'
         C_sample(:,1:3) = mhsampleStoLinElasTensorIsotTrans(lambda,C_data(:,1:3),N);
@@ -95,18 +104,20 @@ vC_sample = var(C_sample,0,1);
 % vC_sample = size(C_sample,1)/(size(C_sample,1)-1)*moment(C_sample,2,1);
 sC_sample = sqrt(norm(vC_sample));
 dC_sample = sC_sample/norm(mC_sample);
+phiC_sample = log((C_sample(:,1).*C_sample(:,2)-C_sample(:,3).^2).*(C_sample(:,4).^2).*(C_sample(:,5).^2));
+nuC_sample = mean(phiC_sample,1);
 
 %% Ouputs
 fprintf('\nnb data   = %g',size(C_data,1));
 fprintf('\nnb sample = %g',N);
 fprintf('\n');
 
-fprintf('\nlambda_1 = %.4f',lambda(1));
-fprintf('\nlambda_2 = %.4f',lambda(2));
-fprintf('\nlambda_3 = %.4f',lambda(3));
-fprintf('\nlambda_4 = %.4f',lambda(4));
-fprintf('\nlambda_5 = %.4f',lambda(5));
-fprintf('\nlambda   = %.4f',lambda(6));
+fprintf('\nlambda_1 = %.4f',la1);
+fprintf('\nlambda_2 = %.4f',la2);
+fprintf('\nlambda_3 = %.4f',la3);
+fprintf('\nlambda_4 = %.4f',la4);
+fprintf('\nlambda_5 = %.4f',la5);
+fprintf('\nlambda   = %.4f',la);
 fprintf('\n');
 fprintf('\nalpha_4 = %.4f',a);
 fprintf('\nbeta_4  = %.4f',b4);
@@ -127,11 +138,10 @@ for i=1:5
     fprintf('\n');
 end
 
-alpha = 1/2;
-err = funoptimlseIsotTrans(lambda,C_data,mC_data,dC_data,MCMCalg);
-err_sample = alpha * norm(mC_sample - mC_data)^2/norm(mC_data)^2 + (1-alpha) * (dC_sample - dC_data)^2/(dC_data)^2;
-fprintf('\nmean-squared error mse        = %.4e',err);
-fprintf('\nmean-squared error mse_sample = %.4e',err_sample);
+err_mean_sample = norm(mC_sample - mC_data)^2/norm(mC_data)^2;
+err_nu_sample = (nuC_sample - nuC_data)^2/(nuC_data)^2;
+fprintf('\nerror on mean(C_sample) = %.4e',err_mean_sample);
+fprintf('\nerror on mean(log(det([C_sample])) = %.4e',err_nu_sample);
 fprintf('\n');
 
 %% Display
