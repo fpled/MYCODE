@@ -92,14 +92,12 @@ display = 'final';
 
 tolX = 1e-12; % tolerance on the parameter value
 tolFun = 1e-12; % tolerance on the function value
-tolOptimality = 1e-12; % tolerance on the first-order optimality
-tolConstraint = 1e-12; % tolerance on the constraint violation
+tolCon = 1e-12; % tolerance on the constraint violation
 % maxFunEvals = 3e3; % maximum number of function evaluations
-algorithm = 'interior-point'; % optimization algorithm
 
-% options  = optimoptions('fmincon','Display',display,'Algorithm',algorithm);
-% options  = optimoptions('fmincon','Display',display,'Algorithm',algorithm,'TolX',tolX,'TolFun',tolFun,'OptimalityTolerance',tolOptimality,'ConstraintTolerance',tolConstraint);
-options  = optimoptions('fmincon','Display',display,'Algorithm',algorithm,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolOptimality,'ConstraintTolerance',tolConstraint);
+% options  = optimoptions('fmincon','Display',display);
+% options  = optimoptions('fmincon','Display',display,'TolX',tolX,'TolFun',tolFun,'TolCon',tolCon);
+options  = optimoptions('fmincon','Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,'ConstraintTolerance',tolCon);
 
 fun = @(lambda) funoptimlseIsotTrans(lambda,C_data,mC_data,nuC_data,MCMCalg);
 [lambda,err,exitflag,output] = fmincon(fun,lambda0,[],[],[],[],lb,ub,nonlcon,options);

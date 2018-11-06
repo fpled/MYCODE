@@ -35,11 +35,11 @@ display = 'final';
 
 tolX = 1e-12; % tolerance on the parameter value
 tolFun = 1e-12; % tolerance on the function value
-tolOptimality = 1e-12; % tolerance on the first-order optimality
 % maxFunEvals = 3e3; % maximum number of function evaluations
 
 % options  = optimoptions('lsqnonlin','Display',display);
-options  = optimoptions('lsqnonlin','Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolOptimality);
+% options  = optimoptions('lsqnonlin','Display',display,'TolX',tolX,'TolFun',tolFun);
+options  = optimoptions('lsqnonlin','Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun);
 
 fun = @(lambda) funoptimlseIsot(lambda,mC_data,nuC_data);
 [lambda,err,~,exitflag,output] = lsqnonlin(fun,lambda0,lb,ub,options);
