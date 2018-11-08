@@ -195,20 +195,16 @@ if solveProblem
     load(fullfile(pathnameIdentification,filenameAna));
     load(fullfile(pathnameIdentification,filenameNum));
     
-    % Sample number
-    sample = 'B';
-    numSample = 13;
-    
     % Material symmetry
     materialSym = 'isotTrans';
     
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = mean_ET_data(numSample)*1e6; % Pa
+            E = mean(mean_ET_data)*1e6; % Pa
             %E = 2e9; % Pa
             % Shear modulus
-            %G = mean_GL_data(numSample)*1e6*13; % Pa
+            %G = mean(mean_GL_data)*1e6*13; % Pa
             % Poisson ratio
             %NU = E./(2*G)-1;
             NU = 0.25;
@@ -218,13 +214,13 @@ if solveProblem
             S = setmaterial(S,mat);
         case 'isottrans'
             % Transverse Young modulus
-            ET = mean_ET_data(numSample)*1e6; % Pa
+            ET = mean(mean_ET_data)*1e6; % Pa
             % Longitudinal shear modulus
-            GL = mean_GL_data(numSample)*1e6; % Pa
+            GL = mean(mean_GL_data)*1e6; % Pa
             % Longitudinal Young modulus
-            EL = mean_EL_data(numSample)*1e6; % Pa
+            EL = mean(mean_EL_data)*1e6; % Pa
             % Longitudinal Poisson ratio
-            NUL = mean_NUL_data(numSample);
+            NUL = mean(mean_NUL_data);
             % Transverse Poisson ratio
             NUT = 0.25;
             % Material

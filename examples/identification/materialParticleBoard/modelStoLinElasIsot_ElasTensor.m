@@ -48,8 +48,8 @@ phiC_data = log(96*C_data(:,1).*C_data(:,2).^5);
 nuC_data = mean(phiC_data,1);
 
 %% Parameter estimation
-% lambda = mleStoLinElasTensorIsot(C_data); % Maximum likelihood estimation
-lambda = lseStoLinElasTensorIsot(C_data); % Least-squares estimation
+lambda = mleStoLinElasTensorIsot(C_data); % Maximum likelihood estimation
+% lambda = lseStoLinElasTensorIsot(C_data); % Least-squares estimation
 
 la1 = lambda(1);
 la2 = lambda(2);

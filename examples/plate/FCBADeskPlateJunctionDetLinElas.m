@@ -208,14 +208,12 @@ if solveProblem
     % Data
     filenameAna = 'data_ET_GL.mat';
     filenameNum = 'data_EL_NUL.mat';
+    filenameJunc = 'data_Kjunction.mat';
     pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
         'results','identification','materialParticleBoard');
     load(fullfile(pathnameIdentification,filenameAna));
     load(fullfile(pathnameIdentification,filenameNum));
-    
-    % Sample number
-    sample = 'B';
-    numSample = 13;
+    load(fullfile(pathnameIdentification,filenameJunc));
     
     % Material symmetry
     materialSym = 'isotTrans';
@@ -223,10 +221,10 @@ if solveProblem
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = mean_ET_data(numSample)*1e6; % Pa
+            E = mean(mean_ET_data)*1e6; % Pa
             %E = 2e9; % Pa
             % Shear modulus
-            %G = mean_GL_data(numSample)*1e6*13; % Pa
+            %G = mean(mean_GL_data)*1e6*13; % Pa
             % Poisson ratio
             %NU = E./(2*G)-1;
             NU = 0.25;
@@ -234,13 +232,13 @@ if solveProblem
             mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
         case 'isottrans'
             % Transverse Young modulus
-            ET = mean_ET_data(numSample)*1e6; % Pa
+            ET = mean(mean_ET_data)*1e6; % Pa
             % Longitudinal shear modulus
-            GL = mean_GL_data(numSample)*1e6; % Pa
+            GL = mean(mean_GL_data)*1e6; % Pa
             % Longitudinal Young modulus
-            % EL = mean_EL_data(numSample)*1e6; % Pa
+            % EL = mean(mean_EL_data)*1e6; % Pa
             % Longitudinal Poisson ratio
-            % NUL = mean_NUL_data(numSample);
+            % NUL = mean(mean_NUL_data);
             % Transverse Poisson ratio
             NUT = 0.25;
             % Material
@@ -303,7 +301,7 @@ if solveProblem
         L15b = getedge(Q5b,2);
         L25a = getedge(Q5a,4);
         L25b = getedge(Q5b,4);
-        
+        % intersection points between plates 1 and 3
         [~,numnodeL13] = intersect(S,L13);
         numnode13 = cell(2,1);
         xnode13 = cell(2,1);
@@ -319,7 +317,7 @@ if solveProblem
             numnode13{2} = numnode13{2}(I2);
         end
         S = addclperiodic(S,numnode13{1},numnode13{2},{'U','RX','RZ'});
-        
+        % intersection points between plates 2 and 3
         [~,numnodeL23] = intersect(S,L23);
         numnode23 = cell(2,1);
         xnode23 = cell(2,1);
@@ -335,7 +333,7 @@ if solveProblem
             numnode23{2} = numnode23{2}(I2);
         end
         S = addclperiodic(S,numnode23{1},numnode23{2},{'U','RX','RZ'});
-        
+        % intersection points between plates 1 and 5a
         [~,numnodeL15a] = intersect(S,L15a);
         numnode15a = cell(2,1);
         xnode15a = cell(2,1);
@@ -355,7 +353,7 @@ if solveProblem
             numnode15a{2} = numnode15a{2}(I2);
         end
         S = addclperiodic(S,numnode15a{1},numnode15a{2},{'U','RX','RY'});
-        
+        % intersection points between plates 1 and 5b
         [~,numnodeL15b] = intersect(S,L15b);
         numnode15b = cell(2,1);
         xnode15b = cell(2,1);
@@ -375,7 +373,7 @@ if solveProblem
             numnode15b{2} = numnode15b{2}(I2);
         end
         S = addclperiodic(S,numnode15b{1},numnode15b{2},{'U','RX','RY'});
-        
+        % intersection points between plates 2 and 5a
         [~,numnodeL25a] = intersect(S,L25a);
         numnode25a = cell(2,1);
         xnode25a = cell(2,1);
@@ -395,7 +393,7 @@ if solveProblem
             numnode25a{2} = numnode25a{2}(I2);
         end
         S = addclperiodic(S,numnode25a{1},numnode25a{2},{'U','RX','RY'});
-        
+        % intersection points between plates 2 and 5b
         [~,numnodeL25b] = intersect(S,L25b);
         numnode25b = cell(2,1);
         xnode25b = cell(2,1);
@@ -415,6 +413,25 @@ if solveProblem
             numnode25b{2} = numnode25b{2}(I2);
         end
         S = addclperiodic(S,numnode25b{1},numnode25b{2},{'U','RX','RY'});
+        % junction dofs
+        numddl131 = findddl(S,'RY',numnode13{1},'free');
+        numddl132 = findddl(S,'RY',numnode13{2},'free');
+        numddl13 = [numddl131 numddl132];
+        numddl231 = findddl(S,'RY',numnode23{1},'free');
+        numddl232 = findddl(S,'RY',numnode23{2},'free');
+        numddl23 = [numddl231 numddl232];
+        numddl15a1 = findddl(S,'RZ',numnode15a{1},'free');
+        numddl15a2 = findddl(S,'RZ',numnode15a{2},'free');
+        numddl15a = [numddl15a1 numddl15a2];
+        numddl15b1 = findddl(S,'RZ',numnode15b{1},'free');
+        numddl15b2 = findddl(S,'RZ',numnode15b{2},'free');
+        numddl15b = [numddl15b1 numddl15b2];
+        numddl25a1 = findddl(S,'RZ',numnode25a{1},'free');
+        numddl25a2 = findddl(S,'RZ',numnode25a{2},'free');
+        numddl25a = [numddl25a1 numddl25a2];
+        numddl25b1 = findddl(S,'RZ',numnode25b{1},'free');
+        numddl25b2 = findddl(S,'RZ',numnode25b{2},'free');
+        numddl25b = [numddl25b1 numddl25b2];
     else
         S = final(S);
     end
@@ -545,7 +562,6 @@ if solveProblem
                     if isempty(ispointin(P_fati{4},POINT(S.node)))
                         error('Pointwise load must be applied to a node of the mesh')
                     end
-                    
                 else
                     f = surfload(S,L_fati{4},'FY',-p);
                 end
@@ -561,49 +577,27 @@ if solveProblem
     f = f + bodyload(S,[],'FZ',-p_plate);
     
     if junction
-        kS = 5e4; % additonal junction rotational stiffness for junction screw
-        kD = 1.8e3; % additonal junction rotational stiffness for junction dowel
-        numddl131 = findddl(S,'RY',numnode13{1},'free');
-        numddl132 = findddl(S,'RY',numnode13{2},'free');
-        numddl13 = [numddl131 numddl132];
-        A_add = [kD -kD;-kD kD];
+        kS = mean(mean_Kscrew_data); % additonal junction rotational stiffness for junction screw
+        kD = mean(mean_Kdowel_data); % additonal junction rotational stiffness for junction dowel
+        AD_add = [kD -kD;-kD kD];
+        AS_add = [kS -kS;-kS kS];
         for i=1:size(numddl13,1)
-            A(numddl13(i,:),numddl13(i,:)) = A(numddl13(i,:),numddl13(i,:)) + A_add;
+            A(numddl13(i,:),numddl13(i,:)) = A(numddl13(i,:),numddl13(i,:)) + AD_add;
         end
-        numddl231 = findddl(S,'RY',numnode23{1},'free');
-        numddl232 = findddl(S,'RY',numnode23{2},'free');
-        numddl23 = [numddl231 numddl232];
-        A_add = [kD -kD;-kD kD];
         for i=1:size(numddl23,1)
-            A(numddl23(i,:),numddl23(i,:)) = A(numddl23(i,:),numddl23(i,:)) + A_add;
+            A(numddl23(i,:),numddl23(i,:)) = A(numddl23(i,:),numddl23(i,:)) + AD_add;
         end
-        numddl15a1 = findddl(S,'RZ',numnode15a{1},'free');
-        numddl15a2 = findddl(S,'RZ',numnode15a{2},'free');
-        numddl15a = [numddl15a1 numddl15a2];
-        A_add = [kS -kS;-kS kS];
         for i=1:size(numddl15a,1)
-            A(numddl15a(i,:),numddl15a(i,:)) = A(numddl15a(i,:),numddl15a(i,:)) + A_add;
+            A(numddl15a(i,:),numddl15a(i,:)) = A(numddl15a(i,:),numddl15a(i,:)) + AS_add;
         end
-        numddl15b1 = findddl(S,'RZ',numnode15b{1},'free');
-        numddl15b2 = findddl(S,'RZ',numnode15b{2},'free');
-        numddl15b = [numddl15b1 numddl15b2];
-        A_add = [kS -kS;-kS kS];
         for i=1:size(numddl15b,1)
-            A(numddl15b(i,:),numddl15b(i,:)) = A(numddl15b(i,:),numddl15b(i,:)) + A_add;
+            A(numddl15b(i,:),numddl15b(i,:)) = A(numddl15b(i,:),numddl15b(i,:)) + AS_add;
         end
-        numddl25a1 = findddl(S,'RZ',numnode25a{1},'free');
-        numddl25a2 = findddl(S,'RZ',numnode25a{2},'free');
-        numddl25a = [numddl25a1 numddl25a2];
-        A_add = [kS -kS;-kS kS];
         for i=1:size(numddl25a,1)
-            A(numddl25a(i,:),numddl25a(i,:)) = A(numddl25a(i,:),numddl25a(i,:)) + A_add;
+            A(numddl25a(i,:),numddl25a(i,:)) = A(numddl25a(i,:),numddl25a(i,:)) + AS_add;
         end
-        numddl25b1 = findddl(S,'RZ',numnode25b{1},'free');
-        numddl25b2 = findddl(S,'RZ',numnode25b{2},'free');
-        numddl25b = [numddl25b1 numddl25b2];
-        A_add = [kS -kS;-kS kS];
         for i=1:size(numddl25b,1)
-            A(numddl25b(i,:),numddl25b(i,:)) = A(numddl25b(i,:),numddl25b(i,:)) + A_add;
+            A(numddl25b(i,:),numddl25b(i,:)) = A(numddl25b(i,:),numddl25b(i,:)) + AS_add;
         end
     end
     
@@ -840,7 +834,7 @@ if displaySolution
     mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
-    ampl = 8;
+    ampl = 20;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
     hP = plot(P,'g+');
     legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
