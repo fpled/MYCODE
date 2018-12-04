@@ -295,6 +295,38 @@ if solveProblem
     %% Dirichlet boundary conditions
     if junction
         S = final(S,'duplicate');
+    else
+        S = final(S);
+    end
+    
+    L1 = getedge(Q1,1);
+    L2 = getedge(Q2,1);
+    L5b = getedge(Q5b,1);
+    [~,numnodeL1] = intersect(S,L1);
+    [~,numnodeL2] = intersect(S,L2);
+    [~,numnodeL5b] = intersect(S,L5b);
+    switch lower(test)
+        case 'stability'
+            S = addcl(S,union(numnodeL1,numnodeL2));
+            S = addcl(S,numnodeL5b,'UZ');
+        case {'statichori1','statichori2'}
+            S = addcl(S,numnodeL2);
+            S = addcl(S,union(numnodeL1,numnodeL5b),{'UY','UZ'});
+        case {'statichori3','statichori4'}
+            S = addcl(S,union(numnodeL1,numnodeL2));
+            S = addcl(S,numnodeL5b,'UZ');
+        case 'staticvert'
+            S = addcl(S,union(numnodeL1,numnodeL2));
+            S = addcl(S,numnodeL5b,'UZ');
+        case {'fatigue1','fatigue2','fatigue3','fatigue4'}
+            S = addcl(S,union(numnodeL1,numnodeL2));
+            S = addcl(S,numnodeL5b,'UZ');
+        case {'impact','drop'}
+            S = addcl(S,union(numnodeL1,numnodeL2));
+            S = addcl(S,numnodeL5b,'UZ');
+    end
+    
+    if junction
         L13 = getedge(Q1,3);
         L23 = getedge(Q2,3);
         L15a = getedge(Q5a,2);
@@ -413,54 +445,6 @@ if solveProblem
             numnode25b{2} = numnode25b{2}(I2);
         end
         S = addclperiodic(S,numnode25b{1},numnode25b{2},{'U','RX','RY'});
-        % junction dofs
-        numddl131 = findddl(S,'RY',numnode13{1},'free');
-        numddl132 = findddl(S,'RY',numnode13{2},'free');
-        numddl13 = [numddl131 numddl132];
-        numddl231 = findddl(S,'RY',numnode23{1},'free');
-        numddl232 = findddl(S,'RY',numnode23{2},'free');
-        numddl23 = [numddl231 numddl232];
-        numddl15a1 = findddl(S,'RZ',numnode15a{1},'free');
-        numddl15a2 = findddl(S,'RZ',numnode15a{2},'free');
-        numddl15a = [numddl15a1 numddl15a2];
-        numddl15b1 = findddl(S,'RZ',numnode15b{1},'free');
-        numddl15b2 = findddl(S,'RZ',numnode15b{2},'free');
-        numddl15b = [numddl15b1 numddl15b2];
-        numddl25a1 = findddl(S,'RZ',numnode25a{1},'free');
-        numddl25a2 = findddl(S,'RZ',numnode25a{2},'free');
-        numddl25a = [numddl25a1 numddl25a2];
-        numddl25b1 = findddl(S,'RZ',numnode25b{1},'free');
-        numddl25b2 = findddl(S,'RZ',numnode25b{2},'free');
-        numddl25b = [numddl25b1 numddl25b2];
-    else
-        S = final(S);
-    end
-    
-    L1 = getedge(Q1,1);
-    L2 = getedge(Q2,1);
-    L5b = getedge(Q5b,1);
-    [~,numnodeL1] = intersect(S,L1);
-    [~,numnodeL2] = intersect(S,L2);
-    [~,numnodeL5b] = intersect(S,L5b);
-    switch lower(test)
-        case 'stability'
-            S = addcl(S,union(numnodeL1,numnodeL2));
-            S = addcl(S,numnodeL5b,'UZ');
-        case {'statichori1','statichori2'}
-            S = addcl(S,numnodeL2);
-            S = addcl(S,union(numnodeL1,numnodeL5b),{'UY','UZ'});
-        case {'statichori3','statichori4'}
-            S = addcl(S,union(numnodeL1,numnodeL2));
-            S = addcl(S,numnodeL5b,'UZ');
-        case 'staticvert'
-            S = addcl(S,union(numnodeL1,numnodeL2));
-            S = addcl(S,numnodeL5b,'UZ');
-        case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-            S = addcl(S,union(numnodeL1,numnodeL2));
-            S = addcl(S,numnodeL5b,'UZ');
-        case {'impact','drop'}
-            S = addcl(S,union(numnodeL1,numnodeL2));
-            S = addcl(S,numnodeL5b,'UZ');
     end
     
     %% Stiffness matrix and sollicitation vector
@@ -577,6 +561,25 @@ if solveProblem
     f = f + bodyload(S,[],'FZ',-p_plate);
     
     if junction
+        % junction dofs
+        numddl131 = findddl(S,'RY',numnode13{1},'free');
+        numddl132 = findddl(S,'RY',numnode13{2},'free');
+        numddl13 = [numddl131 numddl132];
+        numddl231 = findddl(S,'RY',numnode23{1},'free');
+        numddl232 = findddl(S,'RY',numnode23{2},'free');
+        numddl23 = [numddl231 numddl232];
+        numddl15a1 = findddl(S,'RZ',numnode15a{1},'free');
+        numddl15a2 = findddl(S,'RZ',numnode15a{2},'free');
+        numddl15a = [numddl15a1 numddl15a2];
+        numddl15b1 = findddl(S,'RZ',numnode15b{1},'free');
+        numddl15b2 = findddl(S,'RZ',numnode15b{2},'free');
+        numddl15b = [numddl15b1 numddl15b2];
+        numddl25a1 = findddl(S,'RZ',numnode25a{1},'free');
+        numddl25a2 = findddl(S,'RZ',numnode25a{2},'free');
+        numddl25a = [numddl25a1 numddl25a2];
+        numddl25b1 = findddl(S,'RZ',numnode25b{1},'free');
+        numddl25b2 = findddl(S,'RZ',numnode25b{2},'free');
+        numddl25b = [numddl25b1 numddl25b2];
         kS = mean(mean_Kscrew_data); % additonal junction rotational stiffness for junction screw
         kD = mean(mean_Kdowel_data); % additonal junction rotational stiffness for junction dowel
         AD_add = [kD -kD;-kD kD];

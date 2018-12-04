@@ -406,6 +406,38 @@ for it=1:length(tests)
         %% Dirichlet boundary conditions
         if junction
             S = final(S,'duplicate');
+        else
+            S = final(S);
+        end
+        
+        L1 = getedge(Q1,1);
+        L2 = getedge(Q2,1);
+        L5b = getedge(Q5b,1);
+        [~,numnodeL1] = intersect(S,L1);
+        [~,numnodeL2] = intersect(S,L2);
+        [~,numnodeL5b] = intersect(S,L5b);
+        switch lower(test)
+            case 'stability'
+                S = addcl(S,union(numnodeL1,numnodeL2));
+                S = addcl(S,numnodeL5b,'UZ');
+            case {'statichori1','statichori2'}
+                S = addcl(S,numnodeL2);
+                S = addcl(S,union(numnodeL1,numnodeL5b),{'UY','UZ'});
+            case {'statichori3','statichori4'}
+                S = addcl(S,union(numnodeL1,numnodeL2));
+                S = addcl(S,numnodeL5b,'UZ');
+            case 'staticvert'
+                S = addcl(S,union(numnodeL1,numnodeL2));
+                S = addcl(S,numnodeL5b,'UZ');
+            case {'fatigue1','fatigue2','fatigue3','fatigue4'}
+                S = addcl(S,union(numnodeL1,numnodeL2));
+                S = addcl(S,numnodeL5b,'UZ');
+            case {'impact','drop'}
+                S = addcl(S,union(numnodeL1,numnodeL2));
+                S = addcl(S,numnodeL5b,'UZ');
+        end
+        
+        if junction
             L13 = getedge(Q1,3);
             L23 = getedge(Q2,3);
             L15a = getedge(Q5a,2);
@@ -544,40 +576,12 @@ for it=1:length(tests)
             numddl25b2 = findddl(S,'RZ',numnode25b{2},'free');
             numddl25b = [numddl25b1 numddl25b2];
         else
-            S = final(S);
             numddl13 = [0 0];
             numddl23 = [0 0];
             numddl15a = [0 0];
             numddl15b = [0 0];
             numddl25a = [0 0];
             numddl25b = [0 0];
-        end
-        
-        L1 = getedge(Q1,1);
-        L2 = getedge(Q2,1);
-        L5b = getedge(Q5b,1);
-        [~,numnodeL1] = intersect(S,L1);
-        [~,numnodeL2] = intersect(S,L2);
-        [~,numnodeL5b] = intersect(S,L5b);
-        switch lower(test)
-            case 'stability'
-                S = addcl(S,union(numnodeL1,numnodeL2));
-                S = addcl(S,numnodeL5b,'UZ');
-            case {'statichori1','statichori2'}
-                S = addcl(S,numnodeL2);
-                S = addcl(S,union(numnodeL1,numnodeL5b),{'UY','UZ'});
-            case {'statichori3','statichori4'}
-                S = addcl(S,union(numnodeL1,numnodeL2));
-                S = addcl(S,numnodeL5b,'UZ');
-            case 'staticvert'
-                S = addcl(S,union(numnodeL1,numnodeL2));
-                S = addcl(S,numnodeL5b,'UZ');
-            case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-                S = addcl(S,union(numnodeL1,numnodeL2));
-                S = addcl(S,numnodeL5b,'UZ');
-            case {'impact','drop'}
-                S = addcl(S,union(numnodeL1,numnodeL2));
-                S = addcl(S,numnodeL5b,'UZ');
         end
         
         %% Sollicitation vector
