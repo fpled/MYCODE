@@ -35,9 +35,9 @@ renderer = 'OpenGL';
 for it=1:length(tests)
     test = tests{it};
 if pointwiseLoading
-    filename = ['FCBADeskPlateDetLinElas' test 'PointwiseLoading'];
+    filename = ['FCBADeskPlateJunctionDetLinElas' test 'PointwiseLoading'];
 else
-    filename = ['FCBADeskPlateDetLinElas' test];
+    filename = ['FCBADeskPlateJunctionDetLinElas' test];
 end
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','plate',filename);

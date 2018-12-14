@@ -11,7 +11,7 @@ displaySolution = true;
 
 tests = {'StaticVert'}; % test under static vertical load
 
-filename = 'FCBADeskBeamDetLinElas';
+filename = 'FCBADeskBeamJunctionDetLinElas';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','plate',filename);
 if ~exist(pathname,'dir')
