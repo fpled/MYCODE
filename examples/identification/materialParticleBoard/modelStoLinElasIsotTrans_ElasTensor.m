@@ -271,7 +271,7 @@ if displaySolution
     ylabel('$C_5$ [GPa]','Interpreter',interpreter);
 %     xlabel('Component $C_4$ [GPa]','Interpreter',interpreter);
 %     ylabel('Component $C_5$ [GPa]','Interpreter',interpreter);
-    legend('sample','data')
+    legend('samples','data')
     mysaveas(pathname,'samples_C4_C5',formats);
     mymatlab2tikz(pathname,'samples_C4_C5.tex');
     

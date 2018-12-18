@@ -352,7 +352,7 @@ if displaySolution
     ylabel('$C_2$ [GPa]','Interpreter',interpreter);
 %     xlabel('Component $C_1$ [GPa]','Interpreter',interpreter);
 %     ylabel('Component $C_2$ [GPa]','Interpreter',interpreter);
-    legend('sample','data')
+    legend('samples','data')
     mysaveas(pathname,'samples_C1_C2',formats);
     mymatlab2tikz(pathname,'samples_C1_C2.tex');
     
@@ -369,7 +369,7 @@ if displaySolution
     ylabel('$E$ [GPa]','Interpreter',interpreter);
 %     xlabel('Poisson''s ratio $\nu$','Interpreter',interpreter);
 %     ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter);
-    legend('sample','data')
+    legend('samples','data')
     mysaveas(pathname,'samples_E_N',formats);
     mymatlab2tikz(pathname,'samples_E_N.tex');
     
