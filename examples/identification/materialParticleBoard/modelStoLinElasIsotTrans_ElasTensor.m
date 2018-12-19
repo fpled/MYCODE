@@ -54,7 +54,7 @@ dC_data = sC_data/norm(mC_data);
 phiC_data = log((C_data(:,1).*C_data(:,2)-C_data(:,3).^2).*(C_data(:,4).^2).*(C_data(:,5).^2));
 nuC_data = mean(phiC_data,1);
 
-%% Least-Squares estimation
+%% Least-Squares estimation for computing Lagrange multipliers
 lambda = lseStoLinElasTensorIsotTrans(C_data,MCMCalg);
 
 la1 = lambda(1);
@@ -137,6 +137,8 @@ for i=1:5
     fprintf('\ndisp(C%u_data)   = %.4f',i,sqrt(vC_data(i))/mC_data(i));
     fprintf('\n');
 end
+fprintf('\nnu(C_sample) = mean(log(det([C_sample])) = %.4f',nuC_sample);
+fprintf('\nnu(C_data)   = mean(log(det([C_data]))   = %.4f',nuC_data);
 
 err_mean_sample = norm(mC_sample - mC_data)^2/norm(mC_data)^2;
 err_nu_sample = (nuC_sample - nuC_data)^2/(nuC_data)^2;
@@ -251,10 +253,8 @@ if displaySolution
     xlabel('$C_1$ [GPa]','Interpreter',interpreter);
     ylabel('$C_2$ [GPa]','Interpreter',interpreter);
     zlabel('$C_3$ [GPa]','Interpreter',interpreter);
-%     xlabel('Component $C_1$ [GPa]','Interpreter',interpreter);
-%     ylabel('Component $C_2$ [GPa]','Interpreter',interpreter);
-%     zlabel('Component $C_3$ [GPa]','Interpreter',interpreter);
-    legend('samples','data','support');
+    %legend('samples','data','support');
+    legend('réalisations','données','support');
     mysaveas(pathname,'samples_C1_C2_C3',formats);
     mymatlab2tikz(pathname,'samples_C1_C2_C3.tex');
     
@@ -269,9 +269,8 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$C_4$ [GPa]','Interpreter',interpreter);
     ylabel('$C_5$ [GPa]','Interpreter',interpreter);
-%     xlabel('Component $C_4$ [GPa]','Interpreter',interpreter);
-%     ylabel('Component $C_5$ [GPa]','Interpreter',interpreter);
-    legend('samples','data')
+    %legend('samples','data');
+    legend('réalisations','données');
     mysaveas(pathname,'samples_C4_C5',formats);
     mymatlab2tikz(pathname,'samples_C4_C5.tex');
     
@@ -287,10 +286,9 @@ if displaySolution
     xlabel('$E^T$ [GPa]','Interpreter',interpreter);
     ylabel('$G^L$ [GPa]','Interpreter',interpreter);
     zlabel('$\nu^T$','Interpreter',interpreter);
-%     xlabel('Young''s modulus $E^T$ [GPa]','Interpreter',interpreter);
-%     ylabel('Shear modulus $G^L$ [GPa]','Interpreter',interpreter);
-%     zlabel('Poisson''s ratio $\nu^T$','Interpreter',interpreter);
-    legend('samples','data');
+    %legend('samples','data');
+    legend('réalisations','données');
     mysaveas(pathname,'samples_ET_GL_NUT',formats);
     mymatlab2tikz(pathname,'samples_ET_GL_NUT.tex');
+    
 end

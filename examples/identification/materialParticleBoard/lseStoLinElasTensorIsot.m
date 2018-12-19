@@ -2,8 +2,8 @@ function [lambda,err,exitflag,output] = lseStoLinElasTensorIsot(C_data)
 % function [lambda,err,exitflag,output] = lseStoLinElasTensorIsot(C_data)
 % Least-squares estimation for stochastic linear elastic tensor with
 % isotropic symmetry
-% C_data(:,1): data for random coordinate C1
-% C_data(:,2): data for random coordinate C2
+% C_data: data set for random vector C=(C1,C2)
+% C_data(:,i): data for random coordinate Ci
 % lambda: parameters (la1,la2,la)
 % lambda(1) = la1 > 0
 % lambda(2) = la2 > 0

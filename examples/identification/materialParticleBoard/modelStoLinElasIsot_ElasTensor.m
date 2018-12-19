@@ -47,7 +47,7 @@ dC_data = sC_data/norm(mC_data);
 phiC_data = log(96*C_data(:,1).*C_data(:,2).^5);
 nuC_data = mean(phiC_data,1);
 
-%% Parameter estimation
+%% Parameter estimation for computing Lagrange multipliers
 lambda = mleStoLinElasTensorIsot(C_data); % Maximum likelihood estimation
 % lambda = lseStoLinElasTensorIsot(C_data); % Least-squares estimation
 
@@ -137,6 +137,9 @@ for i=1:2
     fprintf('\ndisp(C%u_data)   = %.4f',i,sqrt(vC_data(i))/mC_data(i));
     fprintf('\n');
 end
+fprintf('\nnu(C)        = mean(log(det([C]))        = %.4f',i,nuC);
+fprintf('\nnu(C_sample) = mean(log(det([C_sample])) = %.4f',i,nuC_sample);
+fprintf('\nnu(C_data)   = mean(log(det([C_data]))   = %.4f',i,nuC_data);
 
 err_mean = norm(mC - mC_data)^2/norm(mC_data)^2;
 err_nu = (nuC - nuC_data)^2/(nuC_data)^2;
@@ -151,23 +154,27 @@ fprintf('\n');
 %% Display
 if displaySolution
     %% Plot data
-    figure('Name','Data of E')
+    figure('Name','Data for E')
     clf
     bar(1:length(E_data),E_data)
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[0,length(E_data)+1])
-    xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter);
+    %xlabel('Sample number','Interpreter',interpreter);
+    %ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter);
+    xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    ylabel('Module d''Young $E$ [GPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_E','fig');
     mymatlab2tikz(pathname,'data_E.tex');
     
-    figure('Name','Data of G')
+    figure('Name','Data for G')
     clf
     bar(1:length(G_data),G_data)
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[0,length(G_data)+1])
-    xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Shear modulus $G$ [GPa]','Interpreter',interpreter);
+    %xlabel('Sample number','Interpreter',interpreter);
+    %ylabel('Shear modulus $G$ [GPa]','Interpreter',interpreter);
+    xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    ylabel('Module de cisaillement $G$ [GPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_G','fig');
     mymatlab2tikz(pathname,'data_G.tex');
     
@@ -350,9 +357,8 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$C_1$ [GPa]','Interpreter',interpreter);
     ylabel('$C_2$ [GPa]','Interpreter',interpreter);
-%     xlabel('Component $C_1$ [GPa]','Interpreter',interpreter);
-%     ylabel('Component $C_2$ [GPa]','Interpreter',interpreter);
-    legend('samples','data')
+    %legend('samples','data')
+    legend('réalisations','données')
     mysaveas(pathname,'samples_C1_C2',formats);
     mymatlab2tikz(pathname,'samples_C1_C2.tex');
     
@@ -367,9 +373,8 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$\nu$','Interpreter',interpreter);
     ylabel('$E$ [GPa]','Interpreter',interpreter);
-%     xlabel('Poisson''s ratio $\nu$','Interpreter',interpreter);
-%     ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter);
-    legend('samples','data')
+    %legend('samples','data')
+    legend('réalisations','données')
     mysaveas(pathname,'samples_E_N',formats);
     mymatlab2tikz(pathname,'samples_E_N.tex');
     

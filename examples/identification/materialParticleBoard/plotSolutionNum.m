@@ -69,10 +69,10 @@ ampl = 0;
 
 for i=1:2
     plotSolution(S,u,'displ',i,'ampl',ampl);
-    set(gcf,'position',[100,100, 500, 150])
+    set(gcf,'position',[100,100,500,150])
     mysaveas(pathname,['displ_num_' num2str(i)],formats,renderer);
     plotSolution(S,u_exp,'displ',i,'ampl',ampl);
-    set(gcf,'position',[100,100, 500, 150])
+    set(gcf,'position',[100,100,500,150])
     mysaveas(pathname,['displ_exp_' num2str(i)],formats,renderer);
 end
 

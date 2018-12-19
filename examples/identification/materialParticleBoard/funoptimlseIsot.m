@@ -20,6 +20,9 @@ mC = [mC1 mC2];
 % sC = sqrt(norm(vC));
 % dC = sC/norm(mC);
 
+% phi_C = ln(96*C1*C2^5) = ln(96) + ln(C1) + 5*ln(C2)
+% nu_C = E{phi_C}  = E{ln(96*C1*C2^5)} = ln(96) + E{ln(C1)} + 5*E{ln(C2)}
+% with Gamma-distributed random variables C1~Gamma(a1,b1) and C2~Gamma(a2,b2)
 nuC = log(96) + psi(a1)+log(b1) + 5*(psi(a2)+log(b2));
 
 f = [mC nuC] - [mC_data nuC_data];

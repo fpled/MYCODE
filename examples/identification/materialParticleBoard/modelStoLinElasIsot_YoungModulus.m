@@ -111,8 +111,10 @@ if displaySolution
     bar(1:length(E_data),E_data)
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[0,length(E_data)+1])
-    xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter);
+    %xlabel('Sample number','Interpreter',interpreter);
+    %ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter);
+    xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    ylabel('Module d''Young $E$ [GPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_E',formats);
     mymatlab2tikz(pathname,'data_E.tex');
     
@@ -170,9 +172,12 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('Number of samples','Interpreter',interpreter)
-    ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter)
-    legend('samples','mean');
+    %xlabel('Number of samples','Interpreter',interpreter)
+    %ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter)
+    %legend('samples','mean');
+    xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+    ylabel('Module d''Young $E$ [GPa]','Interpreter',interpreter)
+    legend('réalisations','valeur moyenne');
     mysaveas(pathname,'samples_E',formats);
     mymatlab2tikz(pathname,'samples_E.tex');
     

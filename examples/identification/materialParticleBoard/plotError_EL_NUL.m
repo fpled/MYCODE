@@ -15,7 +15,7 @@ load(fullfile(pathname,filenameNum));
 pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'examples','identification','materialParticleBoard','resultsDIC');
 
-fontsize = 12;
+fontsize = 16;
 interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
@@ -101,7 +101,8 @@ for k=6
     % set(gca,'ZScale','log')
     xlabel('$\nu^L$','Interpreter',interpreter)
     ylabel('$E^L$ [MPa]','Interpreter',interpreter)
-    zlabel('Error','Interpreter',interpreter)
+    %zlabel('Error','Interpreter',interpreter)
+    zlabel('Erreur','Interpreter',interpreter)
     mysaveas(pathname,['error_EL_NUL_' numSample '_image_' numImage '_3D'],formats,renderer);
     
     figure

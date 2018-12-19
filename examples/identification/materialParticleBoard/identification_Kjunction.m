@@ -6,7 +6,7 @@
 % MATLAB:     right     up
 % the cell of 50kN is too large for the Dowel junction which is fragile
 
-clc
+% clc
 clearvars
 close all
 
@@ -40,11 +40,11 @@ d = 67.5e-3; % m
 b = 113e-3; % m
 % Same Dimensions for the two assembly junctions
 % Moment per unit length: ml = F*d/b
-% Junction stiffness per unit length: k = ml/var_angle
+% Junction stiffness per unit length: k = ml/angle
 
 F_screw = cell(numScrew,1);
 ml_screw = cell(numScrew,1);
-var_angle_screw = cell(numScrew,1);
+angle_screw = cell(numScrew,1);
 k_screw = cell(numScrew,1);
 mean_Kscrew_data = zeros(numScrew,1);
 for i = 1:numScrew
@@ -55,7 +55,7 @@ for i = 1:numScrew
     numSampleb = ['S' num2str(j) 'b'];
     F = appliedLoad(numSample);
     numImages = length(F);
-    var_angle = zeros(numImages,1);
+    angle = zeros(numImages,1);
     
     for k=1:numImages
     % for k=3
@@ -179,7 +179,7 @@ for i = 1:numScrew
         s = [val2(end)-val2(1) L2y_sort(end)-L2y_sort(1)];
         delta = acosd(abs(t*s')/(norm(t)*norm(s)));
         
-        var_angle(k) = abs(delta0-delta);
+        angle(k) = abs(delta0-delta);
         
         %-----------------------------
         % Reference and deformed mesh
@@ -249,14 +249,14 @@ for i = 1:numScrew
     
     F_screw{j} = F;
     ml_screw{j} = F*d/b;
-    var_angle_screw{j} = var_angle;
-    k_screw{j} = (F*d)./(deg2rad(var_angle)'*b);
-    mean_Kscrew_data(i) = mean( (F(2:end-1)*d)./(deg2rad(var_angle(2:end-1))'*b) );
+    angle_screw{j} = angle;
+    k_screw{j} = (F*d)./(deg2rad(angle)'*b);
+    mean_Kscrew_data(i) = mean( (F(2:end-1)*d)./(deg2rad(angle(2:end-1))'*b) );
 end
 
 F_dowel = cell(numDowel,1);
 ml_dowel = cell(numDowel,1);
-var_angle_dowel = cell(numDowel,1);
+angle_dowel = cell(numDowel,1);
 k_dowel = cell(numDowel,1);
 mean_Kdowel_data = zeros(numDowel,1);
 for j=1:numDowel
@@ -267,7 +267,7 @@ for j=1:numDowel
     numSampleb = ['D' num2str(j) 'b'];
     F = appliedLoad(numSample);
     numImages = length(F);
-    var_angle = zeros(numImages,1);
+    angle = zeros(numImages,1);
     
     for k=1:numImages
     % for k=3
@@ -391,7 +391,7 @@ for j=1:numDowel
         s = [L2x_sort(end)-L2x_sort(1) val2(end)-val2(1)];
         delta = acosd(abs(t*s')/(norm(t)*norm(s)));
         
-        var_angle(k) = abs(delta0-delta);
+        angle(k) = abs(delta0-delta);
         
         %-----------------------------
         % Reference and deformed mesh
@@ -461,56 +461,64 @@ for j=1:numDowel
     
     F_dowel{j} = F;
     ml_dowel{j} = F*d/b;
-    var_angle_dowel{j} = var_angle;
-    k_dowel{j} = (F*d)./(deg2rad(var_angle)'*b);
+    angle_dowel{j} = angle;
+    k_dowel{j} = (F*d)./(deg2rad(angle)'*b);
     mean_Kdowel_data(j) = mean(k_dowel{j});
 end
 
 %% Save variables
 save(fullfile(pathname,filename),'numScrew','numDowel',...
-    'F_screw','ml_screw','var_angle_screw','k_screw','mean_Kscrew_data',...
-    'F_dowel','ml_dowel','var_angle_dowel','k_dowel','mean_Kdowel_data');
+    'F_screw','ml_screw','angle_screw','k_screw','mean_Kscrew_data',...
+    'F_dowel','ml_dowel','angle_dowel','k_dowel','mean_Kdowel_data');
 
 %% Plot data
 if displaySolution
-    figure('name','Screw junction: Moment per unit length w.r.t. Variation of angle')
+    figure('name','Screw junction: Moment per unit length w.r.t. angle')
     for j = 1:numScrew
-        plot(ml_screw{j},var_angle_screw{j},'+-')
+        plot(ml_screw{j},angle_screw{j},'+-')
         hold on
         grid on
         box on
-        xlabel('Moment per unit length [N.m/m]','Interpreter',interpreter);
-        ylabel('Variation of angle [$^{\circ}$]','Interpreter',interpreter);
+        %xlabel('Moment per unit length [N.m/m]','Interpreter',interpreter);
+        %ylabel('Variation of angle [$^{\circ}$]','Interpreter',interpreter);
+        xlabel('Moment lin\''eique [N.m/m]','Interpreter',interpreter);
+        ylabel('Variation d''angle [$^{\circ}$]','Interpreter',interpreter);
     end
     
-    figure('name','Screw junction: Applied load w.r.t. Junction stiffness per unit length')
+    figure('name','Screw junction: Applied load w.r.t. stiffness per unit length')
     for j = 1:numScrew
         plot(F_screw{j},k_screw{j},'+-')
         hold on
         grid on
         box on
-        xlabel('Applied load [N]','Interpreter',interpreter);
-        ylabel('Junction stiffness per unit length [N/rad]','Interpreter',interpreter);    
+        %xlabel('Applied load [N]','Interpreter',interpreter);
+        %ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
+        xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
+        ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
     end
     
-    figure('name','Dowel junction: Moment per unit length w.r.t. Variation of angle')
+    figure('name','Dowel junction: Moment per unit length w.r.t. angle')
     for j = 1:numDowel
-        plot(ml_dowel{j},var_angle_dowel{j},'+-')
+        plot(ml_dowel{j},angle_dowel{j},'+-')
         hold on
         grid on
         box on
-        xlabel('Moment per unit length [N.m/m]','Interpreter',interpreter);
-        ylabel('Variation of angle [$^{\circ}$]','Interpreter',interpreter);
+        %xlabel('Moment per unit length [N.m/m]','Interpreter',interpreter);
+        %ylabel('Variation of angle [$^{\circ}$]','Interpreter',interpreter);
+        xlabel('Moment lin\''eique [N.m/m]','Interpreter',interpreter);
+        ylabel('Variation d''angle [$^{\circ}$]','Interpreter',interpreter);
     end
     
-    figure('name','Dowel junction: Applied load w.r.t. Junction stiffness per unit length')
+    figure('name','Dowel junction: Applied load w.r.t. stiffness per unit length')
     for j = 1:numDowel
         plot(F_dowel{j},k_dowel{j},'+-')
         hold on
         grid on
         box on
-        xlabel('Applied load [N]','Interpreter',interpreter);
-        ylabel('Junction stiffness per unit length [N/rad]','Interpreter',interpreter);
+        %xlabel('Applied load [N]','Interpreter',interpreter);
+        %ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
+        xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
+        ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
     end
 end
 
@@ -519,17 +527,21 @@ clf
 bar(mean_Kscrew_data);
 grid on
 set(gca,'FontSize',fontsize)
-xlabel('Sample number','Interpreter',interpreter);
-ylabel('Junction stiffness per unit length [N/rad]','Interpreter',interpreter);
-mysaveas(pathname,'KjuncVis',formats);
-mymatlab2tikz(pathname,'KjuncVis.tex');
+%xlabel('Sample number','Interpreter',interpreter);
+%ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
+xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
+mysaveas(pathname,'KjuncScrew',formats);
+mymatlab2tikz(pathname,'KjuncScrew.tex');
 
 figure
 clf
 bar(mean_Kdowel_data);
 grid on
 set(gca,'FontSize',fontsize)
-xlabel('Sample number','Interpreter',interpreter);
-ylabel('Junction stiffness per unit length [N/rad]','Interpreter',interpreter);
-mysaveas(pathname,'KjuncTourillon',formats);
-mymatlab2tikz(pathname,'KjuncTourillon.tex');
+%xlabel('Sample number','Interpreter',interpreter);
+%ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
+xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
+mysaveas(pathname,'KjuncDowel',formats);
+mymatlab2tikz(pathname,'KjuncDowel.tex');

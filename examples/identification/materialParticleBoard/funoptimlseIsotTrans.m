@@ -11,6 +11,11 @@ b5 = 1/la5;
 
 mC4 = a*b4;
 mC5 = a*b5;
+% phi_C = ln((C1*C2-C3^2) * C4^2 * C5^2) = ln(C1*C2-C3^2) + 2*ln(C4) + 2*ln(C5)
+% nu_C = E{phi_C} = E{ln(C1*C2-C3^2)} + 2*E{ln(C4)} + 2*E{ln(C5)}
+%                 = mphiC123          + mphiC4      + mphiC5
+% with Gamma-distributed random variables C4~Gamma(a4,b4) and C5~Gamma(a5,b5)
+% E(ln(X)) = psi(a)+log(b) for a Gamma-distributed random variable X~Gamma(a,b)
 mphiC4 = 2*(psi(a)+log(b4));
 mphiC5 = 2*(psi(a)+log(b5));
 
