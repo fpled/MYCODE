@@ -30,6 +30,9 @@ loadings = {'Uniform','Concentrated'};
 elemtypes = {'DKT','DKQ','DST','DSQ','COQ4'}; % Both plate theories
 nbelems = 2.^(1:6);
 
+fontsize = 16;
+linewidth = 1;
+interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
@@ -382,7 +385,7 @@ if displaySolution
         case 'concentrated'
             ampl = 0.2;
     end
-    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
+    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',linewidth);
     % legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
     mysaveas(pathname,['boundary_conditions_' num2str(i)],formats,renderer);
     
@@ -448,23 +451,23 @@ end
 
 if displayCv
     figure(hcvUz)
-    loglog(Nbelem,err_Uz,'-','Color',getfacecolor(ie+1),'LineWidth',1);
+    loglog(Nbelem,err_Uz,'-','Color',getfacecolor(ie+1),'LineWidth',linewidth);
     hold on
     
     figure(hcvRt)
-    loglog(Nbelem,err_Rt,'-','Color',getfacecolor(ie+1),'LineWidth',1);
+    loglog(Nbelem,err_Rt,'-','Color',getfacecolor(ie+1),'LineWidth',linewidth);
     hold on
     
     figure(hcvRx)
-    loglog(Nbelem,err_Rx,'-','Color',getfacecolor(ie+1),'LineWidth',1);
+    loglog(Nbelem,err_Rx,'-','Color',getfacecolor(ie+1),'LineWidth',linewidth);
     hold on
     
     figure(hcvRy)
-    loglog(Nbelem,err_Ry,'-','Color',getfacecolor(ie+1),'LineWidth',1);
+    loglog(Nbelem,err_Ry,'-','Color',getfacecolor(ie+1),'LineWidth',linewidth);
     hold on
     
     figure(htime)
-    loglog(Nbelem,time,'-','Color',getfacecolor(ie+1),'LineWidth',1);
+    loglog(Nbelem,time,'-','Color',getfacecolor(ie+1),'LineWidth',linewidth);
     hold on
 end
 
@@ -477,9 +480,11 @@ if displayCv
     figure(hcvUz)
     grid on
     box on
-    set(gca,'FontSize',16)
-    xlabel('Number of elements')
-    ylabel('Error')
+    set(gca,'FontSize',fontsize)
+    %xlabel('Number of elements')
+    %ylabel('Error')
+    xlabel('Nombre d''éléments')
+    ylabel('Erreur')
     legend(leg{:})
     mysaveas(pathname,'error_Uz','fig');
     mymatlab2tikz(pathname,'error_Uz.tex');
@@ -487,9 +492,11 @@ if displayCv
     figure(hcvRt)
     grid on
     box on
-    set(gca,'FontSize',16)
-    xlabel('Number of elements')
-    ylabel('Error')
+    set(gca,'FontSize',fontsize)
+    %xlabel('Number of elements')
+    %ylabel('Error')
+    xlabel('Nombre d''éléments')
+    ylabel('Erreur')
     legend(leg{:})
     mysaveas(pathname,'error_Rt','fig');
     mymatlab2tikz(pathname,'error_Rt.tex');
@@ -497,9 +504,11 @@ if displayCv
     figure(hcvRx)
     grid on
     box on
-    set(gca,'FontSize',16)
-    xlabel('Number of elements')
-    ylabel('Error')
+    set(gca,'FontSize',fontsize)
+    %xlabel('Number of elements')
+    %ylabel('Error')
+    xlabel('Nombre d''éléments')
+    ylabel('Erreur')
     legend(leg{:})
     mysaveas(pathname,'error_Rx','fig');
     mymatlab2tikz(pathname,'error_Rx.tex');
@@ -507,9 +516,11 @@ if displayCv
     figure(hcvRy)
     grid on
     box on
-    set(gca,'FontSize',16)
-    xlabel('Number of elements')
-    ylabel('Error')
+    set(gca,'FontSize',fontsize)
+    %xlabel('Number of elements')
+    %ylabel('Error')
+    xlabel('Nombre d''éléments')
+    ylabel('Erreur')
     legend(leg{:})
     mysaveas(pathname,'error_Ry','fig');
     mymatlab2tikz(pathname,'error_Ry.tex');
@@ -517,9 +528,11 @@ if displayCv
     figure(htime)
     grid on
     box on
-    set(gca,'FontSize',16)
-    xlabel('Number of elements')
-    ylabel('CPU time (s)')
+    set(gca,'FontSize',fontsize)
+    %xlabel('Number of elements')
+    %ylabel('CPU time (s)')
+    xlabel('Nombre d''éléments')
+    ylabel('Temps CPU (s)')
     legend(leg{:})
     mysaveas(pathname,'cputime','fig');
     mymatlab2tikz(pathname,'cputime.tex');

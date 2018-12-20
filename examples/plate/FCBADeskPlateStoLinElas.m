@@ -30,6 +30,9 @@ tests = {'StaticVert'}; % test under static vertical load
 
 pointwiseLoading = true; % pointwise loading
 
+fontsize = 16;
+linewidth = 1;
+interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
@@ -769,9 +772,10 @@ for it=1:length(tests)
         
         [hD,legD] = plotBoundaryConditions(S,'legend',false);
         ampl = 20;
-        [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
+        [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',lindewidth);
         hP = plot(P,'g+');
-        legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
+        %legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
+        legend([hD,hN,hP],[legD,legN,'mesure'],'Location','NorthEastOutside')
         mysaveas(pathname,'boundary_conditions',formats,renderer);
         
         plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
@@ -844,34 +848,39 @@ for it=1:length(tests)
         hold on
         ciplot(repmat(lowercis_u_exp,1,N),repmat(uppercis_u_exp,1,N),1:N,'r');
         alpha(0.2)
-        plot(1:N,means_u,'-b','LineWidth',1)
+        plot(1:N,means_u,'-b','LineWidth',lindewidth)
         switch lower(test)
             case {'stability','staticvert'}
-                plot(1:N,repmat(uz_exp,1,N),'-r','LineWidth',1)
+                plot(1:N,repmat(uz_exp,1,N),'-r','LineWidth',lindewidth)
             case {'statichori1','statichori2','fatigue1','fatigue2'}
-                plot(1:N,repmat(ux_exp,1,N),'-r','LineWidth',1)
+                plot(1:N,repmat(ux_exp,1,N),'-r','LineWidth',lindewidth)
             case {'statichori3','statichori4','fatigue3','fatigue4'}
-                plot(1:N,repmat(uy_exp,1,N),'-r','LineWidth',1)
+                plot(1:N,repmat(uy_exp,1,N),'-r','LineWidth',lindewidth)
         end
         hold off
         grid on
         box on
-        set(gca,'FontSize',16)
-        % xlabel('Nombre de r\''ealisations','Interpreter','latex')
-        xlabel('Number of samples','Interpreter','latex')
+        set(gca,'FontSize',fontsize)
+        %xlabel('Number of samples','Interpreter',interpreter)
+        xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
         switch lower(test)
             case {'stability','staticvert'}
-                ylabel('Vertical displacement','Interpreter','latex')
+                %ylabel('Vertical displacement','Interpreter',interpreter)
+                ylabel('D\''eplacement vertical','Interpreter',interpreter)
             case {'statichori1','statichori2','fatigue1','fatigue2',...
                     'statichori3','statichori4','fatigue3','fatigue4'}
-                ylabel('Horizontal displacement','Interpreter','latex')
+                %ylabel('Horizontal displacement','Interpreter',interpreter)
+                ylabel('D\''eplacement horizontal','Interpreter',interpreter)
         end
         switch lower(test)
             case {'stability','staticvert','statichori1','statichori2','fatigue1','fatigue2',...
                     'statichori3','statichori4','fatigue3','fatigue4'}
-                legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],...
-                    [num2str((probs(2)-probs(1))*100) '% confidence interval'],...
-                    'mean value','experimental value'})
+                %legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],...
+                %    [num2str((probs(2)-probs(1))*100) '% confidence interval'],...
+                %    'mean value','experimental value'})
+                legend({['intervalle de confiance à ' num2str((probs(2)-probs(1))*100) '%'],...
+                    'intervalle de confiance à ' [num2str((probs(2)-probs(1))*100) '%'],...
+                    'valeur moyenne','valeur exp\''erimentale'})
             case{'impact','drop'}
                 
         end
@@ -880,27 +889,27 @@ for it=1:length(tests)
         
         figure('Name','Convergence mean')
         clf
-        plot(1:N,means_u,'-b','LineWidth',1)
+        plot(1:N,means_u,'-b','LineWidth',lindewidth)
         grid on
         box on
-        set(gca,'FontSize',16)
-        % xlabel('Nombre de r\''ealisations','Interpreter','latex')
-        % ylabel('Moyenne','Interpreter','latex')
-        xlabel('Number of samples','Interpreter','latex')
-        ylabel('Mean','Interpreter','latex')
+        set(gca,'FontSize',fontsize)
+        %xlabel('Number of samples','Interpreter',interpreter)
+        %ylabel('Mean value','Interpreter',interpreter)
+        xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+        ylabel('Moyenne','Interpreter',interpreter)
         mysaveas(pathname,'convergence_mean','fig');
         mymatlab2tikz(pathname,'convergence_mean.tex');
         
         figure('Name','Convergence standard deviation')
         clf
-        plot(1:N,stds_u,'-r','LineWidth',1)
+        plot(1:N,stds_u,'-r','LineWidth',lindewidth)
         grid on
         box on
-        set(gca,'FontSize',16)
-        % xlabel('Nombre de r\''ealisations','Interpreter','latex')
-        % ylabel('Ecart-type','Interpreter','latex')
-        xlabel('Number of samples','Interpreter','latex')
-        ylabel('Standard deviation','Interpreter','latex')
+        set(gca,'FontSize',fontsize)
+        %xlabel('Number of samples','Interpreter',interpreter)
+        %ylabel('Standard deviation','Interpreter',interpreter)
+        xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+        ylabel('Ecart-type','Interpreter',interpreter)
         mysaveas(pathname,'convergence_std','fig');
         mymatlab2tikz(pathname,'convergence_std.tex');
     end

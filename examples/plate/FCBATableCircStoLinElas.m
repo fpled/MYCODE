@@ -33,6 +33,9 @@ tests = {'StaticVert'}; % test under static vertical load
 
 belt = true; % belt modeling
 
+fontsize = 16;
+linewidth = 1;
+interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
@@ -569,7 +572,7 @@ if displaySolution
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 5;
-    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
+    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',lindewidth);
     hP = plot(P,'g+');
     % legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
@@ -657,48 +660,50 @@ if displayCv
     ciplot(lowercis_u,uppercis_u,1:N,'b');
     hold on
     alpha(0.2)
-    plot(1:N,means_u,'-b','LineWidth',1)
+    plot(1:N,means_u,'-b','LineWidth',lindewidth)
     if strcmpi(test,'staticvert')
-        plot(1:N,repmat(uz_exp,1,N),'-r','LineWidth',1)
+        plot(1:N,repmat(uz_exp,1,N),'-r','LineWidth',lindewidth)
     end
     hold off
     grid on
     box on
-    set(gca,'FontSize',16)
-    % xlabel('Nombre de r\''ealisations','Interpreter','latex')
-    xlabel('Number of samples','Interpreter','latex')
-    ylabel('Solution','Interpreter','latex')
+    set(gca,'FontSize',fontsize)
+    %xlabel('Number of samples')
+    xlabel('Nombre de réalisations')
+    ylabel('Solution')
     if strcmpi(test,'staticvert')
-        legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean value','experimental value'})
+        %legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean value','experimental value'})
+        legend({['intervalle de confiance à ' num2str((probs(2)-probs(1))*100) '%'],'valeur moyenne','valeur expérimentale'})
     else
-        legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean value'})
+        %legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean value'})
+        legend({['intervalle de confiance à ' num2str((probs(2)-probs(1))*100) '%'],'valeur moyenne'})
     end
     mysaveas(pathname,'convergence_solution','fig');
     mymatlab2tikz(pathname,'convergence_solution.tex');
     
     figure('Name','Convergence mean')
     clf
-    plot(1:N,means_u,'-b','LineWidth',1)
+    plot(1:N,means_u,'-b','LineWidth',lindewidth)
     grid on
     box on
-    set(gca,'FontSize',16)
-    % xlabel('Nombre de r\''ealisations','Interpreter','latex')
-    % ylabel('Moyenne','Interpreter','latex')
-    xlabel('Number of samples','Interpreter','latex')
-    ylabel('Mean','Interpreter','latex')
+    set(gca,'FontSize',fontsize)
+    %xlabel('Number of samples')
+    %ylabel('Mean value')
+    xlabel('Nombre de réalisations')
+    ylabel('Moyenne')
     mysaveas(pathname,'convergence_mean','fig');
     mymatlab2tikz(pathname,'convergence_mean.tex');
     
     figure('Name','Convergence standard deviation')
     clf
-    plot(1:N,stds_u,'-r','LineWidth',1)
+    plot(1:N,stds_u,'-r','LineWidth',lindewidth)
     grid on
     box on
-    set(gca,'FontSize',16)
-    % xlabel('Nombre de r\''ealisations','Interpreter','latex')
-    % ylabel('Ecart-type','Interpreter','latex')
-    xlabel('Number of samples','Interpreter','latex')
-    ylabel('Standard deviation','Interpreter','latex')
+    set(gca,'FontSize',fontsize)
+    %xlabel('Number of samples')
+    %ylabel('Standard deviation')
+    xlabel('Nombre de réalisations')
+    ylabel('Ecart-type')
     mysaveas(pathname,'convergence_std','fig');
     mymatlab2tikz(pathname,'convergence_std.tex');
 end

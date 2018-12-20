@@ -52,32 +52,36 @@ lambda0 = [la1 la2 la3 la4 la5 la];
 % mphiC5 = 2*(psi(a)+log(b5));
 % nuCs = arrayfun(@(x) mean(log(C_sample(1:x,1).*C_sample(1:x,2)-C_sample(1:x,3).^2),1) + mphiC4 + mphiC5,1:N);
 % 
+% fontsize = 16;
+% linewidth = 1;
+% interpreter = 'latex';
+% 
 % figure('Name','Convergence mean')
 % clf
-% plot(1:N,mC1s,'-b','LineWidth',1)
+% plot(1:N,mC1s,'-b','LineWidth',linewidth)
 % hold on
-% plot(1:N,mC2s,'-r','LineWidth',1)
-% plot(1:N,mC3s,'-g','LineWidth',1)
+% plot(1:N,mC2s,'-r','LineWidth',linewidth)
+% plot(1:N,mC3s,'-g','LineWidth',linewidth)
 % grid on
 % box on
-% set(gca,'FontSize',16)
-% xlabel('Number of samples','Interpreter','latex')
-% ylabel('Mean','Interpreter','latex')
-% % xlabel('Nombre de r\''ealisations','Interpreter','latex')
-% % ylabel('Moyenne','Interpreter','latex')
+% set(gca,'FontSize',fontsize)
+% %xlabel('Number of samples','Interpreter',interpreter)
+% %ylabel('Mean value','Interpreter',interpreter)
+% xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+% ylabel('Moyenne','Interpreter',interpreter)
 % l = legend('$C_1$','$C_2$','$C_3$');
-% set(l,'Interpreter','latex')
+% set(l,'Interpreter',interpreter)
 % 
 % figure('Name','Convergence logarithmic mean of det([C])')
 % clf
-% plot(1:N,nuCs,'-b','LineWidth',1)
+% plot(1:N,nuCs,'-b','LineWidth',linewidth)
 % grid on
 % box on
-% set(gca,'FontSize',16)
-% xlabel('Number of samples','Interpreter','latex')
-% ylabel('Logarithmic mean of $\det([C])$','Interpreter','latex')
-% % xlabel('Nombre de r\''ealisations','Interpreter','latex')
-% % ylabel('Moyenne du logarithme de $\det([C])$','Interpreter','latex')
+% set(gca,'FontSize',fontsize)
+% %xlabel('Number of samples','Interpreter',interpreter)
+% %ylabel('Logarithmic mean of $\det([C])$','Interpreter',interpreter)
+% xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+% ylabel('Moyenne du logarithme de $\det([C])$','Interpreter',interpreter)
 
 lb = [0 0 -Inf 0 0 -Inf];
 ub = [Inf Inf Inf Inf Inf 1/2];
