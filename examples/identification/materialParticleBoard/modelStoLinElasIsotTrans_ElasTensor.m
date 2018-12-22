@@ -253,8 +253,8 @@ if displaySolution
     xlabel('$C_1$ [GPa]','Interpreter',interpreter);
     ylabel('$C_2$ [GPa]','Interpreter',interpreter);
     zlabel('$C_3$ [GPa]','Interpreter',interpreter);
-    %legend('samples','data','support');
-    legend('réalisations','données','support');
+    legend('samples','data','support');
+    %legend('réalisations','données','support');
     mysaveas(pathname,'samples_C1_C2_C3',formats);
     mymatlab2tikz(pathname,'samples_C1_C2_C3.tex');
     
@@ -269,8 +269,8 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$C_4$ [GPa]','Interpreter',interpreter);
     ylabel('$C_5$ [GPa]','Interpreter',interpreter);
-    %legend('samples','data');
-    legend('réalisations','données');
+    legend('samples','data');
+    %legend('réalisations','données');
     mysaveas(pathname,'samples_C4_C5',formats);
     mymatlab2tikz(pathname,'samples_C4_C5.tex');
     
@@ -286,8 +286,8 @@ if displaySolution
     xlabel('$E^T$ [GPa]','Interpreter',interpreter);
     ylabel('$G^L$ [GPa]','Interpreter',interpreter);
     zlabel('$\nu^T$','Interpreter',interpreter);
-    %legend('samples','data');
-    legend('réalisations','données');
+    legend('samples','data');
+    %legend('réalisations','données');
     mysaveas(pathname,'samples_ET_GL_NUT',formats);
     mymatlab2tikz(pathname,'samples_ET_GL_NUT.tex');
     

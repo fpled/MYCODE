@@ -479,10 +479,10 @@ if displaySolution
         hold on
         grid on
         box on
-        %xlabel('Moment per unit length [N.m/m]','Interpreter',interpreter);
-        %ylabel('Variation of angle [$^{\circ}$]','Interpreter',interpreter);
-        xlabel('Moment lin\''eique [N.m/m]','Interpreter',interpreter);
-        ylabel('Variation d''angle [$^{\circ}$]','Interpreter',interpreter);
+        xlabel('Moment per unit length [N.m/m]','Interpreter',interpreter);
+        ylabel('Variation of angle [$^{\circ}$]','Interpreter',interpreter);
+        %xlabel('Moment lin\''eique [N.m/m]','Interpreter',interpreter);
+        %ylabel('Variation d''angle [$^{\circ}$]','Interpreter',interpreter);
     end
     
     figure('name','Screw junction: Applied load w.r.t. stiffness per unit length')
@@ -491,10 +491,10 @@ if displaySolution
         hold on
         grid on
         box on
-        %xlabel('Applied load [N]','Interpreter',interpreter);
-        %ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
-        xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
-        ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
+        xlabel('Applied load [N]','Interpreter',interpreter);
+        ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
+        %xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
+        %ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
     end
     
     figure('name','Dowel junction: Moment per unit length w.r.t. angle')
@@ -503,10 +503,10 @@ if displaySolution
         hold on
         grid on
         box on
-        %xlabel('Moment per unit length [N.m/m]','Interpreter',interpreter);
-        %ylabel('Variation of angle [$^{\circ}$]','Interpreter',interpreter);
-        xlabel('Moment lin\''eique [N.m/m]','Interpreter',interpreter);
-        ylabel('Variation d''angle [$^{\circ}$]','Interpreter',interpreter);
+        xlabel('Moment per unit length [N.m/m]','Interpreter',interpreter);
+        ylabel('Variation of angle [$^{\circ}$]','Interpreter',interpreter);
+        %xlabel('Moment lin\''eique [N.m/m]','Interpreter',interpreter);
+        %ylabel('Variation d''angle [$^{\circ}$]','Interpreter',interpreter);
     end
     
     figure('name','Dowel junction: Applied load w.r.t. stiffness per unit length')
@@ -515,10 +515,10 @@ if displaySolution
         hold on
         grid on
         box on
-        %xlabel('Applied load [N]','Interpreter',interpreter);
-        %ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
-        xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
-        ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
+        xlabel('Applied load [N]','Interpreter',interpreter);
+        ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
+        %xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
+        %ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
     end
 end
 
@@ -527,10 +527,10 @@ clf
 bar(mean_Kscrew_data);
 grid on
 set(gca,'FontSize',fontsize)
-%xlabel('Sample number','Interpreter',interpreter);
-%ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
-xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
+xlabel('Sample number','Interpreter',interpreter);
+ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
+%xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+%ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
 mysaveas(pathname,'KjuncScrew',formats);
 mymatlab2tikz(pathname,'KjuncScrew.tex');
 
@@ -539,9 +539,9 @@ clf
 bar(mean_Kdowel_data);
 grid on
 set(gca,'FontSize',fontsize)
-%xlabel('Sample number','Interpreter',interpreter);
-%ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
-xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
+xlabel('Sample number','Interpreter',interpreter);
+ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
+%xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+%ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
 mysaveas(pathname,'KjuncDowel',formats);
 mymatlab2tikz(pathname,'KjuncDowel.tex');

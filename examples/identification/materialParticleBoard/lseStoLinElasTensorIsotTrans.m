@@ -65,10 +65,10 @@ lambda0 = [la1 la2 la3 la4 la5 la];
 % grid on
 % box on
 % set(gca,'FontSize',fontsize)
-% %xlabel('Number of samples','Interpreter',interpreter)
-% %ylabel('Mean value','Interpreter',interpreter)
-% xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-% ylabel('Moyenne','Interpreter',interpreter)
+% xlabel('Number of samples','Interpreter',interpreter)
+% ylabel('Mean value','Interpreter',interpreter)
+% %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+% %ylabel('Moyenne','Interpreter',interpreter)
 % l = legend('$C_1$','$C_2$','$C_3$');
 % set(l,'Interpreter',interpreter)
 % 
@@ -78,10 +78,10 @@ lambda0 = [la1 la2 la3 la4 la5 la];
 % grid on
 % box on
 % set(gca,'FontSize',fontsize)
-% %xlabel('Number of samples','Interpreter',interpreter)
-% %ylabel('Logarithmic mean of $\det([C])$','Interpreter',interpreter)
-% xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-% ylabel('Moyenne du logarithme de $\det([C])$','Interpreter',interpreter)
+% xlabel('Number of samples','Interpreter',interpreter)
+% ylabel('Logarithmic mean of $\det([C])$','Interpreter',interpreter)
+% %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+% %ylabel('Moyenne du logarithme de $\det([C])$','Interpreter',interpreter)
 
 lb = [0 0 -Inf 0 0 -Inf];
 ub = [Inf Inf Inf Inf Inf 1/2];

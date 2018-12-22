@@ -525,8 +525,8 @@ if displaySolution
     ampl = 3;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
     hP = plot(P2,'g+');
-    %legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
-    legend([hD,hN,hP],[legD,legN,'mesure'],'Location','NorthEastOutside')
+    legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
+    %legend([hD,hN,hP],[legD,legN,'mesure'],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','node',true,'legend',false);

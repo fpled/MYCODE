@@ -90,10 +90,10 @@ if displaySolution
     bar(1:length(Kdowel_data),Kdowel_data)
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[0,length(Kdowel_data)+1])
-    %xlabel('Sample number','Interpreter',interpreter);
-    %ylabel('Stiffness per unit length $k$ [kN/rad]','Interpreter',interpreter);
-    xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    ylabel('Rigidit\''e lin\''eique $k$ [kN/rad]','Interpreter',interpreter);
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Stiffness per unit length $k$ [kN/rad]','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Rigidit\''e lin\''eique $k$ [kN/rad]','Interpreter',interpreter);
     mysaveas(pathname,'data_Kdowel',formats);
     mymatlab2tikz(pathname,'data_Kdowel.tex');
 
@@ -102,10 +102,10 @@ if displaySolution
     bar(1:length(Kscrew_data),Kscrew_data)
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[0,length(Kscrew_data)+1])
-    %xlabel('Sample number','Interpreter',interpreter);
-    %ylabel('Stiffness per unit length $k$ [kN/rad]','Interpreter',interpreter);
-    xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    ylabel('Rigidit\''e lin\''eique $k$ [kN/rad]','Interpreter',interpreter);
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Stiffness per unit length $k$ [kN/rad]','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Rigidit\''e lin\''eique $k$ [kN/rad]','Interpreter',interpreter);
     mysaveas(pathname,'data_Kscrew',formats);
     mymatlab2tikz(pathname,'data_Kscrew.tex');
     
@@ -198,12 +198,12 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    %xlabel('Number of realizations','Interpreter',interpreter)
-    %ylabel('Stiffness per unit length $k$ [kN/rad]','Interpreter',interpreter)
-    %legend('samples','mean');
-    xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-    ylabel('Rigidit\''e lin\''eique $k$ [kN/rad]','Interpreter',interpreter)
-    legend('réalisations','valeur moyenne');
+    xlabel('Number of realizations','Interpreter',interpreter)
+    ylabel('Stiffness per unit length $k$ [kN/rad]','Interpreter',interpreter)
+    legend('samples','mean');
+    %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+    %ylabel('Rigidit\''e lin\''eique $k$ [kN/rad]','Interpreter',interpreter)
+    %legend('réalisations','valeur moyenne');
     mysaveas(pathname,'samples_Kdowel',formats);
     mymatlab2tikz(pathname,'samples_Kdowel.tex');
     
@@ -216,12 +216,12 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    %xlabel('Number of realizations','Interpreter',interpreter)
-    %ylabel('Stiffness per unit length $k$ [kN/rad]','Interpreter',interpreter)
-    %legend('samples','mean');
-    xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-    ylabel('Rigidit\''e lin\''eique $k$ [kN/rad]','Interpreter',interpreter)
-    legend('réalisations','valeur moyenne');
+    xlabel('Number of realizations','Interpreter',interpreter)
+    ylabel('Stiffness per unit length $k$ [kN/rad]','Interpreter',interpreter)
+    legend('samples','mean');
+    %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+    %ylabel('Rigidit\''e lin\''eique $k$ [kN/rad]','Interpreter',interpreter)
+    %legend('réalisations','valeur moyenne');
     mysaveas(pathname,'samples_Kscrew',formats);
     mymatlab2tikz(pathname,'samples_Kscrew.tex');
     

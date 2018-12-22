@@ -161,7 +161,7 @@ for j=8
             hg = hggroup;
             set([h(:),hD],'Parent',hg);
             axis image
-            l = legend(hD,'$U_{\mathrm{exp}}$','Location','NorthEastOutside');
+            l = legend(hD,'$u^{\mathrm{exp}}$','Location','NorthEastOutside');
             % l = legend(hD,legD,'Location','NorthEastOutside');
             set(l,'Interpreter',interpreter);
             set(gcf,'position',[100,100, 450, 120])

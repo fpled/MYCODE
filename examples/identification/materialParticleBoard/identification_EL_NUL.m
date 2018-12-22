@@ -159,10 +159,10 @@ if displaySolution
 %         grid on
 %         set(gca,'FontSize',fontsize)
 %         legend(numSample,'Location','NorthEastOutside');
-%         %xlabel('Image number','Interpreter',interpreter);
-%         %ylabel('Young''s modulus $E^L$ [MPa]','Interpreter',interpreter);
-%         xlabel('Num\''ero d''image','Interpreter',interpreter);
-%         ylabel('Module d''Young $E^L$ [MPa]','Interpreter',interpreter);
+%         xlabel('Image number','Interpreter',interpreter);
+%         ylabel('Young''s modulus $E^L$ [MPa]','Interpreter',interpreter);
+%         %xlabel('Num\''ero d''image','Interpreter',interpreter);
+%         %ylabel('Module d''Young $E^L$ [MPa]','Interpreter',interpreter);
 %         mysaveas(pathname,['data_EL_' numSample],formats);
 %         mymatlab2tikz(pathname,['data_EL_' numSample '.tex']);
 %         
@@ -172,10 +172,10 @@ if displaySolution
 %         grid on
 %         set(gca,'FontSize',fontsize)
 %         legend(numSample,'Location','NorthEastOutside');
-%         %xlabel('Image number','Interpreter',interpreter);
-%         %ylabel('Poisson''s ratio $\nu^L$','Interpreter',interpreter);
-%         xlabel('Num\''ero d''image','Interpreter',interpreter);
-%         ylabel('Coefficient de Poisson $\nu^L$','Interpreter',interpreter);
+%         xlabel('Image number','Interpreter',interpreter);
+%         ylabel('Poisson''s ratio $\nu^L$','Interpreter',interpreter);
+%         %xlabel('Num\''ero d''image','Interpreter',interpreter);
+%         %ylabel('Coefficient de Poisson $\nu^L$','Interpreter',interpreter);
 %         mysaveas(pathname,['data_NUL_' numSample],formats);
 %         mymatlab2tikz(pathname,['data_NUL_' numSample '.tex']);
 %     end
@@ -185,10 +185,10 @@ if displaySolution
     bar(mean_EL_data,'LineWidth',linewidth);
     grid on
     set(gca,'FontSize',fontsize)
-    %xlabel('Sample number','Interpreter',interpreter);
-    %ylabel('Young''s modulus $E^L$ [MPa]','Interpreter',interpreter);
-    xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    ylabel('Module d''Young $E^L$ [MPa]','Interpreter',interpreter);
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Young''s modulus $E^L$ [MPa]','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Module d''Young $E^L$ [MPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_EL',formats);
     mymatlab2tikz(pathname,'data_EL.tex');
     
@@ -197,10 +197,10 @@ if displaySolution
     bar(mean_NUL_data,'LineWidth',linewidth);
     grid on
     set(gca,'FontSize',fontsize)
-    %xlabel('Sample number','Interpreter',interpreter);
-    %ylabel('Poisson''s ratio $\nu^L$','Interpreter',interpreter);
-    xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    ylabel('Coefficient de Poisson $\nu^L$','Interpreter',interpreter);
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Poisson''s ratio $\nu^L$','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Coefficient de Poisson $\nu^L$','Interpreter',interpreter);
     mysaveas(pathname,'data_NUL',formats);
     mymatlab2tikz(pathname,'data_NUL.tex');
 end

@@ -158,10 +158,10 @@ if displaySolution
 %         grid on
 %         set(gca,'FontSize',fontsize)
 %         legend(numSample,'Location','NorthEastOutside');
-%         %xlabel('Image number','Interpreter',interpreter);
-%         %ylabel('Young''s modulus $E^T$ [GPa]','Interpreter',interpreter);
-%         xlabel('Num\''ero d''image','Interpreter',interpreter);
-%         ylabel('Module d''Young $E^T$ [GPa]','Interpreter',interpreter);
+%         xlabel('Image number','Interpreter',interpreter);
+%         ylabel('Young''s modulus $E^T$ [GPa]','Interpreter',interpreter);
+%         %xlabel('Num\''ero d''image','Interpreter',interpreter);
+%         %ylabel('Module d''Young $E^T$ [GPa]','Interpreter',interpreter);
 %         mysaveas(pathname,['data_ET_' numSample],formats);
 %         mymatlab2tikz(pathname,['data_ET_' numSample '.tex']);
 %         
@@ -171,10 +171,10 @@ if displaySolution
 %         grid on
 %         set(gca,'FontSize',fontsize)
 %         legend(numSample,'Location','NorthEastOutside');
-%         %xlabel('Image number','Interpreter',interpreter);
-%         %ylabel('Shear modulus $G^L$ [MPa]','Interpreter',interpreter);
-%         xlabel('Num\''ero d''image','Interpreter',interpreter);
-%         ylabel('Module de cisaillement $G^L$ [MPa]','Interpreter',interpreter);
+%         xlabel('Image number','Interpreter',interpreter);
+%         ylabel('Shear modulus $G^L$ [MPa]','Interpreter',interpreter);
+%         %xlabel('Num\''ero d''image','Interpreter',interpreter);
+%         %ylabel('Module de cisaillement $G^L$ [MPa]','Interpreter',interpreter);
 %         mysaveas(pathname,['data_GL_' numSample],formats);
 %         mymatlab2tikz(pathname,['data_GL_' numSample '.tex']);
 %     end
@@ -184,10 +184,10 @@ if displaySolution
     bar(mean_ET_data*1e-3,'LineWidth',linewidth);
     grid on
     set(gca,'FontSize',fontsize)
-    %xlabel('Sample number','Interpreter',interpreter);
-    %ylabel('Young''s modulus $E^T$ [GPa]','Interpreter',interpreter);
-    xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    ylabel('Module d''Young $E^T$ [GPa]','Interpreter',interpreter);
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Young''s modulus $E^T$ [GPa]','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Module d''Young $E^T$ [GPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_ET',formats);
     mymatlab2tikz(pathname,'data_ET.tex');
     
@@ -196,10 +196,10 @@ if displaySolution
     bar(mean_GL_data,'LineWidth',linewidth);
     grid on
     set(gca,'FontSize',fontsize)
-    %xlabel('Sample number','Interpreter',interpreter);
-    %ylabel('Shear modulus $G^L$ [MPa]','Interpreter',interpreter);
-    xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    ylabel('Module de cisaillement $G^L$ [MPa]','Interpreter',interpreter);
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Shear modulus $G^L$ [MPa]','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Module de cisaillement $G^L$ [MPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_GL',formats);
     mymatlab2tikz(pathname,'data_GL.tex');
 end

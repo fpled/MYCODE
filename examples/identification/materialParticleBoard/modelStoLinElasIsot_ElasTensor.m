@@ -159,10 +159,10 @@ if displaySolution
     bar(1:length(E_data),E_data)
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[0,length(E_data)+1])
-    %xlabel('Sample number','Interpreter',interpreter);
-    %ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter);
-    xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    ylabel('Module d''Young $E$ [GPa]','Interpreter',interpreter);
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Module d''Young $E$ [GPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_E','fig');
     mymatlab2tikz(pathname,'data_E.tex');
     
@@ -171,10 +171,10 @@ if displaySolution
     bar(1:length(G_data),G_data)
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[0,length(G_data)+1])
-    %xlabel('Sample number','Interpreter',interpreter);
-    %ylabel('Shear modulus $G$ [GPa]','Interpreter',interpreter);
-    xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    ylabel('Module de cisaillement $G$ [GPa]','Interpreter',interpreter);
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Shear modulus $G$ [GPa]','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Module de cisaillement $G$ [GPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_G','fig');
     mymatlab2tikz(pathname,'data_G.tex');
     

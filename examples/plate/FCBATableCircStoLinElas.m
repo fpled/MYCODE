@@ -574,7 +574,8 @@ if displaySolution
     ampl = 5;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',lindewidth);
     hP = plot(P,'g+');
-    % legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
+    legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
+    %legend([hD,hN,hP],[legD,legN,'mesure'],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
@@ -668,15 +669,15 @@ if displayCv
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    %xlabel('Number of samples')
-    xlabel('Nombre de réalisations')
+    xlabel('Number of samples')
+    %xlabel('Nombre de réalisations')
     ylabel('Solution')
     if strcmpi(test,'staticvert')
-        %legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean value','experimental value'})
-        legend({['intervalle de confiance à ' num2str((probs(2)-probs(1))*100) '%'],'valeur moyenne','valeur expérimentale'})
+        legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean value','experimental value'})
+        %legend({['intervalle de confiance à ' num2str((probs(2)-probs(1))*100) '%'],'valeur moyenne','valeur expérimentale'})
     else
-        %legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean value'})
-        legend({['intervalle de confiance à ' num2str((probs(2)-probs(1))*100) '%'],'valeur moyenne'})
+        legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean value'})
+        %legend({['intervalle de confiance à ' num2str((probs(2)-probs(1))*100) '%'],'valeur moyenne'})
     end
     mysaveas(pathname,'convergence_solution','fig');
     mymatlab2tikz(pathname,'convergence_solution.tex');
@@ -687,10 +688,10 @@ if displayCv
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    %xlabel('Number of samples')
-    %ylabel('Mean value')
-    xlabel('Nombre de réalisations')
-    ylabel('Moyenne')
+    xlabel('Number of samples')
+    ylabel('Mean value')
+    %xlabel('Nombre de réalisations')
+    %ylabel('Moyenne')
     mysaveas(pathname,'convergence_mean','fig');
     mymatlab2tikz(pathname,'convergence_mean.tex');
     
@@ -700,10 +701,10 @@ if displayCv
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    %xlabel('Number of samples')
-    %ylabel('Standard deviation')
-    xlabel('Nombre de réalisations')
-    ylabel('Ecart-type')
+    xlabel('Number of samples')
+    ylabel('Standard deviation')
+    %xlabel('Nombre de réalisations')
+    %ylabel('Ecart-type')
     mysaveas(pathname,'convergence_std','fig');
     mymatlab2tikz(pathname,'convergence_std.tex');
 end

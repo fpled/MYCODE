@@ -155,10 +155,10 @@ if displayCv
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    % xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-    % ylabel('Erreur relative','Interpreter',interpreter)
     xlabel('Number of samples','Interpreter',interpreter)
     ylabel('Relative error','Interpreter',interpreter)
+    % xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+    % ylabel('Erreur relative','Interpreter',interpreter)
     if mod(lambda,1)==0
         l = legend('Univariate normal and Gamma distributions','Wishart distribution','Multivariate normal distribution','Multivariate standard normal distribution','$1/\sqrt{N}$');
     else

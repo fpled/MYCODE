@@ -192,7 +192,7 @@ set(gca,'FontSize',fontsize)
 hg = hggroup;
 set([h(:),hD],'Parent',hg);
 axis image
-l = legend(hD,'$U_{\mathrm{exp}}$','Location','NorthEastOutside');
+l = legend(hD,'$u^{\mathrm{exp}}$','Location','NorthEastOutside');
 % l = legend(hD,legD);
 set(l,'Interpreter',interpreter);
 mysaveas(pathname,'boundary_conditions',formats,renderer);
