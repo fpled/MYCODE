@@ -53,7 +53,11 @@ for i = 1:numScrew
     numSample = ['S' num2str(j)];
     numSamplea = ['S' num2str(j) 'a'];
     numSampleb = ['S' num2str(j) 'b'];
+    
+    time = tic;
+    
     F = appliedLoad(numSample);
+    ml = F*d/b;
     numImages = length(F);
     angle = zeros(numImages,1);
     
@@ -247,11 +251,26 @@ for i = 1:numScrew
         
     end
     
+    %% Outputs
+    fprintf('\n')
+    disp('+-----------------------+')
+    fprintf('| Sample S%2d            |\n',j)
+    disp('+-------+---------------+-----------+------------------+')
+    disp('| Load  | Moment p.u.l. |   Angle   | Stiffness p.u.l. |')
+    disp('| F [N] |  ml [N.m/m]   | theta [°] |    k [N/rad]     |')
+    disp('+-------+---------------+-----------+------------------+')
+    for k=1:numImages
+        fprintf('|  %3d  | %13.4f | %9.4f | %16.4e |\n',F(k),ml(k),angle(k),ml(k)./deg2rad(angle(k)))
+    end
+    disp('+-------+---------------+-----------+------------------+')
+    
+    toc(time)
+    
     F_screw{j} = F;
-    ml_screw{j} = F*d/b;
+    ml_screw{j} = ml;
     angle_screw{j} = angle;
-    k_screw{j} = (F*d)./(deg2rad(angle)'*b);
-    mean_Kscrew_data(i) = mean( (F(2:end-1)*d)./(deg2rad(angle(2:end-1))'*b) );
+    k_screw{j} = ml./deg2rad(angle)';
+    mean_Kscrew_data(i) = mean( ml(2:end-1)./deg2rad(angle(2:end-1))' );
 end
 
 F_dowel = cell(numDowel,1);
@@ -265,7 +284,11 @@ for j=1:numDowel
     numSample = ['D' num2str(j)];
     numSamplea = ['D' num2str(j) 'a'];
     numSampleb = ['D' num2str(j) 'b'];
+    
+    time = tic;
+    
     F = appliedLoad(numSample);
+    ml = F*d/b;
     numImages = length(F);
     angle = zeros(numImages,1);
     
@@ -459,10 +482,25 @@ for j=1:numDowel
         
     end
     
+    %% Outputs
+    fprintf('\n')
+    disp('+-----------------------+')
+    fprintf('| Sample D%2d            |\n',j)
+    disp('+-------+---------------+-----------+------------------+')
+    disp('| Load  | Moment p.u.l. |   Angle   | Stiffness p.u.l. |')
+    disp('| F [N] |  ml [N.m/m]   | theta [°] |    k [N/rad]     |')
+    disp('+-------+---------------+-----------+------------------+')
+    for k=1:numImages
+        fprintf('|  %3d  | %13.4f | %9.4f | %16.4e |\n',F(k),ml(k),angle(k),ml(k)./deg2rad(angle(k)))
+    end
+    disp('+-------+---------------+-----------+------------------+')
+    
+    toc(time)
+    
     F_dowel{j} = F;
-    ml_dowel{j} = F*d/b;
+    ml_dowel{j} = ml;
     angle_dowel{j} = angle;
-    k_dowel{j} = (F*d)./(deg2rad(angle)'*b);
+    k_dowel{j} = ml./deg2rad(angle)';
     mean_Kdowel_data(j) = mean(k_dowel{j});
 end
 
@@ -520,28 +558,28 @@ if displaySolution
         %xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
         %ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
     end
+    
+    figure
+    clf
+    bar(mean_Kscrew_data);
+    grid on
+    set(gca,'FontSize',fontsize)
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
+    mysaveas(pathname,'KjuncScrew',formats);
+    mymatlab2tikz(pathname,'KjuncScrew.tex');
+    
+    figure
+    clf
+    bar(mean_Kdowel_data);
+    grid on
+    set(gca,'FontSize',fontsize)
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
+    mysaveas(pathname,'KjuncDowel',formats);
+    mymatlab2tikz(pathname,'KjuncDowel.tex');
 end
-
-figure
-clf
-bar(mean_Kscrew_data);
-grid on
-set(gca,'FontSize',fontsize)
-xlabel('Sample number','Interpreter',interpreter);
-ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
-%xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-%ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
-mysaveas(pathname,'KjuncScrew',formats);
-mymatlab2tikz(pathname,'KjuncScrew.tex');
-
-figure
-clf
-bar(mean_Kdowel_data);
-grid on
-set(gca,'FontSize',fontsize)
-xlabel('Sample number','Interpreter',interpreter);
-ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
-%xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-%ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
-mysaveas(pathname,'KjuncDowel',formats);
-mymatlab2tikz(pathname,'KjuncDowel.tex');

@@ -62,13 +62,19 @@ Cluster_Name = cluster
 #Pb_Name = tableRectDetLinElas
 #Pb_Name = FCBATableCircDetLinElas
 #Pb_Name = FCBATableCircStoLinElas
-#Pb_Name = FCBADeskDetLinElas
-#Pb_Name = FCBADeskStoLinElas
+#Pb_Name = FCBADeskBeamJunctionDetLinElas
+#Pb_Name = FCBADeskPlateDetLinElas
+#Pb_Name = FCBADeskPlateStoLinElas
+#Pb_Name = FCBADeskPlateJunctionDetLinElas
+#Pb_Name = FCBADeskPlateJunctionStoLinElas
+#Pb_Name = FCBAJunctionScrewDowelBeamDetLinElas
+#Pb_Name = FCBAJunctionScrewDowelBeamStoLinElas
 #Pb_Name = FCBADesk3DDetLinElas
 #Pb_Name = FCBADesk3DStoLinElas
 
 #Pb_Name = identification_ET_GL
 #Pb_Name = identification_EL_NUL
+#Pb_Name = identification_Kjunction
 
 # Default ---------------------------
 default:
@@ -80,7 +86,7 @@ default:
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADesk3DDetLinElas; exit" -logfile results/plate/FCBADesk3DDetLinElas.log
 
 # All ---------------------------
-all: sparse monosto multidet multisto plate
+all: sparse monosto multidet multisto identification plate
 
 # Multiscale ---------------------------
 multi: multidet multisto
@@ -114,7 +120,7 @@ multisto:
 #	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoNonlinDiffReacSquareInclusionsIso; exit" -logfile results/multiscaleSto/nonlinDiffReacSquareInclusionsIso.log
 #	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoNonlinDiffReacSquareInclusionsAniso; exit" -logfile results/multiscaleSto/nonlinDiffReacSquareInclusionsAniso.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoTransientLinAdvDiffReac; exit" -logfile results/multiscaleSto/transientLinAdvDiffReac.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoDynLinElas; exit" -logfile results/multiscaleSto/dynLinElas.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoDynLinElas; exit" -logfile results/multiscaleSto/dynLinElas.log
 
 # Monoscale Stochastic ---------------------------
 monosto:
@@ -143,8 +149,14 @@ plate:
 	matlab -nodesktop -nosplash -noFigureWindows -r "tableRectDetLinElas; exit" -logfile results/plate/tableRectDetLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBATableCircDetLinElas; exit" -logfile results/plate/FCBATableCircDetLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBATableCircStoLinElas; exit" -logfile results/plate/FCBATableCircStoLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskBeamJunctionDetLinElas; exit" -logfile results/plate/FCBADeskBeamJunctionDetLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskDetLinElas; exit" -logfile results/plate/FCBADeskDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskStoLinElas; exit" -logfile results/plate/FCBADeskStoLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateDetLinElas; exit" -logfile results/plate/FCBADeskPlateDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateStoLinElas; exit" -logfile results/plate/FCBADeskPlateStoLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionDetLinElas; exit" -logfile results/plate/FCBADeskPlateJunctionDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElas; exit" -logfile results/plate/FCBADeskPlateJunctionStoLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBAJunctionScrewDowelBeamDetLinElas; exit" -logfile results/plate/FCBAJunctionScrewDowelBeamDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBAJunctionScrewDowelPlateDetLinElas; exit" -logfile results/plate/FCBAJunctionScrewDowelPlateDetLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADesk3DDetLinElas; exit" -logfile results/plate/FCBADesk3DDetLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADesk3DStoLinElas; exit" -logfile results/plate/FCBADesk3DStoLinElas.log
 
@@ -152,6 +164,7 @@ plate:
 identification:
 	matlab -nodesktop -nosplash -noFigureWindows -r "identification_ET_GL; exit" -logfile results/plate/identification_ET_GL.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "identification_EL_NUL; exit" -logfile results/plate/identification_EL_NUL.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "identification_Kjunction; exit" -logfile results/plate/identification_Kjunction.log
 
 # Clean ---------------------------
 clean:
