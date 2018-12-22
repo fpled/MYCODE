@@ -193,8 +193,8 @@ if solveProblem
                     fun_Rt = @(x) p/(4*pi*D_rig) * sqrt(x(:,1).^2+x(:,2).^2) .* (log(sqrt(x(:,1).^2+x(:,2).^2)./r) - 1/(1+NU)) - c/(D_rig*(1+NU))*sqrt(x(:,1).^2+x(:,2).^2);
             end
     end
-    fun_Uz = MultiVariateFunction(fun_Uz,3);
-    fun_Rt = MultiVariateFunction(fun_Rt,3);
+    fun_Uz = UserDefinedFunction(fun_Uz,3);
+    fun_Rt = UserDefinedFunction(fun_Rt,3);
     fun_Uz.evaluationAtMultiplePoints = true;
     fun_Rt.evaluationAtMultiplePoints = true;
     

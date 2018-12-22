@@ -34,26 +34,23 @@ if setProblem
     
     %% Random variables
     d = 3; % parametric dimension
-    v = UniformRandomVariable(0,1);
-    rv = RandomVector(v,d);
+    r = UniformRandomVariable(0,1);
+    rv = RandomVector(r,d);
     
     %% Materials
     % IntegrationRule
     p = 1;
-    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases.duplicate(basis,d);
-    vb = basis.basis.randomVariable;
-    rvb = getRandomVector(bases);
+    bases = cellfun(@(x) PolynomialFunctionalBasis(x,0:p),orthonormalPolynomials(rv),'UniformOutput',false);
+    bases = FunctionalBases(bases);
     H = FullTensorProductFunctionalBasis(bases);
-    I = gaussIntegrationRule(vb,2);
+    I = gaussIntegrationRule(r,2);
     I = I.tensorize(d);
     
     % Linear diffusion coefficient
     % K1(xi) = 0.01 * (1 + 0.25 * (2 * xi - 1))
     % K2 = 0.01
     fun = @(xi) 0.01 * (1 + 0.25 * (2 * xi(:,1) - 1));
-    funtr = @(xi) fun(transfer(rvb,rv,xi));
-    fun = MultiVariateFunction(funtr,d);
+    fun = UserDefinedFunction(fun,d);
     fun.evaluationAtMultiplePoints = true;
     
     K1 = H.projection(fun,I);
@@ -63,8 +60,7 @@ if setProblem
     % c1(xi) = 1 * (1 + 0.1 * (2 * xi - 1))
     % c2 = 1
     fun = @(xi) 1 * (1 + 0.1 * (2 * xi(:,2) - 1));
-    funtr = @(xi) fun(transfer(rvb,rv,xi));
-    fun = MultiVariateFunction(funtr,d);
+    fun = UserDefinedFunction(fun,d);
     fun.evaluationAtMultiplePoints = true;
     
     c1 = H.projection(fun,I);
@@ -93,8 +89,7 @@ if setProblem
     % R1(xi) = 0.1 * (1 + 0.25 * (2 * xi - 1))
     % R2 = 10
     fun = @(xi) 0.1 * (1 + 0.25 * (2 * xi(:,3) - 1));
-    funtr = @(xi) fun(transfer(rvb,rv,xi));
-    fun = MultiVariateFunction(funtr,d);
+    fun = UserDefinedFunction(fun,d);
     fun.evaluationAtMultiplePoints = true;
     
     R1 = H.projection(fun,I);
@@ -147,36 +142,24 @@ if setProblem
         pb.b = pb.b0*pb.loadFunction(pb.timeSolver);
     end
     
-    save(fullfile(pathname,'problem.mat'),'pb','Sadv','v','phi');
+    save(fullfile(pathname,'problem.mat'),'pb','Sadv','v','phi','rv');
 else
-    load(fullfile(pathname,'problem.mat'),'pb','Sadv','v','phi');
+    load(fullfile(pathname,'problem.mat'),'pb','Sadv','v','phi','rv');
 end
 
 %% Solution
 if solveProblem
     p = 50;
-    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases.duplicate(basis,d);
-    rv = getRandomVector(bases);
+    bases = cellfun(@(x) PolynomialFunctionalBasis(x,0:p),orthonormalPolynomials(rv),'UniformOutput',false);
+    bases = FunctionalBases(bases);
     
     s = AdaptiveSparseTensorAlgorithm();
-    % s.nbSamples = 1;
-    % s.addSamplesFactor = 0.1;
     s.tolStagnation = 1e-1;
-    % s.tolOverfit = 1.1;
-    % s.bulkParameter = 0.5;
-    % s.adaptiveSampling = true;
-    % s.adaptationRule = 'reducedmargin';
-    s.maxIndex = p;
     s.display = true;
     s.displayIterations = true;
     
     ls = LeastSquaresSolver();
-    ls.regularization = false;
-    % ls.regularizationType = 'l1';
     ls.errorEstimation = true;
-    % ls.errorEstimationType = 'leaveout';
-    % ls.errorEstimationOptions.correction = true;
     
     pbt = pb;
     
@@ -185,7 +168,7 @@ if solveProblem
     pb.timeSolver = [];
     pb.loadFunction = [];
     fun = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
-    fun = MultiVariateFunction(fun,d,getnbddlfree(pb.S));
+    fun = UserDefinedFunction(fun,d,getnbddlfree(pb.S));
     fun.evaluationAtMultiplePoints = false;
     
     t = tic;
@@ -193,14 +176,14 @@ if solveProblem
     time = toc(t);
     
     % Transient solution
-    s.tol = 1e-3;
+    s.tol = 1e-1;
     pb = pbt;
     funt = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
-    funt = MultiVariateFunction(funt,d,[getnbddlfree(pb.S),getnbtimedof(pb.timeSolver)]);
+    funt = UserDefinedFunction(funt,d,[getnbddlfree(pb.S),getnbtimedof(pb.timeSolver)]);
     funt.evaluationAtMultiplePoints = false;
     
     funtCell = @(xi) solveSystemCell(calcOperator(funEval(pb,xi)));
-    funtCell = MultiVariateFunction(funtCell,d,2);
+    funtCell = UserDefinedFunction(funtCell,d,2);
     funtCell.evaluationAtMultiplePoints = false;
     
     t = tic;
@@ -228,7 +211,7 @@ fprintf('Stationary solution\n');
 fprintf('-------------------\n');
 fprintf('spatial dimension = %d\n',u.sz)
 fprintf('parametric dimension = %d\n',ndims(u.basis))
-fprintf('basis dimension = %d\n',numel(u.basis))
+fprintf('basis dimension = %d\n',cardinal(u.basis))
 fprintf('order = [ %s ]\n',num2str(max(u.basis.indices.array)))
 % fprintf('multi-index set = \n')
 % disp(u.basis.indices.array)
@@ -242,7 +225,7 @@ fprintf('------------------\n');
 fprintf('spatial dimension = %d\n',ut.sz(1))
 fprintf('time dimension = %d\n',ut.sz(2))
 fprintf('parametric dimension = %d\n',ndims(ut.basis))
-fprintf('basis dimension = %d\n',numel(ut.basis))
+fprintf('basis dimension = %d\n',cardinal(ut.basis))
 fprintf('order = [ %s ]\n',num2str(max(ut.basis.indices.array)))
 % fprintf('multi-index set = \n')
 % disp(ut.basis.indices.array)
@@ -253,9 +236,9 @@ fprintf('elapsed time = %f s\n',timet)
 T = gettimemodel(pb.timeSolver);
 sz = [getnbddl(pb.S),getnbtimedof(T)];
 
-vt_data = zeros([numel(ut.basis),ut.sz]);
-vt_data_tot = zeros([numel(ut.basis),sz]);
-for k=1:numel(ut.basis)
+vt_data = zeros([cardinal(ut.basis),ut.sz]);
+vt_data_tot = zeros([cardinal(ut.basis),sz]);
+for k=1:cardinal(ut.basis)
     vtk = diff(pb.timeSolver,TIMEMATRIX(reshape(ut.data(k,:,:),ut.sz),T));
     vt_data(k,:,:) = getvalue(vtk);
     vt_data_tot(k,:,:) = getvalue(unfreevector(pb.S,vtk)-calc_init_dirichlet(pb.S)*one(T));
@@ -265,32 +248,22 @@ vt_tot = FunctionalBasisArray(vt_data_tot,ut.basis,sz);
 
 %% Test
 if testSolution
-    Ntest = 100;
-    [errtest,xtest,utest,ytest] = computeTestError(u,fun,Ntest);
-    [errttest,xttest,uttest,yttest] = computeTestError(ut,funt,Ntest);
-    [Errttest,Xttest,Uttest,Yttest] = computeTestErrorCell({ut;vt},funtCell,Ntest);
-    save(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
-    save(fullfile(pathname,'testt.mat'),'uttest','errttest','xttest','yttest');
-    save(fullfile(pathname,'testtAll.mat'),'Uttest','Errttest','Xttest','Yttest');
+    N = 100;
+    errL2 = testError(u,fun,N,rv);
+    errL2t = testError(ut,funt,N,rv);
+    save(fullfile(pathname,'test.mat'),'errL2','errL2t');
 else
-    load(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
-    load(fullfile(pathname,'testt.mat'),'uttest','errttest','xttest','yttest');
-    load(fullfile(pathname,'testtAll.mat'),'Uttest','Errttest','Xttest','Yttest');
+    load(fullfile(pathname,'test.mat'),'errL2','errL2t');
 end
 fprintf('\n');
 fprintf('Stationary solution\n');
 fprintf('-------------------\n');
-fprintf('test error = %d\n',errtest)
+fprintf('mean squared error = %d\n',errL2)
 
 fprintf('\n');
 fprintf('Transient solution\n');
 fprintf('------------------\n');
-fprintf('test error = %d\n',errttest)
-
-erruttest = Errttest{1};
-errvttest = Errttest{2};
-fprintf('test error = %d for u\n',erruttest)
-fprintf('test error = %d for v\n',errvttest)
+fprintf('mean squared error = %d\n',errL2t)
 
 %% Display
 if displaySolution
@@ -447,15 +420,15 @@ if displaySolution
 %         
 %         d = ndims(uk.basis);
 %         for i=1:d
-%             plotSobolIndices(pb.S,uk,i);
-%             mysaveas(pathname,['sobol_indices_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
-%             plotSobolIndices(pb.S,uk,i,'surface',true);
-%             mysaveas(pathname,['sobol_indices_solution_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
+%             % plotSobolIndices(pb.S,uk,i);
+%             % mysaveas(pathname,['sobol_indices_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+%             % plotSobolIndices(pb.S,uk,i,'surface',true);
+%             % mysaveas(pathname,['sobol_indices_solution_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
 %             
-%             plotSobolIndices(pb.S,vk,i);
-%             mysaveas(pathname,['sobol_indices_velocity_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
-%             plotSobolIndices(pb.S,vk,i,'surface',true);
-%             mysaveas(pathname,['sobol_indices_velocity_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
+%             % plotSobolIndices(pb.S,vk,i);
+%             % mysaveas(pathname,['sobol_indices_velocity_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+%             % plotSobolIndices(pb.S,vk,i,'surface',true);
+%             % mysaveas(pathname,['sobol_indices_velocity_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
 %             
 %             plotSensitivityIndices(pb.S,uk,i);
 %             mysaveas(pathname,['sensitivity_indices_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
@@ -531,3 +504,5 @@ if displaySolution
     fprintf('std  of quantity of interest = %e\n',std_Ioutput);
     fprintf('%d%% confidence interval of quantity of interest = [%e,%e]\n',(probs(2)-probs(1))*100,lowerci_Ioutput,upperci_Ioutput);
 end
+
+myparallel('stop');

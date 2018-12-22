@@ -22,33 +22,22 @@ fun = @(x) geometricBrownianKL(x,-1,0.5,1,m-1);
 v = NormalRandomVariable(0,1);
 rv = RandomVector(v,d);
 
-fun = MultiVariateFunction(fun,d,m);
+fun = UserDefinedFunction(fun,d,m);
 fun.evaluationAtMultiplePoints = true;
 
 %% Adaptive sparse least-squares approximation
 p = 50;
-basis = PolynomialFunctionalBasis(HermitePolynomials(),0:p);
-bases = FunctionalBases.duplicate(basis,d);
+bases = cellfun(@(x) PolynomialFunctionalBasis(x,0:p),orthonormalPolynomials(rv),'UniformOutput',false);
+bases = FunctionalBases(bases);
 
 s = AdaptiveSparseTensorAlgorithm();
-% s.nbSamples = 1;
-% s.addSamplesFactor = 0.1;
 s.tol = 1e-3;
 s.tolStagnation = 5e-2;
-% s.tolOverfit = 1.1;
-% s.bulkParameter = 0.5;
-% s.adaptiveSampling = true;
-% s.adaptationRule = 'reducedmargin';
-s.maxIndex = p;
-% s.display = true;
-% s.displayIterations = true;
+s.display = true;
+s.displayIterations = true;
 
 ls = LeastSquaresSolver();
-ls.regularization = false;
-% ls.regularizationType = 'l1';
 ls.errorEstimation = true;
-% ls.errorEstimationType = 'leaveout';
-% ls.errorEstimationOptions.correction = true;
 
 t = tic;
 [f,err,~,y] = s.leastSquares(fun,bases,ls,rv);
@@ -57,7 +46,7 @@ time = toc(t);
 %% Outputs
 fprintf('\n')
 fprintf('parametric dimension = %d\n',ndims(f.basis))
-fprintf('basis dimension = %d\n',numel(f.basis))
+fprintf('basis dimension = %d\n',cardinal(f.basis))
 fprintf('order = [ %s ]\n',num2str(max(f.basis.indices.array)))
 % fprintf('multi-index set = \n')
 % disp(f.basis.indices.array)
@@ -66,12 +55,13 @@ fprintf('CV error = %d\n',norm(err))
 fprintf('elapsed time = %f s\n',time)
 
 %% Test
-Ntest = 1000;
-[errtest,xtest,fxtest,ytest] = computeTestError(f,fun,Ntest,rv);
-fprintf('test error = %d\n',errtest)
+N = 1000;
+errL2 = testError(f,fun,N,rv);
+fprintf('mean squared error = %d\n',errL2)
 
 %% Display random evaluations
-plotGeometricBrownianKL(ytest(1,:)',fxtest(1,:)');
+x = random(rv,1);
+plotGeometricBrownianKL(fun(x),f(x));
 mysaveas(pathname,'geometric_brownian_kl.fig','fig');
 mymatlab2tikz(pathname,'geometric_brownian_kl.tex');
 

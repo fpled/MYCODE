@@ -208,9 +208,9 @@ if solveProblem
             %     end
             % end
     end
-    fun_Uz = MultiVariateFunction(fun_Uz,3);
-    fun_Rx = MultiVariateFunction(fun_Rx,3);
-    fun_Ry = MultiVariateFunction(fun_Ry,3);
+    fun_Uz = UserDefinedFunction(fun_Uz,3);
+    fun_Rx = UserDefinedFunction(fun_Rx,3);
+    fun_Ry = UserDefinedFunction(fun_Ry,3);
     fun_Uz.evaluationAtMultiplePoints = true;
     fun_Rx.evaluationAtMultiplePoints = true;
     fun_Ry.evaluationAtMultiplePoints = true;

@@ -13,7 +13,7 @@ directSolver = true;
 iterativeSolver = true;
 displaySolution = true;
 
-n = 3; % number of patches
+n = 1; % number of patches
 filename = ['transientLinAdvDiffReac' num2str(n) 'Patches'];
 % for rho = [0.2:0.2:1.8 0.9 1.1]
 % close all
@@ -40,14 +40,26 @@ if setProblem
     patches = Patches(n);
     
     D_patch = cell(1,n);
-    D_patch{1} = DOMAIN(2,[0.85,0.40],[1.05,0.80]);
-    D_patch{2} = DOMAIN(2,[0.45,0.20],[0.65,0.60]);
-    D_patch{3} = DOMAIN(2,[0.05,0.40],[0.25,0.80]);
+    if n>=1
+        D_patch{1} = DOMAIN(2,[0.85,0.40],[1.05,0.80]);
+    end
+    if n>=2
+        D_patch{2} = DOMAIN(2,[0.45,0.20],[0.65,0.60]);
+    end
+    if n>=3
+        D_patch{3} = DOMAIN(2,[0.05,0.40],[0.25,0.80]);
+    end
     
     D_patch_star = cell(1,n);
-    D_patch_star{1} = DOMAIN(2,[0.85,0.40],[1.05,0.60]);
-    D_patch_star{2} = DOMAIN(2,[0.45,0.40],[0.65,0.60]);
-    D_patch_star{3} = DOMAIN(2,[0.05,0.40],[0.25,0.60]);
+    if n>=1
+        D_patch_star{1} = DOMAIN(2,[0.85,0.40],[1.05,0.60]);
+    end
+    if n>=2
+        D_patch_star{2} = DOMAIN(2,[0.45,0.40],[0.65,0.60]);
+    end
+    if n>=3
+        D_patch_star{3} = DOMAIN(2,[0.05,0.40],[0.25,0.60]);
+    end
     
     cl1 = 0.02;
     cl2 = 0.04;
@@ -72,8 +84,8 @@ if setProblem
     
     %% Random variables
     d = 3*n; % parametric dimension
-    v = UniformRandomVariable(0,1);
-    rv = RandomVector(v,d);
+    r = UniformRandomVariable(0,1);
+    rv = RandomVector(r,d);
     
     %% Materials
     % Linear diffusion coefficient
@@ -130,12 +142,10 @@ if setProblem
     
     % IntegrationRule
     p = 1;
-    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases.duplicate(basis,d);
-    vb = basis.basis.randomVariable;
-    rvb = getRandomVector(bases);
+    bases = cellfun(@(x) PolynomialFunctionalBasis(x,0:p),orthonormalPolynomials(rv),'UniformOutput',false);
+    bases = FunctionalBases(bases);
     H = FullTensorProductFunctionalBasis(bases);
-    I = gaussIntegrationRule(vb,2);
+    I = gaussIntegrationRule(r,2);
     I = I.tensorize(d);
     
     for k=1:n
@@ -153,22 +163,19 @@ if setProblem
         f = @(x) distance(x,c,Inf)<L;
         
         fun = @(xi) K_out * (ones(size(xi,1),patch.S.nbnode) + 0.25 * (2 * xi(:,3*k-2) - 1) * double(squeeze(f(patch.S.node)))');
-        funtr = @(xi) fun(transfer(rvb,rv,xi));
-        fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
+        fun = UserDefinedFunction(fun,d,patch.S.nbnode);
         fun.evaluationAtMultiplePoints = true;
         
         K_patch{k} = FENODEFIELD(H.projection(fun,I));
         
         fun = @(xi) c_out * (ones(size(xi,1),patch.S.nbnode) + 0.1 * (2 * xi(:,3*k-1) - 1) * double(squeeze(f(patch.S.node)))');
-        funtr = @(xi) fun(transfer(rvb,rv,xi));
-        fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
+        fun = UserDefinedFunction(fun,d,patch.S.nbnode);
         fun.evaluationAtMultiplePoints = true;
         
         c_patch{k} = FENODEFIELD(H.projection(fun,I));
         
         fun = @(xi) R1_out * (ones(size(xi,1),patch.S.nbnode) + 0.25 * (2* xi(:,3*k) - 1) * double(squeeze(f(patch.S.node)))');
-        funtr = @(xi) fun(transfer(rvb,rv,xi));
-        fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
+        fun = UserDefinedFunction(fun,d,patch.S.nbnode);
         fun.evaluationAtMultiplePoints = true;
         
         R_patch{k} = FENODEFIELD(H.projection(fun,I));
@@ -344,38 +351,26 @@ if setProblem
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'glob_sta','globOut_sta','patches_sta','interfaces_sta');
+    save(fullfile(pathname,'problem.mat'),'glob_sta','globOut_sta','patches_sta','interfaces_sta','rv');
     save(fullfile(pathname,'problem_time.mat'),'glob','globOut','patches','interfaces','N','D_patch','Sadv','Sadv_patch','v','v_patch','phi','phi_patch');
 else
-    load(fullfile(pathname,'problem.mat'),'glob_sta','globOut_sta','patches_sta','interfaces_sta');
+    load(fullfile(pathname,'problem.mat'),'glob_sta','globOut_sta','patches_sta','interfaces_sta','rv');
     load(fullfile(pathname,'problem_time.mat'),'glob','globOut','patches','interfaces','N','D_patch','Sadv','Sadv_patch','v','v_patch','phi','phi_patch');
 end
 
 %% Direct solver
 if directSolver
     p = 50;
-    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases.duplicate(basis,d);
-    rv = getRandomVector(bases);
+    bases = cellfun(@(x) PolynomialFunctionalBasis(x,0:p),orthonormalPolynomials(rv),'UniformOutput',false);
+    bases = FunctionalBases(bases);
     
     s = AdaptiveSparseTensorAlgorithm();
-    % s.nbSamples = 1;
-    % s.addSamplesFactor = 0.1;
     s.tolStagnation = 1e-1;
-    % s.tolOverfit = 1.1;
-    % s.bulkParameter = 0.5;
-    % s.adaptiveSampling = true;
-    % s.adaptationRule = 'reducedmargin';
-    s.maxIndex = p;
     s.display = true;
     s.displayIterations = true;
     
     ls = LeastSquaresSolver();
-    ls.regularization = false;
-    % ls.regularizationType = 'l1';
     ls.errorEstimation = true;
-    % ls.errorEstimationType = 'leaveout';
-    % ls.errorEstimationOptions.correction = true;
     
     DS = DirectSolver();
     DS.changeOfVariable = false;
@@ -393,81 +388,30 @@ if directSolver
     DS.timeOrder = 1;
     [Ut_ref,wt_ref,lambdat_ref,outputt_ref] = DS.solveRandom(globOut,patches,interfaces,s,bases,ls,rv);
     
-    save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref','s','bases','ls','rv');
-    save(fullfile(pathname,'reference_solution_time.mat'),'Ut_ref','wt_ref','lambdat_ref','outputt_ref','s','bases','ls','rv');
+    save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref','s','bases','ls');
+    save(fullfile(pathname,'reference_solution_time.mat'),'Ut_ref','wt_ref','lambdat_ref','outputt_ref','s','bases','ls');
 else
-    load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref','s','bases','ls','rv');
-    load(fullfile(pathname,'reference_solution_time.mat'),'Ut_ref','wt_ref','lambdat_ref','outputt_ref','s','bases','ls','rv');
+    load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref','s','bases','ls');
+    load(fullfile(pathname,'reference_solution_time.mat'),'Ut_ref','wt_ref','lambdat_ref','outputt_ref','s','bases','ls');
 end
 
 %% Outputs
 fprintf('\n')
-fprintf('Stationary reference solution\n');
+fprintf('Reference stationary solution\n');
 fprintf('-----------------------------\n');
-fprintf('spatial dimension = %d for U_ref\n',U_ref.sz)
-for k=1:n
-    fprintf('                  = %d for w_ref{%u}\n',w_ref{k}.sz,k)
-    fprintf('                  = %d for lambda_ref{%u}\n',lambda_ref{k}.sz,k)
-end
-fprintf('parametric dimension = %d\n',ndims(U_ref.basis))
-fprintf('basis dimension = %d for U_ref\n',numel(U_ref.basis))
-for k=1:n
-    fprintf('                = %d for w_ref{%u}\n',numel(w_ref{k}.basis),k)
-    fprintf('                = %d for lambda_ref{%u}\n',numel(lambda_ref{k}.basis),k)
-end
-fprintf('order = [ %s ] for U_ref\n',num2str(max(U_ref.basis.indices.array)))
-for k=1:n
-    fprintf('      = [ %s ] for w_ref{%u}\n',num2str(max(w_ref{k}.basis.indices.array)),k)
-    fprintf('      = [ %s ] for lambda_ref{%u}\n',num2str(max(lambda_ref{k}.basis.indices.array)),k)
-end
-% fprintf('multi-index set for U_ref = \n')
-% disp(num2str(U_ref.basis.indices.array))
-% for k=1:n
-%     fprintf('multi-index set for w_ref{%u} = \n',k)
-%     disp(num2str(w_ref{k}.basis.indices.array))
-%     fprintf('multi-index set for lambda_ref{%u} = \n',k)
-%     disp(num2str(lambda_ref{k}.basis.indices.array))
-% end
+dispMultiscaleSolution(U_ref,w_ref,lambda_ref);
 fprintf('nb samples = %d\n',output_ref.nbSamples)
-fprintf('CV error = %d for U_ref\n',norm(output_ref.CVErrorGlobalSolution))
+fprintf('CV error = %d for U\n',norm(output_ref.CVErrorGlobalSolution))
 for k=1:n
-    fprintf('         = %d for w_ref{%u}\n',norm(output_ref.CVErrorLocalSolution{k}),k)
-    fprintf('         = %d for lambda_ref{%u}\n',norm(output_ref.CVErrorLagrangeMultiplier{k}),k)
+    fprintf('         = %d for w{%u}\n',norm(output_ref.CVErrorLocalSolution{k}),k)
+    fprintf('         = %d for lambda{%u}\n',norm(output_ref.CVErrorLagrangeMultiplier{k}),k)
 end
 fprintf('elapsed time = %f s\n',output_ref.time)
 
 fprintf('\n')
-fprintf('Transient reference solution\n');
+fprintf('Reference transient solution\n');
 fprintf('----------------------------\n');
-fprintf('spatial dimension = %d for U_ref\n',Ut_ref.sz(1))
-for k=1:n
-    fprintf('                  = %d for w_ref{%u}\n',wt_ref{k}.sz(1),k)
-    fprintf('                  = %d for lambda_ref{%u}\n',lambdat_ref{k}.sz(1),k)
-end
-fprintf('time dimension = %d for U_ref\n',Ut_ref.sz(2))
-for k=1:n
-    fprintf('               = %d for w_ref{%u}\n',wt_ref{k}.sz(2),k)
-    fprintf('               = %d for lambda_ref{%u}\n',lambdat_ref{k}.sz(2),k)
-end
-fprintf('parametric dimension = %d\n',ndims(Ut_ref.basis))
-fprintf('basis dimension = %d for U_ref\n',numel(Ut_ref.basis))
-for k=1:n
-    fprintf('                = %d for w_ref{%u}\n',numel(wt_ref{k}.basis),k)
-    fprintf('                = %d for lambda_ref{%u}\n',numel(lambdat_ref{k}.basis),k)
-end
-fprintf('order = [ %s ] for U_ref\n',num2str(max(Ut_ref.basis.indices.array)))
-for k=1:n
-    fprintf('      = [ %s ] for w_ref{%u}\n',num2str(max(wt_ref{k}.basis.indices.array)),k)
-    fprintf('      = [ %s ] for lambda_ref{%u}\n',num2str(max(lambdat_ref{k}.basis.indices.array)),k)
-end
-% fprintf('multi-index set for U_ref = \n')
-% disp(num2str(Ut_ref.basis.indices.array))
-% for k=1:n
-%     fprintf('multi-index set for w_ref{%u} = \n',k)
-%     disp(num2str(wt_ref{k}.basis.indices.array))
-%     fprintf('multi-index set for lambda_ref{%u} = \n',k)
-%     disp(num2str(lambdat_ref{k}.basis.indices.array))
-% end
+dispMultiscaleSolution(Ut_ref,wt_ref,lambdat_ref);
 fprintf('nb samples = %d\n',outputt_ref.nbSamples)
 fprintf('CV error = %d for U_ref\n',norm(outputt_ref.CVErrorGlobalSolution))
 for k=1:n
@@ -515,64 +459,13 @@ end
 fprintf('\n')
 fprintf('Stationary solution\n');
 fprintf('-------------------\n');
-fprintf('spatial dimension = %d for U\n',U.sz)
-for k=1:n
-    fprintf('                  = %d for w{%u}\n',w{k}.sz,k)
-    fprintf('                  = %d for lambda{%u}\n',lambda{k}.sz,k)
-end
-fprintf('parametric dimension = %d\n',ndims(U.basis))
-fprintf('basis dimension = %d for U\n',numel(U.basis))
-for k=1:n
-    fprintf('                = %d for w{%u}\n',numel(w{k}.basis),k)
-    fprintf('                = %d for lambda{%u}\n',numel(lambda{k}.basis),k)
-end
-fprintf('order = [ %s ] for U\n',num2str(max(U.basis.indices.array)))
-for k=1:n
-    fprintf('      = [ %s ] for w{%u}\n',num2str(max(w{k}.basis.indices.array)),k)
-    fprintf('      = [ %s ] for lambda{%u}\n',num2str(max(lambda{k}.basis.indices.array)),k)
-end
-% fprintf('multi-index set for U = \n')
-% disp(num2str(U.basis.indices.array))
-% for k=1:n
-%     fprintf('multi-index set for w{%u} = \n',k)
-%     disp(num2str(w{k}.basis.indices.array))
-%     fprintf('multi-index set for lambda{%u} = \n',k)
-%     disp(num2str(lambda{k}.basis.indices.array))
-% end
+dispMultiscaleSolution(U,w,lambda);
 fprintf('elapsed time = %f s\n',output.totalTime)
 
 fprintf('\n')
 fprintf('Transient solution\n');
 fprintf('------------------\n');
-fprintf('spatial dimension = %d for U\n',Ut.sz(1))
-for k=1:n
-    fprintf('                  = %d for w{%u}\n',wt{k}.sz(1),k)
-    fprintf('                  = %d for lambda{%u}\n',lambdat{k}.sz(1),k)
-end
-fprintf('time dimension = %d for U\n',Ut.sz(2))
-for k=1:n
-    fprintf('               = %d for w{%u}\n',wt{k}.sz(2),k)
-    fprintf('               = %d for lambda{%u}\n',lambdat{k}.sz(2),k)
-end
-fprintf('parametric dimension = %d\n',ndims(Ut.basis))
-fprintf('basis dimension = %d for U\n',numel(Ut.basis))
-for k=1:n
-    fprintf('                = %d for w{%u}\n',numel(wt{k}.basis),k)
-    fprintf('                = %d for lambda{%u}\n',numel(lambdat{k}.basis),k)
-end
-fprintf('order = [ %s ] for U\n',num2str(max(Ut.basis.indices.array)))
-for k=1:n
-    fprintf('      = [ %s ] for w{%u}\n',num2str(max(wt{k}.basis.indices.array)),k)
-    fprintf('      = [ %s ] for lambda{%u}\n',num2str(max(lambdat{k}.basis.indices.array)),k)
-end
-% fprintf('multi-index set for U = \n')
-% disp(num2str(Ut.basis.indices.array))
-% for k=1:n
-%     fprintf('multi-index set for w{%u} = \n',k)
-%     disp(num2str(wt{k}.basis.indices.array))
-%     fprintf('multi-index set for lambda{%u} = \n',k)
-%     disp(num2str(lambdat{k}.basis.indices.array))
-% end
+dispMultiscaleSolution(Ut,wt,lambdat);
 fprintf('elapsed time = %f s\n',outputt.totalTime)
 
 %% Display
@@ -1001,10 +894,10 @@ if displaySolution
 %         
 %         d = ndims(Uk.basis);
 %         for i=1:d
-%             plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,Uk,wk,i);
-%             mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
-%             plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,Uk,wk,i,'surface',true);
-%             mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
+%             % plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,Uk,wk,i);
+%             % mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);
+%             % plotSobolIndicesMultiscaleSolution(glob,patches,interfaces,Uk,wk,i,'surface',true);
+%             % mysaveas(pathname,['sobol_indices_multiscale_solution_var_' num2str(i) '_t' num2str(k-1) '_surface'],formats,renderer);
 %             
 %             plotSensitivityIndicesMultiscaleSolution(glob,patches,interfaces,Uk,wk,i);
 %             mysaveas(pathname,['sensitivity_indices_multiscale_solution_var_' num2str(i) '_t' num2str(k-1)],formats,renderer);

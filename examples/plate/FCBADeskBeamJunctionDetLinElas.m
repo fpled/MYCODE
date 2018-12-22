@@ -239,14 +239,14 @@ if solveProblem
     fun_Gamz{2} = @(x) fun_Mz{2}(x)/(E*IZ2);
     
     for i=1:2
-        fun_Ux{i} = MultiVariateFunction(fun_Ux{i},1);
-        fun_Uy{i} = MultiVariateFunction(fun_Uy{i},1);
-        fun_Rz{i} = MultiVariateFunction(fun_Rz{i},1);
-        fun_N{i}  = MultiVariateFunction(fun_N{i},1);
-        fun_Ty{i} = MultiVariateFunction(fun_Ty{i},1);
-        fun_Mz{i} = MultiVariateFunction(fun_Mz{i},1);
-        fun_Epsx{i} = MultiVariateFunction(fun_Epsx{i},1);
-        fun_Gamz{i} = MultiVariateFunction(fun_Gamz{i},1);
+        fun_Ux{i} = UserDefinedFunction(fun_Ux{i},1);
+        fun_Uy{i} = UserDefinedFunction(fun_Uy{i},1);
+        fun_Rz{i} = UserDefinedFunction(fun_Rz{i},1);
+        fun_N{i}  = UserDefinedFunction(fun_N{i},1);
+        fun_Ty{i} = UserDefinedFunction(fun_Ty{i},1);
+        fun_Mz{i} = UserDefinedFunction(fun_Mz{i},1);
+        fun_Epsx{i} = UserDefinedFunction(fun_Epsx{i},1);
+        fun_Gamz{i} = UserDefinedFunction(fun_Gamz{i},1);
         fun_Ux{i}.evaluationAtMultiplePoints = true;
         fun_Uy{i}.evaluationAtMultiplePoints = true;
         fun_Rz{i}.evaluationAtMultiplePoints = true;

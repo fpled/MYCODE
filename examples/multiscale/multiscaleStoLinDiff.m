@@ -102,12 +102,10 @@ if setProblem
     
     % IntegrationRule
     p = 1;
-    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases.duplicate(basis,d);
-    vb = basis.basis.randomVariable;
-    rvb = getRandomVector(bases);
+    bases = cellfun(@(x) PolynomialFunctionalBasis(x,0:p),orthonormalPolynomials(rv),'UniformOutput',false);
+    bases = FunctionalBases(bases);
     H = FullTensorProductFunctionalBasis(bases);
-    I = gaussIntegrationRule(vb,2);
+    I = gaussIntegrationRule(v,2);
     I = I.tensorize(d);
     
     for k=1:n
@@ -125,8 +123,7 @@ if setProblem
         % beta_patch = 1;
         % beta_in = 0;
         % fun = @(xi) ones(size(xi,1),patch.S.nbnode) + beta_patch * xi(:,k) * double(squeeze(f(patch.S.node)))';
-        % funtr = @(xi) fun(transfer(rvb,rv,xi));
-        % fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
+        % fun = UserDefinedFunction(fun,d,patch.S.nbnode);
         % fun.evaluationAtMultiplePoints = true;
         % 
         % K_patch{k} = FENODEFIELD(H.projection(fun,I));
@@ -140,8 +137,7 @@ if setProblem
         c = getcenter(D_patch{k});
         f = @(x) distance(x,c,Inf)<L;
         fun = @(xi) ones(size(xi,1),patch.S.nbnode) + xi(:,k) * double(squeeze(f(patch.S.node)))';
-        funtr = @(xi) fun(transfer(rvb,rv,xi));
-        fun = MultiVariateFunction(funtr,d,patch.S.nbnode);
+        fun = UserDefinedFunction(fun,d,patch.S.nbnode);
         fun.evaluationAtMultiplePoints = true;
         
         K_patch{k} = FENODEFIELD(H.projection(fun,I));
@@ -239,79 +235,46 @@ if setProblem
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'glob','globOut','patches','interfaces','D','D_patch');
+    save(fullfile(pathname,'problem.mat'),'glob','globOut','patches','interfaces','D','D_patch','rv');
 else
-    load(fullfile(pathname,'problem.mat'),'glob','globOut','patches','interfaces','D','D_patch');
+    load(fullfile(pathname,'problem.mat'),'glob','globOut','patches','interfaces','D','D_patch','rv');
 end
 
 %% Direct solver
 if directSolver
     p = 50;
-    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases.duplicate(basis,d);
-    rv = getRandomVector(bases);
+    bases = cellfun(@(x) PolynomialFunctionalBasis(x,0:p),orthonormalPolynomials(rv),'UniformOutput',false);
+    bases = FunctionalBases(bases);
     
     s = AdaptiveSparseTensorAlgorithm();
-    % s.nbSamples = 1;
-    % s.addSamplesFactor = 0.1;
     s.tol = 1e-8;
     s.tolStagnation = 1e-1;
-    % s.tolOverfit = 1.1;
-    % s.bulkParameter = 0.5;
-    % s.adaptiveSampling = true;
-    % s.adaptationRule = 'reducedmargin';
-    s.maxIndex = p;
     s.display = true;
     s.displayIterations = true;
     
     ls = LeastSquaresSolver();
-    ls.regularization = false;
-    % ls.regularizationType = 'l1';
     ls.errorEstimation = true;
-    % ls.errorEstimationType = 'leaveout';
-    % ls.errorEstimationOptions.correction = true;
     
     DS = DirectSolver();
     DS.changeOfVariable = false;
     DS.display = true;
     
     [U_ref,w_ref,lambda_ref,output_ref] = DS.solveRandom(globOut,patches,interfaces,s,bases,ls,rv);
-    save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref','s','bases','ls','rv');
+    save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref','s','bases','ls');
 else
-    load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref','s','bases','ls','rv');
+    load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref','s','bases','ls');
 end
 
 %% Outputs
 fprintf('\n')
-fprintf('spatial dimension = %d for U_ref\n',U_ref.sz)
-for k=1:n
-    fprintf('                  = %d for w_ref{%u}\n',w_ref{k}.sz,k)
-    fprintf('                  = %d for lambda_ref{%u}\n',lambda_ref{k}.sz,k)
-end
-fprintf('parametric dimension = %d\n',ndims(U_ref.basis))
-fprintf('basis dimension = %d for U_ref\n',numel(U_ref.basis))
-for k=1:n
-    fprintf('                = %d for w_ref{%u}\n',numel(w_ref{k}.basis),k)
-    fprintf('                = %d for lambda_ref{%u}\n',numel(lambda_ref{k}.basis),k)
-end
-fprintf('order = [ %s ] for U_ref\n',num2str(max(U_ref.basis.indices.array)))
-for k=1:n
-    fprintf('      = [ %s ] for w_ref{%u}\n',num2str(max(w_ref{k}.basis.indices.array)),k)
-    fprintf('      = [ %s ] for lambda_ref{%u}\n',num2str(max(lambda_ref{k}.basis.indices.array)),k)
-end
-% fprintf('multi-index set for U_ref = \n')
-% disp(num2str(U_ref.basis.indices.array))
-% for k=1:n
-%     fprintf('multi-index set for w_ref{%u} = \n',k)
-%     disp(num2str(w_ref{k}.basis.indices.array))
-%     fprintf('multi-index set for lambda_ref{%u} = \n',k)
-%     disp(num2str(lambda_ref{k}.basis.indices.array))
-% end
+fprintf('Reference solution\n')
+fprintf('------------------\n')
+dispMultiscaleSolution(U_ref,w_ref,lambda_ref);
 fprintf('nb samples = %d\n',output_ref.nbSamples)
-fprintf('CV error = %d for U_ref\n',norm(output_ref.CVErrorGlobalSolution))
+fprintf('CV error = %d for U\n',norm(output_ref.CVErrorGlobalSolution))
 for k=1:n
-    fprintf('         = %d for w_ref{%u}\n',norm(output_ref.CVErrorLocalSolution{k}),k)
-    fprintf('         = %d for lambda_ref{%u}\n',norm(output_ref.CVErrorLagrangeMultiplier{k}),k)
+    fprintf('         = %d for w{%u}\n',norm(output_ref.CVErrorLocalSolution{k}),k)
+    fprintf('         = %d for lambda{%u}\n',norm(output_ref.CVErrorLagrangeMultiplier{k}),k)
 end
 fprintf('elapsed time = %f s\n',output_ref.time)
 
@@ -340,30 +303,9 @@ end
 
 %% Outputs
 fprintf('\n')
-fprintf('spatial dimension = %d for U\n',U.sz)
-for k=1:n
-    fprintf('                  = %d for w{%u}\n',w{k}.sz,k)
-    fprintf('                  = %d for lambda{%u}\n',lambda{k}.sz,k)
-end
-fprintf('parametric dimension = %d\n',ndims(U.basis))
-fprintf('basis dimension = %d for U\n',numel(U.basis))
-for k=1:n
-    fprintf('                = %d for w{%u}\n',numel(w{k}.basis),k)
-    fprintf('                = %d for lambda{%u}\n',numel(lambda{k}.basis),k)
-end
-fprintf('order = [ %s ] for U\n',num2str(max(U.basis.indices.array)))
-for k=1:n
-    fprintf('      = [ %s ] for w{%u}\n',num2str(max(w{k}.basis.indices.array)),k)
-    fprintf('      = [ %s ] for lambda{%u}\n',num2str(max(lambda{k}.basis.indices.array)),k)
-end
-% fprintf('multi-index set for U = \n')
-% disp(num2str(U.basis.indices.array))
-% for k=1:n
-%     fprintf('multi-index set for w{%u} = \n',k)
-%     disp(num2str(w{k}.basis.indices.array))
-%     fprintf('multi-index set for lambda{%u} = \n',k)
-%     disp(num2str(lambda{k}.basis.indices.array))
-% end
+fprintf('Solution\n')
+fprintf('--------\n')
+dispMultiscaleSolution(U,w,lambda);
 fprintf('elapsed time = %f s\n',output.totalTime)
 
 %% Display
@@ -494,16 +436,17 @@ if displaySolution
     
     %% Display random evaluations
     % nbSamples = 3;
+    % xtest = random(rv,nbSamples);
     % for i=1:nbSamples
-    %     xi = random(rv,1);
-    %     U_xi = U(xi);
-    %     w_xi = cellfun(@(x) x(xi),w,'UniformOutput',false);
-    %     lambda_xi = cellfun(@(x) x(xi),lambda,'UniformOutput',false);
-    %     % plotAllSolutions(glob,patches.eval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false),cellfun(@(x) x',lambda_xi,'UniformOutput',false));
-    %     plotGlobalSolution(glob,U_xi');
-    %     % plotLocalSolution(patches,cellfun(@(x) x',w_xi,'UniformOutput',false));
-    %     % plotLagrangeMultiplier(interfaces,cellfun(@(x) x',lambda_xi,'UniformOutput',false));
-    %     plotMultiscaleSolution(glob,patches.eval(xi),interfaces,U_xi',cellfun(@(x) x',w_xi,'UniformOutput',false));
+    %     xi = xtest(i,:);
+    %     Utest = U(xi)';
+    %     wtest = cellfun(@(x) x(xi)',w,'UniformOutput',false);
+    %     lambdatest = cellfun(@(x) x(xi)',lambda,'UniformOutput',false);
+    %     % plotAllSolutions(glob,patches.eval(xi),interfaces,Utest,wtest,lambdatest);
+    %     plotGlobalSolution(glob,Utest);
+    %     % plotLocalSolution(patches,wtest);
+    %     % plotLagrangeMultiplier(interfaces,lambdatest);
+    %     plotMultiscaleSolution(glob,patches.eval(xi),interfaces,Utest,wtest);
     % end
 end
 

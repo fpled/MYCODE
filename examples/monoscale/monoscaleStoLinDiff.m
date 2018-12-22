@@ -45,19 +45,16 @@ if setProblem
     %% Materials
     % IntegrationRule
     p = 1;
-    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases.duplicate(basis,d);
-    vb = basis.basis.randomVariable;
-    rvb = getRandomVector(bases);
+    bases = cellfun(@(x) PolynomialFunctionalBasis(x,0:p),orthonormalPolynomials(rv),'UniformOutput',false);
+    bases = FunctionalBases(bases);
     H = FullTensorProductFunctionalBasis(bases);
-    I = gaussIntegrationRule(vb,2);
+    I = gaussIntegrationRule(v,2);
     I = I.tensorize(d);
     
     % Linear diffusion coefficient
     % K(xi) = 1 + xi
     fun = @(xi) 1 + xi(:,1);
-    funtr = @(xi) fun(transfer(rvb,rv,xi));
-    fun = MultiVariateFunction(funtr,d);
+    fun = UserDefinedFunction(fun,d);
     fun.evaluationAtMultiplePoints = true;
     
     K = H.projection(fun,I);
@@ -83,37 +80,25 @@ if setProblem
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'pb','d','D');
+    save(fullfile(pathname,'problem.mat'),'pb','d','D','rv');
 else
-    load(fullfile(pathname,'problem.mat'),'pb','d','D');
+    load(fullfile(pathname,'problem.mat'),'pb','d','D','rv');
 end
 
 %% Adaptive sparse least-squares approximation
 if solveProblem
     p = 50;
-    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases.duplicate(basis,d);
-    rv = getRandomVector(bases);
+    bases = cellfun(@(x) PolynomialFunctionalBasis(x,0:p),orthonormalPolynomials(rv),'UniformOutput',false);
+    bases = FunctionalBases(bases);
     
     s = AdaptiveSparseTensorAlgorithm();
-    % s.nbSamples = 1;
-    % s.addSamplesFactor = 0.1;
     s.tol = 1e-12;
     s.tolStagnation = 1e-1;
-    % s.tolOverfit = 1.1;
-    % s.bulkParameter = 0.5;
-    % s.adaptiveSampling = true;
-    % s.adaptationRule = 'reducedmargin';
-    s.maxIndex = p;
     s.display = true;
     s.displayIterations = true;
     
     ls = LeastSquaresSolver();
-    ls.regularization = false;
-    % ls.regularizationType = 'l1';
     ls.errorEstimation = true;
-    % ls.errorEstimationType = 'leaveout';
-    % ls.errorEstimationOptions.correction = true;
     
     % if isanlsolver(pb.solver)
     %     u0 = solveSystem(calcOperator(funEval(pb,mean(rv))));
@@ -121,7 +106,7 @@ if solveProblem
     % else
     fun = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
     % end
-    fun = MultiVariateFunction(fun,d,getnbddlfree(pb.S));
+    fun = UserDefinedFunction(fun,d,getnbddlfree(pb.S));
     fun.evaluationAtMultiplePoints = false;
     
     t = tic;
@@ -136,7 +121,7 @@ end
 fprintf('\n')
 fprintf('spatial dimension = %d\n',u.sz)
 fprintf('parametric dimension = %d\n',ndims(u.basis))
-fprintf('basis dimension = %d\n',numel(u.basis))
+fprintf('basis dimension = %d\n',cardinal(u.basis))
 fprintf('order = [ %s ]\n',num2str(max(u.basis.indices.array)))
 % fprintf('multi-index set = \n')
 % disp(u.basis.indices.array)
@@ -146,13 +131,13 @@ fprintf('elapsed time = %f s\n',time)
 
 %% Test
 if testSolution
-    Ntest = 100;
-    [errtest,xtest,utest,ytest] = computeTestError(u,fun,Ntest);
-    save(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
+    N = 100;
+    errL2 = testError(u,fun,N,rv);
+    save(fullfile(pathname,'test.mat'),'errL2');
 else
-    load(fullfile(pathname,'test.mat'),'utest','errtest','xtest','ytest');
+    load(fullfile(pathname,'test.mat'),'errL2');
 end
-fprintf('test error = %d\n',errtest)
+fprintf('mean squared error = %d\n',errL2)
 
 %% Display
 if displaySolution
@@ -195,8 +180,11 @@ if displaySolution
     
     %% Display random evaluations
     % nbSamples = 3;
+    % xtest = random(rv,nbSamples);
+    % ytest = fun(xtest);
+    % utest = u(xtest);
     % for i=1:nbSamples
-    %     Stest = randomeval(pb.S,xtest(i,:)');
+    %     Stest = randomeval(pb.S,xtest(i,:));
     %     plotSolution(Stest,ytest(i,:)');
     %     mysaveas(pathname,['solution_ref_sample_' num2str(i)],formats,renderer);
     %     plotSolution(Stest,utest(i,:)');

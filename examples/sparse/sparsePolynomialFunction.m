@@ -26,33 +26,24 @@ q = 2; % partial degree
 
 [fun,rv] = multivariateFunctionsBenchmarks('polynomial',d,q);
 
-fun = MultiVariateFunction(fun,d);
+fun = UserDefinedFunction(fun,d);
 fun.evaluationAtMultiplePoints = true;
 
 %% Adaptive sparse least-squares approximation
 p = 50;
-basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-bases = FunctionalBases.duplicate(basis,d);
+% basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
+% bases = FunctionalBases.duplicate(basis,d);
+bases = cellfun(@(x) PolynomialFunctionalBasis(x,0:p),orthonormalPolynomials(rv),'UniformOutput',false);
+bases = FunctionalBases(bases);
 
 s = AdaptiveSparseTensorAlgorithm();
-% s.nbSamples = 1;
-% s.addSamplesFactor = 0.1;
 s.tol = 1e-12;
 s.tolStagnation = 5e-2;
-% s.tolOverfit = 1.1;
-% s.bulkParameter = 0.5;
-% s.adaptiveSampling = true;
-% s.adaptationRule = 'reducedmargin';
-s.maxIndex = p;
-% s.display = true;
-% s.displayIterations = true;
+s.display = true;
+s.displayIterations = true;
 
 ls = LeastSquaresSolver();
-ls.regularization = false;
-% ls.regularizationType = 'l1';
 ls.errorEstimation = true;
-% ls.errorEstimationType = 'leaveout';
-% ls.errorEstimationOptions.correction = true;
 
 t = tic;
 [f,err,~,y] = s.leastSquares(fun,bases,ls,rv);
@@ -61,18 +52,18 @@ time = toc(t);
 %% Outputs
 fprintf('\n')
 fprintf('parametric dimension = %d\n',ndims(f.basis))
-fprintf('basis dimension = %d\n',numel(f.basis))
+fprintf('basis dimension = %d\n',cardinal(f.basis))
 fprintf('order = [ %s ]\n',num2str(max(f.basis.indices.array)))
 % fprintf('multi-index set = \n')
 % disp(f.basis.indices.array)
 fprintf('nb samples = %d\n',size(y,1))
-fprintf('CV error = %d\n',norm(err))
+fprintf('CV error = %d\n',err)
 fprintf('elapsed time = %f s\n',time)
 
 %% Test
-Ntest = 1000;
-[errtest,xtest,fxtest,ytest] = computeTestError(f,fun,Ntest,rv);
-fprintf('test error = %d\n',errtest)
+N = 1000;
+errL2 = testError(f,fun,N,rv);
+fprintf('mean squared error = %d\n',errL2)
 
 %% Display multi-index set
 dim = 1:3;

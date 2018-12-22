@@ -232,9 +232,9 @@ if solveProblem
             %     end
             % end
     end
-    fun_Uz = MultiVariateFunction(fun_Uz,3);
-    fun_Rx = MultiVariateFunction(fun_Rx,3);
-    fun_Ry = MultiVariateFunction(fun_Ry,3);
+    fun_Uz = UserDefinedFunction(fun_Uz,3);
+    fun_Rx = UserDefinedFunction(fun_Rx,3);
+    fun_Ry = UserDefinedFunction(fun_Ry,3);
     fun_Uz.evaluationAtMultiplePoints = true;
     fun_Rx.evaluationAtMultiplePoints = true;
     fun_Ry.evaluationAtMultiplePoints = true;
@@ -442,10 +442,10 @@ if displayCv
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    %xlabel('Number of elements')
-    %ylabel('Error')
-    xlabel('Nombre d''éléments')
-    ylabel('Erreur')
+    xlabel('Number of elements')
+    ylabel('Error')
+    %xlabel('Nombre d''éléments')
+    %ylabel('Erreur')
     legend(leg{:})
     mysaveas(pathname,'error_Uz','fig');
     mymatlab2tikz(pathname,'error_Uz.tex');
@@ -454,10 +454,10 @@ if displayCv
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    %xlabel('Number of elements')
-    %ylabel('Error')
-    xlabel('Nombre d''éléments')
-    ylabel('Erreur')
+    xlabel('Number of elements')
+    ylabel('Error')
+    %xlabel('Nombre d''éléments')
+    %ylabel('Erreur')
     legend(leg{:})
     mysaveas(pathname,'error_Rx','fig');
     mymatlab2tikz(pathname,'error_Rx.tex');
@@ -466,10 +466,10 @@ if displayCv
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    %xlabel('Number of elements')
-    %ylabel('Error')
-    xlabel('Nombre d''éléments')
-    ylabel('Erreur')
+    xlabel('Number of elements')
+    ylabel('Error')
+    %xlabel('Nombre d''éléments')
+    %ylabel('Erreur')
     legend(leg{:})
     mysaveas(pathname,'error_Ry','fig');
     mymatlab2tikz(pathname,'error_Ry.tex');
@@ -478,10 +478,10 @@ if displayCv
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    %xlabel('Number of elements')
-    %ylabel('CPU time (s)')
-    xlabel('Nombre d''éléments')
-    ylabel('Temps CPU (s)')
+    xlabel('Number of elements')
+    ylabel('CPU time (s)')
+    %xlabel('Nombre d''éléments')
+    %ylabel('Temps CPU (s)')
     legend(leg{:})
     mysaveas(pathname,'cputime','fig');
     mymatlab2tikz(pathname,'cputime.tex');

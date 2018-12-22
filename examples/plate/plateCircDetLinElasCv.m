@@ -219,8 +219,8 @@ if solveProblem
                     fun_Rt = @(x) p/(4*pi*D_rig) * sqrt(x(:,1).^2+x(:,2).^2) .* (log(sqrt(x(:,1).^2+x(:,2).^2)./r) - 1/(1+NU)) - c/(D_rig*(1+NU))*sqrt(x(:,1).^2+x(:,2).^2);
             end
     end
-    fun_Uz = MultiVariateFunction(fun_Uz,3);
-    fun_Rt = MultiVariateFunction(fun_Rt,3);
+    fun_Uz = UserDefinedFunction(fun_Uz,3);
+    fun_Rt = UserDefinedFunction(fun_Rt,3);
     fun_Uz.evaluationAtMultiplePoints = true;
     fun_Rt.evaluationAtMultiplePoints = true;
     
@@ -481,10 +481,10 @@ if displayCv
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    %xlabel('Number of elements')
-    %ylabel('Error')
-    xlabel('Nombre d''éléments')
-    ylabel('Erreur')
+    xlabel('Number of elements')
+    ylabel('Error')
+    %xlabel('Nombre d''éléments')
+    %ylabel('Erreur')
     legend(leg{:})
     mysaveas(pathname,'error_Uz','fig');
     mymatlab2tikz(pathname,'error_Uz.tex');
@@ -493,10 +493,10 @@ if displayCv
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    %xlabel('Number of elements')
-    %ylabel('Error')
-    xlabel('Nombre d''éléments')
-    ylabel('Erreur')
+    xlabel('Number of elements')
+    ylabel('Error')
+    %xlabel('Nombre d''éléments')
+    %ylabel('Erreur')
     legend(leg{:})
     mysaveas(pathname,'error_Rt','fig');
     mymatlab2tikz(pathname,'error_Rt.tex');
@@ -505,10 +505,10 @@ if displayCv
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    %xlabel('Number of elements')
-    %ylabel('Error')
-    xlabel('Nombre d''éléments')
-    ylabel('Erreur')
+    xlabel('Number of elements')
+    ylabel('Error')
+    %xlabel('Nombre d''éléments')
+    %ylabel('Erreur')
     legend(leg{:})
     mysaveas(pathname,'error_Rx','fig');
     mymatlab2tikz(pathname,'error_Rx.tex');
@@ -517,10 +517,10 @@ if displayCv
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    %xlabel('Number of elements')
-    %ylabel('Error')
-    xlabel('Nombre d''éléments')
-    ylabel('Erreur')
+    xlabel('Number of elements')
+    ylabel('Error')
+    %xlabel('Nombre d''éléments')
+    %ylabel('Erreur')
     legend(leg{:})
     mysaveas(pathname,'error_Ry','fig');
     mymatlab2tikz(pathname,'error_Ry.tex');
@@ -529,10 +529,10 @@ if displayCv
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    %xlabel('Number of elements')
-    %ylabel('CPU time (s)')
-    xlabel('Nombre d''éléments')
-    ylabel('Temps CPU (s)')
+    xlabel('Number of elements')
+    ylabel('CPU time (s)')
+    %xlabel('Nombre d''éléments')
+    %ylabel('Temps CPU (s)')
     legend(leg{:})
     mysaveas(pathname,'cputime','fig');
     mymatlab2tikz(pathname,'cputime.tex');

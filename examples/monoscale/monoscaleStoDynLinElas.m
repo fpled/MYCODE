@@ -49,19 +49,16 @@ if setProblem
     
     % IntegrationRule
     p = 1;
-    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases.duplicate(basis,d);
-    vb = basis.basis.randomVariable;
-    rvb = getRandomVector(bases);
+    bases = cellfun(@(x) PolynomialFunctionalBasis(x,0:p),orthonormalPolynomials(rv),'UniformOutput',false);
+    bases = FunctionalBases(bases);
     H = FullTensorProductFunctionalBasis(bases);
-    I = gaussIntegrationRule(vb,2);
+    I = gaussIntegrationRule(v,2);
     I = I.tensorize(d);
     
     % Density
     % RHO(xi) = 1 + 0.05 * (2 * xi - 1)
     fun = @(xi) 1 + 0.05 * (2 * xi(:,1) - 1);
-    funtr = @(xi) fun(transfer(rvb,rv,xi));
-    fun = MultiVariateFunction(funtr,d);
+    fun = UserDefinedFunction(fun,d);
     fun.evaluationAtMultiplePoints = true;
     
     RHO = H.projection(fun,I);
@@ -69,8 +66,7 @@ if setProblem
     % Young modulus
     % E(xi) = 1 + 0.5 * (2 * xi - 1) = xi + 0.5
     fun = @(xi) xi(:,2) + 0.5;
-    funtr = @(xi) fun(transfer(rvb,rv,xi));
-    fun = MultiVariateFunction(funtr,d);
+    fun = UserDefinedFunction(fun,d);
     fun.evaluationAtMultiplePoints = true;
     
     E = H.projection(fun,I);
@@ -114,40 +110,28 @@ if setProblem
     b = surfload(pb.S,L2,'FX',-1);
     pb.b = b*pb.loadFunction(pb.timeSolver);
     
-    save(fullfile(pathname,'problem.mat'),'pb','D','L1','L2');
+    save(fullfile(pathname,'problem.mat'),'pb','D','L1','L2','rv');
 else
-    load(fullfile(pathname,'problem.mat'),'pb','D','L1','L2');
+    load(fullfile(pathname,'problem.mat'),'pb','D','L1','L2','rv');
 end
 
 %% Solution
 if solveProblem
     p = 50;
-    basis = PolynomialFunctionalBasis(LegendrePolynomials(),0:p);
-    bases = FunctionalBases.duplicate(basis,d);
-    rv = getRandomVector(bases);
+    bases = cellfun(@(x) PolynomialFunctionalBasis(x,0:p),orthonormalPolynomials(rv),'UniformOutput',false);
+    bases = FunctionalBases(bases);
     
     s = AdaptiveSparseTensorAlgorithm();
-    % s.nbSamples = 1;
-    % s.addSamplesFactor = 0.1;
     s.tol = 1e-2;
     s.tolStagnation = 1e-1;
-    % s.tolOverfit = 1.1;
-    % s.bulkParameter = 0.5;
-    % s.adaptiveSampling = true;
-    % s.adaptationRule = 'reducedmargin';
-    s.maxIndex = p;
     s.display = true;
     s.displayIterations = true;
     
     ls = LeastSquaresSolver();
-    ls.regularization = false;
-    % ls.regularizationType = 'l1';
     ls.errorEstimation = true;
-    % ls.errorEstimationType = 'leaveout';
-    % ls.errorEstimationOptions.correction = true;
     
     funt = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
-    funt = MultiVariateFunction(funt,d,getnbddlfree(pb.S)*getnbtimedof(pb.timeSolver));
+    funt = UserDefinedFunction(funt,d,getnbddlfree(pb.S)*getnbtimedof(pb.timeSolver));
     funt.evaluationAtMultiplePoints = false;
     
     t = tic;
@@ -172,14 +156,14 @@ T = gettimemodel(pb.timeSolver);
 sz = [getnbddlfree(pb.S),getnbtimedof(T)];
 
 utoutput = ut;
-ut.data = reshape(ut.data,[numel(ut.basis),sz]);
+ut.data = reshape(ut.data,[cardinal(ut.basis),sz]);
 ut.sz = sz;
 
 fprintf('\n');
 fprintf('spatial dimension = %d\n',ut.sz(1))
 fprintf('time dimension = %d\n',ut.sz(2))
 fprintf('parametric dimension = %d\n',ndims(ut.basis))
-fprintf('basis dimension = %d\n',numel(ut.basis))
+fprintf('basis dimension = %d\n',cardinal(ut.basis))
 fprintf('order = [ %s ]\n',num2str(max(ut.basis.indices.array)))
 % fprintf('multi-index set = \n')
 % disp(ut.basis.indices.array)
@@ -189,13 +173,13 @@ fprintf('elapsed time = %f s\n',time)
 
 %% Test
 if testSolution
-    Ntest = 100;
-    [errttest,xttest,uttest,yttest] = computeTestError(utoutput,funt,Ntest);
-    save(fullfile(pathname,'test.mat'),'uttest','errttest','xttest','yttest');
+    N = 100;
+    errL2t = testError(utoutput,funt,N,rv);
+    save(fullfile(pathname,'test.mat'),'errL2t');
 else
-    load(fullfile(pathname,'test.mat'),'uttest','errttest','xttest','yttest');
+    load(fullfile(pathname,'test.mat'),'errL2t');
 end
-fprintf('test error = %d\n',errttest)
+fprintf('mean squared error = %d\n',errL2t)
 
 %% Display
 if displaySolution
@@ -236,7 +220,7 @@ if displaySolution
     T = gettimemodel(pb.timeSolver);
     
     i = 1;
-    % for i=1:2
+%     for i=1:2
         evolMean(pb.S,T,ut,'displ',i,'filename',['mean_solution_' num2str(i)],'pathname',pathname);
 %         evolMean(pb.S,T,vt,'displ',i,'filename',['mean_velocity_' num2str(i)],'pathname',pathname);
 %         evolMean(pb.S,T,at,'displ',i,'filename',['mean_acceleration_' num2str(i)],'pathname',pathname);
@@ -259,11 +243,11 @@ if displaySolution
 %             evolSensitivityIndices(pb.S,T,vt,j,'displ',i,'filename',['sensitivity_indices_velocity_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
 %             evolSensitivityIndices(pb.S,T,at,j,'displ',i,'filename',['sensitivity_indices_acceleration_' num2str(i) '_var_' num2str(j)],'pathname',pathname);
         end
-    % end
+%     end
     
     %% Display statistical outputs at differents instants
     i = 1;
-    % for i=1:2
+%     for i=1:2
         [t,rep] = gettevol(pb.timeSolver);
         for k=1:floor(length(rep)/5):length(rep)
             close all
@@ -318,5 +302,7 @@ if displaySolution
 %                 mysaveas(pathname,['sensitivity_indices_acceleration_' num2str(i) '_var_' num2str(j) '_t' num2str(k-1)],formats,renderer);
             end
         end
-    % end
+%     end
 end
+
+myparallel('stop');

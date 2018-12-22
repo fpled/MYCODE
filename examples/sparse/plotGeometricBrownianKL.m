@@ -15,8 +15,8 @@ parse(p,varargin{:})
 figure('Name','Evolution of Brownian motion w.r.t. time')
 % set(gcf,'Name','Evolution of Brownian motion w.r.t. time')
 clf
-t = linspace(0,1,size(Xref,1));
-plot(t,[Xref,Xpc],'LineWidth',p.Results.LineWidth);
+t = linspace(0,1,length(Xref));
+plot(t,[Xref(:),Xpc(:)],'LineWidth',p.Results.LineWidth);
 if p.Results.grid
     grid on
 end
