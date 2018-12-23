@@ -28,7 +28,7 @@ tests = {'StaticVert'}; % test under static vertical load
 %     'StaticHori1','StaticHori2',...
 %     'Fatigue1','Fatigue2'};
 
-pointwiseLoading = true; % pointwise loading
+pointwiseLoading = false; % pointwise loading
 
 fontsize = 16;
 linewidth = 1;
@@ -182,8 +182,7 @@ for it=1:length(tests)
         materialSym = 'isotTrans';
         
         % Number of samples
-        % N = 1e3;
-        N = 3;
+        N = 500;
         % Markov Chain Monte Carlo method
         MCMCalg = 'MH'; % 'MH', 'BUM', 'CUM' or 'SS' for materialSym = 'isotTrans'
         
@@ -622,7 +621,7 @@ for it=1:length(tests)
         %% Save variables
         save(fullfile(pathname,'problem.mat'),'S','elemtype',...
             'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','L_hori_fati',...
-            'f','p','pointwiseLoading');
+            'f','p','pointwiseLoading','N');
         save(fullfile(pathname,'solution.mat'),'u','mean_u','std_u','ci_u','probs','time');
         save(fullfile(pathname,'test_solution.mat'),'P',...
             'mean_ux','mean_uy','mean_uz',...
@@ -634,7 +633,7 @@ for it=1:length(tests)
     else
         load(fullfile(pathname,'problem.mat'),'S','elemtype',...
             'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','L_hori_fati',...
-            'f','p','pointwiseLoading');
+            'f','p','pointwiseLoading','N');
         load(fullfile(pathname,'solution.mat'),'u','mean_u','std_u','ci_u','probs','time');
         load(fullfile(pathname,'test_solution.mat'),'P',...
             'mean_ux','mean_uy','mean_uz',...
@@ -655,6 +654,7 @@ for it=1:length(tests)
     fprintf('span-to-thickness ratio of plates 1 and 2 = %g\n',min(a12,b12)/h);
     fprintf('span-to-thickness ratio of plate 3 = %g\n',min(a3,b3)/h);
     fprintf('span-to-thickness ratio of plates 5a and 5b = %g\n',min(a5,b5)/h);
+    fprintf('nb samples = %g\n',N);
     fprintf('elapsed time = %f s\n',time);
     fprintf('\n');
     
@@ -772,7 +772,7 @@ for it=1:length(tests)
         
         [hD,legD] = plotBoundaryConditions(S,'legend',false);
         ampl = 20;
-        [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',lindewidth);
+        [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',linewidth);
         hP = plot(P,'g+');
         legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
         %legend([hD,hN,hP],[legD,legN,'mesure'],'Location','NorthEastOutside')
@@ -781,7 +781,8 @@ for it=1:length(tests)
         plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
         mysaveas(pathname,'mesh',formats,renderer);
         
-        ampl = getsize(S)/max(abs(mean_u))/10;
+        mean_U = mean_u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+        ampl = getsize(S)/max(abs(mean_U))/20;
         plotModelDeflection(S,mean_u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
         mysaveas(pathname,'mesh_deflected',formats,renderer);
         
@@ -793,7 +794,7 @@ for it=1:length(tests)
         
         %% Display solution
         % ampl = 0;
-        ampl = getsize(S)/max(abs(mean_u))/10;
+        ampl = getsize(S)/max(abs(mean_U))/20;
         options = {'solid',true};
         % options = {};
         
@@ -848,14 +849,14 @@ for it=1:length(tests)
         hold on
         ciplot(repmat(lowercis_u_exp,1,N),repmat(uppercis_u_exp,1,N),1:N,'r');
         alpha(0.2)
-        plot(1:N,means_u,'-b','LineWidth',lindewidth)
+        plot(1:N,means_u,'-b','LineWidth',linewidth)
         switch lower(test)
             case {'stability','staticvert'}
-                plot(1:N,repmat(uz_exp,1,N),'-r','LineWidth',lindewidth)
+                plot(1:N,repmat(uz_exp,1,N),'-r','LineWidth',linewidth)
             case {'statichori1','statichori2','fatigue1','fatigue2'}
-                plot(1:N,repmat(ux_exp,1,N),'-r','LineWidth',lindewidth)
+                plot(1:N,repmat(ux_exp,1,N),'-r','LineWidth',linewidth)
             case {'statichori3','statichori4','fatigue3','fatigue4'}
-                plot(1:N,repmat(uy_exp,1,N),'-r','LineWidth',lindewidth)
+                plot(1:N,repmat(uy_exp,1,N),'-r','LineWidth',linewidth)
         end
         hold off
         grid on
@@ -865,12 +866,12 @@ for it=1:length(tests)
         %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
         switch lower(test)
             case {'stability','staticvert'}
-                ylabel('Vertical displacement','Interpreter',interpreter)
-                %ylabel('D\''eplacement vertical','Interpreter',interpreter)
+                ylabel('Vertical displacement [m]','Interpreter',interpreter)
+                %ylabel('D\''eplacement vertical [m]','Interpreter',interpreter)
             case {'statichori1','statichori2','fatigue1','fatigue2',...
                     'statichori3','statichori4','fatigue3','fatigue4'}
-                ylabel('Horizontal displacement','Interpreter',interpreter)
-                %ylabel('D\''eplacement horizontal','Interpreter',interpreter)
+                ylabel('Horizontal displacement [m]','Interpreter',interpreter)
+                %ylabel('D\''eplacement horizontal [m]','Interpreter',interpreter)
         end
         switch lower(test)
             case {'stability','staticvert','statichori1','statichori2','fatigue1','fatigue2',...
@@ -889,7 +890,7 @@ for it=1:length(tests)
         
         figure('Name','Convergence mean')
         clf
-        plot(1:N,means_u,'-b','LineWidth',lindewidth)
+        plot(1:N,means_u,'-b','LineWidth',linewidth)
         grid on
         box on
         set(gca,'FontSize',fontsize)
@@ -902,7 +903,7 @@ for it=1:length(tests)
         
         figure('Name','Convergence standard deviation')
         clf
-        plot(1:N,stds_u,'-r','LineWidth',lindewidth)
+        plot(1:N,stds_u,'-r','LineWidth',linewidth)
         grid on
         box on
         set(gca,'FontSize',fontsize)

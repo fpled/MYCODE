@@ -572,7 +572,7 @@ if displaySolution
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 5;
-    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',lindewidth);
+    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',linewidth);
     hP = plot(P,'g+');
     legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     %legend([hD,hN,hP],[legD,legN,'mesure'],'Location','NorthEastOutside')
@@ -582,7 +582,7 @@ if displaySolution
     mysaveas(pathname,'mesh',formats,renderer);
     
     mean_U = mean_u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
-    ampl = getsize(S)/max(abs(mean_U))/10;
+    ampl = getsize(S)/max(abs(mean_U))/20;
     plotModelDeflection(S,mean_u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
@@ -594,7 +594,7 @@ if displaySolution
     
     %% Display solution
     % ampl = 0;
-    ampl = getsize(S)/max(abs(mean_U))/10;
+    ampl = getsize(S)/max(abs(mean_U))/20;
     options = {'solid',true};
     % options = {};
     
@@ -661,9 +661,9 @@ if displayCv
     ciplot(lowercis_u,uppercis_u,1:N,'b');
     hold on
     alpha(0.2)
-    plot(1:N,means_u,'-b','LineWidth',lindewidth)
+    plot(1:N,means_u,'-b','LineWidth',linewidth)
     if strcmpi(test,'staticvert')
-        plot(1:N,repmat(uz_exp,1,N),'-r','LineWidth',lindewidth)
+        plot(1:N,repmat(uz_exp,1,N),'-r','LineWidth',linewidth)
     end
     hold off
     grid on
@@ -684,7 +684,7 @@ if displayCv
     
     figure('Name','Convergence mean')
     clf
-    plot(1:N,means_u,'-b','LineWidth',lindewidth)
+    plot(1:N,means_u,'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -697,7 +697,7 @@ if displayCv
     
     figure('Name','Convergence standard deviation')
     clf
-    plot(1:N,stds_u,'-r','LineWidth',lindewidth)
+    plot(1:N,stds_u,'-r','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
