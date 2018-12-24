@@ -28,7 +28,7 @@ tests = {'StaticVert'}; % test under static vertical load
 %     'StaticHori1','StaticHori2',...
 %     'Fatigue1','Fatigue2'};
 
-pointwiseLoading = true; % pointwise loading
+pointwiseLoading = false; % pointwise loading
 
 junction = true; % junction modeling
 

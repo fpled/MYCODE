@@ -85,7 +85,7 @@ k_screw = gamrnd(a_screw,b_screw,N,1);
 %% Display
 if displaySolution
     %% Plot data
-    figure('Name','Dowel junction data')
+    figure('Name','Data for dowel stiffness')
     clf
     bar(1:length(Kdowel_data),Kdowel_data)
     set(gca,'FontSize',fontsize)
@@ -97,7 +97,7 @@ if displaySolution
     mysaveas(pathname,'data_Kdowel',formats);
     mymatlab2tikz(pathname,'data_Kdowel.tex');
 
-    figure('Name','Screw junction data')
+    figure('Name','Data for screw stiffness')
     clf
     bar(1:length(Kscrew_data),Kscrew_data)
     set(gca,'FontSize',fontsize)
@@ -109,7 +109,7 @@ if displaySolution
     mysaveas(pathname,'data_Kscrew',formats);
     mymatlab2tikz(pathname,'data_Kscrew.tex');
     
-  %% Plot pdf and cdf
+    %% Plot pdfs and cdfs
     xmin_dowel = max(0,mKdowel-5*sKdowel);
     xmax_dowel = mKdowel+5*sKdowel;
     x_dowel = linspace(xmin_dowel,xmax_dowel,1e3);
