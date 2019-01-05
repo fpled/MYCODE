@@ -37,9 +37,18 @@ if setProblem
     patches = Patches(n);
     
     D_patch = cell(1,n);
-    D_patch{1} = DOMAIN(2,[0.85,0.40],[1.05,0.60]);
-    D_patch{2} = DOMAIN(2,[0.45,0.40],[0.65,0.60]);
-    D_patch{3} = DOMAIN(2,[0.05,0.40],[0.25,0.60]);
+%     D_patch{1} = DOMAIN(2,[0.85,0.40],[1.05,0.60]);
+%     D_patch{2} = DOMAIN(2,[0.45,0.40],[0.65,0.60]);
+%     D_patch{3} = DOMAIN(2,[0.05,0.40],[0.25,0.60]);
+    if n>=1
+        D_patch{1} = DOMAIN(2,[0.85,0.40],[1.05,0.80]);
+    end
+    if n>=2
+        D_patch{2} = DOMAIN(2,[0.45,0.20],[0.65,0.60]);
+    end
+    if n>=3
+        D_patch{3} = DOMAIN(2,[0.05,0.40],[0.25,0.80]);
+    end
     
     cl1 = 0.02;
     cl2 = 0.04;
@@ -322,18 +331,18 @@ if directSolver
     % Transient solution
     DS.timeSolver = N;
     DS.timeOrder = 1;
-    [Ut_ref,wt_ref,lambdat_ref,outputt_ref] = DS.solve(globOut,patches,interfaces);
-    outputt_ref.vU = unfreevector(globOut.S,outputt_ref.vU)-calc_init_dirichlet(globOut.S);
+    [Ut_ref,wt_ref,lambdat_ref,outputt_ref,vUt_ref,vwt_ref,vlambdat_ref] = DS.solve(globOut,patches,interfaces);
+    vUt_ref = unfreevector(globOut.S,vUt_ref)-calc_init_dirichlet(globOut.S);
     for k=1:n
-        outputt_ref.vw{k} = unfreevector(patches.patches{k}.S,outputt_ref.vw{k})-calc_init_dirichlet(patches.patches{k}.S);
-        outputt_ref.vlambda{k} = unfreevector(interfaces.interfaces{k}.S,outputt_ref.vlambda{k})-calc_init_dirichlet(interfaces.interfaces{k}.S);
+        vwt_ref{k} = unfreevector(patches.patches{k}.S,vwt_ref{k})-calc_init_dirichlet(patches.patches{k}.S);
+        vlambdat_ref{k} = unfreevector(interfaces.interfaces{k}.S,vlambdat_ref{k})-calc_init_dirichlet(interfaces.interfaces{k}.S);
     end
     
     save(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref');
-    save(fullfile(pathname,'reference_solution_time.mat'),'Ut_ref','wt_ref','lambdat_ref','outputt_ref');
+    save(fullfile(pathname,'reference_solution_time.mat'),'Ut_ref','wt_ref','lambdat_ref','outputt_ref','vUt_ref','vwt_ref','vlambdat_ref');
 else
     load(fullfile(pathname,'reference_solution.mat'),'U_ref','w_ref','lambda_ref','output_ref');
-    load(fullfile(pathname,'reference_solution_time.mat'),'Ut_ref','wt_ref','lambdat_ref','outputt_ref');
+    load(fullfile(pathname,'reference_solution_time.mat'),'Ut_ref','wt_ref','lambdat_ref','outputt_ref','vUt_ref','vwt_ref','vlambdat_ref');
 end
 
 %% Outputs
@@ -364,18 +373,18 @@ if iterativeSolver
     [U,w,lambda,output] = IS.solve(glob_sta,patches_sta,interfaces);
     
     IS.referenceSolution = {Ut_ref,wt_ref,lambdat_ref};
-    [Ut,wt,lambdat,outputt] = IS.solve(glob,patches,interfaces);
-    outputt.vU = unfreevector(glob.S,outputt.vU)-calc_init_dirichlet(glob.S);
+    [Ut,wt,lambdat,outputt,vUt,vwt,vlambdat] = IS.solve(glob,patches,interfaces);
+    vUt = unfreevector(glob.S,vUt)-calc_init_dirichlet(glob.S);
     for k=1:n
-        outputt.vw{k} = unfreevector(patches.patches{k}.S,outputt.vw{k})-calc_init_dirichlet(patches.patches{k}.S);
-        outputt.vlambda{k} = unfreevector(interfaces.interfaces{k}.S,outputt.vlambda{k})-calc_init_dirichlet(interfaces.interfaces{k}.S);
+        vwt{k} = unfreevector(patches.patches{k}.S,vwt{k})-calc_init_dirichlet(patches.patches{k}.S);
+        vlambdat{k} = unfreevector(interfaces.interfaces{k}.S,vlambdat{k})-calc_init_dirichlet(interfaces.interfaces{k}.S);
     end
     
     save(fullfile(pathname,'solution.mat'),'U','w','lambda','output');
-    save(fullfile(pathname,'solution_time.mat'),'Ut','wt','lambdat','outputt');
+    save(fullfile(pathname,'solution_time.mat'),'Ut','wt','lambdat','outputt','vUt','vwt','vlambdat');
 else
     load(fullfile(pathname,'solution.mat'),'U','w','lambda','output');
-    load(fullfile(pathname,'solution_time.mat'),'Ut','wt','lambdat','outputt');
+    load(fullfile(pathname,'solution_time.mat'),'Ut','wt','lambdat','outputt','vUt','vwt','vlambdat');
 end
 
 %% Outputs
@@ -583,33 +592,33 @@ if displaySolution
     %% Display evolutions of transient solutions
     % evolAllSolutions(glob,patches,interfaces,Ut,wt,lambdat,'filename','all_solutions','pathname',pathname);
     % evolAllSolutions(glob,patches,interfaces,Ut,wt,lambdat,'surface',true,'filename','all_solutions_surface','pathname',pathname);
-    % evolAllSolutions(glob,patches,interfaces,outputt.vU,outputt.vw,outputt.vlambda,'filename','all_velocities','pathname',pathname);
-    % evolAllSolutions(glob,patches,interfaces,outputt.vU,outputt.vw,outputt.vlambda,'surface',true,'filename','all_velocities_surface','pathname',pathname);
+    % evolAllSolutions(glob,patches,interfaces,vUt,vwt,vlambdat,'filename','all_velocities','pathname',pathname);
+    % evolAllSolutions(glob,patches,interfaces,vUt,vwt,vlambdat,'surface',true,'filename','all_velocities_surface','pathname',pathname);
     
     evolGlobalSolution(glob,Ut,'filename','global_solution','pathname',pathname);
     evolGlobalSolution(glob,Ut,'surface',true,'filename','global_solution_surface','pathname',pathname);
-    evolGlobalSolution(glob,outputt.vU,'rescale',false,'filename','global_solution_velocity','pathname',pathname);
-    evolGlobalSolution(glob,outputt.vU,'rescale',false,'surface',true,'filename','global_solution_velocity_surface','pathname',pathname);
+    evolGlobalSolution(glob,vUt,'rescale',false,'filename','global_solution_velocity','pathname',pathname);
+    evolGlobalSolution(glob,vUt,'rescale',false,'surface',true,'filename','global_solution_velocity_surface','pathname',pathname);
     
     % evolLocalSolution(patches,wt,'filename','local_solution','pathname',pathname);
     % evolLocalSolution(patches,wt,'surface',true,'filename','local_solution_surface','pathname',pathname);
-    % evolLocalSolution(patches,outputt.vw,'rescale',false,'filename','local_solution_velocity','pathname',pathname);
-    % evolLocalSolution(patches,outputt.vw,'rescale',false,'surface',true,'filename','local_solution_velocity_surface','pathname',pathname);
+    % evolLocalSolution(patches,vwt,'rescale',false,'filename','local_solution_velocity','pathname',pathname);
+    % evolLocalSolution(patches,vwt,'rescale',false,'surface',true,'filename','local_solution_velocity_surface','pathname',pathname);
     %
     % evolLagrangeMultiplier(interfaces,lambdat,'filename','Lagrange_multiplier','pathname',pathname);
     % evolLagrangeMultiplier(interfaces,lambdat,'surface',true,'filename','Lagrange_multiplier_surface','pathname',pathname);
-    % evolLagrangeMultiplier(interfaces,outputt.vlambda,'rescale',false,'filename','Lagrange_multiplier_velocity','pathname',pathname);
-    % evolLagrangeMultiplier(interfaces,outputt.vlambda,'rescale',false,'surface',true,'filename','Lagrange_multiplier_velocity_surface','pathname',pathname);
+    % evolLagrangeMultiplier(interfaces,vlambdat,'rescale',false,'filename','Lagrange_multiplier_velocity','pathname',pathname);
+    % evolLagrangeMultiplier(interfaces,vlambdat,'rescale',false,'surface',true,'filename','Lagrange_multiplier_velocity_surface','pathname',pathname);
     
     evolMultiscaleSolution(glob,patches,interfaces,Ut,wt,'filename','multiscale_solution','pathname',pathname);
     evolMultiscaleSolution(glob,patches,interfaces,Ut,wt,'surface',true,'filename','multiscale_solution_surface','pathname',pathname);
-    evolMultiscaleSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'filename','multiscale_solution_velocity','pathname',pathname);
-    evolMultiscaleSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'surface',true,'filename','multiscale_solution_velocity_surface','pathname',pathname);
+    evolMultiscaleSolution(glob,patches,interfaces,vUt,vwt,'rescale',false,'filename','multiscale_solution_velocity','pathname',pathname);
+    evolMultiscaleSolution(glob,patches,interfaces,vUt,vwt,'rescale',false,'surface',true,'filename','multiscale_solution_velocity_surface','pathname',pathname);
     
     evolGlobalLocalSolution(glob,patches,interfaces,Ut,wt,'filename','global_local_solution','pathname',pathname);
     evolGlobalLocalSolution(glob,patches,interfaces,Ut,wt,'surface',true,'filename','global_local_solution_surface','pathname',pathname);
-    evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'filename','global_local_solution_velocity','pathname',pathname);
-    evolGlobalLocalSolution(glob,patches,interfaces,outputt.vU,outputt.vw,'rescale',false,'surface',true,'filename','global_local_solution_velocity_surface','pathname',pathname);
+    evolGlobalLocalSolution(glob,patches,interfaces,vUt,vwt,'rescale',false,'filename','global_local_solution_velocity','pathname',pathname);
+    evolGlobalLocalSolution(glob,patches,interfaces,vUt,vwt,'rescale',false,'surface',true,'filename','global_local_solution_velocity_surface','pathname',pathname);
     
     %% Display transient solutions at different instants
 %     [t,rep] = gettevol(N);
@@ -618,9 +627,9 @@ if displaySolution
 %         Uk = getmatrixatstep(Ut,rep(k));
 %         wk = cellfun(@(x) getmatrixatstep(x,rep(k)),wt,'UniformOutput',false);
 %         lambdak = cellfun(@(x) getmatrixatstep(x,rep(k)),lambdat,'UniformOutput',false);
-%         vUk = getmatrixatstep(outputt.vU,rep(k));
-%         vwk = cellfun(@(x) getmatrixatstep(x,rep(k)),outputt.vw,'UniformOutput',false);
-%         vlambdak = cellfun(@(x) getmatrixatstep(x,rep(k)),outputt.vlambda,'UniformOutput',false);
+%         vUk = getmatrixatstep(vUt,rep(k));
+%         vwk = cellfun(@(x) getmatrixatstep(x,rep(k)),vwt,'UniformOutput',false);
+%         vlambdak = cellfun(@(x) getmatrixatstep(x,rep(k)),vlambdat,'UniformOutput',false);
 %         
 %         % plotAllSolutions(glob,patches,interfaces,Uk,wk,lambdak);
 %         % mysaveas(pathname,['all_solutions_t' num2str(k-1)],formats,renderer);

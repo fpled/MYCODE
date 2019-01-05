@@ -131,6 +131,7 @@ if setProblem
     % pb.timeSolver = EULERTIMESOLVER(T,'eulertype','explicit','display',false);
     pb.timeSolver = EULERTIMESOLVER(T,'eulertype','implicit','display',false);
     % pb.timeSolver = DGTIMESOLVER(T,1,'outputsplit',true,'display',false,'lu',true);
+    pb.timeOrder = 1;
     
     pb.loadFunction = @(N) one(N);
     

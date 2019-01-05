@@ -95,6 +95,7 @@ if setProblem
     
     pb.timeSolver = NEWMARKSOLVER(T,'alpha',0.05,'display',false);
     % pb.timeSolver = DGTIMESOLVER(T,1,'outputsplit',true,'display',false,'lu',true);
+    pb.timeOrder = 2;
     
     tc = get(T,'t1')/6;
     pb.loadFunction = @(N) rampe(N,t0,tc);

@@ -78,12 +78,30 @@ Cluster_Name = cluster
 
 # Default ---------------------------
 default:
-#	matlab -nodesktop -nosplash -noFigureWindows -r "$(Pb_Name); exit" -logfile results/$(Pb_Name).log
+	matlab -nodesktop -nosplash -noFigureWindows -r "$(Pb_Name); exit" -logfile results/$(Pb_Name).log
 #	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoLinDiffAlignInclusionsIso; exit" -logfile results/multiscaleSto/linDiffAlignInclusionsIso.log
 #	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoLinDiffAlignInclusionsAniso; exit" -logfile results/multiscaleSto/linDiffAlignInclusionsAniso.log
 #	matlab -nodesktop -nosplash -noFigureWindows -r "multiscaleStoTransientLinAdvDiffReac; exit" -logfile results/multiscaleSto/transientLinAdvDiffReac.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskDetLinElas; exit" -logfile results/plate/FCBADeskDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADesk3DDetLinElas; exit" -logfile results/plate/FCBADesk3DDetLinElas.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateStoLinElasStaticHori1_100N; exit" -logfile results/plate/FCBADeskPlateStoLinElasStaticHori1_100N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateStoLinElasStaticHori1_200N; exit" -logfile results/plate/FCBADeskPlateStoLinElasStaticHori1_200N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateStoLinElasStaticHori2_100N; exit" -logfile results/plate/FCBADeskPlateStoLinElasStaticHori2_100N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateStoLinElasStaticHori2_200N; exit" -logfile results/plate/FCBADeskPlateStoLinElasStaticHori2_200N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateStoLinElasStaticVert_300N; exit" -logfile results/plate/FCBADeskPlateStoLinElasStaticVert_300N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateStoLinElasStaticVert_400N; exit" -logfile results/plate/FCBADeskPlateStoLinElasStaticVert_400N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateStoLinElasStaticVert_500N; exit" -logfile results/plate/FCBADeskPlateStoLinElasStaticVert_500N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateStoLinElasStability_400N; exit" -logfile results/plate/FCBADeskPlateStoLinElasStability_400N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateStoLinElasFatigue1_100N; exit" -logfile results/plate/FCBADeskPlateStoLinElasFatigue1_100N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateStoLinElasFatigue2_100N; exit" -logfile results/plate/FCBADeskPlateStoLinElasFatigue2_100N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElasStaticHori1_100N; exit" -logfile results/plate/FCBADeskPlateJunctionStoLinElasStaticHori1_100N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElasStaticHori1_200N; exit" -logfile results/plate/FCBADeskPlateJunctionStoLinElasStaticHori1_200N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElasStaticHori2_100N; exit" -logfile results/plate/FCBADeskPlateJunctionStoLinElasStaticHori2_100N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElasStaticHori2_200N; exit" -logfile results/plate/FCBADeskPlateJunctionStoLinElasStaticHori2_200N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElasStaticVert_300N; exit" -logfile results/plate/FCBADeskPlateJunctionStoLinElasStaticVert_300N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElasStaticVert_400N; exit" -logfile results/plate/FCBADeskPlateJunctionStoLinElasStaticVert_400N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElasStaticVert_500N; exit" -logfile results/plate/FCBADeskPlateJunctionStoLinElasStaticVert_500N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElasStability_400N; exit" -logfile results/plate/FCBADeskPlateJunctionStoLinElasStability_400N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElasFatigue1_100N; exit" -logfile results/plate/FCBADeskPlateJunctionStoLinElasFatigue1_100N.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElasFatigue2_100N; exit" -logfile results/plate/FCBADeskPlateJunctionStoLinElasFatigue2_100N.log
 
 # All ---------------------------
 all: sparse monosto multidet multisto identification plate
