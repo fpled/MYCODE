@@ -10,7 +10,7 @@ setProblem = true;
 solveProblem = true;
 displaySolution = true;
 
-Dim = 2; % space dimension Dim = 2, 3
+Dim = 3; % space dimension Dim = 2, 3
 filename = ['specimenCompressionDetLinElas_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification',filename);
@@ -23,8 +23,11 @@ interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
+t = tic;
+
 %% Problem
 if setProblem
+    tMesh = tic;
     %% Domains and meshes
     L = 1e-2;
     if Dim==2
@@ -44,19 +47,44 @@ if setProblem
     S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
     % cl = L/20;
     % S = build_model(D,'cl',cl,'elemtype',elemtype,'option',option,'filename',fullfile(pathname,'gmsh_domain'));
+    timeMesh = toc(tMesh);
+    fprintf('Meshing: elapsed time = %f s\n',timeMesh);
     
+    tAssemble = tic;
     %% Materials
-    % Poisson ratio
-    NU = 0.34;
     % Thickness
     DIM3 = 1;
     % Density
     RHO = 1;
-    % Young modulus
-    E = 12e9;
     
     % Material
-    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3);
+    % Material Symmetry
+    materialSym = 'isotTrans';
+    
+    switch lower(materialSym)
+        case 'isot'
+            % Young modulus
+            E = 1;
+            % Poisson ratio
+            NU = 0.3;
+            % Material
+            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3);
+        case 'isottrans'
+            % Transverse Young modulus
+            ET = 1;
+            % Longitudinal shear modulus
+            GL = 1.5;
+            % Longitudinal Young modulus
+            EL = 2;
+            % Longitudinal Poisson ratio
+            NUL = 0.2;
+            % Transverse Poisson ratio
+            NUT = 0.3;
+            % Material
+            mat = ELAS_ISOT_TRANS('AXISL',[0;0;1],'AXIST',[1;0;0],'EL',EL,'ET',ET,'NUL',NUL,'NUT',NUT,'GL',GL,'RHO',RHO,'DIM3',DIM3);
+        otherwise
+            error('Wrong material symmetry !')
+    end
     mat = setnumber(mat,1);
     S = setmaterial(S,mat);
     
@@ -72,13 +100,13 @@ if setProblem
     S = final(S);
     S = addcl(S,BL);
     
-    % loading = 'Dirichlet'; % Imposed displacement
-    loading = 'Neumann'; % Traction force density
+    loading = 'Dirichlet'; % Imposed displacement
+    % loading = 'Neumann'; % Traction force density
     degree = 'cst'; % constant loading
     % degree = 'lin'; % linear loading
     % degree = 'qua'; % quadratic loading
     if strcmpi(loading,'dirichlet')
-        udmax = -1e-2;
+        udmax = -1e-3;
         switch lower(degree)
             case 'cst'
                 ud = udmax;
@@ -98,7 +126,7 @@ if setProblem
     switch lower(loading)
         case 'neumann'
             A = calc_rigi(S);
-            fmax = -5e3/L^2;
+            fmax = -5e-5/L^2;
             switch lower(degree)
                 case 'cst'
                     f = fmax;
@@ -116,6 +144,8 @@ if setProblem
             [A,b] = calc_rigi(S);
             b = -b;
     end
+    timeAssemble = toc(tAssemble);
+    fprintf('Assembling: elapsed time = %f s\n',timeAssemble);
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'loading','elemtype','S','D','b');
@@ -125,17 +155,20 @@ end
 
 %% Solution
 if solveProblem
-    t = tic;
+    tSolve = tic;
     u = A\b;
-    time = toc(t);
+    timeSolve = toc(tSolve);
+    fprintf('Solving: elapsed time = %f s\n',timeSolve);
     
     e = calc_epsilon(S,u);
     s = calc_sigma(S,u);
     
-    save(fullfile(pathname,'solution.mat'),'u','time','e','s');
+    save(fullfile(pathname,'solution.mat'),'u','e','s');
 else
-    load(fullfile(pathname,'solution.mat'),'u','time','e','s');
+    load(fullfile(pathname,'solution.mat'),'u','e','s');
 end
+
+time = toc(t);
 
 %% Outputs
 fprintf('\nSquare specimen\n');
