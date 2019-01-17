@@ -43,7 +43,7 @@ if setProblem
     end
     % option = 'DEFO'; % plane strain
     option = 'CONT'; % plane stress
-    nbelem = repmat(20,1,Dim);
+    nbelem = repmat(50,1,Dim);
     S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
     % cl = L/20;
     % S = build_model(D,'cl',cl,'elemtype',elemtype,'option',option,'filename',fullfile(pathname,'gmsh_domain'));
@@ -160,8 +160,11 @@ if solveProblem
     timeSolve = toc(tSolve);
     fprintf('Solving: elapsed time = %f s\n',timeSolve);
     
+    tPostProcess = tic;
     e = calc_epsilon(S,u);
     s = calc_sigma(S,u);
+    timePostProcess = toc(tPostProcess);
+    fprintf('Post_processing: elapsed time = %f s\n',timePostProcess);
     
     save(fullfile(pathname,'solution.mat'),'u','e','s');
 else
