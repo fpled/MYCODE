@@ -116,9 +116,9 @@ for j=8
             b = -b;
             
             %% Save variables
-            save(fullfile(pathname,'problem.mat'),'S','b');
+            save(fullfile(pathname,'problem.mat'),'S','A','b');
         else
-            load(fullfile(pathname,'problem.mat'),'S','b');
+            load(fullfile(pathname,'problem.mat'),'S','A','b');
         end
         
         %% Solution
