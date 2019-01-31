@@ -45,6 +45,8 @@ if setProblem
     %% Materials
     % IntegrationRule
     p = 1;
+    % basis = PolynomialFunctionalBasis(orthonormalPolynomials(v),0:p);
+    % bases = FunctionalBases.duplicate(basis,d);
     bases = cellfun(@(x) PolynomialFunctionalBasis(x,0:p),orthonormalPolynomials(rv),'UniformOutput',false);
     bases = FunctionalBases(bases);
     H = FullTensorProductFunctionalBasis(bases);
