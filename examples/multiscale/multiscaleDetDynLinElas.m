@@ -62,7 +62,7 @@ if setProblem
     
     %% Materials
     % Poisson ratio
-    NU = 0;
+    NU = 0.3;
     % Thickness
     DIM3 = 1;
     % Density

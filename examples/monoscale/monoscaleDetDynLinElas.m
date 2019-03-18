@@ -34,14 +34,14 @@ if setProblem
 %     pb.S = build_model(D,'cl',cl,'elemtype',elemtype,'option',option,'filename',fullfile(pathname,'gmsh_domain'));
     
     %% Materials
+    % Young modulus
+    E = 1;
     % Poisson ratio
-    NU = 0;
+    NU = 0.3;
     % Thickness
     DIM3 = 1;
     % Density
     RHO = 1;
-    % Young modulus
-    E = 1;
     % Material
     mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3);
     mat = setnumber(mat,1);
@@ -78,9 +78,9 @@ if setProblem
     b = surfload(pb.S,L2,'FX',-1);
     pb.b = b*pb.loadFunction(pb.N);
     
-    save(fullfile(pathname,'problem.mat'),'pb','D','L1','L2');
+    save(fullfile(pathname,'problem.mat'),'pb','elemtype','D','L1','L2');
 else
-    load(fullfile(pathname,'problem.mat'),'pb','D','L1','L2');
+    load(fullfile(pathname,'problem.mat'),'pb','elemtype','D','L1','L2');
 end
 
 %% Solution
