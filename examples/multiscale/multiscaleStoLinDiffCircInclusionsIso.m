@@ -1,6 +1,8 @@
 %% Multiscale stochastic linear diffusion problem with n circular inclusions - Isotropic case %%
 %%--------------------------------------------------------------------------------------------%%
-% [Beck, Nobile, Tamellini, Tempone, 2011,2014], [Chkifa, Cohen, Migliorati, Tempone, 2014]
+% [Beck, Nobile, Tamellini, Tempone, 2011, Springer]
+% [Beck, Nobile, Tamellini, Tempone, 2014, CMA]
+% [Chkifa, Cohen, Migliorati, Nobile, Tempone, 2015, ESAIM:M2AN]
 
 % clc
 clearvars

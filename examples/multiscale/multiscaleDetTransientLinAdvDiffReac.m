@@ -1,6 +1,7 @@
 %% Multiscale deterministic transient linear advection-diffusion-reaction problem %%
 %%--------------------------------------------------------------------------------%%
-% [Pares, Diez, Huerta, 2008], [Nouy, 2010]
+% [Pares, Diez, Huerta, 2008, CMAME]
+% [Nouy, 2010, CMAME]
 
 % clc
 clearvars

@@ -1,6 +1,6 @@
 %% Multiscale stochastic nonlinear diffusion-reaction problem with n aligned inclusions - Anisotropic case %%
 %%---------------------------------------------------------------------------------------------------------%%
-% [Nouy, Pled 2018]
+% [Nouy, Pled, 2018, ESAIM:M2AN]
 
 % clc
 clearvars

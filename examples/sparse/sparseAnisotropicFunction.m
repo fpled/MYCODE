@@ -1,6 +1,6 @@
 %% Adaptive sparse polynomial approximation - Anisotropic function %%
 %%-----------------------------------------------------------------%%
-% [Chkifa, Cohen, Schwab, 2014]
+% [Chkifa, Cohen, Schwab, 2014, FCM]
 
 % clc
 clearvars

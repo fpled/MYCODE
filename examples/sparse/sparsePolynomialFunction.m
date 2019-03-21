@@ -1,6 +1,6 @@
 %% Adaptive sparse polynomial approximation - Polynomial function %%
 %%----------------------------------------------------------------%%
-% [Sudret, 2008]
+% [Sudret, 2008, RESS]
 
 % clc
 clearvars

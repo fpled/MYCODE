@@ -1,6 +1,7 @@
 %% Adaptive sparse polynomial approximation - Sobol function %%
 %%-----------------------------------------------------------%%
-% [Sobol, 2003], [Sudret, 2008]
+% [Sobol, 2003, RESS]
+% [Sudret, 2008, RESS]
 
 % clc
 clearvars

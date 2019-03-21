@@ -1,6 +1,7 @@
 %% Monoscale stochastic linear diffusion problem with circular inclusions - Anisotropic case %%
 %%-------------------------------------------------------------------------------------------%%
-% [Beck, Nobile, Tamellini, Tempone, 2011,2014]
+% [Beck, Nobile, Tamellini, Tempone, 2011, Springer]
+% [Beck, Nobile, Tamellini, Tempone, 2014, CMA]
 
 % clc
 % clearvars

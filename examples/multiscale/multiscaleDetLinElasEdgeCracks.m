@@ -303,23 +303,26 @@ if displaySolution
     mymatlab2tikz(pathname,'relaxation_parameter.tex');
     
     %% Display solutions
+    ampl = 0;
+    % ampl = getsize(glob.S)/max(abs(U))/20;
+    
     for i=1:2
-        % plotAllSolutions(glob,patches,interfaces,U,w,lambda,'displ',i);
+        % plotAllSolutions(glob,patches,interfaces,U,w,lambda,'displ',i,'ampl',ampl);
         % mysaveas(pathname,['all_solutions_' num2str(i)],formats,renderer);
         
-        plotGlobalSolution(glob,U,'displ',i);
+        plotGlobalSolution(glob,U,'displ',i,'ampl',ampl);
         mysaveas(pathname,['global_solution_' num2str(i)],formats,renderer);
         
-        % plotLocalSolution(patches,w,'displ',i);
+        % plotLocalSolution(patches,w,'displ',i,'ampl',ampl);
         % mysaveas(pathname,['local_solution_' num2str(i)],formats,renderer);
         
-        % plotLagrangeMultiplier(interfaces,lambda,'displ',i);
+        % plotLagrangeMultiplier(interfaces,lambda,'displ',i,'ampl',ampl);
         % mysaveas(pathname,['Lagrange_multiplier_' num2str(i)],formats,renderer);
         
-        plotMultiscaleSolution(glob,patches,interfaces,U,w,'displ',i);
+        plotMultiscaleSolution(glob,patches,interfaces,U,w,'displ',i,'ampl',ampl);
         mysaveas(pathname,['multiscale_solution_' num2str(i)],formats,renderer);
         
-        plotGlobalLocalSolution(glob,patches,interfaces,U,w,'displ',i);
+        plotGlobalLocalSolution(glob,patches,interfaces,U,w,'displ',i,'ampl',ampl);
         mysaveas(pathname,['global_local_solution_' num2str(i)],formats,renderer);
     end
 end

@@ -64,11 +64,11 @@ if setProblem
     
     %% Dirichlet boundary conditions
     pb.S = final(pb.S);
-    pb.S = addcl(pb.S,P1,'UY',0);
-    pb.S = addcl(pb.S,P2,'UY',0);
-    pb.S = addcl(pb.S,Line,'UX',0);
-    % pb.S = addcl(pb.S,P1,{'UY','RZ'},0);
-    % pb.S = addcl(pb.S,P2,{'UY','RZ'},0);
+    pb.S = addcl(pb.S,P1,'UY');
+    pb.S = addcl(pb.S,P2,'UY');
+    pb.S = addcl(pb.S,Line,'UX');
+    % pb.S = addcl(pb.S,P1,{'UY','RZ'});
+    % pb.S = addcl(pb.S,P2,{'UY','RZ'});
     
     %% Initial conditions
     pb.u0 = zeros(getnbddlfree(pb.S),1);
@@ -138,6 +138,7 @@ if displaySolution
     ut = unfreevector(pb.S,ut);
     ut_val = getvalue(ut);
     Ut = ut_val(findddl(pb.S,DDL(DDLVECT('U',pb.S.syscoord,'TRANS'))),:);
+    Uyt = ut_val(findddl(pb.S,DDL(DDLSCAL('UY'))),:);
     ampl = getsize(pb.S)/max(max(abs(Ut)))/5;
     
     %% Display evolution of solution

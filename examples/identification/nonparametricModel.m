@@ -1,6 +1,6 @@
 %% Nonparametric model for symmetric positive-definite real-valued random matrices %%
 %%---------------------------------------------------------------------------------%%
-% [Soize, 2000]
+% [Soize, 2000, PEM]
 
 % clc
 clearvars
