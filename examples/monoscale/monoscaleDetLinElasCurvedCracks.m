@@ -1,5 +1,5 @@
-%% Monoscale deterministic linear elasticity problem with n edge cracks %%
-%%----------------------------------------------------------------------%%
+%% Monoscale deterministic linear elasticity problem with curve crack %%
+%%--------------------------------------------------------_-----------%%
 % [Miehe, Hofacker, Welschinger, 2010, CMAME]
 % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
 
