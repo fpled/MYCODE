@@ -12,7 +12,7 @@ N = length(t)-1; % number of time steps
 % N = T/dt;
 % t = linspace(0,T,N+1);
 
-X = ampl*sin(2*pi*fd*t).*exp(-4*(fd*t-1).^2); % wavelet
+X = ampl*sin(2*pi*fd*t).*exp(-4*(fd*t-1).^2); % Exponentially weighted sine wavelet
 
 figure
 plot(t*1e6,X,'LineStyle','-','Color','b','LineWidth',0.8)
@@ -22,7 +22,7 @@ xlim([0 T*1e6]);
 set(gca,'FontSize',16)
 xlabel('Time $t$ [$\mu$s]','Interpreter','latex')
 ylabel('Amplitude $F(t)$','Interpreter','latex')
-% title('Exponentially weighted sine wavelet in Time Domain')
+% title('Exponentially weighted sine wavelet in time domain')
 % mymatlab2tikz('./','source_time.tex');
 
 % n = 2^nextpow2(N+1); % number of frequency points
@@ -34,7 +34,8 @@ Y = dt*fftshift(fft(X,n)); % discrete Fourier transform (DFT)
 P = abs(Y);
 
 f = fs/n*(0:(n/2)); % frequency points
-% f = 1/(n*dt)*(0:(n/2)); 
+% f = 1/(n*dt)*(0:(n/2));
+omega = 2*pi*f; % angular frequency points
 
 I = find(f<=5e6);
 
@@ -47,5 +48,17 @@ xlim([0 5]);
 set(gca,'FontSize',16)
 xlabel('Frequency $f$ [MHz]','Interpreter','latex')
 ylabel('Amplitude $|\hat{F}(f)|$','Interpreter','latex')
-% title('Exponentially weighted sine wavelet in Frequency Domain')
+% title('Exponentially weighted sine wavelet in frequency domain')
 % mymatlab2tikz('./','source_freq.tex');
+
+figure
+% plot(omega*1e-6,P(n/2:end),'LineStyle','-','Color','r','LineWidth',0.8)
+plot(omega(I)*1e-6,P(n/2:(n/2+length(I)-1)),'LineStyle','-','Color','r','LineWidth',0.8)
+grid on
+box on
+xlim([0 2*pi*5]);
+set(gca,'FontSize',16)
+xlabel('Angular frequency $\omega$ [Mrad/s]','Interpreter','latex')
+ylabel('Amplitude $|\hat{F}(\omega)|$','Interpreter','latex')
+% title('Exponentially weighted sine wavelet in angular frequency domain')
+% mymatlab2tikz('./','source_omega.tex');

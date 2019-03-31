@@ -1,5 +1,6 @@
 %% Adaptive sparse polynomial approximation - Sobol function %%
 %%-----------------------------------------------------------%%
+% [Saltelli, Sobol, RESS, 1995]
 % [Sobol, 2003, RESS]
 % [Sudret, 2008, RESS]
 

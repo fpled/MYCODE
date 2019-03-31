@@ -14,7 +14,7 @@ setProblem = true;
 solveProblem = true;
 displaySolution = true;
 
-loading = 'Shear'; % 'Pull' or 'Shear'
+loading = 'Pull'; % 'Pull' or 'Shear'
 filename = ['linElasCurvedCracks' loading];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','monoscaleDet',filename);
@@ -149,8 +149,8 @@ if displaySolution
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display solutions
-    ampl = 0;
-    % ampl = getsize(S)/max(abs(u))/20;
+    % ampl = 0;
+    ampl = getsize(S)/max(abs(u))/20;
     
     for i=1:2
         plotSolution(S,u,'displ',i,'ampl',ampl);
