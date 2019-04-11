@@ -247,18 +247,18 @@ if displaySolution
 %     end
     
     %% Display statistical outputs at differents instants
-    i = 1;
-%     for i=1:2
-        [t,rep] = gettevol(pb.timeSolver);
-        for k=1:floor(length(rep)/5):length(rep)
-            close all
-            uk_data = ut.data(:,:,rep(k));
-%             vk_data = vt.data(:,:,rep(k));
-%             ak_data = at_tot.data(:,:,rep(k));
-            uk = FunctionalBasisArray(uk_data,ut.basis,ut.sz(1));
-%             vk = FunctionalBasisArray(vk_data,vt.basis,vt.sz(1));
-%             ak = FunctionalBasisArray(ak_data,at.basis,at.sz(1));
-            
+    [t,rep] = gettevol(pb.timeSolver);
+    for k=1:floor(length(rep)/5):length(rep)
+        close all
+        uk_data = ut.data(:,:,rep(k));
+%         vk_data = vt.data(:,:,rep(k));
+%         ak_data = at_tot.data(:,:,rep(k));
+        uk = FunctionalBasisArray(uk_data,ut.basis,ut.sz(1));
+%         vk = FunctionalBasisArray(vk_data,vt.basis,vt.sz(1));
+%         ak = FunctionalBasisArray(ak_data,at.basis,at.sz(1));
+        
+        i = 1;
+        % for i=1:2
             plotMean(pb.S,uk,'displ',i);
             mysaveas(pathname,['mean_solution_' num2str(i) '_t' num2str(k-1)],formats,renderer);
             
@@ -302,8 +302,8 @@ if displaySolution
 %                 plotSensitivityIndices(pb.S,ak,j,'displ',i);
 %                 mysaveas(pathname,['sensitivity_indices_acceleration_' num2str(i) '_var_' num2str(j) '_t' num2str(k-1)],formats,renderer);
             end
-        end
-%     end
+        % end
+    end
 end
 
 myparallel('stop');

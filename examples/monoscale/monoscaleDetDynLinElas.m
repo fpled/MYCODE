@@ -139,6 +139,7 @@ if displaySolution
     mysaveas(pathname,'mesh',formats,renderer);
     
     %% Display evolution of solution
+    % ampl = getsize(pb.S)/max(max(abs(getvalue(ut))))/5;
     i = 1;
     % for i=1:2
         evolSolution(pb.S,ut,'displ',i,'filename',['solution_' num2str(i)],'pathname',pathname);
@@ -155,15 +156,15 @@ if displaySolution
     % evolSolution(pb.S,ut,'sigma','mises','filename','sigma_von_mises','pathname',pathname);
     
     %% Display solution at differents instants
-    i = 1;
-    % for i=1:2
-        [t,rep] = gettevol(pb.N);
-        for k=1:floor(length(rep)/5):length(rep)
-            close all
-            uk = getmatrixatstep(ut,rep(k));
-            vk = getmatrixatstep(vt,rep(k));
-            ak = getmatrixatstep(at,rep(k));
-            
+    [t,rep] = gettevol(pb.N);
+    for k=1:floor(length(rep)/5):length(rep)
+        close all
+        uk = getmatrixatstep(ut,rep(k));
+        vk = getmatrixatstep(vt,rep(k));
+        ak = getmatrixatstep(at,rep(k));
+        
+        i = 1;
+        % for i=1:2
             plotSolution(pb.S,uk,'displ',i);
             mysaveas(pathname,['solution_' num2str(i) '_t' num2str(k-1)],formats,renderer);
             
@@ -172,6 +173,6 @@ if displaySolution
             
             plotSolution(pb.S,ak,'displ',i);
             mysaveas(pathname,['acceleration_' num2str(i) '_t' num2str(k-1)],formats,renderer);
-        end
-    % end
+        % end
+    end
 end

@@ -402,21 +402,21 @@ if displaySolution
     % end
     
     %% Display solutions at different instants
-    i = 1;
-    % for i=1:2
-        [t,rep] = gettevol(N);
-        for k=1:floor(length(rep)/5):length(rep)
-            close all
-            Uk = getmatrixatstep(Ut,rep(k));
-            wk = cellfun(@(x) getmatrixatstep(x,rep(k)),wt,'UniformOutput',false);
-            lambdak = cellfun(@(x) getmatrixatstep(x,rep(k)),lambdat,'UniformOutput',false);
-            vUk = getmatrixatstep(vUt,rep(k));
-            vwk = cellfun(@(x) getmatrixatstep(x,rep(k)),vwt,'UniformOutput',false);
-            vlambdak = cellfun(@(x) getmatrixatstep(x,rep(k)),vlambdat,'UniformOutput',false);
-            aUk = getmatrixatstep(aUt,rep(k));
-            awk = cellfun(@(x) getmatrixatstep(x,rep(k)),awt,'UniformOutput',false);
-            alambdak = cellfun(@(x) getmatrixatstep(x,rep(k)),alambdat,'UniformOutput',false);
-            
+    [t,rep] = gettevol(N);
+    for k=1:floor(length(rep)/5):length(rep)
+        close all
+        Uk = getmatrixatstep(Ut,rep(k));
+        wk = cellfun(@(x) getmatrixatstep(x,rep(k)),wt,'UniformOutput',false);
+        lambdak = cellfun(@(x) getmatrixatstep(x,rep(k)),lambdat,'UniformOutput',false);
+        vUk = getmatrixatstep(vUt,rep(k));
+        vwk = cellfun(@(x) getmatrixatstep(x,rep(k)),vwt,'UniformOutput',false);
+        vlambdak = cellfun(@(x) getmatrixatstep(x,rep(k)),vlambdat,'UniformOutput',false);
+        aUk = getmatrixatstep(aUt,rep(k));
+        awk = cellfun(@(x) getmatrixatstep(x,rep(k)),awt,'UniformOutput',false);
+        alambdak = cellfun(@(x) getmatrixatstep(x,rep(k)),alambdat,'UniformOutput',false);
+        
+        i = 1;
+        % for i=1:2
             % plotAllSolutions(glob,patches,interfaces,Uk,wk,lambdak,'displ',i);
             % mysaveas(pathname,['all_solutions_' num2str(i) '_t' num2str(k-1)],formats,renderer);
             % plotAllSolutions(glob,patches,interfaces,vUk,vwk,vlambdak,'displ',i);
@@ -458,8 +458,8 @@ if displaySolution
             mysaveas(pathname,['global_local_solution_velocity_' num2str(i) '_t' num2str(k-1)],formats,renderer);
             plotGlobalLocalSolution(glob,patches,interfaces,aUk,awk,'displ',i);
             mysaveas(pathname,['global_local_solution_acceleration_' num2str(i) '_t' num2str(k-1)],formats,renderer);
-        end
-    % end
+        % end
+    end
     
 end
 
