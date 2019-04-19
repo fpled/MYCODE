@@ -243,8 +243,6 @@ if displaySolution
     plotSolution(S,u,'sigma','mises','ampl',ampl);
     mysaveas(pathname,'sig_von_mises',formats,renderer);
     
-    % u = unfreevector(S,u);
-    %
     % figure('Name','Solution eps_xx')
     % clf
     % plot(e,S+ampl*u,'compo','EPXX')

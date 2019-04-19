@@ -26,8 +26,8 @@ if setProblem
     %% Domains and meshes
     % Beam dimensions
     L = 1.0;
-    b = 0.06;
-    h = 0.01;
+    b = 0.1;
+    h = 0.1;
     
     % Points
     P1 = POINT([0.0,0.0]);
@@ -53,11 +53,11 @@ if setProblem
     IX = IY+IZ;
     
     % Young modulus
-    E = 12e9;
+    E = 1;
     % Poisson ratio
     NU = 0.3;
     % Density
-    RHO = 700;
+    RHO = 1;
     
     % Material
     mat = ELAS_BEAM('E',E,'NU',NU,'S',Sec,'IZ',IZ,'IY',IY,'IX',IX,'RHO',RHO);
@@ -78,14 +78,14 @@ if setProblem
     
     %% Time scheme
     t0 = 0;
-    t1 = 0.4;
-    nt = 100;
+    t1 = 1;
+    nt = 5;
     T = TIMEMODEL(t0,t1,nt);
     
     pb.N = NEWMARKSOLVER(T,'alpha',0,'gamma',1/2,'beta',1/4,'display',false);
     
-    fmax = 1e3;
-    tf = 0.2;
+    fmax = 1e2;
+    tf = 1;
     % omega = pi/(t1-t0);
     % pb.loadFunction = @(N) fmax * sin(N,omega); % from t0 to t1
     pb.loadFunction = @(N) fmax * dirac(N,t0,tf,'sin'); % from t0 to tf

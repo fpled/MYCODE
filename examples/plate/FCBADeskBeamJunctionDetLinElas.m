@@ -583,8 +583,6 @@ if displaySolution
     % plotSolution(S,u,'sigma',2,'ampl',ampl,options{:});
     % mysaveas(pathname,'mom_z',formats,renderer);
     
-    u = unfreevector(S,u);
-    
     figure('Name','Solution eps_x')
     clf
     plot(e,S+ampl*u,'compo','EPSX')

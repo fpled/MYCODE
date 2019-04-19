@@ -186,8 +186,8 @@ if solveProblem
     
     x = getcoord(S.node);
     
-    e = calc_epsilon(S,u,'node');
-    s = calc_sigma(S,u,'node');
+    e = calc_epsilon(S,u,'smooth');
+    s = calc_sigma(S,u,'smooth');
     
     Exx = e(1);
     Eyy = e(2);
@@ -430,8 +430,6 @@ if displaySolution
 %     
 %     plotSolution(S,u,'sigma',6,'ampl',ampl,options{:});
 %     mysaveas(pathname,'Mxy',formats,renderer);
-    
-    u = unfreevector(S,u);
     
     figure('Name','Solution Exx')
     clf
