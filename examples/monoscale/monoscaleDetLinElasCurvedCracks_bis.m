@@ -18,7 +18,7 @@ solveProblem = true;
 displaySolution = true;
 
 loading = 'Shear'; % 'Pull' or 'Shear'
-filename = ['linElasCurvedCracks' loading];
+filename = ['linElasCurvedCracks' loading '_bis'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','monoscaleDet',filename);
 if ~exist(pathname,'dir')
@@ -173,11 +173,12 @@ if solveProblem
     dt = cell(1,length(T));
     ut = cell(1,length(T));
     
-    sz_phase = getnbddl(S_phase);
-    sz = getnbddl(S);
-    H = zeros(sz_phase,1);
-    d = zeros(sz_phase,1);
-    u = zeros(sz,1);
+    sz_H = getnbelem(S);
+    sz_d = getnbddl(S_phase);
+    sz_u = getnbddl(S);
+    H = FEELEMFIELD(zeros(sz_H,1),S);
+    d = zeros(sz_d,1);
+    u = zeros(sz_u,1);
     
     fprintf('\n+------------+------------+------------+------------+\n');
     fprintf('|    Iter    |  norm(H)   |  norm(d)   |  norm(u)   |\n');
@@ -192,22 +193,27 @@ if solveProblem
         end
         S = actualisematerials(S,mats);
         
-        h_old = double(H);
-        H = FENODEFIELD(calc_energyint(S,u,'node'));
-        h = double(H);
-        rep = find(h <= h_old);
-        h(rep) = h_old(rep);
-        H = setvalue(H,h);
+        h_old = getvalue(H);
+        H = calc_energyint(S,u);
+        h = getvalue(H);
+        for p=1:getnbgroupelem(S)
+            he = double(h{p});
+            he_old = double(h_old{p});
+            rep = find(he <= he_old);
+            he(rep) = he_old(rep);
+            h{p} = he;
+        end
+        H = FEELEMFIELD(h,'storage',getstorage(H),'type',gettype(H),'ddl',getddl(H));
         
         % Phase field
         mats_phase = MATERIALS(S_phase);
         for m=1:length(mats_phase)
-            mats_phase{m} = setparam(mats_phase{m},'r',FENODEFIELD(gc/l+2*H));
+            mats_phase{m} = setparam(mats_phase{m},'r',gc/l+2*H);
         end
         S_phase = actualisematerials(S_phase,mats_phase);
         
         [A_phase,b_phase] = calc_rigi(S_phase);
-        b_phase = -b_phase + bodyload(S_phase,[],'QN',FENODEFIELD(2*H));
+        b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
         
         d = A_phase\b_phase;
         d = unfreevector(S_phase,d);
@@ -240,19 +246,19 @@ if solveProblem
         u = unfreevector(S,u);
         
         % Update fields
-        Ht{i} = double(H);
+        Ht{i} = H;
         dt{i} = d;
         ut{i} = u;
         
-        fprintf('| %10d | %9.4e | %9.4e | %9.4e |\n',i,norm(Ht{i}),norm(dt{i}),norm(ut{i}));
+        fprintf('| %10d | %9.4e | %9.4e | %9.4e |\n',i,norm(squeeze(double(Ht{i}))),norm(dt{i}),norm(ut{i}));
         
     end
     
     fprintf('+------------+------------+------------+------------+\n');
     
-    Ht = TIMEMATRIX(Ht,T,[sz_phase,1]);
-    dt = TIMEMATRIX(dt,T,[sz_phase,1]);
-    ut = TIMEMATRIX(ut,T,[sz,1]);
+    Ht = TIMEMATRIX(cellfun(@(H) squeeze(double(H)),Ht,'UniformOutput',false),T,[sz_H,1]);
+    dt = TIMEMATRIX(dt,T,[sz_d,1]);
+    ut = TIMEMATRIX(ut,T,[sz_u,1]);
     
     time = toc(tTotal);
     
@@ -307,7 +313,11 @@ if displaySolution
     
     options = {'plotiter',true,'plottime',false};
     
-%     evolSolution(S_phase,Ht,'filename','internal_energy','pathname',pathname,options{:});
+%     figure('Name','Solution H')
+%     clf
+%     T = setevolparam(T,'colorbar',true,'FontSize',fontsize,options{:});
+%     frame = evol(T,Ht,S_phase,'rescale',true);
+%     saveMovie(frame,'filename','internal_energy','pathname',pathname);
     
     evolSolution(S_phase,dt,'filename',['damage_' num2str(i)],'pathname',pathname,options{:});
     for i=1:2
@@ -330,7 +340,11 @@ if displaySolution
         dj = getmatrixatstep(dt,rep(j));
         uj = getmatrixatstep(ut,rep(j));
         
-%         plotSolution(S_phase,Hj);
+%         figure('Name','Solution H')
+%         clf
+%         plot(S_phase,Hj);
+%         colorbar
+%         set(gca,'FontSize',fontsize)
 %         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
         
         plotSolution(S_phase,dj);

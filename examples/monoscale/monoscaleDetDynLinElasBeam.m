@@ -26,8 +26,8 @@ if setProblem
     %% Domains and meshes
     % Beam dimensions
     L = 1.0;
-    b = 0.1;
-    h = 0.1;
+    b = 0.06;
+    h = 0.025;
     
     % Points
     P1 = POINT([0.0,0.0]);
@@ -36,7 +36,7 @@ if setProblem
     Line = LIGNE(P1,P2);
     
     elemtype = 'BEAM';
-    nbelem = 100;
+    nbelem = 10;
     pb.S = build_model(Line,'nbelem',nbelem,'elemtype',elemtype);
 %     cl = 0.1;
 %     pb.S = build_model(Line,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,'gmsh_domain'));
@@ -53,11 +53,11 @@ if setProblem
     IX = IY+IZ;
     
     % Young modulus
-    E = 1;
+    E = 12e9;
     % Poisson ratio
     NU = 0.3;
     % Density
-    RHO = 1;
+    RHO = 700;
     
     % Material
     mat = ELAS_BEAM('E',E,'NU',NU,'S',Sec,'IZ',IZ,'IY',IY,'IX',IX,'RHO',RHO);
@@ -79,13 +79,13 @@ if setProblem
     %% Time scheme
     t0 = 0;
     t1 = 1;
-    nt = 5;
+    nt = 10;
     T = TIMEMODEL(t0,t1,nt);
     
     pb.N = NEWMARKSOLVER(T,'alpha',0,'gamma',1/2,'beta',1/4,'display',false);
     
-    fmax = 1e2;
-    tf = 1;
+    fmax = 10;
+    tf = 0.3;
     % omega = pi/(t1-t0);
     % pb.loadFunction = @(N) fmax * sin(N,omega); % from t0 to t1
     pb.loadFunction = @(N) fmax * dirac(N,t0,tf,'sin'); % from t0 to tf
@@ -110,8 +110,8 @@ if solveProblem
     [ut,result,vt,at] = ddsolve(pb.N,pb.b,pb.M,pb.A,[],pb.u0,pb.v0);
     time = toc(t);
     
-    et = calc_epsilon(pb.S,ut,'smooth');
-    st = calc_sigma(pb.S,ut,'smooth');
+    et = calc_epsilon(pb.S,ut,'node');
+    st = calc_sigma(pb.S,ut,'node');
     
     save(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','time');
 else
