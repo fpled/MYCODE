@@ -42,7 +42,7 @@ if setProblem
     option = 'DEFO'; % plane stress
     clD = 2e-5;
     % clP = 6e-7;
-    clP = 5e-6;
+    clP = 2e-6;
     S_phase = gmshdomainwithcurvedcrack(D,P,clD,clP,fullfile(pathname,'gmsh_domain_curved_crack'));
     
 %     load(fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -319,7 +319,7 @@ if displaySolution
 %     frame = evol(T,Ht,S_phase,'rescale',true);
 %     saveMovie(frame,'filename','internal_energy','pathname',pathname);
     
-    evolSolution(S_phase,dt,'filename',['damage_' num2str(i)],'pathname',pathname,options{:});
+    evolSolution(S_phase,dt,'filename','damage','pathname',pathname,options{:});
     for i=1:2
         evolSolution(S,ut,'displ',i,'ampl',ampl,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
     end
