@@ -30,35 +30,46 @@ load(fullfile(pathnameIdentification,filenameAna));
 
 E_data = mean_ET_data*1e-3; % GPa
 
-mE_data = mean(E_data,1);
-vE_data = var(E_data,0,1);
-% vE_data = size(E_data,1)/(size(E_data,1)-1)*moment(E_data,2,1);
-sE_data = sqrt(vE_data);
-% sE_data = std(E_data,0,1);
+mE_data = mean(E_data);
+% mE_data = sum(E_data)/length(E_data);
+vE_data = var(E_data);
+% vE_data = length(E_data)/(length(E_data)-1)*moment(E_data,2);
+sE_data = std(E_data);
+% sE_data = sqrt(vE_data);
 dE_data = sE_data/mE_data;
 
 %% Maximum likelihood estimation
-phat = gamfit(E_data);
-% phat = mle(E_data,'distribution','gam');
-% nloglf = @(phat,data,cens,freq) length(data)*gammaln(a)...
-%     +length(data)*a*log(b)...
-%     +(1-a)*sum(log(data))...
-%     +1/b*sum(data);
-% phat = mle(E_data,'nloglf',nloglf,'start',[2 0],'lowerbound',[2 0]);
+param = gamfit(E_data);
+% param = mle(E_data,'distribution','gam');
+% param = mle(E_data,'pdf',@gampdf,'start',[3 1],'lowerbound',[2 0]);
+% param = mle(E_data,'nloglf',@gamlike,'start',[3 1],'lowerbound',[2 0]);
 
-a = phat(1);
-b = phat(2);
+custpdf = @(data,a,b) gampdf(data,a,b);
+% custpdf = @(data,a,b) exp(-(a*log(b)+gammaln(a))) * data.^(a-1) .* exp(-data/b);
+% param = mle(E_data,'pdf',custpdf,'start',[3 1],'lowerbound',[2 0]);
 
+nloglf = @(param,data,cens,freq) gamlike(param,data);
+% nloglf = @(param,data,cens,freq) length(data)*param(1)*log(param(2))...
+%     +length(data)*gammaln(param(1))...
+%     +(1-param(1))*sum(log(data))...
+%     +1/param(2)*sum(data);
+% param = mle(E_data,'nloglf',nloglf,'start',[3 1],'lowerbound',[2 0]);
+
+a = param(1);
+b = param(2);
+
+% [mE,vE] = gamstat(a,b);
 mE = a*b;
 vE = a*b^2;
-sE = sqrt(vE);
+sE = sqrt(vE); % sE = sqrt(a)*b;
 dE = sE/mE; % dE = 1/sqrt(a);
 
 %% Pdf and cdf
 pdf_E = @(x) gampdf(x,a,b);
+% pdf_E = @(x) custpdf(x,a,b);
 % pdf_E = @(x) pdf('gam',x,a,b);
-% pdf_E = @(x) 1/(b^a*gamma(a))*(x.^(a-1)).*exp(-x./b);
 cdf_E = @(x) gamcdf(x,a,b);
+% cdf_E = @(x) cdf('gam',x,a,b);
 
 %% Sample generation
 N = 1e3; % number of samples
@@ -66,11 +77,12 @@ E_sample = gamrnd(a,b,N,1);
 % u = randn(N,1);
 % E_sample = gaminv(normcdf(u),a,b);
 
-mE_sample = mean(E_sample,1);
-vE_sample = var(E_sample,0,1);
-% vE_sample = size(E_sample,1)/(size(E_sample,1)-1)*moment(E_sample,2,1);
-sE_sample = sqrt(vE_sample);
-% sE_sample = std(E_sample,0,1);
+mE_sample = mean(E_sample);
+% mE_sample = sum(E_sample)/length(E_sample);
+vE_sample = var(E_sample);
+% vE_sample = length(E_sample)/(length(E_sample)-1)*moment(E_sample,2);
+sE_sample = std(E_sample);
+% sE_sample = sqrt(vE_sample);
 dE_sample = sE_sample/mE_sample;
 
 %% Outputs
@@ -165,9 +177,9 @@ if displaySolution
     %% Plot samples
     figure('Name','Samples')
     clf
-    scatter(1:N,E_sample,'b.')
+    scatter(1:length(E_sample),E_sample,'b.')
     hold on
-    plot([1 N],[mE mE],'-r','LineWidth',linewidth)
+    plot([1 length(E_sample)],[mE mE],'-r','LineWidth',linewidth)
     hold off
     grid on
     box on

@@ -66,8 +66,8 @@ sC = sqrt(norm(vC));
 dC = sC/norm(mC);
 nuC = log(96) + psi(a1)+log(b1) + 5*(psi(a2)+log(b2));
 
-k1ln = -gammaln(a1)-a1*log(b1);
-k2ln = -gammaln(a2)-a2*log(b2);
+k1ln = -a1*log(b1)-gammaln(a1);
+k2ln = -a2*log(b2)-gammaln(a2);
 % k1ln = (1-la)*log(la1)-gammaln(1-la);
 % k2ln = (1-5*la)*log(la2)-gammaln(1-5*la);
 
