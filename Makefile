@@ -78,7 +78,7 @@ Cluster_Name = cluster
 
 #Pb_Name = phasefieldDetLinElasSingleEdgeCrack
 #Pb_Name = phasefieldDetLinElasSingleEdgeCrack_bis
-#Pb_Name = phasefieldDetLinElasSingleEdgeCrackMeshAdaptation
+Pb_Name = phasefieldDetLinElasSingleEdgeCrackMeshAdaptation
 
 # Default ---------------------------
 default:

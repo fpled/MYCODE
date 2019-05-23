@@ -49,10 +49,10 @@ if setProblem
     if Dim==2
         clD = 2e-5;
         % clC = 6e-7;
-        clC = 1e-5;
+        clC = 1e-6;
     elseif Dim==3
-        clD = 1e-4;
-        clC = 5e-5;
+        clD = 1e-5;
+        clC = 5e-6;
     end
     S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
     
