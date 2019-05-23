@@ -259,9 +259,8 @@ if solveProblem
         mats_phase = MATERIALS(S_phase);
         for m=1:length(mats_phase)
             mats_phase{m} = setparam(mats_phase{m},'r',FENODEFIELD(gc/l+2*H));
-            S_phase = setmaterial(S_phase,mats_phase{m},m);
         end
-        % S_phase = actualisematerials(S_phase,mats_phase);
+        S_phase = actualisematerials(S_phase,mats_phase);
         
         [A_phase,b_phase] = calc_rigi(S_phase);
         b_phase = -b_phase + bodyload(S_phase,[],'QN',FENODEFIELD(2*H));
@@ -275,7 +274,10 @@ if solveProblem
         S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
         S = S_phase;
         
-        S_phase = actualisematerials(S_phase,mats_phase);
+        for m=1:length(mats_phase)
+            S_phase = setmaterial(S_phase,mats_phase{m},m);
+        end
+        % S_phase = actualisematerials(S_phase,mats_phase);
         S_phase = final(S_phase,'duplicate');
         S_phase = addcl(S_phase,CU,'T',1);
         S_phase = addcl(S_phase,CL,'T',1);
