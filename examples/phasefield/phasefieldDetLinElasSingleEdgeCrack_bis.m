@@ -45,18 +45,16 @@ if setProblem
         C = QUADRANGLE([0.0,0.0,L/2],[a,0.0,L/2],[a,L,L/2],[0.0,L,L/2]);
     end
     
-    option = 'DEFO'; % plane strain
     if Dim==2
         clD = 2e-5;
         % clC = 6e-7;
-        clC = 1e-6;
+        clC = 2e-6;
     elseif Dim==3
-        clD = 2e-5;
+        clD = 5e-5;
         clC = 5e-6;
     end
     S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
-    
-    S = setoption(S_phase,option);
+    S = S_phase;
     
     %% Phase field problem
     %% Material
@@ -100,6 +98,8 @@ if setProblem
     
     %% Linear elastic displacement field problem
     %% Materials
+    % Option
+    option = 'DEFO'; % plane strain
     % Lame coefficients
     lambda = 121.15e9;
     mu = 80.77e9;
@@ -122,6 +122,7 @@ if setProblem
     % Material
     mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3);
     mat = setnumber(mat,1);
+    S = setoption(S,option);
     S = setmaterial(S,mat);
     
     %% Dirichlet boundary conditions
@@ -201,7 +202,6 @@ if solveProblem
     sz_d = getnbddl(S_phase);
     sz_u = getnbddl(S);
     H = FEELEMFIELD(zeros(sz_H,1),S);
-    d = zeros(sz_d,1);
     u = zeros(sz_u,1);
     
     fprintf('\n+----------+------------+------------+------------+\n');
@@ -243,12 +243,10 @@ if solveProblem
         d = unfreevector(S_phase,d);
         
         % Displacement field
-        mats = MATERIALS(S);
         for m=1:length(mats)
             mats{m} = setparam(mats{m},'E',FENODEFIELD(E.*(g(d)+k)));
         end
         S = actualisematerials(S,mats);
-        
         S = removebc(S);
         ud = t(i);
         switch lower(loading)

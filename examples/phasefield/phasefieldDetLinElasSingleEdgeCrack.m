@@ -19,7 +19,7 @@ setProblem = true;
 solveProblem = true;
 displaySolution = true;
 
-Dim = 3; % space dimension Dim = 2, 3
+Dim = 2; % space dimension Dim = 2, 3
 loading = 'Shear'; % 'Pull' or 'Shear'
 filename = ['phasefieldDetLinElasSingleEdgeCrack' loading '_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -45,18 +45,16 @@ if setProblem
         C = QUADRANGLE([0.0,0.0,L/2],[a,0.0,L/2],[a,L,L/2],[0.0,L,L/2]);
     end
     
-    option = 'DEFO'; % plane strain
     if Dim==2
         clD = 2e-5;
         % clC = 6e-7;
-        clC = 1e-6;
+        clC = 2e-6;
     elseif Dim==3
-        clD = 2e-5;
+        clD = 5e-5;
         clC = 5e-6;
     end
     S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
-    
-    S = setoption(S_phase,option);
+    S = S_phase;
     
     %% Phase field problem
     %% Material
@@ -100,6 +98,8 @@ if setProblem
     
     %% Linear elastic displacement field problem
     %% Materials
+    % Option
+    option = 'DEFO'; % plane strain
     % Lame coefficients
     lambda = 121.15e9;
     mu = 80.77e9;
@@ -122,6 +122,7 @@ if setProblem
     % Material
     mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3);
     mat = setnumber(mat,1);
+    S = setoption(S,option);
     S = setmaterial(S,mat);
     
     %% Dirichlet boundary conditions
@@ -176,8 +177,6 @@ if setProblem
         dt = 2e-8;
         nt = 2500;
     end
-    dt = 2e-7;
-    nt = 300;
     t0 = dt;
     t1 = nt*dt;
     T = TIMEMODEL(t0,t1,nt-1);
@@ -202,7 +201,6 @@ if solveProblem
     sz_phase = getnbddl(S_phase);
     sz = getnbddl(S);
     H = zeros(sz_phase,1);
-    d = zeros(sz_phase,1);
     u = zeros(sz,1);
     
     fprintf('\n+----------+------------+------------+------------+\n');
@@ -239,12 +237,10 @@ if solveProblem
         d = unfreevector(S_phase,d);
         
         % Displacement field
-        mats = MATERIALS(S);
         for m=1:length(mats)
             mats{m} = setparam(mats{m},'E',FENODEFIELD(E.*(g(d)+k)));
         end
         S = actualisematerials(S,mats);
-        
         S = removebc(S);
         ud = t(i);
         switch lower(loading)

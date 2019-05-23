@@ -21,7 +21,7 @@ displaySolution = true;
 
 Dim = 2; % space dimension Dim = 2, 3
 loading = 'Shear'; % 'Pull' or 'Shear'
-filename = ['phasefieldDetlinElasSingleEdgeCrack' loading '_' num2str(Dim) 'D_MeshAdaptation'];
+filename = ['phasefieldDetLinElasSingleEdgeCrack' loading '_' num2str(Dim) 'D_MeshAdaptation'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
 if ~exist(pathname,'dir')
@@ -50,13 +50,12 @@ if setProblem
         C = QUADRANGLE([0.0,0.0,L/2],[a,0.0,L/2],[a,L,L/2],[0.0,L,L/2]);
     end
     
-    option = 'DEFO'; % plane strain
     if Dim==2
         clD = 2e-5;
         % clC = 6e-7;
-        clC = 1e-6;
+        clC = 2e-6;
     elseif Dim==3
-        clD = 2e-5;
+        clD = 5e-5;
         clC = 5e-6;
     end
     % S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
@@ -70,7 +69,8 @@ if setProblem
         CL = QUADRANGLE([0.0,0.0,L/2-clC/2],[a,0.0,L/2],[a,L,L/2],[0.0,L,L/2-clC/2]);
     end
     
-    S = setoption(S_phase,option);
+    % sizemap = @(d) (clC-clD)*d+clD;
+    sizemap = @(d) clD*clC./((clD-clC)*d+clC);
     
     %% Phase field problem
     %% Material
@@ -86,9 +86,20 @@ if setProblem
     % Material
     mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H);
     mat_phase = setnumber(mat_phase,1);
-    S_phase = setmaterial(S_phase,mat_phase);
+    % S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
+    S_phase = final(S_phase,'duplicate');
+    % S_phase = addcl(S_phase,C,'T',1);
+    S_phase = addcl(S_phase,CU,'T',1);
+    S_phase = addcl(S_phase,CL,'T',1);
+    
+    d = calc_init_dirichlet(S_phase);
+    cl = sizemap(d);
+    S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    S = S_phase;
+    
+    S_phase = setmaterial(S_phase,mat_phase);
     S_phase = final(S_phase,'duplicate');
     % S_phase = addcl(S_phase,C,'T',1);
     S_phase = addcl(S_phase,CU,'T',1);
@@ -116,6 +127,8 @@ if setProblem
     
     %% Linear elastic displacement field problem
     %% Materials
+    % Option
+    option = 'DEFO'; % plane strain
     % Lame coefficients
     lambda = 121.15e9;
     mu = 80.77e9;
@@ -138,6 +151,7 @@ if setProblem
     % Material
     mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3);
     mat = setnumber(mat,1);
+    S = setoption(S,option);
     S = setmaterial(S,mat);
     
     %% Dirichlet boundary conditions
@@ -197,9 +211,9 @@ if setProblem
     T = TIMEMODEL(t0,t1,nt-1);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','CU','CL','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','CU','CL','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','CU','CL','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','CU','CL','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g');
 end
 
 %% Solution
@@ -218,7 +232,6 @@ if solveProblem
     sz_phase = getnbddl(S_phase);
     sz = getnbddl(S);
     H = zeros(sz_phase,1);
-    d = zeros(sz_phase,1);
     u = zeros(sz,1);
     
     fprintf('\n+----------+----------+----------+------------+------------+------------+\n');
@@ -256,34 +269,27 @@ if solveProblem
         d = unfreevector(S_phase,d);
         
         % Mesh adaptation
-        % cl = (clC-clD)*d+clD;
-        cl = clD*clC./((clD-clC)*d+clC);
-        S_phase_adapt = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+        S_phase_old = S_phase;
+        cl = sizemap(d);
+        S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+        S = S_phase;
         
-        mats = MATERIALS(S);
-        S = setoption(S_phase_adapt,option);
+        S_phase = actualisematerials(S_phase,mats_phase);
+        S_phase = final(S_phase,'duplicate');
+        S_phase = addcl(S_phase,CU,'T',1);
+        S_phase = addcl(S_phase,CL,'T',1);
         
-        for m=1:length(mats_phase)
-            S_phase_adapt = setmaterial(S_phase_adapt,mats_phase{m},m);
-        end
-        S_phase_adapt = final(S_phase_adapt,'duplicate');
-        S_phase_adapt = addcl(S_phase_adapt,CU,'T',1);
-        S_phase_adapt = addcl(S_phase_adapt,CL,'T',1);
-        
-        P_phase = calcProjection(S_phase_adapt,S_phase,[],'free',false);
+        P_phase = calcProjection(S_phase,S_phase_old,[],'free',false);
         d = P_phase'*d;
         h = P_phase'*h;
         H = setvalue(H,h);
         
-        S_phase = S_phase_adapt;
-        
         % Displacement field
         for m=1:length(mats)
             mats{m} = setparam(mats{m},'E',FENODEFIELD(E.*(g(d)+k)));
-            S = setmaterial(S,mats{m},m);
         end
+        S = actualisematerials(S,mats);
         S = final(S,'duplicate');
-        
         S = removebc(S);
         ud = t(i);
         switch lower(loading)
