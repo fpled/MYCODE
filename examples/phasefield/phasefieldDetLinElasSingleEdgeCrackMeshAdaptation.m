@@ -86,7 +86,7 @@ if setProblem
     % Material
     mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H);
     mat_phase = setnumber(mat_phase,1);
-    % S_phase = setmaterial(S_phase,mat_phase);
+    S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
     S_phase = final(S_phase,'duplicate');
