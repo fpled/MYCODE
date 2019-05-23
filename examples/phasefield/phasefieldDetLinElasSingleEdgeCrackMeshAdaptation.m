@@ -254,7 +254,6 @@ if solveProblem
         
         d = A_phase\b_phase;
         d = unfreevector(S_phase,d);
-        plotSolution(S_phase,d);
         
         % Mesh adaptation
         % cl = (clC-clD)*d+clD;
