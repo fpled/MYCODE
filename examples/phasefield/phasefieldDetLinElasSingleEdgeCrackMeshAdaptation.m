@@ -259,8 +259,9 @@ if solveProblem
         mats_phase = MATERIALS(S_phase);
         for m=1:length(mats_phase)
             mats_phase{m} = setparam(mats_phase{m},'r',FENODEFIELD(gc/l+2*H));
+            S_phase = setmaterial(S_phase,mats_phase{m},m);
         end
-        S_phase = actualisematerials(S_phase,mats_phase);
+        % S_phase = actualisematerials(S_phase,mats_phase);
         
         [A_phase,b_phase] = calc_rigi(S_phase);
         b_phase = -b_phase + bodyload(S_phase,[],'QN',FENODEFIELD(2*H));
@@ -287,8 +288,9 @@ if solveProblem
         % Displacement field
         for m=1:length(mats)
             mats{m} = setparam(mats{m},'E',FENODEFIELD(E.*(g(d)+k)));
+            S = setmaterial(S,mats{m},m);
         end
-        S = actualisematerials(S,mats);
+        % S = actualisematerials(S,mats);
         S = final(S,'duplicate');
         S = removebc(S);
         ud = t(i);
