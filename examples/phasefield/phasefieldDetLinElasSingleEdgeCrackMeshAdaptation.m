@@ -357,6 +357,13 @@ fprintf('elapsed time = %f s\n',time);
 
 %% Display
 if displaySolution
+    
+    [t,rep] = gettevol(T);
+    % DO NOT WORK WITH MESH ADAPTATION
+    % u = getmatrixatstep(ut,rep(end));
+    u = ut{rep(end)};
+    S = St{end};
+    
     %% Display domains, boundary conditions and meshes
     plotDomain({D,C},'legend',false);
     mysaveas(pathname,'domain',formats,renderer);
@@ -379,10 +386,6 @@ if displaySolution
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
-    [t,rep] = gettevol(T);
-    % DO NOT WORK WITH MESH ADAPTATION
-    % u = getmatrixatstep(ut,rep(end));
-    u = ut{rep(end)};
     ampl = getsize(S)/max(abs(u))/20;
     plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
