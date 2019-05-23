@@ -76,6 +76,10 @@ Cluster_Name = cluster
 #Pb_Name = identification_EL_NUL
 #Pb_Name = identification_Kjunction
 
+#Pb_Name = phasefieldDetLinElasSingleEdgeCrack
+#Pb_Name = phasefieldDetLinElasSingleEdgeCrack_bis
+#Pb_Name = phasefieldDetLinElasSingleEdgeCrackMeshAdaptation
+
 # Default ---------------------------
 default:
 	matlab -nodesktop -nosplash -noFigureWindows -r "$(Pb_Name); exit" -logfile results/$(Pb_Name).log
@@ -183,6 +187,11 @@ identification:
 	matlab -nodesktop -nosplash -noFigureWindows -r "identification_ET_GL; exit" -logfile results/plate/identification_ET_GL.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "identification_EL_NUL; exit" -logfile results/plate/identification_EL_NUL.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "identification_Kjunction; exit" -logfile results/plate/identification_Kjunction.log
+
+# Identification ---------------------------
+identification:
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasSingleEdgeCrack; exit" -logfile results/phasefield/phasefieldDetLinElasSingleEdgeCrack.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasSingleEdgeCrackMeshAdaptation; exit" -logfile results/phasefield/phasefieldDetLinElasSingleEdgeCrackMeshAdaptation.log
 
 # Clean ---------------------------
 clean:

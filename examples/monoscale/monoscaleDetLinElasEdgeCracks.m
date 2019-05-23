@@ -35,8 +35,8 @@ if setProblem
     
     option = 'DEFO'; % plane strain
     clD = 0.25;
-    clP = 0.05;
-    S = gmshdomainwithedgecrack(D,P,clD,clP,fullfile(pathname,'gmsh_domain_edge_crack'));
+    clB = 0.05;
+    S = gmshdomainwithedgecrack(D,B,clD,clB,fullfile(pathname,'gmsh_domain_edge_crack'));
     S = setoption(S,option);
     
     %% Materials
@@ -57,13 +57,11 @@ if setProblem
     %% Dirichlet boundary conditions
     LU = LIGNE([0.0,L/2],[w,L/2]);
     LL = LIGNE([0.0,-L/2],[w,-L/2]);
-    LM = LIGNE([a,0.0],[w,0.0]);
     
     S = final(S,'duplicate');
     switch lower(loading)
         case 'pull'
-            S = addcl(S,LM,'UY');
-            S = addcl(S,POINT([w,0.0]),'UX');
+            S = addcl(S,POINT([a,0.0]),'UY');
         case 'shear'
             S = addcl(S,LL);
         otherwise

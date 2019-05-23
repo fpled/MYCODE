@@ -1,5 +1,5 @@
-%% Monoscale deterministic linear elasticity problem with curved crack %%
-%%---------------------------------------------------------------------%%
+%% Phase field fracture model - deterministic linear elasticity problem with single edge crack %%
+%%---------------------------------------------------------------------------------------------%%
 % [Bourdin, Francfort, Marigo, 2000, JMPS]
 % [Amor, Marigo, Maurini, 2009, JMPS]
 % [Miehe, Hofacker, Welschinger, 2010, CMAME]
@@ -19,11 +19,11 @@ setProblem = true;
 solveProblem = true;
 displaySolution = true;
 
-Dim = 3; % space dimension Dim = 2, 3
+Dim = 2; % space dimension Dim = 2, 3
 loading = 'Shear'; % 'Pull' or 'Shear'
-filename = ['linElasCurvedCracks' loading '_' num2str(Dim) 'D_noAdaptMesh'];
+filename = ['phasefieldDetlinElasSingleEdgeCrack' loading '_' num2str(Dim) 'D_MeshAdaptation'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','monoscaleDet',filename);
+    'results','phasefield',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -32,6 +32,11 @@ fontsize = 16;
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
+gmshoptions = '-v 0';
+mmgoptions = '-v 0';
+% gmshoptions = '-v 5';
+% mmgoptions = '-v 1';
+
 %% Problem
 if setProblem
     %% Domains and meshes
@@ -39,32 +44,32 @@ if setProblem
     a = L/2;
     if Dim==2
         D = DOMAIN(2,[0.0,0.0],[L,L]);
-        P = [a,L/2];
+        C = LIGNE([0.0,L/2],[a,L/2]);
     elseif Dim==3
         D = DOMAIN(3,[0.0,0.0,0.0],[L,L,L]);
-        P = [a,0.0,L/2];
+        C = QUADRANGLE([0.0,0.0,L/2],[a,0.0,L/2],[a,L,L/2],[0.0,L,L/2]);
     end
     
     option = 'DEFO'; % plane strain
     if Dim==2
         clD = 2e-5;
-        % clP = 6e-7;
-        clP = 1e-5;
+        % clC = 6e-7;
+        clC = 1e-5;
     elseif Dim==3
         clD = 1e-4;
-        clP = 5e-5;
+        clC = 5e-5;
     end
-    S_phase = gmshdomainwithcurvedcrack(D,P,clD,clP,fullfile(pathname,'gmsh_domain_curved_crack'));
+    % S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
+    S_phase = gmshdomainwithedgesmearedcrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
     
     if Dim==2
-        C = LIGNE([0.0,L/2],P);
-        % C = DOMAIN(2,[0.0,L/2]-[0.0,clP/2],P+[0.0,clP/2]);
+        CU = LIGNE([0.0,L/2+clC/2],[a,L/2]);
+        CL = LIGNE([0.0,L/2-clC/2],[a,L/2]);
     elseif Dim==3
-        C = DOMAIN(3,[0.0,0.0,L/2],[a,L,L/2]);
-        % C = DOMAIN(3,[0.0,0.0,L/2]-[0.0,0.0,clP/2],P+[0.0,0.0,clP/2]);
+        CU = QUADRANGLE([0.0,0.0,L/2+clC/2],[a,0.0,L/2],[a,L,L/2],[0.0,L,L/2+clC/2]);
+        CL = QUADRANGLE([0.0,0.0,L/2-clC/2],[a,0.0,L/2],[a,L,L/2],[0.0,L,L/2-clC/2]);
     end
     
-    S_phase = concatgroupelem(S_phase);
     S = setoption(S_phase,option);
     
     %% Phase field problem
@@ -85,7 +90,9 @@ if setProblem
     
     %% Dirichlet boundary conditions
     S_phase = final(S_phase,'duplicate');
-    S_phase = addcl(S_phase,C,'T',1);
+    % S_phase = addcl(S_phase,C,'T',1);
+    S_phase = addcl(S_phase,CU,'T',1);
+    S_phase = addcl(S_phase,CL,'T',1);
     
     %% Stiffness matrices and sollicitation vectors
     % a_phase = BILINFORM(1,1,gc*l); % uniform values
@@ -167,8 +174,6 @@ if setProblem
                 S = addcl(S,BLeft,{'UY','UZ'});
                 S = addcl(S,BFront,{'UY','UZ'});
                 S = addcl(S,BBack,{'UY','UZ'});
-                S = addcl(S,BFront,{'UY','UZ'});
-                S = addcl(S,BBack,{'UY','UZ'});
             end
         otherwise
             error('Wrong loading case')
@@ -181,24 +186,20 @@ if setProblem
     
     %% Time scheme
     if Dim==2
-        % dt = 2e-8;
-        % nt = 1500;
-        dt = 1e-7;
-        nt = 300;
+        dt = 2e-8;
+        nt = 1500;
     elseif Dim==3
-        % dt = 2e-8;
-        % nt = 2500;
-        dt = 1e-7;
-        nt = 500;
+        dt = 2e-8;
+        nt = 2500;
     end
     t0 = dt;
     t1 = nt*dt;
     T = TIMEMODEL(t0,t1,nt-1);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','CU','CL','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','CU','CL','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g');
 end
 
 %% Solution
@@ -207,11 +208,12 @@ if solveProblem
     tTotal = tic;
     
     t = gett(T);
-    nt = getnt(T);
     
     Ht = cell(1,length(T));
     dt = cell(1,length(T));
     ut = cell(1,length(T));
+    St_phase = cell(1,length(T));
+    St = cell(1,length(T));
     
     sz_phase = getnbddl(S_phase);
     sz = getnbddl(S);
@@ -219,9 +221,10 @@ if solveProblem
     d = zeros(sz_phase,1);
     u = zeros(sz,1);
     
-    fprintf('\n+------------+------------+------------+------------+\n');
-    fprintf('|    Iter    |  norm(H)   |  norm(d)   |  norm(u)   |\n');
-    fprintf('+------------+------------+------------+------------+\n');
+    fprintf('\n+----------+----------+----------+------------+------------+------------+\n');
+    fprintf('|   Iter   | Nb nodes | Nb elems |  norm(H)   |  norm(d)   |  norm(u)   |\n');
+    fprintf('+----------+----------+----------+------------+------------+------------+\n');
+    fprintf('| %8d | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',0,getnbnode(S),getnbelem(S),0,0,0);
     
     for i=1:length(T)
         
@@ -251,13 +254,36 @@ if solveProblem
         
         d = A_phase\b_phase;
         d = unfreevector(S_phase,d);
+        plotSolution(S_phase,d);
+        
+        % Mesh adaptation
+        % cl = (clC-clD)*d+clD;
+        cl = clD*clC./((clD-clC)*d+clC);
+        S_phase_adapt = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+        
+        mats = MATERIALS(S);
+        S = setoption(S_phase_adapt,option);
+        
+        for m=1:length(mats_phase)
+            S_phase_adapt = setmaterial(S_phase_adapt,mats_phase{m},m);
+        end
+        S_phase_adapt = final(S_phase_adapt,'duplicate');
+        S_phase_adapt = addcl(S_phase_adapt,CU,'T',1);
+        S_phase_adapt = addcl(S_phase_adapt,CL,'T',1);
+        
+        P_phase = calcProjection(S_phase_adapt,S_phase,[],'free',false);
+        d = P_phase'*d;
+        h = P_phase'*h;
+        H = setvalue(H,h);
+        
+        S_phase = S_phase_adapt;
         
         % Displacement field
-        mats = MATERIALS(S);
         for m=1:length(mats)
             mats{m} = setparam(mats{m},'E',FENODEFIELD(E.*(g(d)+k)));
+            S = setmaterial(S,mats{m},m);
         end
-        S = actualisematerials(S,mats);
+        S = final(S,'duplicate');
         
         S = removebc(S);
         ud = t(i);
@@ -291,22 +317,25 @@ if solveProblem
         Ht{i} = double(H);
         dt{i} = d;
         ut{i} = u;
+        St_phase{i} = S_phase;
+        St{i} = S;
         
-        fprintf('| %10d | %9.4e | %9.4e | %9.4e |\n',i,norm(Ht{i}),norm(dt{i}),norm(ut{i}));
+        fprintf('| %8d | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',i,getnbnode(S),getnbelem(S),norm(Ht{i}),norm(dt{i}),norm(ut{i}));
         
     end
     
-    fprintf('+------------+------------+------------+------------+\n');
+    fprintf('+----------+----------+----------+------------+------------+------------+\n');
     
-    Ht = TIMEMATRIX(Ht,T,[sz_phase,1]);
-    dt = TIMEMATRIX(dt,T,[sz_phase,1]);
-    ut = TIMEMATRIX(ut,T,[sz,1]);
+    % DO NOT WORK WITH MESH ADAPTATION
+    % Ht = TIMEMATRIX(Ht,T,[sz_phase,1]);
+    % dt = TIMEMATRIX(dt,T,[sz_phase,1]);
+    % ut = TIMEMATRIX(ut,T,[sz,1]);
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'Ht','dt','ut','time');
+    save(fullfile(pathname,'solution.mat'),'Ht','dt','ut','St','St_phase','time');
 else
-    load(fullfile(pathname,'solution.mat'),'Ht','dt','ut','time');
+    load(fullfile(pathname,'solution.mat'),'Ht','dt','ut','St','St_phase','time');
 end
 
 %% Outputs
@@ -342,7 +371,9 @@ if displaySolution
     mysaveas(pathname,'mesh',formats,renderer);
     
     [t,rep] = gettevol(T);
-    u = getmatrixatstep(ut,rep(end));
+    % DO NOT WORK WITH MESH ADAPTATION
+    % u = getmatrixatstep(ut,rep(end));
+    u = ut{rep(end)};
     ampl = getsize(S)/max(abs(u))/20;
     plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
@@ -355,59 +386,83 @@ if displaySolution
     
     %% Display evolution of solutions
     ampl = 0;
+    % DO NOT WORK WITH MESH ADAPTATION
     % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
+    % umax = cellfun(@(u) max(abs(u)),ut,'UniformOutput',false);
+    % ampl = getsize(S)/max([umax{:}])/20;
     
     options = {'plotiter',true,'plottime',false};
     
-%     evolSolution(S_phase,Ht,'filename','internal_energy','pathname',pathname,options{:});
+    evolModel(T,St,'filename','mesh','pathname',pathname,options{:});
     
-    evolSolution(S_phase,dt,'filename','damage','pathname',pathname,options{:});
+%     evolSolutionCell(T,St_phase,Ht,'filename','internal_energy','pathname',pathname,options{:});
+    
+    evolSolutionCell(T,St_phase,dt,'filename','damage','pathname',pathname,options{:});
     for i=1:Dim
-        evolSolution(S,ut,'displ',i,'ampl',ampl,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
+        evolSolutionCell(T,St,ut,'displ',i,'ampl',ampl,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
     end
     
 %     for i=1:(Dim*(Dim+1)/2)
-%         evolSolution(S,ut,'epsilon',i,'ampl',ampl,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
-%         evolSolution(S,ut,'sigma',i,'ampl',ampl,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
+%         evolSolutionCell(T,St,ut,'epsilon',i,'ampl',ampl,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
+%         evolSolutionCell(T,St,ut,'sigma',i,'ampl',ampl,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
 %     end
 %     
-%     evolSolution(S,ut,'epsilon','mises','ampl',ampl,'filename','epsilon_von_mises','pathname',pathname,options{:});
-%     evolSolution(S,ut,'sigma','mises','ampl',ampl,'filename','sigma_von_mises','pathname',pathname,options{:});
+%     evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'filename','epsilon_von_mises','pathname',pathname,options{:});
+%     evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'filename','sigma_von_mises','pathname',pathname,options{:});
     
     %% Display solutions at differents instants
     rep = [500,650];
     for j=1:length(rep)
         close all
-        Hj = getmatrixatstep(Ht,rep(j));
-        dj = getmatrixatstep(dt,rep(j));
-        uj = getmatrixatstep(ut,rep(j));
+        % DO NOT WORK WITH MESH ADAPTATION
+        % Hj = getmatrixatstep(Ht,rep(j));
+        % dj = getmatrixatstep(dt,rep(j));
+        % uj = getmatrixatstep(ut,rep(j));
+        Hj = Ht{rep(j)};
+        dj = dt{rep(j)};
+        uj = ut{rep(j)};
+        Sj = St{rep(j)};
+        Sj_phase = St_phase{rep(j)};
         
-%         plotSolution(S_phase,Hj);
+%         plotSolution(Sj_phase,Hj);
 %         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
         
-        plotSolution(S_phase,dj);
+        plotSolution(Sj_phase,dj);
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
         
         for i=1:Dim
-            plotSolution(S,uj,'displ',i,'ampl',ampl);
+            plotSolution(Sj,uj,'displ',i,'ampl',ampl);
             mysaveas(pathname,['displacement_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         end
         
 %         for i=1:(Dim*(Dim+1)/2)
-%             plotSolution(S,uj,'epsilon',i,'ampl',ampl);
+%             plotSolution(Sj,uj,'epsilon',i,'ampl',ampl);
 %             mysaveas(pathname,['epsilon_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
 %             
-%             plotSolution(S,uj,'sigma',i,'ampl',ampl);
+%             plotSolution(Sj,uj,'sigma',i,'ampl',ampl);
 %             mysaveas(pathname,['sigma_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
 %         end
 %         
-%         plotSolution(S,uj,'epsilon','mises','ampl',ampl);
+%         plotSolution(Sj,uj,'epsilon','mises','ampl',ampl);
 %         mysaveas(pathname,['epsilon_von_mises_t' num2str(rep(j))],formats,renderer);
 %         
-%         plotSolution(S,uj,'sigma','mises','ampl',ampl);
+%         plotSolution(Sj,uj,'sigma','mises','ampl',ampl);
 %         mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
     end
     
 end
+
+%% Save solutions
+[t,rep] = gettevol(T);
+for i=1:length(T)
+    Hi = getmatrixatstep(Ht,rep(i));
+    di = getmatrixatstep(dt,rep(i));
+    ui = getmatrixatstep(ut,rep(i));
+    
+    write_vtk_mesh(S,{Hi,di,ui},[],...
+        {'internal energy','damage','displacement'},[],...
+        pathname,'solution',1,i-1);
+end
+make_pvd_file(pathname,'solution',1,length(T));
 
 % myparallel('stop');

@@ -58,9 +58,9 @@ if setProblem
     end
     
     cl_patch_D = 0.25;
-    cl_patch_P = 0.05;
+    cl_patch_B = 0.05;
     for k=1:n
-        patches.patches{k}.S = gmshdomainwithedgecrack(D_patch{k},P_patch{k},cl_patch_D,cl_patch_P,fullfile(pathname,['gmsh_patch_' num2str(k) '_edge_crack']));
+        patches.patches{k}.S = gmshdomainwithedgecrack(D_patch{k},B_patch{k},cl_patch_D,cl_patch_B,fullfile(pathname,['gmsh_patch_' num2str(k) '_edge_crack']));
         patches.patches{k}.S = setoption(patches.patches{k}.S,option);
     end
     
@@ -116,14 +116,13 @@ if setProblem
     %% Dirichlet boundary conditions
     LU = LIGNE([0.0,L/2],[w,L/2]);
     LL = LIGNE([0.0,-L/2],[w,-L/2]);
-    LM = LIGNE([a,0.0],[w,0.0]);
     
     % Global
     glob.S = final(glob.S);
     switch lower(loading)
         case 'pull'
-            glob.S = addcl(glob.S,LM,'UY');
-            glob.S = addcl(glob.S,POINT([w,0.0]),'UX');
+            glob.S = addcl(glob.S,POINT([a,0.0]),'UY');
+            glob.S = addcl(glob.S,POINT([w,0.0]),'U');
         case 'shear'
             glob.S = addcl(glob.S,LL);
         otherwise

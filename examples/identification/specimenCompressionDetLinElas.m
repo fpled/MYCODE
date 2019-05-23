@@ -10,7 +10,7 @@ setProblem = true;
 solveProblem = true;
 displaySolution = true;
 
-Dim = 3; % space dimension Dim = 2, 3
+Dim = 2; % space dimension Dim = 2, 3
 filename = ['specimenCompressionDetLinElas_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification',filename);
