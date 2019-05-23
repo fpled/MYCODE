@@ -33,9 +33,9 @@ formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 gmshoptions = '-v 0';
-mmgoptions = '-v 0';
+mmgoptions = '-nomove -v 0';
 % gmshoptions = '-v 5';
-% mmgoptions = '-v 1';
+% mmgoptions = '-nomove -v 1';
 
 %% Problem
 if setProblem
