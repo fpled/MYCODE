@@ -108,7 +108,7 @@ default:
 #	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElasFatigue2_100N; exit" -logfile results/plate/FCBADeskPlateJunctionStoLinElasFatigue2_100N.log
 
 # All ---------------------------
-all: sparse monosto multidet multisto identification plate
+all: sparse monosto multidet multisto identification plate phasefield
 
 # Multiscale ---------------------------
 multi: multidet multisto
@@ -188,8 +188,8 @@ identification:
 	matlab -nodesktop -nosplash -noFigureWindows -r "identification_EL_NUL; exit" -logfile results/plate/identification_EL_NUL.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "identification_Kjunction; exit" -logfile results/plate/identification_Kjunction.log
 
-# Identification ---------------------------
-identification:
+# Phase field ---------------------------
+phasefield:
 	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasSingleEdgeCrack; exit" -logfile results/phasefield/phasefieldDetLinElasSingleEdgeCrack.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasSingleEdgeCrackMeshAdaptation; exit" -logfile results/phasefield/phasefieldDetLinElasSingleEdgeCrackMeshAdaptation.log
 
