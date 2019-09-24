@@ -2,12 +2,13 @@
 %%---------------------------------------------------------------------------------------------%%
 % [Bourdin, Francfort, Marigo, 2000, JMPS]
 % [Amor, Marigo, Maurini, 2009, JMPS]
+% [Miehe, Welschinger, Hofacker, 2010 IJNME]
 % [Miehe, Hofacker, Welschinger, 2010, CMAME]
 % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
 % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+% [Ambati, Gerasimov, De Lorenzis, 2015, CM]
 % [Wu, Nguyen, Nguyen, Sutula, Borad, Sinaie, 2018, AAM]
 % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
-
 
 % clc
 clearvars
@@ -17,10 +18,10 @@ close all
 %% Input data
 setProblem = true;
 solveProblem = true;
-displaySolution = true;
+displaySolution = false;
 
 Dim = 2; % space dimension Dim = 2, 3
-loading = 'Shear'; % 'Pull' or 'Shear'
+loading = 'Shear'; % 'Tension' or 'Shear'
 filename = ['phasefieldDetLinElasSingleEdgeCrack' loading '_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -46,22 +47,26 @@ if setProblem
     end
     
     if Dim==2
-        clD = 2e-5;
-        % clC = 6e-7;
-        clC = 2e-6;
+        clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+        % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+        clC = 2e-6; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
+        % clC = 1e-6; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
     elseif Dim==3
-        clD = 5e-5;
-        clC = 5e-6;
+        clD = 2e-4;
+        clC = 2e-5;
     end
     S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
     S = S_phase;
     
     %% Phase field problem
     %% Material
-    % Fracture toughness
-    gc = 2700;
+    % Critical energy release rate (or fracture toughness)
+    gc = 2.7e3;
     % Regularization parameter (width of the smeared crack)
-    l = 7.5e-6;
+    % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Wu, Nguyen, Nguyen, Sutula, Borad, Sinaie, 2018, AAM]
+    % l = 3.75e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
+    % l = 4e-6, % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
+    l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
     % Small parameter
     k = 1e-10;
     % Internal energy
@@ -101,8 +106,8 @@ if setProblem
     % Option
     option = 'DEFO'; % plane strain
     % Lame coefficients
-    lambda = 121.15e9;
-    mu = 80.77e9;
+    lambda = 121.1538e9;
+    mu = 80.7692e9;
     % Young modulus and Poisson ratio
     switch lower(option)
         case 'defo'
@@ -146,7 +151,7 @@ if setProblem
     
     ud = 0;
     switch lower(loading)
-        case 'pull'
+        case 'tension'
             S = addcl(S,BU,'UY',ud);
         case 'shear'
             if Dim==2
@@ -171,10 +176,10 @@ if setProblem
     
     %% Time scheme
     if Dim==2
-        dt = 2e-8;
+        dt = 1e-8;
         nt = 1500;
     elseif Dim==3
-        dt = 2e-8;
+        dt = 1e-8;
         nt = 2500;
     end
     t0 = dt;
@@ -244,7 +249,7 @@ if solveProblem
         S = removebc(S);
         ud = t(i);
         switch lower(loading)
-            case 'pull'
+            case 'tension'
                 S = addcl(S,BU,'UY',ud);
             case 'shear'
                 if Dim==2
@@ -357,7 +362,7 @@ if displaySolution
 %     evolSolution(S,ut,'sigma','mises','ampl',ampl,'filename','sigma_von_mises','pathname',pathname,options{:});
     
     %% Display solutions at differents instants
-    rep = [500,650];
+    rep = [1000,1250,1500];
     for j=1:length(rep)
         close all
         Hj = getmatrixatstep(Ht,rep(j));
