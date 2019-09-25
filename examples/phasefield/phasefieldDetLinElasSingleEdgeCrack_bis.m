@@ -21,7 +21,7 @@ solveProblem = true;
 displaySolution = false;
 
 Dim = 2; % space dimension Dim = 2, 3
-loading = 'Shear'; % 'Tension' or 'Shear'
+loading = 'Tension'; % 'Tension' or 'Shear'
 filename = ['phasefieldDetLinElasSingleEdgeCrack' loading '_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -163,6 +163,7 @@ if setProblem
         case 'tension'
             S = addcl(S,BU,'UY',ud);
             S = addcl(S,BL,'UY');
+            S = addcl(S,POINT([0.0,0.0]),'UX');
         case 'shear'
             if Dim==2
                 S = addcl(S,BU,{'UX','UY'},[ud;0]);
@@ -303,6 +304,7 @@ if solveProblem
             case 'tension'
                 S = addcl(S,BU,'UY',ud);
                 S = addcl(S,BL,'UY');
+                S = addcl(S,POINT([0.0,0.0]),'UX');
             case 'shear'
                 if Dim==2
                     S = addcl(S,BU,{'UX','UY'},[ud;0]);

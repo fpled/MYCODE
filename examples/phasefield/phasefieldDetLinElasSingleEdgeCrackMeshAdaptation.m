@@ -192,6 +192,7 @@ if setProblem
         case 'tension'
             S = addcl(S,BU,'UY',ud);
             S = addcl(S,BL,'UY');
+            S = addcl(S,POINT([0.0,0.0]),'UX');
         case 'shear'
             if Dim==2
                 S = addcl(S,BU,{'UX','UY'},[ud;0]);
@@ -350,6 +351,7 @@ if solveProblem
             case 'tension'
                 S = addcl(S,BU,'UY',ud);
                 S = addcl(S,BL,'UY');
+                S = addcl(S,POINT([0.0,0.0]),'UX');
             case 'shear'
                 if Dim==2
                     S = addcl(S,BU,{'UX','UY'},[ud;0]);
