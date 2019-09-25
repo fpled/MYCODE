@@ -7,7 +7,7 @@
 % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
 % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
 % [Liu, Li, Msekh, Zuo, 2016, CMS]
-% [Wu, Nguyen, Nguyen, Sutula, Borad, Sinaie, 2018, AAM]
+% [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
 % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
 
 % clc
@@ -53,11 +53,11 @@ if setProblem
     
     if Dim==2
         clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        % clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Borad, Sinaie, 2018, AAM]
-        % clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Borad, Sinaie, 2018, AAM]
         clC = 2e-6; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
         % clC = 1e-6; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
         % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+        % clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
+        % clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
     elseif Dim==3
         clD = 2e-4;
         clC = 2e-5;
@@ -82,7 +82,7 @@ if setProblem
     gc = 2.7e3;
     % Regularization parameter (width of the smeared crack)
     % l = 1e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
-    % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Borad, Sinaie, 2018, AAM]
+    % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
     % l = 3.75e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
     % l = 4e-6, % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
     % eta = 0.052; w0 = 75.94; l = eta/sqrt(w0)*1e-3; % l = 6e-7; % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
@@ -153,7 +153,7 @@ if setProblem
             E = 4*mu*(lambda+mu)/(lambda+2*mu);
             NU = lambda/(lambda+2*mu);
     end
-    % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Borad, Sinaie, 2018, AAM]
+    % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
     % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
     % Energetic degradation function
     g = @(d) (1-d).^2;
@@ -250,14 +250,38 @@ if setProblem
                 % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                 % t = [t0,t1];
             case 'shear'
+                % [Miehe, Welschinger, Hofacker, 2010 IJNME]
+                % du = 1e-4 mm during the first 100 time steps (up to u = 5e-3 mm)
+                % du = 1e-6 mm during the last 5000 time steps (up to u = 15e-3 mm)
+                % dt0 = 1e-7;
+                % nt0 = 100;
+                % t0 = linspace(dt0,nt0*dt0,nt0);
+                % dt1 = 1e-9;
+                % nt1 = 5000;
+                % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                % t = [t0,t1];
+                
+                % [Liu, Li, Msekh, Zuo, 2016, CMS]
+                % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
+                % du = 1e-5 mm during the last 1000 time steps (up to u = 15e-3 mm)
+                % dt0 = 1e-7;
+                % nt0 = 50;
+                % t0 = linspace(dt0,nt0*dt0,nt0);
+                % dt1 = 1e-8;
+                % nt1 = 1000;
+                % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                % t = [t0,t1];
+                
+                % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+                % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM], [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
                 dt = 1e-8;
-                nt = 1500;
-                t = linspace(dt,nt*dt,nt);
+                tmax = 1500;
+                t = linspace(dt,tmax*dt,tmax);
         end
     elseif Dim==3
         dt = 1e-8;
-        nt = 2500;
-        t = linspace(dt,nt*dt,nt);
+        tmax = 2500;
+        t = linspace(dt,tmax*dt,tmax);
     end
     T = TIMEMODEL(t);
     
@@ -411,16 +435,18 @@ fprintf('elapsed time = %f s\n',time);
 %% Display
 if displaySolution
     
-    nt = 900;
-    timestep = getdt(T);
-    T = TIMEMODEL(timestep,nt*timestep,nt-1);
+    tmax = 900;
     [t,rep] = gettevol(T);
-    Ht_new = cell(1,nt);
-    dt_new = cell(1,nt);
-    ut_new = cell(1,nt);
-    St_new = cell(1,nt);
-    St_phase_new = cell(1,nt);
-    for i=1:nt
+    t = t(1:tmax);
+    rep = rep(1:tmax);
+    T = TIMEMODEL(t);
+    
+    Ht_new = cell(1,tmax);
+    dt_new = cell(1,tmax);
+    ut_new = cell(1,tmax);
+    St_new = cell(1,tmax);
+    St_phase_new = cell(1,tmax);
+    for i=1:tmax
         Ht_new{i} = Ht{i};
         dt_new{i} = dt{i};
         ut_new{i} = ut{i};
