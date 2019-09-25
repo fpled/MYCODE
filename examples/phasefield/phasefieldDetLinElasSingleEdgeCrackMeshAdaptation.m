@@ -1,12 +1,12 @@
 %% Phase field fracture model - deterministic linear elasticity problem with single edge crack %%
 %%---------------------------------------------------------------------------------------------%%
 % [Bourdin, Francfort, Marigo, 2000, JMPS]
-% [Amor, Marigo, Maurini, 2009, JMPS]
 % [Miehe, Welschinger, Hofacker, 2010 IJNME]
 % [Miehe, Hofacker, Welschinger, 2010, CMAME]
 % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
 % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
 % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
+% [Liu, Li, Msekh, Zuo, 2016, CMS]
 % [Wu, Nguyen, Nguyen, Sutula, Borad, Sinaie, 2018, AAM]
 % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
 
@@ -21,8 +21,8 @@ solveProblem = true;
 displaySolution = false;
 
 Dim = 2; % space dimension Dim = 2, 3
-loading = 'Shear'; % 'Tension' or 'Shear'
-filename = ['phasefieldDetLinElasSingleEdgeCrack' loading '_' num2str(Dim) 'D_MeshAdaptation'];
+loading = 'Tension'; % 'Tension' or 'Shear'
+filename = ['phasefieldDetLinElasSingleEdgeCrack' loading '_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
 if ~exist(pathname,'dir')
@@ -53,9 +53,11 @@ if setProblem
     
     if Dim==2
         clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+        % clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Borad, Sinaie, 2018, AAM]
+        % clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Borad, Sinaie, 2018, AAM]
         clC = 2e-6; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
         % clC = 1e-6; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
+        % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
     elseif Dim==3
         clD = 2e-4;
         clC = 2e-5;
@@ -79,10 +81,12 @@ if setProblem
     % Critical energy release rate (or fracture toughness)
     gc = 2.7e3;
     % Regularization parameter (width of the smeared crack)
-    % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Wu, Nguyen, Nguyen, Sutula, Borad, Sinaie, 2018, AAM]
+    % l = 1e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
+    % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Borad, Sinaie, 2018, AAM]
     % l = 3.75e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
     % l = 4e-6, % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
-    l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+    % eta = 0.052; w0 = 75.94; l = eta/sqrt(w0)*1e-3; % l = 6e-7; % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
+    l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS]
     % Small parameter
     k = 1e-10;
     % Internal energy
@@ -134,9 +138,12 @@ if setProblem
     %% Materials
     % Option
     option = 'DEFO'; % plane strain
+    % option = 'CONT'; % plane strain [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS]
     % Lame coefficients
-    lambda = 121.1538e9;
-    mu = 80.7692e9;
+    % lambda = 121.1538e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
+    % mu = 80.7692e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
+    lambda = 121.15e9;
+    mu = 80.77e9;
     % Young modulus and Poisson ratio
     switch lower(option)
         case 'defo'
@@ -146,6 +153,8 @@ if setProblem
             E = 4*mu*(lambda+mu)/(lambda+2*mu);
             NU = lambda/(lambda+2*mu);
     end
+    % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Borad, Sinaie, 2018, AAM]
+    % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
     % Energetic degradation function
     g = @(d) (1-d).^2;
     % Thickness
@@ -182,22 +191,23 @@ if setProblem
     switch lower(loading)
         case 'tension'
             S = addcl(S,BU,'UY',ud);
+            S = addcl(S,BL,'UY');
         case 'shear'
             if Dim==2
                 S = addcl(S,BU,{'UX','UY'},[ud;0]);
-                S = addcl(S,BRight,'UY');
                 S = addcl(S,BLeft,'UY');
+                S = addcl(S,BRight,'UY');
             elseif Dim==3
                 S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
-                S = addcl(S,BRight,{'UY','UZ'});
                 S = addcl(S,BLeft,{'UY','UZ'});
+                S = addcl(S,BRight,{'UY','UZ'});
                 S = addcl(S,BFront,{'UY','UZ'});
                 S = addcl(S,BBack,{'UY','UZ'});
             end
+            S = addcl(S,BL);
         otherwise
             error('Wrong loading case')
     end
-    S = addcl(S,BL);
     
     %% Stiffness matrices and sollicitation vectors
     % [A,b] = calc_rigi(S);
@@ -205,15 +215,50 @@ if setProblem
     
     %% Time scheme
     if Dim==2
-        dt = 1e-8;
-        nt = 1500;
+        switch lower(loading)
+            case 'tension'
+                % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM]
+                % du = 1e-5 mm during the first 500 time steps (up to u = 5e-3 mm)
+                % du = 1e-6 mm during the last 1000 time steps (up to u = 6e-3 mm)
+                dt0 = 1e-8;
+                nt0 = 500;
+                t0 = linspace(dt0,nt0*dt0,nt0);
+                dt1 = 1e-9;
+                nt1 = 1000;
+                t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                t = [t0,t1];
+                
+                % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+                % dt = 1e-8;
+                % nt = 1500;
+                % t = linspace(dt,nt*dt,nt);
+                
+                % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
+                % dt = 1e-7;
+                % nt = 60;
+                % t = linspace(dt,nt*dt,nt);
+                
+                % [Liu, Li, Msekh, Zuo, 2016, CMS]
+                % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
+                % du = 1e-6 mm during the last 1000 time steps (up to u = 6e-3 mm)
+                % dt0 = 1e-7;
+                % nt0 = 50;
+                % t0 = linspace(dt0,nt0*dt0,nt0);
+                % dt1 = 1e-9;
+                % nt1 = 1000;
+                % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                % t = [t0,t1];
+            case 'shear'
+                dt = 1e-8;
+                nt = 1500;
+                t = linspace(dt,nt*dt,nt);
+        end
     elseif Dim==3
         dt = 1e-8;
         nt = 2500;
+        t = linspace(dt,nt*dt,nt);
     end
-    t0 = dt;
-    t1 = nt*dt;
-    T = TIMEMODEL(t0,t1,nt-1);
+    T = TIMEMODEL(t);
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','CU','CL','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g');
@@ -239,10 +284,10 @@ if solveProblem
     H = zeros(sz_phase,1);
     u = zeros(sz,1);
     
-    fprintf('\n+----------+----------+----------+------------+------------+------------+\n');
-    fprintf('|   Iter   | Nb nodes | Nb elems |  norm(H)   |  norm(d)   |  norm(u)   |\n');
-    fprintf('+----------+----------+----------+------------+------------+------------+\n');
-    fprintf('| %8d | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',0,getnbnode(S),getnbelem(S),0,0,0);
+    fprintf('\n+----------+-----------+----------+----------+------------+------------+------------+\n');
+    fprintf('|   Iter   |  u (mm)   | Nb nodes | Nb elems |  norm(H)   |  norm(d)   |  norm(u)   |\n');
+    fprintf('+----------+-----------+----------+----------+------------+------------+------------+\n');
+    fprintf('| %8d | %6.3e | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',0,0,getnbnode(S),getnbelem(S),0,0,0);
     
     for i=1:length(T)
         
@@ -304,22 +349,23 @@ if solveProblem
         switch lower(loading)
             case 'tension'
                 S = addcl(S,BU,'UY',ud);
+                S = addcl(S,BL,'UY');
             case 'shear'
                 if Dim==2
                     S = addcl(S,BU,{'UX','UY'},[ud;0]);
-                    S = addcl(S,BRight,'UY');
                     S = addcl(S,BLeft,'UY');
+                    S = addcl(S,BRight,'UY');
                 elseif Dim==3
                     S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
-                    S = addcl(S,BRight,{'UY','UZ'});
                     S = addcl(S,BLeft,{'UY','UZ'});
                     S = addcl(S,BRight,{'UY','UZ'});
-                    S = addcl(S,BLeft,{'UY','UZ'});
+                    S = addcl(S,BFront,{'UY','UZ'});
+                    S = addcl(S,BBack,{'UY','UZ'});
                 end
+                S = addcl(S,BL);
             otherwise
                 error('Wrong loading case')
         end
-        S = addcl(S,BL);
         
         [A,b] = calc_rigi(S);
         b = -b;
@@ -334,11 +380,11 @@ if solveProblem
         St_phase{i} = S_phase;
         St{i} = S;
         
-        fprintf('| %8d | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',i,getnbnode(S),getnbelem(S),norm(Ht{i}),norm(dt{i}),norm(ut{i}));
+        fprintf('| %8d | %6.3e | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,getnbnode(S),getnbelem(S),norm(Ht{i}),norm(dt{i}),norm(ut{i}));
         
     end
     
-    fprintf('+----------+----------+----------+------------+------------+------------+\n');
+    fprintf('+----------+-----------+----------+----------+------------+------------+------------+\n');
     
     % DO NOT WORK WITH MESH ADAPTATION
     % Ht = TIMEMATRIX(Ht,T,[sz_phase,1]);
