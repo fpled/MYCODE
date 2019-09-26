@@ -38,9 +38,9 @@ renderer = 'OpenGL';
 
 %% Problem
 if setProblem
+    %% Domains and meshes
     unit = 1e-3; % for mm
     % unit = 25.4e-3; % for inch % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
-    %% Domains and meshes
     switch setup
         case 1
             a = 1.5*unit; % crack length
@@ -61,7 +61,7 @@ if setProblem
     % cl = 0.01*unit/5; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     clC = cl; % characteristic length for edge crack/notch
     clH = cl; % characteristic length for circular holes
-    S_phase = gmshasymmetricnotchedplate(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'));
+    S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'));
     S = S_phase;
     
     %% Phase field problem
@@ -248,7 +248,7 @@ if solveProblem
         dt{i} = d;
         ut{i} = u;
         
-        fprintf('| %8d | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,norm(Ht{i}),norm(dt{i}),norm(ut{i}));
+        fprintf('| %8d | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,norm(Ht{i}),norm(dt{i}),norm(ut{i}));
         
     end
     
