@@ -21,7 +21,7 @@ solveProblem = true;
 displaySolution = false;
 
 Dim = 2; % space dimension Dim = 2, 3
-loading = 'Tension'; % 'Tension' or 'Shear'
+loading = 'Shear'; % 'Tension' or 'Shear'
 filename = ['phasefieldDetLinElasSingleEdgeCrack' loading '_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -222,7 +222,7 @@ if setProblem
                 % t = [t0,t1];
             case 'shear'
                 % [Miehe, Welschinger, Hofacker, 2010 IJNME]
-                % du = 1e-4 mm during the first 100 time steps (up to u = 5e-3 mm)
+                % du = 1e-4 mm during the first 100 time steps (up to u = 10e-3 mm)
                 % du = 1e-6 mm during the last 5000 time steps (up to u = 15e-3 mm)
                 % dt0 = 1e-7;
                 % nt0 = 100;
