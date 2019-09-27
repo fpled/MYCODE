@@ -1,14 +1,18 @@
-%% Phase field fracture model - deterministic linear elasticity problem with single edge crack %%
-%%---------------------------------------------------------------------------------------------%%
-% [Bourdin, Francfort, Marigo, 2000, JMPS]
-% [Miehe, Welschinger, Hofacker, 2010 IJNME]
+%% Phase field fracture model - deterministic linear elasticity problem  %%
+%  Asymmetric notched plate with three holes under three-point bending   %%
+%%-----------------------------------------------------------------------%%
+% [Ingraffea, Grigoriu, 1990]
+% [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM]
+% [Ventura, Xu, Belytschko, 2002, IJNME]
+% [Guidault, Allix, Champaney, Cornuault, 2008, CMAME]
+% [Miehe, Welschinger, Hofacker, 2010, IJNME]
 % [Miehe, Hofacker, Welschinger, 2010, CMAME]
-% [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
-% [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+% [Häusler, Lindhorst, Horst, 2011, IJNME]
+% [Geniaut, Galenne, 2012, IJSS]
+% [Passieux, Rethore, Gravouil, Baietto, 2013, CM]
 % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
-% [Liu, Li, Msekh, Zuo, 2016, CMS]
+% [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
 % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
-% [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
 
 % clc
 clearvars
@@ -20,9 +24,8 @@ setProblem = true;
 solveProblem = true;
 displaySolution = false;
 
-Dim = 2; % space dimension Dim = 2, 3
-loading = 'Shear'; % 'Tension' or 'Shear'
-filename = ['phasefieldDetLinElasSingleEdgeCrack' loading 'Adaptive_' num2str(Dim) 'D'];
+setup = 2; % notch geometry setup = 1, 2
+filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) 'Adaptive'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
 if ~exist(pathname,'dir')
@@ -41,37 +44,33 @@ mmgoptions = '-nomove -v 0';
 %% Problem
 if setProblem
     %% Domains and meshes
-    L = 1e-3;
-    a = L/2;
-    if Dim==2
-        D = DOMAIN(2,[0.0,0.0],[L,L]);
-        C = LIGNE([0.0,L/2],[a,L/2]);
-    elseif Dim==3
-        D = DOMAIN(3,[0.0,0.0,0.0],[L,L,L]);
-        C = QUADRANGLE([0.0,0.0,L/2],[a,0.0,L/2],[a,L,L/2],[0.0,L,L/2]);
+    unit = 1e-3; % for mm
+    % unit = 25.4e-3; % for inch % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
+    switch setup
+        case 1
+            a = 1.5*unit; % crack length
+            b = 5*unit; % crack offset from the centerline
+            % a = 2.5*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
+            % b = 6*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
+        case 2
+            a = 1*unit; % crack length
+            b = 6*unit; % crack offset from the centerline
     end
+    h = 4*unit;
+    C = LIGNE([-b,-h],[-b,-h+a]);
+    clD = 0.1*unit; % characteristic length for domain
+    % cl = clD;
+    % cl = 0.01*unit; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
+    cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    % cl = 0.01*unit/5; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
+    clC = cl; % characteristic length for edge crack/notch
+    clH = cl; % characteristic length for circular holes
+    % S_phase = gmshasymmetricnotchedplate(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),2,'gmshoptions',gmshoptions);
+    S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),2,'gmshoptions',gmshoptions);
     
-    if Dim==2
-        clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        clC = 2e-6; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
-        % clC = 1e-6; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
-        % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        % clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
-        % clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
-    elseif Dim==3
-        clD = 2e-4;
-        clC = 2e-5;
-    end
-    % S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
-    S_phase = gmshdomainwithedgesmearedcrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
-    
-    if Dim==2
-        CU = LIGNE([0.0,L/2+clC/2],[a,L/2]);
-        CL = LIGNE([0.0,L/2-clC/2],[a,L/2]);
-    elseif Dim==3
-        CU = QUADRANGLE([0.0,0.0,L/2+clC/2],[a,0.0,L/2],[a,L,L/2],[0.0,L,L/2+clC/2]);
-        CL = QUADRANGLE([0.0,0.0,L/2-clC/2],[a,0.0,L/2],[a,L,L/2],[0.0,L,L/2-clC/2]);
-    end
+    CL = LIGNE([-b-clC/2,-h],[-b,-h+a]);
+    CR = LIGNE([-b+clC/2,-h],[-b,-h+a]);
     
     % sizemap = @(d) (clC-clD)*d+clD;
     sizemap = @(d) clD*clC./((clD-clC)*d+clC);
@@ -79,14 +78,11 @@ if setProblem
     %% Phase field problem
     %% Material
     % Critical energy release rate (or fracture toughness)
-    gc = 2.7e3;
+    gc = 1e3;
+    % gc = 304.321; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % Regularization parameter (width of the smeared crack)
-    % l = 1e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
-    % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
-    % l = 3.75e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
-    % l = 4e-6, % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
-    % eta = 0.052; w0 = 75.94; l = eta/sqrt(w0)*1e-3; % l = 6e-7; % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
-    l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS]
+    l = 0.025*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
+    % l = 0.01*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % Small parameter
     k = 1e-10;
     % Internal energy
@@ -100,19 +96,19 @@ if setProblem
     %% Dirichlet boundary conditions
     S_phase = final(S_phase,'duplicate');
     % S_phase = addcl(S_phase,C,'T',1);
-    S_phase = addcl(S_phase,CU,'T',1);
     S_phase = addcl(S_phase,CL,'T',1);
+    S_phase = addcl(S_phase,CR,'T',1);
     
     d = calc_init_dirichlet(S_phase);
     cl = sizemap(d);
-    S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     S = S_phase;
     
     S_phase = setmaterial(S_phase,mat_phase);
     S_phase = final(S_phase,'duplicate');
     % S_phase = addcl(S_phase,C,'T',1);
-    S_phase = addcl(S_phase,CU,'T',1);
     S_phase = addcl(S_phase,CL,'T',1);
+    S_phase = addcl(S_phase,CR,'T',1);
     
     %% Stiffness matrices and sollicitation vectors
     % a_phase = BILINFORM(1,1,gc*l); % uniform values
@@ -138,12 +134,9 @@ if setProblem
     %% Materials
     % Option
     option = 'DEFO'; % plane strain
-    % option = 'CONT'; % plane strain [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS]
     % Lame coefficients
-    % lambda = 121.1538e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
-    % mu = 80.7692e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
-    lambda = 121.15e9;
-    mu = 80.77e9;
+    lambda = 12e9;
+    mu = 8e9;
     % Young modulus and Poisson ratio
     switch lower(option)
         case 'defo'
@@ -153,8 +146,7 @@ if setProblem
             E = 4*mu*(lambda+mu)/(lambda+2*mu);
             NU = lambda/(lambda+2*mu);
     end
-    % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
-    % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
+    % E = 3.102e9; % NU = 0.35; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % Energetic degradation function
     g = @(d) (1-d).^2;
     % Thickness
@@ -169,126 +161,44 @@ if setProblem
     S = setmaterial(S,mat);
     
     %% Dirichlet boundary conditions
-    if Dim==2
-        BU = LIGNE([0.0,L],[L,L]);
-        BL = LIGNE([0.0,0.0],[L,0.0]);
-        BRight = LIGNE([L,0.0],[L,L]);
-        BLeft = LIGNE([0.0,0.0],[0.0,L]);
-        BFront = [];
-        BBack = [];
-    elseif Dim==3
-        BU = PLAN([0.0,0.0,L],[L,0.0,L],[0.0,L,L]);
-        BL = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
-        BRight = PLAN([L,0.0,0.0],[L,L,0.0],[L,0.0,L]);
-        BLeft = PLAN([0.0,0.0,0.0],[0.0,L,0.0],[0.0,0.0,L]);
-        BFront = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,L]);
-        BBack = PLAN([0.0,L,0.0],[L,L,0.0],[0.0,L,L]);
-    end
+    PU = POINT([0.0,h]);
+    PLeft = POINT([-9*unit,-h]);
+    PRight = POINT([9*unit,-h]);
     
     S = final(S,'duplicate');
     
     ud = 0;
-    switch lower(loading)
-        case 'tension'
-            S = addcl(S,BU,'UY',ud);
-            S = addcl(S,BL,'UY');
-            S = addcl(S,POINT([0.0,0.0]),'UX');
-        case 'shear'
-            if Dim==2
-                S = addcl(S,BU,{'UX','UY'},[ud;0]);
-                S = addcl(S,BLeft,'UY');
-                S = addcl(S,BRight,'UY');
-            elseif Dim==3
-                S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
-                S = addcl(S,BLeft,{'UY','UZ'});
-                S = addcl(S,BRight,{'UY','UZ'});
-                S = addcl(S,BFront,{'UY','UZ'});
-                S = addcl(S,BBack,{'UY','UZ'});
-            end
-            S = addcl(S,BL);
-        otherwise
-            error('Wrong loading case')
-    end
+    S = addcl(S,PU,'UY',ud);
+    S = addcl(S,PLeft,{'UX','UY'});
+    S = addcl(S,PRight,'UY');
     
     %% Stiffness matrices and sollicitation vectors
     % [A,b] = calc_rigi(S);
     % b = -b;
     
     %% Time scheme
-    if Dim==2
-        switch lower(loading)
-            case 'tension'
-                % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM]
-                % du = 1e-5 mm during the first 500 time steps (up to u = 5e-3 mm)
-                % du = 1e-6 mm during the last 1500 time steps (up to u = 6.5e-3 mm)
-                dt0 = 1e-8;
-                nt0 = 500;
-                t0 = linspace(dt0,nt0*dt0,nt0);
-                dt1 = 1e-9;
-                nt1 = 1500;
-                t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                t = [t0,t1];
-                
-                % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-                % dt = 1e-8;
-                % nt = 650;
-                % t = linspace(dt,nt*dt,nt);
-                
-                % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
-                % dt = 1e-7;
-                % nt = 65;
-                % t = linspace(dt,nt*dt,nt);
-                
-                % [Liu, Li, Msekh, Zuo, 2016, CMS]
-                % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
-                % du = 1e-6 mm during the last 1500 time steps (up to u = 8e-3 mm)
-                % dt0 = 1e-7;
-                % nt0 = 50;
-                % t0 = linspace(dt0,nt0*dt0,nt0);
-                % dt1 = 1e-9;
-                % nt1 = 1500;
-                % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                % t = [t0,t1];
-            case 'shear'
-                % [Miehe, Welschinger, Hofacker, 2010 IJNME]
-                % du = 1e-4 mm during the first 100 time steps (up to u = 10e-3 mm)
-                % du = 1e-6 mm during the last 5000 time steps (up to u = 15e-3 mm)
-                % dt0 = 1e-7;
-                % nt0 = 100;
-                % t0 = linspace(dt0,nt0*dt0,nt0);
-                % dt1 = 1e-9;
-                % nt1 = 5000;
-                % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                % t = [t0,t1];
-                
-                % [Liu, Li, Msekh, Zuo, 2016, CMS]
-                % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
-                % du = 1e-5 mm during the last 1000 time steps (up to u = 15e-3 mm)
-                % dt0 = 1e-7;
-                % nt0 = 50;
-                % t0 = linspace(dt0,nt0*dt0,nt0);
-                % dt1 = 1e-8;
-                % nt1 = 1000;
-                % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                % t = [t0,t1];
-                
-                % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-                % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM], [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
-                dt = 1e-8;
-                tmax = 1500;
-                t = linspace(dt,tmax*dt,tmax);
-        end
-    elseif Dim==3
-        dt = 1e-8;
-        tmax = 2500;
-        t = linspace(dt,tmax*dt,tmax);
-    end
+    % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
+    % dt = 1e-4*unit;
+    % nt = 2500;
+    % t = linspace(dt,nt*dt,nt);
+    
+    % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
+    % du = 1e-3 mm during the first 200 time steps (up to u = 0.2 mm)
+    % du = 1e-4 mm during the last  500 time steps (up to u = 0.25 mm)
+    dt0 = 1e-3*unit;
+    nt0 = 200;
+    t0 = linspace(dt0,nt0*dt0,nt0);
+    dt1 = 1e-4*unit;
+    nt1 = 500;
+    t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+    t = [t0,t1];
+    
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','CU','CL','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','CL','CR','C','PU','PLeft','PRight','gc','l','E','g');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','CU','CL','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','CL','CR','C','PU','PLeft','PRight','gc','l','E','g');
 end
 
 %% Solution
@@ -346,7 +256,7 @@ if solveProblem
         % Mesh adaptation
         S_phase_old = S_phase;
         cl = sizemap(d);
-        S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+        S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
         S = S_phase;
         
         for m=1:length(mats_phase)
@@ -354,8 +264,8 @@ if solveProblem
         end
         % S_phase = actualisematerials(S_phase,mats_phase);
         S_phase = final(S_phase,'duplicate');
-        S_phase = addcl(S_phase,CU,'T',1);
         S_phase = addcl(S_phase,CL,'T',1);
+        S_phase = addcl(S_phase,CR,'T',1);
         
         P_phase = calcProjection(S_phase,S_phase_old,[],'free',false);
         d = P_phase'*d;
@@ -371,27 +281,9 @@ if solveProblem
         S = final(S,'duplicate');
         S = removebc(S);
         ud = t(i);
-        switch lower(loading)
-            case 'tension'
-                S = addcl(S,BU,'UY',ud);
-                S = addcl(S,BL,'UY');
-                S = addcl(S,POINT([0.0,0.0]),'UX');
-            case 'shear'
-                if Dim==2
-                    S = addcl(S,BU,{'UX','UY'},[ud;0]);
-                    S = addcl(S,BLeft,'UY');
-                    S = addcl(S,BRight,'UY');
-                elseif Dim==3
-                    S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
-                    S = addcl(S,BLeft,{'UY','UZ'});
-                    S = addcl(S,BRight,{'UY','UZ'});
-                    S = addcl(S,BFront,{'UY','UZ'});
-                    S = addcl(S,BBack,{'UY','UZ'});
-                end
-                S = addcl(S,BL);
-            otherwise
-                error('Wrong loading case')
-        end
+        S = addcl(S,PU,'UY',ud);
+        S = addcl(S,PLeft,{'UX','UY'});
+        S = addcl(S,PRight,'UY');
         
         [A,b] = calc_rigi(S);
         b = -b;
@@ -441,12 +333,12 @@ if displaySolution
     rep = rep(1:tmax);
     T = TIMEMODEL(t);
     
-    Ht_new = cell(1,tmax);
-    dt_new = cell(1,tmax);
-    ut_new = cell(1,tmax);
-    St_new = cell(1,tmax);
-    St_phase_new = cell(1,tmax);
-    for i=1:tmax
+    Ht_new = cell(1,tamx);
+    dt_new = cell(1,tamx);
+    ut_new = cell(1,tamx);
+    St_new = cell(1,tamx);
+    St_phase_new = cell(1,tamx);
+    for i=1:tamx
         Ht_new{i} = Ht{i};
         dt_new{i} = dt{i};
         ut_new{i} = ut{i};
@@ -465,10 +357,6 @@ if displaySolution
     S = St{end};
     
     %% Display domains, boundary conditions and meshes
-    plotDomain({D,C},'legend',false);
-    mysaveas(pathname,'domain',formats,renderer);
-    mymatlab2tikz(pathname,'domain.tex');
-    
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;
     v = calc_init_dirichlet(S);
@@ -504,27 +392,26 @@ if displaySolution
     % ampl = getsize(S)/max([umax{:}])/20;
     
     options = {'plotiter',true,'plottime',false};
-    framerate = 80;
     
-    evolModel(T,St,'FrameRate',framerate,'filename','mesh','pathname',pathname,options{:});
+    evolModel(T,St,'FrameRate',80,'filename','mesh','pathname',pathname,options{:});
     
-%     evolSolutionCell(T,St_phase,Ht,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
+%     evolSolutionCell(T,St_phase,Ht,'filename','internal_energy','pathname',pathname,options{:});
     
-    evolSolutionCell(T,St_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
-    for i=1:Dim
-        evolSolutionCell(T,St,ut,'displ',i,'FrameRate',framerate,'ampl',ampl,'FrameRate',60,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
+    evolSolutionCell(T,St_phase,dt,'FrameRate',80,'filename','damage','pathname',pathname,options{:});
+    for i=1:2
+        evolSolutionCell(T,St,ut,'displ',i,'FrameRate',80,'ampl',ampl,'FrameRate',60,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
     end
     
-%     for i=1:(Dim*(Dim+1)/2)
-%         evolSolutionCell(T,St,ut,'epsilon',i,'FrameRate',framerate,'ampl',ampl,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
-%         evolSolutionCell(T,St,ut,'sigma',i,'FrameRate',framerate,'ampl',ampl,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
+%     for i=1:3
+%         evolSolutionCell(T,St,ut,'epsilon',i,'ampl',ampl,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
+%         evolSolutionCell(T,St,ut,'sigma',i,'ampl',ampl,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
 %     end
 %     
-%     evolSolutionCell(T,St,ut,'epsilon','mises','FrameRate',framerate,'ampl',ampl,'filename','epsilon_von_mises','pathname',pathname,options{:});
-%     evolSolutionCell(T,St,ut,'sigma','mises','FrameRate',framerate,'ampl',ampl,'filename','sigma_von_mises','pathname',pathname,options{:});
+%     evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'filename','epsilon_von_mises','pathname',pathname,options{:});
+%     evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'filename','sigma_von_mises','pathname',pathname,options{:});
     
     %% Display solutions at differents instants
-    rep = [1000,1250,1500];
+    rep = [500,650];
     for j=1:length(rep)
         close all
         % DO NOT WORK WITH MESH ADAPTATION
@@ -543,12 +430,12 @@ if displaySolution
         plotSolution(Sj_phase,dj);
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
         
-        for i=1:Dim
+        for i=1:2
             plotSolution(Sj,uj,'displ',i,'ampl',ampl);
             mysaveas(pathname,['displacement_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         end
         
-%         for i=1:(Dim*(Dim+1)/2)
+%         for i=1:3
 %             plotSolution(Sj,uj,'epsilon',i,'ampl',ampl);
 %             mysaveas(pathname,['epsilon_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
 %             

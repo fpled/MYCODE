@@ -22,7 +22,7 @@ close all
 %% Input data
 setProblem = true;
 solveProblem = true;
-displaySolution = true;
+displaySolution = false;
 
 setup = 2; % notch geometry setup = 1, 2
 filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup)];
