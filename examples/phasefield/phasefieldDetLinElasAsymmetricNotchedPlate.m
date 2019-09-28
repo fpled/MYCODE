@@ -54,9 +54,9 @@ if setProblem
     h = 4*unit;
     C = LIGNE([-b,-h],[-b,-h+a]);
     clD = 0.1*unit; % characteristic length for domain
-    % cl = clD;
+    cl = 0.05*unit;
     % cl = 0.01*unit; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
-    cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    % cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
     % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
     % cl = 0.01*unit/5; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     clC = cl; % characteristic length for edge crack/notch
@@ -83,8 +83,15 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
+    BU = CIRCLE(0.0,h,2*unit);
+    BL = CIRCLE(-9*unit,-h,2*unit);
+    BR = CIRCLE(9*unit,-h,2*unit);
+    
     S_phase = final(S_phase,'duplicate');
     S_phase = addcl(S_phase,C,'T',1);
+    S_phase = addcl(S_phase,BU,'T');
+    S_phase = addcl(S_phase,BL,'T');
+    S_phase = addcl(S_phase,BR,'T');
     
     %% Stiffness matrices and sollicitation vectors
     % a_phase = BILINFORM(1,1,gc*l); % uniform values
@@ -138,15 +145,15 @@ if setProblem
     
     %% Dirichlet boundary conditions
     PU = POINT([0.0,h]);
-    PLeft = POINT([-9*unit,-h]);
-    PRight = POINT([9*unit,-h]);
+    PL = POINT([-9*unit,-h]);
+    PR = POINT([9*unit,-h]);
     
     S = final(S,'duplicate');
     
     ud = 0;
     S = addcl(S,PU,'UY',ud);
-    S = addcl(S,PLeft,{'UX','UY'});
-    S = addcl(S,PRight,'UY');
+    S = addcl(S,PL,{'UX','UY'});
+    S = addcl(S,PR,'UY');
     
     %% Stiffness matrices and sollicitation vectors
     % [A,b] = calc_rigi(S);
@@ -165,16 +172,16 @@ if setProblem
     nt0 = 200;
     t0 = linspace(dt0,nt0*dt0,nt0);
     dt1 = 1e-4*unit;
-    nt1 = 500;
+    nt1 = 3000;
     t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
     t = [t0,t1];
     
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','C','PU','PLeft','PRight','gc','l','E','g');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','C','BU','BL','BR','PU','PL','PR','gc','l','E','g');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','C','PU','PLeft','PRight','gc','l','E','g');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','C','BU','BL','BR','PU','PL','PR','gc','l','E','g');
 end
 
 %% Solution
@@ -234,8 +241,8 @@ if solveProblem
         S = removebc(S);
         ud = -t(i);
         S = addcl(S,PU,'UY',ud);
-        S = addcl(S,PLeft,{'UX','UY'});
-        S = addcl(S,PRight,'UY');
+        S = addcl(S,PL,{'UX','UY'});
+        S = addcl(S,PR,'UY');
         
         [A,b] = calc_rigi(S);
         b = -b;

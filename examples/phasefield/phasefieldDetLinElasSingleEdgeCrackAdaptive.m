@@ -99,7 +99,6 @@ if setProblem
     
     %% Dirichlet boundary conditions
     S_phase = final(S_phase,'duplicate');
-    % S_phase = addcl(S_phase,C,'T',1);
     S_phase = addcl(S_phase,CU,'T',1);
     S_phase = addcl(S_phase,CL,'T',1);
     
@@ -110,7 +109,6 @@ if setProblem
     
     S_phase = setmaterial(S_phase,mat_phase);
     S_phase = final(S_phase,'duplicate');
-    % S_phase = addcl(S_phase,C,'T',1);
     S_phase = addcl(S_phase,CU,'T',1);
     S_phase = addcl(S_phase,CL,'T',1);
     
@@ -434,35 +432,11 @@ fprintf('elapsed time = %f s\n',time);
 
 %% Display
 if displaySolution
-    
-    tmax = 900;
-    [t,rep] = gettevol(T);
-    t = t(1:tmax);
-    rep = rep(1:tmax);
-    T = TIMEMODEL(t);
-    
-    Ht_new = cell(1,tmax);
-    dt_new = cell(1,tmax);
-    ut_new = cell(1,tmax);
-    St_new = cell(1,tmax);
-    St_phase_new = cell(1,tmax);
-    for i=1:tmax
-        Ht_new{i} = Ht{i};
-        dt_new{i} = dt{i};
-        ut_new{i} = ut{i};
-        St_new{i} = St{i};
-        St_phase_new{i} = St_phase{i};
-    end
-    Ht = Ht_new;
-    dt = dt_new;
-    ut = ut_new;
-    St = St_new;
-    St_phase = St_phase_new;
-    
     % DO NOT WORK WITH MESH ADAPTATION
     % u = getmatrixatstep(ut,rep(end));
-    u = ut{rep(end)};
-    S = St{end};
+%     u = ut{rep(end)};
+    u = ut{end};
+    S_final = St{end};
     
     %% Display domains, boundary conditions and meshes
     plotDomain({D,C},'legend',false);
@@ -484,16 +458,19 @@ if displaySolution
     % mysaveas(pathname,'mesh',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
-    mysaveas(pathname,'mesh',formats,renderer);
+    mysaveas(pathname,'mesh_init',formats,renderer);
     
-    ampl = getsize(S)/max(abs(u))/20;
-    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+    plotModel(S_final,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+    mysaveas(pathname,'mesh_final',formats,renderer);
+    
+    ampl = getsize(S_final)/max(abs(u))/20;
+    plotModelDeflection(S_final,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
     plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-    plot(S+ampl*unfreevector(S,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
+    plot(S_final+ampl*unfreevector(S_final,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display evolution of solutions
@@ -524,7 +501,14 @@ if displaySolution
 %     evolSolutionCell(T,St,ut,'sigma','mises','FrameRate',framerate,'ampl',ampl,'filename','sigma_von_mises','pathname',pathname,options{:});
     
     %% Display solutions at differents instants
-    rep = [1000,1250,1500];
+    switch lower(loading)
+        case 'tension'
+            rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.5e-5)<eps);
+        case 'shear'
+            rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.5e-5)<eps);
+        otherwise
+            error('Wrong loading case')  
+    end
     for j=1:length(rep)
         close all
         % DO NOT WORK WITH MESH ADAPTATION
