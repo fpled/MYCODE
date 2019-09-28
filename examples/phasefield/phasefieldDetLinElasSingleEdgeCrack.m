@@ -21,7 +21,7 @@ solveProblem = true;
 displaySolution = false;
 
 Dim = 2; % space dimension Dim = 2, 3
-loading = 'Tension'; % 'Tension' or 'Shear'
+loading = 'Shear'; % 'Tension' or 'Shear'
 filename = ['phasefieldDetLinElasSingleEdgeCrack' loading '_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -30,6 +30,8 @@ if ~exist(pathname,'dir')
 end
 
 fontsize = 16;
+linewidth = 1;
+interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
@@ -272,15 +274,16 @@ if solveProblem
     Ht = cell(1,length(T));
     dt = cell(1,length(T));
     ut = cell(1,length(T));
+    ft = zeros(1,length(T));
     
     sz_phase = getnbddl(S_phase);
     sz = getnbddl(S);
     H = zeros(sz_phase,1);
     u = zeros(sz,1);
     
-    fprintf('\n+----------+-----------+------------+------------+------------+\n');
-    fprintf('|   Iter   |  u (mm)   |  norm(H)   |  norm(d)   |  norm(u)   |\n');
-    fprintf('+----------+-----------+------------+------------+------------+\n');
+    fprintf('\n+----------+-----------+-----------+------------+------------+------------+\n');
+    fprintf('|   Iter   |  u [mm]   |  f [kN]   |  norm(H)   |  norm(d)   |  norm(u)   |\n');
+    fprintf('+----------+-----------+-----------+------------+------------+------------+\n');
     
     for i=1:length(T)
         
@@ -340,22 +343,37 @@ if solveProblem
                 error('Wrong loading case')
         end
         
-        [A,b] = calc_rigi(S);
+        [A,b] = calc_rigi(S,'nofree');
         b = -b;
         
-        u = A\b;
+        u = freematrix(S,A)\b;
         u = unfreevector(S,u);
+        
+        % ddlfree = getddlfree(S);
+        % ddlbloque = getddlbloque(S);
+        % bc = getbc(S,1);
+        % numddl = bc.ddlbloque; % works only if the first bc corresponds to imposed displacement ud
+        switch lower(loading)
+            case 'tension'
+                numddl = findddl(S,'UY',BU);
+            case 'shear'
+                numddl = findddl(S,'UX',BU);
+            otherwise
+                error('Wrong loading case')
+        end
+        fint = A(numddl,:)*u;
         
         % Update fields
         Ht{i} = double(H);
         dt{i} = d;
         ut{i} = u;
+        ft(i) = sum(fint);
         
-        fprintf('| %8d | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,norm(Ht{i}),norm(dt{i}),norm(ut{i}));
+        fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,norm(Ht{i}),norm(dt{i}),norm(ut{i}));
         
     end
     
-    fprintf('+----------+-----------+------------+------------+------------+\n');
+    fprintf('+----------+-----------+-----------+------------+------------+------------+\n');
     
     Ht = TIMEMATRIX(Ht,T,[sz_phase,1]);
     dt = TIMEMATRIX(dt,T,[sz_phase,1]);
@@ -363,9 +381,9 @@ if solveProblem
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'Ht','dt','ut','time');
+    save(fullfile(pathname,'solution.mat'),'Ht','dt','ut','ft','time');
 else
-    load(fullfile(pathname,'solution.mat'),'Ht','dt','ut','time');
+    load(fullfile(pathname,'solution.mat'),'Ht','dt','ut','ft','time');
 end
 
 %% Outputs
@@ -411,6 +429,17 @@ if displaySolution
     plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
     plot(S+ampl*unfreevector(S,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
+    
+    %% Display force-displacement curve
+    figure('Name','Force-displacement')
+    clf
+    plot(t*1e3,ft*1e-3,'-b','Linewidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [$mm$]','Interpreter',interpreter)
+    ylabel('Force [$kN$]','Interpreter',interpreter)
+    mysaveas(pathname,'force_displacement',formats);
     
     %% Display evolution of solutions
     ampl = 0;

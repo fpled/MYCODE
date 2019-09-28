@@ -94,10 +94,16 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
+    BU = CIRCLE(0.0,h,2.5*unit);
+    BL = CIRCLE(-9*unit,-h,2.5*unit);
+    BR = CIRCLE(9*unit,-h,2.5*unit);
+    
     S_phase = final(S_phase,'duplicate');
-    % S_phase = addcl(S_phase,C,'T',1);
     S_phase = addcl(S_phase,CL,'T',1);
     S_phase = addcl(S_phase,CR,'T',1);
+    S_phase = addcl(S_phase,BU,'T');
+    S_phase = addcl(S_phase,BL,'T');
+    S_phase = addcl(S_phase,BR,'T');
     
     d = calc_init_dirichlet(S_phase);
     cl = sizemap(d);
@@ -106,9 +112,11 @@ if setProblem
     
     S_phase = setmaterial(S_phase,mat_phase);
     S_phase = final(S_phase,'duplicate');
-    % S_phase = addcl(S_phase,C,'T',1);
     S_phase = addcl(S_phase,CL,'T',1);
     S_phase = addcl(S_phase,CR,'T',1);
+    S_phase = addcl(S_phase,BU,'T');
+    S_phase = addcl(S_phase,BL,'T');
+    S_phase = addcl(S_phase,BR,'T');
     
     %% Stiffness matrices and sollicitation vectors
     % a_phase = BILINFORM(1,1,gc*l); % uniform values
@@ -162,15 +170,15 @@ if setProblem
     
     %% Dirichlet boundary conditions
     PU = POINT([0.0,h]);
-    PLeft = POINT([-9*unit,-h]);
-    PRight = POINT([9*unit,-h]);
+    PL = POINT([-9*unit,-h]);
+    PR = POINT([9*unit,-h]);
     
     S = final(S,'duplicate');
     
     ud = 0;
     S = addcl(S,PU,'UY',ud);
-    S = addcl(S,PLeft,{'UX','UY'});
-    S = addcl(S,PRight,'UY');
+    S = addcl(S,PL,{'UX','UY'});
+    S = addcl(S,PR,'UY');
     
     %% Stiffness matrices and sollicitation vectors
     % [A,b] = calc_rigi(S);
@@ -179,26 +187,26 @@ if setProblem
     %% Time scheme
     % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
     % dt = 1e-4*unit;
-    % nt = 2500;
+    % nt = 3000;
     % t = linspace(dt,nt*dt,nt);
     
     % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
     % du = 1e-3 mm during the first 200 time steps (up to u = 0.2 mm)
-    % du = 1e-4 mm during the last  500 time steps (up to u = 0.25 mm)
+    % du = 1e-4 mm during the last  1000 time steps (up to u = 0.3 mm)
     dt0 = 1e-3*unit;
     nt0 = 200;
     t0 = linspace(dt0,nt0*dt0,nt0);
     dt1 = 1e-4*unit;
-    nt1 = 500;
+    nt1 = 1000;
     t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
     t = [t0,t1];
     
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','CL','CR','C','PU','PLeft','PRight','gc','l','E','g');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','C','CL','CR','BU','BL','BR','PU','PL','PR','gc','l','E','g');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','CL','CR','C','PU','PLeft','PRight','gc','l','E','g');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','C','CL','CR','BU','BL','BR','PU','PL','PR','gc','l','E','g');
 end
 
 %% Solution
@@ -220,7 +228,7 @@ if solveProblem
     u = zeros(sz,1);
     
     fprintf('\n+----------+-----------+----------+----------+------------+------------+------------+\n');
-    fprintf('|   Iter   |  u (mm)   | Nb nodes | Nb elems |  norm(H)   |  norm(d)   |  norm(u)   |\n');
+    fprintf('|   Iter   |  u [mm]   | Nb nodes | Nb elems |  norm(H)   |  norm(d)   |  norm(u)   |\n');
     fprintf('+----------+-----------+----------+----------+------------+------------+------------+\n');
     fprintf('| %8d | %6.3e | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',0,0,getnbnode(S),getnbelem(S),0,0,0);
     
@@ -266,6 +274,9 @@ if solveProblem
         S_phase = final(S_phase,'duplicate');
         S_phase = addcl(S_phase,CL,'T',1);
         S_phase = addcl(S_phase,CR,'T',1);
+        S_phase = addcl(S_phase,BU,'T');
+        S_phase = addcl(S_phase,BL,'T');
+        S_phase = addcl(S_phase,BR,'T');
         
         P_phase = calcProjection(S_phase,S_phase_old,[],'free',false);
         d = P_phase'*d;
@@ -280,10 +291,10 @@ if solveProblem
         % S = actualisematerials(S,mats);
         S = final(S,'duplicate');
         S = removebc(S);
-        ud = t(i);
+        ud = -t(i);
         S = addcl(S,PU,'UY',ud);
-        S = addcl(S,PLeft,{'UX','UY'});
-        S = addcl(S,PRight,'UY');
+        S = addcl(S,PL,{'UX','UY'});
+        S = addcl(S,PR,'UY');
         
         [A,b] = calc_rigi(S);
         b = -b;
@@ -326,37 +337,17 @@ fprintf('elapsed time = %f s\n',time);
 
 %% Display
 if displaySolution
-    
-    tmax = 900;
-    [t,rep] = gettevol(T);
-    t = t(1:tmax);
-    rep = rep(1:tmax);
-    T = TIMEMODEL(t);
-    
-    Ht_new = cell(1,tamx);
-    dt_new = cell(1,tamx);
-    ut_new = cell(1,tamx);
-    St_new = cell(1,tamx);
-    St_phase_new = cell(1,tamx);
-    for i=1:tamx
-        Ht_new{i} = Ht{i};
-        dt_new{i} = dt{i};
-        ut_new{i} = ut{i};
-        St_new{i} = St{i};
-        St_phase_new{i} = St_phase{i};
-    end
-    Ht = Ht_new;
-    dt = dt_new;
-    ut = ut_new;
-    St = St_new;
-    St_phase = St_phase_new;
-    
     % DO NOT WORK WITH MESH ADAPTATION
     % u = getmatrixatstep(ut,rep(end));
-    u = ut{rep(end)};
-    S = St{end};
+%     u = ut{rep(end)};
+    u = ut{end};
+    S_final = St{end};
     
     %% Display domains, boundary conditions and meshes
+    plotDomain({D,C},'legend',false);
+    mysaveas(pathname,'domain',formats,renderer);
+    mymatlab2tikz(pathname,'domain.tex');
+    
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;
     v = calc_init_dirichlet(S);
@@ -372,16 +363,19 @@ if displaySolution
     % mysaveas(pathname,'mesh',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
-    mysaveas(pathname,'mesh',formats,renderer);
+    mysaveas(pathname,'mesh_init',formats,renderer);
     
-    ampl = getsize(S)/max(abs(u))/20;
-    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+    plotModel(S_final,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+    mysaveas(pathname,'mesh_final',formats,renderer);
+    
+    ampl = getsize(S_final)/max(abs(u))/20;
+    plotModelDeflection(S_final,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
     plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-    plot(S+ampl*unfreevector(S,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
+    plot(S_final+ampl*unfreevector(S_final,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display evolution of solutions
@@ -392,26 +386,27 @@ if displaySolution
     % ampl = getsize(S)/max([umax{:}])/20;
     
     options = {'plotiter',true,'plottime',false};
+    framerate = 80;
     
-    evolModel(T,St,'FrameRate',80,'filename','mesh','pathname',pathname,options{:});
+    evolModel(T,St,'FrameRate',framerate,'filename','mesh','pathname',pathname,options{:});
     
-%     evolSolutionCell(T,St_phase,Ht,'filename','internal_energy','pathname',pathname,options{:});
+%     evolSolutionCell(T,St_phase,Ht,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
     
-    evolSolutionCell(T,St_phase,dt,'FrameRate',80,'filename','damage','pathname',pathname,options{:});
+    evolSolutionCell(T,St_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
     for i=1:2
-        evolSolutionCell(T,St,ut,'displ',i,'FrameRate',80,'ampl',ampl,'FrameRate',60,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
+        evolSolutionCell(T,St,ut,'displ',i,'FrameRate',framerate,'ampl',ampl,'FrameRate',60,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
     end
     
 %     for i=1:3
-%         evolSolutionCell(T,St,ut,'epsilon',i,'ampl',ampl,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
-%         evolSolutionCell(T,St,ut,'sigma',i,'ampl',ampl,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
+%         evolSolutionCell(T,St,ut,'epsilon',i,'FrameRate',framerate,'ampl',ampl,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
+%         evolSolutionCell(T,St,ut,'sigma',i,'FrameRate',framerate,'ampl',ampl,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
 %     end
 %     
-%     evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'filename','epsilon_von_mises','pathname',pathname,options{:});
-%     evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'filename','sigma_von_mises','pathname',pathname,options{:});
+%     evolSolutionCell(T,St,ut,'epsilon','mises','FrameRate',framerate,'ampl',ampl,'filename','epsilon_von_mises','pathname',pathname,options{:});
+%     evolSolutionCell(T,St,ut,'sigma','mises','FrameRate',framerate,'ampl',ampl,'filename','sigma_von_mises','pathname',pathname,options{:});
     
     %% Display solutions at differents instants
-    rep = [500,650];
+    rep = find(abs(t-0.223*unit)<eps | abs(t-0.225*unit)<eps | abs(t-0.227*unit)<eps | abs(t-0.230*unit)<eps)
     for j=1:length(rep)
         close all
         % DO NOT WORK WITH MESH ADAPTATION

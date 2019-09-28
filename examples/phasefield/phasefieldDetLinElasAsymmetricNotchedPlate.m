@@ -54,9 +54,9 @@ if setProblem
     h = 4*unit;
     C = LIGNE([-b,-h],[-b,-h+a]);
     clD = 0.1*unit; % characteristic length for domain
-    cl = 0.05*unit;
+    % cl = clD;
     % cl = 0.01*unit; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
-    % cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
     % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
     % cl = 0.01*unit/5; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     clC = cl; % characteristic length for edge crack/notch
@@ -83,9 +83,9 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    BU = CIRCLE(0.0,h,2*unit);
-    BL = CIRCLE(-9*unit,-h,2*unit);
-    BR = CIRCLE(9*unit,-h,2*unit);
+    BU = CIRCLE(0.0,h,2.5*unit);
+    BL = CIRCLE(-9*unit,-h,2.5*unit);
+    BR = CIRCLE(9*unit,-h,2.5*unit);
     
     S_phase = final(S_phase,'duplicate');
     S_phase = addcl(S_phase,C,'T',1);
@@ -162,17 +162,17 @@ if setProblem
     %% Time scheme
     % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
     % dt = 1e-4*unit;
-    % nt = 2500;
+    % nt = 3000;
     % t = linspace(dt,nt*dt,nt);
     
     % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
     % du = 1e-3 mm during the first 200 time steps (up to u = 0.2 mm)
-    % du = 1e-4 mm during the last  500 time steps (up to u = 0.25 mm)
+    % du = 1e-4 mm during the last  1000 time steps (up to u = 0.3 mm)
     dt0 = 1e-3*unit;
     nt0 = 200;
     t0 = linspace(dt0,nt0*dt0,nt0);
     dt1 = 1e-4*unit;
-    nt1 = 3000;
+    nt1 = 1000;
     t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
     t = [t0,t1];
     
@@ -201,7 +201,7 @@ if solveProblem
     u = zeros(sz,1);
     
     fprintf('\n+----------+-----------+------------+------------+------------+\n');
-    fprintf('|   Iter   |  u (mm)   |  norm(H)   |  norm(d)   |  norm(u)   |\n');
+    fprintf('|   Iter   |  u [mm]   |  norm(H)   |  norm(d)   |  norm(u)   |\n');
     fprintf('+----------+-----------+------------+------------+------------+\n');
     
     for i=1:length(T)
