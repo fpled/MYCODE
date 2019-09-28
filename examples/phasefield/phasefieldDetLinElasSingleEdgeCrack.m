@@ -369,7 +369,7 @@ if solveProblem
         ut{i} = u;
         ft(i) = sum(fint);
         
-        fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,norm(Ht{i}),norm(dt{i}),norm(ut{i}));
+        fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*1e-3,norm(Ht{i}),norm(dt{i}),norm(ut{i}));
         
     end
     
