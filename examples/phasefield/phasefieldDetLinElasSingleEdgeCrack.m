@@ -21,7 +21,7 @@ solveProblem = true;
 displaySolution = false;
 
 Dim = 2; % space dimension Dim = 2, 3
-loading = 'Shear'; % 'Tension' or 'Shear'
+loading = 'Tension'; % 'Tension' or 'Shear'
 filename = ['phasefieldDetLinElasSingleEdgeCrack' loading '_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -191,33 +191,33 @@ if setProblem
             case 'tension'
                 % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM]
                 % du = 1e-5 mm during the first 500 time steps (up to u = 5e-3 mm)
-                % du = 1e-6 mm during the last 1500 time steps (up to u = 6.5e-3 mm)
+                % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
                 dt0 = 1e-8;
                 nt0 = 500;
                 t0 = linspace(dt0,nt0*dt0,nt0);
                 dt1 = 1e-9;
-                nt1 = 1500;
+                nt1 = 1300;
                 t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                 t = [t0,t1];
                 
                 % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
                 % dt = 1e-8;
-                % nt = 650;
+                % nt = 630;
                 % t = linspace(dt,nt*dt,nt);
                 
                 % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
                 % dt = 1e-7;
-                % nt = 65;
+                % nt = 63;
                 % t = linspace(dt,nt*dt,nt);
                 
                 % [Liu, Li, Msekh, Zuo, 2016, CMS]
                 % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
-                % du = 1e-6 mm during the last 1500 time steps (up to u = 8e-3 mm)
+                % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
                 % dt0 = 1e-7;
                 % nt0 = 50;
                 % t0 = linspace(dt0,nt0*dt0,nt0);
                 % dt1 = 1e-9;
-                % nt1 = 1500;
+                % nt1 = 1300;
                 % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                 % t = [t0,t1];
             case 'shear'
@@ -436,9 +436,9 @@ if displaySolution
     %% Display solutions at differents instants
     switch lower(loading)
         case 'tension'
-            rep = [1000,1250,1500];
+            rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps);
         case 'shear'
-            rep = [1000,1250,1500];
+            rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-5)<eps | abs(t-6e-6)<eps | abs(t-6.25e-6)<eps);
         otherwise
             error('Wrong loading case')  
     end
