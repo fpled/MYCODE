@@ -273,13 +273,13 @@ if setProblem
                 % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
                 % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM], [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
                 dt = 1e-8;
-                tmax = 1500;
-                t = linspace(dt,tmax*dt,tmax);
+                nt = 1500;
+                t = linspace(dt,nt*dt,nt);
         end
     elseif Dim==3
         dt = 1e-8;
-        tmax = 2500;
-        t = linspace(dt,tmax*dt,tmax);
+        nt = 2500;
+        t = linspace(dt,nt*dt,nt);
     end
     T = TIMEMODEL(t);
     
