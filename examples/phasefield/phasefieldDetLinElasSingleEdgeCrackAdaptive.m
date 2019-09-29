@@ -22,7 +22,7 @@ displaySolution = false;
 
 Dim = 2; % space dimension Dim = 2, 3
 loading = 'Shear'; % 'Tension' or 'Shear'
-filename = ['phasefieldDetLinElasSingleEdgeCrack' loading '_' num2str(Dim) 'D'];
+filename = ['phasefieldDetLinElasSingleEdgeCrack' loading 'Adaptive_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
 if ~exist(pathname,'dir')
