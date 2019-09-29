@@ -44,8 +44,9 @@ if setProblem
         D = DOMAIN(2,[0.0,0.0],[L,L]);
         C = LIGNE([0.0,L/2],[a,L/2]);
     elseif Dim==3
-        D = DOMAIN(3,[0.0,0.0,0.0],[L,L,L]);
-        C = QUADRANGLE([0.0,0.0,L/2],[a,0.0,L/2],[a,L,L/2],[0.0,L,L/2]);
+        l = 0.1e-3;
+        D = DOMAIN(3,[0.0,0.0,0.0],[L,L,l]);
+        C = QUADRANGLE([0.0,L/2,0.0],[a,L/2,0.0],[a,L/2,l],[0.0,L/2,l]);
     end
     
     if Dim==2
@@ -111,7 +112,7 @@ if setProblem
     %% Materials
     % Option
     option = 'DEFO'; % plane strain
-    % option = 'CONT'; % plane strain [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS]
+    % option = 'CONT'; % plane stress [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS]
     % Lame coefficients
     % lambda = 121.1538e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
     % mu = 80.7692e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
@@ -150,12 +151,12 @@ if setProblem
         BFront = [];
         BBack = [];
     elseif Dim==3
-        BU = PLAN([0.0,0.0,L],[L,0.0,L],[0.0,L,L]);
-        BL = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
-        BRight = PLAN([L,0.0,0.0],[L,L,0.0],[L,0.0,L]);
-        BLeft = PLAN([0.0,0.0,0.0],[0.0,L,0.0],[0.0,0.0,L]);
-        BFront = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,L]);
-        BBack = PLAN([0.0,L,0.0],[L,L,0.0],[0.0,L,L]);
+        BU = PLAN([0.0,L,0.0],[L,L,0.0],[0.0,L,l]);
+        BL = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,l]);
+        BRight = PLAN([L,0.0,0.0],[L,L,0.0],[L,0.0,l]);
+        BLeft = PLAN([0.0,0.0,0.0],[0.0,L,0.0],[0.0,0.0,l]);
+        BFront = PLAN([0.0,0.0,l],[L,0.0,l],[0.0,L,l]);
+        BBack = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
     end
     
     S = final(S,'duplicate');
@@ -165,7 +166,11 @@ if setProblem
         case 'tension'
             S = addcl(S,BU,'UY',ud);
             S = addcl(S,BL,'UY');
-            S = addcl(S,POINT([0.0,0.0]),'UX');
+            if Dim==2
+                S = addcl(S,POINT([0.0,0.0]),'UX');
+            elseif Dim==3
+                S = addcl(S,POINT([0.0,0.0,0.0]),{'UX','UZ'});
+            end
         case 'shear'
             if Dim==2
                 S = addcl(S,BU,{'UX','UY'},[ud;0]);
@@ -225,30 +230,30 @@ if setProblem
             case 'shear'
                 % [Miehe, Welschinger, Hofacker, 2010 IJNME]
                 % du = 1e-4 mm during the first 100 time steps (up to u = 10e-3 mm)
-                % du = 1e-6 mm during the last 5000 time steps (up to u = 15e-3 mm)
+                % du = 1e-6 mm during the last 10 000 time steps (up to u = 20e-3 mm)
                 % dt0 = 1e-7;
                 % nt0 = 100;
                 % t0 = linspace(dt0,nt0*dt0,nt0);
                 % dt1 = 1e-9;
-                % nt1 = 5000;
+                % nt1 = 10000;
                 % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                 % t = [t0,t1];
                 
                 % [Liu, Li, Msekh, Zuo, 2016, CMS]
                 % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
-                % du = 1e-5 mm during the last 1000 time steps (up to u = 15e-3 mm)
+                % du = 1e-5 mm during the last 1500 time steps (up to u = 20e-3 mm)
                 % dt0 = 1e-7;
                 % nt0 = 50;
                 % t0 = linspace(dt0,nt0*dt0,nt0);
                 % dt1 = 1e-8;
-                % nt1 = 1000;
+                % nt1 = 1500;
                 % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                 % t = [t0,t1];
                 
                 % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
                 % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM], [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
                 dt = 1e-8;
-                nt = 1500;
+                nt = 2000;
                 t = linspace(dt,nt*dt,nt);
         end
     elseif Dim==3
@@ -349,10 +354,6 @@ if solveProblem
         u = freematrix(S,A)\b;
         u = unfreevector(S,u);
         
-        % ddlfree = getddlfree(S);
-        % ddlbloque = getddlbloque(S);
-        % bc = getbc(S,1);
-        % numddl = bc.ddlbloque; % works only if the first bc corresponds to imposed displacement ud
         switch lower(loading)
             case 'tension'
                 numddl = findddl(S,'UY',BU);
@@ -368,6 +369,13 @@ if solveProblem
         dt{i} = d;
         ut{i} = u;
         ft(i) = sum(fint);
+        if Dim==2
+            size = getLength(BU);
+        elseif Dim==3
+            size = getsize(D);
+            size = prod(size([1 Dim]));
+        end
+        ft(i) = ft(i)/size;
         
         fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*1e-3,norm(Ht{i}),norm(dt{i}),norm(ut{i}));
         
@@ -396,6 +404,9 @@ fprintf('elapsed time = %f s\n',time);
 
 %% Display
 if displaySolution
+    [t,rep] = gettevol(T);
+    u = getmatrixatstep(ut,rep(end));
+    
     %% Display domains, boundary conditions and meshes
     plotDomain({D,C},'legend',false);
     mysaveas(pathname,'domain',formats,renderer);
@@ -418,8 +429,6 @@ if displaySolution
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
-    [t,rep] = gettevol(T);
-    u = getmatrixatstep(ut,rep(end));
     ampl = getsize(S)/max(abs(u))/20;
     plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
@@ -437,8 +446,8 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('Displacement [$mm$]','Interpreter',interpreter)
-    ylabel('Force [$kN$]','Interpreter',interpreter)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Force [kN]','Interpreter',interpreter)
     mysaveas(pathname,'force_displacement',formats);
     
     %% Display evolution of solutions
@@ -446,21 +455,22 @@ if displaySolution
     % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
     
     options = {'plotiter',true,'plottime',false};
+    framerate = 80;
     
-%     evolSolution(S_phase,Ht,'filename','internal_energy','pathname',pathname,options{:});
+%     evolSolution(S_phase,Ht,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
     
-    evolSolution(S_phase,dt,'filename','damage','pathname',pathname,options{:});
+    evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
     for i=1:Dim
-        evolSolution(S,ut,'displ',i,'ampl',ampl,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
+        evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
     end
     
 %     for i=1:(Dim*(Dim+1)/2)
-%         evolSolution(S,ut,'epsilon',i,'ampl',ampl,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
-%         evolSolution(S,ut,'sigma',i,'ampl',ampl,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
+%         evolSolution(S,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
+%         evolSolution(S,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
 %     end
 %     
-%     evolSolution(S,ut,'epsilon','mises','ampl',ampl,'filename','epsilon_von_mises','pathname',pathname,options{:});
-%     evolSolution(S,ut,'sigma','mises','ampl',ampl,'filename','sigma_von_mises','pathname',pathname,options{:});
+%     evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
+%     evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
     
     %% Display solutions at differents instants
     switch lower(loading)
