@@ -413,20 +413,21 @@ if solveProblem
             otherwise
                 error('Wrong loading case')
         end
-        fint = A(numddl,:)*u;
-        
-        % Update fields
-        Ht{i} = double(H);
-        dt{i} = d;
-        ut{i} = u;
-        ft(i) = sum(fint);
+        f = A(numddl,:)*u;
+        f = sum(f);
         if Dim==2
             size = getLength(BU);
         elseif Dim==3
             size = getsize(D);
             size = prod(size([1 Dim]));
         end
-        ft(i) = ft(i)/size;
+        f = f*size;
+        
+        % Update fields
+        Ht{i} = double(H);
+        dt{i} = d;
+        ut{i} = u;
+        ft(i) = f;
         St_phase{i} = S_phase;
         St{i} = S;
         

@@ -33,6 +33,8 @@ if ~exist(pathname,'dir')
 end
 
 fontsize = 16;
+linewidth = 1;
+interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
@@ -54,9 +56,9 @@ if setProblem
     h = 4*unit;
     C = LIGNE([-b,-h],[-b,-h+a]);
     clD = 0.1*unit; % characteristic length for domain
-    % cl = clD;
+    cl = clD;
     % cl = 0.01*unit; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
-    cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    % cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
     % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
     % cl = 0.01*unit/5; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     clC = cl; % characteristic length for edge crack/notch
@@ -144,6 +146,7 @@ if setProblem
     S = setmaterial(S,mat);
     
     %% Dirichlet boundary conditions
+    B = LIGNE([-10*unit,h],[10*unit,h]);
     PU = POINT([0.0,h]);
     PL = POINT([-9*unit,-h]);
     PR = POINT([9*unit,-h]);
@@ -179,9 +182,9 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','C','BU','BL','BR','PU','PL','PR','gc','l','E','g');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR','gc','l','E','g');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','C','BU','BL','BR','PU','PL','PR','gc','l','E','g');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR','gc','l','E','g');
 end
 
 %% Solution
@@ -194,15 +197,16 @@ if solveProblem
     Ht = cell(1,length(T));
     dt = cell(1,length(T));
     ut = cell(1,length(T));
+    ft = zeros(1,length(T));
     
     sz_phase = getnbddl(S_phase);
     sz = getnbddl(S);
     H = zeros(sz_phase,1);
     u = zeros(sz,1);
     
-    fprintf('\n+----------+-----------+------------+------------+------------+\n');
-    fprintf('|   Iter   |  u [mm]   |  norm(H)   |  norm(d)   |  norm(u)   |\n');
-    fprintf('+----------+-----------+------------+------------+------------+\n');
+    fprintf('\n+----------+-----------+-----------+------------+------------+------------+\n');
+    fprintf('|   Iter   |  u [mm]   |  f [kN]   |  norm(H)   |  norm(d)   |  norm(u)   |\n');
+    fprintf('+----------+-----------+-----------+------------+------------+------------+\n');
     
     for i=1:length(T)
         
@@ -244,22 +248,28 @@ if solveProblem
         S = addcl(S,PL,{'UX','UY'});
         S = addcl(S,PR,'UY');
         
-        [A,b] = calc_rigi(S);
+        [A,b] = calc_rigi(S,'nofree');
         b = -b;
         
-        u = A\b;
+        u = freematrix(S,A)\b;
         u = unfreevector(S,u);
+        
+        % numddl = findddl(S,'UY',PU);
+        numddl = findddl(S,'UY',B);
+        f = -A(numddl,:)*u;
+        f = sum(f)*getLength(B);
         
         % Update fields
         Ht{i} = double(H);
         dt{i} = d;
         ut{i} = u;
+        ft(i) = f;
         
-        fprintf('| %8d | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,norm(Ht{i}),norm(dt{i}),norm(ut{i}));
+        fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*1e-3,norm(Ht{i}),norm(dt{i}),norm(ut{i}));
         
     end
     
-    fprintf('+----------+-----------+------------+------------+------------+\n');
+    fprintf('+----------+-----------+-----------+------------+------------+------------+\n');
     
     Ht = TIMEMATRIX(Ht,T,[sz_phase,1]);
     dt = TIMEMATRIX(dt,T,[sz_phase,1]);
@@ -267,9 +277,9 @@ if solveProblem
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'Ht','dt','ut','time');
+    save(fullfile(pathname,'solution.mat'),'Ht','dt','ut','ft','time');
 else
-    load(fullfile(pathname,'solution.mat'),'Ht','dt','ut','time');
+    load(fullfile(pathname,'solution.mat'),'Ht','dt','ut','ft','time');
 end
 
 %% Outputs
@@ -282,6 +292,9 @@ fprintf('elapsed time = %f s\n',time);
 
 %% Display
 if displaySolution
+    [t,rep] = gettevol(T);
+    u = getmatrixatstep(ut,rep(end));
+    
     %% Display domains, boundary conditions and meshes
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;
@@ -300,8 +313,6 @@ if displaySolution
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
-    [t,rep] = gettevol(T);
-    u = getmatrixatstep(ut,rep(end));
     ampl = getsize(S)/max(abs(u))/20;
     plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
@@ -312,29 +323,41 @@ if displaySolution
     plot(S+ampl*unfreevector(S,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
+    %% Display force-displacement curve
+    figure('Name','Force-displacement')
+    clf
+    plot(t*1e3,ft*1e-3,'-b','Linewidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Force [kN]','Interpreter',interpreter)
+    mysaveas(pathname,'force_displacement',formats);
+    
     %% Display evolution of solutions
     ampl = 0;
     % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
     
     options = {'plotiter',true,'plottime',false};
+    framerate = 80;
     
-%     evolSolution(S_phase,Ht,'filename','internal_energy','pathname',pathname,options{:});
+%     evolSolution(S_phase,Ht,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
     
-    evolSolution(S_phase,dt,'filename','damage','pathname',pathname,options{:});
+    evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
     for i=1:2
-        evolSolution(S,ut,'displ',i,'ampl',ampl,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
+        evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
     end
     
 %     for i=1:3
-%         evolSolution(S,ut,'epsilon',i,'ampl',ampl,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
-%         evolSolution(S,ut,'sigma',i,'ampl',ampl,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
+%         evolSolution(S,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
+%         evolSolution(S,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
 %     end
 %     
-%     evolSolution(S,ut,'epsilon','mises','ampl',ampl,'filename','epsilon_von_mises','pathname',pathname,options{:});
-%     evolSolution(S,ut,'sigma','mises','ampl',ampl,'filename','sigma_von_mises','pathname',pathname,options{:});
+%     evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
+%     evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
     
     %% Display solutions at differents instants
-    rep = [500,650];
+    rep = find(abs(t-0.223*unit)<eps | abs(t-0.225*unit)<eps | abs(t-0.227*unit)<eps | abs(t-0.230*unit)<eps)
     for j=1:length(rep)
         close all
         Hj = getmatrixatstep(Ht,rep(j));

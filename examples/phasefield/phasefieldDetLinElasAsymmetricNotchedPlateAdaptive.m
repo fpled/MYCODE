@@ -33,6 +33,8 @@ if ~exist(pathname,'dir')
 end
 
 fontsize = 16;
+linewidth = 1;
+interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
@@ -169,6 +171,7 @@ if setProblem
     S = setmaterial(S,mat);
     
     %% Dirichlet boundary conditions
+    B = LIGNE([-10*unit,h],[10*unit,h]);
     PU = POINT([0.0,h]);
     PL = POINT([-9*unit,-h]);
     PR = POINT([9*unit,-h]);
@@ -204,9 +207,9 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','C','CL','CR','BU','BL','BR','PU','PL','PR','gc','l','E','g');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','C','CL','CR','B','BU','BL','BR','PU','PL','PR','gc','l','E','g');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','C','CL','CR','BU','BL','BR','PU','PL','PR','gc','l','E','g');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','C','CL','CR','B','BU','BL','BR','PU','PL','PR','gc','l','E','g');
 end
 
 %% Solution
@@ -219,6 +222,7 @@ if solveProblem
     Ht = cell(1,length(T));
     dt = cell(1,length(T));
     ut = cell(1,length(T));
+    ft = zeros(1,length(T));
     St_phase = cell(1,length(T));
     St = cell(1,length(T));
     
@@ -227,10 +231,10 @@ if solveProblem
     H = zeros(sz_phase,1);
     u = zeros(sz,1);
     
-    fprintf('\n+----------+-----------+----------+----------+------------+------------+------------+\n');
-    fprintf('|   Iter   |  u [mm]   | Nb nodes | Nb elems |  norm(H)   |  norm(d)   |  norm(u)   |\n');
-    fprintf('+----------+-----------+----------+----------+------------+------------+------------+\n');
-    fprintf('| %8d | %6.3e | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',0,0,getnbnode(S),getnbelem(S),0,0,0);
+    fprintf('\n+----------+-----------+-----------+----------+----------+------------+------------+------------+\n');
+    fprintf('|   Iter   |  u [mm]   |  f [kN]   | Nb nodes | Nb elems |  norm(H)   |  norm(d)   |  norm(u)   |\n');
+    fprintf('+----------+-----------+-----------+----------+----------+------------+------------+------------+\n');
+    fprintf('| %8d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',0,0,getnbnode(S),getnbelem(S),0,0,0);
     
     for i=1:length(T)
         
@@ -296,24 +300,30 @@ if solveProblem
         S = addcl(S,PL,{'UX','UY'});
         S = addcl(S,PR,'UY');
         
-        [A,b] = calc_rigi(S);
+        [A,b] = calc_rigi(S,'nofree');
         b = -b;
         
-        u = A\b;
+        u = freematrix(S,A)\b;
         u = unfreevector(S,u);
+        
+        % numddl = findddl(S,'UY',PU);
+        numddl = findddl(S,'UY',B);
+        f = -A(numddl,:)*u;
+        f = sum(f)*getLength(B);
         
         % Update fields
         Ht{i} = double(H);
         dt{i} = d;
         ut{i} = u;
+        ft(i) = f;
         St_phase{i} = S_phase;
         St{i} = S;
         
-        fprintf('| %8d | %6.3e | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,getnbnode(S),getnbelem(S),norm(Ht{i}),norm(dt{i}),norm(ut{i}));
+        fprintf('| %8d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,getnbnode(S),getnbelem(S),norm(Ht{i}),norm(dt{i}),norm(ut{i}));
         
     end
     
-    fprintf('+----------+-----------+----------+----------+------------+------------+------------+\n');
+    fprintf('+----------+-----------+-----------+----------+----------+------------+------------+------------+\n');
     
     % DO NOT WORK WITH MESH ADAPTATION
     % Ht = TIMEMATRIX(Ht,T,[sz_phase,1]);
@@ -322,9 +332,9 @@ if solveProblem
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'Ht','dt','ut','St','St_phase','time');
+    save(fullfile(pathname,'solution.mat'),'Ht','dt','ut','ft','St','St_phase','time');
 else
-    load(fullfile(pathname,'solution.mat'),'Ht','dt','ut','St','St_phase','time');
+    load(fullfile(pathname,'solution.mat'),'Ht','dt','ut','ft','St','St_phase','time');
 end
 
 %% Outputs
@@ -344,10 +354,6 @@ if displaySolution
     S_final = St{end};
     
     %% Display domains, boundary conditions and meshes
-    plotDomain({D,C},'legend',false);
-    mysaveas(pathname,'domain',formats,renderer);
-    mymatlab2tikz(pathname,'domain.tex');
-    
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;
     v = calc_init_dirichlet(S);
@@ -378,6 +384,17 @@ if displaySolution
     plot(S_final+ampl*unfreevector(S_final,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
+    %% Display force-displacement curve
+    figure('Name','Force-displacement')
+    clf
+    plot(t*1e3,ft*1e-3,'-b','Linewidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Force [kN]','Interpreter',interpreter)
+    mysaveas(pathname,'force_displacement',formats);
+    
     %% Display evolution of solutions
     ampl = 0;
     % DO NOT WORK WITH MESH ADAPTATION
@@ -394,7 +411,7 @@ if displaySolution
     
     evolSolutionCell(T,St_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
     for i=1:2
-        evolSolutionCell(T,St,ut,'displ',i,'FrameRate',framerate,'ampl',ampl,'FrameRate',60,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
+        evolSolutionCell(T,St,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
     end
     
 %     for i=1:3
