@@ -232,7 +232,7 @@ if solveProblem
     u = zeros(sz,1);
     
     fprintf('\n+----------+-----------+-----------+----------+----------+------------+------------+------------+\n');
-    fprintf('|   Iter   |  u [mm]   |  f [kN]   | Nb nodes | Nb elems |  norm(H)   |  norm(d)   |  norm(u)   |\n');
+    fprintf('|   Iter   |  u [mm]   | f [kN/mm] | Nb nodes | Nb elems |  norm(H)   |  norm(d)   |  norm(u)   |\n');
     fprintf('+----------+-----------+-----------+----------+----------+------------+------------+------------+\n');
     fprintf('| %8d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',0,0,getnbnode(S),getnbelem(S),0,0,0);
     
@@ -274,7 +274,6 @@ if solveProblem
         for m=1:length(mats_phase)
             S_phase = setmaterial(S_phase,mats_phase{m},m);
         end
-        % S_phase = actualisematerials(S_phase,mats_phase);
         S_phase = final(S_phase,'duplicate');
         S_phase = addcl(S_phase,CL,'T',1);
         S_phase = addcl(S_phase,CR,'T',1);
@@ -292,7 +291,6 @@ if solveProblem
             mats{m} = setparam(mats{m},'E',FENODEFIELD(E.*(g(d)+k)));
             S = setmaterial(S,mats{m},m);
         end
-        % S = actualisematerials(S,mats);
         S = final(S,'duplicate');
         S = removebc(S);
         ud = -t(i);
@@ -306,10 +304,9 @@ if solveProblem
         u = freematrix(S,A)\b;
         u = unfreevector(S,u);
         
-        % numddl = findddl(S,'UY',PU);
-        numddl = findddl(S,'UY',B);
+        numddl = findddl(S,'UY',PU);
         f = -A(numddl,:)*u;
-        f = sum(f)*getLength(B);
+        % f = sum(f);
         
         % Update fields
         Ht{i} = double(H);

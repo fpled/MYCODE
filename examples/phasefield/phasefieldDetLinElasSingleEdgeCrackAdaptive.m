@@ -316,7 +316,7 @@ if solveProblem
     u = zeros(sz,1);
     
     fprintf('\n+----------+-----------+-----------+----------+----------+------------+------------+------------+\n');
-    fprintf('|   Iter   |  u [mm]   |  f [kN]   | Nb nodes | Nb elems |  norm(H)   |  norm(d)   |  norm(u)   |\n');
+    fprintf('|   Iter   |  u [mm]   | f [kN/mm] | Nb nodes | Nb elems |  norm(H)   |  norm(d)   |  norm(u)   |\n');
     fprintf('+----------+-----------+-----------+----------+----------+------------+------------+------------+\n');
     fprintf('| %8d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',0,0,0,getnbnode(S),getnbelem(S),0,0,0);
     
@@ -358,7 +358,6 @@ if solveProblem
         for m=1:length(mats_phase)
             S_phase = setmaterial(S_phase,mats_phase{m},m);
         end
-        % S_phase = actualisematerials(S_phase,mats_phase);
         S_phase = final(S_phase,'duplicate');
         S_phase = addcl(S_phase,CU,'T',1);
         S_phase = addcl(S_phase,CL,'T',1);
@@ -373,7 +372,6 @@ if solveProblem
             mats{m} = setparam(mats{m},'E',FENODEFIELD(E.*(g(d)+k)));
             S = setmaterial(S,mats{m},m);
         end
-        % S = actualisematerials(S,mats);
         S = final(S,'duplicate');
         S = removebc(S);
         ud = t(i);
@@ -431,7 +429,7 @@ if solveProblem
         St_phase{i} = S_phase;
         St{i} = S;
         
-        fprintf('| %8d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*1e-3,getnbnode(S),getnbelem(S),norm(Ht{i}),norm(dt{i}),norm(ut{i}));
+        fprintf('| %8d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*1e-6,getnbnode(S),getnbelem(S),norm(Ht{i}),norm(dt{i}),norm(ut{i}));
         
     end
     
@@ -503,12 +501,12 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force-displacement')
     clf
-    plot(t*1e3,ft*1e-3,'-b','Linewidth',linewidth)
+    plot(t*1e3,ft*1e-6,'-b','Linewidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
-    ylabel('Force [kN]','Interpreter',interpreter)
+    ylabel('Force [kN/mm]','Interpreter',interpreter)
     mysaveas(pathname,'force_displacement',formats);
     
     %% Display evolution of solutions
@@ -541,9 +539,9 @@ if displaySolution
     %% Display solutions at differents instants
     switch lower(loading)
         case 'tension'
-            rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps);
-        case 'shear'
             rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-5)<eps | abs(t-6e-6)<eps | abs(t-6.25e-6)<eps);
+        case 'shear'
+            rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps);
         otherwise
             error('Wrong loading case')  
     end

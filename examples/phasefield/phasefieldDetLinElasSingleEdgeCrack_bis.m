@@ -288,7 +288,7 @@ if solveProblem
     u = zeros(sz_u,1);
     
     fprintf('\n+----------+-----------+-----------+------------+------------+------------+\n');
-    fprintf('|   Iter   |  u [mm]   |  f [kN]   |  norm(H)   |  norm(d)   |  norm(u)   |\n');
+    fprintf('|   Iter   |  u [mm]   | f [kN/mm] |  norm(H)   |  norm(d)   |  norm(u)   |\n');
     fprintf('+----------+-----------+-----------+------------+------------+------------+\n');
     
     for i=1:length(T)
@@ -370,13 +370,6 @@ if solveProblem
         end
         f = A(numddl,:)*u;
         f = sum(f);
-        if Dim==2
-            size = getLength(BU);
-        elseif Dim==3
-            size = getsize(D);
-            size = prod(size([1 Dim]));
-        end
-        f = f*size;
         
         % Update fields
         Ht{i} = H;
@@ -449,12 +442,12 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force-displacement')
     clf
-    plot(t*1e3,ft*1e-3,'-b','Linewidth',linewidth)
+    plot(t*1e3,ft*1e-6,'-b','Linewidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
-    ylabel('Force [kN]','Interpreter',interpreter)
+    ylabel('Force [kN/mm]','Interpreter',interpreter)
     mysaveas(pathname,'force_displacement',formats);
     
     %% Display evolution of solutions
@@ -486,9 +479,9 @@ if displaySolution
     %% Display solutions at differents instants
     switch lower(loading)
         case 'tension'
-            rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps);
-        case 'shear'
             rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-5)<eps | abs(t-6e-6)<eps | abs(t-6.25e-6)<eps);
+        case 'shear'
+            rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps);
         otherwise
             error('Wrong loading case')  
     end

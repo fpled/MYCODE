@@ -205,7 +205,7 @@ if solveProblem
     u = zeros(sz,1);
     
     fprintf('\n+----------+-----------+-----------+------------+------------+------------+\n');
-    fprintf('|   Iter   |  u [mm]   |  f [kN]   |  norm(H)   |  norm(d)   |  norm(u)   |\n');
+    fprintf('|   Iter   |  u [mm]   | f [kN/mm] |  norm(H)   |  norm(d)   |  norm(u)   |\n');
     fprintf('+----------+-----------+-----------+------------+------------+------------+\n');
     
     for i=1:length(T)
@@ -254,10 +254,9 @@ if solveProblem
         u = freematrix(S,A)\b;
         u = unfreevector(S,u);
         
-        % numddl = findddl(S,'UY',PU);
-        numddl = findddl(S,'UY',B);
+        numddl = findddl(S,'UY',PU);
         f = -A(numddl,:)*u;
-        f = sum(f)*getLength(B);
+        % f = sum(f);
         
         % Update fields
         Ht{i} = double(H);
@@ -265,7 +264,7 @@ if solveProblem
         ut{i} = u;
         ft(i) = f;
         
-        fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*1e-3,norm(Ht{i}),norm(dt{i}),norm(ut{i}));
+        fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*1e-6,norm(Ht{i}),norm(dt{i}),norm(ut{i}));
         
     end
     
@@ -326,12 +325,12 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force-displacement')
     clf
-    plot(t*1e3,ft*1e-3,'-b','Linewidth',linewidth)
+    plot(t*1e3,ft*1e-6,'-b','Linewidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
-    ylabel('Force [kN]','Interpreter',interpreter)
+    ylabel('Force [kN/mm]','Interpreter',interpreter)
     mysaveas(pathname,'force_displacement',formats);
     
     %% Display evolution of solutions
