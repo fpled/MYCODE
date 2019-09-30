@@ -62,8 +62,8 @@ if setProblem
         % clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
         % clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
     elseif Dim==3
-        clD = 2e-4;
-        clC = 2e-5;
+        clD = 4e-5;
+        clC = 4e-6;
     end
     % S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
     S_phase = gmshdomainwithedgesmearedcrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
@@ -316,7 +316,7 @@ if solveProblem
     u = zeros(sz,1);
     
     fprintf('\n+----------+-----------+-----------+----------+----------+------------+------------+------------+\n');
-    fprintf('|   Iter   |  u [mm]   | f [kN/mm] | Nb nodes | Nb elems |  norm(H)   |  norm(d)   |  norm(u)   |\n');
+    fprintf('|   Iter   |  u [mm]   |  f [kN]   | Nb nodes | Nb elems |  norm(H)   |  norm(d)   |  norm(u)   |\n');
     fprintf('+----------+-----------+-----------+----------+----------+------------+------------+------------+\n');
     fprintf('| %8d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',0,0,0,getnbnode(S),getnbelem(S),0,0,0);
     
@@ -422,7 +422,7 @@ if solveProblem
         St_phase{i} = S_phase;
         St{i} = S;
         
-        fprintf('| %8d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*1e-6,getnbnode(S),getnbelem(S),norm(Ht{i}),norm(dt{i}),norm(ut{i}));
+        fprintf('| %8d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),getnbnode(S),getnbelem(S),norm(Ht{i}),norm(dt{i}),norm(ut{i}));
         
     end
     
@@ -494,13 +494,19 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force-displacement')
     clf
-    plot(t*1e3,ft*1e-6,'-b','Linewidth',linewidth)
+    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
-    ylabel('Force [kN/mm]','Interpreter',interpreter)
+    if Dim==2
+        ylabel('Force [kN/mm]','Interpreter',interpreter)
+    elseif Dim==3
+        ylabel('Force [kN]','Interpreter',interpreter)
+    end
+    my
     mysaveas(pathname,'force_displacement',formats);
+    mymatlab2tikz(pathname,'force_displacement.tex');
     
     %% Display evolution of solutions
     ampl = 0;

@@ -332,6 +332,7 @@ if displaySolution
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Force [kN/mm]','Interpreter',interpreter)
     mysaveas(pathname,'force_displacement',formats);
+    mymatlab2tikz(pathname,'force_displacement.tex');
     
     %% Display evolution of solutions
     ampl = 0;
