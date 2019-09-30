@@ -413,13 +413,6 @@ if solveProblem
         end
         f = A(numddl,:)*u;
         f = sum(f);
-        if Dim==2
-            size = getLength(BU);
-        elseif Dim==3
-            size = getsize(D);
-            size = prod(size([1 Dim]));
-        end
-        f = f*size;
         
         % Update fields
         Ht{i} = double(H);
