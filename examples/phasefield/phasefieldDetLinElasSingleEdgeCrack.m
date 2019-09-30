@@ -16,9 +16,9 @@ close all
 % myparallel('start');
 
 %% Input data
-setProblem = false;
-solveProblem = false;
-displaySolution = true;
+setProblem = true;
+solveProblem = true;
+displaySolution = false;
 
 Dim = 2; % space dimension Dim = 2, 3
 loading = 'Tension'; % 'Tension' or 'Shear'
