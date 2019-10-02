@@ -165,26 +165,26 @@ if setProblem
     %% Time scheme
     % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
     % dt = 1e-4*unit;
-    % nt = 3000;
+    % nt = 2500;
     % t = linspace(dt,nt*dt,nt);
     
     % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
     % du = 1e-3 mm during the first 200 time steps (up to u = 0.2 mm)
-    % du = 1e-4 mm during the last  1000 time steps (up to u = 0.3 mm)
+    % du = 1e-4 mm during the last  500 time steps (up to u = 0.25 mm)
     dt0 = 1e-3*unit;
     nt0 = 200;
     t0 = linspace(dt0,nt0*dt0,nt0);
     dt1 = 1e-4*unit;
-    nt1 = 1000;
+    nt1 = 500;
     t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
     t = [t0,t1];
     
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR','gc','l','E','g');
+    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR','gc','l','E','g');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR','gc','l','E','g');
+    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR','gc','l','E','g');
 end
 
 %% Solution
@@ -357,7 +357,7 @@ if displaySolution
 %     evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
     
     %% Display solutions at differents instants
-    rep = find(abs(t-0.223*unit)<eps | abs(t-0.225*unit)<eps | abs(t-0.227*unit)<eps | abs(t-0.230*unit)<eps)
+    rep = find(abs(t-0.210*unit)<eps | abs(t-0.215*unit)<eps | abs(t-0.218*unit)<eps | abs(t-0.220*unit)<eps | abs(t-0.222*unit)<eps);
     for j=1:length(rep)
         close all
         Hj = getmatrixatstep(Ht,rep(j));
