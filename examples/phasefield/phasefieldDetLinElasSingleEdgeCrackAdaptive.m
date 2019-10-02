@@ -16,9 +16,9 @@ close all
 % myparallel('start');
 
 %% Input data
-setProblem = true;
-solveProblem = true;
-displaySolution = false;
+setProblem = false;
+solveProblem = false;
+displaySolution = true;
 
 Dim = 2; % space dimension Dim = 2, 3
 loading = 'Tension'; % 'Tension' or 'Shear'
@@ -450,6 +450,7 @@ fprintf('elapsed time = %f s\n',time);
 
 %% Display
 if displaySolution
+    [t,rep] = gettevol(T);
     % DO NOT WORK WITH MESH ADAPTATION
     % u = getmatrixatstep(ut,rep(end));
 %     u = ut{rep(end)};
@@ -504,7 +505,6 @@ if displaySolution
     elseif Dim==3
         ylabel('Force [kN]','Interpreter',interpreter)
     end
-    my
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
