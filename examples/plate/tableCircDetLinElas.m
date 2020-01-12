@@ -234,7 +234,7 @@ if displaySolution
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
-    [hD,legD] = plotBoundaryConditions(S,'legend',false);
+    [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     switch lower(loading)
         case 'uniform'
             ampl = 2;

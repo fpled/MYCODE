@@ -165,7 +165,7 @@ if solveProblem
     
     %% Materials
     % Gravitational acceleration
-    g = 9.81;
+    g = 9.81; % m/s2
     
     % Density
     Mass_total = 13.9; % kg

@@ -57,7 +57,7 @@ if solveProblem
     
     %% Materials
     % Gravitational acceleration
-    g = 9.81;
+    g = 9.81; % m/s2
     
     % Density
     RHO = 707.1384; % kg/m3
@@ -515,7 +515,7 @@ if displaySolution
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
-    [hD,legD] = plotBoundaryConditions(S,'legend',false);
+    [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     ampl = 5;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
     hP = plot(P2,'g+');

@@ -556,6 +556,9 @@ if displaySolution
         Sj = St{rep(j)};
         Sj_phase = St_phase{rep(j)};
         
+        plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+        mysaveas(pathname,['mesh_t' num2str(rep(j))],formats,renderer);
+        
 %         plotSolution(Sj_phase,Hj);
 %         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
         

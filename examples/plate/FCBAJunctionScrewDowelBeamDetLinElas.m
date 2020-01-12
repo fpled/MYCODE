@@ -49,7 +49,7 @@ if solveProblem
     
     %% Materials
     % Gravitational acceleration
-    g = 9.81;
+    g = 9.81; % m/s2
     
     % Density
     RHO = 707.1384; % kg/m3
@@ -64,6 +64,7 @@ if solveProblem
     IY2 = h*b2^3/12;
     IZ1 = b1*h^3/12;
     IZ2 = b2*h^3/12;
+    % Polar second moment of area (or Polar area moment of inertia)
     IX1 = IY1+IZ1;
     IX2 = IY2+IZ2;
     

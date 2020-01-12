@@ -148,7 +148,7 @@ if solveProblem
     
     %% Materials
     % Gravitational acceleration
-    g = 9.81;
+    g = 9.81; % m/s2
     
     % Plate
     % Young modulus
@@ -570,7 +570,7 @@ if displaySolution
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
-    [hD,legD] = plotBoundaryConditions(S,'legend',false);
+    [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     ampl = 5;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',linewidth);
     hP = plot(P,'g+');

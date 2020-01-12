@@ -48,7 +48,7 @@ if solveProblem
     
     %% Materials
     % Gravitational acceleration
-    g = 9.81;
+    g = 9.81; % m/s2
     
     % Density
     RHO = 707.1384; % kg/m3
@@ -434,7 +434,6 @@ if displaySolution
     figure('Name','Solution Exx')
     clf
     plot(e,S+ampl*u,'compo','EXX',options{:})
-    view(3)
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Exx',formats,renderer);
@@ -442,7 +441,6 @@ if displaySolution
     figure('Name','Solution Eyy')
     clf
     plot(e,S+ampl*u,'compo','EYY',options{:})
-    view(3)
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Eyy',formats,renderer);
@@ -450,7 +448,6 @@ if displaySolution
     figure('Name','Solution Exy')
     clf
     plot(e,S+ampl*u,'compo','EXY',options{:})
-    view(3)
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Exy',formats,renderer);
@@ -458,7 +455,6 @@ if displaySolution
     figure('Name','Solution Gxx')
     clf
     plot(e,S+ampl*u,'compo','GXX',options{:})
-    view(3)
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Gxx',formats,renderer);
@@ -466,7 +462,6 @@ if displaySolution
     figure('Name','Solution Gyy')
     clf
     plot(e,S+ampl*u,'compo','GYY',options{:})
-    view(3)
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Gyy',formats,renderer);
@@ -474,7 +469,6 @@ if displaySolution
     figure('Name','Solution Gxy')
     clf
     plot(e,S+ampl*u,'compo','GXY',options{:})
-    view(3)
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Gxy',formats,renderer);
@@ -482,7 +476,6 @@ if displaySolution
     figure('Name','Solution Nxx')
     clf
     plot(s,S+ampl*u,'compo','NXX',options{:})
-    view(3)
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Nxx',formats,renderer);
@@ -490,7 +483,6 @@ if displaySolution
     figure('Name','Solution Nyy')
     clf
     plot(s,S+ampl*u,'compo','NYY',options{:})
-    view(3)
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Nyy',formats,renderer);
@@ -498,7 +490,6 @@ if displaySolution
     figure('Name','Solution Nxy')
     clf
     plot(s,S+ampl*u,'compo','NXY',options{:})
-    view(3)
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Nxy',formats,renderer);
@@ -506,7 +497,6 @@ if displaySolution
     figure('Name','Solution Mxx')
     clf
     plot(s,S+ampl*u,'compo','MXX',options{:})
-    view(3)
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Mxx',formats,renderer);
@@ -514,7 +504,6 @@ if displaySolution
     figure('Name','Solution Myy')
     clf
     plot(s,S+ampl*u,'compo','MYY',options{:})
-    view(3)
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Myy',formats,renderer);
@@ -522,7 +511,6 @@ if displaySolution
     figure('Name','Solution Mxy')
     clf
     plot(s,S+ampl*u,'compo','MXY',options{:})
-    view(3)
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Mxy',formats,renderer);
