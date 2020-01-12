@@ -186,7 +186,8 @@ if solveProblem
     
     x = getcoord(S.node);
     
-    e = calc_epsilon(S,u,'smooth');
+    e = calc_epsilon(S,u,'node');
+    % e = calc_epsilon(S,u,'smooth');
     s = calc_sigma(S,u,'smooth');
     
     Exx = e(1);
@@ -394,7 +395,7 @@ if displaySolution
     
     plotSolution(S,u,'rotation',3,'ampl',ampl,options{:});
     mysaveas(pathname,'Rz',formats,renderer);
-%     %
+    %
 %     plotSolution(S,u,'epsilon',1,'ampl',ampl,options{:});
 %     mysaveas(pathname,'Exx',formats,renderer);
 %     
