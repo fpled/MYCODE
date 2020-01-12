@@ -522,7 +522,7 @@ if displaySolution
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
-    [hD,legD] = plotBoundaryConditions(S,'legend',false);
+    [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     ampl = 3;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
     hP = plot(P2,'g+');
