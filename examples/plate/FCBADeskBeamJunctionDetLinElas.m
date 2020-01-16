@@ -501,7 +501,7 @@ fprintf('Mz    = %g N.m\n',mz);
 fprintf('Mz_ex = %g N.m, error = %g\n',mz_ex,err_mz);
 fprintf('\n');
 
-disp('Axial deformation Epsx and shear deformation Gamz at point'); disp(P2);
+disp('Axial strain Epsx and bending strain (curvature) Gamz at point'); disp(P2);
 fprintf('Epsx    = %g\n',epsx);
 fprintf('Epsx_ex = %g, error = %g\n',epsx_ex,err_epsx);
 fprintf('Gamz    = %g\n',gamz);

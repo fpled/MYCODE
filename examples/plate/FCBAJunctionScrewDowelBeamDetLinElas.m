@@ -373,15 +373,15 @@ if solveProblem
     epsx = 0;
     gamz = 0;
     for i=1:getnbgroupelem(S)
-        Ni  = reshape(abs(N{i}),[getnbnode(S),1]);
-        Mzi = reshape(abs(Mz{i}),[getnbnode(S),1]);
-        Epsxi = reshape(abs(Epsx{i}),[getnbnode(S),1]);
-        Gamzi = reshape(abs(Gamz{i}),[getnbnode(S),1]);
+        Ni  = reshape(N{i},[getnbnode(S),1]);
+        Mzi = reshape(Mz{i},[getnbnode(S),1]);
+        Epsxi = reshape(Epsx{i},[getnbnode(S),1]);
+        Gamzi = reshape(Gamz{i},[getnbnode(S),1]);
         for j=1:length(numnode2)
-            ni = double(Ni(numnode2(j)));
-            mzi = double(Mzi(numnode2(j)));
-            epsxi = double(Epsxi(numnode2(j)));
-            gamzi = double(Gamzi(numnode2(j)));
+            ni = abs(double(Ni(numnode2(j))));
+            mzi = abs(double(Mzi(numnode2(j))));
+            epsxi = abs(double(Epsxi(numnode2(j))));
+            gamzi = abs(double(Gamzi(numnode2(j))));
             n = max(n,ni);
             mz = max(mz,mzi);
             epsx = max(epsx,epsxi);
@@ -403,15 +403,15 @@ if solveProblem
     epsx_ex = 0;
     gamz_ex = 0;
     for i=1:getnbgroupelem(S)
-        Ni_ex  = reshape(abs(N_ex{i}),[getnbnode(S),1]);
-        Mzi_ex = reshape(abs(Mz_ex{i}),[getnbnode(S),1]);
-        Epsxi_ex = reshape(abs(Epsx_ex{i}),[getnbnode(S),1]);
-        Gamzi_ex = reshape(abs(Gamz_ex{i}),[getnbnode(S),1]);
+        Ni_ex  = reshape(N_ex{i},[getnbnode(S),1]);
+        Mzi_ex = reshape(Mz_ex{i},[getnbnode(S),1]);
+        Epsxi_ex = reshape(Epsx_ex{i},[getnbnode(S),1]);
+        Gamzi_ex = reshape(Gamz_ex{i},[getnbnode(S),1]);
         for j=1:length(numnode2)
-            ni_ex = double(Ni_ex(numnode2(j)));
-            mzi_ex = double(Mzi_ex(numnode2(j)));
-            epsxi_ex = double(Epsxi_ex(numnode2(j)));
-            gamzi_ex = double(Gamzi_ex(numnode2(j)));
+            ni_ex = abs(double(Ni_ex(numnode2(j))));
+            mzi_ex = abs(double(Mzi_ex(numnode2(j))));
+            epsxi_ex = abs(double(Epsxi_ex(numnode2(j))));
+            gamzi_ex = abs(double(Gamzi_ex(numnode2(j))));
             n_ex = max(n_ex,ni_ex);
             mz_ex = max(mz_ex,mzi_ex);
             epsx_ex = max(epsx_ex,epsxi_ex);
@@ -508,7 +508,7 @@ fprintf('Mz    = %g N.m\n',mz);
 fprintf('Mz_ex = %g N.m, error = %g\n',mz_ex,err_mz);
 fprintf('\n');
 
-disp('Axial deformation Epsx and shear deformation Gamz at point'); disp(P2);
+disp('Axial strain Epsx and bending strain (curvature) Gamz at point'); disp(P2);
 fprintf('Epsx    = %g\n',epsx);
 fprintf('Epsx_ex = %g, error = %g\n',epsx_ex,err_epsx);
 fprintf('Gamz    = %g\n',gamz);
