@@ -134,9 +134,9 @@ if solveProblem
     S_beam = convertelem(S_beam,elemtype,'param',VECTEUR([0;0;1]));
     
     S_bed = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_bed_' num2str(n)])),P_bed,num2cell(1:length(P_bed)),'UniformOutput',false);
-    S_bed{1} = concatgroupelem(S_bed{1});
-    S_bed{2} = concatgroupelem(S_bed{2});
-    S_bed{3} = concatgroupelem(S_bed{3});
+    for n=1:3
+        S_bed{n} = concatgroupelem(S_bed{n});
+    end
     S_bed = union(S_bed{:});
     S_bed = convertelem(S_bed,elemtype,'param',VECTEUR([0;0;1]));
     
