@@ -77,14 +77,14 @@ if solveProblem
                 case 'concentrated'
                     points = [x_beam,{x_load}];
             end
-            S_plate = build_model(Q,'cl',cl_plate,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_rect_' elemtype '_cl_' num2str(cl_plate)]),'points',points);
+            S_plate = build_model(Q,'cl',cl_plate,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_rect_' elemtype]),'points',points);
     end
     
     % Beams meshes
     nbelem_beam = 10;
     S_beam = cellfun(@(L) build_model(L,'nbelem',nbelem_beam,'elemtype','BEAM'),L_beam,'UniformOutput',false);
     % cl_beam = 0.1;
-    % S_beam = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','filename',fullfile(pathname,['gmsh_beam_' num2str(n) '_cl_' num2str(cl_beam)])),L_beam,num2cell(1:length(L_beam)),'UniformOutput',false);
+    % S_beam = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','filename',fullfile(pathname,['gmsh_beam_' num2str(n)])),L_beam,num2cell(1:length(L_beam)),'UniformOutput',false);
     
     %% Materials
     % Gravitational acceleration

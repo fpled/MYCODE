@@ -47,13 +47,15 @@ if solveProblem
     P3 = POINT([2*L2,L1]);
     P4 = POINT([2*L2,0.0]);
     
+    % Lines
     L_beam{1} = LIGNE(P1,P2);
     L_beam{2} = LIGNE(P2,P_load);
     L_beam{3} = LIGNE(P_load,P3);
     L_beam{4} = LIGNE(P4,P3);
     
+    % Beams meshes
     cl_beam = h/20;
-    S_beam = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','filename',fullfile(pathname,['gmsh_beam_' num2str(n) '_cl_' num2str(cl_beam)])),L_beam,num2cell(1:length(L_beam)),'UniformOutput',false);
+    S_beam = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','filename',fullfile(pathname,['gmsh_beam_' num2str(n)])),L_beam,num2cell(1:length(L_beam)),'UniformOutput',false);
     
     %% Materials
     % Gravitational acceleration

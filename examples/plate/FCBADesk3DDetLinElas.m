@@ -137,11 +137,11 @@ if solveProblem
     if ~strcmp(elemtype,'CUB8')
         S = gmshFCBAdesk3D(D1,D2,D3,D5a,D5b,C_masse,LbD3,C_stab,C_vert,...
             cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
-            fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3);
+            fullfile(pathname,['gmsh_desk_' elemtype]),3);
     else
         S = gmshFCBAdesk3D(D1,D2,D3,D5a,D5b,C_masse,LbD3,C_stab,C_vert,...
             cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
-            fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3,'recombine');
+            fullfile(pathname,['gmsh_desk_' elemtype]),3,'recombine');
     end
     S = convertelem(S,elemtype);
     

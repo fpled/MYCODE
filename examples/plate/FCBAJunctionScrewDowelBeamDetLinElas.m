@@ -40,12 +40,14 @@ if solveProblem
     P2 = POINT([0.0,L1]);
     P_load = POINT([L2,L1]);
     
+    % Lines
     Line1 = LIGNE(P1,P2);
     Line2 = LIGNE(P2,P_load);
     
+    % Beams meshes
     cl = h/20;
-    S1 = build_model(Line1,'cl',cl,'elemtype','BEAM','filename',fullfile(pathname,['gmsh_beam_1_cl_' num2str(cl)]));
-    S2 = build_model(Line2,'cl',cl,'elemtype','BEAM','filename',fullfile(pathname,['gmsh_beam_2_cl_' num2str(cl)]));
+    S1 = build_model(Line1,'cl',cl,'elemtype','BEAM','filename',fullfile(pathname,'gmsh_beam_1'));
+    S2 = build_model(Line2,'cl',cl,'elemtype','BEAM','filename',fullfile(pathname,'gmsh_beam_2'));
     
     %% Materials
     % Gravitational acceleration

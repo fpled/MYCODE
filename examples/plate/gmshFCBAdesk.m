@@ -6,7 +6,7 @@ function varargout = gmshFCBAdesk(Q1,Q2,Q3,Q5a,Q5b,I,LbQ3,GCiQ3eI,CiI,clQ1,clQ2,
 % CiQ3eI, CiI : CIRCLE
 % clQ1, clQ2, clQ3, clQ5a, clQ5b, clI, clLbQ3, clCiQ3eI, clCiI : characteristic lengths
 % filename : file name (optional)
-% indim : space dimension (optional, getdim(Q) by default)
+% indim : space dimension (optional, max([getindim(Q1),getindim(Q2),getindim(Q3),getindim(Q5a),getindim(Q5b),getindim(I)]) by default)
 
 if nargin<15
     clI = clQ3;
@@ -20,9 +20,8 @@ end
 if nargin<18
     clCiI = clI;
 end
-dim = max([getdim(Q1),getdim(Q2),getdim(Q3),getdim(Q5a),getdim(Q5b),getdim(I)]);
 if nargin<20
-    indim = dim;
+    indim = max([getindim(Q1),getindim(Q2),getindim(Q3),getindim(Q5a),getindim(Q5b),getindim(I)]);
 end
 
 if ~iscell(LbQ3)
@@ -118,4 +117,5 @@ varargin = delonlycharin('recombine',varargin);
 
 n=max(nargout,1);
 varargout = cell(1,n);
+dim = max([getdim(Q1),getdim(Q2),getdim(Q3),getdim(Q5a),getdim(Q5b),getdim(I)]);
 [varargout{:}] = gmsh2femobject(indim,G,dim:-1:dim-n+1,varargin{:});

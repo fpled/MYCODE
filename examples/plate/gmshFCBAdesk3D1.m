@@ -4,7 +4,7 @@ function varargout = gmshFCBAdesk3D1(D,Qa,Qb,clD,clQa,clQb,filename,indim,vararg
 % Qa, Qb : QUADRANGLE
 % clD, clQa, clQb : characteristic lengths
 % filename : file name (optional)
-% indim : space dimension (optional, getdim(D) by default)
+% indim : space dimension (optional, getindim(D) by default)
 
 if nargin<5
     clQa = clD;
@@ -13,7 +13,7 @@ if nargin<6
     clQb = clD;
 end
 if nargin<8
-    indim = getdim(D);
+    indim = getindim(D);
 end
 
 G = GMSHFILE();

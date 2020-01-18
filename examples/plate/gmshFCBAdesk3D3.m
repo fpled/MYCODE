@@ -7,7 +7,7 @@ function varargout = gmshFCBAdesk3D3(D,I,Q1,Q2,LbD,CiDeI,CiI,clD,clI,clQ1,clQ2,c
 % CiDeI, CiI : CIRCLE
 % clD, clI, clQ1, clQ2, clLbD, clCiDeI, clCiI : characteristic lengths
 % filename : file name (optional)
-% indim : space dimension (optional, getdim(D) by default)
+% indim : space dimension (optional, getindim(D) by default)
 
 if nargin<9
     clI = clD;
@@ -28,7 +28,7 @@ if nargin<14
     clCiI = clI;
 end
 if nargin<16
-    indim = getdim(D);
+    indim = getindim(D);
 end
 
 if ~iscell(LbD)

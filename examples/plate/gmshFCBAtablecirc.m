@@ -6,7 +6,7 @@ function varargout = gmshFCBAtablecirc(C,Q,I,PbC,PiCeQ,PiQeI,PiI,clC,clQ,clI,clP
 % PbC, PiCeQ, PiQeI, PiI : POINT
 % clC, clQ, clI, clPbC, clPiCeQ, clPiQeI, clPiI : characteristic lengths
 % filename : file name (optional)
-% indim : space dimension (optional, getdim(D) by default)
+% indim : space dimension (optional, getindim(C) by default)
 
 if nargin<9
     clQ = clC;
@@ -27,7 +27,7 @@ if nargin<14
     clPiI = clI;
 end
 if nargin<15
-    indim = getdim(C);
+    indim = getindim(C);
 end
 
 if ~iscell(PbC)

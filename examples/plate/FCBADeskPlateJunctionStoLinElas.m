@@ -139,10 +139,10 @@ for it=1:length(tests)
         L1_b = LIGNE([x5b_23,y5b,z5b_12],[x5b_23,y5b,z5b_34]);
         if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
             S1 = gmshFCBAdesk12(Q1,L1_a,L1_b,cl_12,cl_5,cl_5,...
-                fullfile(pathname,['gmsh_desk_1_' elemtype '_cl_' num2str(cl_12)]),3);
+                fullfile(pathname,['gmsh_desk_1_' elemtype]),3);
         else
             S1 = gmshFCBAdesk12(Q1,L1_a,L1_b,cl_12,cl_5,cl_5,...
-                fullfile(pathname,['gmsh_desk_1_' elemtype '_cl_' num2str(cl_12)]),3,'recombine');
+                fullfile(pathname,['gmsh_desk_1_' elemtype]),3,'recombine');
         end
         S1 = convertelem(S1,elemtype);
         %
@@ -150,10 +150,10 @@ for it=1:length(tests)
         L2_b = LIGNE([x5b_14,y5b,z5b_12],[x5b_14,y5b,z5b_34]);
         if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
             S2 = gmshFCBAdesk12(Q2,L2_a,L2_b,cl_12,cl_5,cl_5,...
-                fullfile(pathname,['gmsh_desk_2_' elemtype '_cl_' num2str(cl_12)]),3);
+                fullfile(pathname,['gmsh_desk_2_' elemtype]),3);
         else
             S2 = gmshFCBAdesk12(Q2,L2_a,L2_b,cl_12,cl_5,cl_5,...
-                fullfile(pathname,['gmsh_desk_2_' elemtype '_cl_' num2str(cl_12)]),3,'recombine');
+                fullfile(pathname,['gmsh_desk_2_' elemtype]),3,'recombine');
         end
         S2 = convertelem(S2,elemtype);
         %
@@ -165,11 +165,11 @@ for it=1:length(tests)
             if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
                 S3 = gmshFCBAdesk3simplified(Q3,C_masse,L3_1,L3_2,PbQ3,x_stab,x_masse,...
                     cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-                    fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3);
+                    fullfile(pathname,['gmsh_desk_3_' elemtype]),3);
             else
                 S3 = gmshFCBAdesk3simplified(Q3,C_masse,L3_1,L3_2,PbQ3,x_stab,x_masse,...
                     cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-                    fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3,'recombine');
+                    fullfile(pathname,['gmsh_desk_3_' elemtype]),3,'recombine');
             end
         else
             L_hori{1} = LIGNE(x_hori{1}+[0,-r_load,0],x_hori{1}+[0,r_load,0]);
@@ -187,20 +187,20 @@ for it=1:length(tests)
             if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
                 S3 = gmshFCBAdesk3(Q3,C_masse,L3_1,L3_2,LbQ3,C_stab,C_vert,...
                     cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-                    fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3);
+                    fullfile(pathname,['gmsh_desk_3_' elemtype]),3);
             else
                 S3 = gmshFCBAdesk3(Q3,C_masse,L3_1,L3_2,LbQ3,C_stab,C_vert,...
                     cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-                    fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3,'recombine');
+                    fullfile(pathname,['gmsh_desk_3_' elemtype]),3,'recombine');
             end
         end
         S3 = convertelem(S3,elemtype);
         %
         S5a = build_model(Q5a,'cl',cl_5,'elemtype',elemtype,...
-            'filename',fullfile(pathname,['gmsh_desk_5a_' elemtype '_cl_' num2str(cl_5)]));
+            'filename',fullfile(pathname,['gmsh_desk_5a_' elemtype]));
         %
         S5b = build_model(Q5b,'cl',cl_5,'elemtype',elemtype,...
-            'filename',fullfile(pathname,['gmsh_desk_5b_' elemtype '_cl_' num2str(cl_5)]));
+            'filename',fullfile(pathname,['gmsh_desk_5b_' elemtype]));
         
         %% Random variables
         % Data

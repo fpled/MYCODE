@@ -132,11 +132,11 @@ if solveProblem
         if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
             S = gmshFCBAdesksimplified(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
                 cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3);
+                fullfile(pathname,['gmsh_desk_' elemtype]),3);
         else
             S = gmshFCBAdesksimplified(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
                 cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3,'recombine');
+                fullfile(pathname,['gmsh_desk_' elemtype]),3,'recombine');
         end
     else
         L_hori{1} = LIGNE(x_hori{1}+[0,-r_load,0],x_hori{1}+[0,r_load,0]);
@@ -154,11 +154,11 @@ if solveProblem
         if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
             S = gmshFCBAdesk(Q1,Q2,Q3,Q5a,Q5b,C_masse,LbQ3,C_stab,C_vert,...
                 cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3);
+                fullfile(pathname,['gmsh_desk_' elemtype]),3);
         else
             S = gmshFCBAdesk(Q1,Q2,Q3,Q5a,Q5b,C_masse,LbQ3,C_stab,C_vert,...
                 cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_' elemtype '_cl12_' num2str(cl_12) '_cl3_' num2str(cl_3) '_cl5_' num2str(cl_5)]),3,'recombine');
+                fullfile(pathname,['gmsh_desk_' elemtype]),3,'recombine');
         end
     end
     S = convertelem(S,elemtype);

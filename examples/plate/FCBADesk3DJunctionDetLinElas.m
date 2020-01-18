@@ -123,10 +123,10 @@ if solveProblem
     Q1_b = QUADRANGLE([x5b_23-h/2,y5b+h/2,z5b_12],[x5b_23-h/2,y5b-h/2,z5b_12],[x5b_23-h/2,y5b-h/2,z5b_34],[x5b_23-h/2,y5b+h/2,z5b_34]);
     if ~strcmp(elemtype,'CUB8')
         S1 = gmshFCBAdesk3D1(D1,Q1_a,Q1_b,cl_12,cl_5,cl_5,...
-            fullfile(pathname,['gmsh_desk_1_' elemtype '_cl_' num2str(cl_12)]),3);
+            fullfile(pathname,['gmsh_desk_1_' elemtype]),3);
     else
         S1 = gmshFCBAdesk3D1(D1,Q1_a,Q1_b,cl_12,cl_5,cl_5,...
-            fullfile(pathname,['gmsh_desk_1_' elemtype '_cl_' num2str(cl_12)]),3,'recombine');
+            fullfile(pathname,['gmsh_desk_1_' elemtype]),3,'recombine');
     end
     S1 = convertelem(S1,elemtype);
     %
@@ -134,10 +134,10 @@ if solveProblem
     Q2_b = QUADRANGLE([x5b_14+h/2,y5b-h/2,z5b_12],[x5b_14+h/2,y5b+h/2,z5b_12],[x5b_14+h/2,y5b+h/2,z5b_34],[x5b_14+h/2,y5b-h/2,z5b_34]);
     if ~strcmp(elemtype,'CUB8')
         S2 = gmshFCBAdesk3D2(D2,Q2_a,Q2_b,cl_12,cl_5,cl_5,...
-            fullfile(pathname,['gmsh_desk_2_' elemtype '_cl_' num2str(cl_12)]),3);
+            fullfile(pathname,['gmsh_desk_2_' elemtype]),3);
     else
         S2 = gmshFCBAdesk3D2(D2,Q2_a,Q2_b,cl_12,cl_5,cl_5,...
-            fullfile(pathname,['gmsh_desk_2_' elemtype '_cl_' num2str(cl_12)]),3,'recombine');
+            fullfile(pathname,['gmsh_desk_2_' elemtype]),3,'recombine');
     end    
     S2 = convertelem(S2,elemtype);
     %
@@ -162,19 +162,19 @@ if solveProblem
     if ~strcmp(elemtype,'CUB8')
         S3 = gmshFCBAdesk3D3(D3,C_masse,Q3_1,Q3_2,LbD3,C_stab,C_vert,...
             cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-            fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3);
+            fullfile(pathname,['gmsh_desk_3_' elemtype]),3);
     else
         S3 = gmshFCBAdesk3D3(D3,C_masse,Q3_1,Q3_2,LbD3,C_stab,C_vert,...
             cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-            fullfile(pathname,['gmsh_desk_3_' elemtype '_cl_' num2str(cl_3)]),3,'recombine');
+            fullfile(pathname,['gmsh_desk_3_' elemtype]),3,'recombine');
     end
     S3 = convertelem(S3,elemtype);
     %
     S5a = build_model(D5a,'cl',cl_5,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_desk_5a_' elemtype '_cl_' num2str(cl_5)]));
+        'filename',fullfile(pathname,['gmsh_desk_5a_' elemtype]));
     %
     S5b = build_model(D5b,'cl',cl_5,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_desk_5b_' elemtype '_cl_' num2str(cl_5)]));
+        'filename',fullfile(pathname,['gmsh_desk_5b_' elemtype]));
     
     S = union(S1,S2,S3,S5a,S5b);
     

@@ -4,7 +4,7 @@ function varargout = gmshFCBAdesk12(Q,La,Lb,clQ,clLa,clLb,filename,indim,varargi
 % La, Lb : LIGNE
 % clQ, clLa, clLb : characteristic lengths
 % filename : file name (optional)
-% indim : space dimension (optional, getdim(Q) by default)
+% indim : space dimension (optional, getindim(Q) by default)
 
 if nargin<5
     clLa = clQ;
@@ -13,7 +13,7 @@ if nargin<6
     clLb = clQ;
 end
 if nargin<8
-    indim = getdim(Q);
+    indim = getindim(Q);
 end
 
 G = GMSHFILE();

@@ -57,7 +57,7 @@ if solveProblem
         L-c,0.0,H;
         L-c,l-c,H;
         0.0,l-c,H];
-    x_mid = [0.0,0.0,H1+h1/2;
+    x_beam = [0.0,0.0,H1+h1/2;
         L-c,0.0,H1+h1/2;
         L-c,l-c,H1+h1/2;
         0.0,l-c,H1+h1/2];
@@ -66,12 +66,12 @@ if solveProblem
         L-c,0.0,H2+h1/2;
         L-c,l-c,H2+h1/2;
         0.0,l-c,H2+h1/2];
-    x_stage1 = [0.0,0.0,H2+h1+d+h1/2;
+    x_barrier1 = [0.0,0.0,H2+h1+d+h1/2;
         L-L1-c/2-h2/2,0.0,H2+h1+d+h1/2;
         L-c,0.0,H2+h1+d+h1/2;
         L-c,l-c,H2+h1+d+h1/2;
         0.0,l-c,H2+h1+d+h1/2];
-    x_stage2 = [0.0,0.0,H2+2*(h1+d)+h1/2;
+    x_barrier2 = [0.0,0.0,H2+2*(h1+d)+h1/2;
         L-L1-c/2-h2/2,0.0,H2+2*(h1+d)+h1/2;
         L-c,0.0,H2+2*(h1+d)+h1/2;
         L-c,l-c,H2+2*(h1+d)+h1/2;
@@ -84,153 +84,75 @@ if solveProblem
     
     x_load = [(L-L1-c/2-h2/2)/2,0.0,H2+2*(h1+d)+h1/2];
     
-%     P_bot = POINT(x_bot);
-%     P_top = POINT(x_top);
-%     P_mid = POINT(x_mid);
-%     P_bed = POINT(x_bed);
-%     P_stage1 = POINT(x_stage1);
-%     P_stage2 = POINT(x_stage2);
-%     P_lath = POINT(x_lath);
-%     P_load = POINT(x_load);
-%     
-%     L_post{1} = LIGNE(P_bot(1),P_mid(1));
-%     L_post{2} = LIGNE(P_mid(1),P_bed(1));
-%     L_post{3} = LIGNE(P_bed(1),P_stage1(1));
-%     L_post{4} = LIGNE(P_stage1(1),P_stage2(1));
-%     L_post{5} = LIGNE(P_stage2(1),P_top(1));
-%     L_post{6} = LIGNE(P_bot(2),P_mid(2));
-%     L_post{7} = LIGNE(P_mid(2),P_bed(3));
-%     L_post{8} = LIGNE(P_bed(3),P_stage1(3));
-%     L_post{9} = LIGNE(P_stage1(3),P_stage2(3));
-%     L_post{10} = LIGNE(P_stage2(3),P_top(2));
-%     L_post{11} = LIGNE(P_bot(3),P_mid(3));
-%     L_post{12} = LIGNE(P_mid(3),P_bed(4));
-%     L_post{13} = LIGNE(P_bed(4),P_stage1(4));
-%     L_post{14} = LIGNE(P_stage1(4),P_stage2(4));
-%     L_post{15} = LIGNE(P_stage2(4),P_top(3));
-%     L_post{16} = LIGNE(P_bot(4),P_mid(4));
-%     L_post{17} = LIGNE(P_mid(4),P_bed(5));
-%     L_post{18} = LIGNE(P_bed(5),P_stage1(5));
-%     L_post{19} = LIGNE(P_stage1(5),P_stage2(5));
-%     L_post{20} = LIGNE(P_stage2(5),P_top(4));
-%     L_beam1{1} = LIGNE(P_mid(2),P_mid(3));
-%     L_beam1{2} = LIGNE(P_mid(3),P_mid(4));
-%     L_beam1{3} = LIGNE(P_mid(4),P_mid(1));
-%     L_beam1{4} = LIGNE(P_bed(1),P_lath(1));
-%     L_beam1{5} = LIGNE(P_bed(5),P_lath(2));
-%     for i=1:10
-%         L_beam1{5+2*i-1} = LIGNE(P_lath(2*i-1),P_lath(2*i+1));
-%         L_beam1{5+2*i} = LIGNE(P_lath(2*i),P_lath(2*i+2));
-%     end
-%     L_beam1{26} = LIGNE(P_lath(2*10+1),P_bed(2));
-%     L_beam1{27} = LIGNE(P_bed(2),P_lath(2*11+1));
-%     L_beam1{28} = LIGNE(P_lath(2*11),P_lath(2*12));
-%     for i=1:3
-%         L_beam1{28+2*i-1} = LIGNE(P_lath(20+2*i-1),P_lath(20+2*i+1));
-%         L_beam1{28+2*i} = LIGNE(P_lath(20+2*i),P_lath(20+2*i+2));
-%     end
-%     L_beam1{35} = LIGNE(P_lath(27),P_bed(3));
-%     L_beam1{36} = LIGNE(P_lath(28),P_bed(4));
-%     L_lath = cell(1,14);
-%     for i=1:14
-%         L_lath{i} = LIGNE(P_lath(2*i-1),P_lath(2*i));
-%     end
-%     L_beam2{1} = LIGNE(P_bed(3),P_bed(4));
-%     L_beam2{2} = LIGNE(P_bed(5),P_bed(1));
-%     L_beam1{37} = LIGNE(P_stage1(1),P_stage1(2));
-%     L_beam1{38} = LIGNE(P_stage1(3),P_stage1(4));
-%     L_beam1{39} = LIGNE(P_stage1(4),P_stage1(5));
-%     L_beam1{40} = LIGNE(P_stage1(5),P_stage1(1));
-%     L_beam1{41} = LIGNE(P_stage2(1),P_load);
-%     L_beam1{42} = LIGNE(P_load,P_stage2(2));
-%     L_beam1{43} = LIGNE(P_stage2(3),P_stage2(4));
-%     L_beam1{44} = LIGNE(P_stage2(4),P_stage2(5));
-%     L_beam1{45} = LIGNE(P_stage2(5),P_stage2(1));
-%     L_beam3{1} = LIGNE(P_bed(2),P_stage1(2));
-%     L_beam3{2} = LIGNE(P_stage1(2),P_stage2(2));
-%     
-%     cl_beam = b1;
-%     S_post = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','param',VECTEUR([1;0;0]),'filename',fullfile(pathname,['gmsh_post_' num2str(n) '_cl_' num2str(cl_beam)])),L_post,num2cell(1:length(L_post)),'UniformOutput',false);
-%     S_beam1 = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','param',VECTEUR([0;0;1]),'filename',fullfile(pathname,['gmsh_beam1_' num2str(n) '_cl_' num2str(cl_beam)])),L_beam1,num2cell(1:length(L_beam1)),'UniformOutput',false);
-%     S_beam2 = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','param',VECTEUR([0;0;1]),'filename',fullfile(pathname,['gmsh_beam2_' num2str(n) '_cl_' num2str(cl_beam)])),L_beam2,num2cell(1:length(L_beam2)),'UniformOutput',false);
-%     S_beam3 = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','param',VECTEUR([1;0;0]),'filename',fullfile(pathname,['gmsh_beam3_' num2str(n) '_cl_' num2str(cl_beam)])),L_beam3,num2cell(1:length(L_beam3)),'UniformOutput',false);
-%     S_lath = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','param',VECTEUR([1;0;0]),'filename',fullfile(pathname,['gmsh_lath_' num2str(n) '_cl_' num2str(cl_beam)])),L_lath,num2cell(1:length(L_lath)),'UniformOutput',false);
-%     
-%     S_post = union(S_post{:});
-%     S_beam1 = union(S_beam1{:});
-%     S_beam2 = union(S_beam2{:});
-%     S_beam3 = union(S_beam3{:});
-%     S_lath = union(S_lath{:});
-%     
-%     S_post = concatgroupelem(S_post);
-%     S_beam1 = concatgroupelem(S_beam1);
-%     S_beam2 = concatgroupelem(S_beam2);
-%     S_beam3 = concatgroupelem(S_beam3);
-%     S_lath = concatgroupelem(S_lath);
+    P_post{1} = {x_bot(1,:),x_beam(1,:),x_bed(1,:),x_barrier1(1,:),x_barrier2(1,:),x_top(1,:)};
+    P_post{2} = {x_bot(2,:),x_beam(2,:),x_bed(3,:),x_barrier1(3,:),x_barrier2(3,:),x_top(2,:)};
+    P_post{3} = {x_bot(3,:),x_beam(3,:),x_bed(4,:),x_barrier1(4,:),x_barrier2(4,:),x_top(3,:)};
+    P_post{4} = {x_bot(4,:),x_beam(4,:),x_bed(5,:),x_barrier1(5,:),x_barrier2(5,:),x_top(4,:)};
     
-    P_post{1} = {x_bot(1,:),x_mid(1,:),x_bed(1,:),x_stage1(1,:),x_stage2(1,:),x_top(1,:)};
-    P_post{2} = {x_bot(2,:),x_mid(2,:),x_bed(3,:),x_stage1(3,:),x_stage2(3,:),x_top(2,:)};
-    P_post{3} = {x_bot(3,:),x_mid(3,:),x_bed(4,:),x_stage1(4,:),x_stage2(4,:),x_top(3,:)};
-    P_post{4} = {x_bot(4,:),x_mid(4,:),x_bed(5,:),x_stage1(5,:),x_stage2(5,:),x_top(4,:)};
+    P_beam{1} = {x_beam(2,:),x_beam(3,:)};
+    P_beam{2} = {x_beam(3,:),x_beam(4,:)};
+    P_beam{3} = {x_beam(4,:),x_beam(1,:)};
     
-    P_beam1{1} = {x_mid(2,:),x_mid(3,:)};
-    P_beam1{2} = {x_mid(3,:),x_mid(4,:)};
-    P_beam1{3} = {x_mid(4,:),x_mid(1,:)};
-    P_beam1{4} = {x_bed(1,:),x_lath(1,:),x_lath(3,:),x_lath(5,:),x_lath(7,:),x_lath(9,:),...
+    P_bed{1} = {x_bed(1,:),x_lath(1,:),x_lath(3,:),x_lath(5,:),x_lath(7,:),x_lath(9,:),...
         x_lath(11,:),x_lath(13,:),x_lath(15,:),x_lath(17,:),x_lath(19,:),x_lath(21,:),x_bed(2,:)};
-    P_beam1{5} = {x_bed(5,:),x_lath(2,:),x_lath(4,:),x_lath(6,:),x_lath(8,:),x_lath(10,:),...
+    P_bed{2} = {x_bed(2,:),x_lath(23,:),x_lath(25,:),x_lath(27,:),x_bed(3,:)};
+    P_bed{3} = {x_bed(5,:),x_lath(2,:),x_lath(4,:),x_lath(6,:),x_lath(8,:),x_lath(10,:),...
         x_lath(12,:),x_lath(14,:),x_lath(16,:),x_lath(18,:),x_lath(20,:),x_lath(22,:),...
         x_lath(24,:),x_lath(26,:),x_lath(28,:),x_bed(4,:)};
-    
-    P_beam1{6} = {x_bed(2,:),x_lath(23,:),x_lath(25,:),x_lath(27,:),x_bed(3,:)};
+    P_bed{4} = {x_bed(3,:),x_bed(4,:)};
+    P_bed{5} = {x_bed(5,:),x_bed(1,:)};
     
     P_lath = cell(1,14);
     for i=1:14
         P_lath{i} = {x_lath(2*i-1,:),x_lath(2*i,:)};
     end
     
-    P_beam2{1} = {x_bed(3,:),x_bed(4,:)};
-    P_beam2{2} = {x_bed(5,:),x_bed(1,:)};
+    P_barrier1{1} = {x_barrier1(1,:),x_barrier1(2,:)};
+    P_barrier1{2} = {x_barrier1(3,:),x_barrier1(4,:)};
+    P_barrier1{3} = {x_barrier1(4,:),x_barrier1(5,:)};
+    P_barrier1{4} = {x_barrier1(5,:),x_barrier1(1,:)};
     
-    P_beam1{7} = {x_stage1(1,:),x_stage1(2,:)};
-    P_beam1{8} = {x_stage1(3,:),x_stage1(4,:)};
-    P_beam1{9} = {x_stage1(4,:),x_stage1(5,:)};
-    P_beam1{10} = {x_stage1(5,:),x_stage1(1,:)};
-    P_beam1{11} = {x_stage2(1,:),x_load,x_stage2(2,:)};
-    P_beam1{12} = {x_stage2(3,:),x_stage2(4,:)};
-    P_beam1{13} = {x_stage2(4,:),x_stage2(5,:)};
-    P_beam1{14} = {x_stage2(5,:),x_stage2(1,:)};
+    P_barrier2{1} = {x_barrier2(1,:),x_load,x_barrier2(2,:)};
+    P_barrier2{2} = {x_barrier2(3,:),x_barrier2(4,:)};
+    P_barrier2{3} = {x_barrier2(4,:),x_barrier2(5,:)};
+    P_barrier2{4} = {x_barrier2(5,:),x_barrier2(1,:)};
     
-    P_beam3 = {x_bed(2,:),x_stage1(2,:),x_stage2(2,:)};
+    P_frame = {x_bed(2,:),x_barrier1(2,:),x_barrier2(2,:)};
     
-    cl_beam = b1;
-    S_post = cellfun(@(P,n) gmshbeam(P,cl_beam,fullfile(pathname,['gmsh_post_' num2str(n) '_cl_' num2str(cl_beam)])),P_post,num2cell(1:length(P_post)),'UniformOutput',false);
-    S_beam1 = cellfun(@(P,n) gmshbeam(P,cl_beam,fullfile(pathname,['gmsh_beam1_' num2str(n) '_cl_' num2str(cl_beam)])),P_beam1,num2cell(1:length(P_beam1)),'UniformOutput',false);
-    S_beam2 = cellfun(@(P,n) gmshbeam(P,cl_beam,fullfile(pathname,['gmsh_beam2_' num2str(n) '_cl_' num2str(cl_beam)])),P_beam2,num2cell(1:length(P_beam2)),'UniformOutput',false);
-    S_beam3 = gmshbeam(P_beam3,cl_beam,fullfile(pathname,['gmsh_beam3_cl_' num2str(cl_beam)]));
-    S_lath = cellfun(@(P,n) gmshbeam(P,cl_beam,fullfile(pathname,['gmsh_lath_' num2str(n) '_cl_' num2str(cl_beam)])),P_lath,num2cell(1:length(P_lath)),'UniformOutput',false);
-    
-    S_post = cellfun(@(S) concatgroupelem(S),S_post,'UniformOutput',false);
-    S_beam1 = cellfun(@(S) concatgroupelem(S),S_beam1,'UniformOutput',false);
-    S_beam2 = cellfun(@(S) concatgroupelem(S),S_beam2,'UniformOutput',false);
-    S_lath = cellfun(@(S) concatgroupelem(S),S_lath,'UniformOutput',false);
-    
-    S_post = union(S_post{:});
-    S_beam1 = union(S_beam1{:});
-    S_beam2 = union(S_beam2{:});
-    S_lath = union(S_lath{:});
-    
-    S_post = concatgroupelem(S_post);
-    S_beam1 = concatgroupelem(S_beam1);
-    S_beam2 = concatgroupelem(S_beam2);
-    S_beam3 = concatgroupelem(S_beam3);
-    S_lath = concatgroupelem(S_lath);
-    
+    % Beams meshes
     elemtype = 'BEAM';
+    cl = b1;
+    S_post = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_post_' num2str(n)])),P_post,num2cell(1:length(P_post)),'UniformOutput',false);
+    S_post = cellfun(@(S) concatgroupelem(S),S_post,'UniformOutput',false);
+    S_post = union(S_post{:});
+    S_post = concatgroupelem(S_post);
     S_post = convertelem(S_post,elemtype,'param',VECTEUR([1;0;0]));
-    S_beam1 = convertelem(S_beam1,elemtype,'param',VECTEUR([0;0;1]));
-    S_beam2 = convertelem(S_beam2,elemtype,'param',VECTEUR([0;0;1]));
-    S_beam3 = convertelem(S_beam3,elemtype,'param',VECTEUR([1;0;0]));
+    
+    S_beam = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_beam_' num2str(n)])),P_beam,num2cell(1:length(P_beam)),'UniformOutput',false);
+    S_beam = union(S_beam{:});
+    S_beam = concatgroupelem(S_beam);
+    S_beam = convertelem(S_beam,elemtype,'param',VECTEUR([0;0;1]));
+    
+    S_bed = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_bed_' num2str(n)])),P_bed,num2cell(1:length(P_bed)),'UniformOutput',false);
+    S_bed{1} = concatgroupelem(S_bed{1});
+    S_bed{2} = concatgroupelem(S_bed{2});
+    S_bed{3} = concatgroupelem(S_bed{3});
+    S_bed = union(S_bed{:});
+    S_bed = convertelem(S_bed,elemtype,'param',VECTEUR([0;0;1]));
+    
+    S_barrier1 = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_barrier1_' num2str(n)])),P_barrier1,num2cell(1:length(P_barrier1)),'UniformOutput',false);
+    S_barrier2 = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_barrier2_' num2str(n)])),P_barrier2,num2cell(1:length(P_barrier2)),'UniformOutput',false);
+    S_barrier = union(S_barrier1{:},S_barrier2{:});
+    S_barrier = concatgroupelem(S_barrier);
+    S_barrier = convertelem(S_barrier,elemtype,'param',VECTEUR([0;0;1]));
+    
+    S_frame = gmshbeam(P_frame,cl,fullfile(pathname,'gmsh_frame'));
+    S_frame = concatgroupelem(S_frame);
+    S_frame = convertelem(S_frame,elemtype,'param',VECTEUR([1;0;0]));
+    
+    S_lath = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_lath_' num2str(n)])),P_lath,num2cell(1:length(P_lath)),'UniformOutput',false);
+    S_lath = union(S_lath{:});
+    S_lath = concatgroupelem(S_lath);
     S_lath = convertelem(S_lath,elemtype,'param',VECTEUR([1;0;0]));
     
     %% Materials
@@ -285,15 +207,19 @@ if solveProblem
             mat_4 = ELAS_BEAM('E',E,'NU',NU,'S',Sec4,'IZ',IZ4,'IY',IY4,'IX',IX4,'RHO',RHO);
             mat_4 = setnumber(mat_4,5);
             S_post = setmaterial(S_post,mat_0);
-            S_beam1 = setmaterial(S_beam1,mat_1);
-            S_beam2 = setmaterial(S_beam2,mat_2);
-            S_beam3 = setmaterial(S_beam3,mat_3);
+            S_beam = setmaterial(S_beam,mat_1);
+            S_bed = setmaterial(S_bed,mat_1,1:3);
+            S_bed = setmaterial(S_bed,mat_2,4:5);
+            S_barrier = setmaterial(S_barrier,mat_1);
+            S_frame = setmaterial(S_frame,mat_3);
             S_lath = setmaterial(S_lath,mat_4);
         otherwise
             error('Wrong material symmetry !')
     end
     
-    S = union(S_post,S_beam1,S_beam2,S_beam3,S_lath);
+    S_bed = concatgroupelem(S_bed);
+    S_bed = union(S_bed,S_lath);
+    S = union(S_post,S_beam,S_bed,S_barrier,S_frame);
     
     %% Neumann boundary conditions
     p0 = RHO*g*Sec0; % line load (body load for posts)
@@ -324,11 +250,11 @@ if solveProblem
         case 'statichoriout'
             f = nodalload(S,P_load,'FY',-p);
     end
-    f = f + bodyload(keepgroupelem(S,1),[],'FZ',-p0);
-    f = f + bodyload(keepgroupelem(S,2),[],'FZ',-p1);
-    f = f + bodyload(keepgroupelem(S,3),[],'FZ',-p2);
-    f = f + bodyload(keepgroupelem(S,4),[],'FZ',-p3);
-    f = f + bodyload(keepgroupelem(S,5),[],'FZ',-p4);
+    f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_0)),[],'FZ',-p0);
+    f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_1)),[],'FZ',-p1);
+    f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_2)),[],'FZ',-p2);
+    f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_3)),[],'FZ',-p3);
+    f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_4)),[],'FZ',-p4);
     
     %% Solution
     t = tic;
@@ -365,7 +291,6 @@ if solveProblem
     numnode = find(S.node==P);
     xP = x(numnode,:);
     
-    
     ux = eval_sol(S,u,P,'UX');
     uy = eval_sol(S,u,P,'UY');
     uz = eval_sol(S,u,P,'UZ');
@@ -373,14 +298,14 @@ if solveProblem
     ry = eval_sol(S,u,P,'RY');
     rz = eval_sol(S,u,P,'RZ');
     
-    n  = reshape(N{2},[getnbnode(S),1]);
-    mx = reshape(Mx{2},[getnbnode(S),1]);
-    my = reshape(My{2},[getnbnode(S),1]);
-    mz = reshape(Mz{2},[getnbnode(S),1]);
-    epsx = reshape(Epsx{2},[getnbnode(S),1]);
-    gamx = reshape(Gamx{2},[getnbnode(S),1]);
-    gamy = reshape(Gamy{2},[getnbnode(S),1]);
-    gamz = reshape(Gamz{2},[getnbnode(S),1]);
+    n  = reshape(N{6},[getnbnode(S),1]);
+    mx = reshape(Mx{6},[getnbnode(S),1]);
+    my = reshape(My{6},[getnbnode(S),1]);
+    mz = reshape(Mz{6},[getnbnode(S),1]);
+    epsx = reshape(Epsx{6},[getnbnode(S),1]);
+    gamx = reshape(Gamx{6},[getnbnode(S),1]);
+    gamy = reshape(Gamy{6},[getnbnode(S),1]);
+    gamz = reshape(Gamz{6},[getnbnode(S),1]);
     n = double(n(numnode));
     mx = double(mx(numnode));
     my = double(my(numnode));
@@ -405,11 +330,13 @@ else
         'H','L','L1','l','h','H1','H2','h1','h2','b1','b2','c','d','e',...
         'f');
     load(fullfile(pathname,'solution.mat'),'u','s','e','time',...
-        'Ux','Uy','Uz','Rx','Ry','Rz','N','Mx','My','Mz',...
-        'Epsx','Gamx','Gamy','Gamz');
+        'Ux','Uy','Uz','Rx','Ry','Rz',...
+        'Epsx','Gamx','Gamy','Gamz',...
+        'N','Mx','My','Mz');
     load(fullfile(pathname,'test_solution.mat'),'P',...
-        'ux','uy','uz','rx','ry','rz','n','mx','my','mz',...
-        'epsx','gamx','gamy','gamz');
+        'ux','uy','uz','rx','ry','rz',...
+        'epsx','gamx','gamy','gamz',...
+        'n','mx','my','mz');
 end
 
 %% Outputs
@@ -429,13 +356,6 @@ fprintf('ry = %g rad = %g deg\n',ry,rad2deg(ry));
 fprintf('rz = %g rad = %g deg\n',rz,rad2deg(rz));
 fprintf('\n');
 
-disp('Force N and moments Mx, My, Mz at point'); disp(P);
-fprintf('N  = %g N\n',n);
-fprintf('Mx = %g N.m\n',mx);
-fprintf('My = %g N.m\n',my);
-fprintf('Mz = %g N.m\n',mz);
-fprintf('\n');
-
 disp('Axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point'); disp(P);
 fprintf('Epsx = %g\n',epsx);
 fprintf('Gamx = %g\n',gamx);
@@ -443,19 +363,33 @@ fprintf('Gamy = %g\n',gamy);
 fprintf('Gamz = %g\n',gamz);
 fprintf('\n');
 
+disp('Force N and moments Mx, My, Mz at point'); disp(P);
+fprintf('N  = %g N\n',n);
+fprintf('Mx = %g N.m\n',mx);
+fprintf('My = %g N.m\n',my);
+fprintf('Mz = %g N.m\n',mz);
+fprintf('\n');
+
 %% Display
 if displaySolution
     %% Display domains, boundary conditions and meshes
-    figure('Name','Materials')
+    figure('Name','Domain')
     clf
     h1 = plot(S,'selgroup',1,'color','r');
     hold on
-    h2 = plot(S,'selgroup',2,'color','m');
-    h3 = plot(S,'selgroup',3,'color','b');
-    h4 = plot(S,'selgroup',4,'color','k');
-    h5 = plot(S,'selgroup',5,'color','g');
+    h2 = plot(S,'selgroup',2,'color','g');
+    h3 = plot(S,'selgroup',3:5,'color','b');
+    h4 = plot(S,'selgroup',6,'color','k');
+    h5 = plot(S,'selgroup',7,'color','m');
     hold off
-    mysaveas(pathname,'material',formats,renderer);
+    set(gca,'FontSize',16)
+    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'post','beam','bed','barrier','frame','Location','NorthEastOutside');
+    %set(l,'Interpreter','latex')
+    mysaveas(pathname,'domain',formats,renderer);
+    mymatlab2tikz(pathname,'domain.tex');
+    
+%     plot(S,'group')
+%     plot(S,'mat')
     
 %     plotDomain(S,'legend',false);
 %     mysaveas(pathname,'domain',formats,renderer);

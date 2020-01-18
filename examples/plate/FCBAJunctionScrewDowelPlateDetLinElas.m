@@ -26,7 +26,7 @@ junction = true; % junction modeling
 %% Problem
 if solveProblem
     %% Domains and meshes
-    % Plates
+    % Plates dimensions
     a1 = 142.5e-3; % m
     a2 = 67.5e-3;
     b = 113e-3;
@@ -37,14 +37,13 @@ if solveProblem
     Q2 = QUADRANGLE([0,b,a1],[0,0,a1],...
         [a2,0,a1],[a2,b,a1]);
     
+    % Plates meshes
     elemtype = 'DKT';
     cl = h/5;
-    
     S1 = build_model(Q1,'cl',cl,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_plate_1_' elemtype '_cl_' num2str(cl)]));
-    %
+        'filename',fullfile(pathname,['gmsh_plate_1_' elemtype]));
     S2 = build_model(Q2,'cl',cl,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_plate_2_' elemtype '_cl_' num2str(cl)]));
+        'filename',fullfile(pathname,['gmsh_plate_2_' elemtype]));
     
     %% Materials
     % Gravitational acceleration

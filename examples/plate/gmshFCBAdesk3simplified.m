@@ -6,7 +6,7 @@ function varargout = gmshFCBAdesk3simplified(Q,I,L1,L2,PbQ,PiQeI,PiI,clQ,clI,clL
 % PbQ, PiQeI, PiI : POINT
 % clQ, clI, clL1, clL2, clPbQ, clPiQeI, clPiI : characteristic lengths
 % filename : file name (optional)
-% indim : space dimension (optional, getdim(Q) by default)
+% indim : space dimension (optional, getindim(Q) by default)
 
 if nargin<9
     clI = clQ;
@@ -27,7 +27,7 @@ if nargin<14
     clPiI = clI;
 end
 if nargin<16
-    indim = getdim(Q);
+    indim = getindim(Q);
 end
 
 if ~iscell(PbQ)

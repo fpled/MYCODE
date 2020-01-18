@@ -49,23 +49,23 @@ if solveProblem
     e = 10e-3;
     
     % Points
-    P_bot = POINT([0.0,0.0,0.0;
+    x_bot = [0.0,0.0,0.0;
         L-c,0.0,0.0;
         L-c,l-c,0.0;
-        0.0,l-c,0.0]);
-    P_top = POINT([0.0,0.0,H;
+        0.0,l-c,0.0];
+    x_top = [0.0,0.0,H;
         L-c,0.0,H;
         L-c,l-c,H;
-        0.0,l-c,H]);
-    P_mid = POINT([0.0,0.0,H1;
+        0.0,l-c,H];
+    x_mid = [0.0,0.0,H1;
         0.0,0.0,H1+h1;
         L-c,0.0,H1;
         L-c,0.0,H1+h1;
         L-c,l-c,H1;
         L-c,l-c,H1+h1;
         0.0,l-c,H1;
-        0.0,l-c,H1+h1]);
-    P_bed = POINT([0.0,0.0,H2;
+        0.0,l-c,H1+h1];
+    x_bed = [0.0,0.0,H2;
         0.0,0.0,H2+h1;
         L-L1-c/2-h2,0.0,H2;
         L-L1-c/2,0.0,H2;
@@ -76,100 +76,122 @@ if solveProblem
         L-c,l-c,H2;
         L-c,l-c,H2+h1;
         0.0,l-c,H2;
-        0.0,l-c,H2+h1]);
-    P_stage1 = POINT([0.0,0.0,H2+h1+d+h1/2;
-        L-L1-c/2-h2/2,0.0,H2+h1+d+h1/2;
-        L-c,0.0,H2+h1+d+h1/2;
-        L-c,l-c,H2+h1+d+h1/2;
-        0.0,l-c,H2+h1+d+h1/2]);
-    P_stage2 = POINT([0.0,0.0,H2+2*(h1+d)+h1/2;
-        L-L1-c/2-h2/2,0.0,H2+2*(h1+d)+h1/2;
-        L-c,0.0,H2+2*(h1+d)+h1/2;
-        L-c,l-c,H2+2*(h1+d)+h1/2;
-        0.0,l-c,H2+2*(h1+d)+h1/2]);
-    P_lath = zeros(14*2,3);
+        0.0,l-c,H2+h1];
+    x_barrier1 = [0.0,0.0,H2+h1+d;
+        0.0,0.0,H2+h1+d+h1;
+        L-L1-c/2-h2/2,0.0,H2+h1+d;
+        L-L1-c/2-h2/2,0.0,H2+h1+d+h1;
+        L-c,0.0,H2+h1+d;
+        L-c,0.0,H2+h1+d+h1;
+        L-c,l-c,H2+h1+d;
+        L-c,l-c,H2+h1+d+h1;
+        0.0,l-c,H2+h1+d+h1/2];
+    x_barrier2 = [0.0,0.0,H2+2*(h1+d);
+        0.0,0.0,H2+2*(h1+d)+h1;
+        L-L1-c/2-h2/2,0.0,H2+2*(h1+d);
+        L-L1-c/2-h2/2,0.0,H2+2*(h1+d)+h1;
+        L-c,0.0,H2+2*(h1+d);
+        L-c,0.0,H2+2*(h1+d)+h1;
+        L-c,l-c,H2+2*(h1+d);
+        L-c,l-c,H2+2*(h1+d)+h1;
+        0.0,l-c,H2+2*(h1+d);
+        0.0,l-c,H2+2*(h1+d)+h1];
+    x_lath = zeros(14*4,3);
     for i=1:14
-        P_lath(2*i-1,:) = [b2/2+e+d/2+(i-1)*2*d,0.0,H2+h1/2];
-        P_lath(2*i,:) = [b2/2+e+d/2+(i-1)*2*d,l-c,H2+h1/2];
+        x_lath(4*i-3,:) = [b2/2+e+d/2+(i-1)*2*d,0.0,H2];
+        x_lath(4*i-2,:) = [b2/2+e+d/2+(i-1)*2*d,0.0,H2+h1];
+        x_lath(4*i-1,:) = [b2/2+e+d/2+(i-1)*2*d,l-c,H2];
+        x_lath(4*i,:) = [b2/2+e+d/2+(i-1)*2*d,l-c,H2+h1];
     end
-    P_lath = POINT(P_lath);
     
-    P_load = POINT([(L-L1-c/2-h2/2)/2,0.0,H2+2*(h1+d)+h1/2]);
+    x_load = [(L-L1-c/2-h2/2)/2,0.0,H2+2*(h1+d)+h1/2];
     
-    L_post{1} = LIGNE(P_bot(1),P_mid(1));
-    L_post{2} = LIGNE(P_mid(1),P_bed(1));
-    L_post{3} = LIGNE(P_bed(1),P_stage1(1));
-    L_post{4} = LIGNE(P_stage1(1),P_stage2(1));
-    L_post{5} = LIGNE(P_stage2(1),P_top(1));
-    L_post{6} = LIGNE(P_bot(2),P_mid(2));
-    L_post{7} = LIGNE(P_mid(2),P_bed(3));
-    L_post{8} = LIGNE(P_bed(3),P_stage1(3));
-    L_post{9} = LIGNE(P_stage1(3),P_stage2(3));
-    L_post{10} = LIGNE(P_stage2(3),P_top(2));
-    L_post{11} = LIGNE(P_bot(3),P_mid(3));
-    L_post{12} = LIGNE(P_mid(3),P_bed(4));
-    L_post{13} = LIGNE(P_bed(4),P_stage1(4));
-    L_post{14} = LIGNE(P_stage1(4),P_stage2(4));
-    L_post{15} = LIGNE(P_stage2(4),P_top(3));
-    L_post{16} = LIGNE(P_bot(4),P_mid(4));
-    L_post{17} = LIGNE(P_mid(4),P_bed(5));
-    L_post{18} = LIGNE(P_bed(5),P_stage1(5));
-    L_post{19} = LIGNE(P_stage1(5),P_stage2(5));
-    L_post{20} = LIGNE(P_stage2(5),P_top(4));
-    L_beam1{1} = LIGNE(P_mid(2),P_mid(3));
-    L_beam1{2} = LIGNE(P_mid(3),P_mid(4));
-    L_beam1{3} = LIGNE(P_mid(4),P_mid(1));
-    L_beam1{4} = LIGNE(P_bed(1),P_lath(1));
-    L_beam1{5} = LIGNE(P_bed(5),P_lath(2));
-    for i=1:10
-        L_beam1{5+2*i-1} = LIGNE(P_lath(2*i-1),P_lath(2*i+1));
-        L_beam1{5+2*i} = LIGNE(P_lath(2*i),P_lath(2*i+2));
-    end
-    L_beam1{26} = LIGNE(P_lath(2*10+1),P_bed(2));
-    L_beam1{27} = LIGNE(P_bed(2),P_lath(2*11+1));
-    L_beam1{28} = LIGNE(P_lath(2*11),P_lath(2*12));
-    for i=1:3
-        L_beam1{28+2*i-1} = LIGNE(P_lath(20+2*i-1),P_lath(20+2*i+1));
-        L_beam1{28+2*i} = LIGNE(P_lath(20+2*i),P_lath(20+2*i+2));
-    end
-    L_beam1{35} = LIGNE(P_lath(27),P_bed(3));
-    L_beam1{36} = LIGNE(P_lath(28),P_bed(4));
-    L_lath = cell(1,14);
+    P_post{1} = {x_bot(1,:),x_mid(1,:),x_mid(2,:),x_bed(1,:),x_bed(2,:),x_barrier1(1,:),x_barrier1(2,:),x_barrier2(1,:),x_barrier2(2,:),x_top(1,:)};
+    P_post{2} = {x_bot(2,:),x_mid(3,:),x_mid(4,:),x_bed(7,:),x_bed(8,:),x_barrier1(7,:),x_barrier1(8,:),x_barrier2(7,:),x_barrier2(8,:),x_top(2,:)};
+    P_post{3} = {x_bot(3,:),x_mid(5,:),x_mid(6,:),x_bed(9,:),x_bed(10,:),x_barrier1(9,:),x_barrier1(10,:),x_barrier2(9,:),x_barrier2(10,:),x_top(3,:)};
+    P_post{4} = {x_bot(4,:),x_mid(7,:),x_mid(8,:),x_bed(11,:),x_bed(12,:),x_barrier1(11,:),x_barrier1(12,:),x_barrier2(11,:),x_barrier2(12,:),x_top(4,:)};
+    
+    Q_plate{1} = QUADRANGLE(x_mid(3,:),x_mid(4,:),x_mid(6,:),x_mid(5,:));
+    Q_plate{2} = QUADRANGLE(x_mid(5,:),x_mid(6,:),x_mid(8,:),x_mid(7,:));
+    Q_plate{3} = QUADRANGLE(x_mid(7,:),x_mid(8,:),x_mid(2,:),x_mid(1,:));
+    
+    Q_bed{1} = QUADRANGLE(x_bed(1,:),x_bed(2,:),x_bed(4,:),x_bed(3,:));
+    Q_bed{2} = QUADRANGLE(x_bed(5,:),x_bed(6,:),x_bed(8,:),x_bed(7,:));
+    Q_bed{3} = QUADRANGLE(x_bed(9,:),x_bed(10,:),x_bed(12,:),x_bed(11,:));
+    Q_bed{4} = QUADRANGLE(x_bed(7,:),x_bed(8,:),x_bed(10,:),x_bed(9,:));
+    Q_bed{5} = QUADRANGLE(x_bed(11,:),x_bed(12,:),x_bed(2,:),x_bed(1,:));
+    
+    Q_lath = cell(1,14);
     for i=1:14
-        L_lath{i} = LIGNE(P_lath(2*i-1),P_lath(2*i));
+        Q_lath{i} = QUADRANGLE(x_lath(4*i-3,:),x_bed(4*i-2,:),x_bed(4*i,:),x_bed(4*i-1,:));
     end
-    L_beam2{1} = LIGNE(P_bed(3),P_bed(4));
-    L_beam2{2} = LIGNE(P_bed(5),P_bed(1));
-    L_beam1{37} = LIGNE(P_stage1(1),P_stage1(2));
-    L_beam1{38} = LIGNE(P_stage1(3),P_stage1(4));
-    L_beam1{39} = LIGNE(P_stage1(4),P_stage1(5));
-    L_beam1{40} = LIGNE(P_stage1(5),P_stage1(1));
-    L_beam1{41} = LIGNE(P_stage2(1),P_load);
-    L_beam1{42} = LIGNE(P_load,P_stage2(2));
-    L_beam1{43} = LIGNE(P_stage2(3),P_stage2(4));
-    L_beam1{44} = LIGNE(P_stage2(4),P_stage2(5));
-    L_beam1{45} = LIGNE(P_stage2(5),P_stage2(1));
-    L_beam3{1} = LIGNE(P_bed(2),P_stage1(2));
-    L_beam3{2} = LIGNE(P_stage1(2),P_stage2(2));
     
-    cl_beam = b1;
-    S_post = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','param',VECTEUR([1;0;0]),'filename',fullfile(pathname,['gmsh_post_' num2str(n) '_cl_' num2str(cl_beam)])),L_post,num2cell(1:length(L_post)),'UniformOutput',false);
-    S_beam1 = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','param',VECTEUR([0;0;1]),'filename',fullfile(pathname,['gmsh_beam1_' num2str(n) '_cl_' num2str(cl_beam)])),L_beam1,num2cell(1:length(L_beam1)),'UniformOutput',false);
-    S_beam2 = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','param',VECTEUR([0;0;1]),'filename',fullfile(pathname,['gmsh_beam2_' num2str(n) '_cl_' num2str(cl_beam)])),L_beam2,num2cell(1:length(L_beam2)),'UniformOutput',false);
-    S_beam3 = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','param',VECTEUR([1;0;0]),'filename',fullfile(pathname,['gmsh_beam3_' num2str(n) '_cl_' num2str(cl_beam)])),L_beam3,num2cell(1:length(L_beam3)),'UniformOutput',false);
-    S_lath = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','param',VECTEUR([1;0;0]),'filename',fullfile(pathname,['gmsh_lath_' num2str(n) '_cl_' num2str(cl_beam)])),L_lath,num2cell(1:length(L_lath)),'UniformOutput',false);
+    Q_barrier1{1} = QUADRANGLE(x_barrier1(1,:),x_barrier1(2,:),x_barrier1(4,:),x_barrier1(3,:));
+    Q_barrier1{2} = QUADRANGLE(x_barrier1(7,:),x_barrier1(8,:),x_barrier1(10,:),x_barrier1(9,:));
+    Q_barrier1{3} = QUADRANGLE(x_barrier1(9,:),x_barrier1(10,:),x_barrier1(12,:),x_barrier1(11,:));
+    Q_barrier1{4} = QUADRANGLE(x_barrier1(11,:),x_barrier1(12,:),x_barrier1(2,:),x_barrier1(1,:));
     
+    Q_barrier2{1} = QUADRANGLE(x_barrier2(1,:),x_barrier2(2,:),x_barrier2(4,:),x_barrier2(3,:));
+    Q_barrier2{2} = QUADRANGLE(x_barrier2(7,:),x_barrier2(8,:),x_barrier2(10,:),x_barrier2(9,:));
+    Q_barrier2{3} = QUADRANGLE(x_barrier2(9,:),x_barrier2(10,:),x_barrier2(12,:),x_barrier2(11,:));
+    Q_barrier2{4} = QUADRANGLE(x_barrier2(11,:),x_barrier2(12,:),x_barrier2(2,:),x_barrier2(1,:));
+    
+    Q_frame{1} = QUADRANGLE(x_bed(3,:),x_bed(4,:),x_bed(6,:),x_bed(5,:));
+    Q_frame{2} = QUADRANGLE(x_bed(4,:),x_barrier1(3,:),x_barrier1(5,:),x_bed(6,:));
+    Q_frame{3} = QUADRANGLE(x_barrier1(3,:),x_barrier1(4,:),x_barrier1(6,:),x_barrier1(5,:));
+    Q_frame{4} = QUADRANGLE(x_barrier1(4,:),x_barrier2(3,:),x_barrier2(5,:),x_barrier1(6,:));
+    Q_frame{5} = QUADRANGLE(x_barrier2(3,:),x_barrier2(4,:),x_barrier2(6,:),x_barrier2(5,:));
+    
+    % Beams meshes
+    cl = b1;
+    S_post = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_post_' num2str(n)])),P_post,num2cell(1:length(P_post)),'UniformOutput',false);
+    S_post = cellfun(@(S) concatgroupelem(S),S_post,'UniformOutput',false);
     S_post = union(S_post{:});
+    S_post = concatgroupelem(S_post);
+    S_post = convertelem(S_post,elemtype,'param',VECTEUR([1;0;0]));
+    
+    % Plate meshes
+    elemtype = 'DKT';
+    S_plate = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
+        'filename',fullfile(pathname,['gmsh_plate_' num2str(n)]),Q_plate,num2cell(1:length(Q_plate)),'UniformOutput',false);
+    S_plate = union(S_plate{:});
+    S_plate = concatgroupelem(S_plate);
+    
+    S_bed = cell(1,5);
+    for n=1:3
+        S_bed{n} = gmshbeam(P,cl,fullfile(pathname,['gmsh_bed_' num2str(n)]))
+    end
+    for n=4:5
+        S_bed{n} = build_model(Q_bed{n},'cl',cl,'elemtype',elemtype,...
+            'filename',fullfile(pathname,['gmsh_bed_' num2str(n) '_elemtype_' elemtype]));
+    end
+    
+    S_bed = union(S_bed{:});
+    
+    S_beam1 = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_plate1_' num2str(n)])),P_beam1,num2cell(1:length(P_beam1)),'UniformOutput',false);
+    S_beam2 = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_plate2_' num2str(n)])),P_beam2,num2cell(1:length(P_beam2)),'UniformOutput',false);
+    S_beam3 = gmshbeam(P_beam3,cl,fullfile(pathname,['gmsh_beam3_cl_' num2str(cl)]));
+    S_lath = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_lath_' num2str(n) '_cl_' num2str(cl)])),P_lath,num2cell(1:length(P_lath)),'UniformOutput',false);
+    
+    
+    S_beam1 = cellfun(@(S) concatgroupelem(S),S_beam1,'UniformOutput',false);
+    S_beam2 = cellfun(@(S) concatgroupelem(S),S_beam2,'UniformOutput',false);
+    S_lath = cellfun(@(S) concatgroupelem(S),S_lath,'UniformOutput',false);
+    
     S_beam1 = union(S_beam1{:});
     S_beam2 = union(S_beam2{:});
-    S_beam3 = union(S_beam3{:});
     S_lath = union(S_lath{:});
     
-    S_post = concatgroupelem(S_post);
     S_beam1 = concatgroupelem(S_beam1);
     S_beam2 = concatgroupelem(S_beam2);
     S_beam3 = concatgroupelem(S_beam3);
     S_lath = concatgroupelem(S_lath);
+    
+    
+    S_beam1 = convertelem(S_beam1,elemtype);
+    S_beam2 = convertelem(S_beam2,elemtype);
+    S_beam3 = convertelem(S_beam3,elemtype);
+    S_lath = convertelem(S_lath,elemtype,'param',VECTEUR([1;0;0]));
     
     %% Materials
     % Gravitational acceleration
