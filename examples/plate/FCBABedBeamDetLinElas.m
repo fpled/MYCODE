@@ -57,103 +57,108 @@ if solveProblem
         L-c,0.0,H;
         L-c,l-c,H;
         0.0,l-c,H];
-    x_beam = [0.0,0.0,H1+h1/2;
+    x_botrail = [0.0,0.0,H1+h1/2;
         L-c,0.0,H1+h1/2;
         L-c,l-c,H1+h1/2;
         0.0,l-c,H1+h1/2];
-    x_bed = [0.0,0.0,H2+h1/2;
+    x_toprail = [0.0,0.0,H2+h1/2;
         L-L1-c/2-h2/2,0.0,H2+h1/2;
         L-c,0.0,H2+h1/2;
         L-c,l-c,H2+h1/2;
         0.0,l-c,H2+h1/2];
-    x_barrier1 = [0.0,0.0,H2+h1+d+h1/2;
+    x_botguardrail = [0.0,0.0,H2+h1+d+h1/2;
         L-L1-c/2-h2/2,0.0,H2+h1+d+h1/2;
         L-c,0.0,H2+h1+d+h1/2;
         L-c,l-c,H2+h1+d+h1/2;
         0.0,l-c,H2+h1+d+h1/2];
-    x_barrier2 = [0.0,0.0,H2+2*(h1+d)+h1/2;
+    x_topguardrail = [0.0,0.0,H2+2*(h1+d)+h1/2;
         L-L1-c/2-h2/2,0.0,H2+2*(h1+d)+h1/2;
         L-c,0.0,H2+2*(h1+d)+h1/2;
         L-c,l-c,H2+2*(h1+d)+h1/2;
         0.0,l-c,H2+2*(h1+d)+h1/2];
-    x_lath = zeros(14*2,3);
+    x_slat = zeros(14*2,3);
     for i=1:14
-        x_lath(2*i-1,:) = [b2/2+e+d/2+(i-1)*2*d,0.0,H2+h1/2];
-        x_lath(2*i,:) = [b2/2+e+d/2+(i-1)*2*d,l-c,H2+h1/2];
+        x_slat(2*i-1,:) = [b2/2+e+d/2+(i-1)*2*d,0.0,H2+h1/2];
+        x_slat(2*i,:) = [b2/2+e+d/2+(i-1)*2*d,l-c,H2+h1/2];
     end
     
     x_load = [(L-L1-c/2-h2/2)/2,0.0,H2+2*(h1+d)+h1/2];
     
-    P_post{1} = {x_bot(1,:),x_beam(1,:),x_bed(1,:),x_barrier1(1,:),x_barrier2(1,:),x_top(1,:)};
-    P_post{2} = {x_bot(2,:),x_beam(2,:),x_bed(3,:),x_barrier1(3,:),x_barrier2(3,:),x_top(2,:)};
-    P_post{3} = {x_bot(3,:),x_beam(3,:),x_bed(4,:),x_barrier1(4,:),x_barrier2(4,:),x_top(3,:)};
-    P_post{4} = {x_bot(4,:),x_beam(4,:),x_bed(5,:),x_barrier1(5,:),x_barrier2(5,:),x_top(4,:)};
+    P_leg{1} = {x_bot(1,:),x_botrail(1,:),x_toprail(1,:),x_botguardrail(1,:),x_topguardrail(1,:),x_top(1,:)};
+    P_leg{2} = {x_bot(2,:),x_botrail(2,:),x_toprail(3,:),x_botguardrail(3,:),x_topguardrail(3,:),x_top(2,:)};
+    P_leg{3} = {x_bot(3,:),x_botrail(3,:),x_toprail(4,:),x_botguardrail(4,:),x_topguardrail(4,:),x_top(3,:)};
+    P_leg{4} = {x_bot(4,:),x_botrail(4,:),x_toprail(5,:),x_botguardrail(5,:),x_topguardrail(5,:),x_top(4,:)};
     
-    P_beam{1} = {x_beam(2,:),x_beam(3,:)};
-    P_beam{2} = {x_beam(3,:),x_beam(4,:)};
-    P_beam{3} = {x_beam(4,:),x_beam(1,:)};
+    P_botrail{1} = {x_botrail(2,:),x_botrail(3,:)};
+    P_botrail{2} = {x_botrail(3,:),x_botrail(4,:)};
+    P_botrail{3} = {x_botrail(4,:),x_botrail(1,:)};
     
-    P_bed{1} = {x_bed(1,:),x_lath(1,:),x_lath(3,:),x_lath(5,:),x_lath(7,:),x_lath(9,:),...
-        x_lath(11,:),x_lath(13,:),x_lath(15,:),x_lath(17,:),x_lath(19,:),x_lath(21,:),x_bed(2,:)};
-    P_bed{2} = {x_bed(2,:),x_lath(23,:),x_lath(25,:),x_lath(27,:),x_bed(3,:)};
-    P_bed{3} = {x_bed(5,:),x_lath(2,:),x_lath(4,:),x_lath(6,:),x_lath(8,:),x_lath(10,:),...
-        x_lath(12,:),x_lath(14,:),x_lath(16,:),x_lath(18,:),x_lath(20,:),x_lath(22,:),...
-        x_lath(24,:),x_lath(26,:),x_lath(28,:),x_bed(4,:)};
-    P_bed{4} = {x_bed(3,:),x_bed(4,:)};
-    P_bed{5} = {x_bed(5,:),x_bed(1,:)};
+    P_siderail{1} = {x_toprail(1,:),x_slat(1,:),x_slat(3,:),x_slat(5,:),x_slat(7,:),x_slat(9,:),...
+        x_slat(11,:),x_slat(13,:),x_slat(15,:),x_slat(17,:),x_slat(19,:),x_slat(21,:),...
+        x_toprail(2,:),x_slat(23,:),x_slat(25,:),x_slat(27,:),x_toprail(3,:)};
+    P_siderail{2} = {x_toprail(5,:),x_slat(2,:),x_slat(4,:),x_slat(6,:),x_slat(8,:),x_slat(10,:),...
+        x_slat(12,:),x_slat(14,:),x_slat(16,:),x_slat(18,:),x_slat(20,:),x_slat(22,:),...
+        x_slat(24,:),x_slat(26,:),x_slat(28,:),x_toprail(4,:)};
     
-    P_lath = cell(1,14);
+    P_endrail{1} = {x_toprail(3,:),x_toprail(4,:)};
+    P_endrail{2} = {x_toprail(5,:),x_toprail(1,:)};
+    
+    P_slat = cell(1,14);
     for i=1:14
-        P_lath{i} = {x_lath(2*i-1,:),x_lath(2*i,:)};
+        P_slat{i} = {x_slat(2*i-1,:),x_slat(2*i,:)};
     end
     
-    P_barrier1{1} = {x_barrier1(1,:),x_barrier1(2,:)};
-    P_barrier1{2} = {x_barrier1(3,:),x_barrier1(4,:)};
-    P_barrier1{3} = {x_barrier1(4,:),x_barrier1(5,:)};
-    P_barrier1{4} = {x_barrier1(5,:),x_barrier1(1,:)};
+    P_botguardrail{1} = {x_botguardrail(1,:),x_botguardrail(2,:)};
+    P_botguardrail{2} = {x_botguardrail(3,:),x_botguardrail(4,:)};
+    P_botguardrail{3} = {x_botguardrail(4,:),x_botguardrail(5,:)};
+    P_botguardrail{4} = {x_botguardrail(5,:),x_botguardrail(1,:)};
     
-    P_barrier2{1} = {x_barrier2(1,:),x_load,x_barrier2(2,:)};
-    P_barrier2{2} = {x_barrier2(3,:),x_barrier2(4,:)};
-    P_barrier2{3} = {x_barrier2(4,:),x_barrier2(5,:)};
-    P_barrier2{4} = {x_barrier2(5,:),x_barrier2(1,:)};
+    P_topguardrail{1} = {x_topguardrail(1,:),x_load,x_topguardrail(2,:)};
+    P_topguardrail{2} = {x_topguardrail(3,:),x_topguardrail(4,:)};
+    P_topguardrail{3} = {x_topguardrail(4,:),x_topguardrail(5,:)};
+    P_topguardrail{4} = {x_topguardrail(5,:),x_topguardrail(1,:)};
     
-    P_frame = {x_bed(2,:),x_barrier1(2,:),x_barrier2(2,:)};
+    P_guardrailsupport = {x_toprail(2,:),x_botguardrail(2,:),x_topguardrail(2,:)};
     
     % Beams meshes
     elemtype = 'BEAM';
     cl = b1;
-    S_post = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_post_' num2str(n)])),P_post,num2cell(1:length(P_post)),'UniformOutput',false);
-    S_post = cellfun(@(S) concatgroupelem(S),S_post,'UniformOutput',false);
-    S_post = union(S_post{:});
-    S_post = concatgroupelem(S_post);
-    S_post = convertelem(S_post,elemtype,'param',VECTEUR([1;0;0]));
+    S_leg = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_leg_' num2str(n)])),P_leg,num2cell(1:length(P_leg)),'UniformOutput',false);
+    S_leg = cellfun(@(S) concatgroupelem(S),S_leg,'UniformOutput',false);
+    S_leg = union(S_leg{:});
+    S_leg = concatgroupelem(S_leg);
+    S_leg = convertelem(S_leg,elemtype,'param',VECTEUR([1;0;0]));
     
-    S_beam = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_beam_' num2str(n)])),P_beam,num2cell(1:length(P_beam)),'UniformOutput',false);
-    S_beam = union(S_beam{:});
-    S_beam = concatgroupelem(S_beam);
-    S_beam = convertelem(S_beam,elemtype,'param',VECTEUR([0;0;1]));
+    S_botrail = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_botrail_' num2str(n)])),P_botrail,num2cell(1:length(P_botrail)),'UniformOutput',false);
+    S_botrail = union(S_botrail{:});
+    S_botrail = concatgroupelem(S_botrail);
+    S_botrail = convertelem(S_botrail,elemtype,'param',VECTEUR([0;0;1]));
     
-    S_bed = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_bed_' num2str(n)])),P_bed,num2cell(1:length(P_bed)),'UniformOutput',false);
-    for n=1:3
-        S_bed{n} = concatgroupelem(S_bed{n});
-    end
-    S_bed = union(S_bed{:});
-    S_bed = convertelem(S_bed,elemtype,'param',VECTEUR([0;0;1]));
+    S_siderail = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_siderail_' num2str(n)])),P_siderail,num2cell(1:length(P_siderail)),'UniformOutput',false);
+    S_siderail = cellfun(@(S) concatgroupelem(S),S_siderail,'UniformOutput',false);
+    S_siderail = union(S_siderail{:});
+    S_siderail = concatgroupelem(S_siderail);
+    S_siderail = convertelem(S_siderail,elemtype,'param',VECTEUR([0;0;1]));
     
-    S_barrier1 = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_barrier1_' num2str(n)])),P_barrier1,num2cell(1:length(P_barrier1)),'UniformOutput',false);
-    S_barrier2 = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_barrier2_' num2str(n)])),P_barrier2,num2cell(1:length(P_barrier2)),'UniformOutput',false);
-    S_barrier = union(S_barrier1{:},S_barrier2{:});
-    S_barrier = concatgroupelem(S_barrier);
-    S_barrier = convertelem(S_barrier,elemtype,'param',VECTEUR([0;0;1]));
+    S_endrail = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_endrail_' num2str(n)])),P_endrail,num2cell(1:length(P_endrail)),'UniformOutput',false);
+    S_endrail = union(S_endrail{:});
+    S_endrail = concatgroupelem(S_endrail);
+    S_endrail = convertelem(S_endrail,elemtype,'param',VECTEUR([0;0;1]));
     
-    S_frame = gmshbeam(P_frame,cl,fullfile(pathname,'gmsh_frame'));
-    S_frame = concatgroupelem(S_frame);
-    S_frame = convertelem(S_frame,elemtype,'param',VECTEUR([1;0;0]));
+    S_botguardrail = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_botguardrail_' num2str(n)])),P_botguardrail,num2cell(1:length(P_botguardrail)),'UniformOutput',false);
+    S_topguardrail = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_topguardrail_' num2str(n)])),P_topguardrail,num2cell(1:length(P_topguardrail)),'UniformOutput',false);
+    S_guardrail = union(S_botguardrail{:},S_topguardrail{:});
+    S_guardrail = concatgroupelem(S_guardrail);
+    S_guardrail = convertelem(S_guardrail,elemtype,'param',VECTEUR([0;0;1]));
     
-    S_lath = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_lath_' num2str(n)])),P_lath,num2cell(1:length(P_lath)),'UniformOutput',false);
-    S_lath = union(S_lath{:});
-    S_lath = concatgroupelem(S_lath);
-    S_lath = convertelem(S_lath,elemtype,'param',VECTEUR([1;0;0]));
+    S_guardrailsupport = gmshbeam(P_guardrailsupport,cl,fullfile(pathname,'gmsh_guardrailsupport'));
+    S_guardrailsupport = concatgroupelem(S_guardrailsupport);
+    S_guardrailsupport = convertelem(S_guardrailsupport,elemtype,'param',VECTEUR([1;0;0]));
+    
+    S_slat = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_slat_' num2str(n)])),P_slat,num2cell(1:length(P_slat)),'UniformOutput',false);
+    S_slat = union(S_slat{:});
+    S_slat = concatgroupelem(S_slat);
+    S_slat = convertelem(S_slat,elemtype,'param',VECTEUR([1;0;0]));
     
     %% Materials
     % Gravitational acceleration
@@ -206,27 +211,24 @@ if solveProblem
             mat_3 = setnumber(mat_3,4);
             mat_4 = ELAS_BEAM('E',E,'NU',NU,'S',Sec4,'IZ',IZ4,'IY',IY4,'IX',IX4,'RHO',RHO);
             mat_4 = setnumber(mat_4,5);
-            S_post = setmaterial(S_post,mat_0);
-            S_beam = setmaterial(S_beam,mat_1);
-            S_bed = setmaterial(S_bed,mat_1,1:3);
-            S_bed = setmaterial(S_bed,mat_2,4:5);
-            S_barrier = setmaterial(S_barrier,mat_1);
-            S_frame = setmaterial(S_frame,mat_3);
-            S_lath = setmaterial(S_lath,mat_4);
+            S_leg = setmaterial(S_leg,mat_0);
+            S_botrail = setmaterial(S_botrail,mat_1);
+            S_siderail = setmaterial(S_siderail,mat_1);
+            S_endrail = setmaterial(S_endrail,mat_2);
+            S_guardrail = setmaterial(S_guardrail,mat_1);
+            S_guardrailsupport = setmaterial(S_guardrailsupport,mat_3);
+            S_slat = setmaterial(S_slat,mat_4);
         otherwise
             error('Wrong material symmetry !')
     end
-    
-    S_bed = concatgroupelem(S_bed);
-    S_bed = union(S_bed,S_lath);
-    S = union(S_post,S_beam,S_bed,S_barrier,S_frame);
+    S = union(S_leg,S_botrail,S_siderail,S_endrail,S_guardrail,S_guardrailsupport,S_slat);
     
     %% Neumann boundary conditions
-    p0 = RHO*g*Sec0; % line load (body load for posts)
-    p1 = RHO*g*Sec1; % line load (body load for beams 1)
-    p2 = RHO*g*Sec2; % line load (body load for beams 2)
-    p3 = RHO*g*Sec3; % line load (body load for beams 3)
-    p4 = RHO*g*Sec4; % line load (body load for laths)
+    p0 = RHO*g*Sec0; % line load (body load for legs)
+    p1 = RHO*g*Sec1; % line load (body load for bottom rails, side rails and guard rails)
+    p2 = RHO*g*Sec2; % line load (body load for end rails)
+    p3 = RHO*g*Sec3; % line load (body load for guardrail support)
+    p4 = RHO*g*Sec4; % line load (body load for slats)
     switch lower(test)
         case 'staticvert'
             p = 200; % pointwise load, 200N
@@ -298,14 +300,15 @@ if solveProblem
     ry = eval_sol(S,u,P,'RY');
     rz = eval_sol(S,u,P,'RZ');
     
-    n  = reshape(N{6},[getnbnode(S),1]);
-    mx = reshape(Mx{6},[getnbnode(S),1]);
-    my = reshape(My{6},[getnbnode(S),1]);
-    mz = reshape(Mz{6},[getnbnode(S),1]);
-    epsx = reshape(Epsx{6},[getnbnode(S),1]);
-    gamx = reshape(Gamx{6},[getnbnode(S),1]);
-    gamy = reshape(Gamy{6},[getnbnode(S),1]);
-    gamz = reshape(Gamz{6},[getnbnode(S),1]);
+    n  = reshape(N{5},[getnbnode(S),1]);
+    mx = reshape(Mx{5},[getnbnode(S),1]);
+    my = reshape(My{5},[getnbnode(S),1]);
+    mz = reshape(Mz{5},[getnbnode(S),1]);
+    epsx = reshape(Epsx{5},[getnbnode(S),1]);
+    gamx = reshape(Gamx{5},[getnbnode(S),1]);
+    gamy = reshape(Gamy{5},[getnbnode(S),1]);
+    gamz = reshape(Gamz{5},[getnbnode(S),1]);
+    
     n = double(n(numnode));
     mx = double(mx(numnode));
     my = double(my(numnode));
@@ -320,27 +323,25 @@ if solveProblem
         'H','L','L1','l','h','H1','H2','h1','h2','b1','b2','c','d','e',...
         'f');
     save(fullfile(pathname,'solution.mat'),'u','s','e','time',...
-        'Ux','Uy','Uz','Rx','Ry','Rz','N','Mx','My','Mz',...
-        'Epsx','Gamx','Gamy','Gamz');
+        'Ux','Uy','Uz','Rx','Ry','Rz',...
+        'N','Mx','My','Mz','Epsx','Gamx','Gamy','Gamz');
     save(fullfile(pathname,'test_solution.mat'),'P',...
-        'ux','uy','uz','rx','ry','rz','n','mx','my','mz',...
-        'epsx','gamx','gamy','gamz');
+        'ux','uy','uz','rx','ry','rz',...
+        'n','mx','my','mz','epsx','gamx','gamy','gamz');
 else
     load(fullfile(pathname,'problem.mat'),'S','test',...
         'H','L','L1','l','h','H1','H2','h1','h2','b1','b2','c','d','e',...
         'f');
     load(fullfile(pathname,'solution.mat'),'u','s','e','time',...
         'Ux','Uy','Uz','Rx','Ry','Rz',...
-        'Epsx','Gamx','Gamy','Gamz',...
-        'N','Mx','My','Mz');
+        'N','Mx','My','Mz','Epsx','Gamx','Gamy','Gamz');
     load(fullfile(pathname,'test_solution.mat'),'P',...
         'ux','uy','uz','rx','ry','rz',...
-        'epsx','gamx','gamy','gamz',...
-        'n','mx','my','mz');
+        'n','mx','my','mz','epsx','gamx','gamy','gamz');
 end
 
 %% Outputs
-fprintf('\nDesk\n');
+fprintf('\nBed\n');
 fprintf(['test : ' test '\n']);
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
@@ -356,13 +357,6 @@ fprintf('ry = %g rad = %g deg\n',ry,rad2deg(ry));
 fprintf('rz = %g rad = %g deg\n',rz,rad2deg(rz));
 fprintf('\n');
 
-disp('Axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point'); disp(P);
-fprintf('Epsx = %g\n',epsx);
-fprintf('Gamx = %g\n',gamx);
-fprintf('Gamy = %g\n',gamy);
-fprintf('Gamz = %g\n',gamz);
-fprintf('\n');
-
 disp('Force N and moments Mx, My, Mz at point'); disp(P);
 fprintf('N  = %g N\n',n);
 fprintf('Mx = %g N.m\n',mx);
@@ -370,20 +364,29 @@ fprintf('My = %g N.m\n',my);
 fprintf('Mz = %g N.m\n',mz);
 fprintf('\n');
 
+disp('Axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point'); disp(P);
+fprintf('Epsx = %g\n',epsx);
+fprintf('Gamx = %g\n',gamx);
+fprintf('Gamy = %g\n',gamy);
+fprintf('Gamz = %g\n',gamz);
+fprintf('\n');
+
 %% Display
 if displaySolution
     %% Display domains, boundary conditions and meshes
     figure('Name','Domain')
     clf
-    h1 = plot(S,'selgroup',1,'color','r');
+    h1 = plot(S,'selgroup',1,'EdgeColor','k');
     hold on
-    h2 = plot(S,'selgroup',2,'color','g');
-    h3 = plot(S,'selgroup',3:5,'color','b');
-    h4 = plot(S,'selgroup',6,'color','k');
-    h5 = plot(S,'selgroup',7,'color','m');
+    h2 = plot(S,'selgroup',2,'EdgeColor','c');
+    h3 = plot(S,'selgroup',3,'EdgeColor','r');
+    h4 = plot(S,'selgroup',4,'EdgeColor',[1 0.5 0]);
+    h5 = plot(S,'selgroup',5,'EdgeColor','b');
+    h6 = plot(S,'selgroup',6,'EdgeColor','m');
+    h7 = plot(S,'selgroup',7,'EdgeColor','g');
     hold off
     set(gca,'FontSize',16)
-    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'post','beam','bed','barrier','frame','Location','NorthEastOutside');
+    l = legend([h1,h2,h3,h4,h5,h6,h7],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','slat','Location','NorthEastOutside');
     %set(l,'Interpreter','latex')
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
@@ -398,7 +401,6 @@ if displaySolution
     [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     ampl = 5;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
-    legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
     %legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
@@ -445,12 +447,24 @@ if displaySolution
     % mysaveas(pathname,'eps_x',formats,renderer);
     %
     % plotSolution(S,u,'epsilon',2,'ampl',ampl,options{:});
+    % mysaveas(pathname,'gam_x',formats,renderer);
+    %
+    % plotSolution(S,u,'epsilon',3,'ampl',ampl,options{:});
+    % mysaveas(pathname,'gam_y',formats,renderer);
+    %
+    % plotSolution(S,u,'epsilon',4,'ampl',ampl,options{:});
     % mysaveas(pathname,'gam_z',formats,renderer);
     %
     % plotSolution(S,u,'sigma',1,'ampl',ampl,options{:});
     % mysaveas(pathname,'eff_x',formats,renderer);
     %
     % plotSolution(S,u,'sigma',2,'ampl',ampl,options{:});
+    % mysaveas(pathname,'mom_x',formats,renderer);
+    %
+    % plotSolution(S,u,'sigma',3,'ampl',ampl,options{:});
+    % mysaveas(pathname,'mom_y',formats,renderer);
+    %
+    % plotSolution(S,u,'sigma',4,'ampl',ampl,options{:});
     % mysaveas(pathname,'mom_z',formats,renderer);
     
     figure('Name','Solution eps_x')

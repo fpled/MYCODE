@@ -68,7 +68,7 @@ mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',EL_exp,'ET',ET_exp,'NUL',
 mat = setnumber(mat,1);
 S = setmaterial(S,mat);
 
-%% Dirichlet boundary conditions for exprimental solution
+%% Dirichlet boundary conditions for experimental solution
 L = getedges(D);
 S = final(S);
 
