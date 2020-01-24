@@ -145,7 +145,7 @@ if solveProblem
     Q_guardrailsupport{1} = QUADRANGLE(x_guardrailsupport(1,:),x_guardrailsupport(2,:),x_guardrailsupport(8,:),x_guardrailsupport(7,:));
     Q_guardrailsupport{2} = QUADRANGLE(x_guardrailsupport(2,:),x_guardrailsupport(3,:),x_botguardrail(3,:),x_guardrailsupport(8,:));
     Q_guardrailsupport{3} = QUADRANGLE(x_guardrailsupport(3,:),x_guardrailsupport(4,:),x_botguardrail(4,:),x_botguardrail(3,:));
-    Q_guardrailsupport{4} = QUADRANGLE(x_guardrailsupport(4,:),x_guardrailsupport(5,:),x_topguardrail(3,:),x_topguardrail(4,:));
+    Q_guardrailsupport{4} = QUADRANGLE(x_guardrailsupport(4,:),x_guardrailsupport(5,:),x_topguardrail(3,:),x_botguardrail(4,:));
     Q_guardrailsupport{5} = QUADRANGLE(x_guardrailsupport(5,:),x_guardrailsupport(6,:),x_topguardrail(4,:),x_topguardrail(3,:));
     
     % Beams meshes
@@ -191,22 +191,29 @@ if solveProblem
     S_topguardrail{1} = build_model(Q_topguardrail{1},'cl',cl,'elemtype',elemtype,...
         'filename',fullfile(pathname,['gmsh_topguardrail_1_elemtype_' elemtype]),'points',x_load);
     S_topguardrail(2:4) = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_topguardrail_' num2str(n) '_elemtype_' elemtype])),Q_topguardrail(2:4),num2cell(1:length(Q_topguardrail(2:4))),'UniformOutput',false);
+        'filename',fullfile(pathname,['gmsh_topguardrail_' num2str(n) '_elemtype_' elemtype])),Q_topguardrail(2:4),num2cell(2:4),'UniformOutput',false);
     S_guardrail = union(S_botguardrail{:},S_topguardrail{:});
     S_guardrail = concatgroupelem(S_guardrail);
     
     L_slat = LIGNE(x_cross,x_slat(4*11-2,:));
     if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-        S_guardrailsupport = gmshFCBAbedguardrailsupport(Q_guardrailsupport{1},L_slat,cl,cl,fullfile(pathname,['gmsh_guardrailsupport_1_elemtype_' elemtype]),3);
+        S_guardrailsupport{1} = gmshFCBAbedguardrailsupport(Q_guardrailsupport{1},L_slat,cl,cl,fullfile(pathname,['gmsh_guardrailsupport_1_elemtype_' elemtype]),3);
     else
-        S_guardrailsupport = gmshFCBAbedguardrailsupport(Q_guardrailsupport{1},L_slat,cl,cl,fullfile(pathname,['gmsh_guardrailsupport_1_elemtype_' elemtype]),3,'recombine');
+        S_guardrailsupport{1} = gmshFCBAbedguardrailsupport(Q_guardrailsupport{1},L_slat,cl,cl,fullfile(pathname,['gmsh_guardrailsupport_1_elemtype_' elemtype]),3,'recombine');
     end
     S_guardrailsupport{1} = convertelem(S_guardrailsupport{1},elemtype);
-    S_topguardrail(2:5) = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_guardrailsupport_' num2str(n) '_elemtype_' elemtype])),Q_guardrailsupport(2:5),num2cell(1:length(Q_guardrailsupport(2:5))),'UniformOutput',false);
+    S_guardrailsupport(2:5) = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
+        'filename',fullfile(pathname,['gmsh_guardrailsupport_' num2str(n) '_elemtype_' elemtype])),Q_guardrailsupport(2:5),num2cell(2:5),'UniformOutput',false);
     
-    S_slat = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_slat_' num2str(n) '_elemtype_' elemtype])),Q_slat,num2cell(1:length(Q_slat)),'UniformOutput',false);
+    P_slat = POINT(x_cross);
+    S_slat([1:10,12:14]) = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
+        'filename',fullfile(pathname,['gmsh_slat_' num2str(n) '_elemtype_' elemtype])),Q_slat{[1:10,12:14]},num2cell([1:10,12:14]),'UniformOutput',false);
+    if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
+        S_slat{10} = gmshFCBAbedslat(Q_slat{10},P_slat,cl,cl,fullfile(pathname,['gmsh_slat_10_elemtype_' elemtype]),3);
+    else
+        S_slat{10} = gmshFCBAbedslat(Q_slat{10},P_slat,cl,cl,fullfile(pathname,['gmsh_slat_10_elemtype_' elemtype]),3,'recombine');
+    end
+    
     S_slat = union(S_slat{:});
     S_slat = concatgroupelem(S_slat);
     

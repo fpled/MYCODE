@@ -116,7 +116,7 @@ if solveProblem
     s.display = true;
     s.displayIterations = true;
     
-    ls = LeastSquaresSolver();
+    ls = LinearModelLearningSquareLoss();
     ls.errorEstimation = true;
     
     % if isanlsolver(pb.solver)

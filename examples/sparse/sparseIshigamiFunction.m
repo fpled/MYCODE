@@ -56,7 +56,7 @@ s.tolStagnation = 5e-2;
 s.display = true;
 s.displayIterations = true;
 
-ls = LeastSquaresSolver();
+ls = LinearModelLearningSquareLoss();
 ls.errorEstimation = true;
 
 t = tic;

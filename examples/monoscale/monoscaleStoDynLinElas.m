@@ -128,7 +128,7 @@ if solveProblem
     s.display = true;
     s.displayIterations = true;
     
-    ls = LeastSquaresSolver();
+    ls = LinearModelLearningSquareLoss();
     ls.errorEstimation = true;
     
     funt = @(xi) solveSystem(calcOperator(funEval(pb,xi)));

@@ -160,7 +160,7 @@ if solveProblem
     s.display = true;
     s.displayIterations = true;
     
-    ls = LeastSquaresSolver();
+    ls = LinearModelLearningSquareLoss();
     ls.errorEstimation = true;
     
     pbt = pb;

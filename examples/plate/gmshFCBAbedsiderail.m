@@ -1,23 +1,23 @@
-function varargout = gmshFCBAbedsiderail(Q,L_slat,clQ,clL_slat,filename,indim,varargin)
-% function varargout = gmshFCBAbedsiderail(Q,L_slat,clQ,clL_slat,filename,indim,varargin)
+function varargout = gmshFCBAbedsiderail(Q,L,clQ,clL,filename,indim,varargin)
+% function varargout = gmshFCBAbedsiderail(Q,L,clQ,clL,filename,indim,varargin)
 % Q : QUADRANGLE
-% L_slat : cell of LIGNE
-% clQ, clL_slat : characteristic lengths
+% L : cell of LIGNE
+% clQ, clL : characteristic lengths
 % filename : file name (optional)
 % indim : space dimension (optional, getindim(Q) by default)
 
 if nargin<4
-    clL_slat = clQ;
+    clL = clQ;
 end
 if nargin<6
     indim = getindim(Q);
 end
 
-if ~iscell(L_slat)
-    L_slat = {L_slat};
+if ~iscell(L)
+    L = {L};
 end
-if length(clL_slat)==1
-    clL_slat = repmat(clL_slat,1,length(L_slat));
+if length(clL)==1
+    clL = repmat(clL,1,length(L));
 end
 
 G = GMSHFILE();
@@ -29,10 +29,10 @@ PQ = getvertices(Q);
 
 G = createpoints(G,PQ,clQ,1:4);
 
-numpoints = 4+(1:2*length(L_slat));
-numlines = 5+(1:length(L_slat));
-for j=1:length(L_slat)
-    GI = gmshfile(L_slat{j},clL_slat(j),numpoints([2*j-1,2*j]),numlines(j));
+numpoints = 4+(1:2*length(L));
+numlines = 5+(1:length(L));
+for j=1:length(L)
+    GI = gmshfile(L{j},clL(j),numpoints([2*j-1,2*j]),numlines(j));
     G = G+GI;
 end
 G = createcontour(G,[1:3,numpoints(end),4],1:5,1);

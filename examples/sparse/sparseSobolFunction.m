@@ -43,7 +43,7 @@ s.tolOverfit = 1.05;
 s.display = true;
 s.displayIterations = true;
 
-ls = LeastSquaresSolver();
+ls = LinearModelLearningSquareLoss();
 ls.errorEstimation = true;
 
 t = tic;
