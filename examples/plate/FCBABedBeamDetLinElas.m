@@ -122,7 +122,7 @@ if solveProblem
     
     % Beams meshes
     elemtype = 'BEAM';
-    cl = b1;
+    cl = b1/2;
     S_leg = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_leg_' num2str(n)])),P_leg,num2cell(1:length(P_leg)),'UniformOutput',false);
     S_leg = cellfun(@(S) concatgroupelem(S),S_leg,'UniformOutput',false);
     S_leg = union(S_leg{:});
@@ -300,14 +300,15 @@ if solveProblem
     ry = eval_sol(S,u,P,'RY');
     rz = eval_sol(S,u,P,'RZ');
     
-    n  = reshape(N{5},[getnbnode(S),1]);
-    mx = reshape(Mx{5},[getnbnode(S),1]);
-    my = reshape(My{5},[getnbnode(S),1]);
-    mz = reshape(Mz{5},[getnbnode(S),1]);
-    epsx = reshape(Epsx{5},[getnbnode(S),1]);
-    gamx = reshape(Gamx{5},[getnbnode(S),1]);
-    gamy = reshape(Gamy{5},[getnbnode(S),1]);
-    gamz = reshape(Gamz{5},[getnbnode(S),1]);
+    [~,~,numgroupelem] = findelemwithnode(S,numnode);
+    n  = reshape(N{numgroupelem},[getnbnode(S),1]);
+    mx = reshape(Mx{numgroupelem},[getnbnode(S),1]);
+    my = reshape(My{numgroupelem},[getnbnode(S),1]);
+    mz = reshape(Mz{numgroupelem},[getnbnode(S),1]);
+    epsx = reshape(Epsx{numgroupelem},[getnbnode(S),1]);
+    gamx = reshape(Gamx{numgroupelem},[getnbnode(S),1]);
+    gamy = reshape(Gamy{numgroupelem},[getnbnode(S),1]);
+    gamz = reshape(Gamz{numgroupelem},[getnbnode(S),1]);
     
     n = double(n(numnode));
     mx = double(mx(numnode));
@@ -386,13 +387,13 @@ if displaySolution
     h7 = plot(S,'selgroup',7,'EdgeColor','g');
     hold off
     set(gca,'FontSize',16)
-    l = legend([h1,h2,h3,h4,h5,h6,h7],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','slat','Location','NorthEastOutside');
+    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1),h7(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','slat','Location','NorthEastOutside');
     %set(l,'Interpreter','latex')
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
-%     plot(S,'group')
-%     plot(S,'mat')
+%     plotparamelem(S,'group')
+%     plotparamelem(S,'material')
     
 %     plotDomain(S,'legend',false);
 %     mysaveas(pathname,'domain',formats,renderer);

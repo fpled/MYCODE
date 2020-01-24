@@ -149,7 +149,7 @@ if solveProblem
     Q_guardrailsupport{5} = QUADRANGLE(x_guardrailsupport(5,:),x_guardrailsupport(6,:),x_topguardrail(4,:),x_topguardrail(3,:));
     
     % Beams meshes
-    cl = b1;
+    cl = b1/2;
     S_leg = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_leg_' num2str(n)])),P_leg,num2cell(1:length(P_leg)),'UniformOutput',false);
     S_leg = cellfun(@(S) concatgroupelem(S),S_leg,'UniformOutput',false);
     S_leg = union(S_leg{:});
@@ -204,16 +204,17 @@ if solveProblem
     S_guardrailsupport{1} = convertelem(S_guardrailsupport{1},elemtype);
     S_guardrailsupport(2:5) = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
         'filename',fullfile(pathname,['gmsh_guardrailsupport_' num2str(n) '_elemtype_' elemtype])),Q_guardrailsupport(2:5),num2cell(2:5),'UniformOutput',false);
+    S_guardrailsupport = union(S_guardrailsupport{:});
     
     P_slat = POINT(x_cross);
-    S_slat([1:10,12:14]) = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_slat_' num2str(n) '_elemtype_' elemtype])),Q_slat{[1:10,12:14]},num2cell([1:10,12:14]),'UniformOutput',false);
     if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-        S_slat{10} = gmshFCBAbedslat(Q_slat{10},P_slat,cl,cl,fullfile(pathname,['gmsh_slat_10_elemtype_' elemtype]),3);
+        S_slat{11} = gmshFCBAbedslat(Q_slat{11},P_slat,cl,cl,fullfile(pathname,['gmsh_slat_11_elemtype_' elemtype]),3);
     else
-        S_slat{10} = gmshFCBAbedslat(Q_slat{10},P_slat,cl,cl,fullfile(pathname,['gmsh_slat_10_elemtype_' elemtype]),3,'recombine');
+        S_slat{11} = gmshFCBAbedslat(Q_slat{11},P_slat,cl,cl,fullfile(pathname,['gmsh_slat_11_elemtype_' elemtype]),3,'recombine');
     end
-    
+    S_slat{11} = convertelem(S_slat{11},elemtype);
+    S_slat([1:10,12:14]) = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
+        'filename',fullfile(pathname,['gmsh_slat_' num2str(n) '_elemtype_' elemtype])),Q_slat([1:10,12:14]),num2cell([1:10,12:14]),'UniformOutput',false);
     S_slat = union(S_slat{:});
     S_slat = concatgroupelem(S_slat);
     
@@ -248,12 +249,15 @@ if solveProblem
             mat_1 = setnumber(mat_1,2);
             mat_2 = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',b2,'k',5/6);
             mat_2 = setnumber(mat_2,3);
+            mat_3 = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',b1+b2,'k',5/6);
+            mat_3 = setnumber(mat_3,4);
             S_leg = setmaterial(S_leg,mat_0);
             S_botrail = setmaterial(S_botrail,mat_1);
             S_siderail = setmaterial(S_siderail,mat_1);
             S_endrail = setmaterial(S_endrail,mat_2);
             S_guardrail = setmaterial(S_guardrail,mat_1);
-            S_guardrailsupport = setmaterial(S_guardrailsupport,mat_2);
+            S_guardrailsupport = setmaterial(S_guardrailsupport,mat_2,[2,4]);
+            S_guardrailsupport = setmaterial(S_guardrailsupport,mat_3,[1,3,5]);
             S_slat = setmaterial(S_slat,mat_1);
         otherwise
             error('Wrong material symmetry !')
@@ -264,7 +268,8 @@ if solveProblem
     %% Neumann boundary conditions
     p0 = RHO*g*Sec0; % line load (body load for legs)
     p1 = RHO*g*b1; % surface load (body load for bottom rails, side rails, guard rails and slats)
-    p2 = RHO*g*b2; % surface load (body load for end rails and guard rail support)
+    p2 = RHO*g*b2; % surface load (body load for end rails and parts 2 and 4 of guard rail support)
+    p3 = RHO*g*(b1+b2); % surface load (body load for parts 1, 3 and 5 of guard rail support)
     switch lower(test)
         case 'staticvert'
             p = 200; % pointwise load, 200N
@@ -291,6 +296,7 @@ if solveProblem
     f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_0)),[],'FZ',-p0);
     f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_1)),[],'FZ',-p1);
     f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_2)),[],'FZ',-p2);
+    f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_3)),[],'FZ',-p3);
     
     %% Solution
     t = tic;
@@ -359,18 +365,21 @@ if solveProblem
     ry = eval_sol(S,u,P,'RY');
     rz = eval_sol(S,u,P,'RZ');
     
-    nxx = reshape(Nxx{4},[getnbnode(S_plate),1]);
-    nyy = reshape(Nyy{4},[getnbnode(S_plate),1]);
-    nxy = reshape(Nxy{4},[getnbnode(S_plate),1]);
-    mxx = reshape(Mxx{4},[getnbnode(S_plate),1]);
-    myy = reshape(Myy{4},[getnbnode(S_plate),1]);
-    mxy = reshape(Mxy{4},[getnbnode(S_plate),1]);
-    exx = reshape(Exx{4},[getnbnode(S_plate),1]);
-    eyy = reshape(Eyy{4},[getnbnode(S_plate),1]);
-    exy = reshape(Exy{4},[getnbnode(S_plate),1]);
-    gxx = reshape(Gxx{4},[getnbnode(S_plate),1]);
-    gyy = reshape(Gyy{4},[getnbnode(S_plate),1]);
-    gxy = reshape(Gxy{4},[getnbnode(S_plate),1]);
+    numnode_plate = find(S_plate.node==P);
+    [~,~,numgroupelem] = findelemwithnode(S_plate,numnode_plate);
+    nxx = reshape(Nxx{numgroupelem},[getnbnode(S_plate),1]);
+    nyy = reshape(Nyy{numgroupelem},[getnbnode(S_plate),1]);
+    nxy = reshape(Nxy{numgroupelem},[getnbnode(S_plate),1]);
+    mxx = reshape(Mxx{numgroupelem},[getnbnode(S_plate),1]);
+    myy = reshape(Myy{numgroupelem},[getnbnode(S_plate),1]);
+    mxy = reshape(Mxy{numgroupelem},[getnbnode(S_plate),1]);
+    exx = reshape(Exx{numgroupelem},[getnbnode(S_plate),1]);
+    eyy = reshape(Eyy{numgroupelem},[getnbnode(S_plate),1]);
+    exy = reshape(Exy{numgroupelem},[getnbnode(S_plate),1]);
+    gxx = reshape(Gxx{numgroupelem},[getnbnode(S_plate),1]);
+    gyy = reshape(Gyy{numgroupelem},[getnbnode(S_plate),1]);
+    gxy = reshape(Gxy{numgroupelem},[getnbnode(S_plate),1]);
+    
     
     nxx = double(nxx(numnode));
     nyy = double(nyy(numnode));
@@ -477,17 +486,20 @@ if displaySolution
     h3 = plot(S,'selgroup',3,'EdgeColor','r','FaceColor','r','FaceAlpha',0.1);
     h4 = plot(S,'selgroup',4,'EdgeColor',[1 0.5 0],'FaceColor',[1 0.5 0],'FaceAlpha',0.1);
     h5 = plot(S,'selgroup',5,'EdgeColor','b','FaceColor','b','FaceAlpha',0.1);
-    h6 = plot(S,'selgroup',6,'EdgeColor','m','FaceColor','m','FaceAlpha',0.1);
-    h7 = plot(S,'selgroup',7,'EdgeColor','g','FaceColor','g','FaceAlpha',0.1);
+    h6 = plot(S,'selgroup',[7,9],'EdgeColor','m','FaceColor','m','FaceAlpha',0.1);
+    h7 = plot(S,'selgroup',11,'EdgeColor','g','FaceColor','g','FaceAlpha',0.1);
+    h8 = plot(S,'selgroup',6,'EdgeColor',([1 0 1]+[1 0 0])/2,'FaceColor',([1 0 1]+[1 0 0])/2,'FaceAlpha',0.1);
+    h9 = plot(S,'selgroup',[8,10],'EdgeColor',([1 0 1]+[0 0 1])/2,'FaceColor',([1 0 1]+[0 0 1])/2,'FaceAlpha',0.1);
     hold off
     set(gca,'FontSize',16)
-    l = legend([h1,h2,h3,h4,h5,h6,h7],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','slat','Location','NorthEastOutside');
+    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1),h7(1),h8(1),h9(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','slat',...
+        'junction guard rail support - side rail','junction guard rail support - guard rail','Location','NorthEastOutside');
     %set(l,'Interpreter','latex')
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
-%     plot(S,'group')
-%     plot(S,'mat')
+%     plotparamelem(S,'group')
+%     plotparamelem(S,'material')
     
 %     plotDomain(S,'legend',false);
 %     mysaveas(pathname,'domain',formats,renderer);
