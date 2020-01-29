@@ -70,22 +70,22 @@ ampl = 0;
 for i=1:2
     plotSolution(S,u,'displ',i,'ampl',ampl);
     set(gcf,'position',[100,100,500,150])
-    mysaveas(pathname,['displ_num_' num2str(i)],formats,renderer);
+    mysaveas(pathname,['u_' num2str(i) '_num'],formats,renderer);
     plotSolution(S,u_exp,'displ',i,'ampl',ampl);
     set(gcf,'position',[100,100,500,150])
-    mysaveas(pathname,['displ_exp_' num2str(i)],formats,renderer);
+    mysaveas(pathname,['u_' num2str(i) '_exp'],formats,renderer);
 end
 
 % for i=1:3
 %     plotSolution(S,u,'epsilon',i,'ampl',ampl);
-%     mysaveas(pathname,['eps_num_' num2str(i)],formats,renderer);
+%     mysaveas(pathname,['eps_' num2str(i) '_num'],formats,renderer);
 %     plotSolution(S,u_exp,'epsilon',i,'ampl',ampl);
-%     mysaveas(pathname,['eps_exp_' num2str(i)],formats,renderer);
+%     mysaveas(pathname,['eps_' num2str(i) '_exp'],formats,renderer);
 %     
 %     plotSolution(S,u,'sigma',i,'ampl',ampl);
-%     mysaveas(pathname,['sig_num_' num2str(i)],formats,renderer);
+%     mysaveas(pathname,['sig_' num2str(i) '_num'],formats,renderer);
 %     plotSolution(S,u_exp,'sigma',i,'ampl',ampl);
-%     mysaveas(pathname,['sig_exp_' num2str(i)],formats,renderer);
+%     mysaveas(pathname,['sig_' num2str(i) '_exp'],formats,renderer);
 % end
 % 
 % plotSolution(S,u,'epsilon','mises','ampl',ampl);

@@ -27,15 +27,15 @@ junction = true; % junction modeling
 if solveProblem
     %% Domains and meshes
     % Plates dimensions
-    a1 = 142.5e-3; % m
-    a2 = 67.5e-3;
+    L1 = 142.5e-3; % m
+    L2 = 67.5e-3;
     b = 113e-3;
     h = 15e-3;
     
     Q1 = QUADRANGLE([0,0,0],[0,b,0],...
-        [0,b,a1],[0,0,a1]);
-    Q2 = QUADRANGLE([0,b,a1],[0,0,a1],...
-        [a2,0,a1],[a2,b,a1]);
+        [0,b,L1],[0,0,L1]);
+    Q2 = QUADRANGLE([0,b,L1],[0,0,L1],...
+        [L2,0,L1],[L2,b,L1]);
     
     % Plates meshes
     elemtype = 'DKT';
@@ -51,7 +51,7 @@ if solveProblem
     
     % Density
     RHO = 707.1384; % kg/m3
-    Vol_total = h*(a1+a2)*b;
+    Vol_total = h*(L1+L2)*b;
     Mass_total = Vol_total*RHO; % kg
     
     % Data
@@ -69,7 +69,6 @@ if solveProblem
         case 'isot'
             % Young modulus
             E = mean(mean_ET_data)*1e6; % Pa
-            %E = 2e9; % Pa
             % Shear modulus
             %G = mean(mean_GL_data)*1e6*13; % Pa
             % Poisson ratio
@@ -105,7 +104,7 @@ if solveProblem
     %% Neumann boundary conditions
     p_plate = RHO*g*h; % surface load (body load for plates)
     
-    L_load = LIGNE([a2,0,a1],[a2,b,a1]);
+    L_load = LIGNE([L2,0,L1],[L2,b,L1]);
     junction_type = 'S1';
     
     switch lower(junction_type)
@@ -185,8 +184,7 @@ if solveProblem
     
     x = getcoord(S.node);
     
-    e = calc_epsilon(S,u,'node');
-    % e = calc_epsilon(S,u,'smooth');
+    e = calc_epsilon(S,u,'smooth');
     s = calc_sigma(S,u,'smooth');
     
     Exx = e(1);
@@ -195,12 +193,27 @@ if solveProblem
     Gxx = e(4);
     Gyy = e(5);
     Gxy = e(6);
+    if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
+        Gzx = e(7);
+        Gzy = e(8);
+    else
+        Gzx = 0;
+        Gzy = 0;
+    end
+    
     Nxx = s(1);
     Nyy = s(2);
     Nxy = s(3);
     Mxx = s(4);
     Myy = s(5);
     Mxy = s(6);
+    if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
+        Qx = s(7);
+        Qy = s(8);
+    else
+        Qx = 0;
+        Qy = 0;
+    end
     
     %% Test solution
     [~,numnode3] = intersect(S,L3);
@@ -226,87 +239,53 @@ if solveProblem
         ry = eval_sol(S,u,P3,'RY');
     end
     
-    nxx = 0;
-    nyy = 0;
-    nxy = 0;
-    mxx = 0;
-    myy = 0;
-    mxy = 0;
-    exx = 0;
-    eyy = 0;
-    exy = 0;
-    gxx = 0;
-    gyy = 0;
-    gxy = 0;
-    for i=1:getnbgroupelem(S)
-        Nxxi  = reshape(Nxx{i},[getnbnode(S),1]);
-        Nyyi  = reshape(Nyy{i},[getnbnode(S),1]);
-        Nxyi  = reshape(Nxy{i},[getnbnode(S),1]);
-        Mxxi  = reshape(Mxx{i},[getnbnode(S),1]);
-        Myyi  = reshape(Myy{i},[getnbnode(S),1]);
-        Mxyi  = reshape(Mxy{i},[getnbnode(S),1]);
-        Exxi = reshape(Exx{i},[getnbnode(S),1]);
-        Eyyi = reshape(Eyy{i},[getnbnode(S),1]);
-        Exyi = reshape(Exy{i},[getnbnode(S),1]);
-        Gxxi = reshape(Gxx{i},[getnbnode(S),1]);
-        Gyyi = reshape(Gyy{i},[getnbnode(S),1]);
-        Gxyi = reshape(Gxy{i},[getnbnode(S),1]);
-        for j=1:length(numnode3)
-            nxxi = abs(double(Nxxi(numnode3(j))));
-            nyyi = abs(double(Nyyi(numnode3(j))));
-            nxyi = abs(double(Nxyi(numnode3(j))));
-            mxxi = abs(double(Mxxi(numnode3(j))));
-            myyi = abs(double(Myyi(numnode3(j))));
-            mxyi = abs(double(Mxyi(numnode3(j))));
-            exxi = abs(double(Exxi(numnode3(j))));
-            eyyi = abs(double(Eyyi(numnode3(j))));
-            exyi = abs(double(Exyi(numnode3(j))));
-            gxxi = abs(double(Gxxi(numnode3(j))));
-            gyyi = abs(double(Gyyi(numnode3(j))));
-            gxyi = abs(double(Gxyi(numnode3(j))));
-            nxx = max(nxx,nxxi);
-            nyy = max(nyy,nyyi);
-            nxy = max(nxy,nxyi);
-            mxx = max(nxx,mxxi);
-            myy = max(nyy,myyi);
-            mxy = max(nxy,mxyi);
-            exx = max(exx,exxi);
-            eyy = max(eyy,eyyi);
-            exy = max(exy,exyi);
-            gxx = max(gxx,gxxi);
-            gyy = max(gyy,gyyi);
-            gxy = max(gxy,gxyi);
-        end
-    end
+    nxx = max(abs(Nxx));
+    nyy = max(abs(Nyy));
+    nxy = max(abs(Nxy));
+    mxx = max(abs(Mxx));
+    myy = max(abs(Myy));
+    mxy = max(abs(Mxy));
+    qx = max(abs(Qx));
+    qy = max(abs(Qy));
+    
+    exx = max(abs(Exx));
+    eyy = max(abs(Eyy));
+    exy = max(abs(Exy));
+    gxx = max(abs(Gxx));
+    gyy = max(abs(Gyy));
+    gxy = max(abs(Gxy));
+    gzx = max(abs(Gzx));
+    gzy = max(abs(Gzy));
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'S',...
-        'a1','a2','b','h',...
+    save(fullfile(pathname,'problem.mat'),'S','elemtype',...
+        'L1','L2','b','h',...
         'f','p','junction','junction_type');
     save(fullfile(pathname,'solution.mat'),'u','s','e','time',...
         'Ux','Uy','Uz','Rx','Ry','Rz',...
-        'Nxx','Nyy','Nxy','Mxx','Myy','Mxy',...
-        'Exx','Eyy','Exy','Gxx','Gyy','Gxy');
+        'Nxx','Nyy','Nxy','Mxx','Myy','Mxy','Qx','Qy',...
+        'Exx','Eyy','Exy','Gxx','Gyy','Gxy','Gzx','Gzy');
     save(fullfile(pathname,'test_solution.mat'),'P3',...
         'ux','uy','uz','rx','ry','rz',...
-        'nxx','nyy','nxy','mxx','myy','mxy',...
-        'exx','eyy','exy','gxx','gyy','gxy');
+        'nxx','nyy','nxy','mxx','myy','mxy','qx','qy',...
+        'exx','eyy','exy','gxx','gyy','gxy','gzx','gzy');
 else
-    load(fullfile(pathname,'problem.mat'),'S',...
-        'a1','a2','b','h',...
+    load(fullfile(pathname,'problem.mat'),'S','elemtype',...
+        'L1','L2','b','h',...
         'f','p','junction','junction_type');
     load(fullfile(pathname,'solution.mat'),'u','s','e','time',...
         'Ux','Uy','Uz','Rx','Ry','Rz',...
-        'Nxx','Nyy','Nxy','Mxx','Myy','Mxy',...
-        'Exx','Eyy','Exy','Gxx','Gyy','Gxy');
+        'Nxx','Nyy','Nxy','Mxx','Myy','Mxy','Qx','Qy',...
+        'Exx','Eyy','Exy','Gxx','Gyy','Gxy','Gzx','Gzy');
     load(fullfile(pathname,'test_solution.mat'),'P3',...
         'ux','uy','uz','rx','ry','rz',...
-        'nxx','nyy','nxy','mxx','myy','mxy',...
-        'exx','eyy','exy','gxx','gyy','gxy');
+        'nxx','nyy','nxy','mxx','myy','mxy','qx','qy',...
+        'exx','eyy','exy','gxx','gyy','gxy','gzx','gzy');
 end
 
 %% Outputs
 fprintf('\nJunction %s\n',junction_type);
+fprintf(['mesh : ' elemtype ' elements\n']);
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
@@ -328,22 +307,38 @@ end
 fprintf('rz    = %g rad = %g deg\n',rz,rad2deg(rz));
 fprintf('\n');
 
-disp('Forces Nxx, Nyy, Nxy and moments Mxx, Myy, Mxy at point'); disp(P3);
+if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
+    disp('Maximum membrane forces Nxx, Nyy, Nxy, moments Mxx, Myy, Mxy and shear forces Qx, Qy');
+else
+    disp('Maximum forces Nxx, Nyy, Nxy and moments Mxx, Myy, Mxy');
+end
 fprintf('Nxx = %g N/m\n',nxx);
 fprintf('Nyy = %g N/m\n',nyy);
 fprintf('Nxy = %g N/m\n',nxy);
 fprintf('Mxx = %g N\n',mxx);
 fprintf('Myy = %g N\n',myy);
 fprintf('Mxy = %g N\n',mxy);
+if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
+    fprintf('Qx = %g N/m\n',qx);
+    fprintf('Qy = %g N/m\n',qy);
+end
 fprintf('\n');
 
-disp('Membrane strains Exx, Eyy, Exy and bending strains (curvatures) Gxx, Gyy, Gxy at point'); disp(P3);
+if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
+    disp('Maximum membrane strains Exx, Eyy, Exy, bending strains (curvatures) Gxx, Gyy, Gxy and shear strains Gzx, Gzy');
+else
+    disp('Maximum membrane strains Exx, Eyy, Exy and bending strains (curvatures) Gxx, Gyy, Gxy');
+end
 fprintf('Exx = %g\n',exx);
 fprintf('Eyy = %g\n',eyy);
 fprintf('Exy = %g\n',exy);
 fprintf('Gxx = %g\n',gxx);
 fprintf('Gyy = %g\n',gyy);
 fprintf('Gxy = %g\n',gxy);
+if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
+    fprintf('Gzx = %g\n',gzx);
+    fprintf('Gzy = %g\n',gzy);
+end
 fprintf('\n');
 
 %% Display
@@ -381,6 +376,7 @@ if displaySolution
     options = {'solid',true};
     % options = {};
     
+    % Displacements
     plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
     mysaveas(pathname,'Ux',formats,renderer);
     
@@ -389,7 +385,8 @@ if displaySolution
     
     plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
     mysaveas(pathname,'Uz',formats,renderer);
-    %
+    
+    % Rotations
     plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
     mysaveas(pathname,'Rx',formats,renderer);
     
@@ -398,7 +395,8 @@ if displaySolution
     
     plotSolution(S,u,'rotation',3,'ampl',ampl,options{:});
     mysaveas(pathname,'Rz',formats,renderer);
-    %
+    
+%     % Membrane strains
 %     plotSolution(S,u,'epsilon',1,'ampl',ampl,options{:});
 %     mysaveas(pathname,'Exx',formats,renderer);
 %     
@@ -407,7 +405,8 @@ if displaySolution
 %     
 %     plotSolution(S,u,'epsilon',3,'ampl',ampl,options{:});
 %     mysaveas(pathname,'Exy',formats,renderer);
-%     %
+% 
+%     % Bending strains (curvatures)
 %     plotSolution(S,u,'epsilon',4,'ampl',ampl,options{:});
 %     mysaveas(pathname,'Gxx',formats,renderer);
 %     
@@ -416,7 +415,16 @@ if displaySolution
 %     
 %     plotSolution(S,u,'epsilon',6,'ampl',ampl,options{:});
 %     mysaveas(pathname,'Gxy',formats,renderer);
-%     %
+%     
+%     if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
+%         % Shear strains
+%         plotSolution(S,u,'epsilon',7,'ampl',ampl,options{:});
+%         mysaveas(pathname,'Gzx',formats,renderer);
+%         plotSolution(S,u,'epsilon',8,'ampl',ampl,options{:});
+%         mysaveas(pathname,'Gzy',formats,renderer);
+%     end
+% 
+%     % Membrane forces
 %     plotSolution(S,u,'sigma',1,'ampl',ampl,options{:});
 %     mysaveas(pathname,'Nxx',formats,renderer);
 %     
@@ -425,7 +433,8 @@ if displaySolution
 %     
 %     plotSolution(S,u,'sigma',3,'ampl',ampl,options{:});
 %     mysaveas(pathname,'Nxy',formats,renderer);
-%     %
+%     
+%     % Moments
 %     plotSolution(S,u,'sigma',4,'ampl',ampl,options{:});
 %     mysaveas(pathname,'Mxx',formats,renderer);
 %     
@@ -434,7 +443,16 @@ if displaySolution
 %     
 %     plotSolution(S,u,'sigma',6,'ampl',ampl,options{:});
 %     mysaveas(pathname,'Mxy',formats,renderer);
+% 
+%     if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
+%         % Shear forces
+%         plotSolution(S,u,'sigma',7,'ampl',ampl,options{:});
+%         mysaveas(pathname,'Qx',formats,renderer);
+%         plotSolution(S,u,'sigma',8,'ampl',ampl,options{:});
+%         mysaveas(pathname,'Qy',formats,renderer);
+%     end
     
+    % Membrane strains
     figure('Name','Solution Exx')
     clf
     plot(e,S+ampl*u,'compo','EXX',options{:})
@@ -455,7 +473,8 @@ if displaySolution
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Exy',formats,renderer);
-    %
+    
+    % Bending strains (curvatures)
     figure('Name','Solution Gxx')
     clf
     plot(e,S+ampl*u,'compo','GXX',options{:})
@@ -476,7 +495,25 @@ if displaySolution
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Gxy',formats,renderer);
-    %
+    
+    if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
+        % Shear strains
+        figure('Name','Solution Gzx')
+        clf
+        plot(e,S+ampl*u,'compo','GZX',options{:})
+        colorbar
+        set(gca,'FontSize',fontsize)
+        mysaveas(pathname,'Gzx',formats,renderer);
+        
+        figure('Name','Solution Gzy')
+        clf
+        plot(e,S+ampl*u,'compo','GZY',options{:})
+        colorbar
+        set(gca,'FontSize',fontsize)
+        mysaveas(pathname,'Gzy',formats,renderer);
+    end
+    
+    % Membrane forces
     figure('Name','Solution Nxx')
     clf
     plot(s,S+ampl*u,'compo','NXX',options{:})
@@ -497,7 +534,8 @@ if displaySolution
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Nxy',formats,renderer);
-    %
+    
+    % Moments
     figure('Name','Solution Mxx')
     clf
     plot(s,S+ampl*u,'compo','MXX',options{:})
@@ -518,4 +556,21 @@ if displaySolution
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Mxy',formats,renderer);
+    
+    if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
+        % Shear forces
+        figure('Name','Solution Qx')
+        clf
+        plot(s,S+ampl*u,'compo','QX',options{:})
+        colorbar
+        set(gca,'FontSize',fontsize)
+        mysaveas(pathname,'Qx',formats,renderer);
+        
+        figure('Name','Solution Qy')
+        clf
+        plot(s,S+ampl*u,'compo','QY',options{:})
+        colorbar
+        set(gca,'FontSize',fontsize)
+        mysaveas(pathname,'Qy',formats,renderer);
+    end
 end

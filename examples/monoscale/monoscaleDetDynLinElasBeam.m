@@ -50,6 +50,7 @@ if setProblem
     % Planar second moment of area (or Planar area moment of inertia)
     IY = h*b^3/12;
     IZ = b*h^3/12;
+    % Polar second moment of area (or Polar area moment of inertia)
     IX = IY+IZ;
     
     % Young modulus
@@ -163,14 +164,14 @@ if displaySolution
     % end
     
     % DO NOT WORK WITH BEAM ELEMENTS
-    % for i=1:3
-    %     evolSolution(pb.S,ut,'epsilon',i,'ampl',ampl,'filename',['epsilon_' num2str(i)],'pathname',pathname);
-    %     evolSolution(pb.S,ut,'sigma',i,'ampl',ampl,'filename',['sigma_' num2str(i)],'pathname',pathname);
-    % end
+    % evolSolution(pb.S,ut,'epsilon',1,'ampl',ampl,'filename','Epsx','pathname',pathname);
+    % evolSolution(pb.S,ut,'epsilon',2,'ampl',ampl,'filename','Gamz','pathname',pathname);
+    % evolSolution(pb.S,ut,'sigma',1,'ampl',ampl,'filename','N','pathname',pathname);
+    % evolSolution(pb.S,ut,'sigma',2,'ampl',ampl,'filename','Mz','pathname',pathname);
     
     % DO NOT WORK WITH BEAM ELEMENTS
-    % evolSolution(pb.S,ut,'epsilon','mises','ampl',ampl,'filename','epsilon_von_mises','pathname',pathname);
-    % evolSolution(pb.S,ut,'sigma','mises','ampl',ampl,'filename','sigma_von_mises','pathname',pathname);
+    % evolSolution(pb.S,ut,'epsilon','mises','ampl',ampl,'filename','EpsVM','pathname',pathname);
+    % evolSolution(pb.S,ut,'sigma','mises','ampl',ampl,'filename','SigVM','pathname',pathname);
     
     pb.N = setevolparam(pb.N,'colorbar',true,'FontSize',fontsize);
     
@@ -179,14 +180,14 @@ if displaySolution
     set(gcf,'color','w')
     % frame = evol(pb.N,et,pb.S,'compo','EPSX','rescale',true);
     frame = evol(pb.N,Epsxt,pb.S,'rescale',true);
-    saveMovie(frame,'filename','epsx','pathname',pathname);
+    saveMovie(frame,'filename','Epsx','pathname',pathname);
     
     figure('Name','Solution Gamz')
     clf
     set(gcf,'color','w')
     % frame = evol(pb.N,et,pb.S,'compo','GAMZ','rescale',true);
     frame = evol(pb.N,Gamzt,pb.S,'rescale',true);
-    saveMovie(frame,'filename','gamz','pathname',pathname);
+    saveMovie(frame,'filename','Gamz','pathname',pathname);
     
     figure('Name','Solution N')
     clf
@@ -230,14 +231,14 @@ if displaySolution
         plot(ek,pb.S+ampl*uk,'compo','EPSX')
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['epsx_t' num2str(k-1)],formats,renderer);
+        mysaveas(pathname,['Epsx_t' num2str(k-1)],formats,renderer);
         
         figure('Name','Solution Gamz')
         clf
         plot(ek,pb.S+ampl*uk,'compo','GAMZ')
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['gamz_t' num2str(k-1)],formats,renderer);
+        mysaveas(pathname,['Gamz_t' num2str(k-1)],formats,renderer);
         
         figure('Name','Solution N')
         clf

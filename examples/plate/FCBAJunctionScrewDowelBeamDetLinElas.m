@@ -28,12 +28,24 @@ sym = false; % symmetry boundary conditions
 if solveProblem
     %% Domains and meshes
     % Beams dimensions
-    L1 = 142.5e-3; % m
-    L2 = 67.5e-3;
-    b = 113e-3;
-    b1 = b;
-    b2 = b;
-    h = 15e-3;
+    if sym
+        a1 = 750e-3; % m
+        b1 = 396e-3;
+        a2 = 940e-3;
+        b2 = 501e-3;
+        % Same thickness for all the beams
+        h = 15e-3;
+        
+        L1 = a1+h/2;
+        L2 = (a2+h)/2;
+    else
+        L1 = 142.5e-3; % m
+        L2 = 67.5e-3;
+        b = 113e-3;
+        b1 = b;
+        b2 = b;
+        h = 15e-3;
+    end
     
     % Points
     P1 = POINT([0.0,0.0]);
@@ -127,22 +139,25 @@ if solveProblem
     p2 = RHO*g*Sec2; % line load (body load for beams)
     
     junction_type = 'S1';
-    
-    switch lower(junction_type)
-        case 's1'
-            p = [24 65 114 163 200 252 291];
-        case 's2'
-            p = [14 54 113 159 199 249 299];
-        case 's3'
-            p = [15 65 111 153 203 243 295 341];
-        case 's4'
-            p = [23 34 91 141 180 229 290];
-        case 'd1'
-            p = [40 46 101 146];
-        case 'd2'
-            p = [6 63 110 175];
+    if sym
+        p = 300/2; % pointwise load, half of 300N, 400N or 500N
+    else
+        switch lower(junction_type)
+            case 's1'
+                p = [24 65 114 163 200 252 291];
+            case 's2'
+                p = [14 54 113 159 199 249 299];
+            case 's3'
+                p = [15 65 111 153 203 243 295 341];
+            case 's4'
+                p = [23 34 91 141 180 229 290];
+            case 'd1'
+                p = [40 46 101 146];
+            case 'd2'
+                p = [6 63 110 175];
+        end
+        p = p(5); % pointwise load
     end
-    p = p(5);
     
     %% Dirichlet boundary conditions
     if junction
@@ -197,18 +212,18 @@ if solveProblem
     %% Reference solution
     if sym
         if junction
-            XA = 2*(3*p+2*p2*L2)/2*L2^2*IZ1/(L1*(L1*IZ2+4*L2*IZ1*(1+E*IZ2/(k*L2))) + 12*L2/L1*IZ1/Sec2*(IZ2*(1+E*IZ1/(k*L1))+L2/L1*IZ1));
-            % MA = 2*(p+2/3*p2*L2)/2*L2^2*IZ1*(-L1+6*L2/L1^2*IZ1/Sec2)/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2*(1+E*IZ1/(k*L1))+L2/L1*IZ1));
+            Fx = (3*2*p+4*p2*L2)/2*L2^2*IZ1/(L1*(L1*IZ2+4*L2*IZ1*(1+E*IZ2/(k*L2))) + 12*L2/L1*IZ1/Sec2*(IZ2*(1+E*IZ1/(k*L1))+L2/L1*IZ1));
+            % Cz = (2*p+4/3*p2*L2)/2*L2^2*IZ1*(-L1+6*L2/L1^2*IZ1/Sec2)/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2*(1+E*IZ1/(k*L1))+L2/L1*IZ1));
         else
-            XA = 2*(3*p+2*p2*L2)/2*L2^2*IZ1/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2+L2/L1*IZ1));
-            % MA = 2*(p+2/3*p2*L2)/2*L2^2*IZ1*(-L1+6*L2/L1^2*IZ1/Sec2)/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2+L2/L1*IZ1));
+            Fx = 2*(3*p+2*p2*L2)/2*L2^2*IZ1/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2+L2/L1*IZ1));
+            % Cz = 2*(p+2/3*p2*L2)/2*L2^2*IZ1*(-L1+6*L2/L1^2*IZ1/Sec2)/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2+L2/L1*IZ1));
         end
-        MA = XA*(-L1/3+2*L2/L1^2*IZ1/Sec2);
+        Cz = Fx*(-L1/3+2*L2/L1^2*IZ1/Sec2);
     else
-        XA = 0;
-        MA = (p2*L2/2+p)*L2;
+        Fx = 0;
+        Cz = (p2*L2/2+p)*L2;
     end
-    YA = p1*L1+p2*L2+p;
+    Fy = p1*L1+p2*L2+p;
     
     fun_Ux = cell(2,1);
     fun_Uy = cell(2,1);
@@ -218,46 +233,40 @@ if solveProblem
     fun_Epsx = cell(2,1);
     fun_Gamz = cell(2,1);
     
-    % Beam 1
-    fun_Ux{1} = @(x) 1/(E*Sec1)*(p1*x/2-YA).*x;
-    fun_Uy{1} = @(x) -1/(E*IZ1)*(XA*x.^3/6+MA*x.^2/2);
-    fun_Rz{1} = @(x) -1/(E*IZ1)*(XA*x.^2/2+MA*x);
-    fun_N{1}  = @(x) p1*x-YA;
-    if sym
-        fun_Ty{1} = @(x) XA*ones(size(x));
-        fun_Mz{1} = @(x) -XA*x-MA;
-    else
-        fun_Ty{1} = @(x) zeros(size(x));
-        fun_Mz{1} = @(x) -MA*ones(size(x));
-    end
+    % Beam 1 in local coordinates system
+    fun_Ux{1} = @(x) 1/(E*Sec1)*(p1*x/2-Fy).*x;
+    fun_Uy{1} = @(x) -1/(E*IZ1)*(Fx*x/6+Cz/2).*x.^2;
+    fun_Rz{1} = @(x) -1/(E*IZ1)*(Fx*x/2+Cz).*x;
+    fun_N{1}  = @(x) p1*x-Fy;
+    fun_Ty{1} = @(x) Fx*ones(size(x));
+    fun_Mz{1} = @(x) -Fx*x-Cz;
     
-    % Beam 2
+    % Beam 2 in local coordinates system
+    fun_N{2}  = @(x) -Fx*ones(size(x));
     fun_Ty{2} = @(x) p2*(x-L2)-p;
-    % fun_Ty{2} = @(x) p2*x+p1*L1-YA;
+    % fun_Ty{2} = @(x) p2*x+p1*L1-Fy;
     if sym
-        fun_Ux{2} = @(x) XA/(E*Sec2)*(L2-x);
-        fun_Uy{2} = @(x) 1/(E*IZ2)*(-p2*x.^4/24 + (p2*L2+p)*x.^3/6 - (XA*L1+MA)*x.^2/2) - L1/(E*IZ1)*(XA*L1/2+MA)*x - L1/(E*Sec1)*(p1*L1/2+p2*L2+p);
+        fun_Ux{2} = @(x) Fx/(E*Sec2)*(L2-x);
+        fun_Uy{2} = @(x) 1/(E*IZ2)*(-p2*x.^4/24 + (p2*L2+p)*x.^3/6 - (Fx*L1+Cz)*x.^2/2) - L1/(E*IZ1)*(Fx*L1/2+Cz)*x + L1/(E*Sec1)*(p1*L1/2-Fy);
         if junction
-            fun_Uy{2} = @(x) fun_Uy{2}(x) - 1/k*(XA*L1+MA)*x;
+            fun_Uy{2} = @(x) fun_Uy{2}(x) - 1/k*(Fx*L1+Cz)*x;
         end
-        fun_Rz{2} = @(x) 1/(E*IZ2)*(p2/6*(3*L2^2-(x-L2).^2) + p/2*(x+L2) - (XA*L1+MA)).*(x-L2);
-        % fun_Rz{2} = @(x) 1/(E*IZ2)*(-p2*x.^3/6 + (p2*L2+p)*x.^2/2 - (XA*L1+MA)*x) - L1/(E*IZ1)*(XA*L1/2+MA);
+        fun_Rz{2} = @(x) 1/(E*IZ2)*(p2/6*(3*L2^2-(x-L2).^2) + p/2*(x+L2) - (Fx*L1+Cz)).*(x-L2);
+        % fun_Rz{2} = @(x) 1/(E*IZ2)*(-p2*x.^3/6 + (p2*L2+p)*x.^2/2 - (Fx*L1+Cz)*x) - L1/(E*IZ1)*(Fx*L1/2+Cz);
         % if junction
-        %     fun_Rz{2} = @(x) fun_Rz{2}(x) - 1/k*(XA*L1+MA);
+        %     fun_Rz{2} = @(x) fun_Rz{2}(x) - 1/k*(Fx*L1+Cz);
         % end
-        fun_N{2}  = @(x) -XA*ones(size(x));
-        fun_Mz{2} = @(x) -p2*x.^2/2+(p2*L2+p)*x-XA*L1-MA;
+        fun_Mz{2} = @(x) -p2*x.^2/2+(p2*L2+p)*x-Fx*L1-Cz;
     else
-        fun_Ux{2} = @(x) MA*L1^2/(2*E*IZ2)*ones(size(x));
-        fun_Uy{2} = @(x) 1/(E*IZ2)*(-p2*(x-L2).^4/24 + p*(x-L2).^3/6 - (p2*L2/3+p)*L2^2/2*x + (p2*L2/4+p)*L2^3/6) - MA*L1/(E*IZ1)*x - L1/(E*Sec1)*(p1*L1/2+p2*L2+p);
+        fun_Ux{2} = @(x) Cz*L1^2/(2*E*IZ1)*ones(size(x));
+        fun_Uy{2} = @(x) 1/(E*IZ2)*(-p2*(x-L2).^4/24 + p*(x-L2).^3/6 - (p2*L2/3+p)*L2^2/2*x + (p2*L2/4+p)*L2^3/6) - Cz*L1/(E*IZ1)*x + L1/(E*Sec1)*(p1*L1/2-Fy);
         if junction
-            fun_Uy{2} = @(x) fun_Uy{2}(x) - MA/k*x;
+            fun_Uy{2} = @(x) fun_Uy{2}(x) - Cz/k*x;
         end
-        fun_Rz{2} = @(x) 1/(E*IZ2)*(-p2*(x-L2).^3/6 + p*(x-L2).^2/2 - (p2*L2/3+p)*L2^2/2) - MA*L1/(E*IZ1);
+        fun_Rz{2} = @(x) 1/(E*IZ2)*(-p2*(x-L2).^3/6 + p*(x-L2).^2/2 - (p2*L2/3+p)*L2^2/2) - Cz*L1/(E*IZ1);
         if junction
-            fun_Rz{2} = @(x) fun_Rz{2}(x) - MA/k;
+            fun_Rz{2} = @(x) fun_Rz{2}(x) - Cz/k;
         end
-        fun_N{2}  = @(x) zeros(size(x));
         fun_Mz{2} = @(x) -p2*(x-L2).^2/2+p*(x-L2);
     end
     fun_Epsx{1} = @(x) fun_N{1}(x)/(E*Sec1);
@@ -284,8 +293,6 @@ if solveProblem
         fun_Gamz{i}.evaluationAtMultiplePoints = true;
     end
     
-    dim = zeros(getnbgroupelem(S),1);
-    numnode = cell(getnbgroupelem(S),1);
     Ux_ex = zeros(getnbnode(S),1);
     Uy_ex = zeros(getnbnode(S),1);
     Rz_ex = zeros(getnbnode(S),1);
@@ -299,34 +306,29 @@ if solveProblem
         numnode = getnumnodeingroupelem(S,i);
         if i==1
             xi = x(numnode,2);
-            Ux_ex(numnode) = -fun_Uy{1}(xi);
-            Uy_ex(numnode) = fun_Ux{1}(xi);
-            Rz_ex(numnode) = fun_Rz{1}(xi);
-            N_ex{i}(:,:,numnode)  = fun_N{1}(xi);
-            Mz_ex{i}(:,:,numnode) = fun_Mz{1}(xi);
-            Epsx_ex{i}(:,:,numnode) = fun_Epsx{1}(xi);
-            Gamz_ex{i}(:,:,numnode) = fun_Gamz{1}(xi);
+            Ux_ex(numnode) = -fun_Uy{i}(xi);
+            Uy_ex(numnode) = fun_Ux{i}(xi);
         elseif i==2
             xi = x(numnode,1);
-            Ux_ex(numnode) = fun_Ux{2}(xi);
-            Uy_ex(numnode) = fun_Uy{2}(xi);
-            Rz_ex(numnode) = fun_Rz{2}(xi);
-            N_ex{i}(:,:,numnode)  = fun_N{2}(xi);
-            Mz_ex{i}(:,:,numnode) = fun_Mz{2}(xi);
-            Epsx_ex{i}(:,:,numnode) = fun_Epsx{2}(xi);
-            Gamz_ex{i}(:,:,numnode) = fun_Gamz{2}(xi);
+            Ux_ex(numnode) = fun_Ux{i}(xi);
+            Uy_ex(numnode) = fun_Uy{i}(xi);
         end
+        Rz_ex(numnode) = fun_Rz{i}(xi);
+        N_ex{i}(:,:,numnode)  = fun_N{i}(xi);
+        Mz_ex{i}(:,:,numnode) = fun_Mz{i}(xi);
+        Epsx_ex{i}(:,:,numnode) = fun_Epsx{i}(xi);
+        Gamz_ex{i}(:,:,numnode) = fun_Gamz{i}(xi);
         s_ex{i}(1,:,numnode) = N_ex{i}(1,:,numnode);
         s_ex{i}(2,:,numnode) = Mz_ex{i}(1,:,numnode);
         e_ex{i}(1,:,numnode) = Epsx_ex{i}(1,:,numnode);
         e_ex{i}(2,:,numnode) = Gamz_ex{i}(1,:,numnode);
     end
-    N_ex  = FEELEMFIELD(N_ex,'type',gettype(N),'storage',getstorage(N),'ddl',get(N,'ddl'));
-    Mz_ex = FEELEMFIELD(Mz_ex,'type',gettype(Mz),'storage',getstorage(Mz),'ddl',get(Mz,'ddl'));
-    Epsx_ex = FEELEMFIELD(Epsx_ex,'type',gettype(Epsx),'storage',getstorage(Epsx),'ddl',get(Epsx,'ddl'));
-    Gamz_ex = FEELEMFIELD(Gamz_ex,'type',gettype(Gamz),'storage',getstorage(Gamz),'ddl',get(Gamz,'ddl'));
-    s_ex = FEELEMFIELD(s_ex,'type',gettype(s),'storage',getstorage(s),'ddl',get(s,'ddl'));
-    e_ex = FEELEMFIELD(e_ex,'type',gettype(e),'storage',getstorage(e),'ddl',get(e,'ddl'));
+    N_ex  = FEELEMFIELD(N_ex,'type',gettype(N),'storage',getstorage(N),'ddl',getddl(N));
+    Mz_ex = FEELEMFIELD(Mz_ex,'type',gettype(Mz),'storage',getstorage(Mz),'ddl',getddl(Mz));
+    Epsx_ex = FEELEMFIELD(Epsx_ex,'type',gettype(Epsx),'storage',getstorage(Epsx),'ddl',getddl(Epsx));
+    Gamz_ex = FEELEMFIELD(Gamz_ex,'type',gettype(Gamz),'storage',getstorage(Gamz),'ddl',getddl(Gamz));
+    s_ex = FEELEMFIELD(s_ex,'type',gettype(s),'storage',getstorage(s),'ddl',getddl(s));
+    e_ex = FEELEMFIELD(e_ex,'type',gettype(e),'storage',getstorage(e),'ddl',getddl(e));
     
     u_ex = [Ux_ex Uy_ex Rz_ex]';
     u_ex = u_ex(:);
@@ -347,9 +349,9 @@ if solveProblem
         Epsxi_ex = reshape(Epsx_ex{i},[getnbnode(S),1]);
         Gamzi    = reshape(Gamz{i},[getnbnode(S),1]);
         Gamzi_ex = reshape(Gamz_ex{i},[getnbnode(S),1]);
-        err_N(i)  = norm(Ni-Ni_ex);%/norm(Ni_ex);
+        err_N(i)  = norm(Ni-Ni_ex)/norm(Ni_ex);
         err_Mz(i) = norm(Mzi-Mzi_ex)/norm(Mzi_ex);
-        err_Epsx(i) = norm(Epsxi-Epsxi_ex);%/norm(Epsxi_ex);
+        err_Epsx(i) = norm(Epsxi-Epsxi_ex)/norm(Epsxi_ex);
         err_Gamz(i) = norm(Gamzi-Gamzi_ex)/norm(Gamzi_ex);
     end
     
@@ -561,6 +563,7 @@ if displaySolution
     options = {'solid',true};
     % options = {};
     
+    % Displacements
     plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
     mysaveas(pathname,'Ux',formats,renderer);
     
@@ -573,25 +576,43 @@ if displaySolution
     plotSolution(S,u_ex,'displ',2,'ampl',ampl,options{:});
     mysaveas(pathname,'Uy_ex',formats,renderer);
     
+    % Rotations
     plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
     mysaveas(pathname,'Rz',formats,renderer);
     
     plotSolution(S,u_ex,'rotation',1,'ampl',ampl,options{:});
     mysaveas(pathname,'Rz_ex',formats,renderer);
     
-    % DO NOT WORK WITH BEAM ELEMENTS
-    % plotSolution(S,u,'epsilon',1,'ampl',ampl,options{:});
-    % mysaveas(pathname,'Epsx',formats,renderer);
-    %
-    % plotSolution(S,u,'epsilon',2,'ampl',ampl,options{:});
-    % mysaveas(pathname,'Gamz',formats,renderer);
-    %
-    % plotSolution(S,u,'sigma',1,'ampl',ampl,options{:});
-    % mysaveas(pathname,'N',formats,renderer);
-    %
-    % plotSolution(S,u,'sigma',2,'ampl',ampl,options{:});
-    % mysaveas(pathname,'Mz',formats,renderer);
+%     % DO NOT WORK WITH BEAM ELEMENTS
+%     % Axial strain
+%     plotSolution(S,u,'epsilon',1,'ampl',ampl,options{:});
+%     mysaveas(pathname,'Epsx',formats,renderer);
+%     
+%     plotSolution(S,u_ex,'epsilon',1,'ampl',ampl,options{:});
+%     mysaveas(pathname,'Epsx_ex',formats,renderer);
+%     
+%     % Bending strain (curvature)
+%     plotSolution(S,u,'epsilon',2,'ampl',ampl,options{:});
+%     mysaveas(pathname,'Gamz',formats,renderer);
+%     
+%     plotSolution(S,u_ex,'epsilon',2,'ampl',ampl,options{:});
+%     mysaveas(pathname,'Gamz_ex',formats,renderer);
+%     
+%     % Normal force
+%     plotSolution(S,u,'sigma',1,'ampl',ampl,options{:});
+%     mysaveas(pathname,'N',formats,renderer);
+%     
+%     plotSolution(S,u_ex,'sigma',1,'ampl',ampl,options{:});
+%     mysaveas(pathname,'N_ex',formats,renderer);
+%     
+%     % Bending moment
+%     plotSolution(S,u,'sigma',2,'ampl',ampl,options{:});
+%     mysaveas(pathname,'Mz',formats,renderer);
+%     
+%     plotSolution(S,u_ex,'sigma',2,'ampl',ampl,options{:});
+%     mysaveas(pathname,'Mz_ex',formats,renderer);
     
+    % Axial strain
     figure('Name','Solution Epsx')
     clf
     plot(e,S+ampl*u,'compo','EPSX')
@@ -606,6 +627,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Epsx_ex',formats,renderer);
     
+    % Bending strain (curvature)
     figure('Name','Solution Gamz')
     clf
     plot(e,S+ampl*u,'compo','GAMZ')
@@ -620,6 +642,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Gamz_ex',formats,renderer);
     
+    % Normal force
     figure('Name','Solution N')
     clf
     plot(s,S+ampl*u,'compo','EFFX')
@@ -634,6 +657,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'N_ex',formats,renderer);
     
+    % Bending moment
     figure('Name','Solution Mz')
     clf
     plot(s,S+ampl*u,'compo','MOMZ')

@@ -9,10 +9,11 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-% tests = {'StaticVert'}; % test under static vertical load
+% tests = {'StaticVertUp'}; % test under static vertical upward load
+tests = {'StaticVertDown'}; % test under static vertical downward load
 % tests = {'StaticHoriIn'}; % test under static horizontal inward load
-tests = {'StaticHoriOut'}; % test under static horizontal outward load
-% tests = {'StaticVert','StaticHoriIn','StaticHoriOut'};
+% tests = {'StaticHoriOut'}; % test under static horizontal outward load
+% tests = {'StaticVertUp','StaticVertDown','StaticHoriIn','StaticHoriOut'};
 
 for it=1:length(tests)
     test = tests{it};
@@ -122,7 +123,7 @@ if solveProblem
     
     % Beams meshes
     elemtype = 'BEAM';
-    cl = b1/2;
+    cl = b1;
     S_leg = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_leg_' num2str(n)])),P_leg,num2cell(1:length(P_leg)),'UniformOutput',false);
     S_leg = cellfun(@(S) concatgroupelem(S),S_leg,'UniformOutput',false);
     S_leg = union(S_leg{:});
@@ -230,7 +231,7 @@ if solveProblem
     p3 = RHO*g*Sec3; % line load (body load for guardrail support)
     p4 = RHO*g*Sec4; % line load (body load for slats)
     switch lower(test)
-        case 'staticvert'
+        case {'staticvertup','staticvertdown'}
             p = 200; % pointwise load, 200N
         case {'statichoriin','statichoriout'}
             p = 500; % pointwise load, 500N
@@ -245,8 +246,10 @@ if solveProblem
     A = calc_rigi(S);
     P_load = POINT(x_load);
     switch lower(test)
-        case 'staticvert'
+        case 'staticvertup'
             f = nodalload(S,P_load,'FZ',p);
+            case 'staticvertdown'
+            f = nodalload(S,P_load,'FZ',-p);
         case 'statichoriin'
             f = nodalload(S,P_load,'FY',p);
         case 'statichoriout'
@@ -425,6 +428,7 @@ if displaySolution
     options = {'solid',true};
     % options = {};
     
+    % Displacements
     plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
     mysaveas(pathname,'Ux',formats,renderer);
     
@@ -434,6 +438,7 @@ if displaySolution
     plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
     mysaveas(pathname,'Uz',formats,renderer);
     
+    % Rotations
     plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
     mysaveas(pathname,'Rx',formats,renderer);
     
@@ -444,30 +449,33 @@ if displaySolution
     mysaveas(pathname,'Rz',formats,renderer);
     
     % DO NOT WORK WITH BEAM ELEMENTS
+    % Strains
     % plotSolution(S,u,'epsilon',1,'ampl',ampl,options{:});
-    % mysaveas(pathname,'eps_x',formats,renderer);
+    % mysaveas(pathname,'Epsx',formats,renderer);
     %
     % plotSolution(S,u,'epsilon',2,'ampl',ampl,options{:});
-    % mysaveas(pathname,'gam_x',formats,renderer);
+    % mysaveas(pathname,'Gamx',formats,renderer);
     %
     % plotSolution(S,u,'epsilon',3,'ampl',ampl,options{:});
-    % mysaveas(pathname,'gam_y',formats,renderer);
+    % mysaveas(pathname,'Gamy',formats,renderer);
     %
     % plotSolution(S,u,'epsilon',4,'ampl',ampl,options{:});
-    % mysaveas(pathname,'gam_z',formats,renderer);
+    % mysaveas(pathname,'Gamz',formats,renderer);
     %
+    % Stresses
     % plotSolution(S,u,'sigma',1,'ampl',ampl,options{:});
-    % mysaveas(pathname,'eff_x',formats,renderer);
+    % mysaveas(pathname,'N',formats,renderer);
     %
     % plotSolution(S,u,'sigma',2,'ampl',ampl,options{:});
-    % mysaveas(pathname,'mom_x',formats,renderer);
+    % mysaveas(pathname,'Mx',formats,renderer);
     %
     % plotSolution(S,u,'sigma',3,'ampl',ampl,options{:});
-    % mysaveas(pathname,'mom_y',formats,renderer);
+    % mysaveas(pathname,'My',formats,renderer);
     %
     % plotSolution(S,u,'sigma',4,'ampl',ampl,options{:});
-    % mysaveas(pathname,'mom_z',formats,renderer);
+    % mysaveas(pathname,'Mz',formats,renderer);
     
+    % Strains
     figure('Name','Solution eps_x')
     clf
     plot(e,S+ampl*u,'compo','EPSX')
@@ -496,6 +504,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Gamz',formats,renderer);
     
+    % Stresses
     figure('Name','Solution N')
     clf
     plot(s,S+ampl*u,'compo','EFFX')

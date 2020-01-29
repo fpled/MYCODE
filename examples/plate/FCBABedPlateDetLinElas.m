@@ -9,10 +9,11 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-% tests = {'StaticVert'}; % test under static vertical load
+% tests = {'StaticVertUp'}; % test under static vertical upward load
+tests = {'StaticVertDown'}; % test under static vertical downward load
 % tests = {'StaticHoriIn'}; % test under static horizontal inward load
-tests = {'StaticHoriOut'}; % test under static horizontal outward load
-% tests = {'StaticVert','StaticHoriIn','StaticHoriOut'};
+% tests = {'StaticHoriOut'}; % test under static horizontal outward load
+% tests = {'StaticVertUp','StaticVertDown','StaticHoriIn','StaticHoriOut'};
 
 for it=1:length(tests)
     test = tests{it};
@@ -149,7 +150,7 @@ if solveProblem
     Q_guardrailsupport{5} = QUADRANGLE(x_guardrailsupport(5,:),x_guardrailsupport(6,:),x_topguardrail(4,:),x_topguardrail(3,:));
     
     % Beams meshes
-    cl = b1/2;
+    cl = b1;
     S_leg = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_leg_' num2str(n)])),P_leg,num2cell(1:length(P_leg)),'UniformOutput',false);
     S_leg = cellfun(@(S) concatgroupelem(S),S_leg,'UniformOutput',false);
     S_leg = union(S_leg{:});
@@ -271,7 +272,7 @@ if solveProblem
     p2 = RHO*g*b2; % surface load (body load for end rails and parts 2 and 4 of guard rail support)
     p3 = RHO*g*(b1+b2); % surface load (body load for parts 1, 3 and 5 of guard rail support)
     switch lower(test)
-        case 'staticvert'
+        case {'staticvertup','staticvertdown'}
             p = 200; % pointwise load, 200N
         case {'statichoriin','statichoriout'}
             p = 500; % pointwise load, 500N
@@ -286,8 +287,10 @@ if solveProblem
     A = calc_rigi(S);
     P_load = POINT(x_load);
     switch lower(test)
-        case 'staticvert'
+        case 'staticvertup'
             f = nodalload(S,P_load,'FZ',p);
+        case 'staticvertdown'
+            f = nodalload(S,P_load,'FZ',-p);
         case 'statichoriin'
             f = nodalload(S,P_load,'FY',p);
         case 'statichoriout'
@@ -327,8 +330,7 @@ if solveProblem
     e_beam = calc_epsilon(S_beam,u_beam,'smooth');
     s_beam = calc_sigma(S_beam,u_beam,'smooth');
     
-    e_plate = calc_epsilon(S_plate,u_plate,'node');
-    % e_plate = calc_epsilon(S_plate,u_plate,'smooth');
+    e_plate = calc_epsilon(S_plate,u_plate,'smooth');
     s_plate = calc_sigma(S_plate,u_plate,'smooth');
     
     Epsx = e_beam(1);
@@ -427,6 +429,7 @@ end
 %% Outputs
 fprintf('\nBed\n');
 fprintf(['test : ' test '\n']);
+fprintf(['mesh : ' elemtype ' elements\n']);
 fprintf('nb elements       = %g\n',getnbelem(S));
 fprintf('nb beam elements  = %g\n',getnbelem(S_beam));
 fprintf('nb plate elements = %g\n',getnbelem(S_plate));
@@ -531,6 +534,7 @@ if displaySolution
     options = {'solid',true};
     % options = {};
     
+    % Displacements
     plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
     mysaveas(pathname,'Ux',formats,renderer);
     
@@ -540,6 +544,7 @@ if displaySolution
     plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
     mysaveas(pathname,'Uz',formats,renderer);
     
+    % Rotations
     plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
     mysaveas(pathname,'Rx',formats,renderer);
     
@@ -550,59 +555,62 @@ if displaySolution
     mysaveas(pathname,'Rz',formats,renderer);
     
     % DO NOT WORK WITH BEAM ELEMENTS
-    % plotSolution(S,u,'epsilon',1,'ampl',ampl,options{:});
-    % mysaveas(pathname,'eps_x',formats,renderer);
+    % Beams strains
+    % plotSolution(S_beam,u_beam,'epsilon',1,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Epsx',formats,renderer);
     %
-    % plotSolution(S,u,'epsilon',2,'ampl',ampl,options{:});
-    % mysaveas(pathname,'gam_x',formats,renderer);
+    % plotSolution(S_beam,u_beam,'epsilon',2,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Gamx',formats,renderer);
     %
-    % plotSolution(S,u,'epsilon',3,'ampl',ampl,options{:});
-    % mysaveas(pathname,'gam_y',formats,renderer);
+    % plotSolution(S_beam,u_beam,'epsilon',3,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Gamy',formats,renderer);
     %
-    % plotSolution(S,u,'epsilon',4,'ampl',ampl,options{:});
-    % mysaveas(pathname,'gam_z',formats,renderer);
+    % plotSolution(S_beam,u_beam,'epsilon',4,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Gamz',formats,renderer);
     %
-    % plotSolution(S,u,'sigma',1,'ampl',ampl,options{:});
-    % mysaveas(pathname,'eff_x',formats,renderer);
+    % Beams stresses
+    % plotSolution(S_beam,u_beam,'sigma',1,'ampl',ampl,options{:});
+    % mysaveas(pathname,'N',formats,renderer);
     %
-    % plotSolution(S,u,'sigma',2,'ampl',ampl,options{:});
-    % mysaveas(pathname,'mom_x',formats,renderer);
+    % plotSolution(S_beam,u_beam,'sigma',2,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Mx',formats,renderer);
     %
-    % plotSolution(S,u,'sigma',3,'ampl',ampl,options{:});
-    % mysaveas(pathname,'mom_y',formats,renderer);
+    % plotSolution(S_beam,u_beam,'sigma',3,'ampl',ampl,options{:});
+    % mysaveas(pathname,'My',formats,renderer);
     %
-    % plotSolution(S,u,'sigma',4,'ampl',ampl,options{:});
-    % mysaveas(pathname,'mom_z',formats,renderer);
+    % plotSolution(S_beam,u_beam,'sigma',4,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Mz',formats,renderer);
     
-    % Beams
-    figure('Name','Solution eps_x')
+    % Beams strains
+    figure('Name','Solution Epsx')
     clf
     plot(e_beam,S_beam+ampl*u_beam,'compo','EPSX')
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Epsx',formats,renderer);
     
-    figure('Name','Solution gam_x')
+    figure('Name','Solution Gamx')
     clf
     plot(e_beam,S_beam+ampl*u_beam,'compo','GAMX')
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Gamx',formats,renderer);
     
-    figure('Name','Solution gam_y')
+    figure('Name','Solution Gamy')
     clf
     plot(e_beam,S_beam+ampl*u_beam,'compo','GAMY')
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Gamy',formats,renderer);
     
-    figure('Name','Solution gam_z')
+    figure('Name','Solution Gamz')
     clf
     plot(e_beam,S_beam+ampl*u_beam,'compo','GAMZ')
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Gamz',formats,renderer);
     
+    % Beams stresses
     figure('Name','Solution N')
     clf
     plot(s_beam,S_beam+ampl*u_beam,'compo','EFFX')
@@ -631,42 +639,43 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Mz',formats,renderer);
     
-    % Plates
+    % Plates strains
     plotSolution(S_plate,u_plate,'epsilon',1,'ampl',ampl,options{:});
-    mysaveas(pathname,'e_xx',formats,renderer);
+    mysaveas(pathname,'Exx',formats,renderer);
     
     plotSolution(S_plate,u_plate,'epsilon',2,'ampl',ampl,options{:});
-    mysaveas(pathname,'e_yy',formats,renderer);
+    mysaveas(pathname,'Eyy',formats,renderer);
     
     plotSolution(S_plate,u_plate,'epsilon',3,'ampl',ampl,options{:});
-    mysaveas(pathname,'e_xy',formats,renderer);
+    mysaveas(pathname,'Exy',formats,renderer);
     
     plotSolution(S_plate,u_plate,'epsilon',4,'ampl',ampl,options{:});
-    mysaveas(pathname,'g_xx',formats,renderer);
+    mysaveas(pathname,'Gxx',formats,renderer);
     
     plotSolution(S_plate,u_plate,'epsilon',5,'ampl',ampl,options{:});
-    mysaveas(pathname,'g_yy',formats,renderer);
+    mysaveas(pathname,'Gyy',formats,renderer);
     
     plotSolution(S_plate,u_plate,'epsilon',6,'ampl',ampl,options{:});
-    mysaveas(pathname,'g_xy',formats,renderer);
+    mysaveas(pathname,'Gxy',formats,renderer);
     
+    % Plates stresses
     plotSolution(S_plate,u_plate,'sigma',1,'ampl',ampl,options{:});
-    mysaveas(pathname,'n_xx',formats,renderer);
+    mysaveas(pathname,'Nxx',formats,renderer);
     
     plotSolution(S_plate,u_plate,'sigma',2,'ampl',ampl,options{:});
-    mysaveas(pathname,'n_yy',formats,renderer);
+    mysaveas(pathname,'Nyy',formats,renderer);
     
     plotSolution(S_plate,u_plate,'sigma',3,'ampl',ampl,options{:});
-    mysaveas(pathname,'n_xy',formats,renderer);
+    mysaveas(pathname,'Nxy',formats,renderer);
     
     plotSolution(S_plate,u_plate,'sigma',4,'ampl',ampl,options{:});
-    mysaveas(pathname,'m_xx',formats,renderer);
+    mysaveas(pathname,'Mxx',formats,renderer);
     
     plotSolution(S_plate,u_plate,'sigma',5,'ampl',ampl,options{:});
-    mysaveas(pathname,'m_yy',formats,renderer);
+    mysaveas(pathname,'Myy',formats,renderer);
     
     plotSolution(S_plate,u_plate,'sigma',6,'ampl',ampl,options{:});
-    mysaveas(pathname,'m_xy',formats,renderer);
+    mysaveas(pathname,'Mxy',formats,renderer);
 end
 
 end

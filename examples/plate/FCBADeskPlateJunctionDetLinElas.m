@@ -222,7 +222,6 @@ if solveProblem
         case 'isot'
             % Young modulus
             E = mean(mean_ET_data)*1e6; % Pa
-            %E = 2e9; % Pa
             % Shear modulus
             %G = mean(mean_GL_data)*1e6*13; % Pa
             % Poisson ratio
