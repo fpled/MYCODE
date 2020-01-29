@@ -10,10 +10,11 @@ solveProblem = true;
 displaySolution = true;
 
 % tests = {'StaticVertUp'}; % test under static vertical upward load
-tests = {'StaticVertDown'}; % test under static vertical downward load
+% tests = {'StaticVertDown'}; % test under static vertical downward load
 % tests = {'StaticHoriIn'}; % test under static horizontal inward load
 % tests = {'StaticHoriOut'}; % test under static horizontal outward load
 % tests = {'StaticVertUp','StaticVertDown','StaticHoriIn','StaticHoriOut'};
+tests = {'StaticVertDown','StaticHoriOut'};
 
 for it=1:length(tests)
     test = tests{it};
@@ -123,7 +124,7 @@ if solveProblem
     
     % Beams meshes
     elemtype = 'BEAM';
-    cl = b1;
+    cl = b1/2;
     S_leg = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_leg_' num2str(n)])),P_leg,num2cell(1:length(P_leg)),'UniformOutput',false);
     S_leg = cellfun(@(S) concatgroupelem(S),S_leg,'UniformOutput',false);
     S_leg = union(S_leg{:});
@@ -412,7 +413,8 @@ if displaySolution
     mysaveas(pathname,'mesh',formats,renderer);
     
     U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
-    ampl = getsize(S)/max(abs(U))/20;
+    % ampl = getsize(S)/max(abs(U))/20;
+    ampl = 3;
     plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','node',true,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     

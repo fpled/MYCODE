@@ -10,10 +10,11 @@ solveProblem = true;
 displaySolution = true;
 
 % tests = {'StaticVertUp'}; % test under static vertical upward load
-tests = {'StaticVertDown'}; % test under static vertical downward load
+% tests = {'StaticVertDown'}; % test under static vertical downward load
 % tests = {'StaticHoriIn'}; % test under static horizontal inward load
 % tests = {'StaticHoriOut'}; % test under static horizontal outward load
 % tests = {'StaticVertUp','StaticVertDown','StaticHoriIn','StaticHoriOut'};
+tests = {'StaticVertDown','StaticHoriOut'};
 
 for it=1:length(tests)
     test = tests{it};
@@ -150,7 +151,7 @@ if solveProblem
     Q_guardrailsupport{5} = QUADRANGLE(x_guardrailsupport(5,:),x_guardrailsupport(6,:),x_topguardrail(4,:),x_topguardrail(3,:));
     
     % Beams meshes
-    cl = b1;
+    cl = b1/2;
     S_leg = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_leg_' num2str(n)])),P_leg,num2cell(1:length(P_leg)),'UniformOutput',false);
     S_leg = cellfun(@(S) concatgroupelem(S),S_leg,'UniformOutput',false);
     S_leg = union(S_leg{:});
@@ -168,6 +169,7 @@ if solveProblem
     L_slat1{11} = LIGNE(x_slat(4*11-3,:),x_cross);
     L_slat2 = cellfun(@(Q) getedge(Q,1),Q_slat(12:14),'UniformOutput',false);
     L_slat3 = cellfun(@(Q) getedge(Q,3),Q_slat,'UniformOutput',false);
+    S_siderail = cell(1,3);
     if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
         S_siderail{1} = gmshFCBAbedsiderail(Q_siderail{1},L_slat1,cl,cl,fullfile(pathname,['gmsh_siderail_1_elemtype_' elemtype]),3);
         S_siderail{2} = gmshdomainwithinclusion(Q_siderail{2},L_slat2,cl,cl,fullfile(pathname,['gmsh_siderail_2_elemtype_' elemtype]),3);
@@ -197,6 +199,7 @@ if solveProblem
     S_guardrail = concatgroupelem(S_guardrail);
     
     L_slat = LIGNE(x_cross,x_slat(4*11-2,:));
+    S_guardrailsupport = cell(1,5);
     if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
         S_guardrailsupport{1} = gmshFCBAbedguardrailsupport(Q_guardrailsupport{1},L_slat,cl,cl,fullfile(pathname,['gmsh_guardrailsupport_1_elemtype_' elemtype]),3);
     else
@@ -208,6 +211,7 @@ if solveProblem
     S_guardrailsupport = union(S_guardrailsupport{:});
     
     P_slat = POINT(x_cross);
+    S_slat = cell(1,14);
     if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
         S_slat{11} = gmshFCBAbedslat(Q_slat{11},P_slat,cl,cl,fullfile(pathname,['gmsh_slat_11_elemtype_' elemtype]),3);
     else
@@ -518,7 +522,8 @@ if displaySolution
     mysaveas(pathname,'mesh',formats,renderer);
     
     U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
-    ampl = getsize(S)/max(abs(U))/20;
+    % ampl = getsize(S)/max(abs(U))/20;
+    ampl = 3;
     plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','node',true,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
