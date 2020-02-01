@@ -12,9 +12,9 @@ displaySolution = true;
 % tests = {'StaticVertUp'}; % test under static vertical upward load
 % tests = {'StaticVertDown'}; % test under static vertical downward load
 % tests = {'StaticHoriIn'}; % test under static horizontal inward load
-% tests = {'StaticHoriOut'}; % test under static horizontal outward load
+tests = {'StaticHoriOut'}; % test under static horizontal outward load
 % tests = {'StaticVertUp','StaticVertDown','StaticHoriIn','StaticHoriOut'};
-tests = {'StaticVertDown','StaticHoriOut'};
+% tests = {'StaticVertDown','StaticHoriOut'};
 
 for it=1:length(tests)
     test = tests{it};
@@ -199,7 +199,7 @@ if solveProblem
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = 2e9; % Pa
+            E = 10e9; % Pa
             % Poisson ratio
             NU = 0.3;
             % Material
@@ -249,7 +249,7 @@ if solveProblem
     switch lower(test)
         case 'staticvertup'
             f = nodalload(S,P_load,'FZ',p);
-            case 'staticvertdown'
+        case 'staticvertdown'
             f = nodalload(S,P_load,'FZ',-p);
         case 'statichoriin'
             f = nodalload(S,P_load,'FY',p);
@@ -352,6 +352,7 @@ fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('elapsed time = %f s\n',time);
+fprintf('\n');
 
 disp('Displacement u and rotation r at point'); disp(P);
 fprintf('ux = %g m\n',ux);
@@ -413,8 +414,7 @@ if displaySolution
     mysaveas(pathname,'mesh',formats,renderer);
     
     U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
-    % ampl = getsize(S)/max(abs(U))/20;
-    ampl = 3;
+    ampl = getsize(S)/max(abs(U))/20;
     plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','node',true,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     

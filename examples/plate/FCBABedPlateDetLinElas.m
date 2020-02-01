@@ -12,9 +12,9 @@ displaySolution = true;
 % tests = {'StaticVertUp'}; % test under static vertical upward load
 % tests = {'StaticVertDown'}; % test under static vertical downward load
 % tests = {'StaticHoriIn'}; % test under static horizontal inward load
-% tests = {'StaticHoriOut'}; % test under static horizontal outward load
+tests = {'StaticHoriOut'}; % test under static horizontal outward load
 % tests = {'StaticVertUp','StaticVertDown','StaticHoriIn','StaticHoriOut'};
-tests = {'StaticVertDown','StaticHoriOut'};
+% tests = {'StaticVertDown','StaticHoriOut'};
 
 for it=1:length(tests)
     test = tests{it};
@@ -244,7 +244,7 @@ if solveProblem
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = 2e9; % Pa
+            E = 10e9; % Pa
             % Poisson ratio
             NU = 0.3;
             % Material
@@ -401,7 +401,7 @@ if solveProblem
     gxy = double(gxy(numnode));
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'S','S_beam','S_plate','test',...
+    save(fullfile(pathname,'problem.mat'),'S','S_beam','S_plate','test','elemtype',...
         'H','L','L1','l','h','H1','H2','h1','h2','b1','b2','c','d','e',...
         'f');
     save(fullfile(pathname,'solution.mat'),'u','s_beam','e_beam','s_plate','e_plate','time',...
@@ -415,7 +415,7 @@ if solveProblem
         'nxx','nyy','nxy','mxx','myy','mxy',...
         'exx','eyy','exy','gxx','gyy','gxy');
 else
-    load(fullfile(pathname,'problem.mat'),'S','S_beam','S_plate','test',...
+    load(fullfile(pathname,'problem.mat'),'S','S_beam','S_plate','test','elemtype',...
         'H','L','L1','l','h','H1','H2','h1','h2','b1','b2','c','d','e',...
         'f');
     load(fullfile(pathname,'solution.mat'),'u','s_beam','e_beam','s_plate','e_plate','time',...
@@ -440,6 +440,7 @@ fprintf('nb plate elements = %g\n',getnbelem(S_plate));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('elapsed time = %f s\n',time);
+fprintf('\n');
 
 disp('Displacement u and rotation r at point'); disp(P);
 fprintf('ux = %g m\n',ux);
@@ -522,8 +523,7 @@ if displaySolution
     mysaveas(pathname,'mesh',formats,renderer);
     
     U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
-    % ampl = getsize(S)/max(abs(U))/20;
-    ampl = 3;
+    ampl = getsize(S)/max(abs(U))/20;
     plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','node',true,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
