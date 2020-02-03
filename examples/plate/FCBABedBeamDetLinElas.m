@@ -10,11 +10,10 @@ solveProblem = true;
 displaySolution = true;
 
 % tests = {'StaticVertUp'}; % test under static vertical upward load
-% tests = {'StaticVertDown'}; % test under static vertical downward load
+tests = {'StaticVertDown'}; % test under static vertical downward load
 % tests = {'StaticHoriIn'}; % test under static horizontal inward load
-tests = {'StaticHoriOut'}; % test under static horizontal outward load
+% tests = {'StaticHoriOut'}; % test under static horizontal outward load
 % tests = {'StaticVertUp','StaticVertDown','StaticHoriIn','StaticHoriOut'};
-% tests = {'StaticVertDown','StaticHoriOut'};
 
 for it=1:length(tests)
     test = tests{it};
@@ -83,8 +82,9 @@ if solveProblem
         x_slat(2*i-1,:) = [b2/2+e+d/2+(i-1)*2*d,0.0,H2+h1/2];
         x_slat(2*i,:) = [b2/2+e+d/2+(i-1)*2*d,l-c,H2+h1/2];
     end
-    
-    x_load = [(L-L1-c/2-h2/2)/2,0.0,H2+2*(h1+d)+h1/2];
+    x_load = [(L-c)/2,l-c,H2+2*(h1+d)+h1/2;
+        100e-3-c/2,l-c,H2+2*(h1+d)+h1/2];
+    x_measure = x_topguardrail(5,:);
     
     P_leg{1} = {x_bot(1,:),x_botrail(1,:),x_toprail(1,:),x_botguardrail(1,:),x_topguardrail(1,:),x_top(1,:)};
     P_leg{2} = {x_bot(2,:),x_botrail(2,:),x_toprail(3,:),x_botguardrail(3,:),x_topguardrail(3,:),x_top(2,:)};
@@ -115,9 +115,9 @@ if solveProblem
     P_botguardrail{3} = {x_botguardrail(4,:),x_botguardrail(5,:)};
     P_botguardrail{4} = {x_botguardrail(5,:),x_botguardrail(1,:)};
     
-    P_topguardrail{1} = {x_topguardrail(1,:),x_load,x_topguardrail(2,:)};
+    P_topguardrail{1} = {x_topguardrail(1,:),x_topguardrail(2,:)};
     P_topguardrail{2} = {x_topguardrail(3,:),x_topguardrail(4,:)};
-    P_topguardrail{3} = {x_topguardrail(4,:),x_topguardrail(5,:)};
+    P_topguardrail{3} = {x_topguardrail(4,:),x_load(1,:),x_load(2,:),x_topguardrail(5,:)};
     P_topguardrail{4} = {x_topguardrail(5,:),x_topguardrail(1,:)};
     
     P_guardrailsupport = {x_toprail(2,:),x_botguardrail(2,:),x_topguardrail(2,:)};
@@ -226,17 +226,13 @@ if solveProblem
     S = union(S_leg,S_botrail,S_siderail,S_endrail,S_guardrail,S_guardrailsupport,S_slat);
     
     %% Neumann boundary conditions
+    p = 500; % pointwise load, 500N
     p0 = RHO*g*Sec0; % line load (body load for legs)
     p1 = RHO*g*Sec1; % line load (body load for bottom rails, side rails and guard rails)
     p2 = RHO*g*Sec2; % line load (body load for end rails)
     p3 = RHO*g*Sec3; % line load (body load for guardrail support)
     p4 = RHO*g*Sec4; % line load (body load for slats)
-    switch lower(test)
-        case {'staticvertup','staticvertdown'}
-            p = 200; % pointwise load, 200N
-        case {'statichoriin','statichoriout'}
-            p = 500; % pointwise load, 500N
-    end
+    p = 500; % pointwise load, 500N
     
     %% Dirichlet boundary conditions
     S = final(S);
@@ -245,15 +241,18 @@ if solveProblem
     
     %% Stiffness matrix and sollicitation vector
     A = calc_rigi(S);
-    P_load = POINT(x_load);
     switch lower(test)
         case 'staticvertup'
+            P_load = POINT(x_load(1,:));
             f = nodalload(S,P_load,'FZ',p);
         case 'staticvertdown'
+            P_load = POINT(x_load(1,:));
             f = nodalload(S,P_load,'FZ',-p);
         case 'statichoriin'
+            P_load = POINT(x_load(2,:));
             f = nodalload(S,P_load,'FY',p);
         case 'statichoriout'
+            P_load = POINT(x_load(2,:));
             f = nodalload(S,P_load,'FY',-p);
     end
     f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_0)),[],'FZ',-p0);
@@ -293,7 +292,7 @@ if solveProblem
     Mz = s(4);
     
     %% Test solution
-    P = P_load;
+    P = POINT(x_measure);
     numnode = find(S.node==P);
     xP = x(numnode,:);
     
@@ -305,23 +304,40 @@ if solveProblem
     rz = eval_sol(S,u,P,'RZ');
     
     [~,~,numgroupelem] = findelemwithnode(S,numnode);
-    n  = reshape(N{numgroupelem},[getnbnode(S),1]);
-    mx = reshape(Mx{numgroupelem},[getnbnode(S),1]);
-    my = reshape(My{numgroupelem},[getnbnode(S),1]);
-    mz = reshape(Mz{numgroupelem},[getnbnode(S),1]);
-    epsx = reshape(Epsx{numgroupelem},[getnbnode(S),1]);
-    gamx = reshape(Gamx{numgroupelem},[getnbnode(S),1]);
-    gamy = reshape(Gamy{numgroupelem},[getnbnode(S),1]);
-    gamz = reshape(Gamz{numgroupelem},[getnbnode(S),1]);
-    
-    n = double(n(numnode));
-    mx = double(mx(numnode));
-    my = double(my(numnode));
-    mz = double(mz(numnode));
-    epsx = double(epsx(numnode));
-    gamx = double(gamx(numnode));
-    gamy = double(gamy(numnode));
-    gamz = double(gamz(numnode));
+    n = 0;
+    mx = 0;
+    my = 0;
+    mz = 0;
+    epsx = 0;
+    gamx = 0;
+    gamy = 0;
+    gamz = 0;
+    for i=1:length(numgroupelem)
+        Ni  = reshape(N{numgroupelem(i)},[getnbnode(S),1]);
+        Mxi = reshape(Mx{numgroupelem(i)},[getnbnode(S),1]);
+        Myi = reshape(My{numgroupelem(i)},[getnbnode(S),1]);
+        Mzi = reshape(Mz{numgroupelem(i)},[getnbnode(S),1]);
+        Epsxi = reshape(Epsx{numgroupelem(i)},[getnbnode(S),1]);
+        Gamxi = reshape(Gamx{numgroupelem(i)},[getnbnode(S),1]);
+        Gamyi = reshape(Gamy{numgroupelem(i)},[getnbnode(S),1]);
+        Gamzi = reshape(Gamz{numgroupelem(i)},[getnbnode(S),1]);
+        ni = abs(double(Ni(numnode)));
+        mxi = abs(double(Mxi(numnode)));
+        myi = abs(double(Myi(numnode)));
+        mzi = abs(double(Mzi(numnode)));
+        epsxi = abs(double(Epsxi(numnode)));
+        gamxi = abs(double(Gamxi(numnode)));
+        gamyi = abs(double(Gamyi(numnode)));
+        gamzi = abs(double(Gamzi(numnode)));
+        n = max(n,ni);
+        mx = max(mx,mxi);
+        my = max(my,myi);
+        mz = max(mz,mzi);
+        epsx = max(epsx,epsxi);
+        gamx = max(gamx,gamxi);
+        gamy = max(gamy,gamyi);
+        gamz = max(gamz,gamzi);
+    end
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S','test',...
@@ -363,14 +379,14 @@ fprintf('ry = %g rad = %g deg\n',ry,rad2deg(ry));
 fprintf('rz = %g rad = %g deg\n',rz,rad2deg(rz));
 fprintf('\n');
 
-disp('Force N and moments Mx, My, Mz at point'); disp(P);
+disp('Maximum force N and moments Mx, My, Mz at point'); disp(P);
 fprintf('N  = %g N\n',n);
 fprintf('Mx = %g N.m\n',mx);
 fprintf('My = %g N.m\n',my);
 fprintf('Mz = %g N.m\n',mz);
 fprintf('\n');
 
-disp('Axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point'); disp(P);
+disp('Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point'); disp(P);
 fprintf('Epsx = %g\n',epsx);
 fprintf('Gamx = %g\n',gamx);
 fprintf('Gamy = %g\n',gamy);
@@ -407,7 +423,8 @@ if displaySolution
     [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     ampl = 5;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
-    %legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
+    hP = plot(P,'g+');
+    legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','node',true,'legend',false);

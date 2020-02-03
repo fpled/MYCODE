@@ -13,11 +13,6 @@ if nargin<6
     indim = getindim(Q);
 end
 
-G = GMSHFILE();
-if nargin>=5 && ischar(filename)
-    G = setfile(G,filename);
-end
-
 PQ = getvertices(Q);
 
 G = gmshfile(L,clL,[2 1],1);
@@ -30,6 +25,10 @@ end
 G = embedlineinsurface(G,1,1);
 
 varargin = delonlycharin('recombine',varargin);
+
+if nargin>=5 && ischar(filename)
+    G = setfile(G,filename);
+end
 
 n=max(nargout,1);
 varargout = cell(1,n);

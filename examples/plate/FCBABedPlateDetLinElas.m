@@ -14,7 +14,6 @@ displaySolution = true;
 % tests = {'StaticHoriIn'}; % test under static horizontal inward load
 tests = {'StaticHoriOut'}; % test under static horizontal outward load
 % tests = {'StaticVertUp','StaticVertDown','StaticHoriIn','StaticHoriOut'};
-% tests = {'StaticVertDown','StaticHoriOut'};
 
 for it=1:length(tests)
     test = tests{it};
@@ -111,12 +110,14 @@ if solveProblem
         x_slat(4*i,:) = [b2/2+e+d+(i-1)*2*d,l-c,H2+h1/2];
     end
     x_cross = [L-L1-c/2-h2,0.0,H2+h1/2];
-    x_load = [(L-L1-c/2-h2/2)/2,0.0,H2+2*(h1+d)+h1/2];
+    x_load = [(L-c)/2,l-c,H2+2*(h1+d)+h1/2;
+        100e-3-c/2,l-c,H2+2*(h1+d)+h1/2];
+    x_measure = [0.0,l-c,H2+2*(h1+d)+h1/2];
     
     P_leg{1} = {x_bot(1,:),x_botrail(1,:),x_botrail(2,:),x_toprail(1,:),x_toprail(2,:),x_botguardrail(1,:),x_botguardrail(2,:),x_topguardrail(1,:),x_top(1,:)};
     P_leg{2} = {x_bot(2,:),x_botrail(3,:),x_botrail(4,:),x_toprail(3,:),x_toprail(4,:),x_botguardrail(5,:),x_botguardrail(6,:),x_topguardrail(5,:),x_top(2,:)};
     P_leg{3} = {x_bot(3,:),x_botrail(5,:),x_botrail(6,:),x_toprail(5,:),x_toprail(6,:),x_botguardrail(7,:),x_botguardrail(8,:),x_topguardrail(7,:),x_top(3,:)};
-    P_leg{4} = {x_bot(4,:),x_botrail(7,:),x_botrail(8,:),x_toprail(7,:),x_toprail(8,:),x_botguardrail(9,:),x_botguardrail(10,:),x_topguardrail(9,:),x_top(4,:)};
+    P_leg{4} = {x_bot(4,:),x_botrail(7,:),x_botrail(8,:),x_toprail(7,:),x_toprail(8,:),x_botguardrail(9,:),x_botguardrail(10,:),x_measure,x_topguardrail(9,:),x_top(4,:)};
     
     Q_botrail{1} = QUADRANGLE(x_botrail(3,:),x_botrail(4,:),x_botrail(6,:),x_botrail(5,:));
     Q_botrail{2} = QUADRANGLE(x_botrail(5,:),x_botrail(6,:),x_botrail(8,:),x_botrail(7,:));
@@ -130,9 +131,10 @@ if solveProblem
     Q_endrail{2} = QUADRANGLE(x_toprail(7,:),x_toprail(8,:),x_toprail(2,:),x_toprail(1,:));
     
     Q_slat = cell(1,14);
-    for i=1:14
+    for i=[1:10,12:14]
         Q_slat{i} = QUADRANGLE(x_slat(4*i-3,:),x_slat(4*i-2,:),x_slat(4*i,:),x_slat(4*i-1,:));
     end
+    Q_slat{11} = POLYGON(x_slat(4*11-3,:),x_cross,x_slat(4*11-2,:),x_slat(4*11,:),x_slat(4*11-1,:));
     
     Q_botguardrail{1} = QUADRANGLE(x_botguardrail(1,:),x_botguardrail(2,:),x_guardrailsupport(4,:),x_guardrailsupport(3,:));
     Q_botguardrail{2} = QUADRANGLE(x_botguardrail(5,:),x_botguardrail(6,:),x_botguardrail(8,:),x_botguardrail(7,:));
@@ -141,8 +143,8 @@ if solveProblem
     
     Q_topguardrail{1} = QUADRANGLE(x_topguardrail(1,:),x_topguardrail(2,:),x_guardrailsupport(6,:),x_guardrailsupport(5,:));
     Q_topguardrail{2} = QUADRANGLE(x_topguardrail(5,:),x_topguardrail(6,:),x_topguardrail(8,:),x_topguardrail(7,:));
-    Q_topguardrail{3} = QUADRANGLE(x_topguardrail(7,:),x_topguardrail(8,:),x_topguardrail(10,:),x_topguardrail(9,:));
-    Q_topguardrail{4} = QUADRANGLE(x_topguardrail(9,:),x_topguardrail(10,:),x_topguardrail(2,:),x_topguardrail(1,:));
+    Q_topguardrail{3} = POLYGON(x_topguardrail(7,:),x_topguardrail(8,:),x_topguardrail(10,:),x_measure,x_topguardrail(9,:));
+    Q_topguardrail{4} = POLYGON(x_topguardrail(9,:),x_measure,x_topguardrail(10,:),x_topguardrail(2,:),x_topguardrail(1,:));
     
     Q_guardrailsupport{1} = QUADRANGLE(x_guardrailsupport(1,:),x_guardrailsupport(2,:),x_guardrailsupport(8,:),x_guardrailsupport(7,:));
     Q_guardrailsupport{2} = QUADRANGLE(x_guardrailsupport(2,:),x_guardrailsupport(3,:),x_botguardrail(3,:),x_guardrailsupport(8,:));
@@ -165,10 +167,10 @@ if solveProblem
     S_botrail = union(S_botrail{:});
     S_botrail = concatgroupelem(S_botrail);
     
-    L_slat1 = cellfun(@(Q) getedge(Q,1),Q_slat(1:10),'UniformOutput',false);
-    L_slat1{11} = LIGNE(x_slat(4*11-3,:),x_cross);
+    L_slat1 = cellfun(@(Q) getedge(Q,1),Q_slat(1:11),'UniformOutput',false);
     L_slat2 = cellfun(@(Q) getedge(Q,1),Q_slat(12:14),'UniformOutput',false);
     L_slat3 = cellfun(@(Q) getedge(Q,3),Q_slat,'UniformOutput',false);
+    L_slat3{11} = getedge(Q_slat{11},4);
     S_siderail = cell(1,3);
     if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
         S_siderail{1} = gmshFCBAbedsiderail(Q_siderail{1},L_slat1,cl,cl,fullfile(pathname,['gmsh_siderail_1_elemtype_' elemtype]),3);
@@ -191,14 +193,14 @@ if solveProblem
     S_botguardrail = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
         'filename',fullfile(pathname,['gmsh_botguardrail_' num2str(n) '_elemtype_' elemtype])),Q_botguardrail,num2cell(1:length(Q_botguardrail)),'UniformOutput',false);
     S_topguardrail = cell(1,4);
-    S_topguardrail{1} = build_model(Q_topguardrail{1},'cl',cl,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_topguardrail_1_elemtype_' elemtype]),'points',x_load);
-    S_topguardrail(2:4) = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_topguardrail_' num2str(n) '_elemtype_' elemtype])),Q_topguardrail(2:4),num2cell(2:4),'UniformOutput',false);
+    S_topguardrail([1,2,4]) = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
+        'filename',fullfile(pathname,['gmsh_topguardrail_' num2str(n) '_elemtype_' elemtype])),Q_topguardrail([1,2,4]),num2cell([1,2,4]),'UniformOutput',false);
+    S_topguardrail{3} = build_model(Q_topguardrail{3},'cl',cl,'elemtype',elemtype,...
+        'filename',fullfile(pathname,['gmsh_topguardrail_3_elemtype_' elemtype]),'points',{x_load(1,:),x_load(2,:)});
     S_guardrail = union(S_botguardrail{:},S_topguardrail{:});
     S_guardrail = concatgroupelem(S_guardrail);
     
-    L_slat = LIGNE(x_cross,x_slat(4*11-2,:));
+    L_slat = getedge(Q_slat{11},2);
     S_guardrailsupport = cell(1,5);
     if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
         S_guardrailsupport{1} = gmshFCBAbedguardrailsupport(Q_guardrailsupport{1},L_slat,cl,cl,fullfile(pathname,['gmsh_guardrailsupport_1_elemtype_' elemtype]),3);
@@ -210,16 +212,8 @@ if solveProblem
         'filename',fullfile(pathname,['gmsh_guardrailsupport_' num2str(n) '_elemtype_' elemtype])),Q_guardrailsupport(2:5),num2cell(2:5),'UniformOutput',false);
     S_guardrailsupport = union(S_guardrailsupport{:});
     
-    P_slat = POINT(x_cross);
-    S_slat = cell(1,14);
-    if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-        S_slat{11} = gmshFCBAbedslat(Q_slat{11},P_slat,cl,cl,fullfile(pathname,['gmsh_slat_11_elemtype_' elemtype]),3);
-    else
-        S_slat{11} = gmshFCBAbedslat(Q_slat{11},P_slat,cl,cl,fullfile(pathname,['gmsh_slat_11_elemtype_' elemtype]),3,'recombine');
-    end
-    S_slat{11} = convertelem(S_slat{11},elemtype);
-    S_slat([1:10,12:14]) = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_slat_' num2str(n) '_elemtype_' elemtype])),Q_slat([1:10,12:14]),num2cell([1:10,12:14]),'UniformOutput',false);
+    S_slat = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
+        'filename',fullfile(pathname,['gmsh_slat_' num2str(n) '_elemtype_' elemtype])),Q_slat,num2cell(1:14),'UniformOutput',false);
     S_slat = union(S_slat{:});
     S_slat = concatgroupelem(S_slat);
     
@@ -275,12 +269,7 @@ if solveProblem
     p1 = RHO*g*b1; % surface load (body load for bottom rails, side rails, guard rails and slats)
     p2 = RHO*g*b2; % surface load (body load for end rails and parts 2 and 4 of guard rail support)
     p3 = RHO*g*(b1+b2); % surface load (body load for parts 1, 3 and 5 of guard rail support)
-    switch lower(test)
-        case {'staticvertup','staticvertdown'}
-            p = 200; % pointwise load, 200N
-        case {'statichoriin','statichoriout'}
-            p = 500; % pointwise load, 500N
-    end
+    p = 500; % pointwise load, 500N
     
     %% Dirichlet boundary conditions
     S = final(S);
@@ -289,15 +278,18 @@ if solveProblem
     
     %% Stiffness matrix and sollicitation vector
     A = calc_rigi(S);
-    P_load = POINT(x_load);
     switch lower(test)
         case 'staticvertup'
+            P_load = POINT(x_load(1,:));
             f = nodalload(S,P_load,'FZ',p);
         case 'staticvertdown'
+            P_load = POINT(x_load(1,:));
             f = nodalload(S,P_load,'FZ',-p);
         case 'statichoriin'
+            P_load = POINT(x_load(2,:));
             f = nodalload(S,P_load,'FY',p);
         case 'statichoriout'
+            P_load = POINT(x_load(2,:));
             f = nodalload(S,P_load,'FY',-p);
     end
     f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_0)),[],'FZ',-p0);
@@ -360,7 +352,7 @@ if solveProblem
     Mxy = s_plate(6);
     
     %% Test solution
-    P = P_load;
+    P = POINT(x_measure);
     numnode = find(S.node==P);
     xP = x(numnode,:);
     
@@ -371,34 +363,95 @@ if solveProblem
     ry = eval_sol(S,u,P,'RY');
     rz = eval_sol(S,u,P,'RZ');
     
+    numnode_beam = find(S_beam.node==P);
+    [~,~,numgroupelem_beam] = findelemwithnode(S_beam,numnode_beam);
+    n = 0;
+    mx = 0;
+    my = 0;
+    mz = 0;
+    epsx = 0;
+    gamx = 0;
+    gamy = 0;
+    gamz = 0;
+    for i=1:length(numgroupelem_beam)
+        Ni  = reshape(N{numgroupelem_beam(i)},[getnbnode(S_beam),1]);
+        Mxi = reshape(Mx{numgroupelem_beam(i)},[getnbnode(S_beam),1]);
+        Myi = reshape(My{numgroupelem_beam(i)},[getnbnode(S_beam),1]);
+        Mzi = reshape(Mz{numgroupelem_beam(i)},[getnbnode(S_beam),1]);
+        Epsxi = reshape(Epsx{numgroupelem_beam(i)},[getnbnode(S_beam),1]);
+        Gamxi = reshape(Gamx{numgroupelem_beam(i)},[getnbnode(S_beam),1]);
+        Gamyi = reshape(Gamy{numgroupelem_beam(i)},[getnbnode(S_beam),1]);
+        Gamzi = reshape(Gamz{numgroupelem_beam(i)},[getnbnode(S_beam),1]);
+        ni = abs(double(Ni(numnode_beam)));
+        mxi = abs(double(Mxi(numnode_beam)));
+        myi = abs(double(Myi(numnode_beam)));
+        mzi = abs(double(Mzi(numnode_beam)));
+        epsxi = abs(double(Epsxi(numnode_beam)));
+        gamxi = abs(double(Gamxi(numnode_beam)));
+        gamyi = abs(double(Gamyi(numnode_beam)));
+        gamzi = abs(double(Gamzi(numnode_beam)));
+        n = max(n,ni);
+        mx = max(mx,mxi);
+        my = max(my,myi);
+        mz = max(mz,mzi);
+        epsx = max(epsx,epsxi);
+        gamx = max(gamx,gamxi);
+        gamy = max(gamy,gamyi);
+        gamz = max(gamz,gamzi);
+    end
+    
     numnode_plate = find(S_plate.node==P);
-    [~,~,numgroupelem] = findelemwithnode(S_plate,numnode_plate);
-    nxx = reshape(Nxx{numgroupelem},[getnbnode(S_plate),1]);
-    nyy = reshape(Nyy{numgroupelem},[getnbnode(S_plate),1]);
-    nxy = reshape(Nxy{numgroupelem},[getnbnode(S_plate),1]);
-    mxx = reshape(Mxx{numgroupelem},[getnbnode(S_plate),1]);
-    myy = reshape(Myy{numgroupelem},[getnbnode(S_plate),1]);
-    mxy = reshape(Mxy{numgroupelem},[getnbnode(S_plate),1]);
-    exx = reshape(Exx{numgroupelem},[getnbnode(S_plate),1]);
-    eyy = reshape(Eyy{numgroupelem},[getnbnode(S_plate),1]);
-    exy = reshape(Exy{numgroupelem},[getnbnode(S_plate),1]);
-    gxx = reshape(Gxx{numgroupelem},[getnbnode(S_plate),1]);
-    gyy = reshape(Gyy{numgroupelem},[getnbnode(S_plate),1]);
-    gxy = reshape(Gxy{numgroupelem},[getnbnode(S_plate),1]);
-    
-    
-    nxx = double(nxx(numnode));
-    nyy = double(nyy(numnode));
-    nxy = double(nxy(numnode));
-    mxx = double(mxx(numnode));
-    myy = double(myy(numnode));
-    mxy = double(mxy(numnode));
-    exx = double(exx(numnode));
-    eyy = double(eyy(numnode));
-    exy = double(exy(numnode));
-    gxx = double(gxx(numnode));
-    gyy = double(gyy(numnode));
-    gxy = double(gxy(numnode));
+    [~,~,numgroupelem_plate] = findelemwithnode(S_plate,numnode_plate);
+    nxx = 0;
+    nyy = 0;
+    nxy = 0;
+    mxx = 0;
+    myy = 0;
+    mxy = 0;
+    exx = 0;
+    eyy = 0;
+    exy = 0;
+    gxx = 0;
+    gyy = 0;
+    gxy = 0;
+    for i=1:length(numgroupelem_plate)
+        Nxxi = reshape(Nxx{numgroupelem_plate(i)},[getnbnode(S_plate),1]);
+        Nyyi = reshape(Nyy{numgroupelem_plate(i)},[getnbnode(S_plate),1]);
+        Nxyi = reshape(Nxy{numgroupelem_plate(i)},[getnbnode(S_plate),1]);
+        Mxxi = reshape(Mxx{numgroupelem_plate(i)},[getnbnode(S_plate),1]);
+        Myyi = reshape(Myy{numgroupelem_plate(i)},[getnbnode(S_plate),1]);
+        Mxyi = reshape(Mxy{numgroupelem_plate(i)},[getnbnode(S_plate),1]);
+        Exxi = reshape(Exx{numgroupelem_plate(i)},[getnbnode(S_plate),1]);
+        Eyyi = reshape(Eyy{numgroupelem_plate(i)},[getnbnode(S_plate),1]);
+        Exyi = reshape(Exy{numgroupelem_plate(i)},[getnbnode(S_plate),1]);
+        Gxxi = reshape(Gxx{numgroupelem_plate(i)},[getnbnode(S_plate),1]);
+        Gyyi = reshape(Gyy{numgroupelem_plate(i)},[getnbnode(S_plate),1]);
+        Gxyi = reshape(Gxy{numgroupelem_plate(i)},[getnbnode(S_plate),1]);
+        nxxi = abs(double(Nxxi(numnode_plate)));
+        nyyi = abs(double(Nyyi(numnode_plate)));
+        nxyi = abs(double(Nxyi(numnode_plate)));
+        mxxi = abs(double(Mxxi(numnode_plate)));
+        myyi = abs(double(Myyi(numnode_plate)));
+        mxyi = abs(double(Mxyi(numnode_plate)));
+        exxi = abs(double(Exxi(numnode_plate)));
+        eyyi = abs(double(Eyyi(numnode_plate)));
+        exyi = abs(double(Exyi(numnode_plate)));
+        gxxi = abs(double(Gxxi(numnode_plate)));
+        gyyi = abs(double(Gyyi(numnode_plate)));
+        gxyi = abs(double(Gxyi(numnode_plate)));
+        nxx = max(nxx,nxxi);
+        nyy = max(nyy,nyyi);
+        nxy = max(nxy,nxyi);
+        mxx = max(mxx,nxxi);
+        myy = max(myy,nyyi);
+        mxy = max(mxy,nxyi);
+        exx = max(exx,exxi);
+        eyy = max(eyy,eyyi);
+        exy = max(exy,exyi);
+        gxx = max(gxx,gxxi);
+        gyy = max(gyy,gyyi);
+        gxy = max(gxy,gxyi);
+    end
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S','S_beam','S_plate','test','elemtype',...
@@ -412,6 +465,7 @@ if solveProblem
         'Exx','Eyy','Exy','Gxx','Gyy','Gxy');
     save(fullfile(pathname,'test_solution.mat'),'P',...
         'ux','uy','uz','rx','ry','rz',...
+        'n','mx','my','mz','epsx','gamx','gamy','gamz',...
         'nxx','nyy','nxy','mxx','myy','mxy',...
         'exx','eyy','exy','gxx','gyy','gxy');
 else
@@ -426,6 +480,7 @@ else
         'Exx','Eyy','Exy','Gxx','Gyy','Gxy');
     load(fullfile(pathname,'test_solution.mat'),'P',...
         'ux','uy','uz','rx','ry','rz',...
+        'n','mx','my','mz','epsx','gamx','gamy','gamz',...
         'nxx','nyy','nxy','mxx','myy','mxy',...
         'exx','eyy','exy','gxx','gyy','gxy');
 end
@@ -451,21 +506,21 @@ fprintf('ry = %g rad = %g deg\n',ry,rad2deg(ry));
 fprintf('rz = %g rad = %g deg\n',rz,rad2deg(rz));
 fprintf('\n');
 
-% disp('Force N and moments Mx, My, Mz at point'); disp(P);
-% fprintf('N  = %g N\n',n);
-% fprintf('Mx = %g N.m\n',mx);
-% fprintf('My = %g N.m\n',my);
-% fprintf('Mz = %g N.m\n',mz);
-% fprintf('\n');
-% 
-% disp('Axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point'); disp(P);
-% fprintf('Epsx = %g\n',epsx);
-% fprintf('Gamx = %g\n',gamx);
-% fprintf('Gamy = %g\n',gamy);
-% fprintf('Gamz = %g\n',gamz);
-% fprintf('\n');
+disp('Maximum force N and moments Mx, My, Mz at point'); disp(P);
+fprintf('N  = %g N\n',n);
+fprintf('Mx = %g N.m\n',mx);
+fprintf('My = %g N.m\n',my);
+fprintf('Mz = %g N.m\n',mz);
+fprintf('\n');
 
-disp('Forces Nxx, Nyy, Nxy and moments Mxx, Myy, Mxy at point'); disp(P);
+disp('Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point'); disp(P);
+fprintf('Epsx = %g\n',epsx);
+fprintf('Gamx = %g\n',gamx);
+fprintf('Gamy = %g\n',gamy);
+fprintf('Gamz = %g\n',gamz);
+fprintf('\n');
+
+disp('Maximum forces Nxx, Nyy, Nxy and moments Mxx, Myy, Mxy at point'); disp(P);
 fprintf('Nxx = %g N/m\n',nxx);
 fprintf('Nyy = %g N/m\n',nyy);
 fprintf('Nxy = %g N/m\n',nxy);
@@ -474,7 +529,7 @@ fprintf('Myy = %g N\n',myy);
 fprintf('Mxy = %g N\n',mxy);
 fprintf('\n');
 
-disp('Membrane strains Exx, Eyy, Exy and bending strains (curvatures) Gxx, Gyy, Gxy at point'); disp(P);
+disp('Maximum membrane strains Exx, Eyy, Exy and bending strains (curvatures) Gxx, Gyy, Gxy at point'); disp(P);
 fprintf('Exx = %g\n',exx);
 fprintf('Eyy = %g\n',eyy);
 fprintf('Exy = %g\n',exy);
@@ -516,7 +571,8 @@ if displaySolution
     [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     ampl = 5;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
-    %legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
+    hP = plot(P,'g+');
+    legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','node',true,'legend',false);
