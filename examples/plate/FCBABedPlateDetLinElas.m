@@ -10,9 +10,9 @@ solveProblem = true;
 displaySolution = true;
 
 % tests = {'StaticVertUp'}; % test under static vertical upward load
-% tests = {'StaticVertDown'}; % test under static vertical downward load
+tests = {'StaticVertDown'}; % test under static vertical downward load
 % tests = {'StaticHoriIn'}; % test under static horizontal inward load
-tests = {'StaticHoriOut'}; % test under static horizontal outward load
+% tests = {'StaticHoriOut'}; % test under static horizontal outward load
 % tests = {'StaticVertUp','StaticVertDown','StaticHoriIn','StaticHoriOut'};
 
 for it=1:length(tests)

@@ -41,12 +41,13 @@ if setProblem
     L = 1e-3;
     a = L/2;
     if Dim==2
+        e = 1;
         D = DOMAIN(2,[0.0,0.0],[L,L]);
         C = LIGNE([0.0,L/2],[a,L/2]);
     elseif Dim==3
-        l = 0.1e-3;
-        D = DOMAIN(3,[0.0,0.0,0.0],[L,L,l]);
-        C = QUADRANGLE([0.0,L/2,0.0],[a,L/2,0.0],[a,L/2,l],[0.0,L/2,l]);
+        e = 0.1e-3;
+        D = DOMAIN(3,[0.0,0.0,0.0],[L,L,e]);
+        C = QUADRANGLE([0.0,L/2,0.0],[a,L/2,0.0],[a,L/2,e],[0.0,L/2,e]);
     end
     
     if Dim==2
@@ -131,13 +132,11 @@ if setProblem
     % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
     % Energetic degradation function
     g = @(d) (1-d).^2;
-    % Thickness
-    DIM3 = 1;
     % Density
     RHO = 1;
     
     % Material
-    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3);
+    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e);
     mat = setnumber(mat,1);
     S = setoption(S,option);
     S = setmaterial(S,mat);
@@ -151,11 +150,11 @@ if setProblem
         BFront = [];
         BBack = [];
     elseif Dim==3
-        BU = PLAN([0.0,L,0.0],[L,L,0.0],[0.0,L,l]);
-        BL = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,l]);
-        BRight = PLAN([L,0.0,0.0],[L,L,0.0],[L,0.0,l]);
-        BLeft = PLAN([0.0,0.0,0.0],[0.0,L,0.0],[0.0,0.0,l]);
-        BFront = PLAN([0.0,0.0,l],[L,0.0,l],[0.0,L,l]);
+        BU = PLAN([0.0,L,0.0],[L,L,0.0],[0.0,L,e]);
+        BL = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
+        BRight = PLAN([L,0.0,0.0],[L,L,0.0],[L,0.0,e]);
+        BLeft = PLAN([0.0,0.0,0.0],[0.0,L,0.0],[0.0,0.0,e]);
+        BFront = PLAN([0.0,0.0,e],[L,0.0,e],[0.0,L,e]);
         BBack = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
     end
     
