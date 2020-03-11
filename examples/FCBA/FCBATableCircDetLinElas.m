@@ -37,7 +37,7 @@ for it=1:length(tests)
     test = tests{it};
 filename = ['FCBATableCircDetLinElas' test];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','plate',filename);
+    'results','FCBA',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

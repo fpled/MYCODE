@@ -1,5 +1,5 @@
-%% FCBA desk plate junction deterministic linear elasticity %%
-%%----------------------------------------------------------%%
+%% FCBA desk plate deterministic linear elasticity %%
+%%-------------------------------------------------%%
 
 % clc
 clearvars
@@ -27,20 +27,18 @@ tests = {'StaticVert'}; % test under static vertical load
 
 pointwiseLoading = false; % pointwise loading
 
-junction = true; % junction modeling
-
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 for it=1:length(tests)
     test = tests{it};
 if pointwiseLoading
-    filename = ['FCBADeskPlateJunctionDetLinElas' test 'PointwiseLoading'];
+    filename = ['FCBADeskPlateDetLinElas' test 'PointwiseLoading'];
 else
-    filename = ['FCBADeskPlateJunctionDetLinElas' test];
+    filename = ['FCBADeskPlateDetLinElas' test];
 end
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','plate',filename);
+    'results','FCBA',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -128,42 +126,17 @@ if solveProblem
     r_masse = 100e-3;
     C_masse = CIRCLE(0.0,y3_12+b3/2,z3,r_masse);
     x_masse = double(getcoord(getcenter(C_masse)));
-    %
-    L1_a = LIGNE([x5a_23,y5a,z5a_12],[x5a_23,y5a,z5a_34]);
-    L1_b = LIGNE([x5b_23,y5b,z5b_12],[x5b_23,y5b,z5b_34]);
-    if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-        S1 = gmshFCBAdesk12(Q1,L1_a,L1_b,cl_12,cl_5,cl_5,...
-            fullfile(pathname,['gmsh_desk_1_' elemtype]),3);
-    else
-        S1 = gmshFCBAdesk12(Q1,L1_a,L1_b,cl_12,cl_5,cl_5,...
-            fullfile(pathname,['gmsh_desk_1_' elemtype]),3,'recombine');
-    end
-    S1 = convertelem(S1,elemtype);
-    %
-    L2_a = LIGNE([x5a_14,y5a,z5a_12],[x5a_14,y5a,z5a_34]);
-    L2_b = LIGNE([x5b_14,y5b,z5b_12],[x5b_14,y5b,z5b_34]);
-    if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-        S2 = gmshFCBAdesk12(Q2,L2_a,L2_b,cl_12,cl_5,cl_5,...
-            fullfile(pathname,['gmsh_desk_2_' elemtype]),3);
-    else
-        S2 = gmshFCBAdesk12(Q2,L2_a,L2_b,cl_12,cl_5,cl_5,...
-            fullfile(pathname,['gmsh_desk_2_' elemtype]),3,'recombine');
-    end
-    S2 = convertelem(S2,elemtype);
-    %
-    L3_1 = LIGNE([x1,y1_23,z1_34],[x1,y1_14,z1_34]);
-    L3_2 = LIGNE([x2,y2_23,z2_34],[x2,y2_14,z2_34]);
     if pointwiseLoading
         PbQ3 = {x_hori{4},x_fati{3},x_fati{1},x_hori{1},...
                 x_fati{4},x_hori{3},x_hori{2},x_fati{2}};
         if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-            S3 = gmshFCBAdesk3simplified(Q3,C_masse,L3_1,L3_2,PbQ3,x_stab,x_masse,...
-                cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_3_' elemtype]),3);
+            S = gmshFCBAdesksimplified(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
+                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_' elemtype]),3);
         else
-            S3 = gmshFCBAdesk3simplified(Q3,C_masse,L3_1,L3_2,PbQ3,x_stab,x_masse,...
-                cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_3_' elemtype]),3,'recombine');
+            S = gmshFCBAdesksimplified(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
+                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_' elemtype]),3,'recombine');
         end
     else
         L_hori{1} = LIGNE(x_hori{1}+[0,-r_load,0],x_hori{1}+[0,r_load,0]);
@@ -179,22 +152,16 @@ if solveProblem
         C_vert = CIRCLE(x_vert(1),x_vert(2),x_vert(3),r_load);
         C_stab = CIRCLE(x_stab(1),x_stab(2),x_stab(3),r_load);
         if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-            S3 = gmshFCBAdesk3(Q3,C_masse,L3_1,L3_2,LbQ3,C_stab,C_vert,...
-                cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_3_' elemtype]),3);
+            S = gmshFCBAdesk(Q1,Q2,Q3,Q5a,Q5b,C_masse,LbQ3,C_stab,C_vert,...
+                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_' elemtype]),3);
         else
-            S3 = gmshFCBAdesk3(Q3,C_masse,L3_1,L3_2,LbQ3,C_stab,C_vert,...
-                cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
-                fullfile(pathname,['gmsh_desk_3_' elemtype]),3,'recombine');
+            S = gmshFCBAdesk(Q1,Q2,Q3,Q5a,Q5b,C_masse,LbQ3,C_stab,C_vert,...
+                cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
+                fullfile(pathname,['gmsh_desk_' elemtype]),3,'recombine');
         end
     end
-    S3 = convertelem(S3,elemtype);
-    %
-    S5a = build_model(Q5a,'cl',cl_5,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_desk_5a_' elemtype]));
-    %
-    S5b = build_model(Q5b,'cl',cl_5,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_desk_5b_' elemtype]));
+    S = convertelem(S,elemtype);
     
     %% Materials
     % Gravitational acceleration
@@ -208,12 +175,10 @@ if solveProblem
     % Data
     filenameAna = 'data_ET_GL.mat';
     filenameNum = 'data_EL_NUL.mat';
-    filenameJunc = 'data_Kjunction.mat';
     pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
         'results','identification','materialParticleBoard');
     load(fullfile(pathnameIdentification,filenameAna));
     load(fullfile(pathnameIdentification,filenameNum));
-    load(fullfile(pathnameIdentification,filenameJunc));
     
     % Material symmetry
     materialSym = 'isotTrans';
@@ -222,6 +187,7 @@ if solveProblem
         case 'isot'
             % Young modulus
             E = mean(mean_ET_data)*1e6; % Pa
+            %E = 2e9; % Pa
             % Shear modulus
             %G = mean(mean_GL_data)*1e6*13; % Pa
             % Poisson ratio
@@ -246,11 +212,6 @@ if solveProblem
             error('Wrong material symmetry !')
     end
     mat = setnumber(mat,1);
-    if junction
-        S = union(S1,S2,S3,S5a,S5b,'duplicate');
-    else
-        S = union(S1,S2,S3,S5a,S5b);
-    end
     S = setmaterial(S,mat);
     
     %% Neumann boundary conditions
@@ -292,158 +253,32 @@ if solveProblem
     end
     
     %% Dirichlet boundary conditions
-    if junction
-        S = final(S,'duplicate');
-    else
-        S = final(S);
-    end
-    
+    S = final(S);
     L1 = getedge(Q1,1);
     L2 = getedge(Q2,1);
     L5b = getedge(Q5b,1);
-    [~,numnodeL1] = intersect(S,L1);
-    [~,numnodeL2] = intersect(S,L2);
-    [~,numnodeL5b] = intersect(S,L5b);
+    [~,numnode1] = intersect(S,L1);
+    [~,numnode2] = intersect(S,L2);
+    [~,numnode5b] = intersect(S,L5b);
     switch lower(test)
         case 'stability'
-            S = addcl(S,union(numnodeL1,numnodeL2));
-            S = addcl(S,numnodeL5b,'UZ');
+            S = addcl(S,union(numnode1,numnode2));
+            S = addcl(S,numnode5b,'UZ');
         case {'statichori1','statichori2'}
-            S = addcl(S,numnodeL2);
-            S = addcl(S,union(numnodeL1,numnodeL5b),{'UY','UZ'});
+            S = addcl(S,numnode2);
+            S = addcl(S,union(numnode1,numnode5b),{'UY','UZ'});
         case {'statichori3','statichori4'}
-            S = addcl(S,union(numnodeL1,numnodeL2));
-            S = addcl(S,numnodeL5b,'UZ');
+            S = addcl(S,union(numnode1,numnode2));
+            S = addcl(S,numnode5b,'UZ');
         case 'staticvert'
-            S = addcl(S,union(numnodeL1,numnodeL2));
-            S = addcl(S,numnodeL5b,'UZ');
+            S = addcl(S,union(numnode1,numnode2));
+            S = addcl(S,numnode5b,'UZ');
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-            S = addcl(S,union(numnodeL1,numnodeL2));
-            S = addcl(S,numnodeL5b,'UZ');
+            S = addcl(S,union(numnode1,numnode2));
+            S = addcl(S,numnode5b,'UZ');
         case {'impact','drop'}
-            S = addcl(S,union(numnodeL1,numnodeL2));
-            S = addcl(S,numnodeL5b,'UZ');
-    end
-    
-    if junction
-        L13 = getedge(Q1,3);
-        L23 = getedge(Q2,3);
-        L15a = getedge(Q5a,2);
-        L15b = getedge(Q5b,2);
-        L25a = getedge(Q5a,4);
-        L25b = getedge(Q5b,4);
-        % intersection points between plates 1 and 3
-        [~,numnodeL13] = intersect(S,L13);
-        numnode13 = cell(2,1);
-        xnode13 = cell(2,1);
-        for i=1:2
-            numnode13{i} = double(getnumnodeingroupelem(S,2*i-1));
-            numnode13{i} = intersect(numnodeL13,numnode13{i});
-            xnode13{i} = double(getcoord(getnode(S),numnode13{i}));
-        end
-        for i=1:size(xnode13{1},2)
-            [xnode13{1},I1] = sortrows(xnode13{1},i);
-            numnode13{1} = numnode13{1}(I1);
-            [xnode13{2},I2] = sortrows(xnode13{2},i);
-            numnode13{2} = numnode13{2}(I2);
-        end
-        S = addclperiodic(S,numnode13{1},numnode13{2},{'U','RX','RZ'});
-        % intersection points between plates 2 and 3
-        [~,numnodeL23] = intersect(S,L23);
-        numnode23 = cell(2,1);
-        xnode23 = cell(2,1);
-        for i=1:2
-            numnode23{i} = double(getnumnodeingroupelem(S,i+1));
-            numnode23{i} = intersect(numnodeL23,numnode23{i});
-            xnode23{i} = double(getcoord(getnode(S),numnode23{i}));
-        end
-        for i=1:size(xnode23{1},2)
-            [xnode23{1},I1] = sortrows(xnode23{1},i);
-            numnode23{1} = numnode23{1}(I1);
-            [xnode23{2},I2] = sortrows(xnode23{2},i);
-            numnode23{2} = numnode23{2}(I2);
-        end
-        S = addclperiodic(S,numnode23{1},numnode23{2},{'U','RX','RZ'});
-        % intersection points between plates 1 and 5a
-        [~,numnodeL15a] = intersect(S,L15a);
-        numnode15a = cell(2,1);
-        xnode15a = cell(2,1);
-        for i=1:2
-            if pointwiseLoading
-                numnode15a{i} = double(getnumnodeingroupelem(S,4*i-3));
-            else
-                numnode15a{i} = double(getnumnodeingroupelem(S,6*i-5));
-            end
-            numnode15a{i} = intersect(numnodeL15a,numnode15a{i});
-            xnode15a{i} = double(getcoord(getnode(S),numnode15a{i}));
-        end
-        for i=1:size(xnode15a{1},2)
-            [xnode15a{1},I1] = sortrows(xnode15a{1},i);
-            numnode15a{1} = numnode15a{1}(I1);
-            [xnode15a{2},I2] = sortrows(xnode15a{2},i);
-            numnode15a{2} = numnode15a{2}(I2);
-        end
-        S = addclperiodic(S,numnode15a{1},numnode15a{2},{'U','RX','RY'});
-        % intersection points between plates 1 and 5b
-        [~,numnodeL15b] = intersect(S,L15b);
-        numnode15b = cell(2,1);
-        xnode15b = cell(2,1);
-        for i=1:2
-            if pointwiseLoading
-                numnode15b{i} = double(getnumnodeingroupelem(S,5*i-4));
-            else
-                numnode15b{i} = double(getnumnodeingroupelem(S,7*i-6));
-            end
-            numnode15b{i} = intersect(numnodeL15b,numnode15b{i});
-            xnode15b{i} = double(getcoord(getnode(S),numnode15b{i}));
-        end
-        for i=1:size(xnode15b{1},2)
-            [xnode15b{1},I1] = sortrows(xnode15b{1},i);
-            numnode15b{1} = numnode15b{1}(I1);
-            [xnode15b{2},I2] = sortrows(xnode15b{2},i);
-            numnode15b{2} = numnode15b{2}(I2);
-        end
-        S = addclperiodic(S,numnode15b{1},numnode15b{2},{'U','RX','RY'});
-        % intersection points between plates 2 and 5a
-        [~,numnodeL25a] = intersect(S,L25a);
-        numnode25a = cell(2,1);
-        xnode25a = cell(2,1);
-        for i=1:2
-            if pointwiseLoading
-                numnode25a{i} = double(getnumnodeingroupelem(S,3*i-1));
-            else
-                numnode25a{i} = double(getnumnodeingroupelem(S,5*i-3));
-            end
-            numnode25a{i} = intersect(numnodeL25a,numnode25a{i});
-            xnode25a{i} = double(getcoord(getnode(S),numnode25a{i}));
-        end
-        for i=1:size(xnode25a{1},2)
-            [xnode25a{1},I1] = sortrows(xnode25a{1},i);
-            numnode25a{1} = numnode25a{1}(I1);
-            [xnode25a{2},I2] = sortrows(xnode25a{2},i);
-            numnode25a{2} = numnode25a{2}(I2);
-        end
-        S = addclperiodic(S,numnode25a{1},numnode25a{2},{'U','RX','RY'});
-        % intersection points between plates 2 and 5b
-        [~,numnodeL25b] = intersect(S,L25b);
-        numnode25b = cell(2,1);
-        xnode25b = cell(2,1);
-        for i=1:2
-            if pointwiseLoading
-                numnode25b{i} = double(getnumnodeingroupelem(S,4*i-2));
-            else
-                numnode25b{i} = double(getnumnodeingroupelem(S,6*i-4));
-            end
-            numnode25b{i} = intersect(numnodeL25b,numnode25b{i});
-            xnode25b{i} = double(getcoord(getnode(S),numnode25b{i}));
-        end
-        for i=1:size(xnode25b{1},2)
-            [xnode25b{1},I1] = sortrows(xnode25b{1},i);
-            numnode25b{1} = numnode25b{1}(I1);
-            [xnode25b{2},I2] = sortrows(xnode25b{2},i);
-            numnode25b{2} = numnode25b{2}(I2);
-        end
-        S = addclperiodic(S,numnode25b{1},numnode25b{2},{'U','RX','RY'});
+            S = addcl(S,union(numnode1,numnode2));
+            S = addcl(S,numnode5b,'UZ');
     end
     
     %% Stiffness matrix and sollicitation vector
@@ -558,50 +393,6 @@ if solveProblem
             error('Not implemented')
     end
     f = f + bodyload(S,[],'FZ',-p_plate);
-    
-    if junction
-        % junction dofs
-        numddl131 = findddl(S,'RY',numnode13{1},'free');
-        numddl132 = findddl(S,'RY',numnode13{2},'free');
-        numddl13 = [numddl131 numddl132];
-        numddl231 = findddl(S,'RY',numnode23{1},'free');
-        numddl232 = findddl(S,'RY',numnode23{2},'free');
-        numddl23 = [numddl231 numddl232];
-        numddl15a1 = findddl(S,'RZ',numnode15a{1},'free');
-        numddl15a2 = findddl(S,'RZ',numnode15a{2},'free');
-        numddl15a = [numddl15a1 numddl15a2];
-        numddl15b1 = findddl(S,'RZ',numnode15b{1},'free');
-        numddl15b2 = findddl(S,'RZ',numnode15b{2},'free');
-        numddl15b = [numddl15b1 numddl15b2];
-        numddl25a1 = findddl(S,'RZ',numnode25a{1},'free');
-        numddl25a2 = findddl(S,'RZ',numnode25a{2},'free');
-        numddl25a = [numddl25a1 numddl25a2];
-        numddl25b1 = findddl(S,'RZ',numnode25b{1},'free');
-        numddl25b2 = findddl(S,'RZ',numnode25b{2},'free');
-        numddl25b = [numddl25b1 numddl25b2];
-        kS = mean(mean_Kscrew_data); % additonal junction rotational stiffness for junction screw
-        kD = mean(mean_Kdowel_data); % additonal junction rotational stiffness for junction dowel
-        AD_add = [kD -kD;-kD kD];
-        AS_add = [kS -kS;-kS kS];
-        for i=1:size(numddl13,1)
-            A(numddl13(i,:),numddl13(i,:)) = A(numddl13(i,:),numddl13(i,:)) + AD_add;
-        end
-        for i=1:size(numddl23,1)
-            A(numddl23(i,:),numddl23(i,:)) = A(numddl23(i,:),numddl23(i,:)) + AD_add;
-        end
-        for i=1:size(numddl15a,1)
-            A(numddl15a(i,:),numddl15a(i,:)) = A(numddl15a(i,:),numddl15a(i,:)) + AS_add;
-        end
-        for i=1:size(numddl15b,1)
-            A(numddl15b(i,:),numddl15b(i,:)) = A(numddl15b(i,:),numddl15b(i,:)) + AS_add;
-        end
-        for i=1:size(numddl25a,1)
-            A(numddl25a(i,:),numddl25a(i,:)) = A(numddl25a(i,:),numddl25a(i,:)) + AS_add;
-        end
-        for i=1:size(numddl25b,1)
-            A(numddl25b(i,:),numddl25b(i,:)) = A(numddl25b(i,:),numddl25b(i,:)) + AS_add;
-        end
-    end
     
     %% Solution
     t = tic;

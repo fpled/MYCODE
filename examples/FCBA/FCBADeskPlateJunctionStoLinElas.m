@@ -46,7 +46,7 @@ for it=1:length(tests)
         filename = ['FCBADeskPlateJunctionStoLinElas' test];
     end
     pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-        'results','plate',filename);
+        'results','FCBA',filename);
     if ~exist(pathname,'dir')
         mkdir(pathname);
     end

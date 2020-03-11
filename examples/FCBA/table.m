@@ -8,15 +8,15 @@ close all
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
-filename = 'Table';
+filename = 'table';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','plate',filename);
+    'results','FCBA',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
 
 %% Mesh
-S = gmsh2femobject(3,'Table.msh');
+S = gmsh2femobject(3,'table.msh');
 
 %% Materials
 % Material symmetry

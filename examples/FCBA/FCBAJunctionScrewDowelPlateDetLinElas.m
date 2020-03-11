@@ -11,7 +11,7 @@ displaySolution = true;
 
 filename = 'FCBAJunctionScrewDowelPlateDetLinElas';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','plate',filename);
+    'results','FCBA',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end

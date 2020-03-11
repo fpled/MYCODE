@@ -12,7 +12,7 @@ displaySolution = true;
 Dim = 3; % space dimension Dim = 2, 3
 filename = ['beamDetLinElas_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','plate',filename);
+    'results','FCBA',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
