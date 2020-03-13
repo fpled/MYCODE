@@ -27,21 +27,24 @@ interpreter = 'latex';
 formats = {'fig','epsc'};
 
 %% Identification
+% initial guess
 ET0 = 1e3; % MPa
 GL0 = 1e2; % MPa
 Phi0 = 0;
 U0 = 0; % mm
 V0 = 0; % mm
+
 x0 = [ET0 GL0 Phi0 U0 V0];
 lb = [0 0 -Inf -Inf -Inf];
 ub = [Inf Inf Inf Inf Inf];
+
 optimFun = 'lsqnonlin';
 % optimFun = 'fminsearch';
 % optimFun = 'fminunc';
 % optimFun = 'fmincon';
 display = 'off';
-tolX = 1e-14;
-tolFun = 1e-14;
+tolX = 1e-14; % tolerance on the parameter value
+tolFun = 1e-14; % tolerance on the function value
 
 switch optimFun
     case {'lsqnonlin','fminunc','fmincon'}

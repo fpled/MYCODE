@@ -123,19 +123,22 @@ plotSolution(S_exp,u_exp,'displ',2,'ampl',ampl);
 mysaveas(pathname,'Uy_exp',formats,renderer);
 
 %% Identification
+% initial guess
 EL0 = 1e3; % MPa
 NUL0 = 0.1;
 GL0 = 5e2; % MPa
+
 x0 = [EL0 NUL0 GL0];
 lb = [0 0 0];
 ub = [Inf 0.5 Inf];
+
 optimFun = 'lsqnonlin';
 % optimFun = 'fminsearch';
 % optimFun = 'fminunc';
 % optimFun = 'fmincon';
 display = 'off';
-tolX = 1e-14;
-tolFun = 1e-14;
+tolX = 1e-14; % tolerance on the parameter value
+tolFun = 1e-14; % tolerance on the function value
 
 switch optimFun
     case {'lsqnonlin','fminunc','fmincon'}
