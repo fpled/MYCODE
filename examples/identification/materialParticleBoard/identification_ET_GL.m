@@ -38,7 +38,7 @@ x0 = [ET0 GL0 Phi0 U0 V0];
 lb = [0 0 -Inf -Inf -Inf];
 ub = [Inf Inf Inf Inf Inf];
 
-optimFun = 'lsqnonlin';
+optimFun = 'lsqnonlin'; % optimization function
 % optimFun = 'fminsearch';
 % optimFun = 'fminunc';
 % optimFun = 'fmincon';

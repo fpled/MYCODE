@@ -132,7 +132,7 @@ x0 = [EL0 NUL0 GL0];
 lb = [0 0 0];
 ub = [Inf 0.5 Inf];
 
-optimFun = 'lsqnonlin';
+optimFun = 'lsqnonlin';  % optimization function
 % optimFun = 'fminsearch';
 % optimFun = 'fminunc';
 % optimFun = 'fmincon';
