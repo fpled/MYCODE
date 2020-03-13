@@ -39,7 +39,7 @@ tolFun = 1e-12; % tolerance on the function value
 
 % options  = optimoptions('lsqnonlin','Display',display);
 % options  = optimoptions('lsqnonlin','Display',display,'TolX',tolX,'TolFun',tolFun);
-options  = optimoptions('lsqnonlin','Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun);
+options  = optimoptions('lsqnonlin','Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun);
 
 fun = @(lambda) funoptimlseIsot(lambda,mC_data,nuC_data);
 [lambda,err,~,exitflag,output] = lsqnonlin(fun,lambda0,lb,ub,options);
