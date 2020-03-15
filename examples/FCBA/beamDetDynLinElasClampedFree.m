@@ -26,6 +26,7 @@ renderer = 'OpenGL';
 if setProblem
     %% Domains and meshes
     % Beam dimensions
+    Ltot = 890e-3;
     L = 700e-3;
     b = 65e-3;
     h = 15e-3;
@@ -58,7 +59,7 @@ if setProblem
     % Poisson ratio
     NU = 0.3;
     % Density
-    Vol = Sec*L;
+    Vol = Sec*Ltot;
     Mass = 430e-3;
     RHO = Mass/Vol;
     
@@ -93,7 +94,10 @@ if setProblem
     
     %% Mass, stiffness and damping matrices and sollicitation vectors
     pb.M = calc_mass(pb.S);
-    pb.A = calc_rigi(pb.S);
+    pb.K = calc_rigi(pb.S);
+    alpha = 0;
+    beta = 0;
+    pb.C = alpha*pb.K + beta*pb.C;
     b = zeros(getnbddlfree(pb.S),1);
     pb.b = b*pb.loadFunction(pb.N);
     
@@ -105,7 +109,7 @@ end
 %% Solution
 if solveProblem
     t = tic;
-    [ut,result,vt,at] = ddsolve(pb.N,pb.b,pb.M,pb.A,[],pb.u0,pb.v0);
+    [ut,result,vt,at] = ddsolve(pb.N,pb.b,pb.M,pb.K,pb.C,pb.u0,pb.v0);
     time = toc(t);
     
     et = calc_epsilon(pb.S,ut,'node');

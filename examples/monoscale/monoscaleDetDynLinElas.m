@@ -74,7 +74,7 @@ if setProblem
     
     %% Mass, stiffness and damping matrices and sollicitation vectors
     pb.M = calc_mass(pb.S);
-    pb.A = calc_rigi(pb.S);
+    pb.K = calc_rigi(pb.S);
     b = surfload(pb.S,L2,'FX',-1);
     pb.b = b*pb.loadFunction(pb.N);
     
@@ -86,7 +86,7 @@ end
 %% Solution
 if solveProblem
     t = tic;
-    [ut,result,vt,at] = ddsolve(pb.N,pb.b,pb.M,pb.A,[],pb.u0,pb.v0);
+    [ut,result,vt,at] = ddsolve(pb.N,pb.b,pb.M,pb.K,[],pb.u0,pb.v0);
     time = toc(t);
     
     et = calc_epsilon(pb.S,ut);
