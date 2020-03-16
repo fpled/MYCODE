@@ -73,7 +73,7 @@ if setProblem
     pb.S = addcl(pb.S,P1);
     
     %% Initial conditions
-    delta = 5e-2; % m
+    delta = 6e-2; % m
     x = getcoord(getnode(pb.S));
     ux0 = zeros(getnbnode(pb.S),1);
     uy0 = delta/(2*L^3)*x(:,1).*(3*L-x(:,1));
