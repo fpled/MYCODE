@@ -53,7 +53,7 @@ if solveProblem
     %% Domains and meshes
     % Plate
     % Radius
-    r = 600e-3;
+    r = 600e-3; % [m]
     % Thickness
     h = 25e-3;
     C = CIRCLE(0.0,0.0,0.0,r);
@@ -128,12 +128,13 @@ if solveProblem
     E_data = [4.211 4.057 3.685 3.921 3.839 3.845 3.795...
         3.406 3.389 3.299 3.485 3.319 3.267 3.349 3.307...
         4.684 4.245 4.076 4.407 4.283 4.054 4.226 4.041...
-        4.104 4.075 3.556 3.319 3.848 3.707 3.664 3.493 3.550]*1e9; % GPa
+        4.104 4.075 3.556 3.319 3.848 3.707 3.664 3.493 3.550]*1e9; % [Pa]
     % E_data = [2.7116 2.8945 2.9689 3.022 3.014 3.0069 2.9952 2.9711...
     %     2.7807 2.9541 2.9618 3.0014 2.9562 2.8909 2.8874 2.8923...
     %     2.6636 3.2635 3.1073 3.1657 3.1424 3.1731 3.1416 3.155...
     %     2.7356 2.8797 2.7230 2.7851 2.8312 2.8018 2.7592 2.743 2.7241 2.7055 2.7073...
-    %     3.8267 3.2860 3.3753 3.1742 3.3089 3.2461 3.1331 3.0817 3.0093 3.0528]*1e9; % GPa
+    %     3.8267 3.2860 3.3753 3.1742 3.3089 3.2461 3.1331 3.0817 3.0093
+    %     3.0528]*1e9; % [Pa]
     
     % Maximum likelihood estimation
     % Parameters for Gamma distribution
@@ -144,21 +145,21 @@ if solveProblem
     % Number of samples
     N = 1e3;
     % Sample set
-    E_sample = gamrnd(a,b,N,1);
+    E_sample = gamrnd(a,b,N,1); % [Pa]
     
     %% Materials
     % Gravitational acceleration
-    g = 9.81; % m/s2
+    g = 9.81; % [m/s2]
     
     % Plate
     % Young modulus
-    E = mean(E_sample);
+    E = mean(E_sample); % [Pa]
     % Poisson ratio
     NU = 0.3;
     % Density
-    mass_plate = 18.54;
+    mass_plate = 18.54; % [kg]
     Sec_plate = pi*r^2;
-    RHO = mass_plate/(Sec_plate*h);
+    RHO = mass_plate/(Sec_plate*h); % [kg/m3]
     % Material
     mat_plate = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
     mat_plate = setnumber(mat_plate,1);
@@ -166,7 +167,7 @@ if solveProblem
     
     % Beams and Belt
     % Young modulus
-    E_beam = 15e9;
+    E_beam = 15e9; % [Pa]
     % Poisson ratio
     NU_beam = 0.3;
     % Cross-section area
@@ -177,8 +178,8 @@ if solveProblem
     % Density
     Vol_beam = (l-h/2)*(Sec_beam_top+Sec_beam_bot+sqrt(Sec_beam_top*Sec_beam_bot))/3;
     Vol_belt = 2*(a-h_beam_top)*b_belt*h_belt + 2*(b-b_beam_top)*b_belt*h_belt;
-    mass_beams = 8.48;
-    RHO_beam = mass_beams/(length(L_beam)*Vol_beam + Vol_belt);
+    mass_beams = 8.48; % [kg]
+    RHO_beam = mass_beams/(length(L_beam)*Vol_beam + Vol_belt); % [kg/m3]
     % Planar second moment of area (or Planar area moment of inertia)
     IY = h_beam*b_beam^3/12;
     IZ = b_beam*h_beam^3/12;
@@ -204,29 +205,29 @@ if solveProblem
     end
     
     %% Neumann boundary conditions
-    p_plate = RHO*g*h; % surface load (body load for plates)
-    p_beam = RHO_beam*g*Sec_beam; % line load (body load for beams)
-    p_belt = RHO_beam*g*Sec_belt; % line load (body load for beams)
+    p_plate = RHO*g*h; % surface load (body load for plates) [N/m2]
+    p_beam = RHO_beam*g*Sec_beam; % line load (body load for beams) [N/m]
+    p_belt = RHO_beam*g*Sec_belt; % line load (body load for beams) [N/m]
     switch lower(test)
         case {'stability1','stability2','stability3','stability4'}
-            p = 400; % pointwise load, pmin = 668N
+            p = 400; % pointwise load, pmin = 668 [N]
         case {'statichori1','statichori2','statichori3','statichori4'}
-            masse = 50.5;
+            masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
-            p_masse = masse*g/Sec_masse; % surface load (body load for plates)
-            p = 400; % pointwise load
+            p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
+            p = 400; % pointwise load [N]
             slope = 0;
         case 'staticvert'
-            p = 1200; % pointwise load
+            p = 1200; % pointwise load [N]
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-            masse = 50.5;
+            masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
-            p_masse = masse*g/Sec_masse; % surface load (body load for plates)
-            p = 300; % pointwise load
+            p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
+            p = 300; % pointwise load [N]
         case 'impact'
-            H = 180e-3;
+            H = 180e-3; % [m]
         case 'drop'
-            H = 100e-3;
+            H = 100e-3; % [m]
     end
     
     %% Dirichlet boundary conditions

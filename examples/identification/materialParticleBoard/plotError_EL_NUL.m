@@ -39,7 +39,7 @@ for k=6
     disp(['File = ',filenameDIC]);
     load(fullfile(pathnameDIC,filenameDIC));
     
-    [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d);
+    [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d); % [mm]
     
     node = NODE(coord,1:size(coord,1));
     elem = Mesh.TRI;
@@ -50,9 +50,9 @@ for k=6
     S = addnode(S,node);
     S = addelem(S,elemtype,elem,'option',option);
     
-    ET = ET_data{j}(k); % MPa
-    GL = GL_data{j}(k); % MPa
-    EL = EL_data{j}(k); % MPa
+    ET = ET_data{j}(k); % [MPa]
+    GL = GL_data{j}(k); % [MPa]
+    EL = EL_data{j}(k); % [MPa]
     NUL = NUL_data{j}(k);
     mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',EL,'ET',ET,'NUL',NUL,'GL',GL,'DIM3',h);
     mat = setnumber(mat,1);

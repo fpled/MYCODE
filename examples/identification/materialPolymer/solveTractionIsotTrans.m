@@ -1,9 +1,9 @@
 function [u_in,S] = solveTractionIsotTrans(param,S)
 % function [u_in,S] = solveTractionIsotTrans(param,S)
 
-EL = param(1);
-NUL = param(2);
-GL = param(3);
+EL = param(1); % longitudinal Young modulus
+NUL = param(2); % longitudinal Poisson ratio
+GL = param(3); % longitudinal shear modulus
 
 mats = MATERIALS(S);
 for k=1:length(mats)

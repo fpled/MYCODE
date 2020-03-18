@@ -24,8 +24,13 @@ formats = {'fig','epsc'};
 
 %% Identification
 % initial guess
-EL0 = 1e2; % MPa
-NUL0 = 1e-2;
+EL0 = 1e2; % longitudinal Young modulus [MPa]
+NUL0 = 1e-2; % longitudinal Poisson ratio
+
+disp('Initial parameters');
+disp('------------------');
+fprintf('EL  = %g MPa\n',EL0);
+fprintf('NUL = %g\n',NUL0);
 
 x0 = [EL0 NUL0];
 lb = [0 0];
@@ -78,7 +83,7 @@ for j=1:numSamples
         filenameDIC = [numSample '_00-' numImage '-Mesh'];
         load(fullfile(pathnameDIC,filenameDIC));
         
-        [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d);
+        [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d); % [mm]
         
         node = NODE(coord,1:size(coord,1));
         elem = Mesh.TRI;
@@ -89,8 +94,8 @@ for j=1:numSamples
         S = addnode(S,node);
         S = addelem(S,elemtype,elem,'option',option);
         
-        ET = ET_data{j}(k); % MPa
-        GL = GL_data{j}(k); % MPa
+        ET = ET_data{j}(k); % [MPa]
+        GL = GL_data{j}(k); % [MPa]
         mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',[],'ET',ET,'NUL',[],'GL',GL,'DIM3',h);
         mat = setnumber(mat,1);
         S = setmaterial(S,mat);
@@ -117,7 +122,7 @@ for j=1:numSamples
                 [x,err(k),exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
         end
         
-        EL(k) = x(1); % MPa
+        EL(k) = x(1); % [MPa]
         NUL(k) = x(2);
         err(k) = sqrt(err(k))./norm(u_exp_in);
     end

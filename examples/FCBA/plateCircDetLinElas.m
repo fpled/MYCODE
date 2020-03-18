@@ -50,7 +50,7 @@ for ie=1:length(elemtypes)
 %% Problem
 if solveProblem
     %% Domains and meshes
-    r = 1;
+    r = 1; % [m]
     C = CIRCLE(0.0,0.0,0.0,r);
     
     P_load = getcenter(C);
@@ -66,15 +66,15 @@ if solveProblem
     
     %% Materials
     % Gravitational acceleration
-    g = 10;
+    g = 10; % [m/s2]
     % Young modulus
-    E = 1;
+    E = 1; % [Pa]
     % Poisson ratio
     NU = 0.3;
     % Density
-    RHO = 1;
+    RHO = 1; % [kg/m3]
     % Thickness
-    h = 0.1;
+    h = 0.1; % [m]
     % Extensional stiffness (or Membrane rigidity)
     A_rig = E*h/(1-NU^2);
     % Bending stiffness (or Flexural rigidity)
@@ -114,14 +114,14 @@ if solveProblem
     %% Stiffness matrix and sollicitation vector
     switch lower(loading)
         case 'uniform' % Uniform transverse load per unit area applied on the plate surface
-            p = RHO*g*h;
+            p = RHO*g*h; % surface load (body load for plates) [N/m2]
         case 'concentrated' % Concentrated transverse load applied at point P_load
             Sec = pi*r^2;
-            p = RHO*g*h*Sec;
+            p = RHO*g*h*Sec; % pointwise load [N]
     end
     % Moment per unit length applied on the plate boundary
     % (only for simply supported plate)
-    c = 0;
+    c = 0; % [N.m/m]
     
     A = calc_rigi(S);
     

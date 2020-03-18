@@ -28,11 +28,19 @@ formats = {'fig','epsc'};
 
 %% Identification
 % initial guess
-ET0 = 1e3; % MPa
-GL0 = 1e2; % MPa
-Phi0 = 0;
-U0 = 0; % mm
-V0 = 0; % mm
+ET0 = 1e3; % transverse Young modulus [MPa]
+GL0 = 1e2; % longitudinal shear modulus [MPa]
+Phi0 = 0; % rigid body rotation around z direction [rad]
+U0 = 0; % rigid body displacement along x direction [mm]
+V0 = 0; % rigid body displacement along y direction [mm]
+
+disp('Initial parameters');
+disp('------------------');
+fprintf('ET  = %g MPa\n',ET0);
+fprintf('GL  = %g MPa\n',GL0);
+fprintf('Phi = %g rad = %g deg\n',Phi0,rad2deg(Phi0));
+fprintf('U   = %g mm\n',U0);
+fprintf('V   = %g mm\n',V0);
 
 x0 = [ET0 GL0 Phi0 U0 V0];
 lb = [0 0 -Inf -Inf -Inf];
@@ -93,7 +101,7 @@ for j=1:numSamples
         filenameDIC = [numSample '_00-' numImage '-Mesh'];
         load(fullfile(pathnameDIC,filenameDIC));
         
-        [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d);
+        [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d); % [mm]
         
         switch optimFun
             case 'lsqnonlin'
@@ -110,11 +118,11 @@ for j=1:numSamples
                 [x,err(k),exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
         end
         
-        ET(k) = x(1); % MPa
-        GL(k) = x(2); % MPa
-        Phi(k) = x(3);
-        U0(k) = x(4); % mm
-        V0(k) = x(5); % mm
+        ET(k) = x(1); % [MPa]
+        GL(k) = x(2); % [MPa]
+        Phi(k) = x(3); % [rad]
+        U0(k) = x(4); % [mm]
+        V0(k) = x(5); % [mm]
         err(k) = sqrt(err(k))./norm(u_exp);
     end
     

@@ -29,7 +29,7 @@ t = tic;
 if setProblem
     tMesh = tic;
     %% Domains and meshes
-    L = 1e-2;
+    L = 1e-2; % [m]
     if Dim==2
         D = DOMAIN(2,[0.0,0.0],[L,L]);
         % elemtype = 'TRI3';
@@ -53,9 +53,9 @@ if setProblem
     tAssemble = tic;
     %% Materials
     % Thickness
-    DIM3 = 1;
+    DIM3 = 1; % [m]
     % Density
-    RHO = 1;
+    RHO = 1; % [kg/m3]
     
     % Material
     % Material Symmetry
@@ -64,18 +64,18 @@ if setProblem
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = 1;
+            E = 1; % [Pa]
             % Poisson ratio
             NU = 0.3;
             % Material
             mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3);
         case 'isottrans'
             % Transverse Young modulus
-            ET = 1;
+            ET = 1; % [Pa]
             % Longitudinal shear modulus
-            GL = 1.5;
+            GL = 1.5; % [Pa]
             % Longitudinal Young modulus
-            EL = 2;
+            EL = 2; % [Pa]
             % Longitudinal Poisson ratio
             NUL = 0.2;
             % Transverse Poisson ratio
@@ -106,7 +106,7 @@ if setProblem
     % degree = 'lin'; % linear loading
     % degree = 'qua'; % quadratic loading
     if strcmpi(loading,'dirichlet')
-        udmax = -1e-3;
+        udmax = -1e-3; % [m]
         switch lower(degree)
             case 'cst'
                 ud = udmax;
@@ -126,7 +126,7 @@ if setProblem
     switch lower(loading)
         case 'neumann'
             A = calc_rigi(S);
-            fmax = -5e-5/L^2;
+            fmax = -5e-5/L^2; % surface load [N/m2]
             switch lower(degree)
                 case 'cst'
                     f = fmax;

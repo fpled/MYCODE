@@ -1,8 +1,8 @@
 function [u_in,S] = solveThreePointBendingNum(param,S)
 % function [u_in,S] = solveThreePointBendingNum(param,S)
 
-EL = param(1);
-NUL = param(2);
+EL = param(1); % Young modulus [MPa]
+NUL = param(2); % Poisson ratio
 
 mats = MATERIALS(S);
 for k=1:length(mats)
@@ -13,6 +13,6 @@ S = actualisematerials(S,mats);
 
 [A,b] = calc_rigi(S);
 b = -b;
-u_in = A\b;
+u_in = A\b; % [mm]
 
 end

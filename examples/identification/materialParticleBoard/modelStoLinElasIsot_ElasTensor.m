@@ -31,12 +31,12 @@ pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
 load(fullfile(pathnameIdentification,filenameAna));
 load(fullfile(pathnameIdentification,filenameNum));
 
-E_data = mean_ET_data*1e-3; % GPa
-G_data = mean_GL_data*1e-3*13; % GPa
+E_data = mean_ET_data*1e-3; % [GPa]
+G_data = mean_GL_data*1e-3*13; % [GPa]
 NU_data = E_data./(2*G_data)-1;
-lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data)); % GPa
-C1_data = lambda_data + 2/3*G_data; % GPa
-C2_data = G_data; % GPa
+lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data)); % [GPa]
+C1_data = lambda_data + 2/3*G_data; % [GPa]
+C2_data = G_data; % [GPa]
 C_data = [C1_data(:) C2_data(:)];
 
 mC_data = mean(C_data,1);
@@ -90,13 +90,13 @@ cdf_EN = @(e,n) integral2(@(xe,xn) pdf_EN(xe,xn),0,e,-1,n);
 
 %% Sample generation
 N = 1e4; % number of samples
-C1_sample = gamrnd(a1,b1,N,1);
-C2_sample = gamrnd(a2,b2,N,1);
+C1_sample = gamrnd(a1,b1,N,1); % [GPa]
+C2_sample = gamrnd(a2,b2,N,1); % [GPa]
 C_sample = [C1_sample(:) C2_sample(:)];
 
-lambda_sample = C1_sample-2/3*C2_sample;
-E_sample = (9*C1_sample.*C2_sample)./(3*C1_sample+C2_sample);
-NU_sample = (3*C1_sample-2*C2_sample)./(6*C1_sample+2*C2_sample);
+lambda_sample = C1_sample-2/3*C2_sample; % [GPa]
+E_sample = (9*C1_sample.*C2_sample)./(3*C1_sample+C2_sample); % [GPa]
+NU_sample = (3*C1_sample-2*C2_sample)./(6*C1_sample+2*C2_sample); % [GPa]
 
 mC_sample = mean(C_sample,1);
 vC_sample = var(C_sample,0,1);

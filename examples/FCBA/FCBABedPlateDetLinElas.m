@@ -34,7 +34,7 @@ renderer = 'OpenGL';
 if solveProblem
     %% Domains and meshes
     % Beams and plates dimensions
-    H = 1940e-3; % m
+    H = 1940e-3; % [m]
     L = 1990e-3;
     L1 = 445e-3;
     l = 990e-3;
@@ -219,10 +219,10 @@ if solveProblem
     
     %% Materials
     % Gravitational acceleration
-    g = 9.81; % m/s2
+    g = 9.81; % [m/s2]
     
     % Density
-    RHO = 800; % kg/m3
+    RHO = 800; % [kg/m3]
     
     % Cross-section area
     Sec0 = c^2;
@@ -238,7 +238,7 @@ if solveProblem
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = 10e9; % Pa
+            E = 10e9; % [Pa]
             % Poisson ratio
             NU = 0.3;
             % Material
@@ -265,11 +265,11 @@ if solveProblem
     S = union(S_leg,S_plate);
     
     %% Neumann boundary conditions
-    p0 = RHO*g*Sec0; % line load (body load for legs)
-    p1 = RHO*g*b1; % surface load (body load for bottom rails, side rails, guard rails and slats)
-    p2 = RHO*g*b2; % surface load (body load for end rails and parts 2 and 4 of guard rail support)
-    p3 = RHO*g*(b1+b2); % surface load (body load for parts 1, 3 and 5 of guard rail support)
-    p = 500; % pointwise load, 500N
+    p0 = RHO*g*Sec0; % line load (body load for legs) [N/m]
+    p1 = RHO*g*b1; % surface load (body load for bottom rails, side rails, guard rails and slats) [N/m2]
+    p2 = RHO*g*b2; % surface load (body load for end rails and parts 2 and 4 of guard rail support) [N/m2]
+    p3 = RHO*g*(b1+b2); % surface load (body load for parts 1, 3 and 5 of guard rail support) [N/m2]
+    p = 500; % pointwise load [N]
     
     %% Dirichlet boundary conditions
     S = final(S);

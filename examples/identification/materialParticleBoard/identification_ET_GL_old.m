@@ -65,20 +65,24 @@ for j=1:numSamples
         filenameDIC = [numSample '_00-' numImage '-Mesh'];
         load(fullfile(pathnameDIC,filenameDIC));
         
-        [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d);
+        [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d); % [mm]
         
-set(0,'DefaultAxesFontName','Times','DefaultAxesFontSize',20,'DefaultTextInterpreter','tex');
-figure('name','Reference and deformed mesh')
-Scal=10;
-Unitx=' (mm.)';
-UnitU=' (mm.)';
-triplot(Mesh.TRI,coord(:,1),coord(:,2),'r');
-hold on
-triplot(Mesh.TRI,coord(:,1)+Scal*u_exp(1:2:end),coord(:,2)+Scal*u_exp(2:2:end),'k');
-hold off
-axis equal
-xlabel(['$y$ ',Unitx],'Interpreter','latex')
-ylabel(['$z$ ',Unitx],'Interpreter','latex')
+        %-----------------------------
+        % Reference and deformed mesh
+        %-----------------------------
+%         Scal = 10;
+%         Unitx = '[mm]';
+%         UnitU = '[mm]';
+% 
+%         figure('name','Reference and deformed mesh')
+%         triplot(Mesh.TRI,coord(:,1),coord(:,2),'r');
+%         hold on
+%         triplot(Mesh.TRI,coord(:,1)+Scal*u_exp(1:2:end),coord(:,2)+Scal*u_exp(2:2:end),'k');
+%         hold off
+%         axis equal
+%         xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+%         ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+%         set(gca,'FontSize',fontsize)
         
         A = zeros(5);
         B = zeros(5,1);
@@ -108,11 +112,11 @@ ylabel(['$z$ ',Unitx],'Interpreter','latex')
         
         param = A\B;
         
-        ET(k) = 1/param(1); % MPa
-        GL(k) = 1/param(2); % MPa
-        Phi(k) = param(3);
-        U0(k) = param(4); % mm
-        V0(k) = param(5); % mm
+        ET(k) = 1/param(1); % [MPa]
+        GL(k) = 1/param(2); % [MPa]
+        Phi(k) = param(3); % [rad]
+        U0(k) = param(4); % [mm]
+        V0(k) = param(5); % [mm]
         
         x = [ET(k) GL(k) Phi(k) U0(k) V0(k)];
         u = solveThreePointBendingAna(x,coord,F(k),Iz,h);

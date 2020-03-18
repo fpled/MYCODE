@@ -33,7 +33,7 @@ formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 %% Compute numerical solution
-[u_exp,coord] = extractCorreli(Job,Mesh,U,h,d);
+[u_exp,coord] = extractCorreli(Job,Mesh,U,h,d); % [mm]
 
 node = NODE(coord,1:size(coord,1));
 elem = Mesh.TRI;
@@ -44,9 +44,9 @@ S = MODEL('PLAN');
 S = addnode(S,node);
 S = addelem(S,elemtype,elem,'option',option);
 
-ET = ET_data{j}(k); % MPa
-GL = GL_data{j}(k); % MPa
-EL = EL_data{j}(k); % MPa
+ET = ET_data{j}(k); % [MPa]
+GL = GL_data{j}(k); % [MPa]
+EL = EL_data{j}(k); % [MPa]
 NUL = NUL_data{j}(k);
 mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',EL,'ET',ET,'NUL',NUL,'GL',GL,'DIM3',h);
 mat = setnumber(mat,1);
@@ -60,7 +60,7 @@ S = addcl(S,[],'U',u_exp_b);
 u_exp_in = freevector(S,u_exp);
 
 x = [EL NUL];
-[u_in,S] = solveThreePointBendingNum(x,S);
+[u_in,S] = solveThreePointBendingNum(x,S); % [mm]
 u = unfreevector(S,u_in);
 
 %% Display solutions

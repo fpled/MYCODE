@@ -1,42 +1,92 @@
-%% Clamped-clamped beam deterministic dynamic linear elasticity %%
-%%--------------------------------------------------------------%%
+%% Clamped-free beam deterministic dynamic linear elasticity %%
+%%-----------------------------------------------------------%%
 
 % clc
 clearvars
-close all
+% close all
 
 %% Input data
 setProblem = true;
 solveProblem = true;
 displaySolution = false;
 
-filename = 'beamDetDynLinElasClampedClamped';
+filename = 'beamDetDynLinElasClampedFree';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','FCBA',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
 
+filenameCamera = 'test_3_C001H001S0001.csv';
+pathnameCamera = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'examples','identification','materialWoodSlab','resultsCamera');
+
 fontsize = 16;
+interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
+
+%% Experimental data
+filenameExp = fullfile(pathnameCamera,filenameCamera);
+opts = detectImportOptions(filenameExp);
+opts.SelectedVariableNames = {'time','Point1_Y_'};
+T = readtable(filenameExp,opts);
+t = T.time;
+uyexp = T.Point1_Y_;
+nanInd = find(isnan(uyexp));
+t(nanInd) = [];
+uyexp(nanInd) = [];
+uyexp = uyexp-uyexp(end);
+startInd = find(uyexp>=uyexp(1),1,'last');
+t(1:startInd) = [];
+uyexp(1:startInd) = [];
+t = t-t(1);
+
+%% Identification
+% initial guess
+E0 = 10; % Young modulus [GPa]
+NU0 = 0.3; % Poisson ratio
+delta0 = uyexp(1)*1e2; % initial static displacement [cm]
+alpha0 = 5; % mass proportional Rayleigh (viscous) damping coefficient [1e-4]
+beta0 = 5; % stiffness proportional Rayleigh (viscous) damping coefficient [1e-4]
+
+param0 = [E0 NU0 delta0 alpha0 beta0];
+lb = [0 0 0 0 0];
+ub = [Inf 0.5 10 Inf Inf];
+
+optimFun = 'lsqnonlin'; % optimization function
+% optimFun = 'fminsearch';
+% optimFun = 'fminunc';
+% optimFun = 'fmincon';
+display = 'off';
+tolX = 1e-4; % tolerance on the parameter value
+tolFun = 1e-4; % tolerance on the function value
+
+switch optimFun
+    case {'lsqnonlin','fminunc','fmincon'}
+        options  = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun);
+    case 'fminsearch'
+        options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
+    otherwise
+        error(['Wrong optimization function' optimFun])
+end
 
 %% Problem
 if setProblem
     %% Domains and meshes
     % Beam dimensions
-    L = 1.0; % [m]
-    b = 0.06;
-    h = 0.025;
+    Ltot = 890e-3; % [m]
+    L = 700e-3;
+    b = 65e-3;
+    h = 15e-3;
     
     % Points
     P1 = POINT([0.0,0.0]);
     P2 = POINT([L,0.0]);
-    P_load = POINT([L/2,0.0]);
     Line = LIGNE(P1,P2);
     
     elemtype = 'BEAM';
-    nbelem = 10;
+    nbelem = 100;
     S = build_model(Line,'nbelem',nbelem,'elemtype',elemtype);
 %     cl = 0.1;
 %     S = build_model(Line,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,'gmsh_domain'));
@@ -54,11 +104,13 @@ if setProblem
     IX = IY+IZ;
     
     % Young modulus
-    E = 12e9; % [Pa]
+    E = E0*1e9; % [Pa]
     % Poisson ratio
-    NU = 0.3;
+    NU = NU0;
     % Density
-    RHO = 700; % [kg/m3]
+    Vol = Sec*Ltot;
+    Mass = 430e-3; % [kg]
+    RHO = Mass/Vol; % [kg/m3]
     
     % Material
     mat = ELAS_BEAM('E',E,'NU',NU,'S',Sec,'IZ',IZ,'IY',IY,'IX',IX,'RHO',RHO);
@@ -67,50 +119,91 @@ if setProblem
     
     %% Dirichlet boundary conditions
     S = final(S);
-    S = addcl(S,P1,'UY');
-    S = addcl(S,P2,'UY');
-    S = addcl(S,Line,'UX');
-    % S = addcl(S,P1,{'UY','RZ'});
-    % S = addcl(S,P2,{'UY','RZ'});
+    S = addcl(S,P1);
     
     %% Initial conditions
-    u0 = zeros(getnbddlfree(S),1);
+    % delta = delta0*1e-2; % [m]
+    x = getcoord(getnode(S));
+    ux0 = zeros(getnbnode(S),1);
+    funuy0 = @(delta) delta/(2*L^3)*(x(:,1).^2).*(3*L-x(:,1));
+    funrz0 = @(delta) 3*delta/(2*L^3)*x(:,1).*(2*L-x(:,1));
+    funu0 = @(delta) [ux0 funuy0(delta) funrz0(delta)]';
+    u0 = funu0(delta);
+    u0 = freevector(S,u0(:));
     v0 = zeros(getnbddlfree(S),1);
     
     %% Time scheme
-    t0 = 0;
-    t1 = 1;
-    nt = 50;
-    T = TIMEMODEL(t0,t1,nt);
+    T = TIMEMODEL(t);
     
     N = NEWMARKSOLVER(T,'alpha',0,'gamma',1/2,'beta',1/4,'display',false);
     
-    fmax = 10;
-    tf = 0.3;
-    % omega = pi/(t1-t0);
-    % loadFunction = @(N) fmax * sin(N,omega); % from t0 to t1
-    loadFunction = @(N) fmax * dirac(N,t0,tf,'sin'); % from t0 to tf
+    loadFunction = @(N) zero(N);
     
     %% Mass, stiffness and damping matrices and sollicitation vectors
     M = calc_mass(S);
     K = calc_rigi(S);
-    % b = nodalload(S,P_load,'FY',-1);
-    delta = L/100;
-    fun = @(x) -exp(-((2*x(:,1)-L)/(2*delta)).^2);
-    b = bodyload(S,[],'FY',fun);
+    % stiffness proportional Rayleigh (viscous) damping coefficient
+    alpha = alpha0*1e-4;
+    % mass proportional Rayleigh (viscous) damping coefficient
+    beta = beta0*1e-4;
+    C = alpha*K + beta*M;
+    b = zeros(getnbddlfree(S),1);
     b = b*loadFunction(N);
     
-    save(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','K','b','u0','v0');
+    save(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','b','funu0','v0','uyexp');
 else
-    load(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','K','b','u0','v0');
+    load(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','b','funu0','v0','uyexp');
 end
 
 %% Solution
 if solveProblem
     t = tic;
-    [ut,result,vt,at] = ddsolve(N,b,M,K,[],u0,v0);
+    
+    switch optimFun
+        case 'lsqnonlin'
+            fun = @(param) funlsqnonlin(param,uyexp,S,N,M,b,funu0,v0);
+            [param,err,~,exitflag,output] = lsqnonlin(fun,param0,lb,ub,options);
+        case 'fminsearch'
+            fun = @(param) funoptim(param,uyexp,S,N,M,b,funu0,v0);
+            [param,err,exitflag,output] = fminsearch(fun,param0,options);
+        case 'fminunc'
+            fun = @(param) funoptim(param,uyexp,S,N,M,b,funu0,v0);
+            [param,err,exitflag,output] = fminunc(fun,param0,options);
+        case 'fmincon'
+            fun = @(param) funoptim(param,uyexp,S,N,M,b,funu0,v0);
+            [param,err,exitflag,output] = fmincon(fun,param0,[],[],[],[],lb,ub,[],options);
+    end
+    
+    E = param(1); % [GPa]
+    NU = param(2);
+    delta = param(3); % [cm]
+    alpha = param(4);
+    beta = param(5);
+    err = sqrt(err)./norm(uyexp);
+    
+    disp('Optimal parameters');
+    disp('------------------');
+    fprintf('E  = %g GPa\n',E);
+    fprintf('NU = %g\n',NU);
+    fprintf('delta = %g cm\n',delta);
+    fprintf('alpha = %g\n',alpha);
+    fprintf('beta  = %g\n',beta);
+    fprintf('err = %g\n',err);
+    % fprintf('exitflag = %g\n',exitflag);
+    % disp(output);
+    
     time = toc(t);
     
+    %% Numerical solution
+    S = setmaterial();
+    u0 = funu0(delta*1e-2);
+    K = calc_rigi(S);
+    C = alpha*1e-4*K + beta*1e-4*M;
+    [ut,result,vt,at] = ddsolve(N,b,M,K,C,u0,v0);
+    
+    [ut,S] = solveTractionIsotTrans(x,S);
+    u = unfreevector(S,u_in);
+
     et = calc_epsilon(S,ut,'node');
     st = calc_sigma(S,ut,'node');
     
@@ -118,6 +211,17 @@ if solveProblem
 else
     load(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','time');
 end
+
+%% Outputs
+fprintf('\n');
+fprintf(['spatial mesh : ' elemtype ' elements\n']);
+fprintf('nb elements = %g\n',getnbelem(S));
+fprintf('nb nodes    = %g\n',getnbnode(S));
+fprintf('nb dofs     = %g\n',getnbddl(S));
+fprintf('time solver : %s\n',class(N));
+fprintf('nb time steps = %g\n',getnt(N));
+fprintf('nb time dofs  = %g\n',getnbtimedof(N));
+fprintf('elapsed time = %f s\n',time);
 
 ut = unfreevector(S,ut);
 ut_val = getvalue(ut);
@@ -130,17 +234,6 @@ Epsxt = et(1);
 Gamzt = et(2);
 Nt = st(1);
 Mzt = st(2);
-
-%% Outputs
-fprintf('\n');
-fprintf(['spatial mesh : ' elemtype ' elements\n']);
-fprintf('nb elements = %g\n',getnbelem(S));
-fprintf('nb nodes    = %g\n',getnbnode(S));
-fprintf('nb dofs     = %g\n',getnbddl(S));
-fprintf('time solver : %s\n',class(N));
-fprintf('nb time steps = %g\n',getnt(N));
-fprintf('nb time dofs  = %g\n',getnbtimedof(N));
-fprintf('elapsed time = %f s\n',time);
 
 %% Display
 if displaySolution
@@ -256,6 +349,26 @@ if displaySolution
         mysaveas(pathname,['Mz_t' num2str(k-1)],formats,renderer);
     end
 end
+
+%% Display quantity of interest
+% uyt: vertical displacement at end point as a function of time
+uyt = Uyt(end,:);
+t = gett(T);
+
+figure('Name','Quantity of interest : vertical displacement at end point')
+clf
+plot(t,uyexp*1e2,'-r','LineWidth',1);
+hold on
+plot(t,uyt*1e2,'-b','LineWidth',1);
+hold off
+grid on
+box on
+set(gca,'FontSize',16)
+xlabel('Time [s]')
+ylabel('Vertical displacement [cm]')
+legend('Experimental','Numerical')
+mysaveas(pathname,'quantity_of_interest',formats,renderer);
+mymatlab2tikz(pathname,'quantity_of_interest.tex');
 
 for t=0:getnt(T)
     uk = Ut(:,t+1);

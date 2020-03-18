@@ -53,7 +53,8 @@ for j=8
         %% Problem
         if setProblem
             %% Meshes
-            [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d);
+            [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d); % [mm]
+            
             node = NODE(coord,1:size(coord,1));
             elem = Mesh.TRI;
             elemtype = 'TRI3';
@@ -65,9 +66,9 @@ for j=8
             
             %% Materials
             % Thickness
-            DIM3 = h;
+            DIM3 = h; % [mm]
             % Density
-            RHO = 1;
+            RHO = 1; % [kg/m3]
             
             % Material Symmetry
             materialSym = 'isotTrans';
@@ -75,20 +76,20 @@ for j=8
             switch lower(materialSym)
                 case 'isot'
                     % Young modulus
-                    E = ET_data{j}(k); % MPa
+                    E = ET_data{j}(k); % [MPa]
                     % Shear modulus
-                    G = GL_data{j}(k); % MPa
+                    G = GL_data{j}(k); % [MPa]
                     % Poisson ratio
                     NU = E/G/2-1;
                     % Material
                     mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3);
                 case 'isottrans'
                     % Transverse Young modulus
-                    ET = ET_data{j}(k); % MPa
+                    ET = ET_data{j}(k); % [MPa]
                     % Longitudinal shear modulus
-                    GL = GL_data{k}(k); % MPa
+                    GL = GL_data{k}(k); % [MPa]
                     % Longitudinal Young modulus
-                    EL = EL_data{j}(k); % MPa
+                    EL = EL_data{j}(k); % [MPa]
                     % Longitudinal Poisson ratio
                     NUL = NUL_data{j}(k);
                     % Transverse Poisson ratio

@@ -26,7 +26,7 @@ renderer = 'OpenGL';
 if solveProblem
     %% Domains and meshes
     % Beams dimensions
-    L = 1; % m
+    L = 1; % [m]
     b = 0.2;
     h = 0.5;
     
@@ -56,10 +56,10 @@ if solveProblem
     
     %% Materials
     % Gravitational acceleration
-    g = 9.81; % m/s2
+    g = 9.81; % [m/s2]
     
     % Density
-    RHO = 1; % kg/m3
+    RHO = 1; % [kg/m3]
     
     % Cross-section area
     Sec = b*h;
@@ -75,7 +75,7 @@ if solveProblem
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = 10e9; % Pa
+            E = 10e9; % [Pa]
             % Poisson ratio
             NU = 0.3;
             % Material
@@ -87,8 +87,8 @@ if solveProblem
     end
     
     %% Neumann boundary conditions
-    pl = RHO*g*Sec; % line load (body load for beams)
-    p = 1; % pointwise load, 200N
+    pl = RHO*g*Sec; % line load (body load for beams) [N/m]
+    p = 1; % pointwise load, 200 [N]
     
     %% Dirichlet boundary conditions
     S = final(S);

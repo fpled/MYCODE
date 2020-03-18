@@ -27,7 +27,7 @@ junction = true; % junction modeling
 if solveProblem
     %% Domains and meshes
     % Plates dimensions
-    L1 = 142.5e-3; % m
+    L1 = 142.5e-3; % [m]
     L2 = 67.5e-3;
     b = 113e-3;
     h = 15e-3;
@@ -47,12 +47,12 @@ if solveProblem
     
     %% Materials
     % Gravitational acceleration
-    g = 9.81; % m/s2
+    g = 9.81; % [m/s2]
     
     % Density
-    RHO = 707.1384; % kg/m3
+    RHO = 707.1384; % [kg/m3]
     Vol_total = h*(L1+L2)*b;
-    Mass_total = Vol_total*RHO; % kg
+    Mass_total = Vol_total*RHO; % [kg]
     
     % Data
     filenameAna = 'data_ET_GL.mat';
@@ -68,9 +68,9 @@ if solveProblem
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = mean(mean_ET_data)*1e6; % Pa
+            E = mean(mean_ET_data)*1e6; % [Pa]
             % Shear modulus
-            %G = mean(mean_GL_data)*1e6*13; % Pa
+            %G = mean(mean_GL_data)*1e6*13; % [Pa]
             % Poisson ratio
             %NU = E./(2*G)-1;
             NU = 0.25;
@@ -78,11 +78,11 @@ if solveProblem
             mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
         case 'isottrans'
             % Transverse Young modulus
-            ET = mean(mean_ET_data)*1e6; % Pa
+            ET = mean(mean_ET_data)*1e6; % [Pa]
             % Longitudinal shear modulus
-            GL = mean(mean_GL_data)*1e6; % Pa
+            GL = mean(mean_GL_data)*1e6; % [Pa]
             % Longitudinal Young modulus
-            % EL = mean(mean_EL_data)*1e6; % Pa
+            % EL = mean(mean_EL_data)*1e6; % [Pa]
             % Longitudinal Poisson ratio
             % NUL = mean(mean_NUL_data);
             % Transverse Poisson ratio
@@ -102,7 +102,7 @@ if solveProblem
     S = setmaterial(S,mat);
     
     %% Neumann boundary conditions
-    p_plate = RHO*g*h; % surface load (body load for plates)
+    p_plate = RHO*g*h; % surface load (body load for plates) [N/m2]
     
     L_load = LIGNE([L2,0,L1],[L2,b,L1]);
     junction_type = 'S1';
@@ -121,7 +121,7 @@ if solveProblem
         case 'd2'
             p = [6 63 110 175];
     end
-    p = p(1)/b; % line load (surface load for plates)
+    p = p(1)/b; % line load (surface load for plates) [N/m]
     
     %% Dirichlet boundary conditions
     L1 = getedge(Q1,1);

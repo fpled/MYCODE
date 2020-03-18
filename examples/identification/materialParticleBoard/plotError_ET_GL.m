@@ -37,15 +37,15 @@ for k=6
     disp(['File = ',filenameDIC]);
     load(fullfile(pathnameDIC,filenameDIC));
     
-    [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d);
+    [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d); % [mm]
     
-    ET = ET_data{j}(k); % MPa
-    GL = GL_data{j}(k); % MPa
-    Phi = Phi_data{j}(k);
-    U0 = U0_data{j}(k); % mm
-    V0 = V0_data{j}(k); % mm
-    ET_series = linspace(ET*0.5,ET*1.5,1e2); % MPa
-    GL_series = linspace(GL*0.5,GL*1.5,1e2); % MPa
+    ET = ET_data{j}(k); % [MPa]
+    GL = GL_data{j}(k); % [MPa]
+    Phi = Phi_data{j}(k); % [rad]
+    U0 = U0_data{j}(k); % [mm]
+    V0 = V0_data{j}(k); % [mm]
+    ET_series = linspace(ET*0.5,ET*1.5,1e2); % [MPa]
+    GL_series = linspace(GL*0.5,GL*1.5,1e2); % [MPa]
     
     err = zeros(length(ET_series),length(GL_series));
     for m=1:length(ET_series)

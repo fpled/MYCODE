@@ -34,7 +34,7 @@ renderer = 'OpenGL';
 if solveProblem
     %% Domains and meshes
     % Beams dimensions
-    H = 1940e-3; % m
+    H = 1940e-3; % [m]
     L = 1990e-3;
     L1 = 445e-3;
     l = 990e-3;
@@ -163,10 +163,10 @@ if solveProblem
     
     %% Materials
     % Gravitational acceleration
-    g = 9.81; % m/s2
+    g = 9.81; % [m/s2]
     
     % Density
-    RHO = 800; % kg/m3
+    RHO = 800; % [kg/m3]
     
     % Cross-section area
     Sec0 = c^2;
@@ -198,7 +198,7 @@ if solveProblem
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = 10e9; % Pa
+            E = 10e9; % [Pa]
             % Poisson ratio
             NU = 0.3;
             % Material
@@ -225,12 +225,12 @@ if solveProblem
     S = union(S_leg,S_botrail,S_siderail,S_endrail,S_guardrail,S_guardrailsupport,S_slat);
     
     %% Neumann boundary conditions
-    p0 = RHO*g*Sec0; % line load (body load for legs)
-    p1 = RHO*g*Sec1; % line load (body load for bottom rails, side rails and guard rails)
-    p2 = RHO*g*Sec2; % line load (body load for end rails)
-    p3 = RHO*g*Sec3; % line load (body load for guardrail support)
-    p4 = RHO*g*Sec4; % line load (body load for slats)
-    p = 500; % pointwise load, 500N
+    p0 = RHO*g*Sec0; % line load (body load for legs) [N/m]
+    p1 = RHO*g*Sec1; % line load (body load for bottom rails, side rails and guard rails) [N/m]
+    p2 = RHO*g*Sec2; % line load (body load for end rails) [N/m]
+    p3 = RHO*g*Sec3; % line load (body load for guardrail support) [N/m]
+    p4 = RHO*g*Sec4; % line load (body load for slats) [N/m]
+    p = 500; % pointwise load [N]
     
     %% Dirichlet boundary conditions
     S = final(S);

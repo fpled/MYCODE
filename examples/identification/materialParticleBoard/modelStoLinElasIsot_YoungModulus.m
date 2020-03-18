@@ -28,7 +28,7 @@ pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification','materialParticleBoard');
 load(fullfile(pathnameIdentification,filenameAna));
 
-E_data = mean_ET_data*1e-3; % GPa
+E_data = mean_ET_data*1e-3; % [GPa]
 
 mE_data = mean(E_data);
 % mE_data = sum(E_data)/length(E_data);
@@ -73,9 +73,9 @@ cdf_E = @(x) gamcdf(x,a,b);
 
 %% Sample generation
 N = 1e3; % number of samples
-E_sample = gamrnd(a,b,N,1);
+E_sample = gamrnd(a,b,N,1); % [GPa]
 % u = randn(N,1);
-% E_sample = gaminv(normcdf(u),a,b);
+% E_sample = gaminv(normcdf(u),a,b); % [GPa]
 
 mE_sample = mean(E_sample);
 % mE_sample = sum(E_sample)/length(E_sample);

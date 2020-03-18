@@ -53,7 +53,7 @@ for it=1:length(tests)
     if solveProblem
         %% Domains and meshes
         % Plates dimensions
-        a12 = 750e-3; % m
+        a12 = 750e-3; % [m]
         b12 = 396e-3;
         a3 = 1006e-3;
         b3 = 501e-3;
@@ -189,13 +189,13 @@ for it=1:length(tests)
         switch lower(materialSym)
             case 'isot'
                 % Data
-                E_data = mean_ET_data*1e-3; % GPa
-                G_data = mean_GL_data*1e-3*13; % GPa
+                E_data = mean_ET_data*1e-3; % [GPa]
+                G_data = mean_GL_data*1e-3*13; % [GPa]
                 NU_data = E_data./(2*G_data)-1;
-                lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data)); % GPa
-                C1_data = lambda_data + 2/3*G_data; % GPa
-                C2_data = G_data; % GPa
-                C_data = [C1_data(:) C2_data(:)]; % GPa
+                lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data)); % [GPa]
+                C1_data = lambda_data + 2/3*G_data; % [GPa]
+                C2_data = G_data; % [GPa]
+                C_data = [C1_data(:) C2_data(:)]; % [GPa]
                 
                 % Parameter estimation
                 lambda = mleStoLinElasTensorIsot(C_data); % Maximum likelihood estimation
@@ -211,26 +211,26 @@ for it=1:length(tests)
                 b2 = 1/la2; % b2 > 0
                 
                 % Sample set
-                C_sample(:,1) = gamrnd(a1,b1,N,1)*1e9; % Pa
-                C_sample(:,2) = gamrnd(a2,b2,N,1)*1e9; % Pa
-                lambda_sample = C_sample(:,1)-2/3*C_sample(:,2); % Pa
-                E_sample = (9*C_sample(:,1).*C_sample(:,2))./(3*C_sample(:,1)+C_sample(:,2)); % Pa
+                C_sample(:,1) = gamrnd(a1,b1,N,1)*1e9; % [Pa]
+                C_sample(:,2) = gamrnd(a2,b2,N,1)*1e9; % [Pa]
+                lambda_sample = C_sample(:,1)-2/3*C_sample(:,2); % [Pa]
+                E_sample = (9*C_sample(:,1).*C_sample(:,2))./(3*C_sample(:,1)+C_sample(:,2)); % [Pa]
                 NU_sample = (3*C_sample(:,1)-2*C_sample(:,2))./(6*C_sample(:,1)+2*C_sample(:,2));
                 
             case 'isottrans'
                 % Data
-                ET_data = mean_ET_data*1e-3; % GPa
-                GL_data = mean_GL_data*1e-3; % GPa
-                EL_data = mean_EL_data*1e-3; % GPa
+                ET_data = mean_ET_data*1e-3; % [GPa]
+                GL_data = mean_GL_data*1e-3; % [GPa]
+                EL_data = mean_EL_data*1e-3; % [GPa]
                 NUL_data = mean_NUL_data;
                 NUT_data = 0.1+0.2*rand(length(ET_data),1); % artificial data for NUT varying from 0.1 to 0.3
-                GT_data = ET_data./(2*(1+NUT_data)); % GPa
-                kT_data = (EL_data.*ET_data)./(2*(1-NUT_data).*EL_data-4*ET_data.*(NUL_data).^2); % GPa
-                C1_data = EL_data + 4*(NUL_data.^2).*kT_data; % GPa
-                C2_data = 2*kT_data; % GPa
-                C3_data = 2*sqrt(2)*kT_data.*NUL_data; % GPa
-                C4_data = 2*GT_data; % GPa
-                C5_data = 2*GL_data; % GPa
+                GT_data = ET_data./(2*(1+NUT_data)); % [GPa]
+                kT_data = (EL_data.*ET_data)./(2*(1-NUT_data).*EL_data-4*ET_data.*(NUL_data).^2); % [GPa]
+                C1_data = EL_data + 4*(NUL_data.^2).*kT_data; % [GPa]
+                C2_data = 2*kT_data; % [GPa]
+                C3_data = 2*sqrt(2)*kT_data.*NUL_data; % [GPa]
+                C4_data = 2*GT_data; % [GPa]
+                C5_data = 2*GL_data; % [GPa]
                 C_data = [C1_data(:) C2_data(:) C3_data(:) C4_data(:) C5_data(:)];
                 
                 % Least-squares estimation with MCMC method
@@ -264,13 +264,13 @@ for it=1:length(tests)
                 C_sample(:,5) = gamrnd(a,b5,N,1);
                 
                 % Sample set
-                C_sample = C_sample*1e9; % Pa
-                kT_sample = C_sample(:,2)/2; % Pa
+                C_sample = C_sample*1e9; % [Pa]
+                kT_sample = C_sample(:,2)/2; % [Pa]
                 NUL_sample = (C_sample(:,3)./kT_sample)/(2*sqrt(2));
-                EL_sample = C_sample(:,1) - 4*(NUL_sample.^2).*kT_sample; % Pa
-                GT_sample = C_sample(:,4)/2; % Pa
-                GL_sample = C_sample(:,5)/2; % Pa
-                ET_sample = 4./(1./kT_sample+1./GT_sample+4*(NUL_sample.^2)./EL_sample); % Pa
+                EL_sample = C_sample(:,1) - 4*(NUL_sample.^2).*kT_sample; % [Pa]
+                GT_sample = C_sample(:,4)/2; % [Pa]
+                GL_sample = C_sample(:,5)/2; % [Pa]
+                ET_sample = 4./(1./kT_sample+1./GT_sample+4*(NUL_sample.^2)./EL_sample); % [Pa]
                 NUT_sample = (ET_sample./GT_sample)/2-1;
                 
             otherwise
@@ -279,12 +279,12 @@ for it=1:length(tests)
         
         %% Materials
         % Gravitational acceleration
-        g = 9.81; % m/s2
+        g = 9.81; % [m/s2]
         
         % Density
-        Mass_total = 13.9; % kg
+        Mass_total = 13.9; % [kg]
         Vol_total = h*(a12*b12*2+a3*b3+a5*b5*2);
-        RHO = Mass_total/(Vol_total);
+        RHO = Mass_total/(Vol_total); % [kg/m3]
         
         % Material symmetry
         switch lower(materialSym)
@@ -315,41 +315,41 @@ for it=1:length(tests)
         S = setmaterial(S,mat);
         
         %% Neumann boundary conditions
-        p_plate = RHO*g*h; % surface load (body load for plates)
+        p_plate = RHO*g*h; % surface load (body load for plates) [N/m2]
         Sec_stab_vert = pi*r_load^2;
         L_hori_fati = 2*r_load;
         switch lower(test)
             case 'stability'
-                p = 400; % pointwise load
+                p = 400; % pointwise load [N]
                 if ~pointwiseLoading
-                    p = p/Sec_stab_vert; % surface load (body load for plates)
+                    p = p/Sec_stab_vert; % surface load (body load for plates) [N/m2]
                 end
             case {'statichori1','statichori2','statichori3','statichori4'}
-                masse = 50.5;
+                masse = 50.5; % [kg]
                 Sec_masse = pi*r_masse^2;
-                p_masse = masse*g/Sec_masse; % surface load (body load for plates)
-                p = 100; % pointwise load, F1=F2=100N or 200N, F3=F4=100N
+                p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
+                p = 100; % pointwise load, F1=F2=100, 200 [N], F3=F4=100 [N]
                 if ~pointwiseLoading
-                    p = p/L_hori_fati; % line load (surface load for plates)
+                    p = p/L_hori_fati; % line load (surface load for plates) [N/m]
                 end
                 slope = 0;
             case 'staticvert'
-                p = 300; % pointwise load, 300N, 400N or 500N
+                p = 300; % pointwise load, 300, 400, 500 [N]
                 if ~pointwiseLoading
-                    p = p/Sec_stab_vert; % surface load (body load for plates)
+                    p = p/Sec_stab_vert; % surface load (body load for plates) [N/m2]
                 end
             case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-                masse = 50.5;
+                masse = 50.5; % [kg]
                 Sec_masse = pi*r_masse^2;
-                p_masse = masse*g/Sec_masse; % surface load (body load for plates)
-                p = 100; % pointwise load
+                p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
+                p = 100; % pointwise load [N]
                 if ~pointwiseLoading
-                    p = p/L_hori_fati; % line load (surface load for plates)
+                    p = p/L_hori_fati; % line load (surface load for plates) [N/m]
                 end
             case 'impact'
-                H = 180e-3;
+                H = 180e-3; % [m]
             case 'drop'
-                H = 100e-3;
+                H = 100e-3; % [m]
         end
         
         %% Dirichlet boundary conditions

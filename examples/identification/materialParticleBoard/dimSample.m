@@ -3,10 +3,10 @@ function [b,h,d,Iz] = dimSample(sample)
 % input :
 % sample = 'B1',...,'B27'
 % outputs :
-% b = width (mm)
-% h = thickness (mm)
-% d = distance between the support and the region of interest (ROI) (mm)
-% Iz = planar second moment of area (or planar area moment of inertia) (mm^4)
+% b = width [mm]
+% h = thickness [mm]
+% d = distance between the support and the region of interest (ROI) [mm]
+% Iz = planar second moment of area (or planar area moment of inertia) [mm^4]
 
 switch sample
     case {'B1','B2','B3','B4','B5','B6','B7','B8','B9',...

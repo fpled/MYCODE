@@ -5,7 +5,7 @@ function F = appliedLoad(sample)
 %          'S1',...,'S4'    Screw junction sample    
 %          'D1','D2'        Dowel junction sample
 % output :
-% F = applied load (N)
+% F = applied load [N]
 
 switch sample
     

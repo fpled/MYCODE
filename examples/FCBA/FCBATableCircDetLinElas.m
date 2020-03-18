@@ -47,7 +47,7 @@ if solveProblem
     %% Domains and meshes
     % Plate
     % Radius
-    r = 600e-3;
+    r = 600e-3; % [m]
     % Thickness
     h = 25e-3;
     C = CIRCLE(0.0,0.0,0.0,r);
@@ -119,17 +119,17 @@ if solveProblem
     
     %% Materials
     % Gravitational acceleration
-    g = 9.81; % m/s2
+    g = 9.81; % [m/s2]
     
     % Plate
     % Young modulus
-    E = 2.9914e9; % GPa
+    E = 2.9914e9; % [Pa]
     % Poisson ratio
     NU = 0.3;
     % Density
-    mass_plate = 18.54;
+    mass_plate = 18.54; % [kg]
     Sec_plate = pi*r^2;
-    RHO = mass_plate/(Sec_plate*h);
+    RHO = mass_plate/(Sec_plate*h); % [kg/m3]
     % Material
     mat_plate = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
     mat_plate = setnumber(mat_plate,1);
@@ -137,7 +137,7 @@ if solveProblem
     
     % Beams
     % Young modulus
-    E_beam = 15e9;
+    E_beam = 15e9; % [Pa]
     % Poisson ratio
     NU_beam = 0.3;
     % Cross-section area
@@ -148,8 +148,8 @@ if solveProblem
     % Density
     Vol_beam = (l-h/2)*(Sec_beam_top+Sec_beam_bot+sqrt(Sec_beam_top*Sec_beam_bot))/3;
     Vol_belt = 2*(a-h_beam_top)*b_belt*h_belt + 2*(b-b_beam_top)*b_belt*h_belt;
-    mass_beams = 8.48;
-    RHO_beam = mass_beams/(length(L_beam)*Vol_beam + Vol_belt);
+    mass_beams = 8.48; % [kg]
+    RHO_beam = mass_beams/(length(L_beam)*Vol_beam + Vol_belt); % [kg/m3]
     % Planar second moment of area (or Planar area moment of inertia)
     IY = h_beam*b_beam^3/12;
     IZ = b_beam*h_beam^3/12;
@@ -175,29 +175,29 @@ if solveProblem
     end
     
     %% Neumann boundary conditions
-    p_plate = RHO*g*h; % surface load (body load for plates)
-    p_beam = RHO_beam*g*Sec_beam; % line load (body load for beams)
-    p_belt = RHO_beam*g*Sec_belt; % line load (body load for beams)
+    p_plate = RHO*g*h; % surface load (body load for plates) [N/m2]
+    p_beam = RHO_beam*g*Sec_beam; % line load (body load for beams) [N/m]
+    p_belt = RHO_beam*g*Sec_belt; % line load (body load for beams) [N/m]
     switch lower(test)
         case {'stability1','stability2','stability3','stability4'}
-            p = 400; % pointwise load, pmin = 668N
+            p = 400; % pointwise load, pmin = 668 [N]
         case {'statichori1','statichori2','statichori3','statichori4'}
-            masse = 50.5;
+            masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
-            p_masse = masse*g/Sec_masse; % surface load (body load for plates)
-            p = 400; % pointwise load
+            p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
+            p = 400; % pointwise load [N]
             slope = 0;
         case 'staticvert'
-            p = 1200; % pointwise load
+            p = 1200; % pointwise load [N]
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-            masse = 50.5;
+            masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
-            p_masse = masse*g/Sec_masse; % surface load (body load for plates)
-            p = 300; % pointwise load
+            p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
+            p = 300; % pointwise load [N]
         case 'impact'
-            H = 180e-3;
+            H = 180e-3; % [m]
         case 'drop'
-            H = 100e-3;
+            H = 100e-3; % [m]
     end
     
     %% Dirichlet boundary conditions

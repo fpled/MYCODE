@@ -49,7 +49,7 @@ end
 if solveProblem
     %% Domains and meshes
     % Plates dimensions
-    a12 = 750e-3; % m
+    a12 = 750e-3; % [m]
     b12 = 396e-3;
     a3 = 1006e-3;
     b3 = 501e-3;
@@ -198,12 +198,12 @@ if solveProblem
     
     %% Materials
     % Gravitational acceleration
-    g = 9.81; % m/s2
+    g = 9.81; % [m/s2]
     
     % Density
-    Mass_total = 13.9; % kg
+    Mass_total = 13.9; % [kg]
     Vol_total = h*(a12*b12*2+a3*b3+a5*b5*2);
-    RHO = Mass_total/(Vol_total);
+    RHO = Mass_total/(Vol_total); % [kg/m3]
     
     % Data
     filenameAna = 'data_ET_GL.mat';
@@ -221,9 +221,9 @@ if solveProblem
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = mean(mean_ET_data)*1e6; % Pa
+            E = mean(mean_ET_data)*1e6; % [Pa]
             % Shear modulus
-            %G = mean(mean_GL_data)*1e6*13; % Pa
+            %G = mean(mean_GL_data)*1e6*13; % [Pa]
             % Poisson ratio
             %NU = E./(2*G)-1;
             NU = 0.25;
@@ -231,11 +231,11 @@ if solveProblem
             mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
         case 'isottrans'
             % Transverse Young modulus
-            ET = mean(mean_ET_data)*1e6; % Pa
+            ET = mean(mean_ET_data)*1e6; % [Pa]
             % Longitudinal shear modulus
-            GL = mean(mean_GL_data)*1e6; % Pa
+            GL = mean(mean_GL_data)*1e6; % [Pa]
             % Longitudinal Young modulus
-            % EL = mean(mean_EL_data)*1e6; % Pa
+            % EL = mean(mean_EL_data)*1e6; % [Pa]
             % Longitudinal Poisson ratio
             % NUL = mean(mean_NUL_data);
             % Transverse Poisson ratio
@@ -254,41 +254,41 @@ if solveProblem
     S = setmaterial(S,mat);
     
     %% Neumann boundary conditions
-    p_plate = RHO*g*h; % surface load (body load for plates)
+    p_plate = RHO*g*h; % surface load (body load for plates)  [N/m2]
     Sec_stab_vert = pi*r_load^2;
     L_hori_fati = 2*r_load;
     switch lower(test)
         case 'stability'
-            p = 400; % pointwise load
+            p = 400; % pointwise load [N]
             if ~pointwiseLoading
-                p = p/Sec_stab_vert; % surface load (body load for plates)
+                p = p/Sec_stab_vert; % surface load (body load for plates) [N/m2]
             end
         case {'statichori1','statichori2','statichori3','statichori4'}
-            masse = 50.5;
+            masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
-            p_masse = masse*g/Sec_masse; % surface load (body load for plates)
-            p = 100; % pointwise load, F1=F2=100N or 200N, F3=F4=100N
+            p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
+            p = 100; % pointwise load, F1=F2=100, 200 [N], F3=F4=100 [N]
             if ~pointwiseLoading
-                p = p/L_hori_fati; % line load (surface load for plates)
+                p = p/L_hori_fati; % line load (surface load for plates) [N/m]
             end
             slope = 0;
         case 'staticvert'
-            p = 300; % pointwise load, 300N, 400N or 500N
+            p = 300; % pointwise load, 300, 400, 500 [N]
             if ~pointwiseLoading
-                p = p/Sec_stab_vert; % surface load (body load for plates)
+                p = p/Sec_stab_vert; % surface load (body load for plates) [N/m2]
             end
         case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-            masse = 50.5;
+            masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
-            p_masse = masse*g/Sec_masse; % surface load (body load for plates)
-            p = 100; % pointwise load
+            p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
+            p = 100; % pointwise load [N]
             if ~pointwiseLoading
-                p = p/L_hori_fati; % line load (surface load for plates)
+                p = p/L_hori_fati; % line load (surface load for plates) [N/m]
             end
         case 'impact'
-            H = 180e-3;
+            H = 180e-3; % [m]
         case 'drop'
-            H = 100e-3;
+            H = 100e-3; % [m]
     end
     
     %% Dirichlet boundary conditions

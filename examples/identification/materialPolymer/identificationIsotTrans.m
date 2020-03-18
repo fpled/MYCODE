@@ -21,8 +21,8 @@ if ~exist(pathname,'dir')
 end
 
 %% Domains and meshes
-D = DOMAIN(2,[36.3462,66.6026],[89.6795,83.0128]); % mm
-C = CIRCLE(36.3462,66.6026,10); % mm
+D = DOMAIN(2,[36.3462,66.6026],[89.6795,83.0128]); % [mm]
+C = CIRCLE(36.3462,66.6026,10); % [mm]
 
 elemtype = 'TRI3';
 % elemtype = 'QUA4';
@@ -52,16 +52,16 @@ end
 
 %% Materials
 % Young modulus
-EL_exp = 2e3; % MPa
-ET_exp = 4e3; % MPa
+EL_exp = 2e3; % [MPa]
+ET_exp = 4e3; % [MPa]
 % Poisson ratio
 NUL_exp = 0.2;
 % Shear modulus
-GL_exp = 1e3; % MPa
+GL_exp = 1e3; % [MPa]
 % Thickness
-DIM3 = 1;
+DIM3 = 1; % [m]
 % Density
-RHO = 1;
+RHO = 1; % [kg/m3]
 
 % Material
 mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',EL_exp,'ET',ET_exp,'NUL',NUL_exp,'GL',GL_exp,'RHO',RHO,'DIM3',DIM3);
@@ -77,8 +77,8 @@ S_exp = addcl(S_exp,L{1},'UY');
 
 %% Stiffness matrices and sollicitation vectors
 A = calc_rigi(S_exp);
-fx = 3.55; % MPa
-fy = 1.775; % MPa
+fx = 3.55; % [N/mm2]
+fy = 1.775; % [N/mm2]
 % b = surfload(S_exp,L{2},'FX',fx);
 % b = b + surfload(S_exp,L{3},'FY',fy);
 b = surfload(S_exp,L{3},'FY',fy);
@@ -124,9 +124,15 @@ mysaveas(pathname,'Uy_exp',formats,renderer);
 
 %% Identification
 % initial guess
-EL0 = 1e3; % MPa
-NUL0 = 0.1;
-GL0 = 5e2; % MPa
+EL0 = 1e3; % longitudinal Young modulus [MPa]
+NUL0 = 0.1; % longitudinal Poisson ratio
+GL0 = 5e2; % longitudinal shear modulus [MPa]
+
+disp('Initial parameters');
+disp('------------------');
+fprintf('EL  = %g MPa\n',EL0);
+fprintf('NUL = %g\n',NUL0);
+fprintf('GL  = %g MPa\n',GL0);
 
 x0 = [EL0 NUL0 GL0];
 lb = [0 0 0];
@@ -166,11 +172,13 @@ switch optimFun
 end
 toc(t)
 
-EL = x(1); % MPa
+EL = x(1); % [MPa]
 NUL = x(2);
-GL = x(3); % MPa
+GL = x(3); % [MPa]
 err = sqrt(err)./norm(u_exp_in);
 
+disp('Optimal parameters');
+disp('------------------');
 fprintf('EL  = %g MPa\n',EL);
 fprintf('NUL = %g\n',NUL);
 fprintf('GL  = %g MPa\n',GL);
@@ -221,9 +229,9 @@ plotSolution(S,u,'displ',2,'ampl',ampl);
 mysaveas(pathname,'Uy',formats,renderer);
 
 %% Test numerical solution
-EL_series = linspace(EL*0.5,EL*1.5,50); % MPa
+EL_series = linspace(EL*0.5,EL*1.5,50); % [MPa]
 NUL_series = linspace(NUL*0.5,NUL*1.5,50);
-GL_series = linspace(GL*0.5,GL*1.5,50); % MPa
+GL_series = linspace(GL*0.5,GL*1.5,50); % [MPa]
 
 % Plot error EL GL
 err = zeros(length(EL_series),length(GL_series));

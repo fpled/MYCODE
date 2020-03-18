@@ -32,18 +32,18 @@ pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
 load(fullfile(pathnameIdentification,filenameAna));
 load(fullfile(pathnameIdentification,filenameNum));
 
-ET_data = mean_ET_data*1e-3; % GPa
-GL_data = mean_GL_data*1e-3; % GPa
-EL_data = mean_EL_data*1e-3; % GPa
+ET_data = mean_ET_data*1e-3; % [GPa]
+GL_data = mean_GL_data*1e-3; % [GPa]
+EL_data = mean_EL_data*1e-3; % [GPa]
 NUL_data = mean_NUL_data;
 NUT_data = 0.1+0.2*rand(length(mean_ET_data),1); % artificial data for NUT varying from 0.1 to 0.3
-GT_data = ET_data./(2*(1+NUT_data)); % GPa
-kT_data = (EL_data.*ET_data)./(2*(1-NUT_data).*EL_data-4*ET_data.*(NUL_data).^2); % GPa
-C1_data = EL_data + 4*(NUL_data.^2).*kT_data; % GPa
-C2_data = 2*kT_data; % GPa
-C3_data = 2*sqrt(2)*kT_data.*NUL_data; % GPa
-C4_data = 2*GT_data; % GPa
-C5_data = 2*GL_data; % GPa
+GT_data = ET_data./(2*(1+NUT_data)); % [GPa]
+kT_data = (EL_data.*ET_data)./(2*(1-NUT_data).*EL_data-4*ET_data.*(NUL_data).^2); % [GPa]
+C1_data = EL_data + 4*(NUL_data.^2).*kT_data; % [GPa]
+C2_data = 2*kT_data; % [GPa]
+C3_data = 2*sqrt(2)*kT_data.*NUL_data; % [GPa]
+C4_data = 2*GT_data; % [GPa]
+C5_data = 2*GL_data; % [GPa]
 C_data = [C1_data(:) C2_data(:) C3_data(:) C4_data(:) C5_data(:)];
 
 mC_data = mean(C_data,1);
@@ -91,12 +91,12 @@ end
 C_sample(:,4) = gamrnd(a,b4,N,1);
 C_sample(:,5) = gamrnd(a,b5,N,1);
 
-kT_sample = C_sample(:,2)/2;
+kT_sample = C_sample(:,2)/2; % [GPa]
 NUL_sample = (C_sample(:,3)./kT_sample)/(2*sqrt(2));
-EL_sample = C_sample(:,1) - 4*(NUL_sample.^2).*kT_sample;
-GT_sample = C_sample(:,4)/2;
-GL_sample = C_sample(:,5)/2;
-ET_sample = 4./(1./kT_sample+1./GT_sample+4*(NUL_sample.^2)./EL_sample);
+EL_sample = C_sample(:,1) - 4*(NUL_sample.^2).*kT_sample; % [GPa]
+GT_sample = C_sample(:,4)/2; % [GPa]
+GL_sample = C_sample(:,5)/2; % [GPa]
+ET_sample = 4./(1./kT_sample+1./GT_sample+4*(NUL_sample.^2)./EL_sample); % [GPa]
 NUT_sample = (ET_sample./GT_sample)/2-1;
 
 mC_sample = mean(C_sample,1);

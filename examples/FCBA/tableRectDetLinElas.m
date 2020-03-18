@@ -47,12 +47,12 @@ for im=1:length(meshtypes)
 if solveProblem
     %% Domains and meshes
     % Plate
-    a = 1;
+    a = 1; % [m]
     b = 1;
     Q = QUADRANGLE([0.0,0.0,0.0],[a,0.0,0.0],[a,b,0.0],[0.0,b,0.0]);
     
     % Beams
-    l = 1;
+    l = 1; % [m]
     L_beam{1} = LIGNE([1/5*a,1/5*b,0.0],[1/5*a,1/5*b,-l]);
     L_beam{2} = LIGNE([4/5*a,1/5*b,0.0],[4/5*a,1/5*b,-l]);
     L_beam{3} = LIGNE([4/5*a,4/5*b,0.0],[4/5*a,4/5*b,-l]);
@@ -88,17 +88,17 @@ if solveProblem
     
     %% Materials
     % Gravitational acceleration
-    g = 9.81;
+    g = 9.81; % [m/s2]
     
     % Plate
     % Young modulus
-    E = 1;
+    E = 1; % [Pa]
     % Poisson ratio
     NU = 0.3;
     % Density
-    RHO = 1;
+    RHO = 1; % [kg/m3]
     % Thickness
-    h = 0.1;
+    h = 0.1; % [m]
     % Material
     mat_plate = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
     mat_plate = setnumber(mat_plate,1);
@@ -106,13 +106,13 @@ if solveProblem
     
     % Beams
     % Young modulus
-    E_beam = 1;
+    E_beam = 1; % [Pa]
     % Poisson ratio
     NU_beam = 0.3;
     % Density
-    RHO_beam = 1;
+    RHO_beam = 1; % [kg/m3]
     % Radius
-    r_beam = 0.1;
+    r_beam = 0.1; % [m]
     % Cross-section area
     Sec_beam = pi*r_beam^2;
     % Planar second moment of area (or Planar area moment of inertia)
@@ -139,10 +139,10 @@ if solveProblem
     % Uniform or Concentrated load
     switch lower(loading)
         case 'uniform'
-            p = RHO*g*h;
+            p = RHO*g*h; % surface load (body load for plates) [N/m2]
         case 'concentrated'
             Sec = a*b;
-            p = RHO*g*h*Sec;
+            p = RHO*g*h*Sec; % pointwise load [N]
     end
     
     A = calc_rigi(S);

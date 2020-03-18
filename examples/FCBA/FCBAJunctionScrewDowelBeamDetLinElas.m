@@ -29,7 +29,7 @@ if solveProblem
     %% Domains and meshes
     % Beams dimensions
     if sym
-        a1 = 750e-3; % m
+        a1 = 750e-3; % [m]
         b1 = 396e-3;
         a2 = 940e-3;
         b2 = 501e-3;
@@ -39,7 +39,7 @@ if solveProblem
         L1 = a1+h/2;
         L2 = (a2+h)/2;
     else
-        L1 = 142.5e-3; % m
+        L1 = 142.5e-3; % [m]
         L2 = 67.5e-3;
         b = 113e-3;
         b1 = b;
@@ -63,12 +63,12 @@ if solveProblem
     
     %% Materials
     % Gravitational acceleration
-    g = 9.81; % m/s2
+    g = 9.81; % [m/s2]
     
     % Density
-    RHO = 707.1384; % kg/m3
+    RHO = 707.1384; % [kg/m3]
     Vol_total = (L1*b1+L2*b2)*h;
-    Mass_total = Vol_total*RHO; % kg
+    Mass_total = Vol_total*RHO; % [kg]
     
     % Cross-section area
     Sec1 = b1*h;
@@ -96,9 +96,9 @@ if solveProblem
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = mean(mean_ET_data)*1e6; % Pa
+            E = mean(mean_ET_data)*1e6; % [Pa]
             % Shear modulus
-            %G = mean(mean_GL_data)*1e6*13; % Pa
+            %G = mean(mean_GL_data)*1e6*13; % [Pa]
             % Poisson ratio
             %NU = E./(2*G)-1;
             NU = 0.25;
@@ -107,11 +107,11 @@ if solveProblem
             mat_2 = ELAS_BEAM('E',E,'NU',NU,'S',Sec2,'IZ',IZ2,'IY',IY2,'IX',IX2,'RHO',RHO);
         case 'isottrans'
             % Transverse Young modulus
-            ET = mean(mean_ET_data)*1e6; % Pa
+            ET = mean(mean_ET_data)*1e6; % [Pa]
             % Longitudinal shear modulus
-            GL = mean(mean_GL_data)*1e6; % Pa
+            GL = mean(mean_GL_data)*1e6; % [Pa]
             % Longitudinal Young modulus
-            % EL = mean(mean_EL_data)*1e6; % Pa
+            % EL = mean(mean_EL_data)*1e6; % [Pa]
             % Longitudinal Poisson ratio
             % NUL = mean(mean_NUL_data);
             % Transverse Poisson ratio
@@ -135,12 +135,12 @@ if solveProblem
     end
     
     %% Neumann boundary conditions
-    p1 = RHO*g*Sec1; % line load (body load for beams)
-    p2 = RHO*g*Sec2; % line load (body load for beams)
+    p1 = RHO*g*Sec1; % line load (body load for beams) [N/m]
+    p2 = RHO*g*Sec2; % line load (body load for beams) [N/m]
     
     junction_type = 'S1';
     if sym
-        p = 300/2; % pointwise load, half of 300N, 400N or 500N
+        p = 300/2; % pointwise load, half of 300, 400, 500 [N]
     else
         switch lower(junction_type)
             case 's1'
@@ -156,7 +156,7 @@ if solveProblem
             case 'd2'
                 p = [6 63 110 175];
         end
-        p = p(5); % pointwise load
+        p = p(5); % pointwise load [N]
     end
     
     %% Dirichlet boundary conditions

@@ -238,7 +238,7 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',16)
-    xlabel('Time (s)')
+    xlabel('Time [s]')
     ylabel('Concentration of pollutant')
     mysaveas(pathname,'quantity_of_interest',formats,renderer);
     mymatlab2tikz(pathname,'quantity_of_interest.tex');

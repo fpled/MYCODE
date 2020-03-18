@@ -25,22 +25,22 @@ materialSym = 'isotTrans';
 switch lower(materialSym)
     case 'isot'
         % Young modulus
-        E = 1e9; % Pa
+        E = 1e9; % [Pa]
         % Poisson ratio
         NU = 0.3;
         % Shear modulus
-        G = E/(2*(1+NU)); % Pa
+        G = E/(2*(1+NU)); % [Pa]
         % Material
         mat = ELAS_ISOT('E',E,'NU',NU);
         mat = setnumber(mat,1);
         S = setmaterial(S,mat);
     case 'isottrans'
         % Transverse Young modulus
-        ET = 1e9; % Pa
+        ET = 1e9; % [Pa]
         % Longitudinal shear modulus
-        GL = 1e6; % Pa
+        GL = 1e6; % [Pa]
         % Longitudinal Young modulus
-        EL = 1e6; % Pa
+        EL = 1e6; % [Pa]
         % Longitudinal Poisson ratio
         NUL = 0.3;
         % Transverse Poisson ratio
@@ -57,15 +57,18 @@ switch lower(materialSym)
 end
 
 %% Neumann boundary conditions
-RHO = 1;
-g = 9.81;
-p_vol = RHO*g; % body load
+% Gravitational acceleration
+g = 9.81; % [m/s2]
+% Density
+RHO = 1; % [kg/m3]
 
-r = 40e-3;
+p_vol = RHO*g; % body load [N/m3]
+
+r = 40e-3; % [m]
 C = CIRCLE(500e-3,250e-3,620e-3,r);
 Sec = pi*r^2;
-p = 200;
-p_surf = p/Sec; % surf load
+p = 200; % pointwise load [N]
+p_surf = p/Sec; % surface load [N/m2]
 
 %% Dirichlet boundary conditions
 S = final(S);

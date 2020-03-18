@@ -28,8 +28,8 @@ pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification','materialParticleBoard');
 load(fullfile(pathnameIdentification,filenameAna));
 
-Kdowel_data = mean_Kdowel_data*1e-3; % kN/rad
-Kscrew_data = mean_Kscrew_data*1e-3; % kN/rad
+Kdowel_data = mean_Kdowel_data*1e-3; % [kN/rad]
+Kscrew_data = mean_Kscrew_data*1e-3; % [kN/rad]
 % mean_Kdowel = mean(Kdowel_data);
 % std_Kdowel = std(Kdowel_data);
 % mean_Kscrew = mean(Kscrew_data);
@@ -79,8 +79,8 @@ cdf_Kscrew = @(x) gamcdf(x,a_screw,b_screw);
 
 %% Sample generation
 N = 1e4; % number of samples
-k_dowel = gamrnd(a_dowel,b_dowel,N,1);
-k_screw = gamrnd(a_screw,b_screw,N,1);
+k_dowel = gamrnd(a_dowel,b_dowel,N,1); % [kN/rad]
+k_screw = gamrnd(a_screw,b_screw,N,1); % [kN/rad]
 
 %% Display
 if displaySolution
