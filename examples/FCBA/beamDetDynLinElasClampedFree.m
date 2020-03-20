@@ -19,7 +19,7 @@ end
 
 filenameCamera = 'test_3_C001H001S0001.csv';
 pathnameCamera = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'examples','identification','materialWoodSlab','resultsCamera');
+    'examples','identification','materialWoodDynamicBending','resultsCamera');;
 
 fontsize = 16;
 interpreter = 'latex';
@@ -59,9 +59,9 @@ if setProblem
     IX = IY+IZ;
     
     % Young modulus
-    E = 10e9; % [Pa]
+    E = 13.9e9; % [Pa]
     % Poisson ratio
-    NU = 0.3;
+    NU = 0.4;
     % Density
     Vol = Sec*Ltot;
     Mass = 430e-3; % [kg]
@@ -82,18 +82,21 @@ if setProblem
     opts.SelectedVariableNames = {'time','Point1_Y_'};
     T = readtable(filenameExp,opts);
     t = T.time;
-    uyexp = T.Point1_Y_;
-    nanInd = find(isnan(uyexp));
+    uy_exp = T.Point1_Y_;
+    nanInd = find(isnan(uy_exp));
     t(nanInd) = [];
-    uyexp(nanInd) = [];
-    uyexp = uyexp-uyexp(end);
-    startInd = find(uyexp>=uyexp(1),1,'last');
+    uy_exp(nanInd) = [];
+    uy_exp = uy_exp-uy_exp(end);
+    
+    delta = 2.3e-2; % initial static displacement [m]
+    % delta = uy_exp(1); % initial static displacement [m]
+    startInd = find(uy_exp>delta,1,'last');
     t(1:startInd) = [];
-    uyexp(1:startInd) = [];
+    uy_exp(1:startInd) = [];
     t = t-t(1);
     
     %% Initial conditions
-    delta = uyexp(1); % [m]
+    delta = uy_exp(1); % [m]
     x = getcoord(getnode(S));
     ux0 = zeros(getnbnode(S),1);
     funuy0 = @(delta) delta/(2*L^3)*(x(:,1).^2).*(3*L-x(:,1));
@@ -108,22 +111,27 @@ if setProblem
     
     N = NEWMARKSOLVER(T,'alpha',0,'gamma',1/2,'beta',1/4,'display',false);
     
-    loadFunction = @(N) zero(N);
+    loadFunction = @(N) one(N);
     
     %% Mass, stiffness and damping matrices and sollicitation vectors
     M = calc_mass(S);
     K = calc_rigi(S);
     % stiffness proportional Rayleigh (viscous) damping coefficient
-    alpha = 5e-4;
+    % alpha = 0;
+    alpha = 1e-5;
     % mass proportional Rayleigh (viscous) damping coefficient
-    beta = 5e-4;
+    % beta = 0;
+    beta = 3.25;
     C = alpha*K + beta*M;
+    % C = zeros(size(K));
+    pl = RHO*g*Sec; % line load (body load for beams) [N/m]
+    % b = bodyload(S,[],'FY',pl);
     b = zeros(getnbddlfree(S),1);
     b = b*loadFunction(N);
     
-    save(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','K','C','b','u0','v0','uyexp');
+    save(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','K','C','b','u0','v0','uy_exp');
 else
-    load(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','K','C','b','u0','v0','uyexp');
+    load(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','K','C','b','u0','v0','uy_exp');
 end
 
 %% Solution
@@ -285,7 +293,7 @@ t = gett(T);
 
 figure('Name','Quantity of interest : vertical displacement at end point')
 clf
-plot(t,uyexp*1e2,'-r','LineWidth',1);
+plot(t,uy_exp*1e2,'-r','LineWidth',1);
 hold on
 plot(t,uyt*1e2,'-b','LineWidth',1);
 hold off

@@ -5,6 +5,7 @@ EL = param(1); % longitudinal Young modulus
 NUL = param(2); % longitudinal Poisson ratio
 GL = param(3); % longitudinal shear modulus
 
+% Update materials
 mats = MATERIALS(S);
 for k=1:length(mats)
     mats{k} = setparam(mats{k},'EL',EL);
@@ -13,6 +14,7 @@ for k=1:length(mats)
 end
 S = actualisematerials(S,mats);
 
+% Solve
 [A,b] = calc_rigi(S);
 b = -b;
 u_in = A\b;

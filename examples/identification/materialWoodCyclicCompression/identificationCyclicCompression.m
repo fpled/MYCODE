@@ -72,11 +72,11 @@ optimFun = 'lsqnonlin'; % optimization function
 % optimFun = 'fminunc';
 % optimFun = 'fmincon';
 
-display = 'off';
+% display = 'off';
 % display = 'iter';
 % display = 'iter-detailed';
 % display = 'final';
-% display = 'final-detailed';
+display = 'final-detailed';
 
 tolX = 1e-6; % tolerance on the parameter value in optimization algorithm
 tolFun = 1e-6; % tolerance on the function value in optimization algorithm

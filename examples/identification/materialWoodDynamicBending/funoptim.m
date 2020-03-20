@@ -1,15 +1,18 @@
-function f = funoptim(x,force_exp,epsilon,angle,varargin)
-% function f = funoptim(x,force_exp,epsilon,angle,varargin)
+function f = funoptim(param,uy_exp,S,N,M,b,u0,v0,varargin)
+% function f = funoptim(param,uy_exp,S,N,M,b,u0,v0,varargin)
 
-strain = epsilon(:)*cos(angle)*[1 -1]; 
-stress = zeros(size(strain));              
-parfor i=1:2
-    stress(:,i) = solveModelRheo(x,strain(:,i),varargin{:});
-end
-sigma = (stress(:,1)-stress(:,2))/(2*cos(angle));
+% [ut,result,vt,at] = solveBeamDetDynLinElasClampedFree(param,S,N,M,b,u0,v0,varargin{:});
+ut = solveBeamDetDynLinElasClampedFree(param,S,N,M,b,u0,v0,varargin{:});
 
-S = x(1); % equivalent rod section [m^2]
-force = sigma*S;
-f = norm(force - force_exp)^2;
+ut = unfreevector(S,ut);
+ut_val = getvalue(ut);
+% Ut = ut_val(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
+% Uxt = ut_val(findddl(S,'UX'),:);
+Uyt = ut_val(findddl(S,'UY'),:);
+% Rzt = ut_val(findddl(S,'RZ'),:);
+
+uy = Uyt(end,:);
+
+f = norm(uy - uy_exp(:))^2;
 
 end

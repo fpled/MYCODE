@@ -10,16 +10,16 @@ setProblem = true;
 solveProblem = true;
 displaySolution = false;
 
-filename = 'beamDetDynLinElasClampedFree';
+filename = 'materialWoodDynamicBending';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','FCBA',filename);
+    'results','identification',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
 
 filenameCamera = 'test_3_C001H001S0001.csv';
 pathnameCamera = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'examples','identification','materialWoodSlab','resultsCamera');
+    'examples','identification','materialWoodDynamicBending','resultsCamera');
 
 fontsize = 16;
 interpreter = 'latex';
@@ -32,35 +32,52 @@ opts = detectImportOptions(filenameExp);
 opts.SelectedVariableNames = {'time','Point1_Y_'};
 T = readtable(filenameExp,opts);
 t = T.time;
-uyexp = T.Point1_Y_;
-nanInd = find(isnan(uyexp));
+uy_exp = T.Point1_Y_;
+nanInd = find(isnan(uy_exp));
 t(nanInd) = [];
-uyexp(nanInd) = [];
-uyexp = uyexp-uyexp(end);
-startInd = find(uyexp>=uyexp(1),1,'last');
+uy_exp(nanInd) = [];
+uy_exp = uy_exp-uy_exp(end);
+
+delta = 2.3e-2; % initial static displacement [m]
+% % delta = uy_exp(1); % initial static displacement [m]
+startInd = find(uy_exp>delta,1,'last');
 t(1:startInd) = [];
-uyexp(1:startInd) = [];
+uy_exp(1:startInd) = [];
 t = t-t(1);
 
 %% Identification
 % initial guess
-E0 = 10; % Young modulus [GPa]
-NU0 = 0.3; % Poisson ratio
-delta0 = uyexp(1)*1e2; % initial static displacement [cm]
-alpha0 = 5; % mass proportional Rayleigh (viscous) damping coefficient [1e-4]
-beta0 = 5; % stiffness proportional Rayleigh (viscous) damping coefficient [1e-4]
+E0 = 13.9; % Young modulus [GPa]
+alpha0 = 0; % mass proportional Rayleigh (viscous) damping coefficient
+beta0 = 3; % stiffness proportional Rayleigh (viscous) damping coefficient
 
-param0 = [E0 NU0 delta0 alpha0 beta0];
-lb = [0 0 0 0 0];
-ub = [Inf 0.5 10 Inf Inf];
+disp('Initial static displacement');
+disp('---------------------------');
+fprintf('delta = %g cm\n',delta*1e2);
+
+disp('Initial parameters');
+disp('------------------');
+fprintf('E  = %g GPa\n',E0);
+fprintf('alpha = %g\n',alpha0);
+fprintf('beta  = %g\n',beta0);
+
+param0 = [E0 alpha0 beta0];
+lb = [10 0 0];
+ub = [15 Inf Inf];
 
 optimFun = 'lsqnonlin'; % optimization function
 % optimFun = 'fminsearch';
 % optimFun = 'fminunc';
 % optimFun = 'fmincon';
-display = 'off';
-tolX = 1e-4; % tolerance on the parameter value
-tolFun = 1e-4; % tolerance on the function value
+
+% display = 'off';
+% display = 'iter';
+display = 'iter-detailed';
+% display = 'final';
+% display = 'final-detailed';
+
+tolX = 1e-5; % tolerance on the parameter value
+tolFun = 1e-5; % tolerance on the function value
 
 switch optimFun
     case {'lsqnonlin','fminunc','fmincon'}
@@ -106,7 +123,7 @@ if setProblem
     % Young modulus
     E = E0*1e9; % [Pa]
     % Poisson ratio
-    NU = NU0;
+    NU = 0.3;
     % Density
     Vol = Sec*Ltot;
     Mass = 430e-3; % [kg]
@@ -122,7 +139,7 @@ if setProblem
     S = addcl(S,P1);
     
     %% Initial conditions
-    % delta = delta0*1e-2; % [m]
+    delta = uy_exp(1); % [m]
     x = getcoord(getnode(S));
     ux0 = zeros(getnbnode(S),1);
     funuy0 = @(delta) delta/(2*L^3)*(x(:,1).^2).*(3*L-x(:,1));
@@ -143,16 +160,16 @@ if setProblem
     M = calc_mass(S);
     K = calc_rigi(S);
     % stiffness proportional Rayleigh (viscous) damping coefficient
-    alpha = alpha0*1e-4;
+    alpha = alpha0;
     % mass proportional Rayleigh (viscous) damping coefficient
-    beta = beta0*1e-4;
+    beta = beta0;
     C = alpha*K + beta*M;
-    b = zeros(getnbddlfree(S),1);
-    b = b*loadFunction(N);
+    b0 = zeros(getnbddlfree(S),1);
+    b = b0*loadFunction(N);
     
-    save(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','b','funu0','v0','uyexp');
+    save(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','b','u0','v0','uy_exp');
 else
-    load(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','b','funu0','v0','uyexp');
+%     load(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','b','u0','v0','uy_exp');
 end
 
 %% Solution
@@ -161,55 +178,46 @@ if solveProblem
     
     switch optimFun
         case 'lsqnonlin'
-            fun = @(param) funlsqnonlin(param,uyexp,S,N,M,b,funu0,v0);
+            fun = @(param) funlsqnonlin(param,uy_exp,S,N,M,b,u0,v0);
             [param,err,~,exitflag,output] = lsqnonlin(fun,param0,lb,ub,options);
         case 'fminsearch'
-            fun = @(param) funoptim(param,uyexp,S,N,M,b,funu0,v0);
+            fun = @(param) funoptim(param,uy_exp,S,N,M,b,u0,v0);
             [param,err,exitflag,output] = fminsearch(fun,param0,options);
         case 'fminunc'
-            fun = @(param) funoptim(param,uyexp,S,N,M,b,funu0,v0);
+            fun = @(param) funoptim(param,uy_exp,S,N,M,b,u0,v0);
             [param,err,exitflag,output] = fminunc(fun,param0,options);
         case 'fmincon'
-            fun = @(param) funoptim(param,uyexp,S,N,M,b,funu0,v0);
+            fun = @(param) funoptim(param,uy_exp,S,N,M,b,u0,v0);
             [param,err,exitflag,output] = fmincon(fun,param0,[],[],[],[],lb,ub,[],options);
     end
     
     E = param(1); % [GPa]
-    NU = param(2);
-    delta = param(3); % [cm]
-    alpha = param(4);
-    beta = param(5);
-    err = sqrt(err)./norm(uyexp);
+    alpha = param(2);
+    beta = param(3);
+    err = sqrt(err)./norm(uy_exp);
     
     disp('Optimal parameters');
     disp('------------------');
     fprintf('E  = %g GPa\n',E);
-    fprintf('NU = %g\n',NU);
-    fprintf('delta = %g cm\n',delta);
     fprintf('alpha = %g\n',alpha);
     fprintf('beta  = %g\n',beta);
     fprintf('err = %g\n',err);
     % fprintf('exitflag = %g\n',exitflag);
     % disp(output);
     
-    time = toc(t);
+    timeIdentification = toc(t);
     
     %% Numerical solution
-    S = setmaterial();
-    u0 = funu0(delta*1e-2);
-    K = calc_rigi(S);
-    C = alpha*1e-4*K + beta*1e-4*M;
-    [ut,result,vt,at] = ddsolve(N,b,M,K,C,u0,v0);
+    t = tic;
+    [ut,result,vt,at] = solveBeamDetDynLinElasClampedFree(param,S,N,M,b,u0,v0);
+    timeSolution = toc(t);
     
-    [ut,S] = solveTractionIsotTrans(x,S);
-    u = unfreevector(S,u_in);
-
     et = calc_epsilon(S,ut,'node');
     st = calc_sigma(S,ut,'node');
     
-    save(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','time');
+    save(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','N','timeIdentification','timeSolution');
 else
-    load(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','time');
+    load(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','N','timeIdentification','timeSolution');
 end
 
 %% Outputs
@@ -219,9 +227,10 @@ fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('time solver : %s\n',class(N));
-fprintf('nb time steps = %g\n',getnt(N));
-fprintf('nb time dofs  = %g\n',getnbtimedof(N));
-fprintf('elapsed time = %f s\n',time);
+fprintf('nb time steps = %g\n',getnt(ut));
+fprintf('nb time dofs  = %g\n',getnbtimedof(ut));
+fprintf('elapsed time = %f s for identification\n',timeIdentification);
+fprintf('elapsed time = %f s for solution\n',timeSolution);
 
 ut = unfreevector(S,ut);
 ut_val = getvalue(ut);
@@ -266,35 +275,35 @@ if displaySolution
     % evolSolution(S,ut,'epsilon','mises','ampl',ampl,'filename','EpsVM','pathname',pathname);
     % evolSolution(S,ut,'sigma','mises','ampl',ampl,'filename','SigVM','pathname',pathname);
     
-    N = setevolparam(N,'colorbar',true,'FontSize',fontsize);
-    
-    figure('Name','Solution Epsx')
-    clf
-    set(gcf,'color','w')
-    % frame = evol(N,et,S,'compo','EPSX','rescale',true);
-    frame = evol(N,Epsxt,S,'rescale',true);
-    saveMovie(frame,'filename','Epsx','pathname',pathname);
-    
-    figure('Name','Solution Gamz')
-    clf
-    set(gcf,'color','w')
-    % frame = evol(N,et,S,'compo','GAMZ','rescale',true);
-    frame = evol(N,Gamzt,S,'rescale',true);
-    saveMovie(frame,'filename','Gamz','pathname',pathname);
-    
-    figure('Name','Solution N')
-    clf
-    set(gcf,'color','w')
-    % frame = evol(N,st,S,'compo','EFFX','rescale',true);
-    frame = evol(N,Nt,S,'rescale',true);
-    saveMovie(frame,'filename','N','pathname',pathname);
-    
-    figure('Name','Solution Mz')
-    clf
-    set(gcf,'color','w')
-    % frame = evol(N,st,S,'compo','MOMZ','rescale',true);
-    frame = evol(N,Mzt,S,'rescale',true);
-    saveMovie(frame,'filename','Mz','pathname',pathname);
+%     N = setevolparam(N,'colorbar',true,'FontSize',fontsize);
+%     
+%     figure('Name','Solution Epsx')
+%     clf
+%     set(gcf,'color','w')
+%     % frame = evol(N,et,S,'compo','EPSX','rescale',true);
+%     frame = evol(N,Epsxt,S,'rescale',true);
+%     saveMovie(frame,'filename','Epsx','pathname',pathname);
+%     
+%     figure('Name','Solution Gamz')
+%     clf
+%     set(gcf,'color','w')
+%     % frame = evol(N,et,S,'compo','GAMZ','rescale',true);
+%     frame = evol(N,Gamzt,S,'rescale',true);
+%     saveMovie(frame,'filename','Gamz','pathname',pathname);
+%     
+%     figure('Name','Solution N')
+%     clf
+%     set(gcf,'color','w')
+%     % frame = evol(N,st,S,'compo','EFFX','rescale',true);
+%     frame = evol(N,Nt,S,'rescale',true);
+%     saveMovie(frame,'filename','N','pathname',pathname);
+%     
+%     figure('Name','Solution Mz')
+%     clf
+%     set(gcf,'color','w')
+%     % frame = evol(N,st,S,'compo','MOMZ','rescale',true);
+%     frame = evol(N,Mzt,S,'rescale',true);
+%     saveMovie(frame,'filename','Mz','pathname',pathname);
     
     %% Display solution at differents instants
     % ampl = 0;
@@ -320,44 +329,45 @@ if displaySolution
             % mysaveas(pathname,['acceleration_' num2str(i) '_t' num2str(k-1)],formats,renderer);
         % end
         
-        figure('Name','Solution Epsx')
-        clf
-        plot(ek,S+ampl*uk,'compo','EPSX')
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['Epsx_t' num2str(k-1)],formats,renderer);
-        
-        figure('Name','Solution Gamz')
-        clf
-        plot(ek,S+ampl*uk,'compo','GAMZ')
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['Gamz_t' num2str(k-1)],formats,renderer);
-        
-        figure('Name','Solution N')
-        clf
-        plot(sk,S+ampl*uk,'compo','EFFX')
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['N_t' num2str(k-1)],formats,renderer);
-        
-        figure('Name','Solution Mz')
-        clf
-        plot(sk,S+ampl*uk,'compo','MOMZ')
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['Mz_t' num2str(k-1)],formats,renderer);
+%         figure('Name','Solution Epsx')
+%         clf
+%         plot(ek,S+ampl*uk,'compo','EPSX')
+%         colorbar
+%         set(gca,'FontSize',fontsize)
+%         mysaveas(pathname,['Epsx_t' num2str(k-1)],formats,renderer);
+%         
+%         figure('Name','Solution Gamz')
+%         clf
+%         plot(ek,S+ampl*uk,'compo','GAMZ')
+%         colorbar
+%         set(gca,'FontSize',fontsize)
+%         mysaveas(pathname,['Gamz_t' num2str(k-1)],formats,renderer);
+%         
+%         figure('Name','Solution N')
+%         clf
+%         plot(sk,S+ampl*uk,'compo','EFFX')
+%         colorbar
+%         set(gca,'FontSize',fontsize)
+%         mysaveas(pathname,['N_t' num2str(k-1)],formats,renderer);
+%         
+%         figure('Name','Solution Mz')
+%         clf
+%         plot(sk,S+ampl*uk,'compo','MOMZ')
+%         colorbar
+%         set(gca,'FontSize',fontsize)
+%         mysaveas(pathname,['Mz_t' num2str(k-1)],formats,renderer);
     end
 end
 
 %% Display quantity of interest
 % uyt: vertical displacement at end point as a function of time
 uyt = Uyt(end,:);
-t = gett(T);
+t = gett(ut);
+startInd = find(uy_exp>=delta*1e-2,1); % index of initial time
 
 figure('Name','Quantity of interest : vertical displacement at end point')
 clf
-plot(t,uyexp*1e2,'-r','LineWidth',1);
+plot(t,uy_exp(startInd:end)*1e2,'-r','LineWidth',1);
 hold on
 plot(t,uyt*1e2,'-b','LineWidth',1);
 hold off

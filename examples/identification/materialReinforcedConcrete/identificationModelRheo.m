@@ -95,10 +95,10 @@ switch damageFun
 end
 
 x0 = [S ks kc sig0t sig0c Dsig0];
-lb = [0 0 0 0 0 0];
-ub = [Inf Inf Inf Inf Inf Inf];
-% lb = [0 160e3*ps 15e3*pc 0 0 0];
-% ub = [Inf 240e3*ps 45e3*pc Inf Inf Inf];
+% lb = [0 0 0 0 0 0];
+% ub = [Inf Inf Inf Inf Inf Inf];
+lb = [0 160e3*ps 15e3*pc 0 0 0];
+ub = [Inf 240e3*ps 45e3*pc Inf Inf Inf];
 switch damageFun
     case 1
         x0 = [x0 alphaGt alphadt alphaGc alphadc];

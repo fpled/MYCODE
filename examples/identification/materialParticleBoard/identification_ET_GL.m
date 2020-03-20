@@ -50,7 +50,13 @@ optimFun = 'lsqnonlin'; % optimization function
 % optimFun = 'fminsearch';
 % optimFun = 'fminunc';
 % optimFun = 'fmincon';
+
 display = 'off';
+% display = 'iter';
+% display = 'iter-detailed';
+% display = 'final';
+% display = 'final-detailed';
+
 tolX = 1e-14; % tolerance on the parameter value
 tolFun = 1e-14; % tolerance on the function value
 
