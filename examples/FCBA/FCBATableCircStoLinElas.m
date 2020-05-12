@@ -680,7 +680,7 @@ if displayCv
         legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean value'})
         %legend({['intervalle de confiance à ' num2str((probs(2)-probs(1))*100) '%'],'valeur moyenne'})
     end
-    mysaveas(pathname,'convergence_solution','fig');
+    mysaveas(pathname,'convergence_solution',formats,renderer);
     mymatlab2tikz(pathname,'convergence_solution.tex');
     
     figure('Name','Convergence mean')
@@ -693,7 +693,7 @@ if displayCv
     ylabel('Mean value')
     %xlabel('Nombre de réalisations')
     %ylabel('Moyenne')
-    mysaveas(pathname,'convergence_mean','fig');
+    mysaveas(pathname,'convergence_mean',formats,renderer);
     mymatlab2tikz(pathname,'convergence_mean.tex');
     
     figure('Name','Convergence standard deviation')
@@ -706,7 +706,7 @@ if displayCv
     ylabel('Standard deviation')
     %xlabel('Nombre de réalisations')
     %ylabel('Ecart-type')
-    mysaveas(pathname,'convergence_std','fig');
+    mysaveas(pathname,'convergence_std',formats,renderer);
     mymatlab2tikz(pathname,'convergence_std.tex');
 end
 

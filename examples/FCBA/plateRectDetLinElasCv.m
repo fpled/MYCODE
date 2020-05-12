@@ -448,7 +448,7 @@ if displayCv
     %xlabel('Nombre d''éléments')
     %ylabel('Erreur')
     legend(leg{:})
-    mysaveas(pathname,'error_Uz','fig');
+    mysaveas(pathname,'error_Uz',formats,renderer);
     mymatlab2tikz(pathname,'error_Uz.tex');
     
     figure(hcvRx)
@@ -460,7 +460,7 @@ if displayCv
     %xlabel('Nombre d''éléments')
     %ylabel('Erreur')
     legend(leg{:})
-    mysaveas(pathname,'error_Rx','fig');
+    mysaveas(pathname,'error_Rx',formats,renderer);
     mymatlab2tikz(pathname,'error_Rx.tex');
     
     figure(hcvRy)
@@ -472,7 +472,7 @@ if displayCv
     %xlabel('Nombre d''éléments')
     %ylabel('Erreur')
     legend(leg{:})
-    mysaveas(pathname,'error_Ry','fig');
+    mysaveas(pathname,'error_Ry',formats,renderer);
     mymatlab2tikz(pathname,'error_Ry.tex');
     
     figure(htime)
@@ -484,7 +484,7 @@ if displayCv
     %xlabel('Nombre d''éléments')
     %ylabel('Temps CPU [s]')
     legend(leg{:})
-    mysaveas(pathname,'cputime','fig');
+    mysaveas(pathname,'cputime',formats,renderer);
     mymatlab2tikz(pathname,'cputime.tex');
 end
 

@@ -885,7 +885,7 @@ for it=1:length(tests)
             case{'impact','drop'}
                 
         end
-        mysaveas(pathname,'convergence_solution','fig');
+        mysaveas(pathname,'convergence_solution',formats,renderer);
         mymatlab2tikz(pathname,'convergence_solution.tex');
         
         figure('Name','Convergence mean')
@@ -898,7 +898,7 @@ for it=1:length(tests)
         ylabel('Mean value','Interpreter',interpreter)
         %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
         %ylabel('Moyenne','Interpreter',interpreter)
-        mysaveas(pathname,'convergence_mean','fig');
+        mysaveas(pathname,'convergence_mean',formats,renderer);
         mymatlab2tikz(pathname,'convergence_mean.tex');
         
         figure('Name','Convergence standard deviation')
@@ -911,7 +911,7 @@ for it=1:length(tests)
         ylabel('Standard deviation','Interpreter',interpreter)
         %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
         %ylabel('Ecart-type','Interpreter',interpreter)
-        mysaveas(pathname,'convergence_std','fig');
+        mysaveas(pathname,'convergence_std',formats,renderer);
         mymatlab2tikz(pathname,'convergence_std.tex');
     end
     
