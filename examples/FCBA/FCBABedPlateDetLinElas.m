@@ -15,10 +15,14 @@ tests = {'StaticVertDown'}; % test under static vertical downward load
 % tests = {'StaticHoriOut'}; % test under static horizontal outward load
 % tests = {'StaticVertUp','StaticVertDown','StaticHoriIn','StaticHoriOut'};
 
+junction = false; % junction modeling
+materialSym = 'isot'; % isotropic material symmetry class
+% materialSym = 'isotTrans'; % transversely isotropic material symmetry class
+
 for it=1:length(tests)
     test = tests{it};
     
-filename = ['FCBABedPlateDetLinElas' test];
+filename = ['FCBABedPlateDetLinElas' test '_' materialSym];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','FCBA',filename);
 if ~exist(pathname,'dir')
@@ -232,13 +236,11 @@ if solveProblem
     % Polar second moment of area (or Polar area moment of inertia)
     IX0 = IY0+IZ0;
     
-    % Material symmetry
-    materialSym = 'isot';
-    
+    % Material
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = 10e9; % [Pa]
+            E = 12e9; % [Pa]
             % Poisson ratio
             NU = 0.3;
             % Material
@@ -497,7 +499,7 @@ fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
-disp('Displacement u and rotation r at point'); disp(P);
+fprintf('Displacement u and rotation r at point (%g,%g,%g) m\n',double(P));
 fprintf('ux = %g m\n',ux);
 fprintf('uy = %g m\n',uy);
 fprintf('uz = %g m\n',uz);
@@ -506,21 +508,21 @@ fprintf('ry = %g rad = %g deg\n',ry,rad2deg(ry));
 fprintf('rz = %g rad = %g deg\n',rz,rad2deg(rz));
 fprintf('\n');
 
-disp('Maximum force N and moments Mx, My, Mz at point'); disp(P);
+fprintf('Maximum force N and moments Mx, My, Mz at point (%g,%g,%g) m\n',double(P));
 fprintf('N  = %g N\n',n);
 fprintf('Mx = %g N.m\n',mx);
 fprintf('My = %g N.m\n',my);
 fprintf('Mz = %g N.m\n',mz);
 fprintf('\n');
 
-disp('Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point'); disp(P);
+fprintf('Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point (%g,%g,%g) m\n',double(P));
 fprintf('Epsx = %g\n',epsx);
 fprintf('Gamx = %g\n',gamx);
 fprintf('Gamy = %g\n',gamy);
 fprintf('Gamz = %g\n',gamz);
 fprintf('\n');
 
-disp('Maximum forces Nxx, Nyy, Nxy and moments Mxx, Myy, Mxy at point'); disp(P);
+fprintf('Maximum forces Nxx, Nyy, Nxy and moments Mxx, Myy, Mxy at point (%g,%g,%g) m\n',double(P));
 fprintf('Nxx = %g N/m\n',nxx);
 fprintf('Nyy = %g N/m\n',nyy);
 fprintf('Nxy = %g N/m\n',nxy);
@@ -529,7 +531,7 @@ fprintf('Myy = %g N\n',myy);
 fprintf('Mxy = %g N\n',mxy);
 fprintf('\n');
 
-disp('Maximum membrane strains Exx, Eyy, Exy and bending strains (curvatures) Gxx, Gyy, Gxy at point'); disp(P);
+fprintf('Maximum membrane strains Exx, Eyy, Exy and bending strains (curvatures) Gxx, Gyy, Gxy at point (%g,%g,%g) m\n',double(P));
 fprintf('Exx = %g\n',exx);
 fprintf('Eyy = %g\n',eyy);
 fprintf('Exy = %g\n',exy);

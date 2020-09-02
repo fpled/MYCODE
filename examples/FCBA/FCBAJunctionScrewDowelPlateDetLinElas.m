@@ -292,7 +292,7 @@ fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
-disp('Displacement u and rotation r at point'); disp(P3);
+fprintf('Displacement u and rotation r at point (%g,%g,%g) m\n',double(P3));
 fprintf('ux    = %g m\n',ux);
 fprintf('uy    = %g m\n',uy);
 fprintf('uz    = %g m\n',uz);

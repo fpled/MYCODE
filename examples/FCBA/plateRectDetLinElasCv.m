@@ -321,14 +321,14 @@ fprintf('      = %.3e for Ry\n',err_Ry(i));
 fprintf('elapsed time = %f s\n',time(i));
 fprintf('\n');
 
-disp('Displacement u at point'); disp(P);
+fprintf('Displacement u at point (%g,%g,%g)\n',double(P));
 fprintf('ux    = %g\n',ux);
 fprintf('uy    = %g\n',uy);
 fprintf('uz    = %g\n',uz);
 fprintf('uz_ex = %g, error = %.3e\n',uz_ex,err_uz);
 fprintf('\n');
 
-disp('Rotation r at point'); disp(P);
+fprintf('Rotation r at point (%g,%g,%g)\n',double(P));
 fprintf('rx    = %g\n',rx);
 fprintf('rx_ex = %g, error = %.3e\n',rx_ex,err_rx);
 fprintf('ry    = %g\n',ry);

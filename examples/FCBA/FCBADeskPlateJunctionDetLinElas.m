@@ -696,7 +696,7 @@ switch lower(test)
         uz_exp = mean(uz_exp_end - uz_exp_start);
         err_uz = norm(uz-uz_exp)/norm(uz_exp);
         
-        disp('Displacement u at point'); disp(P);
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uz     = %g m\n',uz);
@@ -708,7 +708,7 @@ switch lower(test)
         uz_exp = mean(uz_exp_end - uz_exp_start);
         err_uz = norm(uz-uz_exp)/norm(uz_exp);
         
-        disp('Displacement u at point'); disp(P);
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uz     = %g m\n',uz);
@@ -725,7 +725,7 @@ switch lower(test)
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
-        disp('Displacement u at point'); disp(P);
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
         fprintf('uy     = %g m\n',uy);
@@ -742,7 +742,7 @@ switch lower(test)
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
-        disp('Displacement u at point'); disp(P);
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
         fprintf('uy     = %g m\n',uy);
@@ -754,7 +754,7 @@ switch lower(test)
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
-        disp('Displacement u at point'); disp(P);
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
@@ -766,7 +766,7 @@ switch lower(test)
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
-        disp('Displacement u at point'); disp(P);
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
@@ -778,7 +778,7 @@ switch lower(test)
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
-        disp('Displacement u at point'); disp(P);
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
         fprintf('uy     = %g m\n',uy);
@@ -790,7 +790,7 @@ switch lower(test)
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
-        disp('Displacement u at point'); disp(P);
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
         fprintf('uy     = %g m\n',uy);
@@ -802,7 +802,7 @@ switch lower(test)
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
-        disp('Displacement u at point'); disp(P);
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
@@ -814,7 +814,7 @@ switch lower(test)
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
-        disp('Displacement u at point'); disp(P);
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
@@ -822,7 +822,7 @@ switch lower(test)
         fprintf('\n');
 end
 
-disp('Rotation r at point'); disp(P);
+fprintf('Rotation r at point (%g,%g,%g) m\n',double(P));
 fprintf('rx     = %g rad = %g deg\n',rx,rad2deg(rx));
 fprintf('ry     = %g rad = %g deg\n',ry,rad2deg(ry));
 fprintf('rz     = %g rad = %g deg\n',rz,rad2deg(rz));

@@ -15,10 +15,14 @@ tests = {'StaticVertDown'}; % test under static vertical downward load
 % tests = {'StaticHoriOut'}; % test under static horizontal outward load
 % tests = {'StaticVertUp','StaticVertDown','StaticHoriIn','StaticHoriOut'};
 
+junction = false; % junction modeling
+materialSym = 'isot'; % isotropic material symmetry class
+% materialSym = 'isotTrans'; % transversely isotropic material symmetry class
+
 for it=1:length(tests)
     test = tests{it};
     
-filename = ['FCBABedBeamDetLinElas' test];
+filename = ['FCBABedBeamDetLinElas' test '_' materialSym];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','FCBA',filename);
 if ~exist(pathname,'dir')
@@ -192,17 +196,45 @@ if solveProblem
     IX3 = IY3+IZ3;
     IX4 = IY4+IZ4;
     
-    % Material symmetry
-    materialSym = 'isot';
-    
+    % Material
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = 10e9; % [Pa]
+            E = 12e9; % [Pa]
             % Poisson ratio
             NU = 0.3;
             % Material
             mat_0 = ELAS_BEAM('E',E,'NU',NU,'S',Sec0,'IZ',IZ0,'IY',IY0,'IX',IX0,'RHO',RHO);
+            mat_0 = setnumber(mat_0,1);
+            mat_1 = ELAS_BEAM('E',E,'NU',NU,'S',Sec1,'IZ',IZ1,'IY',IY1,'IX',IX1,'RHO',RHO);
+            mat_1 = setnumber(mat_1,2);
+            mat_2 = ELAS_BEAM('E',E,'NU',NU,'S',Sec2,'IZ',IZ2,'IY',IY2,'IX',IX2,'RHO',RHO);
+            mat_2 = setnumber(mat_2,3);
+            mat_3 = ELAS_BEAM('E',E,'NU',NU,'S',Sec3,'IZ',IZ3,'IY',IY3,'IX',IX3,'RHO',RHO);
+            mat_3 = setnumber(mat_3,4);
+            mat_4 = ELAS_BEAM('E',E,'NU',NU,'S',Sec4,'IZ',IZ4,'IY',IY4,'IX',IX4,'RHO',RHO);
+            mat_4 = setnumber(mat_4,5);
+            S_leg = setmaterial(S_leg,mat_0);
+            S_botrail = setmaterial(S_botrail,mat_1);
+            S_siderail = setmaterial(S_siderail,mat_1);
+            S_endrail = setmaterial(S_endrail,mat_2);
+            S_guardrail = setmaterial(S_guardrail,mat_1);
+            S_guardrailsupport = setmaterial(S_guardrailsupport,mat_3);
+            S_slat = setmaterial(S_slat,mat_4);
+        case 'isottrans'
+            % Transverse Young modulus
+            ET = 12e9; % [Pa]
+            % Longitudinal shear modulus
+            GL = mean(mean_GL_data)*1e6; % [Pa]
+            % Longitudinal Young modulus
+            % EL = mean(mean_EL_data)*1e6; % [Pa]
+            % Longitudinal Poisson ratio
+            % NUL = mean(mean_NUL_data);
+            % Transverse Poisson ratio
+            NUT = 0.3;
+            % Material
+            mat_0 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec0,'IZ',IZ0,'IY',IY0,'IX',IX0,'RHO',RHO,'k',5/6);
+            ELAS_BEAM('E',E,'NU',NU,'S',Sec0,'IZ',IZ0,'IY',IY0,'IX',IX0,'RHO',RHO);
             mat_0 = setnumber(mat_0,1);
             mat_1 = ELAS_BEAM('E',E,'NU',NU,'S',Sec1,'IZ',IZ1,'IY',IY1,'IX',IX1,'RHO',RHO);
             mat_1 = setnumber(mat_1,2);
@@ -338,12 +370,12 @@ if solveProblem
 %         gamz = max(gamz,gamzi);
 %     end
     
-    [ux,numnodeUx] = max(full(Ux));
-    [uy,numnodeUy] = max(full(Uy));
-    [uz,numnodeUz] = max(full(Uz));
-    [rx,numnodeRx] = max(full(Rx));
-    [ry,numnodeRy] = max(full(Ry));
-    [rz,numnodeRz] = max(full(Rz));
+    [ux,numnodeUx] = max(abs(full(Ux)));
+    [uy,numnodeUy] = max(abs(full(Uy)));
+    [uz,numnodeUz] = max(abs(full(Uz)));
+    [rx,numnodeRx] = max(abs(full(Rx)));
+    [ry,numnodeRy] = max(abs(full(Ry)));
+    [rz,numnodeRz] = max(abs(full(Rz)));
     
     [n,numgroupelemnodeN] = max(abs(N));
     [mx,numgroupelemnodeMx] = max(abs(Mx));
@@ -390,26 +422,40 @@ fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
 disp('Maximum displacement u and rotation r');
-fprintf('ux = %g m at node #%d\n',ux,numnodeUx);
-fprintf('uy = %g m at node #%d\n',uy,numnodeUy);
-fprintf('uz = %g m at node #%d\n',uz,numnodeUz);
-fprintf('rx = %g rad = %g deg at node #%d\n',rx,rad2deg(rx),numnodeRx);
-fprintf('ry = %g rad = %g deg at node #%d\n',ry,rad2deg(ry),numnodeRy);
-fprintf('rz = %g rad = %g deg at node #%d\n',rz,rad2deg(rz),numnodeRz);
+Pux = POINT(getcoord(S.node(numnodeUx)));
+Puy = POINT(getcoord(S.node(numnodeUy)));
+Puz = POINT(getcoord(S.node(numnodeUz)));
+Prx = POINT(getcoord(S.node(numnodeRx)));
+Pry = POINT(getcoord(S.node(numnodeRy)));
+Prz = POINT(getcoord(S.node(numnodeRz)));
+fprintf('ux = %g m at point (%g,%g,%g) m\n',ux,double(Pux));
+fprintf('uy = %g m at point (%g,%g,%g) m\n',uy,double(Puy));
+fprintf('uz = %g m at point (%g,%g,%g) m\n',uz,double(Puz));
+fprintf('rx = %g rad = %g deg at point (%g,%g,%g) m\n',rx,rad2deg(rx),double(Prx));
+fprintf('ry = %g rad = %g deg at point (%g,%g,%g) m\n',ry,rad2deg(ry),double(Pry));
+fprintf('rz = %g rad = %g deg at point (%g,%g,%g) m\n',rz,rad2deg(rz),double(Prz));
 fprintf('\n');
 
 disp('Maximum force N and moments Mx, My, Mz');
-fprintf('N  = %g N in groupelem #%d at node #%d\n',n,numgroupelemnodeN(1),numgroupelemnodeN(2));
-fprintf('Mx = %g N.m in groupelem #%d at node #%d\n',mx,numgroupelemnodeMx(1),numgroupelemnodeMx(2));
-fprintf('My = %g N.m in groupelem #%d at node #%d\n',my,numgroupelemnodeMy(1),numgroupelemnodeMy(2));
-fprintf('Mz = %g N.m in groupelem #%d at node #%d\n',mz,numgroupelemnodeMz(1),numgroupelemnodeMz(2));
+PN = POINT(getcoord(S.node(numgroupelemnodeN(2))));
+PMx = POINT(getcoord(S.node(numgroupelemnodeMx(2))));
+PMy = POINT(getcoord(S.node(numgroupelemnodeMy(2))));
+PMz = POINT(getcoord(S.node(numgroupelemnodeMz(2))));
+fprintf('N  = %g N in groupelem #%d at point (%g,%g,%g) m\n',n,numgroupelemnodeN(1),double(PN));
+fprintf('Mx = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mx,numgroupelemnodeMx(1),double(PMx));
+fprintf('My = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',my,numgroupelemnodeMy(1),double(PMy));
+fprintf('Mz = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mz,numgroupelemnodeMz(1),double(PMz));
 fprintf('\n');
 
 disp('Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz');
-fprintf('Epsx = %g in groupelem #%d at node #%d\n',epsx,numgroupelemnodeEpsx(1),numgroupelemnodeEpsx(2));
-fprintf('Gamx = %g in groupelem #%d at node #%d\n',gamx,numgroupelemnodeGamx(1),numgroupelemnodeGamx(2));
-fprintf('Gamy = %g in groupelem #%d at node #%d\n',gamy,numgroupelemnodeGamy(1),numgroupelemnodeGamy(2));
-fprintf('Gamz = %g in groupelem #%d at node #%d\n',gamz,numgroupelemnodeGamz(1),numgroupelemnodeGamz(2));
+PEpsx = POINT(getcoord(S.node(numgroupelemnodeEpsx(2))));
+PGamx = POINT(getcoord(S.node(numgroupelemnodeGamx(2))));
+PGamy = POINT(getcoord(S.node(numgroupelemnodeGamy(2))));
+PGamz = POINT(getcoord(S.node(numgroupelemnodeGamz(2))));
+fprintf('Epsx = %g in groupelem #%d at point (%g,%g,%g) m\n',epsx,numgroupelemnodeEpsx(1),double(PEpsx));
+fprintf('Gamx = %g in groupelem #%d at point (%g,%g,%g) m\n',gamx,numgroupelemnodeGamx(1),double(PGamx));
+fprintf('Gamy = %g in groupelem #%d at point (%g,%g,%g) m\n',gamy,numgroupelemnodeGamy(1),double(PGamy));
+fprintf('Gamz = %g in groupelem #%d at point (%g,%g,%g) m\n',gamz,numgroupelemnodeGamz(1),double(PGamz));
 fprintf('\n');
 
 %% Display
@@ -447,10 +493,6 @@ if displaySolution
     [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     ampl = 5;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
-    PN = POINT(getcoord(S.node(numgroupelemnodeN(2))));
-    PMx = POINT(getcoord(S.node(numgroupelemnodeMx(2))));
-    PMy = POINT(getcoord(S.node(numgroupelemnodeMy(2))));
-    PMz = POINT(getcoord(S.node(numgroupelemnodeMz(2))));
     hPN = plot(PN,'r+');
     hPMx = plot(PMx,'g+');
     hPMy = plot(PMy,'b+');

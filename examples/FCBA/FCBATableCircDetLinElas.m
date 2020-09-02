@@ -414,7 +414,7 @@ fprintf('span-to-thickness ratio = %g\n',r/h);
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
-disp('Displacement u at point'); disp(P);
+fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
 fprintf('ux     = %g m\n',ux);
 fprintf('uy     = %g m\n',uy);
 fprintf('uz     = %g m\n',uz);
@@ -427,7 +427,7 @@ fprintf('ur     = %g m\n',ur);
 fprintf('ut     = %g m\n',ut);
 fprintf('\n');
 
-disp('Rotation r at point'); disp(P);
+fprintf('Rotation r at point (%g,%g,%g) m\n',double(P));
 fprintf('rx     = %g rad = %g deg\n',rx,rad2deg(rx));
 fprintf('ry     = %g rad = %g deg\n',ry,rad2deg(ry));
 fprintf('rz     = %g rad = %g deg\n',rz,rad2deg(rz));

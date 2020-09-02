@@ -487,7 +487,7 @@ end
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
-disp('Displacement u and rotation r at point'); disp(P2);
+fprintf('Displacement u and rotation r at point (%g,%g) m\n',double(P2));
 fprintf('ux    = %g m\n',ux);
 fprintf('ux_ex = %g m, error = %g\n',ux_ex,err_ux);
 fprintf('uy    = %g m\n',uy);
@@ -505,14 +505,14 @@ else
 end
 fprintf('\n');
 
-disp('Force N and moment Mz at point'); disp(P2);
+fprintf('Force N and moment Mz at point (%g,%g) m\n',double(P2));
 fprintf('N     = %g N\n',n);
 fprintf('N_ex  = %g N, error = %g\n',n_ex,err_n);
 fprintf('Mz    = %g N.m\n',mz);
 fprintf('Mz_ex = %g N.m, error = %g\n',mz_ex,err_mz);
 fprintf('\n');
 
-disp('Axial strain Epsx and bending strain (curvature) Gamz at point'); disp(P2);
+fprintf('Axial strain Epsx and bending strain (curvature) Gamz at point (%g,%g) m\n',double(P2));
 fprintf('Epsx    = %g\n',epsx);
 fprintf('Epsx_ex = %g, error = %g\n',epsx_ex,err_epsx);
 fprintf('Gamz    = %g\n',gamz);

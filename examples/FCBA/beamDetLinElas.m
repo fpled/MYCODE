@@ -9,7 +9,7 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-Dim = 3; % space dimension Dim = 2, 3
+Dim = 2; % space dimension Dim = 2, 3
 filename = ['beamDetLinElas_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','FCBA',filename);
@@ -233,7 +233,11 @@ fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
-disp('Displacement u and rotation r at point'); disp(P);
+if Dim==2
+    fprintf('Displacement u and rotation r at point (%g,%g) m\n',double(P));
+elseif Dim==3
+    fprintf('Displacement u and rotation r at point (%g,%g,%g) m\n',double(P));
+end
 fprintf('ux = %g m\n',ux);
 fprintf('uy = %g m\n',uy);
 if Dim==3
@@ -245,9 +249,9 @@ fprintf('rz = %g rad = %g deg\n',rz,rad2deg(rz));
 fprintf('\n');
 
 if Dim==2
-    disp('Force N and moment Mz at point'); disp(P);
+    fprintf('Force N and moment Mz at point (%g,%g) m\n',double(P));
 elseif Dim==3
-    disp('Force N and moments Mx, My, Mz at point'); disp(P);
+    fprintf('Force N and moments Mx, My, Mz at point (%g,%g,%g) m\n',double(P));
 end
 fprintf('N  = %g N\n',n);
 if Dim==3
@@ -258,9 +262,9 @@ fprintf('Mz = %g N.m\n',mz);
 fprintf('\n');
 
 if Dim==2
-    disp('Axial strain Epsx and bending strain (curvature) Gamz at point'); disp(P);
+    fprintf('Axial strain Epsx and bending strain (curvature) Gamz at point (%g,%g) m\n',double(P));
 elseif Dim==3
-    disp('Axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point'); disp(P);
+    fprintf('Axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point (%g,%g,%g) m\n',double(P));
 end
 fprintf('Epsx = %g\n',epsx);
 if Dim==3
