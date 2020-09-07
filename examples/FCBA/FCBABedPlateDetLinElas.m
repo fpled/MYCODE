@@ -161,7 +161,6 @@ if solveProblem
     S_leg = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_leg_' num2str(n)])),P_leg,num2cell(1:length(P_leg)),'UniformOutput',false);
     S_leg = cellfun(@(S) concatgroupelem(S),S_leg,'UniformOutput',false);
     S_leg = union(S_leg{:});
-    S_leg = concatgroupelem(S_leg);
     S_leg = convertelem(S_leg,'BEAM','param',VECTEUR([1;0;0]));
     
     % Plate meshes
@@ -169,7 +168,6 @@ if solveProblem
     S_botrail = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
         'filename',fullfile(pathname,['gmsh_botrail_' num2str(n) '_elemtype_' elemtype])),Q_botrail,num2cell(1:length(Q_botrail)),'UniformOutput',false);
     S_botrail = union(S_botrail{:});
-    S_botrail = concatgroupelem(S_botrail);
     
     L_slat1 = cellfun(@(Q) getedge(Q,1),Q_slat(1:11),'UniformOutput',false);
     L_slat2 = cellfun(@(Q) getedge(Q,1),Q_slat(12:14),'UniformOutput',false);
@@ -186,13 +184,11 @@ if solveProblem
         S_siderail{3} = gmshdomainwithinclusion(Q_siderail{3},L_slat3,cl,cl,fullfile(pathname,['gmsh_siderail_3_elemtype_' elemtype]),3,'recombine');
     end
     S_siderail = union(S_siderail{:});
-    S_siderail = concatgroupelem(S_siderail);
     S_siderail = convertelem(S_siderail,elemtype);
     
     S_endrail = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
         'filename',fullfile(pathname,['gmsh_endrail_' num2str(n) '_elemtype_' elemtype])),Q_endrail,num2cell(1:length(Q_endrail)),'UniformOutput',false);
     S_endrail = union(S_endrail{:});
-    S_endrail = concatgroupelem(S_endrail);
     
     S_botguardrail = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
         'filename',fullfile(pathname,['gmsh_botguardrail_' num2str(n) '_elemtype_' elemtype])),Q_botguardrail,num2cell(1:length(Q_botguardrail)),'UniformOutput',false);
@@ -202,7 +198,6 @@ if solveProblem
     S_topguardrail{3} = build_model(Q_topguardrail{3},'cl',cl,'elemtype',elemtype,...
         'filename',fullfile(pathname,['gmsh_topguardrail_3_elemtype_' elemtype]),'points',{x_load(1,:),x_load(2,:)});
     S_guardrail = union(S_botguardrail{:},S_topguardrail{:});
-    S_guardrail = concatgroupelem(S_guardrail);
     
     L_slat = getedge(Q_slat{11},2);
     S_guardrailsupport = cell(1,5);
@@ -219,7 +214,6 @@ if solveProblem
     S_slat = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
         'filename',fullfile(pathname,['gmsh_slat_' num2str(n) '_elemtype_' elemtype])),Q_slat,num2cell(1:14),'UniformOutput',false);
     S_slat = union(S_slat{:});
-    S_slat = concatgroupelem(S_slat);
     
     %% Materials
     % Gravitational acceleration
@@ -260,6 +254,34 @@ if solveProblem
             S_guardrailsupport = setmaterial(S_guardrailsupport,mat_2,[2,4]);
             S_guardrailsupport = setmaterial(S_guardrailsupport,mat_3,[1,3,5]);
             S_slat = setmaterial(S_slat,mat_1);
+        case 'isottrans'
+            % Transverse Young modulus
+            ET = 12e9; % [Pa]
+            % Longitudinal shear modulus
+            GL = 600e6; % [Pa]
+            % Longitudinal Young modulus
+            % EL = mean(mean_EL_data)*1e6; % [Pa]
+            % Longitudinal Poisson ratio
+            % NUL = mean(mean_NUL_data);
+            % Transverse Poisson ratio
+            NUT = 0.3;
+            % Material
+            mat_0 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec0,'IZ',IZ0,'IY',IY0,'RHO',RHO);
+            mat_0 = setnumber(mat_0,1);
+            mat_1 = ELAS_SHELL_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'RHO',RHO,'DIM3',b1,'k',5/6);
+            mat_1 = setnumber(mat_1,2);
+            mat_2 = ELAS_SHELL_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'RHO',RHO,'DIM3',b2,'k',5/6);
+            mat_2 = setnumber(mat_2,3);
+            mat_3 = ELAS_SHELL_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'RHO',RHO,'DIM3',b1+b2,'k',5/6);
+            mat_3 = setnumber(mat_3,4);
+            S_leg = setmaterial(S_leg,mat_0);
+            S_botrail = setmaterial(S_botrail,mat_1);
+            S_siderail = setmaterial(S_siderail,mat_1);
+            S_endrail = setmaterial(S_endrail,mat_2);
+            S_guardrail = setmaterial(S_guardrail,mat_1);
+            S_guardrailsupport = setmaterial(S_guardrailsupport,mat_2,[2,4]);
+            S_guardrailsupport = setmaterial(S_guardrailsupport,mat_3,[1,3,5]);
+            S_slat = setmaterial(S_slat,mat_1);
         otherwise
             error('Wrong material symmetry !')
     end
@@ -289,10 +311,10 @@ if solveProblem
             f = nodalload(S,P_load,'FZ',-p);
         case 'statichoriin'
             P_load = POINT(x_load(2,:));
-            f = nodalload(S,P_load,'FY',p);
+            f = nodalload(S,P_load,'FY',-p);
         case 'statichoriout'
             P_load = POINT(x_load(2,:));
-            f = nodalload(S,P_load,'FY',-p);
+            f = nodalload(S,P_load,'FY',p);
     end
     f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_0)),[],'FZ',-p0);
     f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_1)),[],'FZ',-p1);
@@ -545,16 +567,16 @@ if displaySolution
     %% Display domains, boundary conditions and meshes
     figure('Name','Domain')
     clf
-    h1 = plot(S,'selgroup',1,'EdgeColor','k');
+    h1 = plot(S,'selgroup',getnumgroupelemwithfield(S,'material',mat_0),'EdgeColor','k');
     hold on
-    h2 = plot(S,'selgroup',2,'EdgeColor','c','FaceColor','c','FaceAlpha',0.1);
-    h3 = plot(S,'selgroup',3,'EdgeColor','r','FaceColor','r','FaceAlpha',0.1);
-    h4 = plot(S,'selgroup',4,'EdgeColor',[1 0.5 0],'FaceColor',[1 0.5 0],'FaceAlpha',0.1);
-    h5 = plot(S,'selgroup',5,'EdgeColor','b','FaceColor','b','FaceAlpha',0.1);
-    h6 = plot(S,'selgroup',[7,9],'EdgeColor','m','FaceColor','m','FaceAlpha',0.1);
-    h7 = plot(S,'selgroup',11,'EdgeColor','g','FaceColor','g','FaceAlpha',0.1);
-    h8 = plot(S,'selgroup',6,'EdgeColor',([1 0 1]+[1 0 0])/2,'FaceColor',([1 0 1]+[1 0 0])/2,'FaceAlpha',0.1);
-    h9 = plot(S,'selgroup',[8,10],'EdgeColor',([1 0 1]+[0 0 1])/2,'FaceColor',([1 0 1]+[0 0 1])/2,'FaceAlpha',0.1);
+    h2 = plot(S,'selgroup',5:7,'EdgeColor','c','FaceColor','c','FaceAlpha',0.1);
+    h3 = plot(S,'selgroup',8:10,'EdgeColor','r','FaceColor','r','FaceAlpha',0.1);
+    h4 = plot(S,'selgroup',11:12,'EdgeColor',[1 0.5 0],'FaceColor',[1 0.5 0],'FaceAlpha',0.1);
+    h5 = plot(S,'selgroup',13:20,'EdgeColor','b','FaceColor','b','FaceAlpha',0.1);
+    h6 = plot(S,'selgroup',[22,24],'EdgeColor','m','FaceColor','m','FaceAlpha',0.1);
+    h7 = plot(S,'selgroup',26:39,'EdgeColor','g','FaceColor','g','FaceAlpha',0.1);
+    h8 = plot(S,'selgroup',21,'EdgeColor',([1 0 1]+[1 0 0])/2,'FaceColor',([1 0 1]+[1 0 0])/2,'FaceAlpha',0.1);
+    h9 = plot(S,'selgroup',[23,25],'EdgeColor',([1 0 1]+[0 0 1])/2,'FaceColor',([1 0 1]+[0 0 1])/2,'FaceAlpha',0.1);
     hold off
     set(gca,'FontSize',16)
     l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1),h7(1),h8(1),h9(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','slat',...

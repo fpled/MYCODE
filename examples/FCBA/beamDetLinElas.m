@@ -47,7 +47,6 @@ if solveProblem
     cl = L/100;
     
     S = gmshbeam(P,cl,fullfile(pathname,'gmsh'));
-    S = concatgroupelem(S);
     if Dim==2
         S = convertelem(S,elemtype);
     elseif Dim==3
@@ -153,75 +152,92 @@ if solveProblem
     
     ux = eval_sol(S,u,P,'UX');
     uy = eval_sol(S,u,P,'UY');
+    rz = eval_sol(S,u,P,'RZ');
     if Dim==3
         uz = eval_sol(S,u,P,'UZ');
         rx = eval_sol(S,u,P,'RX');
         ry = eval_sol(S,u,P,'RY');
     end
-    rz = eval_sol(S,u,P,'RZ');
     
     [~,~,numgroupelem] = findelemwithnode(S,numnode);
-    n  = reshape(N{numgroupelem},[getnbnode(S),1]);
+    n = 0;
+    mz = 0;
+    epsx = 0;
+    gamz = 0;
     if Dim==3
-        mx = reshape(Mx{numgroupelem},[getnbnode(S),1]);
-        my = reshape(My{numgroupelem},[getnbnode(S),1]);
+        mx = 0;
+        my = 0;
+        gamx = 0;
+        gamy = 0;
     end
-    mz = reshape(Mz{numgroupelem},[getnbnode(S),1]);
-    epsx = reshape(Epsx{numgroupelem},[getnbnode(S),1]);
-    if Dim==3
-        gamx = reshape(Gamx{numgroupelem},[getnbnode(S),1]);
-        gamy = reshape(Gamy{numgroupelem},[getnbnode(S),1]);
+    for i=1:length(numgroupelem)
+        Ni  = reshape(N{numgroupelem(i)},[getnbnode(S),1]);
+        Mzi = reshape(Mz{numgroupelem(i)},[getnbnode(S),1]);
+        Epsxi = reshape(Epsx{numgroupelem(i)},[getnbnode(S),1]);
+        Gamzi = reshape(Gamz{numgroupelem(i)},[getnbnode(S),1]);
+        if Dim==3
+            Gamxi = reshape(Gamx{numgroupelem(i)},[getnbnode(S),1]);
+            Gamyi = reshape(Gamy{numgroupelem(i)},[getnbnode(S),1]);
+            Mxi = reshape(Mx{numgroupelem(i)},[getnbnode(S),1]);
+            Myi = reshape(My{numgroupelem(i)},[getnbnode(S),1]);
+        end
+        
+        ni = abs(double(Ni(numnode)));
+        mzi = abs(double(Mzi(numnode)));
+        epsxi = abs(double(Epsxi(numnode)));
+        gamzi = abs(double(Gamzi(numnode)));
+        if Dim==3
+            gamxi = abs(double(Gamxi(numnode)));
+            gamyi = abs(double(Gamyi(numnode)));
+            mxi = abs(double(Mxi(numnode)));
+            myi = abs(double(Myi(numnode)));
+        end
+        
+        n = max(n,ni);
+        mz = max(mz,mzi);
+        epsx = max(epsx,epsxi);
+        gamz = max(gamz,gamzi);
+        if Dim==3
+            mx = max(mx,mxi);
+            my = max(my,myi);
+            gamx = max(gamx,gamxi);
+            gamy = max(gamy,gamyi);
+        end
     end
-    gamz = reshape(Gamz{numgroupelem},[getnbnode(S),1]);
-    
-    n = double(n(numnode));
-    if Dim==3
-        mx = double(mx(numnode));
-        my = double(my(numnode));
-    end
-    mz = double(mz(numnode));
-    epsx = double(epsx(numnode));
-    if Dim==3
-        gamx = double(gamx(numnode));
-        gamy = double(gamy(numnode));
-    end
-    gamz = double(gamz(numnode));
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S',...
         'L','h','b','f');
-    if Dim==2
-        save(fullfile(pathname,'solution.mat'),'u','s','e','time',...
-            'Ux','Uy','Rz',...
-            'N','Mz','Epsx','Gamz');
-        save(fullfile(pathname,'test_solution.mat'),'P',...
-            'ux','uy','rz',...
-            'n','mz','epsx','gamz');
-    elseif Dim==3
-        save(fullfile(pathname,'solution.mat'),'u','s','e','time',...
-            'Ux','Uy','Uz','Rx','Ry','Rz',...
-            'N','Mx','My','Mz','Epsx','Gamx','Gamy','Gamz');
-        save(fullfile(pathname,'test_solution.mat'),'P',...
-            'ux','uy','uz','rx','ry','rz',...
-            'n','mx','my','mz','epsx','gamx','gamy','gamz');
+    save(fullfile(pathname,'solution.mat'),'u','s','e','time',...
+        'Ux','Uy','Rz',...
+        'N','Mz','Epsx','Gamz');
+    save(fullfile(pathname,'test_solution.mat'),'P',...
+        'ux','uy','rz',...
+        'n','mz','epsx','gamz');
+    if Dim==3
+        save(fullfile(pathname,'solution.mat'),...
+            'Uz','Rx','Ry',...
+            'Mx','My','Gamx','Gamy','-append');
+        save(fullfile(pathname,'test_solution.mat'),...
+            'uz','rx','ry',...
+            'mx','my','gamx','gamy','-append');
     end
 else
     load(fullfile(pathname,'problem.mat'),'S',...
         'L','h','b','f');
-    if Dim==2
-        load(fullfile(pathname,'solution.mat'),'u','s','e','time',...
-            'Ux','Uy','Rz',...
-            'N','Mz','Epsx','Gamz');
-        load(fullfile(pathname,'test_solution.mat'),'P',...
-            'ux','uy','rz',...
-            'n','mz','epsx','gamz');
-    elseif Dim==3
-        load(fullfile(pathname,'solution.mat'),'u','s','e','time',...
-            'Ux','Uy','Uz','Rx','Ry','Rz',...
-            'N','Mx','My','Mz','Epsx','Gamx','Gamy','Gamz');
-        load(fullfile(pathname,'test_solution.mat'),'P',...
-            'ux','uy','uz','rx','ry','rz',...
-            'n','mx','my','mz','epsx','gamx','gamy','gamz');
+    load(fullfile(pathname,'solution.mat'),'u','s','e','time',...
+        'Ux','Uy','Rz',...
+        'N','Mz','Epsx','Gamz');
+    load(fullfile(pathname,'test_solution.mat'),'P',...
+        'ux','uy','rz',...
+        'n','mz','epsx','gamz');
+    if Dim==3
+        load(fullfile(pathname,'solution.mat'),...
+            'Uz','Rx','Ry',...
+            'Mx','My','Gamx','Gamy');
+        load(fullfile(pathname,'test_solution.mat'),...
+            'uz','rx','ry',...
+            'mx','my','gamx','gamy');
     end
 end
 

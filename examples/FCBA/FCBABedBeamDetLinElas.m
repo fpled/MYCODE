@@ -129,40 +129,35 @@ if solveProblem
     elemtype = 'BEAM';
     cl = b1/2;
     S_leg = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_leg_' num2str(n)])),P_leg,num2cell(1:length(P_leg)),'UniformOutput',false);
-    S_leg = cellfun(@(S) concatgroupelem(S),S_leg,'UniformOutput',false);
+    % S_leg = cellfun(@(S) concatgroupelem(S),S_leg,'UniformOutput',false);
     S_leg = union(S_leg{:});
-    S_leg = concatgroupelem(S_leg);
     S_leg = convertelem(S_leg,elemtype,'param',VECTEUR([1;0;0]));
     
     S_botrail = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_botrail_' num2str(n)])),P_botrail,num2cell(1:length(P_botrail)),'UniformOutput',false);
     S_botrail = union(S_botrail{:});
-    S_botrail = concatgroupelem(S_botrail);
     S_botrail = convertelem(S_botrail,elemtype,'param',VECTEUR([0;0;1]));
     
     S_siderail = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_siderail_' num2str(n)])),P_siderail,num2cell(1:length(P_siderail)),'UniformOutput',false);
-    S_siderail = cellfun(@(S) concatgroupelem(S),S_siderail,'UniformOutput',false);
+    % S_siderail = cellfun(@(S) concatgroupelem(S),S_siderail,'UniformOutput',false);
     S_siderail = union(S_siderail{:});
-    S_siderail = concatgroupelem(S_siderail);
     S_siderail = convertelem(S_siderail,elemtype,'param',VECTEUR([0;0;1]));
     
     S_endrail = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_endrail_' num2str(n)])),P_endrail,num2cell(1:length(P_endrail)),'UniformOutput',false);
     S_endrail = union(S_endrail{:});
-    S_endrail = concatgroupelem(S_endrail);
     S_endrail = convertelem(S_endrail,elemtype,'param',VECTEUR([0;0;1]));
     
     S_botguardrail = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_botguardrail_' num2str(n)])),P_botguardrail,num2cell(1:length(P_botguardrail)),'UniformOutput',false);
     S_topguardrail = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_topguardrail_' num2str(n)])),P_topguardrail,num2cell(1:length(P_topguardrail)),'UniformOutput',false);
+    % S_topguardrail = cellfun(@(S) concatgroupelem(S),S_topguardrail,'UniformOutput',false);
     S_guardrail = union(S_botguardrail{:},S_topguardrail{:});
-    S_guardrail = concatgroupelem(S_guardrail);
     S_guardrail = convertelem(S_guardrail,elemtype,'param',VECTEUR([0;0;1]));
     
     S_guardrailsupport = gmshbeam(P_guardrailsupport,cl,fullfile(pathname,'gmsh_guardrailsupport'));
-    S_guardrailsupport = concatgroupelem(S_guardrailsupport);
+    % S_guardrailsupport = concatgroupelem(S_guardrailsupport);
     S_guardrailsupport = convertelem(S_guardrailsupport,elemtype,'param',VECTEUR([1;0;0]));
     
     S_slat = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_slat_' num2str(n)])),P_slat,num2cell(1:length(P_slat)),'UniformOutput',false);
     S_slat = union(S_slat{:});
-    S_slat = concatgroupelem(S_slat);
     S_slat = convertelem(S_slat,elemtype,'param',VECTEUR([1;0;0]));
     
     %% Materials
@@ -225,24 +220,23 @@ if solveProblem
             % Transverse Young modulus
             ET = 12e9; % [Pa]
             % Longitudinal shear modulus
-            GL = mean(mean_GL_data)*1e6; % [Pa]
+            GL = 600e6; % [Pa]
             % Longitudinal Young modulus
-            % EL = mean(mean_EL_data)*1e6; % [Pa]
+            % EL = ET; % [Pa]
             % Longitudinal Poisson ratio
-            % NUL = mean(mean_NUL_data);
+            % NUL = 0.3;
             % Transverse Poisson ratio
             NUT = 0.3;
             % Material
-            mat_0 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec0,'IZ',IZ0,'IY',IY0,'IX',IX0,'RHO',RHO,'k',5/6);
-            ELAS_BEAM('E',E,'NU',NU,'S',Sec0,'IZ',IZ0,'IY',IY0,'IX',IX0,'RHO',RHO);
+            mat_0 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec0,'IZ',IZ0,'IY',IY0,'IX',IX0,'RHO',RHO);
             mat_0 = setnumber(mat_0,1);
-            mat_1 = ELAS_BEAM('E',E,'NU',NU,'S',Sec1,'IZ',IZ1,'IY',IY1,'IX',IX1,'RHO',RHO);
+            mat_1 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec1,'IZ',IZ1,'IY',IY1,'IX',IX1,'RHO',RHO);
             mat_1 = setnumber(mat_1,2);
-            mat_2 = ELAS_BEAM('E',E,'NU',NU,'S',Sec2,'IZ',IZ2,'IY',IY2,'IX',IX2,'RHO',RHO);
+            mat_2 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec2,'IZ',IZ2,'IY',IY2,'IX',IX2,'RHO',RHO);
             mat_2 = setnumber(mat_2,3);
-            mat_3 = ELAS_BEAM('E',E,'NU',NU,'S',Sec3,'IZ',IZ3,'IY',IY3,'IX',IX3,'RHO',RHO);
+            mat_3 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec3,'IZ',IZ3,'IY',IY3,'IX',IX3,'RHO',RHO);
             mat_3 = setnumber(mat_3,4);
-            mat_4 = ELAS_BEAM('E',E,'NU',NU,'S',Sec4,'IZ',IZ4,'IY',IY4,'IX',IX4,'RHO',RHO);
+            mat_4 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec4,'IZ',IZ4,'IY',IY4,'IX',IX4,'RHO',RHO);
             mat_4 = setnumber(mat_4,5);
             S_leg = setmaterial(S_leg,mat_0);
             S_botrail = setmaterial(S_botrail,mat_1);
@@ -280,10 +274,10 @@ if solveProblem
             f = nodalload(S,P_load,'FZ',-p);
         case 'statichoriin'
             P_load = POINT(x_load(2,:));
-            f = nodalload(S,P_load,'FY',p);
+            f = nodalload(S,P_load,'FY',-p);
         case 'statichoriout'
             P_load = POINT(x_load(2,:));
-            f = nodalload(S,P_load,'FY',-p);
+            f = nodalload(S,P_load,'FY',p);
     end
     f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_0)),[],'FZ',-p0);
     f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_1)),[],'FZ',-p1);
@@ -322,69 +316,69 @@ if solveProblem
     Mz = s(4);
     
     %% Test solution
-%     x_measure = x_topguardrail(5,:);
-%     P = POINT(x_measure);
-%     numnode = find(S.node==P);
-%     xP = x(numnode,:);
-%     
-%     ux = eval_sol(S,u,P,'UX');
-%     uy = eval_sol(S,u,P,'UY');
-%     uz = eval_sol(S,u,P,'UZ');
-%     rx = eval_sol(S,u,P,'RX');
-%     ry = eval_sol(S,u,P,'RY');
-%     rz = eval_sol(S,u,P,'RZ');
-%     
-%     [~,~,numgroupelem] = findelemwithnode(S,numnode);
-%     n = 0;
-%     mx = 0;
-%     my = 0;
-%     mz = 0;
-%     epsx = 0;
-%     gamx = 0;
-%     gamy = 0;
-%     gamz = 0;
-%     for i=1:length(numgroupelem)
-%         Ni  = reshape(N{numgroupelem(i)},[getnbnode(S),1]);
-%         Mxi = reshape(Mx{numgroupelem(i)},[getnbnode(S),1]);
-%         Myi = reshape(My{numgroupelem(i)},[getnbnode(S),1]);
-%         Mzi = reshape(Mz{numgroupelem(i)},[getnbnode(S),1]);
-%         Epsxi = reshape(Epsx{numgroupelem(i)},[getnbnode(S),1]);
-%         Gamxi = reshape(Gamx{numgroupelem(i)},[getnbnode(S),1]);
-%         Gamyi = reshape(Gamy{numgroupelem(i)},[getnbnode(S),1]);
-%         Gamzi = reshape(Gamz{numgroupelem(i)},[getnbnode(S),1]);
-%         ni = abs(double(Ni(numnode)));
-%         mxi = abs(double(Mxi(numnode)));
-%         myi = abs(double(Myi(numnode)));
-%         mzi = abs(double(Mzi(numnode)));
-%         epsxi = abs(double(Epsxi(numnode)));
-%         gamxi = abs(double(Gamxi(numnode)));
-%         gamyi = abs(double(Gamyi(numnode)));
-%         gamzi = abs(double(Gamzi(numnode)));
-%         n = max(n,ni);
-%         mx = max(mx,mxi);
-%         my = max(my,myi);
-%         mz = max(mz,mzi);
-%         epsx = max(epsx,epsxi);
-%         gamx = max(gamx,gamxi);
-%         gamy = max(gamy,gamyi);
-%         gamz = max(gamz,gamzi);
-%     end
+    x_measure = x_topguardrail(5,:);
+    P = POINT(x_measure);
+    numnode = find(S.node==P);
+    xP = x(numnode,:);
     
-    [ux,numnodeUx] = max(abs(full(Ux)));
-    [uy,numnodeUy] = max(abs(full(Uy)));
-    [uz,numnodeUz] = max(abs(full(Uz)));
-    [rx,numnodeRx] = max(abs(full(Rx)));
-    [ry,numnodeRy] = max(abs(full(Ry)));
-    [rz,numnodeRz] = max(abs(full(Rz)));
+    ux = eval_sol(S,u,P,'UX');
+    uy = eval_sol(S,u,P,'UY');
+    uz = eval_sol(S,u,P,'UZ');
+    rx = eval_sol(S,u,P,'RX');
+    ry = eval_sol(S,u,P,'RY');
+    rz = eval_sol(S,u,P,'RZ');
     
-    [n,numgroupelemnodeN] = max(abs(N));
-    [mx,numgroupelemnodeMx] = max(abs(Mx));
-    [my,numgroupelemnodeMy] = max(abs(My));
-    [mz,numgroupelemnodeMz] = max(abs(Mz));
-    [epsx,numgroupelemnodeEpsx] = max(abs(Epsx));
-    [gamx,numgroupelemnodeGamx] = max(abs(Gamx));
-    [gamy,numgroupelemnodeGamy] = max(abs(Gamy));
-    [gamz,numgroupelemnodeGamz] = max(abs(Gamz));
+    [~,~,numgroupelem] = findelemwithnode(S,numnode);
+    n = 0;
+    mx = 0;
+    my = 0;
+    mz = 0;
+    epsx = 0;
+    gamx = 0;
+    gamy = 0;
+    gamz = 0;
+    for i=1:length(numgroupelem)
+        Ni  = reshape(N{numgroupelem(i)},[getnbnode(S),1]);
+        Mxi = reshape(Mx{numgroupelem(i)},[getnbnode(S),1]);
+        Myi = reshape(My{numgroupelem(i)},[getnbnode(S),1]);
+        Mzi = reshape(Mz{numgroupelem(i)},[getnbnode(S),1]);
+        Epsxi = reshape(Epsx{numgroupelem(i)},[getnbnode(S),1]);
+        Gamxi = reshape(Gamx{numgroupelem(i)},[getnbnode(S),1]);
+        Gamyi = reshape(Gamy{numgroupelem(i)},[getnbnode(S),1]);
+        Gamzi = reshape(Gamz{numgroupelem(i)},[getnbnode(S),1]);
+        ni = abs(double(Ni(numnode)));
+        mxi = abs(double(Mxi(numnode)));
+        myi = abs(double(Myi(numnode)));
+        mzi = abs(double(Mzi(numnode)));
+        epsxi = abs(double(Epsxi(numnode)));
+        gamxi = abs(double(Gamxi(numnode)));
+        gamyi = abs(double(Gamyi(numnode)));
+        gamzi = abs(double(Gamzi(numnode)));
+        n = max(n,ni);
+        mx = max(mx,mxi);
+        my = max(my,myi);
+        mz = max(mz,mzi);
+        epsx = max(epsx,epsxi);
+        gamx = max(gamx,gamxi);
+        gamy = max(gamy,gamyi);
+        gamz = max(gamz,gamzi);
+    end
+    
+    [uxmax,numnodeUxmax] = max(abs(full(Ux)));
+    [uymax,numnodeUymax] = max(abs(full(Uy)));
+    [uzmax,numnodeUzmax] = max(abs(full(Uz)));
+    [rxmax,numnodeRxmax] = max(abs(full(Rx)));
+    [rymax,numnodeRymax] = max(abs(full(Ry)));
+    [rzmax,numnodeRzmax] = max(abs(full(Rz)));
+    
+    [nmax,numgroupelemnodeNmax] = max(abs(N));
+    [mxmax,numgroupelemnodeMxmax] = max(abs(Mx));
+    [mymax,numgroupelemnodeMymax] = max(abs(My));
+    [mzmax,numgroupelemnodeMzmax] = max(abs(Mz));
+    [epsxmax,numgroupelemnodeEpsxmax] = max(abs(Epsx));
+    [gamxmax,numgroupelemnodeGamxmax] = max(abs(Gamx));
+    [gamymax,numgroupelemnodeGamymax] = max(abs(Gamy));
+    [gamzmax,numgroupelemnodeGamzmax] = max(abs(Gamz));
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S','test',...
@@ -393,11 +387,13 @@ if solveProblem
     save(fullfile(pathname,'solution.mat'),'u','s','e','time',...
         'Ux','Uy','Uz','Rx','Ry','Rz',...
         'N','Mx','My','Mz','Epsx','Gamx','Gamy','Gamz');
-    save(fullfile(pathname,'test_solution.mat'),...
+    save(fullfile(pathname,'test_solution.mat'),'P',...
         'ux','uy','uz','rx','ry','rz',...
-        'numnodeUx','numnodeUy','numnodeUz','numnodeRx','numnodeRy','numnodeRz',... 
         'n','mx','my','mz','epsx','gamx','gamy','gamz',...
-        'numgroupelemnodeN','numgroupelemnodeMx','numgroupelemnodeMy','numgroupelemnodeMz','numgroupelemnodeEpsx','numgroupelemnodeGamx','numgroupelemnodeGamy','numgroupelemnodeGamz');
+        'uxmax','uymax','uzmax','rxmax','rymax','rzmax',...
+        'numnodeUxmax','numnodeUymax','numnodeUzmax','numnodeRxmax','numnodeRymax','numnodeRzmax',... 
+        'nmax','mxmax','mymax','mzmax','epsxmax','gamxmax','gamymax','gamzmax',...
+        'numgroupelemnodeNmax','numgroupelemnodeMxmax','numgroupelemnodeMymax','numgroupelemnodeMzmax','numgroupelemnodeEpsxmax','numgroupelemnodeGamxmax','numgroupelemnodeGamymax','numgroupelemnodeGamzmax');
 else
     load(fullfile(pathname,'problem.mat'),'S','test',...
         'H','L','L1','l','h','H1','H2','h1','h2','b1','b2','c','d','e',...
@@ -405,11 +401,13 @@ else
     load(fullfile(pathname,'solution.mat'),'u','s','e','time',...
         'Ux','Uy','Uz','Rx','Ry','Rz',...
         'N','Mx','My','Mz','Epsx','Gamx','Gamy','Gamz');
-    load(fullfile(pathname,'test_solution.mat'),...
+    load(fullfile(pathname,'test_solution.mat'),'P',...
         'ux','uy','uz','rx','ry','rz',...
-        'numnodeUx','numnodeUy','numnodeUz','numnodeRx','numnodeRy','numnodeRz',... 
         'n','mx','my','mz','epsx','gamx','gamy','gamz',...
-        'numgroupelemnodeN','numgroupelemnodeMx','numgroupelemnodeMy','numgroupelemnodeMz','numgroupelemnodeEpsx','numgroupelemnodeGamx','numgroupelemnodeGamy','numgroupelemnodeGamz');
+        'uxmax','uymax','uzmax','rxmax','rymax','rzmax',...
+        'numnodeUxmax','numnodeUymax','numnodeUzmax','numnodeRxmax','numnodeRymax','numnodeRzmax',... 
+        'nmax','mxmax','mymax','mzmax','epsxmax','gamxmax','gamymax','gamzmax',...
+        'numgroupelemnodeNmax','numgroupelemnodeMxmax','numgroupelemnodeMymax','numgroupelemnodeMzmax','numgroupelemnodeEpsxmax','numgroupelemnodeGamxmax','numgroupelemnodeGamymax','numgroupelemnodeGamzmax');
 end
 
 %% Outputs
@@ -421,41 +419,64 @@ fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
-disp('Maximum displacement u and rotation r');
-Pux = POINT(getcoord(S.node(numnodeUx)));
-Puy = POINT(getcoord(S.node(numnodeUy)));
-Puz = POINT(getcoord(S.node(numnodeUz)));
-Prx = POINT(getcoord(S.node(numnodeRx)));
-Pry = POINT(getcoord(S.node(numnodeRy)));
-Prz = POINT(getcoord(S.node(numnodeRz)));
-fprintf('ux = %g m at point (%g,%g,%g) m\n',ux,double(Pux));
-fprintf('uy = %g m at point (%g,%g,%g) m\n',uy,double(Puy));
-fprintf('uz = %g m at point (%g,%g,%g) m\n',uz,double(Puz));
-fprintf('rx = %g rad = %g deg at point (%g,%g,%g) m\n',rx,rad2deg(rx),double(Prx));
-fprintf('ry = %g rad = %g deg at point (%g,%g,%g) m\n',ry,rad2deg(ry),double(Pry));
-fprintf('rz = %g rad = %g deg at point (%g,%g,%g) m\n',rz,rad2deg(rz),double(Prz));
+fprintf('Displacement u and rotation r at point (%g,%g,%g) m\n',double(P));
+fprintf('ux = %g m\n',ux);
+fprintf('uy = %g m\n',uy);
+fprintf('uz = %g m\n',uz);
+fprintf('rx = %g rad = %g deg\n',rx,rad2deg(rx));
+fprintf('ry = %g rad = %g deg\n',ry,rad2deg(ry));
+fprintf('rz = %g rad = %g deg\n',rz,rad2deg(rz));
 fprintf('\n');
 
-disp('Maximum force N and moments Mx, My, Mz');
-PN = POINT(getcoord(S.node(numgroupelemnodeN(2))));
-PMx = POINT(getcoord(S.node(numgroupelemnodeMx(2))));
-PMy = POINT(getcoord(S.node(numgroupelemnodeMy(2))));
-PMz = POINT(getcoord(S.node(numgroupelemnodeMz(2))));
-fprintf('N  = %g N in groupelem #%d at point (%g,%g,%g) m\n',n,numgroupelemnodeN(1),double(PN));
-fprintf('Mx = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mx,numgroupelemnodeMx(1),double(PMx));
-fprintf('My = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',my,numgroupelemnodeMy(1),double(PMy));
-fprintf('Mz = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mz,numgroupelemnodeMz(1),double(PMz));
+fprintf('Maximum force N and moments Mx, My, Mz at point (%g,%g,%g) m\n',double(P));
+fprintf('N  = %g N\n',n);
+fprintf('Mx = %g N.m\n',mx);
+fprintf('My = %g N.m\n',my);
+fprintf('Mz = %g N.m\n',mz);
 fprintf('\n');
 
-disp('Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz');
-PEpsx = POINT(getcoord(S.node(numgroupelemnodeEpsx(2))));
-PGamx = POINT(getcoord(S.node(numgroupelemnodeGamx(2))));
-PGamy = POINT(getcoord(S.node(numgroupelemnodeGamy(2))));
-PGamz = POINT(getcoord(S.node(numgroupelemnodeGamz(2))));
-fprintf('Epsx = %g in groupelem #%d at point (%g,%g,%g) m\n',epsx,numgroupelemnodeEpsx(1),double(PEpsx));
-fprintf('Gamx = %g in groupelem #%d at point (%g,%g,%g) m\n',gamx,numgroupelemnodeGamx(1),double(PGamx));
-fprintf('Gamy = %g in groupelem #%d at point (%g,%g,%g) m\n',gamy,numgroupelemnodeGamy(1),double(PGamy));
-fprintf('Gamz = %g in groupelem #%d at point (%g,%g,%g) m\n',gamz,numgroupelemnodeGamz(1),double(PGamz));
+fprintf('Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point (%g,%g,%g) m\n',double(P));
+fprintf('Epsx = %g\n',epsx);
+fprintf('Gamx = %g\n',gamx);
+fprintf('Gamy = %g\n',gamy);
+fprintf('Gamz = %g\n',gamz);
+fprintf('\n');
+
+fprintf('Maximum displacement u and rotation r\n');
+Puxmax = POINT(getcoord(S.node(numnodeUxmax)));
+Puymax = POINT(getcoord(S.node(numnodeUymax)));
+Puzmax = POINT(getcoord(S.node(numnodeUzmax)));
+Prxmax = POINT(getcoord(S.node(numnodeRxmax)));
+Prymax = POINT(getcoord(S.node(numnodeRymax)));
+Przmax = POINT(getcoord(S.node(numnodeRzmax)));
+fprintf('ux = %g m at point (%g,%g,%g) m\n',uxmax,double(Puxmax));
+fprintf('uy = %g m at point (%g,%g,%g) m\n',uymax,double(Puymax));
+fprintf('uz = %g m at point (%g,%g,%g) m\n',uzmax,double(Puzmax));
+fprintf('rx = %g rad = %g deg at point (%g,%g,%g) m\n',rxmax,rad2deg(rxmax),double(Prxmax));
+fprintf('ry = %g rad = %g deg at point (%g,%g,%g) m\n',rymax,rad2deg(rymax),double(Prymax));
+fprintf('rz = %g rad = %g deg at point (%g,%g,%g) m\n',rzmax,rad2deg(rzmax),double(Przmax));
+fprintf('\n');
+
+fprintf('Maximum force N and moments Mx, My, Mz\n');
+PNmax = POINT(getcoord(S.node(numgroupelemnodeNmax(2))));
+PMxmax = POINT(getcoord(S.node(numgroupelemnodeMxmax(2))));
+PMymax = POINT(getcoord(S.node(numgroupelemnodeMymax(2))));
+PMzmax = POINT(getcoord(S.node(numgroupelemnodeMzmax(2))));
+fprintf('N  = %g N in groupelem #%d at point (%g,%g,%g) m\n',nmax,numgroupelemnodeNmax(1),double(PNmax));
+fprintf('Mx = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mxmax,numgroupelemnodeMxmax(1),double(PMxmax));
+fprintf('My = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mymax,numgroupelemnodeMymax(1),double(PMymax));
+fprintf('Mz = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mzmax,numgroupelemnodeMzmax(1),double(PMzmax));
+fprintf('\n');
+
+fprintf('Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz\n');
+PEpsxmax = POINT(getcoord(S.node(numgroupelemnodeEpsxmax(2))));
+PGamxmax = POINT(getcoord(S.node(numgroupelemnodeGamxmax(2))));
+PGamymax = POINT(getcoord(S.node(numgroupelemnodeGamymax(2))));
+PGamzmax = POINT(getcoord(S.node(numgroupelemnodeGamzmax(2))));
+fprintf('Epsx = %g in groupelem #%d at point (%g,%g,%g) m\n',epsxmax,numgroupelemnodeEpsxmax(1),double(PEpsxmax));
+fprintf('Gamx = %g in groupelem #%d at point (%g,%g,%g) m\n',gamxmax,numgroupelemnodeGamxmax(1),double(PGamxmax));
+fprintf('Gamy = %g in groupelem #%d at point (%g,%g,%g) m\n',gamymax,numgroupelemnodeGamymax(1),double(PGamymax));
+fprintf('Gamz = %g in groupelem #%d at point (%g,%g,%g) m\n',gamzmax,numgroupelemnodeGamzmax(1),double(PGamzmax));
 fprintf('\n');
 
 %% Display
@@ -463,14 +484,14 @@ if displaySolution
     %% Display domains, boundary conditions and meshes
     figure('Name','Domain')
     clf
-    h1 = plot(S,'selgroup',1,'EdgeColor','k');
+    h1 = plot(S,'selgroup',getnumgroupelemwithfield(S,'material',mat_0),'EdgeColor','k');
     hold on
-    h2 = plot(S,'selgroup',2,'EdgeColor','c');
-    h3 = plot(S,'selgroup',3,'EdgeColor','r');
-    h4 = plot(S,'selgroup',4,'EdgeColor',[1 0.5 0]);
-    h5 = plot(S,'selgroup',5,'EdgeColor','b');
-    h6 = plot(S,'selgroup',6,'EdgeColor','m');
-    h7 = plot(S,'selgroup',7,'EdgeColor','g');
+    h2 = plot(S,'selgroup',21:23,'EdgeColor','c');
+    h3 = plot(S,'selgroup',24:54,'EdgeColor','r');
+    h4 = plot(S,'selgroup',getnumgroupelemwithfield(S,'material',mat_2),'EdgeColor',[1 0.5 0]);
+    h5 = plot(S,'selgroup',57:66,'EdgeColor','b');
+    h6 = plot(S,'selgroup',getnumgroupelemwithfield(S,'material',mat_3),'EdgeColor','m');
+    h7 = plot(S,'selgroup',getnumgroupelemwithfield(S,'material',mat_4),'EdgeColor','g');
     hold off
     set(gca,'FontSize',16)
     l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1),h7(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','slat','Location','NorthEastOutside');
@@ -493,11 +514,11 @@ if displaySolution
     [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     ampl = 5;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
-    hPN = plot(PN,'r+');
-    hPMx = plot(PMx,'g+');
-    hPMy = plot(PMy,'b+');
-    hPMz = plot(PMz,'m+');
-    legend([hD,hN,hPN,hPMx,hPMy,hPMz],[legD,legN,'N max','Mx max','My max','Mz max'],'Location','NorthEastOutside')
+    hPNmax = plot(PNmax,'r+');
+    hPMxmax = plot(PMxmax,'g+');
+    hPMymax = plot(PMymax,'b+');
+    hPMzmax = plot(PMzmax,'m+');
+    legend([hD,hN,hPNmax,hPMxmax,hPMymax,hPMzmax],[legD,legN,'N max','Mx max','My max','Mz max'],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','node',true,'legend',false);
