@@ -107,6 +107,7 @@ if solveProblem
     
     ls = LinearModelLearningSquareLoss();
     ls.errorEstimation = true;
+    ls.sharedCoefficients = false;
     
     % if isanlsolver(pb.solver)
     %     u0 = solveSystem(calcOperator(funEval(pb,mean(rv))));

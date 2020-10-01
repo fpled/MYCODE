@@ -223,6 +223,7 @@ if directSolver
     
     ls = LinearModelLearningSquareLoss();
     ls.errorEstimation = true;
+    ls.sharedCoefficients = false;
     
     DS = DirectSolver();
     DS.changeOfVariable = false;

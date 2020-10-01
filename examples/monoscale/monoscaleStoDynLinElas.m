@@ -130,6 +130,7 @@ if solveProblem
     
     ls = LinearModelLearningSquareLoss();
     ls.errorEstimation = true;
+    ls.sharedCoefficients = false;
     
     funt = @(xi) solveSystem(calcOperator(funEval(pb,xi)));
     funt = UserDefinedFunction(funt,d,getnbddlfree(pb.S)*getnbtimedof(pb.timeSolver));

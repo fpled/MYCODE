@@ -162,6 +162,7 @@ if solveProblem
     
     ls = LinearModelLearningSquareLoss();
     ls.errorEstimation = true;
+    ls.sharedCoefficients = false;
     
     pbt = pb;
     
