@@ -1,12 +1,12 @@
 %% Nonparametric model for symmetric positive-definite real-valued random matrices %%
 %%---------------------------------------------------------------------------------%%
-% [Soize, 2000, PEM]
+% [Soize, 2000, PEM], [Soize, 2017, Springer]
 
 % clc
 clearvars
 close all
-% rng('default');
-myparallel('start');
+rng('default');
+% myparallel('start');
 
 %% Input data
 displayCv = true;
@@ -26,40 +26,48 @@ formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 %% Nonparametric model
-n = 3;
+n = 6; % dimension
 R = randn(n); % generate a n-by-n normal random matrix
 A = R*R'; % construct a symmetric positive (semi-)definite matrix
+% A = eye(n);
 L = chol(A); % upper Cholesky factor of A so that A = L'*L
 
 N = 1e3; % nb samples
 
-gam = 2; % existence of second-order moments of the inverse of random matrix
 delta = 0.1; % dispersion parameter
-% lambda = 1/(2*delta^2)*(1-delta^2*(n-1)+trace(A)^2/trace(A^2));
-lambda = round(1/(2*delta^2)*(1-delta^2*(n-1)+trace(A)^2/trace(A^2)));
+delta_sup = sqrt((n+1)/(n+5));
+if delta>=delta_sup
+    error('Parameter delta = %g should be < %g',delta,delta_sup)
+end
+
+gam = 2; % existence of second-order moments of the inverse of random matrix
+lambda = 1/(2*delta^2)*(1-delta^2*(n-1)+trace(A)^2/trace(A^2));
+% lambda = round(lambda);
 lambda_inf = max(0,(gam-1)/n+(3-n)/2);
 if lambda<=lambda_inf
     error('Parameter lambda = %g should be > %g',lambda,lambda_inf)
 end
 m = n-1+2*lambda;
-sigma = sqrt(2/m);
+% sigma = sqrt(1/m);
+sigma = delta/sqrt(n+1);
 
 % Univariate normal and Gamma distributions
-a = (n-(1:n)'+2*lambda)/2;
+% a = (n-(1:n)'+2*lambda)/2;
+a = 1/(2*sigma.^2) + (1-(1:n)')/2;
 a_ngam = zeros(n,n,N);
 t = tic;
-parfor i=1:N
+for i=1:N
     U = randn(n*(n-1)/2,1); % generate a (n*(n-1)/2)-by-1 random vector U of n*(n-1)/2 standard normal random variables U_l, centered (with zero mean) and reduced (with unit variance)
     X = sigma*U; % (n*(n-1)/2)-by-1 random vector X of n*(n-1)/2 normal random variables X_j, centered (with zero mean) and a common standard deviation sigma
     LL = triu(ones(n),1);
-    LL(LL==1) = 1/sqrt(2)*X; % non diagonal part of random matrix LL
+    LL(LL==1)= X; % non diagonal part of random matrix LL
     Y = gamrnd(a,1); % generate a n-by-1 random vector Y of n Gamma random variables Y_l with shape parameter a=(n-l+2*lambda)/2 and scale parameter b=1
-    LL = LL + diag(sigma*sqrt(Y)); % add diagonal part of random matrix LL
+    LL = LL + diag(sigma*sqrt(2*Y)); % add diagonal part of random matrix LL
     G = LL'*LL;
     a_ngam(:,:,i) = L'*G*L;
 end
 err_mean_ngam = zeros(N,1);
-parfor i=1:N
+for i=1:N
     err_mean_ngam(i) = norm(mean(a_ngam(:,:,1:i),3)-A,'fro')/norm(A,'fro');
 end
 time_ngam = toc(t);
@@ -70,11 +78,11 @@ if mod(lambda,1)==0
     % Wishart distribution
     a_wish = zeros(n,n,N);
     t = tic;
-    parfor i=1:N
+    for i=1:N
         a_wish(:,:,i) = wishrnd(C,m); % generate a n-by-n Wishart random matrix a_wish with n-by-n covariance matrix C and with m degrees of freedom
     end
     err_mean_wish = zeros(N,1);
-    parfor i=1:N
+    for i=1:N
         err_mean_wish(i) = norm(mean(a_wish(:,:,1:i),3)-A,'fro')/norm(A,'fro');
     end
     time_wish = toc(t);
@@ -82,12 +90,12 @@ if mod(lambda,1)==0
     % Multivariate normal distribution
     a_mvn = zeros(n,n,N);
     t = tic;
-    parfor i=1:N
+    for i=1:N
         X = mvnrnd(zeros(1,n),C,m)'; % generate a n-by-m matrix X of m normal random vectors X_j, centered (with zero mean vector) and a common n-by-n covariance matrix C
         a_mvn(:,:,i) = X*X';
     end
     err_mean_mvn = zeros(N,1);
-    parfor i=1:N
+    for i=1:N
         err_mean_mvn(i) = norm(mean(a_mvn(:,:,1:i),3)-A,'fro')/norm(A,'fro');
     end
     time_mvn = toc(t);
@@ -95,13 +103,13 @@ if mod(lambda,1)==0
     % Multivariate standard normal distribution
     a_stdmvn = zeros(n,n,N);
     t = tic;
-    parfor i=1:N
+    for i=1:N
         U = mvnrnd(zeros(1,n),eye(n),m)'; % generate a n-by-m matrix U of m standard normal random vectors U_j, centered (with zero mean vector) and reduced (with identity covariance matrix)
         X = 1/sqrt(m)*L'*U;
         a_stdmvn(:,:,i) = X*X';
     end
     err_mean_stdmvn = zeros(N,1);
-    parfor i=1:N
+    for i=1:N
         err_mean_stdmvn(i) = norm(mean(a_stdmvn(:,:,1:i),3)-A,'fro')/norm(A,'fro');
     end
     time_stdmvn = toc(t);
@@ -144,6 +152,7 @@ if displayCv
     figure('Name','Convergence empirical mean')
     clf
     loglog(1:N,err_mean_ngam,'-b','LineWidth',linewidth)
+    %plot(1:N,err_mean_ngam,'-b','LineWidth',linewidth)
     hold on
     if mod(lambda,1)==0 % check if lambda is an integer
         loglog(1:N,err_mean_wish,'-r','LineWidth',linewidth)
@@ -169,4 +178,4 @@ if displayCv
     mymatlab2tikz(pathname,'convergence_empirical_mean.tex');
 end
 
-myparallel('stop');
+% myparallel('stop');
