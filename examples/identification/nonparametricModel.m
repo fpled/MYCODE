@@ -60,7 +60,7 @@ for i=1:N
     U = randn(n*(n-1)/2,1); % generate a (n*(n-1)/2)-by-1 random vector U of n*(n-1)/2 standard normal random variables U_l, centered (with zero mean) and reduced (with unit variance)
     X = sigma*U; % (n*(n-1)/2)-by-1 random vector X of n*(n-1)/2 normal random variables X_j, centered (with zero mean) and a common standard deviation sigma
     LL = triu(ones(n),1);
-    LL(LL==1)= X; % non diagonal part of random matrix LL
+    LL(LL==1) = X; % non diagonal part of random matrix LL
     Y = gamrnd(a,1); % generate a n-by-1 random vector Y of n Gamma random variables Y_l with shape parameter a=(n-l+2*lambda)/2 and scale parameter b=1
     LL = LL + diag(sigma*sqrt(2*Y)); % add diagonal part of random matrix LL
     G = LL'*LL;
