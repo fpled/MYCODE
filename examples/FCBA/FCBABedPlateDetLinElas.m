@@ -10,9 +10,9 @@ solveProblem = true;
 displaySolution = true;
 
 % tests = {'StaticVertUp'}; % test under static vertical upward load
-tests = {'StaticVertDown'}; % test under static vertical downward load
+% tests = {'StaticVertDown'}; % test under static vertical downward load
 % tests = {'StaticHoriIn'}; % test under static horizontal inward load
-% tests = {'StaticHoriOut'}; % test under static horizontal outward load
+tests = {'StaticHoriOut'}; % test under static horizontal outward load
 % tests = {'StaticVertUp','StaticVertDown','StaticHoriIn','StaticHoriOut'};
 
 junction = false; % junction modeling
@@ -52,6 +52,7 @@ if solveProblem
     c = 50e-3;
     d = 70e-3;
     e = 10e-3;
+    d_load = 100e-3;
     
     % Points
     x_bot = [0.0,0.0,0.0;
@@ -115,7 +116,7 @@ if solveProblem
     end
     x_cross = [L-L1-c/2-h2,0.0,H2+h1/2];
     x_load = [(L-c)/2,l-c,H2+2*(h1+d)+h1/2;
-        100e-3-c/2,l-c,H2+2*(h1+d)+h1/2];
+        d_load-c/2,l-c,H2+2*(h1+d)+h1/2];
     x_measure = [0.0,l-c,H2+2*(h1+d)+h1/2];
     
     P_leg{1} = {x_bot(1,:),x_botrail(1,:),x_botrail(2,:),x_toprail(1,:),x_toprail(2,:),x_botguardrail(1,:),x_botguardrail(2,:),x_topguardrail(1,:),x_top(1,:)};
@@ -266,7 +267,7 @@ if solveProblem
             % Transverse Poisson ratio
             NUT = 0.3;
             % Material
-            mat_0 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec0,'IZ',IZ0,'IY',IY0,'RHO',RHO);
+            mat_0 = ELAS_BEAM_ISOT_TRANS('EL',ET,'NUT',NUT,'GL',GL,'S',Sec0,'IZ',IZ0,'IY',IY0,'IX',IX0,'RHO',RHO);
             mat_0 = setnumber(mat_0,1);
             mat_1 = ELAS_SHELL_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'RHO',RHO,'DIM3',b1,'k',5/6);
             mat_1 = setnumber(mat_1,2);

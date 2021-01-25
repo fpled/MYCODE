@@ -118,9 +118,9 @@ if solveProblem
             % Transverse Poisson ratio
             NUT = 0.25;
             % Material
-            mat_1 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec1,'IZ',IZ1,'IY',IY1,'IX',IX1,'RHO',RHO);
+            mat_1 = ELAS_BEAM_ISOT_TRANS('EL',ET,'NUT',NUT,'GL',GL,'S',Sec1,'IZ',IZ1,'IY',IY1,'IX',IX1,'RHO',RHO);
             mat_1 = setnumber(mat_1,1);
-            mat_2 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec2,'IZ',IZ2,'IY',IY2,'IX',IX2,'RHO',RHO);
+            mat_2 = ELAS_BEAM_ISOT_TRANS('EL',ET,'NUT',NUT,'GL',GL,'S',Sec2,'IZ',IZ2,'IY',IY2,'IX',IX2,'RHO',RHO);
             mat_2 = setnumber(mat_2,2);
             S_beam([1,4]) = cellfun(@(S) setmaterial(S,mat_1),S_beam([1,4]),'UniformOutput',false);
             S_beam([2,3]) = cellfun(@(S) setmaterial(S,mat_2),S_beam([2,3]),'UniformOutput',false);

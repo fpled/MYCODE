@@ -85,7 +85,7 @@ if setProblem
     % Regularization parameter (width of the smeared crack)
     l = 0.025*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
     % l = 0.01*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
-    % Small parameter
+    % Small artificial residual stiffness
     k = 1e-10;
     % Internal energy
     H = 0;
@@ -207,9 +207,9 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','sizemap','C','CL','CR','B','BU','BL','BR','PU','PL','PR','gc','l','E','g');
+    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','sizemap','C','CL','CR','B','BU','BL','BR','PU','PL','PR','gc','l','E','g','k');
 else
-    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','sizemap','C','CL','CR','B','BU','BL','BR','PU','PL','PR','gc','l','E','g');
+    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','sizemap','C','CL','CR','B','BU','BL','BR','PU','PL','PR','gc','l','E','g','k');
 end
 
 %% Solution

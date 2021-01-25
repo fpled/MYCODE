@@ -10,9 +10,9 @@ solveProblem = true;
 displaySolution = true;
 
 % tests = {'StaticVertUp'}; % test under static vertical upward load
-tests = {'StaticVertDown'}; % test under static vertical downward load
+% tests = {'StaticVertDown'}; % test under static vertical downward load
 % tests = {'StaticHoriIn'}; % test under static horizontal inward load
-% tests = {'StaticHoriOut'}; % test under static horizontal outward load
+tests = {'StaticHoriOut'}; % test under static horizontal outward load
 % tests = {'StaticVertUp','StaticVertDown','StaticHoriIn','StaticHoriOut'};
 
 junction = false; % junction modeling
@@ -52,6 +52,7 @@ if solveProblem
     c = 50e-3;
     d = 70e-3;
     e = 10e-3;
+    d_load = 100e-3;
     
     % Points
     x_bot = [0.0,0.0,0.0;
@@ -87,7 +88,7 @@ if solveProblem
         x_slat(2*i,:) = [b2/2+e+d/2+(i-1)*2*d,l-c,H2+h1/2];
     end
     x_load = [(L-c)/2,l-c,H2+2*(h1+d)+h1/2;
-        100e-3-c/2,l-c,H2+2*(h1+d)+h1/2];
+        d_load-c/2,l-c,H2+2*(h1+d)+h1/2];
     
     P_leg{1} = {x_bot(1,:),x_botrail(1,:),x_toprail(1,:),x_botguardrail(1,:),x_topguardrail(1,:),x_top(1,:)};
     P_leg{2} = {x_bot(2,:),x_botrail(2,:),x_toprail(3,:),x_botguardrail(3,:),x_topguardrail(3,:),x_top(2,:)};
@@ -228,15 +229,15 @@ if solveProblem
             % Transverse Poisson ratio
             NUT = 0.3;
             % Material
-            mat_0 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec0,'IZ',IZ0,'IY',IY0,'IX',IX0,'RHO',RHO);
+            mat_0 = ELAS_BEAM_ISOT_TRANS('EL',ET,'NUT',NUT,'GL',GL,'S',Sec0,'IZ',IZ0,'IY',IY0,'IX',IX0,'RHO',RHO);
             mat_0 = setnumber(mat_0,1);
-            mat_1 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec1,'IZ',IZ1,'IY',IY1,'IX',IX1,'RHO',RHO);
+            mat_1 = ELAS_BEAM_ISOT_TRANS('EL',ET,'NUT',NUT,'GL',GL,'S',Sec1,'IZ',IZ1,'IY',IY1,'IX',IX1,'RHO',RHO);
             mat_1 = setnumber(mat_1,2);
-            mat_2 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec2,'IZ',IZ2,'IY',IY2,'IX',IX2,'RHO',RHO);
+            mat_2 = ELAS_BEAM_ISOT_TRANS('EL',ET,'NUT',NUT,'GL',GL,'S',Sec2,'IZ',IZ2,'IY',IY2,'IX',IX2,'RHO',RHO);
             mat_2 = setnumber(mat_2,3);
-            mat_3 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec3,'IZ',IZ3,'IY',IY3,'IX',IX3,'RHO',RHO);
+            mat_3 = ELAS_BEAM_ISOT_TRANS('EL',ET,'NUT',NUT,'GL',GL,'S',Sec3,'IZ',IZ3,'IY',IY3,'IX',IX3,'RHO',RHO);
             mat_3 = setnumber(mat_3,4);
-            mat_4 = ELAS_BEAM_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'S',Sec4,'IZ',IZ4,'IY',IY4,'IX',IX4,'RHO',RHO);
+            mat_4 = ELAS_BEAM_ISOT_TRANS('EL',ET,'NUT',NUT,'GL',GL,'S',Sec4,'IZ',IZ4,'IY',IY4,'IX',IX4,'RHO',RHO);
             mat_4 = setnumber(mat_4,5);
             S_leg = setmaterial(S_leg,mat_0);
             S_botrail = setmaterial(S_botrail,mat_1);

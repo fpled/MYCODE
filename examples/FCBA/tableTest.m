@@ -16,7 +16,7 @@ if ~exist(pathname,'dir')
 end
 
 %% Mesh
-S = gmsh2femobject(3,'table.msh');
+S = gmsh2femobject(3,'tableTest.msh');
 
 %% Materials
 % Material symmetry

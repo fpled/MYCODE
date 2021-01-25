@@ -1,14 +1,14 @@
 %% Phase field fracture model - deterministic linear elasticity problem with single edge crack %%
 %%---------------------------------------------------------------------------------------------%%
-% [Bourdin, Francfort, Marigo, 2000, JMPS]
-% [Miehe, Welschinger, Hofacker, 2010 IJNME]
-% [Miehe, Hofacker, Welschinger, 2010, CMAME]
-% [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
-% [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-% [Ambati, Gerasimov, De Lorenzis, 2015, CM]
-% [Liu, Li, Msekh, Zuo, 2016, CMS]
-% [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
-% [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
+% [Bourdin, Francfort, Marigo, 2000, JMPS] (isotropic phase field model with no split of Bourdin et al.)
+% [Miehe, Welschinger, Hofacker, 2010 IJNME] (anisotropic phase field model of Miehe et al.)
+% [Miehe, Hofacker, Welschinger, 2010, CMAME] (anisotropic phase field model of Miehe et al.)
+% [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME] (anisotropic phase field model of Miehe et al.)
+% [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM] (anisotropic phase field model of Miehe et al.)
+% [Ambati, Gerasimov, De Lorenzis, 2015, CM] (hybrid isotropic-anisotropic phase field model of Ambati et al. compared with the isotropic one of Bourdin et al. and the anisotropic ones of Amor et al. and Miehe et al.)
+% [Liu, Li, Msekh, Zuo, 2016, CMS] (anisotropic phase field model of Miehe et al.)
+% [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM] (anisotropic phase field model of Wu et al.)
+% [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US] (anisotropic phase field model of Amor et al.)
 
 % clc
 clearvars
@@ -88,10 +88,10 @@ if setProblem
     % l = 1e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
     % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
     % l = 3.75e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
+    l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS]
     % l = 4e-6, % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
     % eta = 0.052; w0 = 75.94; l = eta/sqrt(w0)*1e-3; % l = 6e-7; % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
-    l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS]
-    % Small parameter
+    % Small artificial residual stiffness
     k = 1e-10;
     % Internal energy
     H = 0;
@@ -290,9 +290,9 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','CU','CL','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','CU','CL','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g','k');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','CU','CL','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','CU','CL','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g','k');
 end
 
 %% Solution
