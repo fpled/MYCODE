@@ -73,7 +73,7 @@ if setProblem
     % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
     % l = 3.75e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
     l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS]
-    % l = 4e-6, % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
+    % l = 4e-6; % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
     % eta = 0.052; w0 = 75.94; l = eta/sqrt(w0)*1e-3; % l = 6e-7; % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
     % Small artificial residual stiffness
     k = 1e-10;
@@ -107,7 +107,7 @@ if setProblem
     % b_phase = b_phase + calc_vector(l_phase,S_phase);
     
     % [A_phase,b_phase] = calc_rigi(S_phase);
-    % b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H); 
+    % b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
     
     %% Linear elastic displacement field problem
     %% Materials

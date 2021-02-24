@@ -57,8 +57,8 @@ if setProblem
         % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
         clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
         clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
-        clD = 2e-5; % test
-        clC = 2e-5;
+        clD = 1.5e-5; % test
+        clC = 1.5e-5; % test
     elseif Dim==3
         clD = 4e-5;
         clC = 4e-6;
@@ -75,7 +75,7 @@ if setProblem
     % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
     % l = 3.75e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
     l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS]
-    % l = 4e-6, % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
+    % l = 4e-6; % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
     % eta = 0.052; w0 = 75.94; l = eta/sqrt(w0)*1e-3; % l = 6e-7; % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
     % Small artificial residual stiffness
     k = 1e-10;
@@ -109,7 +109,7 @@ if setProblem
     % b_phase = b_phase + calc_vector(l_phase,S_phase);
     
     % [A_phase,b_phase] = calc_rigi(S_phase);
-    % b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H); 
+    % b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
     
     %% Linear elastic displacement field problem
     %% Materials
@@ -138,7 +138,8 @@ if setProblem
     RHO = 1;
     
     % Material
-    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e);
+    d = calc_init_dirichlet(S_phase);
+    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM','isotropic');
     mat = setnumber(mat,1);
     S = setoption(S,option);
     S = setmaterial(S,mat);
@@ -202,9 +203,14 @@ if setProblem
                 % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
                 dt0 = 1e-8;
                 nt0 = 500;
+                dt0 = 1e-7; % test
+                nt0 = 50; % test
                 t0 = linspace(dt0,nt0*dt0,nt0);
                 dt1 = 1e-9;
                 nt1 = 1300;
+                dt1 = 1e-8; % test
+                nt1 = 130; % test
+                %
                 t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                 t = [t0,t1];
                 
@@ -253,10 +259,10 @@ if setProblem
                 
                 % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
                 % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM], [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
-%                 dt = 1e-8;
-%                 nt = 2000;                
-                dt = 1e-7;
-                nt = 200;
+                dt = 1e-8;
+                nt = 2000;
+                dt = 1e-7; % test
+                nt = 200; % test
                 t = linspace(dt,nt*dt,nt);
         end
     elseif Dim==3
@@ -267,9 +273,9 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g','k');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','gc','l');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','gc','l','E','g','k');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','gc','l');
 end
 
 %% Solution
@@ -296,14 +302,8 @@ if solveProblem
     for i=1:length(T)
         
         % Internal energy field
-        mats = MATERIALS(S);
-        for m=1:length(mats)
-            mats{m} = setparam(mats{m},'E',E);
-        end
-        S = actualisematerials(S,mats);
-        
         h_old = double(H);
-        H = FENODEFIELD(calc_energyint(S,u,'node'));
+        H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
         h = double(H);
         rep = find(h <= h_old);
         h(rep) = h_old(rep);
@@ -323,8 +323,10 @@ if solveProblem
         d = unfreevector(S_phase,d);
         
         % Displacement field
+        mats = MATERIALS(S);
         for m=1:length(mats)
-            mats{m} = setparam(mats{m},'E',FENODEFIELD(E.*(g(d)+k)));
+            mats{m} = setparam(mats{m},'d',d);
+            mats{m} = setparam(mats{m},'u',u);
         end
         S = actualisematerials(S,mats);
         S = removebc(S);
@@ -465,10 +467,10 @@ if displaySolution
     
 %     evolSolution(S_phase,Ht,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
     
-    evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
-    for i=1:Dim
-        evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
-    end
+%     evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
+%     for i=1:Dim
+%         evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
+%     end
     
 %     for i=1:(Dim*(Dim+1)/2)
 %         evolSolution(S,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});

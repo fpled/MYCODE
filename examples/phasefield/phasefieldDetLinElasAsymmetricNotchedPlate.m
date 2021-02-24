@@ -1,18 +1,18 @@
 %% Phase field fracture model - deterministic linear elasticity problem  %%
 %  Asymmetric notched plate with three holes under three-point bending   %%
 %%-----------------------------------------------------------------------%%
-% [Ingraffea, Grigoriu, 1990]
-% [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM]
-% [Ventura, Xu, Belytschko, 2002, IJNME]
-% [Guidault, Allix, Champaney, Cornuault, 2008, CMAME]
-% [Miehe, Welschinger, Hofacker, 2010, IJNME]
-% [Miehe, Hofacker, Welschinger, 2010, CMAME]
-% [Häusler, Lindhorst, Horst, 2011, IJNME]
-% [Geniaut, Galenne, 2012, IJSS]
-% [Passieux, Rethore, Gravouil, Baietto, 2013, CM]
-% [Ambati, Gerasimov, De Lorenzis, 2015, CM]
-% [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
-% [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
+% [Ingraffea, Grigoriu, 1990] (experimental tests)
+% [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM] (SIF-based method with local remeshing and special FE)
+% [Ventura, Xu, Belytschko, 2002, IJNME] (vector level set method with discontinuous enrichment in meshless method)
+% [Guidault, Allix, Champaney, Cornuault, 2008, CMAME] (MsXFEM)
+% [Miehe, Welschinger, Hofacker, 2010, IJNME] (anisotropic phase field model of Miehe et al.)
+% [Miehe, Hofacker, Welschinger, 2010, CMAME] (anisotropic phase field model of Miehe et al.)
+% [Häusler, Lindhorst, Horst, 2011, IJNME] (XFEM)
+% [Geniaut, Galenne, 2012, IJSS] (XFEM)
+% [Passieux, Rethore, Gravouil, Baietto, 2013, CM] (XFEM)
+% [Ambati, Gerasimov, De Lorenzis, 2015, CM] (hybrid isotropic-anisotropic phase field model of Ambati et al. compared with the isotropic one of Bourdin et al. and the anisotropic ones of Amor et al. and Miehe et al.)
+% [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (isotropic phase field model with no split of Bourdin et al. compared to experimental data of [Winkler PhD thesis, 2001])
+% [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM] (anisotropic phase field model of Wu et al.)
 
 % clc
 clearvars
@@ -113,7 +113,7 @@ if setProblem
     % b_phase = b_phase + calc_vector(l_phase,S_phase);
     
     % [A_phase,b_phase] = calc_rigi(S_phase);
-    % b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H); 
+    % b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
     
     %% Linear elastic displacement field problem
     %% Materials
@@ -140,7 +140,8 @@ if setProblem
     RHO = 1;
     
     % Material
-    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3);
+    d = calc_init_dirichlet(S_phase);
+    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3,'d',d,'g',g,'k',k,'u',0,'PFM','isotropic');
     mat = setnumber(mat,1);
     S = setoption(S,option);
     S = setmaterial(S,mat);
@@ -182,9 +183,9 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR','gc','l','E','g','k');
+    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR','gc','l');
 else
-    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR','gc','l','E','g','k');
+    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR','gc','l');
 end
 
 %% Solution
@@ -211,14 +212,8 @@ if solveProblem
     for i=1:length(T)
         
         % Internal energy field
-        mats = MATERIALS(S);
-        for m=1:length(mats)
-            mats{m} = setparam(mats{m},'E',E);
-        end
-        S = actualisematerials(S,mats);
-        
         h_old = double(H);
-        H = FENODEFIELD(calc_energyint(S,u,'node'));
+        H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
         h = double(H);
         rep = find(h <= h_old);
         h(rep) = h_old(rep);
@@ -238,8 +233,10 @@ if solveProblem
         d = unfreevector(S_phase,d);
         
         % Displacement field
+        mats = MATERIALS(S);
         for m=1:length(mats)
-            mats{m} = setparam(mats{m},'E',FENODEFIELD(E.*(g(d)+k)));
+            mats{m} = setparam(mats{m},'d',d);
+            mats{m} = setparam(mats{m},'u',u);
         end
         S = actualisematerials(S,mats);
         S = removebc(S);
@@ -343,10 +340,10 @@ if displaySolution
     
 %     evolSolution(S_phase,Ht,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
     
-    evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
-    for i=1:2
-        evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
-    end
+%     evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
+%     for i=1:2
+%         evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
+%     end
     
 %     for i=1:3
 %         evolSolution(S,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
