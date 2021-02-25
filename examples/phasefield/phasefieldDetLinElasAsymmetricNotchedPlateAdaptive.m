@@ -39,7 +39,7 @@ formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 gmshoptions = '-v 0';
-mmgoptions = '-nomove -v 0';
+mmgoptions = '-nomove -v -1';
 % gmshoptions = '-v 5';
 % mmgoptions = '-nomove -v 1';
 
