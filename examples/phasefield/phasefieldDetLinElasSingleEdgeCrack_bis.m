@@ -477,10 +477,10 @@ if displaySolution
 %     frame = evol(T,Ht,S_phase,'rescale',true);
 %     saveMovie(frame,'FrameRate',framerate,'filename','internal_energy','pathname',pathname);
     
-    evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
-    for i=1:Dim
-        evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
-    end
+%     evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
+%     for i=1:Dim
+%         evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
+%     end
     
 %     for i=1:(Dim*(Dim+1)/2)
 %         evolSolution(S,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});

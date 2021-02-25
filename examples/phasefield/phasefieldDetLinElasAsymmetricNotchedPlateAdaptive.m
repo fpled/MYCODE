@@ -276,25 +276,28 @@ if solveProblem
         S_phase = addcl(S_phase,BL,'T');
         S_phase = addcl(S_phase,BR,'T');
         
-        P_phase = calcProjection(S_phase,S_phase_old,[],'free',false);
+        % P_phase = calcProjection(S_phase,S_phase_old,[],'free',false);
+        P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
         d = P_phase'*d;
         h = P_phase'*h;
         H = setvalue(H,h);
         
         % Displacement field
-        mats = MATERIALS(S);
+        mats = MATERIALS(S_old);
         for m=1:length(mats)
             mats{m} = setparam(mats{m},'d',d);
             S = setmaterial(S,mats{m},m);
         end
         S = final(S,'duplicate');
-        S = removebc(S);
+        % S = removebc(S);
         ud = -t(i);
         S = addcl(S,PU,'UY',ud);
         S = addcl(S,PL,{'UX','UY'});
         S = addcl(S,PR,'UY');
         
-        P = calcProjection(S,S_old,[],'free',false);
+        % P = calcProjection(S,S_old,[],'free',false);
+        % P = calcProjection(S,S_old,[],'free',false,'full',true);
+        P = kron(P_phase,eye(2));
         u = P'*u;
         for m=1:length(mats)
             mats{m} = setparam(mats{m},'u',u);
@@ -347,6 +350,7 @@ fprintf('elapsed time = %f s\n',time);
 
 %% Display
 if displaySolution
+    [t,rep] = gettevol(T);
     % DO NOT WORK WITH MESH ADAPTATION
     % u = getmatrixatstep(ut,rep(end));
 %     u = ut{rep(end)};

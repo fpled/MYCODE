@@ -36,7 +36,7 @@ formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 gmshoptions = '-v 0';
-mmgoptions = '-nomove -v 0';
+mmgoptions = '-nomove -v -1';
 % gmshoptions = '-v 5';
 % mmgoptions = '-nomove -v 1';
 
@@ -62,8 +62,8 @@ if setProblem
         % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
         % clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
         % clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
-        % clD = 1.5e-5; % test
-        % clC = 1.5e-5; % test
+        % clD = 5e-5; % test
+        % clC = 2e-5; % test
     elseif Dim==3
         clD = 4e-5;
         clC = 4e-6;
@@ -365,19 +365,20 @@ if solveProblem
         S_phase = addcl(S_phase,CU,'T',1);
         S_phase = addcl(S_phase,CL,'T',1);
         
-        P_phase = calcProjection(S_phase,S_phase_old,[],'free',false);
+        % P_phase = calcProjection(S_phase,S_phase_old,[],'free',false);
+        P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
         d = P_phase'*d;
         h = P_phase'*h;
         H = setvalue(H,h);
         
         % Displacement field
-        mats = MATERIALS(S);
+        mats = MATERIALS(S_old);
         for m=1:length(mats)
             mats{m} = setparam(mats{m},'d',d);
             S = setmaterial(S,mats{m},m);
         end
         S = final(S,'duplicate');
-        S = removebc(S);
+        % S = removebc(S);
         ud = t(i);
         switch lower(loading)
             case 'tension'
@@ -405,7 +406,9 @@ if solveProblem
                 error('Wrong loading case')
         end
         
-        P = calcProjection(S,S_old,[],'free',false);
+        % P = calcProjection(S,S_old,[],'free',false);
+        % P = calcProjection(S,S_old,[],'free',false,'full',true);
+        P = kron(P_phase,eye(Dim));
         u = P'*u;
         for m=1:length(mats)
             mats{m} = setparam(mats{m},'u',u);
