@@ -139,7 +139,7 @@ if setProblem
     
     % Material
     d = calc_init_dirichlet(S_phase);
-    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM','anisotropicmiehe');
+    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM','isotropic');
     mat = setnumber(mat,1);
     S = setoption(S,option);
     S = setmaterial(S,mat);

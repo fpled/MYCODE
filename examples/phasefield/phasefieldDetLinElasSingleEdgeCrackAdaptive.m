@@ -56,14 +56,14 @@ if setProblem
     end
     
     if Dim==2
-        clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        clC = 2e-6; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
+        % clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+        % clC = 2e-6; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
         % clC = 1e-6; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
         % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
         % clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
         % clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
-        % clD = 5e-5; % test
-        % clC = 2e-5; % test
+        clD = 5e-5; % test
+        clC = 1e-5; % test
     elseif Dim==3
         clD = 4e-5;
         clC = 4e-6;

@@ -11,7 +11,7 @@ rng('default');
 %% Input data
 displayCv = true;
 
-filename = 'nonparamtricModel';
+filename = 'nonparametricModel';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results',filename);
 if ~exist(pathname,'dir')
