@@ -352,8 +352,9 @@ if solveProblem
         d = unfreevector(S_phase,d);
         
         % Mesh adaptation
+        mats = MATERIALS(S);
         S_phase_old = S_phase;
-        S_old = S;
+        % S_old = S;
         cl = sizemap(d);
         S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
         S = S_phase;
@@ -372,7 +373,6 @@ if solveProblem
         H = setvalue(H,h);
         
         % Displacement field
-        mats = MATERIALS(S_old);
         for m=1:length(mats)
             mats{m} = setparam(mats{m},'d',d);
             S = setmaterial(S,mats{m},m);
