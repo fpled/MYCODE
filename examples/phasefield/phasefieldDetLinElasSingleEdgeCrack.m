@@ -22,7 +22,8 @@ displaySolution = false;
 
 Dim = 2; % space dimension Dim = 2, 3
 loading = 'Shear'; % 'Tension' or 'Shear'
-filename = ['phasefieldDetLinElasSingleEdgeCrack' loading '_' num2str(Dim) 'D'];
+PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor' or 'AnisotropicMiehe'
+filename = ['phasefieldDetLinElasSingleEdgeCrack' loading PFmodel '_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
 if ~exist(pathname,'dir')
@@ -59,9 +60,13 @@ if setProblem
         clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
         clD = 1.5e-5; % test
         clC = 1.5e-5; % test
+%         clD = 4e-5; % test
+%         clC = 1e-5; % test
     elseif Dim==3
         clD = 4e-5;
         clC = 4e-6;
+        clD = 4e-5; % test
+        clC = 1e-5; % test
     end
     S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
     S = S_phase;
@@ -139,7 +144,7 @@ if setProblem
     
     % Material
     d = calc_init_dirichlet(S_phase);
-    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM','isotropic');
+    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
     mat = setnumber(mat,1);
     S = setoption(S,option);
     S = setmaterial(S,mat);
@@ -268,6 +273,8 @@ if setProblem
     elseif Dim==3
         dt = 1e-8;
         nt = 2500;
+        dt = 1e-7; % test
+        nt = 250; % test
         t = linspace(dt,nt*dt,nt);
     end
     T = TIMEMODEL(t);

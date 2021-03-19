@@ -25,7 +25,8 @@ solveProblem = true;
 displaySolution = false;
 
 setup = 1; % notch geometry setup = 1, 2
-filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup)];
+PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor' or 'AnisotropicMiehe'
+filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
 if ~exist(pathname,'dir')
@@ -141,7 +142,7 @@ if setProblem
     
     % Material
     d = calc_init_dirichlet(S_phase);
-    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3,'d',d,'g',g,'k',k,'u',0,'PFM','isotropic');
+    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
     mat = setnumber(mat,1);
     S = setoption(S,option);
     S = setmaterial(S,mat);

@@ -47,7 +47,7 @@ t = t-t(1);
 
 %% Identification
 % initial guess
-E0 = 13.9; % Young modulus [GPa]
+E0 = 13.8; % Young modulus [GPa]
 alpha0 = 0; % mass proportional Rayleigh (viscous) damping coefficient
 beta0 = 3; % stiffness proportional Rayleigh (viscous) damping coefficient
 

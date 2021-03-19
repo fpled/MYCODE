@@ -19,7 +19,7 @@ end
 
 filenameCamera = 'test_3_C001H001S0001.csv';
 pathnameCamera = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'examples','identification','materialWoodDynamicBending','resultsCamera');;
+    'examples','identification','materialWoodDynamicBending','resultsCamera');
 
 fontsize = 16;
 interpreter = 'latex';
@@ -59,7 +59,7 @@ if setProblem
     IX = IY+IZ;
     
     % Young modulus
-    E = 13.9e9; % [Pa]
+    E = 13.8e9; % [Pa]
     % Poisson ratio
     NU = 0.4;
     % Density

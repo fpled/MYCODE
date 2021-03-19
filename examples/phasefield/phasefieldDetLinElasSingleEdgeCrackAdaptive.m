@@ -20,9 +20,10 @@ setProblem = true;
 solveProblem = true;
 displaySolution = false;
 
-Dim = 2; % space dimension Dim = 2, 3
+Dim = 3; % space dimension Dim = 2, 3
 loading = 'Shear'; % 'Tension' or 'Shear'
-filename = ['phasefieldDetLinElasSingleEdgeCrack' loading 'Adaptive_' num2str(Dim) 'D'];
+PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor' or 'AnisotropicMiehe'
+filename = ['phasefieldDetLinElasSingleEdgeCrack' loading PFmodel 'Adaptive_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
 if ~exist(pathname,'dir')
@@ -56,17 +57,21 @@ if setProblem
     end
     
     if Dim==2
-        % clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        % clC = 2e-6; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
+        clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+        clC = 2e-6; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
         % clC = 1e-6; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
         % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
         % clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
         % clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
-        clD = 5e-5; % test
-        clC = 1e-5; % test
+        clD = 1.5e-5; % test
+        clC = 1.5e-5; % test
+%         clD = 4e-5; % test
+%         clC = 1e-5; % test
     elseif Dim==3
         clD = 4e-5;
         clC = 4e-6;
+        clD = 4e-5; % test
+        clC = 1e-5; % test
     end
     % S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
     S_phase = gmshdomainwithedgesmearedcrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
@@ -165,7 +170,7 @@ if setProblem
     RHO = 1;
     
     % Material
-    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM','isotropic');
+    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
     mat = setnumber(mat,1);
     S = setoption(S,option);
     S = setmaterial(S,mat);
@@ -294,6 +299,8 @@ if setProblem
     elseif Dim==3
         dt = 1e-8;
         nt = 2500;
+        dt = 1e-7; % test
+        nt = 250; % test
         t = linspace(dt,nt*dt,nt);
     end
     T = TIMEMODEL(t);
