@@ -25,6 +25,8 @@ renderer = 'OpenGL';
 
 junction = true; % junction modeling
 
+tol = getfemobjectoptions('tolerancepoint');
+
 %% Problem
 if solveProblem
     %% Domains and meshes
@@ -145,8 +147,10 @@ if solveProblem
         S = final(S,'duplicate');
         % [~,numnode2,~] = intersect(S,P2,'strict',false);
         % [~,numnode3,~] = intersect(S,P3,'strict',false);
-        numnode2 = find(S.node==P2);
-        numnode3 = find(S.node==P3);
+        % numnode2 = find(S.node==P2);
+        % numnode3 = find(S.node==P3);
+        numnode2 = find(distance(S.node,P2)<tol);
+        numnode3 = find(distance(S.node,P3)<tol);
         S = addclperiodic(S,numnode2(1),numnode2(2),'U');
         S = addclperiodic(S,numnode3(1),numnode3(2),'U');
     else
@@ -348,7 +352,8 @@ if solveProblem
     
     %% Test solution
     % [~,numnode2,~] = intersect(S,P2,'strict',false);
-    numnode2 = find(S.node==P2);
+    % numnode2 = find(S.node==P2);
+    numnode2 = find(distance(S.node,P2)<tol);
     xP2 = x(numnode2,:);
     
     ux = eval_sol(S,u,P2,'UX');

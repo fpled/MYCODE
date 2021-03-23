@@ -1,5 +1,5 @@
-%% FCBA bed plate deterministic linear elasticity %%
-%%-----------------------------------------------%%
+%% FCBA bed plate deterministic linear elasticity ME 19-0451-1011 %%
+%%----------------------------------------------------------------%%
 
 % clc
 clearvars
@@ -18,11 +18,12 @@ tests = {'StaticHoriOut'}; % test under static horizontal outward load
 junction = false; % junction modeling
 materialSym = 'isot'; % isotropic material symmetry class
 % materialSym = 'isotTrans'; % transversely isotropic material symmetry class
+slat = false; % slat modeling
 
 for it=1:length(tests)
     test = tests{it};
     
-filename = ['FCBABedPlateDetLinElas' test '_' materialSym];
+filename = ['FCBABedPlateDetLinElas_ME_19_0451_1011_' test '_' materialSym '_slat_' num2str(slat)];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','FCBA',filename);
 if ~exist(pathname,'dir')
@@ -212,16 +213,18 @@ if solveProblem
         'filename',fullfile(pathname,['gmsh_guardrailsupport_' num2str(n) '_elemtype_' elemtype])),Q_guardrailsupport(2:5),num2cell(2:5),'UniformOutput',false);
     S_guardrailsupport = union(S_guardrailsupport{:});
     
-    S_slat = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_slat_' num2str(n) '_elemtype_' elemtype])),Q_slat,num2cell(1:14),'UniformOutput',false);
-    S_slat = union(S_slat{:});
+    if slat
+        S_slat = cellfun(@(Q,n) build_model(Q,'cl',cl,'elemtype',elemtype,...
+            'filename',fullfile(pathname,['gmsh_slat_' num2str(n) '_elemtype_' elemtype])),Q_slat,num2cell(1:14),'UniformOutput',false);
+        S_slat = union(S_slat{:});
+    end
     
     %% Materials
     % Gravitational acceleration
     g = 9.81; % [m/s2]
     
     % Density
-    RHO = 800; % [kg/m3]
+    RHO = 500; % [kg/m3]
     
     % Cross-section area
     Sec0 = c^2;
@@ -235,9 +238,9 @@ if solveProblem
     switch lower(materialSym)
         case 'isot'
             % Young modulus
-            E = 12e9; % [Pa]
+            E = 11e9; % [Pa]
             % Poisson ratio
-            NU = 0.3;
+            NU = 0.2;
             % Material
             mat_0 = ELAS_BEAM('E',E,'NU',NU,'S',Sec0,'IZ',IZ0,'IY',IY0,'IX',IX0,'RHO',RHO);
             mat_0 = setnumber(mat_0,1);
@@ -254,18 +257,20 @@ if solveProblem
             S_guardrail = setmaterial(S_guardrail,mat_1);
             S_guardrailsupport = setmaterial(S_guardrailsupport,mat_2,[2,4]);
             S_guardrailsupport = setmaterial(S_guardrailsupport,mat_3,[1,3,5]);
-            S_slat = setmaterial(S_slat,mat_1);
+            if slat
+                S_slat = setmaterial(S_slat,mat_1);
+            end
         case 'isottrans'
             % Transverse Young modulus
-            ET = 12e9; % [Pa]
+            ET = 11e9; % [Pa]
             % Longitudinal shear modulus
-            GL = 600e6; % [Pa]
+            GL = 500e6; % [Pa]
             % Longitudinal Young modulus
-            % EL = mean(mean_EL_data)*1e6; % [Pa]
+            % EL = ET; % [Pa]
             % Longitudinal Poisson ratio
-            % NUL = mean(mean_NUL_data);
+            % NUL = 0.2;
             % Transverse Poisson ratio
-            NUT = 0.3;
+            NUT = 0.2;
             % Material
             mat_0 = ELAS_BEAM_ISOT_TRANS('EL',ET,'NUT',NUT,'GL',GL,'S',Sec0,'IZ',IZ0,'IY',IY0,'IX',IX0,'RHO',RHO);
             mat_0 = setnumber(mat_0,1);
@@ -282,11 +287,17 @@ if solveProblem
             S_guardrail = setmaterial(S_guardrail,mat_1);
             S_guardrailsupport = setmaterial(S_guardrailsupport,mat_2,[2,4]);
             S_guardrailsupport = setmaterial(S_guardrailsupport,mat_3,[1,3,5]);
-            S_slat = setmaterial(S_slat,mat_1);
+            if slat
+                S_slat = setmaterial(S_slat,mat_1);
+            end
         otherwise
             error('Wrong material symmetry !')
     end
-    S_plate = union(S_botrail,S_siderail,S_endrail,S_guardrail,S_guardrailsupport,S_slat);
+    if slat
+        S_plate = union(S_botrail,S_siderail,S_endrail,S_guardrail,S_guardrailsupport,S_slat);
+    else
+        S_plate = union(S_botrail,S_siderail,S_endrail,S_guardrail,S_guardrailsupport);
+    end
     S = union(S_leg,S_plate);
     
     %% Neumann boundary conditions
@@ -377,8 +388,10 @@ if solveProblem
     Mxy = s_plate(6);
     
     %% Test solution
+    tol = getfemobjectoptions('tolerancepoint');
     P = POINT(x_measure);
-    numnode = find(S.node==P);
+    % numnode = find(S.node==P);
+    numnode = find(distance(S.node,P)<tol);
     xP = x(numnode,:);
     
     ux = eval_sol(S,u,P,'UX');
@@ -388,7 +401,8 @@ if solveProblem
     ry = eval_sol(S,u,P,'RY');
     rz = eval_sol(S,u,P,'RZ');
     
-    numnode_beam = find(S_beam.node==P);
+    % numnode_beam = find(S_beam.node==P);
+    numnode_beam = find(distance(S_beam.node,P)<tol);
     [~,~,numgroupelem_beam] = findelemwithnode(S_beam,numnode_beam);
     n = 0;
     mx = 0;
@@ -425,7 +439,8 @@ if solveProblem
         gamz = max(gamz,gamzi);
     end
     
-    numnode_plate = find(S_plate.node==P);
+    % numnode_plate = find(S_plate.node==P);
+    numnode_plate = find(distance(S_plate.node,P)<tol);
     [~,~,numgroupelem_plate] = findelemwithnode(S_plate,numnode_plate);
     nxx = 0;
     nyy = 0;
@@ -575,19 +590,31 @@ if displaySolution
     h4 = plot(S,'selgroup',11:12,'EdgeColor',[1 0.5 0],'FaceColor',[1 0.5 0],'FaceAlpha',0.1);
     h5 = plot(S,'selgroup',13:20,'EdgeColor','b','FaceColor','b','FaceAlpha',0.1);
     h6 = plot(S,'selgroup',[22,24],'EdgeColor','m','FaceColor','m','FaceAlpha',0.1);
-    h7 = plot(S,'selgroup',26:39,'EdgeColor','g','FaceColor','g','FaceAlpha',0.1);
+    if slat
+        h7 = plot(S,'selgroup',26:39,'EdgeColor','g','FaceColor','g','FaceAlpha',0.1);
+    end
     h8 = plot(S,'selgroup',21,'EdgeColor',([1 0 1]+[1 0 0])/2,'FaceColor',([1 0 1]+[1 0 0])/2,'FaceAlpha',0.1);
     h9 = plot(S,'selgroup',[23,25],'EdgeColor',([1 0 1]+[0 0 1])/2,'FaceColor',([1 0 1]+[0 0 1])/2,'FaceAlpha',0.1);
     hold off
     set(gca,'FontSize',16)
-    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1),h7(1),h8(1),h9(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','slat',...
-        'junction guard rail support - side rail','junction guard rail support - guard rail','Location','NorthEastOutside');
+    if slat
+        l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1),h7(1),h8(1),h9(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','slat',...
+            'junction guard rail support - side rail','junction guard rail support - guard rail','Location','NorthEastOutside');
+    else
+        l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1),h8(1),h9(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support',...
+            'junction guard rail support - side rail','junction guard rail support - guard rail','Location','NorthEastOutside');
+    end
     %set(l,'Interpreter','latex')
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
-%     plotparamelem(S,'group')
+    figure('Name','Group of elements')
+    plotparamelem(S,'group')
+    mysaveas(pathname,'groupelem',formats,renderer);
+    
+%     figure('Name','Materials')
 %     plotparamelem(S,'material')
+%     mysaveas(pathname,'material',formats,renderer);
     
 %     plotDomain(S,'legend',false);
 %     mysaveas(pathname,'domain',formats,renderer);
@@ -631,14 +658,14 @@ if displaySolution
     mysaveas(pathname,'Uz',formats,renderer);
     
     % Rotations
-    plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
-    mysaveas(pathname,'Rx',formats,renderer);
-    
-    plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
-    mysaveas(pathname,'Ry',formats,renderer);
-    
-    plotSolution(S,u,'rotation',3,'ampl',ampl,options{:});
-    mysaveas(pathname,'Rz',formats,renderer);
+%     plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
+%     mysaveas(pathname,'Rx',formats,renderer);
+%     
+%     plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
+%     mysaveas(pathname,'Ry',formats,renderer);
+%     
+%     plotSolution(S,u,'rotation',3,'ampl',ampl,options{:});
+%     mysaveas(pathname,'Rz',formats,renderer);
     
     % DO NOT WORK WITH BEAM ELEMENTS
     % Beams strains
@@ -668,33 +695,33 @@ if displaySolution
     % mysaveas(pathname,'Mz',formats,renderer);
     
     % Beams strains
-    figure('Name','Solution Epsx')
-    clf
-    plot(e_beam,S_beam+ampl*u_beam,'compo','EPSX')
-    colorbar
-    set(gca,'FontSize',fontsize)
-    mysaveas(pathname,'Epsx',formats,renderer);
-    
-    figure('Name','Solution Gamx')
-    clf
-    plot(e_beam,S_beam+ampl*u_beam,'compo','GAMX')
-    colorbar
-    set(gca,'FontSize',fontsize)
-    mysaveas(pathname,'Gamx',formats,renderer);
-    
-    figure('Name','Solution Gamy')
-    clf
-    plot(e_beam,S_beam+ampl*u_beam,'compo','GAMY')
-    colorbar
-    set(gca,'FontSize',fontsize)
-    mysaveas(pathname,'Gamy',formats,renderer);
-    
-    figure('Name','Solution Gamz')
-    clf
-    plot(e_beam,S_beam+ampl*u_beam,'compo','GAMZ')
-    colorbar
-    set(gca,'FontSize',fontsize)
-    mysaveas(pathname,'Gamz',formats,renderer);
+%     figure('Name','Solution Epsx')
+%     clf
+%     plot(e_beam,S_beam+ampl*u_beam,'compo','EPSX')
+%     colorbar
+%     set(gca,'FontSize',fontsize)
+%     mysaveas(pathname,'Epsx',formats,renderer);
+%     
+%     figure('Name','Solution Gamx')
+%     clf
+%     plot(e_beam,S_beam+ampl*u_beam,'compo','GAMX')
+%     colorbar
+%     set(gca,'FontSize',fontsize)
+%     mysaveas(pathname,'Gamx',formats,renderer);
+%     
+%     figure('Name','Solution Gamy')
+%     clf
+%     plot(e_beam,S_beam+ampl*u_beam,'compo','GAMY')
+%     colorbar
+%     set(gca,'FontSize',fontsize)
+%     mysaveas(pathname,'Gamy',formats,renderer);
+%     
+%     figure('Name','Solution Gamz')
+%     clf
+%     plot(e_beam,S_beam+ampl*u_beam,'compo','GAMZ')
+%     colorbar
+%     set(gca,'FontSize',fontsize)
+%     mysaveas(pathname,'Gamz',formats,renderer);
     
     % Beams stresses
     figure('Name','Solution N')
@@ -726,23 +753,23 @@ if displaySolution
     mysaveas(pathname,'Mz',formats,renderer);
     
     % Plates strains
-    plotSolution(S_plate,u_plate,'epsilon',1,'ampl',ampl,options{:});
-    mysaveas(pathname,'Exx',formats,renderer);
-    
-    plotSolution(S_plate,u_plate,'epsilon',2,'ampl',ampl,options{:});
-    mysaveas(pathname,'Eyy',formats,renderer);
-    
-    plotSolution(S_plate,u_plate,'epsilon',3,'ampl',ampl,options{:});
-    mysaveas(pathname,'Exy',formats,renderer);
-    
-    plotSolution(S_plate,u_plate,'epsilon',4,'ampl',ampl,options{:});
-    mysaveas(pathname,'Gxx',formats,renderer);
-    
-    plotSolution(S_plate,u_plate,'epsilon',5,'ampl',ampl,options{:});
-    mysaveas(pathname,'Gyy',formats,renderer);
-    
-    plotSolution(S_plate,u_plate,'epsilon',6,'ampl',ampl,options{:});
-    mysaveas(pathname,'Gxy',formats,renderer);
+%     plotSolution(S_plate,u_plate,'epsilon',1,'ampl',ampl,options{:});
+%     mysaveas(pathname,'Exx',formats,renderer);
+%     
+%     plotSolution(S_plate,u_plate,'epsilon',2,'ampl',ampl,options{:});
+%     mysaveas(pathname,'Eyy',formats,renderer);
+%     
+%     plotSolution(S_plate,u_plate,'epsilon',3,'ampl',ampl,options{:});
+%     mysaveas(pathname,'Exy',formats,renderer);
+%     
+%     plotSolution(S_plate,u_plate,'epsilon',4,'ampl',ampl,options{:});
+%     mysaveas(pathname,'Gxx',formats,renderer);
+%     
+%     plotSolution(S_plate,u_plate,'epsilon',5,'ampl',ampl,options{:});
+%     mysaveas(pathname,'Gyy',formats,renderer);
+%     
+%     plotSolution(S_plate,u_plate,'epsilon',6,'ampl',ampl,options{:});
+%     mysaveas(pathname,'Gxy',formats,renderer);
     
     % Plates stresses
     plotSolution(S_plate,u_plate,'sigma',1,'ampl',ampl,options{:});

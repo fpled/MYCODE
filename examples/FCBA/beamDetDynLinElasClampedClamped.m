@@ -175,19 +175,19 @@ if displaySolution
     
     N = setevolparam(N,'colorbar',true,'FontSize',fontsize);
     
-    figure('Name','Solution Epsx')
-    clf
-    set(gcf,'color','w')
-    % frame = evol(N,et,S,'compo','EPSX','rescale',true);
-    frame = evol(N,Epsxt,S,'rescale',true);
-    saveMovie(frame,'filename','Epsx','pathname',pathname);
-    
-    figure('Name','Solution Gamz')
-    clf
-    set(gcf,'color','w')
-    % frame = evol(N,et,S,'compo','GAMZ','rescale',true);
-    frame = evol(N,Gamzt,S,'rescale',true);
-    saveMovie(frame,'filename','Gamz','pathname',pathname);
+%     figure('Name','Solution Epsx')
+%     clf
+%     set(gcf,'color','w')
+%     % frame = evol(N,et,S,'compo','EPSX','rescale',true);
+%     frame = evol(N,Epsxt,S,'rescale',true);
+%     saveMovie(frame,'filename','Epsx','pathname',pathname);
+%     
+%     figure('Name','Solution Gamz')
+%     clf
+%     set(gcf,'color','w')
+%     % frame = evol(N,et,S,'compo','GAMZ','rescale',true);
+%     frame = evol(N,Gamzt,S,'rescale',true);
+%     saveMovie(frame,'filename','Gamz','pathname',pathname);
     
     figure('Name','Solution N')
     clf
@@ -227,19 +227,19 @@ if displaySolution
             % mysaveas(pathname,['acceleration_' num2str(i) '_t' num2str(k-1)],formats,renderer);
         % end
         
-        figure('Name','Solution Epsx')
-        clf
-        plot(ek,S+ampl*uk,'compo','EPSX')
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['Epsx_t' num2str(k-1)],formats,renderer);
-        
-        figure('Name','Solution Gamz')
-        clf
-        plot(ek,S+ampl*uk,'compo','GAMZ')
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['Gamz_t' num2str(k-1)],formats,renderer);
+%         figure('Name','Solution Epsx')
+%         clf
+%         plot(ek,S+ampl*uk,'compo','EPSX')
+%         colorbar
+%         set(gca,'FontSize',fontsize)
+%         mysaveas(pathname,['Epsx_t' num2str(k-1)],formats,renderer);
+%         
+%         figure('Name','Solution Gamz')
+%         clf
+%         plot(ek,S+ampl*uk,'compo','GAMZ')
+%         colorbar
+%         set(gca,'FontSize',fontsize)
+%         mysaveas(pathname,['Gamz_t' num2str(k-1)],formats,renderer);
         
         figure('Name','Solution N')
         clf
