@@ -280,7 +280,7 @@ if displaySolution
     figure('Name','Meshes')
     clf
     plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-    plot(S_final+ampl*unfreevector(S_final,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
+    plot(S_final+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display force-displacement curve

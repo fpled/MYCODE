@@ -3,7 +3,6 @@ function [Ht,dt,ut,ft] = solvePFDetLinElasAsymmetricNotchedPlate(S,S_phase,T,PU,
 % Solve deterministic Phase Field problem.
 
 display_ = ischarin('display',varargin);
-Dim = getdim(S);
 
 t = gett(T);
 
