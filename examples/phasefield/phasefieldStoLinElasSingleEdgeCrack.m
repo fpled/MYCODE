@@ -424,10 +424,19 @@ fprintf('nb samples = %g\n',N);
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
-fprintf('mean(fmax)    = %e\n',mean_fmax);
-fprintf('std(fmax)     = %e\n',std_fmax);
-fprintf('disp(fmax)    = %e\n',std_fmax/mean_fmax);
-fprintf('%d%% ci(fmax)  = [%e,%e]\n',(probs(2)-probs(1))*100,ci_fmax(1),ci_fmax(2));
+if Dim==2
+    fprintf('mean(fmax)    = %g kN/mm\n',mean_fmax*1e-6);
+    fprintf('std(fmax)     = %g kN/mm\n',std_fmax*1e-6);
+elseif Dim==3
+    fprintf('mean(fmax)    = %g kN\n',mean_fmax*1e-3);
+    fprintf('std(fmax)     = %g kN\n',std_fmax*1e-3);
+end
+fprintf('disp(fmax)    = %g\n',std_fmax/mean_fmax);
+if Dim==2
+    fprintf('%d%% ci(fmax)  = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,ci_fmax(1)*1e-6,ci_fmax(2)*1e-6);
+elseif Dim==3
+    fprintf('%d%% ci(fmax)  = [%g,%g] kN\n',(probs(2)-probs(1))*100,ci_fmax(1)*1e-3,ci_fmax(2)*1e-3);
+end
 
 %% Display
 if displaySolution
