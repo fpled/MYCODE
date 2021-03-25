@@ -155,7 +155,7 @@ if displaySolution
     % evolSolution(pb.S,ut,'epsilon','mises','filename','epsilon_von_mises','pathname',pathname);
     % evolSolution(pb.S,ut,'sigma','mises','filename','sigma_von_mises','pathname',pathname);
     
-    %% Display solution at differents instants
+    %% Display solution at different instants
     [t,rep] = gettevol(pb.N);
     for k=1:floor(length(rep)/5):length(rep)
         close all

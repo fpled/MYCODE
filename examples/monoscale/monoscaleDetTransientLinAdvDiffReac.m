@@ -203,7 +203,7 @@ if displaySolution
 %         evolSolution(pb.S,ut,'sigma',i,'filename',['sig_' num2str(i)],'pathname',pathname);
 %     end
     
-    %% Display transient solution at differents instants
+    %% Display transient solution at different instants
 %     [t,rep] = gettevol(pb.N);
 %     for k=1:floor(length(rep)/4):length(rep)
 %         close all

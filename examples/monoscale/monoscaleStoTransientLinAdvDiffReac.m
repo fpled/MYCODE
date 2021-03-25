@@ -380,7 +380,7 @@ if displaySolution
         evolSensitivityIndices(pb.S,T,vt,i,'surface',true,'filename',['sensitivity_indices_velocity_var_' num2str(i) '_surface'],'pathname',pathname);
     end
     
-    %% Display statistical outputs at differents instants for transient solution
+    %% Display statistical outputs at different instants for transient solution
 %     [t,rep] = gettevol(pb.timeSolver);
 %     for k=1:floor(length(rep)/4):length(rep)
 %         close all

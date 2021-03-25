@@ -305,7 +305,7 @@ if displaySolution
 %     frame = evol(N,Mzt,S,'rescale',true);
 %     saveMovie(frame,'filename','Mz','pathname',pathname);
     
-    %% Display solution at differents instants
+    %% Display solution at different instants
     % ampl = 0;
     ampl = getsize(S)/max(max(abs(Ut)))/5;
     [t,rep] = gettevol(N);

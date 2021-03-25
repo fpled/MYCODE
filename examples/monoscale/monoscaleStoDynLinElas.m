@@ -247,7 +247,7 @@ if displaySolution
         end
 %     end
     
-    %% Display statistical outputs at differents instants
+    %% Display statistical outputs at different instants
     [t,rep] = gettevol(pb.timeSolver);
     for k=1:floor(length(rep)/5):length(rep)
         close all
