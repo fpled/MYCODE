@@ -1,6 +1,6 @@
-%% Phase field fracture model - deterministic linear elasticity problem  %%
-%  Asymmetric notched plate with three holes under three-point bending   %%
-%%-----------------------------------------------------------------------%%
+%% Phase field fracture model - deterministic linear elasticity problem %%
+%  Asymmetric notched plate with three holes under three-point bending  %%
+%%----------------------------------------------------------------------%%
 % [Ingraffea, Grigoriu, 1990] (experimental tests)
 % [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM] (SIF-based method with local remeshing and special FE)
 % [Ventura, Xu, Belytschko, 2002, IJNME] (vector level set method with discontinuous enrichment in meshless method)
@@ -191,9 +191,9 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR','gc','l');
+    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR');
 else
-    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR','gc','l');
+    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR');
 end
 
 %% Solution
@@ -201,7 +201,7 @@ if solveProblem
     
     tTotal = tic;
     
-    [Ht,dt,ut,ft] = solvePFDetLinElasAsymmetricNotchedPlate(S,S_phase,T,PU,PL,PR,'display');
+    [Ht,dt,ut,ft] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR,'display');
     
     time = toc(tTotal);
     
@@ -285,7 +285,7 @@ if displaySolution
 %     evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
 %     evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
     
-    %% Display solutions at differents instants
+    %% Display solutions at different instants
     rep = find(abs(t-0.210*unit)<eps | abs(t-0.215*unit)<eps | abs(t-0.218*unit)<eps | abs(t-0.220*unit)<eps | abs(t-0.222*unit)<eps);
     for j=1:length(rep)
         close all

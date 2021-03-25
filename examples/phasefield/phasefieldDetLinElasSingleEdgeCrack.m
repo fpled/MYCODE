@@ -311,7 +311,7 @@ if solveProblem
     
     tTotal = tic;
     
-    [Ht,dt,ut,ft] = solvePFDetLinElasSingleEdgeCrack(S,S_phase,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
+    [Ht,dt,ut,ft] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
     
     time = toc(tTotal);
     
@@ -403,7 +403,7 @@ if displaySolution
 %     evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
 %     evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
     
-    %% Display solutions at differents instants
+    %% Display solutions at different instants
     switch lower(loading)
         case 'tension'
             rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-5)<eps | abs(t-6e-6)<eps | abs(t-6.25e-6)<eps);

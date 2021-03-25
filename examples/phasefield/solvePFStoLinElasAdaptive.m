@@ -1,8 +1,10 @@
-function [H_sample,d_sample,u_sample,f_sample] = solvePFStoLinElas(S_phase,S,T,fun,samples,varargin)
-% function [H_sample,d_sample,u_sample,f_sample] = solvePFStoLinElas(S_phase,S,T,fun,samples,varargin)
-% Solve stochastic Phase Field problem.
+function [H_sample,d_sample,u_sample,f_sample,S_phase_sample,S_sample] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,samples,varargin)
+% function [H_sample,d_sample,u_sample,f_sample,S_phase_sample,S_sample] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,samples,varargin)
+% Solve stochastic Phase Field problem with mesh adaptation.
 
 fun = fcnchk(fun);
+filename = getcharin('filename',varargin,'filename');
+pathname = getcharin('pathname',varargin,'.');
 
 N = size(samples,1);
 E_sample = samples(:,1);
@@ -13,13 +15,12 @@ l_sample = samples(:,4);
 mats_phase = MATERIALS(S_phase);
 mats = MATERIALS(S);
 
-sz_phase = getnbddl(S_phase);
-sz = getnbddl(S);
-
-H_sample = zeros(N,sz_phase,length(T));
-d_sample = zeros(N,sz_phase,length(T));
-u_sample = zeros(N,sz,length(T));
+H_sample = cell(N,length(T));
+d_sample = cell(N,length(T));
+u_sample = cell(N,length(T));
 f_sample = zeros(N,length(T));
+S_phase_sample = cell(N,length(T));
+S_sample = cell(N,length(T));
 % fmax_sample = zeros(N,1);
 
 if ~verLessThan('matlab','9.2') % introduced in R2017a
@@ -57,12 +58,23 @@ parfor i=1:N
     end
     Si = actualisematerials(Si,matsi);
     
+    % Copy msh, mesh and sol files
+    filenamei = [filename '_' num2str(i)];
+    G = GMSHFILE(fullfile(pathname,filename));
+    Gi = GMSHFILE(fullfile(pathname,filenamei));
+    command = ['cp ' getfilemsh(G) ' ' getfilemsh(Gi) ';'...
+        'cp ' getfilemesh(G) ' ' getfilemesh(Gi) ';'...
+        'cp ' getfilesol(G) ' ' getfilesol(Gi)];
+    dos(command);
+    
     % Solve deterministic problem
-    [Ht,dt,ut,ft] = fun(S_phasei,Si);
-    H_sample(i,:,:) = getvalue(Ht);
-    d_sample(i,:,:) = getvalue(dt);
-    u_sample(i,:,:) = getvalue(ut);
+    [Ht,dt,ut,ft,St_phase,St] = fun(S_phasei,Si,filenamei);
+    H_sample(i,:) = Ht;
+    d_sample(i,:) = dt;
+    u_sample(i,:) = ut;
     f_sample(i,:) = ft;
+    S_phase_sample(i,:) = St_phase;
+    S_sample(i,:) = St;
     % fmax_sample(i) = max(ft);
 end
 textprogressbar(' done');

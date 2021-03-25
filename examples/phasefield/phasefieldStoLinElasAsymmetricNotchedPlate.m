@@ -1,6 +1,6 @@
-%% Phase field fracture model - stochastic linear elasticity problem    %%
-%  Asymmetric notched plate with three holes under three-point bending   %%
-%%-----------------------------------------------------------------------%%
+%% Phase field fracture model - stochastic linear elasticity problem   %%
+%  Asymmetric notched plate with three holes under three-point bending %%
+%%---------------------------------------------------------------------%%
 % [Ingraffea, Grigoriu, 1990] (experimental tests)
 % [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM] (SIF-based method with local remeshing and special FE)
 % [Ventura, Xu, Belytschko, 2002, IJNME] (vector level set method with discontinuous enrichment in meshless method)
@@ -25,8 +25,8 @@ setProblem = true;
 solveProblem = true;
 displaySolution = false;
 
-test = true; % coarse mesh
-% test = false; % fine mesh
+test = true; % coarse mesh and small number of samples
+% test = false; % fine mesh and high number of samples
 
 setup = 1; % notch geometry setup = 1, 2
 PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe'
@@ -34,6 +34,12 @@ randMat = true; % random material parameters (true or false)
 randPF = false; % random phase field parameters (true or false)
 
 filename = ['phasefieldStoLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel];
+if randMat
+    filename = [filename 'RandMat'];
+end
+if randPF
+    filename = [filename 'RandPF'];
+end
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
 if ~exist(pathname,'dir')
@@ -194,9 +200,9 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR','gc','l');
+    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR');
 else
-    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR','gc','l');
+    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR');
 end
 
 %% Solution
@@ -260,8 +266,8 @@ if solveProblem
     %% Solution
     tTotal = tic;
     
-    fun = @(S,S_phase) solvePFDetLinElasAsymmetricNotchedPlate(S,S_phase,T,PU,PL,PR);
-    [Ht,dt,ut,ft] = solvePFStoLinElas(S,S_phase,T,fun,samples,'display');
+    fun = @(S_phase,S) solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR);
+    [Ht,dt,ut,ft] = solvePFStoLinElas(S_phase,S,T,fun,samples,'display');
     fmax = max(ft,[],2);
     
     time = toc(tTotal);
@@ -413,7 +419,7 @@ if displaySolution
 %     evolSolution(S,mean_ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','mean_epsilon_von_mises','pathname',pathname,options{:});
 %     evolSolution(S,mean_ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','mean_sigma_von_mises','pathname',pathname,options{:});
     
-    %% Display solutions at differents instants
+    %% Display solutions at different instants
     rep = find(abs(t-0.210*unit)<eps | abs(t-0.215*unit)<eps | abs(t-0.218*unit)<eps | abs(t-0.220*unit)<eps | abs(t-0.222*unit)<eps);
     for j=1:length(rep)
         close all

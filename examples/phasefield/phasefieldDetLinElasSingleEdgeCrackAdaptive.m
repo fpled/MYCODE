@@ -184,6 +184,7 @@ if setProblem
     RHO = 1;
     
     % Material
+    d = calc_init_dirichlet(S_phase);
     mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
     mat = setnumber(mat,1);
     S = setoption(S,option);
@@ -338,7 +339,7 @@ if solveProblem
     
     tTotal = tic;
     
-    [Ht,dt,ut,ft,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptive(S,S_phase,T,CU,CL,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
+    [Ht,dt,ut,ft,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,CU,CL,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
         'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
     
     time = toc(tTotal);
@@ -382,7 +383,7 @@ if displaySolution
     mysaveas(pathname,'boundary_conditions_damage',formats,renderer);
     
     % plotModel(S,'legend',false);
-    % mysaveas(pathname,'mesh',formats,renderer);
+    % mysaveas(pathname,'mesh_init',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_init',formats,renderer);
@@ -443,7 +444,7 @@ if displaySolution
 %     evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
 %     evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
     
-    %% Display solutions at differents instants
+    %% Display solutions at different instants
     switch lower(loading)
         case 'tension'
             rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-5)<eps | abs(t-6e-6)<eps | abs(t-6.25e-6)<eps);

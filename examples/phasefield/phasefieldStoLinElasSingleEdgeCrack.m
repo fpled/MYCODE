@@ -21,8 +21,8 @@ setProblem = true;
 solveProblem = true;
 displaySolution = false;
 
-test = true; % coarse mesh
-% test = false; % fine mesh
+test = true; % coarse mesh and small number of samples
+% test = false; % fine mesh and high number of samples
 
 Dim = 2; % space dimension Dim = 2, 3
 loading = 'Shear'; % 'Tension' or 'Shear'
@@ -30,7 +30,14 @@ PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe'
 randMat = true; % random material parameters (true or false)
 randPF = false; % random phase field parameters (true or false)
 
-filename = ['phasefieldStoLinElasSingleEdgeCrack' loading PFmodel '_' num2str(Dim) 'D'];
+filename = ['phasefieldStoLinElasSingleEdgeCrack' loading PFmodel];
+if randMat
+    filename = [filename 'RandMat'];
+end
+if randPF
+    filename = [filename 'RandPF'];
+end
+filename = [filename '_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
 if ~exist(pathname,'dir')
@@ -370,8 +377,8 @@ if solveProblem
     %% Solution
     tTotal = tic;
     
-    fun = @(S,S_phase) solvePFDetLinElasSingleEdgeCrack(S,S_phase,T,BU,BL,BRight,BLeft,BFront,BBack,loading);
-    [Ht,dt,ut,ft] = solvePFStoLinElas(S,S_phase,T,fun,samples,'display');
+    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading);
+    [Ht,dt,ut,ft] = solvePFStoLinElas(S_phase,S,T,fun,samples,'display');
     fmax = max(ft,[],2);
     
     time = toc(tTotal);
@@ -544,7 +551,7 @@ if displaySolution
 %     evolSolution(S,mean_ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','mean_epsilon_von_mises','pathname',pathname,options{:});
 %     evolSolution(S,mean_ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','mean_sigma_von_mises','pathname',pathname,options{:});
     
-    %% Display mean solutions at differents instants
+    %% Display mean solutions at different instants
     switch lower(loading)
         case 'tension'
             rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-5)<eps | abs(t-6e-6)<eps | abs(t-6.25e-6)<eps);

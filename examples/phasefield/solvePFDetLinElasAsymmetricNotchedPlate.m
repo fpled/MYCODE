@@ -1,5 +1,5 @@
-function [Ht,dt,ut,ft] = solvePFDetLinElasAsymmetricNotchedPlate(S,S_phase,T,PU,PL,PR,varargin)
-% function [Ht,dt,ut,ft] = solvePFDetLinElasAsymmetricNotchedPlate(S,S_phase,T,PU,PL,PR,varargin)
+function [Ht,dt,ut,ft] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR,varargin)
+% function [Ht,dt,ut,ft] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR,varargin)
 % Solve deterministic Phase Field problem.
 
 display_ = ischarin('display',varargin);
