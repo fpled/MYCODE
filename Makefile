@@ -77,8 +77,10 @@ Cluster_Name = cluster
 #Pb_Name = identification_Kjunction
 
 #Pb_Name = phasefieldDetLinElasSingleEdgeCrack
-#Pb_Name = phasefieldDetLinElasSingleEdgeCrack_bis
-Pb_Name = phasefieldDetLinElasSingleEdgeCrackMeshAdaptation
+#Pb_Name = phasefieldDetLinElasSingleEdgeCrackHelem
+Pb_Name = phasefieldDetLinElasSingleEdgeCrackAdaptive
+#Pb_Name = phasefieldDetLinElasAsymmetricNotchedPlate
+#Pb_Name = phasefieldDetLinElasAsymmetricNotchedPlateAdaptive
 
 # Default ---------------------------
 default:
@@ -191,7 +193,9 @@ identification:
 # Phase field ---------------------------
 phasefield:
 	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasSingleEdgeCrack; exit" -logfile results/phasefield/phasefieldDetLinElasSingleEdgeCrack.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasSingleEdgeCrackMeshAdaptation; exit" -logfile results/phasefield/phasefieldDetLinElasSingleEdgeCrackMeshAdaptation.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasSingleEdgeCrackAdaptive; exit" -logfile results/phasefield/phasefieldDetLinElasSingleEdgeCrackAdaptive.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasAsymmetricNotchedPlate; exit" -logfile results/phasefield/phasefieldDetLinElasAsymmetricNotchedPlateCrack.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasAsymmetricNotchedPlateAdaptive; exit" -logfile results/phasefield/phasefieldDetLinElasAsymmetricNotchedPlateAdaptive.log
 
 # Clean ---------------------------
 clean:

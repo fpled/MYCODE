@@ -18,7 +18,7 @@ tests = {'StaticHoriOut'}; % test under static horizontal outward load
 junction = false; % junction modeling
 materialSym = 'isot'; % isotropic material symmetry class
 % materialSym = 'isotTrans'; % transversely isotropic material symmetry class
-slat = false; % slat modeling
+slat = true; % slat modeling
 
 for it=1:length(tests)
     test = tests{it};

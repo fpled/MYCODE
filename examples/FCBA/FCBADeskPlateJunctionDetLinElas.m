@@ -254,7 +254,7 @@ if solveProblem
     S = setmaterial(S,mat);
     
     %% Neumann boundary conditions
-    p_plate = RHO*g*h; % surface load (body load for plates)  [N/m2]
+    p_plate = RHO*g*h; % surface load (body load for plates) [N/m2]
     Sec_stab_vert = pi*r_load^2;
     L_hori_fati = 2*r_load;
     switch lower(test)
@@ -774,7 +774,7 @@ switch lower(test)
         fprintf('\n');
     case 'fatigue1'
         ux_exp_start = -4.42*1e-3;
-        ux_exp_end = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;   
+        ux_exp_end = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
@@ -786,7 +786,7 @@ switch lower(test)
         fprintf('\n');
     case 'fatigue2'
         ux_exp_start = 3.48*1e-3;
-        ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;   
+        ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         

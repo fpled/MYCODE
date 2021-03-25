@@ -1,5 +1,5 @@
-%% FCBA desk beam deterministic linear elasticity %%
-%%------------------------------------------------%%
+%% FCBA desk beam junction deterministic linear elasticity %%
+%%---------------------------------------------------------%%
 
 % clc
 clearvars
