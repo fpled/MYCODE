@@ -1,6 +1,8 @@
-function [H_sample,d_sample,u_sample,f_sample] = solvePFStoLinElasSingleEdgeCrack(S,S_phase,T,BU,BL,BRight,BLeft,BFront,BBack,loading,samples,varargin)
-% function [H_sample,d_sample,u_sample,f_sample] = solvePFStoLinElasSingleEdgeCrack(S,S_phase,T,BU,BL,BRight,BLeft,BFront,BBack,loading,samples,varargin)
+function [H_sample,d_sample,u_sample,f_sample] = solvePFStoLinElas(S,S_phase,T,fun,samples,varargin)
+% function [H_sample,d_sample,u_sample,f_sample] = solvePFStoLinElas(S,S_phase,T,fun,samples,varargin)
 % Solve stochastic Phase Field problem.
+
+fun = fcnchk(fun);
 
 N = size(samples,1);
 E_sample = samples(:,1);
@@ -56,7 +58,7 @@ parfor i=1:N
     Si = actualisematerials(Si,matsi);
     
     % Solve deterministic problem
-    [Ht,dt,ut,ft] = solvePFDetLinElasSingleEdgeCrack(Si,S_phasei,T,BU,BL,BRight,BLeft,BFront,BBack,loading);
+    [Ht,dt,ut,ft] = fun(Si,S_phasei);
     H_sample(i,:,:) = getvalue(Ht);
     d_sample(i,:,:) = getvalue(dt);
     u_sample(i,:,:) = getvalue(ut);

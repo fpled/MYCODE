@@ -202,7 +202,12 @@ end
 %% Solution
 if solveProblem
     
-    N = 10; % number of samples
+    % Number of samples
+    if test
+        N = 10;
+    else
+        N = 5e2;
+    end
     
     %% Random variables
     % Material properties
@@ -255,7 +260,8 @@ if solveProblem
     %% Solution
     tTotal = tic;
     
-    [Ht,dt,ut,ft] = solvePFStoLinElasAsymmetricNotchedPlate(S,S_phase,T,PU,PL,PR,samples,'display');
+    fun = @(S,S_phase) solvePFDetLinElasAsymmetricNotchedPlate(S,S_phase,T,PU,PL,PR);
+    [Ht,dt,ut,ft] = solvePFStoLinElas(S,S_phase,T,fun,samples,'display');
     fmax = max(ft,[],2);
     
     time = toc(tTotal);
@@ -364,7 +370,7 @@ if displaySolution
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
-    %% Display pdf of criticial force
+    %% Display pdf of critical force
     figure('Name','Probability Density Estimate: Critical force')
     clf
     plot(xi_fmax*1e-6,f_fmax,'-b','LineWidth',linewidth)
