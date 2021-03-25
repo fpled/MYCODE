@@ -1,5 +1,5 @@
-function [Ht,dt,ut,ft] = solvePFDetLinElasSingleEdgeCrack(S,S_phase,T,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
-% function [Ht,dt,ut,ft] = solvePFDetLinElasSingleEdgeCrack(S,S_phase,T,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+function [Ht,dt,ut,ft] = solvePFDetLinElasSingleEdgeCrackHelem(S,S_phase,T,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+% function [Ht,dt,ut,ft] = solvePFDetLinElasSingleEdgeCrackHelem(S,S_phase,T,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
 % Solve deterministic Phase Field problem.
 
 display_ = ischarin('display',varargin);
@@ -12,10 +12,11 @@ dt = cell(1,length(T));
 ut = cell(1,length(T));
 ft = zeros(1,length(T));
 
-sz_phase = getnbddl(S_phase);
-sz = getnbddl(S);
-H = zeros(sz_phase,1);
-u = zeros(sz,1);
+sz_H = getnbelem(S);
+sz_d = getnbddl(S_phase);
+sz_u = getnbddl(S);
+H = FEELEMFIELD(zeros(sz_H,1),S);
+u = zeros(sz_u,1);
 
 if display_
     fprintf('\n+----------+-----------+-----------+------------+------------+------------+\n');
@@ -32,22 +33,27 @@ end
 for i=1:length(T)
     
     % Internal energy field
-    h_old = double(H);
-    H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
-    h = double(H);
-    rep = find(h <= h_old);
-    h(rep) = h_old(rep);
-    H = setvalue(H,h);
+    h_old = getvalue(H);
+    H = calc_energyint(S,u,'positive');
+    h = getvalue(H);
+    for p=1:getnbgroupelem(S)
+        he = double(h{p});
+        he_old = double(h_old{p});
+        rep = find(he <= he_old);
+        he(rep) = he_old(rep);
+        h{p} = he;
+    end
+    H = FEELEMFIELD(h,'storage',getstorage(H),'type',gettype(H),'ddl',getddl(H));
     
     % Phase field
     mats_phase = MATERIALS(S_phase);
     for m=1:length(mats_phase)
-        mats_phase{m} = setparam(mats_phase{m},'r',FENODEFIELD(r(m)+2*H));
+        mats_phase{m} = setparam(mats_phase{m},'r',r(m)+2*H);
     end
     S_phase = actualisematerials(S_phase,mats_phase);
     
     [A_phase,b_phase] = calc_rigi(S_phase);
-    b_phase = -b_phase + bodyload(S_phase,[],'QN',FENODEFIELD(2*H));
+    b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
     
     d = A_phase\b_phase;
     d = unfreevector(S_phase,d);
@@ -105,13 +111,13 @@ for i=1:length(T)
     f = sum(f);
     
     % Update fields
-    Ht{i} = double(H);
+    Ht{i} = H;
     dt{i} = d;
     ut{i} = u;
     ft(i) = f;
     
     if display_
-        fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),norm(Ht{i}),norm(dt{i}),norm(ut{i}));
+        fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),norm(squeeze(double(Ht{i}))),norm(dt{i}),norm(ut{i}));
     end
 end
 
@@ -119,8 +125,8 @@ if display_
     fprintf('+----------+-----------+-----------+------------+------------+------------+\n');
 end
 
-Ht = TIMEMATRIX(Ht,T,[sz_phase,1]);
-dt = TIMEMATRIX(dt,T,[sz_phase,1]);
-ut = TIMEMATRIX(ut,T,[sz,1]);
+Ht = TIMEMATRIX(cellfun(@(H) squeeze(double(H)),Ht,'UniformOutput',false),T,[sz_H,1]);
+dt = TIMEMATRIX(dt,T,[sz_d,1]);
+ut = TIMEMATRIX(ut,T,[sz_u,1]);
 
 end

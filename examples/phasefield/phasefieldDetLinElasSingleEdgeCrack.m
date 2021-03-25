@@ -20,9 +20,13 @@ setProblem = true;
 solveProblem = true;
 displaySolution = false;
 
+test = true; % coarse mesh
+% test = false; % fine mesh
+
 Dim = 2; % space dimension Dim = 2, 3
 loading = 'Shear'; % 'Tension' or 'Shear'
-PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor' or 'AnisotropicMiehe'
+PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe'
+
 filename = ['phasefieldDetLinElasSingleEdgeCrack' loading PFmodel '_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -58,15 +62,19 @@ if setProblem
         % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
         clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
         clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
-        clD = 1.5e-5; % test
-        clC = 1.5e-5; % test
-%         clD = 4e-5; % test
-%         clC = 1e-5; % test
+        if test
+            clD = 1.5e-5;
+            clC = 1.5e-5;
+            % clD = 4e-5;
+            % clC = 1e-5;
+        end
     elseif Dim==3
         clD = 4e-5;
         clC = 4e-6;
-        clD = 4e-5; % test
-        clC = 1e-5; % test
+        if test
+            clD = 4e-5;
+            clC = 1e-5;
+        end
     end
     S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
     S = S_phase;
@@ -127,16 +135,21 @@ if setProblem
     lambda = 121.15e9;
     mu = 80.77e9;
     % Young modulus and Poisson ratio
-    switch lower(option)
-        case 'defo'
-            E = mu*(3*lambda+2*mu)/(lambda+mu);
-            NU = lambda/(lambda+mu)/2;
-        case 'cont'
-            E = 4*mu*(lambda+mu)/(lambda+2*mu);
-            NU = lambda/(lambda+2*mu);
+    if Dim==2
+        switch lower(option)
+            case 'defo'
+                E = mu*(3*lambda+2*mu)/(lambda+mu);
+                NU = lambda/(lambda+mu)/2;
+            case 'cont'
+                E = 4*mu*(lambda+mu)/(lambda+2*mu);
+                NU = lambda/(lambda+2*mu);
+        end
+        % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
+        % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
+    elseif Dim==3
+        E = mu*(3*lambda+2*mu)/(lambda+mu);
+        NU = lambda/(lambda+mu)/2;
     end
-    % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
-    % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
     % Energetic degradation function
     g = @(d) (1-d).^2;
     % Density
@@ -208,13 +221,17 @@ if setProblem
                 % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
                 dt0 = 1e-8;
                 nt0 = 500;
-                dt0 = 1e-7; % test
-                nt0 = 50; % test
+                if test
+                    dt0 = 1e-7;
+                    nt0 = 50;
+                end
                 t0 = linspace(dt0,nt0*dt0,nt0);
                 dt1 = 1e-9;
                 nt1 = 1300;
-                dt1 = 1e-8; % test
-                nt1 = 130; % test
+                if test
+                    dt1 = 1e-8;
+                    nt1 = 130;
+                end
                 %
                 t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                 t = [t0,t1];
@@ -266,23 +283,27 @@ if setProblem
                 % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM], [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
                 dt = 1e-8;
                 nt = 2000;
-                dt = 1e-7; % test
-                nt = 200; % test
+                if test
+                    dt = 1e-7;
+                    nt = 200;
+                end
                 t = linspace(dt,nt*dt,nt);
         end
     elseif Dim==3
         dt = 1e-8;
         nt = 2500;
-        dt = 1e-7; % test
-        nt = 250; % test
+        if test
+            dt = 1e-7;
+            nt = 250;
+        end
         t = linspace(dt,nt*dt,nt);
     end
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','gc','l');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','gc','l');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading');
 end
 
 %% Solution
@@ -290,112 +311,7 @@ if solveProblem
     
     tTotal = tic;
     
-    t = gett(T);
-    
-    Ht = cell(1,length(T));
-    dt = cell(1,length(T));
-    ut = cell(1,length(T));
-    ft = zeros(1,length(T));
-    
-    sz_phase = getnbddl(S_phase);
-    sz = getnbddl(S);
-    H = zeros(sz_phase,1);
-    u = zeros(sz,1);
-    
-    fprintf('\n+----------+-----------+-----------+------------+------------+------------+\n');
-    fprintf('|   Iter   |  u [mm]   |  f [kN]   |  norm(H)   |  norm(d)   |  norm(u)   |\n');
-    fprintf('+----------+-----------+-----------+------------+------------+------------+\n');
-    
-    for i=1:length(T)
-        
-        % Internal energy field
-        h_old = double(H);
-        H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
-        h = double(H);
-        rep = find(h <= h_old);
-        h(rep) = h_old(rep);
-        H = setvalue(H,h);
-        
-        % Phase field
-        mats_phase = MATERIALS(S_phase);
-        for m=1:length(mats_phase)
-            mats_phase{m} = setparam(mats_phase{m},'r',FENODEFIELD(gc/l+2*H));
-        end
-        S_phase = actualisematerials(S_phase,mats_phase);
-        
-        [A_phase,b_phase] = calc_rigi(S_phase);
-        b_phase = -b_phase + bodyload(S_phase,[],'QN',FENODEFIELD(2*H));
-        
-        d = A_phase\b_phase;
-        d = unfreevector(S_phase,d);
-        
-        % Displacement field
-        mats = MATERIALS(S);
-        for m=1:length(mats)
-            mats{m} = setparam(mats{m},'d',d);
-            mats{m} = setparam(mats{m},'u',u);
-        end
-        S = actualisematerials(S,mats);
-        S = removebc(S);
-        ud = t(i);
-        switch lower(loading)
-            case 'tension'
-                S = addcl(S,BU,'UY',ud);
-                S = addcl(S,BL,'UY');
-                if Dim==2
-                    S = addcl(S,POINT([0.0,0.0]),'UX');
-                elseif Dim==3
-                    S = addcl(S,POINT([0.0,0.0,0.0]),{'UX','UZ'});
-                end
-            case 'shear'
-                if Dim==2
-                    S = addcl(S,BU,{'UX','UY'},[ud;0]);
-                    S = addcl(S,BLeft,'UY');
-                    S = addcl(S,BRight,'UY');
-                elseif Dim==3
-                    S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
-                    S = addcl(S,BLeft,{'UY','UZ'});
-                    S = addcl(S,BRight,{'UY','UZ'});
-                    S = addcl(S,BFront,{'UY','UZ'});
-                    S = addcl(S,BBack,{'UY','UZ'});
-                end
-                S = addcl(S,BL);
-            otherwise
-                error('Wrong loading case')
-        end
-        
-        [A,b] = calc_rigi(S,'nofree');
-        b = -b;
-        
-        u = freematrix(S,A)\b;
-        u = unfreevector(S,u);
-        
-        switch lower(loading)
-            case 'tension'
-                numddl = findddl(S,'UY',BU);
-            case 'shear'
-                numddl = findddl(S,'UX',BU);
-            otherwise
-                error('Wrong loading case')
-        end
-        f = A(numddl,:)*u;
-        f = sum(f);
-        
-        % Update fields
-        Ht{i} = double(H);
-        dt{i} = d;
-        ut{i} = u;
-        ft(i) = f;
-        
-        fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),norm(Ht{i}),norm(dt{i}),norm(ut{i}));
-        
-    end
-    
-    fprintf('+----------+-----------+-----------+------------+------------+------------+\n');
-    
-    Ht = TIMEMATRIX(Ht,T,[sz_phase,1]);
-    dt = TIMEMATRIX(dt,T,[sz_phase,1]);
-    ut = TIMEMATRIX(ut,T,[sz,1]);
+    [Ht,dt,ut,ft] = solvePFDetLinElasSingleEdgeCrack(S,S_phase,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
     
     time = toc(tTotal);
     
@@ -430,7 +346,7 @@ if displaySolution
     mysaveas(pathname,'boundary_conditions_displacement',formats,renderer);
     
     [hD_phase,legD_phase] = plotBoundaryConditions(S_phase,'legend',false);
-    % legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
+    % legend([hD_phase,hN_phase],[legD_phase,legN_phase],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions_damage',formats,renderer);
     
     % plotModel(S,'legend',false);
@@ -494,7 +410,7 @@ if displaySolution
         case 'shear'
             rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps);
         otherwise
-            error('Wrong loading case')  
+            error('Wrong loading case')
     end
     for j=1:length(rep)
         close all

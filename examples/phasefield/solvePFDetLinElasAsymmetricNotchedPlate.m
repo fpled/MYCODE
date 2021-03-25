@@ -1,5 +1,5 @@
-function [Ht,dt,ut,ft] = solvePFDetLinElasSingleEdgeCrack(S,S_phase,T,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
-% function [Ht,dt,ut,ft] = solvePFDetLinElasSingleEdgeCrack(S,S_phase,T,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+function [Ht,dt,ut,ft] = solvePFDetLinElasAsymmetricNotchedPlate(S,S_phase,T,PU,PL,PR,varargin)
+% function [Ht,dt,ut,ft] = solvePFDetLinElasAsymmetricNotchedPlate(S,S_phase,T,PU,PL,PR,varargin)
 % Solve deterministic Phase Field problem.
 
 display_ = ischarin('display',varargin);
@@ -19,7 +19,7 @@ u = zeros(sz,1);
 
 if display_
     fprintf('\n+----------+-----------+-----------+------------+------------+------------+\n');
-    fprintf('|   Iter   |  u [mm]   |  f [kN]   |  norm(H)   |  norm(d)   |  norm(u)   |\n');
+    fprintf('|   Iter   |  u [mm]   | f [kN/mm] |  norm(H)   |  norm(d)   |  norm(u)   |\n');
     fprintf('+----------+-----------+-----------+------------+------------+------------+\n');
 end
 
@@ -60,32 +60,10 @@ for i=1:length(T)
     end
     S = actualisematerials(S,mats);
     S = removebc(S);
-    ud = t(i);
-    switch lower(loading)
-        case 'tension'
-            S = addcl(S,BU,'UY',ud);
-            S = addcl(S,BL,'UY');
-            if Dim==2
-                S = addcl(S,POINT([0.0,0.0]),'UX');
-            elseif Dim==3
-                S = addcl(S,POINT([0.0,0.0,0.0]),{'UX','UZ'});
-            end
-        case 'shear'
-            if Dim==2
-                S = addcl(S,BU,{'UX','UY'},[ud;0]);
-                S = addcl(S,BLeft,'UY');
-                S = addcl(S,BRight,'UY');
-            elseif Dim==3
-                S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
-                S = addcl(S,BLeft,{'UY','UZ'});
-                S = addcl(S,BRight,{'UY','UZ'});
-                S = addcl(S,BFront,{'UY','UZ'});
-                S = addcl(S,BBack,{'UY','UZ'});
-            end
-            S = addcl(S,BL);
-        otherwise
-            error('Wrong loading case')
-    end
+    ud = -t(i);
+    S = addcl(S,PU,'UY',ud);
+    S = addcl(S,PL,{'UX','UY'});
+    S = addcl(S,PR,'UY');
     
     [A,b] = calc_rigi(S,'nofree');
     b = -b;
@@ -93,16 +71,9 @@ for i=1:length(T)
     u = freematrix(S,A)\b;
     u = unfreevector(S,u);
     
-    switch lower(loading)
-        case 'tension'
-            numddl = findddl(S,'UY',BU);
-        case 'shear'
-            numddl = findddl(S,'UX',BU);
-        otherwise
-            error('Wrong loading case')
-    end
-    f = A(numddl,:)*u;
-    f = sum(f);
+    numddl = findddl(S,'UY',PU);
+    f = -A(numddl,:)*u;
+    % f = sum(f);
     
     % Update fields
     Ht{i} = double(H);
@@ -111,7 +82,7 @@ for i=1:length(T)
     ft(i) = f;
     
     if display_
-        fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),norm(Ht{i}),norm(dt{i}),norm(ut{i}));
+        fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*1e-6,norm(Ht{i}),norm(dt{i}),norm(ut{i}));
     end
 end
 
