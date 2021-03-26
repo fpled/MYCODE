@@ -20,8 +20,8 @@ f_sample = zeros(N,length(T));
 d_sample = cell(nbSamples,length(T));
 u_sample = cell(nbSamples,length(T));
 H_sample = cell(nbSamples,length(T));
-S_phase_sample = cell(N,length(T));
-S_sample = cell(N,length(T));
+S_phase_sample = cell(nbSamples,length(T));
+S_sample = cell(nbSamples,length(T));
 % fmax_sample = zeros(N,1);
 
 if ~verLessThan('matlab','9.2') % introduced in R2017a
