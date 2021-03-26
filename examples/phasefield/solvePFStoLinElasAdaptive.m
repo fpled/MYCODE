@@ -1,10 +1,11 @@
-function [H_sample,d_sample,u_sample,f_sample,S_phase_sample,S_sample] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,samples,varargin)
-% function [H_sample,d_sample,u_sample,f_sample,S_phase_sample,S_sample] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,samples,varargin)
+function [f_sample,d_sample,u_sample,H_sample,S_phase_sample,S_sample] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,samples,varargin)
+% function [f_sample,d_sample,u_sample,H_sample,S_phase_sample,S_sample] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,samples,varargin)
 % Solve stochastic Phase Field problem with mesh adaptation.
 
 fun = fcnchk(fun);
 filename = getcharin('filename',varargin,'filename');
 pathname = getcharin('pathname',varargin,'.');
+nbSamples = getcharin('nbsamples',varargin,3);
 
 N = size(samples,1);
 E_sample = samples(:,1);
@@ -15,10 +16,10 @@ l_sample = samples(:,4);
 mats_phase = MATERIALS(S_phase);
 mats = MATERIALS(S);
 
-H_sample = cell(N,length(T));
-d_sample = cell(N,length(T));
-u_sample = cell(N,length(T));
 f_sample = zeros(N,length(T));
+d_sample = cell(nbSamples,length(T));
+u_sample = cell(nbSamples,length(T));
+H_sample = cell(nbSamples,length(T));
 S_phase_sample = cell(N,length(T));
 S_sample = cell(N,length(T));
 % fmax_sample = zeros(N,1);
@@ -68,13 +69,15 @@ parfor i=1:N
     dos(command);
     
     % Solve deterministic problem
-    [Ht,dt,ut,ft,St_phase,St] = fun(S_phasei,Si,filenamei);
-    H_sample(i,:) = Ht;
-    d_sample(i,:) = dt;
-    u_sample(i,:) = ut;
+    [dt,ut,ft,Ht,St_phase,St] = fun(S_phasei,Si,filenamei);
     f_sample(i,:) = ft;
-    S_phase_sample(i,:) = St_phase;
-    S_sample(i,:) = St;
+    if i<=nbSamples
+        d_sample(i,:) = dt;
+        u_sample(i,:) = ut;
+        H_sample(i,:) = Ht;
+        S_phase_sample(i,:) = St_phase;
+        S_sample(i,:) = St;
+    end
     % fmax_sample(i) = max(ft);
 end
 textprogressbar(' done');

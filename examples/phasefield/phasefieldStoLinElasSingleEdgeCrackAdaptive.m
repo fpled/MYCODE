@@ -349,7 +349,7 @@ if solveProblem
     
     % Number of samples
     if test
-        N = 10;
+        N = 8;
     else
         N = 5e2;
     end
@@ -405,8 +405,9 @@ if solveProblem
     %% Solution
     tTotal = tic;
     
+    nbSamples = 3;
     fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,CU,CL,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-    [Ht,dt,ut,ft,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,samples,'filename','gmsh_domain_single_edge_crack','pathname',pathname);
+    [ft,dt,ut,Ht,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,samples,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'nbsamples',nbSamples);
     fmax = max(ft,[],2);
     
     time = toc(tTotal);
@@ -425,18 +426,11 @@ if solveProblem
     npts = 100;
     [f_fmax,xi_fmax,bw_fmax] = ksdensity(fmax,'npoints',npts);
     
-    nbSamples = 3;
-    Ht = Ht(1:nbSamples,:);
-    dt = dt(1:nbSamples,:);
-    ut = ut(1:nbSamples,:);
-    St_phase = St_phase(1:nbSamples,:);
-    St = St(1:nbSamples,:);
-
-    save(fullfile(pathname,'solution.mat'),'N','Ht','dt','ut','St_phase','St',...
+    save(fullfile(pathname,'solution.mat'),'N','dt','ut','Ht','St_phase','St',...
         'mean_ft','std_ft','ci_ft','fmax',...
         'mean_fmax','std_fmax','ci_fmax','probs','f_fmax','xi_fmax','bw_fmax','time');
 else
-    load(fullfile(pathname,'solution.mat'),'N','Ht','dt','ut','St_phase','St',...
+    load(fullfile(pathname,'solution.mat'),'N','dt','ut','Ht','St_phase','St',...
         'mean_ft','std_ft','ci_ft','fmax',...
         'mean_fmax','std_fmax','ci_fmax','probs','f_fmax','xi_fmax','bw_fmax','time');
 end
@@ -468,11 +462,6 @@ end
 %% Display
 if displaySolution
     [t,rep] = gettevol(T);
-    % DO NOT WORK WITH MESH ADAPTATION
-    % u = getmatrixatstep(ut,rep(end));
-%     u = ut(:,rep(end));
-    u = ut(:,end);
-    S_final = St(:,end);
     
     %% Display domains, boundary conditions and meshes
     plotDomain({D,C},'legend',false);
@@ -496,6 +485,11 @@ if displaySolution
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_init',formats,renderer);
     
+    % DO NOT WORK WITH MESH ADAPTATION
+    % u = getmatrixatstep(ut,rep(end));
+%     u = ut(:,rep(end));
+    u = ut(:,end);
+    S_final = St(:,end);
     for k=1:numel(S_final)
         plotModel(S_final{k},'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
         mysaveas(pathname,['mesh_final_sample_' num2str(k)],formats,renderer);
@@ -571,8 +565,6 @@ if displaySolution
 %     for k=1:size(St,1)
 %         evolModel(T,St(k,:),'FrameRate',framerate,'filename',['mesh_sample_' num2str(k)],'pathname',pathname,options{:});
 %         
-%         evolSolutionCell(T,St_phase(k,:),Ht(k,:),'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
-%         
 %         evolSolutionCell(T,St_phase(k,:),dt(k,:),'FrameRate',framerate,'filename',['damage_sample_' num2str(k)],'pathname',pathname,options{:});
 %         for i=1:Dim
 %             evolSolutionCell(T,St(k,:),ut(k,:),'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
@@ -585,6 +577,8 @@ if displaySolution
 %         
 %         evolSolutionCell(T,St(k,:),ut(k,:),'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename',['epsilon_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
 %         evolSolutionCell(T,St(k,:),ut(k,:),'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename',['sigma_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
+%         
+%         evolSolutionCell(T,St_phase(k,:),Ht(k,:),'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
 %     end
     
     %% Display samples of solutions at different instants
@@ -600,20 +594,17 @@ if displaySolution
     for j=1:length(rep)
         close all
         % DO NOT WORK WITH MESH ADAPTATION
-        % Hj = getmatrixatstep(Ht,rep(j));
         % dj = getmatrixatstep(dt,rep(j));
         % uj = getmatrixatstep(ut,rep(j));
-        Hj = Ht{k,rep(j)};
+        % Hj = getmatrixatstep(Ht,rep(j));
         dj = dt{k,rep(j)};
         uj = ut{k,rep(j)};
+        Hj = Ht{k,rep(j)};
         Sj = St{k,rep(j)};
         Sj_phase = St_phase{k,rep(j)};
         
         plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
         mysaveas(pathname,['mesh_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
-        
-%         plotSolution(Sj_phase,Hj);
-%         mysaveas(pathname,['internal_energy_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
         
         plotSolution(Sj_phase,dj);
         mysaveas(pathname,['damage_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
@@ -636,6 +627,9 @@ if displaySolution
 %         
 %         plotSolution(Sj,uj,'sigma','mises','ampl',ampl);
 %         mysaveas(pathname,['sigma_von_mises_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        
+%         plotSolution(Sj_phase,Hj);
+%         mysaveas(pathname,['internal_energy_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
     end
     end
     
@@ -646,17 +640,17 @@ end
 for k=1:size(St,1)
 for i=1:length(T)
     % DO NOT WORK WITH MESH ADAPTATION
-    % Hi = getmatrixatstep(Ht,rep(i));
     % di = getmatrixatstep(dt,rep(i));
     % ui = getmatrixatstep(ut,rep(i));
-    Hi = Ht{k,rep(i)};
+    % Hi = getmatrixatstep(Ht,rep(i));
     di = dt{k,rep(i)};
     ui = ut{k,rep(i)};
+    Hi = Ht{k,rep(i)};
     Si = St{k,rep(i)};
     % Si_phase = St_phase{k,rep(i)};
     
-    write_vtk_mesh(Si,{Hi,di,ui},[],...
-        {'internal energy','damage','displacement'},[],...
+    write_vtk_mesh(Si,{di,ui,Hi},[],...
+        {'damage','displacement','internal energy'},[],...
         pathname,['solution_sample_' num2str(k)],1,i-1);
 end
 make_pvd_file(pathname,['solution_sample_' num2str(k)],1,length(T));

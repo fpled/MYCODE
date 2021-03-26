@@ -227,13 +227,13 @@ if solveProblem
     
     tTotal = tic;
     
-    [Ht,dt,ut,ft,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,CL,CR,BU,BL,BR,PU,PL,PR,sizemap,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
+    [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,CL,CR,BU,BL,BR,PU,PL,PR,sizemap,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'Ht','dt','ut','ft','St','St_phase','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','St','St_phase','time');
 else
-    load(fullfile(pathname,'solution.mat'),'Ht','dt','ut','ft','St','St_phase','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','St','St_phase','time');
 end
 
 %% Outputs
@@ -247,11 +247,6 @@ fprintf('elapsed time = %f s\n',time);
 %% Display
 if displaySolution
     [t,rep] = gettevol(T);
-    % DO NOT WORK WITH MESH ADAPTATION
-    % u = getmatrixatstep(ut,rep(end));
-%     u = ut{rep(end)};
-    u = ut{end};
-    S_final = St{end};
     
     %% Display domains, boundary conditions and meshes
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
@@ -270,6 +265,12 @@ if displaySolution
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_init',formats,renderer);
+    
+    % DO NOT WORK WITH MESH ADAPTATION
+    % u = getmatrixatstep(ut,rep(end));
+%     u = ut{rep(end)};
+    u = ut{end};
+    S_final = St{end};
     
     plotModel(S_final,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_final',formats,renderer);
@@ -308,8 +309,6 @@ if displaySolution
     
 %     evolModel(T,St,'FrameRate',framerate,'filename','mesh','pathname',pathname,options{:});
     
-%     evolSolutionCell(T,St_phase,Ht,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
-    
 %     evolSolutionCell(T,St_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
 %     for i=1:2
 %         evolSolutionCell(T,St,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
@@ -323,25 +322,24 @@ if displaySolution
 %     evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
 %     evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
     
+%     evolSolutionCell(T,St_phase,Ht,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
+    
     %% Display solutions at different instants
     rep = find(abs(t-0.210*unit)<eps | abs(t-0.215*unit)<eps | abs(t-0.218*unit)<eps | abs(t-0.220*unit)<eps | abs(t-0.222*unit)<eps);
     for j=1:length(rep)
         close all
         % DO NOT WORK WITH MESH ADAPTATION
-        % Hj = getmatrixatstep(Ht,rep(j));
         % dj = getmatrixatstep(dt,rep(j));
         % uj = getmatrixatstep(ut,rep(j));
-        Hj = Ht{rep(j)};
+        % Hj = getmatrixatstep(Ht,rep(j));
         dj = dt{rep(j)};
         uj = ut{rep(j)};
+        Hj = Ht{rep(j)};
         Sj = St{rep(j)};
         Sj_phase = St_phase{rep(j)};
         
         plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
         mysaveas(pathname,['mesh_t' num2str(rep(j))],formats,renderer);
-        
-%         plotSolution(Sj_phase,Hj);
-%         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
         
         plotSolution(Sj_phase,dj);
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
@@ -364,6 +362,9 @@ if displaySolution
 %         
 %         plotSolution(Sj,uj,'sigma','mises','ampl',ampl);
 %         mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
+        
+%         plotSolution(Sj_phase,Hj);
+%         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
     end
     
 end
@@ -372,17 +373,17 @@ end
 [t,rep] = gettevol(T);
 for i=1:length(T)
     % DO NOT WORK WITH MESH ADAPTATION
-    % Hi = getmatrixatstep(Ht,rep(i));
     % di = getmatrixatstep(dt,rep(i));
     % ui = getmatrixatstep(ut,rep(i));
-    Hi = Ht{rep(i)};
+    % Hi = getmatrixatstep(Ht,rep(i));
     di = dt{rep(i)};
     ui = ut{rep(i)};
+    Hi = Ht{rep(i)};
     Si = St{rep(i)};
     % Si_phase = St_phase{rep(i)};
     
-    write_vtk_mesh(Si,{Hi,di,ui},[],...
-        {'internal energy','damage','displacement'},[],...
+    write_vtk_mesh(Si,{di,ui,Hi},[],...
+        {'damage','displacement','internal energy'},[],...
         pathname,'solution',1,i-1);
 end
 make_pvd_file(pathname,'solution',1,length(T));

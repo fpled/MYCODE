@@ -311,13 +311,13 @@ if solveProblem
     
     tTotal = tic;
     
-    [Ht,dt,ut,ft] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
+    [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'Ht','dt','ut','ft','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','time');
 else
-    load(fullfile(pathname,'solution.mat'),'Ht','dt','ut','ft','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','time');
 end
 
 %% Outputs
@@ -331,7 +331,6 @@ fprintf('elapsed time = %f s\n',time);
 %% Display
 if displaySolution
     [t,rep] = gettevol(T);
-    u = getmatrixatstep(ut,rep(end));
     
     %% Display domains, boundary conditions and meshes
     plotDomain({D,C},'legend',false);
@@ -355,6 +354,7 @@ if displaySolution
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
+    u = getmatrixatstep(ut,rep(end));
     ampl = getsize(S)/max(abs(u))/20;
     plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
@@ -388,8 +388,6 @@ if displaySolution
     options = {'plotiter',true,'plottime',false};
     framerate = 80;
     
-%     evolSolution(S_phase,Ht,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
-    
 %     evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
 %     for i=1:Dim
 %         evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
@@ -403,6 +401,8 @@ if displaySolution
 %     evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
 %     evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
     
+%     evolSolution(S_phase,Ht,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
+    
     %% Display solutions at different instants
     switch lower(loading)
         case 'tension'
@@ -414,12 +414,9 @@ if displaySolution
     end
     for j=1:length(rep)
         close all
-        Hj = getmatrixatstep(Ht,rep(j));
         dj = getmatrixatstep(dt,rep(j));
         uj = getmatrixatstep(ut,rep(j));
-        
-%         plotSolution(S_phase,Hj);
-%         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
+        Hj = getmatrixatstep(Ht,rep(j));
         
         plotSolution(S_phase,dj);
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
@@ -442,6 +439,9 @@ if displaySolution
 %         
 %         plotSolution(S,uj,'sigma','mises','ampl',ampl);
 %         mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
+        
+%         plotSolution(S_phase,Hj);
+%         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
     end
     
 end
@@ -449,12 +449,12 @@ end
 %% Save solutions
 [t,rep] = gettevol(T);
 for i=1:length(T)
-    Hi = getmatrixatstep(Ht,rep(i));
     di = getmatrixatstep(dt,rep(i));
     ui = getmatrixatstep(ut,rep(i));
+    Hi = getmatrixatstep(Ht,rep(i));
     
-    write_vtk_mesh(S,{Hi,di,ui},[],...
-        {'internal energy','damage','displacement'},[],...
+    write_vtk_mesh(S,{di,ui,Hi},[],...
+        {'damage','displacement','internal energy'},[],...
         pathname,'solution',1,i-1);
 end
 make_pvd_file(pathname,'solution',1,length(T));

@@ -1,5 +1,5 @@
-function [Ht,dt,ut,ft] = solvePFDetLinElasSingleEdgeCrackHelem(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
-% function [Ht,dt,ut,ft] = solvePFDetLinElasSingleEdgeCrackHelem(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+function [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrackHelem(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+% function [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrackHelem(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
 % Solve deterministic Phase Field problem.
 
 display_ = ischarin('display',varargin);
@@ -7,16 +7,16 @@ Dim = getdim(S);
 
 t = gett(T);
 
-Ht = cell(1,length(T));
 dt = cell(1,length(T));
 ut = cell(1,length(T));
 ft = zeros(1,length(T));
+Ht = cell(1,length(T));
 
-sz_H = getnbelem(S);
 sz_d = getnbddl(S_phase);
 sz_u = getnbddl(S);
-H = FEELEMFIELD(zeros(sz_H,1),S);
+sz_H = getnbelem(S);
 u = zeros(sz_u,1);
+H = FEELEMFIELD(zeros(sz_H,1),S);
 
 if display_
     fprintf('\n+----------+-----------+-----------+------------+------------+------------+\n');

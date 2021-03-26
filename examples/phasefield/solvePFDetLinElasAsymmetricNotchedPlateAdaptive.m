@@ -1,5 +1,5 @@
-function [Ht,dt,ut,ft,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,CL,CR,BU,BL,BR,PU,PL,PR,sizemap,varargin)
-% function [Ht,dt,ut,ft,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,CL,CR,BU,BL,BR,PU,PL,PR,sizemap,varargin)
+function [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,CL,CR,BU,BL,BR,PU,PL,PR,sizemap,varargin)
+% function [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,CL,CR,BU,BL,BR,PU,PL,PR,sizemap,varargin)
 % Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);
@@ -10,17 +10,17 @@ mmgoptions = getcharin('mmgoptions',varargin,'-nomove -v -1');
 
 t = gett(T);
 
-Ht = cell(1,length(T));
 dt = cell(1,length(T));
 ut = cell(1,length(T));
 ft = zeros(1,length(T));
+Ht = cell(1,length(T));
 St_phase = cell(1,length(T));
 St = cell(1,length(T));
 
 sz_phase = getnbddl(S_phase);
 sz = getnbddl(S);
-H = zeros(sz_phase,1);
 u = zeros(sz,1);
+H = zeros(sz_phase,1);
 
 if display_
     fprintf('\n+----------+-----------+-----------+----------+----------+------------+------------+------------+\n');
@@ -114,10 +114,10 @@ for i=1:length(T)
     % f = sum(f);
     
     % Update fields
-    Ht{i} = double(H);
     dt{i} = d;
     ut{i} = u;
     ft(i) = f;
+    Ht{i} = double(H);
     St_phase{i} = S_phase;
     St{i} = S;
     
@@ -131,8 +131,8 @@ if display_
 end
 
 % DO NOT WORK WITH MESH ADAPTATION
-% Ht = TIMEMATRIX(Ht,T,[sz_phase,1]);
 % dt = TIMEMATRIX(dt,T,[sz_phase,1]);
 % ut = TIMEMATRIX(ut,T,[sz,1]);
+% Ht = TIMEMATRIX(Ht,T,[sz_phase,1]);
 
 end
