@@ -469,12 +469,12 @@ if displaySolution
         plotSolution(Sj_phase,dj);
         mysaveas(pathname,['damage_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
         
-        for i=1:Dim
+        for i=1:2
             plotSolution(Sj,uj,'displ',i,'ampl',ampl);
             mysaveas(pathname,['displacement_' num2str(i) '_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
         end
         
-%         for i=1:(Dim*(Dim+1)/2)
+%         for i=1:3
 %             plotSolution(Sj,uj,'epsilon',i,'ampl',ampl);
 %             mysaveas(pathname,['epsilon_' num2str(i) '_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
 %             
