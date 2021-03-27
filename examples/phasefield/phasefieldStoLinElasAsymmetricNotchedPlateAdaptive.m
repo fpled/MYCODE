@@ -371,7 +371,7 @@ if displaySolution
         
         ampl = getsize(S_final{k})/max(abs(u{k}))/20;
         plotModelDeflection(S_final{k},u{k},'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
-        mysaveas(pathname,['mesh_deflected_sample_' num2str(j)],formats,renderer);
+        mysaveas(pathname,['mesh_deflected_sample_' num2str(k)],formats,renderer);
         
         figure('Name','Meshes')
         clf
