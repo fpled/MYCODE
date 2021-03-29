@@ -29,9 +29,9 @@ test = true; % coarse mesh and small number of samples
 % test = false; % fine mesh and high number of samples
 
 setup = 1; % notch geometry setup = 1, 2
-PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe'
+PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe'
 randMat = true; % random material parameters (true or false)
-randPF = false; % random phase field parameters (true or false)
+randPF = true; % random phase field parameters (true or false)
 
 filename = ['phasefieldStoLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel];
 if randMat
@@ -422,10 +422,10 @@ if displaySolution
     framerate = 80;
     
 %     % ampl = getsize(S)/max(max(abs(getvalue(mean_ut))))/20;
-% %     evolSolution(S_phase,mean_dt,'FrameRate',framerate,'filename','mean_damage','pathname',pathname,options{:});
-% %     for i=1:2
-% %         evolSolution(S,mean_ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['mean_displacement_' num2str(i)],'pathname',pathname,options{:});
-% %     end
+%     evolSolution(S_phase,mean_dt,'FrameRate',framerate,'filename','mean_damage','pathname',pathname,options{:});
+%     for i=1:2
+%         evolSolution(S,mean_ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['mean_displacement_' num2str(i)],'pathname',pathname,options{:});
+%     end
 %     
 % %     for i=1:3
 % %         evolSolution(S,mean_ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['mean_epsilon_' num2str(i)],'pathname',pathname,options{:});
@@ -434,7 +434,7 @@ if displaySolution
 % %     
 % %     evolSolution(S,mean_ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','mean_epsilon_von_mises','pathname',pathname,options{:});
 % %     evolSolution(S,mean_ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','mean_sigma_von_mises','pathname',pathname,options{:});
-%     
+% %     
 % %     evolSolution(S_phase,mean_Ht,'FrameRate',framerate,'filename','mean_internal_energy','pathname',pathname,options{:});
     
 %     % ampl = getsize(S)/max(max(max(abs(ut))))/20;
@@ -448,15 +448,15 @@ if displaySolution
 %             evolSolution(S,uk,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
 %         end
 %         
-%         for i=1:3
-%             evolSolution(S,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
-%             evolSolution(S,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
-%         end
-%         
-%         evolSolution(S,uk,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename',['epsilon_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
-%         evolSolution(S,uk,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename',['sigma_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
-%         
-%         evolSolution(S_phase,Hk,'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
+% %         for i=1:3
+% %             evolSolution(S,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
+% %             evolSolution(S,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
+% %         end
+% %         
+% %         evolSolution(S,uk,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename',['epsilon_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
+% %         evolSolution(S,uk,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename',['sigma_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
+% %         
+% %         evolSolution(S_phase,Hk,'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
 %     end
 
     

@@ -26,9 +26,9 @@ test = true; % coarse mesh and small number of samples
 
 Dim = 2; % space dimension Dim = 2, 3
 loading = 'Shear'; % 'Tension' or 'Shear'
-PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe'
+PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe'
 randMat = true; % random material parameters (true or false)
-randPF = false; % random phase field parameters (true or false)
+randPF = true; % random phase field parameters (true or false)
 
 filename = ['phasefieldStoLinElasSingleEdgeCrack' loading PFmodel];
 if randMat

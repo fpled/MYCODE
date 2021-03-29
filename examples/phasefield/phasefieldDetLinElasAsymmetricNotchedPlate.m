@@ -28,7 +28,7 @@ test = true; % coarse mesh
 % test = false; % fine mesh
 
 setup = 1; % notch geometry setup = 1, 2
-PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe'
+PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe'
 
 filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
