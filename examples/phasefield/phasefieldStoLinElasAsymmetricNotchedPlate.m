@@ -12,7 +12,8 @@
 % [Passieux, Rethore, Gravouil, Baietto, 2013, CM] (XFEM)
 % [Ambati, Gerasimov, De Lorenzis, 2015, CM] (hybrid isotropic-anisotropic phase field model of Ambati et al. compared with the isotropic one of Bourdin et al. and the anisotropic ones of Amor et al. and Miehe et al.)
 % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (isotropic phase field model with no split of Bourdin et al. compared to experimental data of [Winkler PhD thesis, 2001])
-% [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM] (anisotropic phase field model of Wu et al.)
+% [Wu, Nguyen, 2018, JMPS] (hybrid isotropic-anisotropic phase field model of Wu et al.)
+% [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM] (anisotropic phase field model of Wu et al.)
 
 % clc
 clearvars
@@ -28,8 +29,8 @@ displaySolution = false;
 test = true; % coarse mesh and small number of samples
 % test = false; % fine mesh and high number of samples
 
-setup = 1; % notch geometry setup = 1, 2
-PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe'
+setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
+PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe'
 randMat = true; % random material parameters (true or false)
 randPF = true; % random phase field parameters (true or false)
 
@@ -55,25 +56,39 @@ renderer = 'OpenGL';
 %% Problem
 if setProblem
     %% Domains and meshes
-    unit = 1e-3; % for mm
-    % unit = 25.4e-3; % for inch % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
+    unit = 1e-3; % for mm % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], 
+    % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Passieux, Rethore, Gravouil, Baietto, 2013, CM]
+    % unit = 25.4e-3; % for inch % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], 
+    % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     switch setup
-        case 1
+        case 1 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME], 
+            % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME], [Geniaut, Galenne,2012, IJSS], 
+            % [Passieux, Rethore, Gravouil, Baietto, 2013, CM]
             a = 1.5*unit; % crack length
             b = 5*unit; % crack offset from the centerline
-            % a = 2.5*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
-            % b = 6*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
-        case 2
+        case 2 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME], 
+            % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME], 
+            % [Geniaut, Galenne, 2012, IJSS], [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Ambati, Gerasimov, De Lorenzis, 2015, CM], 
+            % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], 
+            % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
             a = 1*unit; % crack length
             b = 6*unit; % crack offset from the centerline
+        case 3 % [Ingraffea, Grigoriu, 1990], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
+            a = 2.5*unit; % crack length
+            b = 6*unit; % crack offset from the centerline
+        case 4 % [Ingraffea, Grigoriu, 1990], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+            a = 1.5*unit; % crack length
+            b = 4.75*unit; % crack offset from the centerline
+        case 5 % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+            a = 1.5*unit; % crack length
+            b = 5.15*unit; % crack offset from the centerline
     end
     h = 4*unit;
     C = LIGNE([-b,-h],[-b,-h+a]);
     clD = 0.1*unit; % characteristic length for domain
-    % cl = 0.01*unit; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
+    % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
-    % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
-    % cl = 0.01*unit/5; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
+    % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     if test
         clD = 0.2*unit;
         cl = 0.1*unit;
@@ -88,8 +103,10 @@ if setProblem
     % Critical energy release rate (or fracture toughness)
     gc = 1e3;
     % gc = 304.321; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
+    % gc = 315; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % Regularization parameter (width of the smeared crack)
-    l = 0.025*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
+    % l = 0.05*unit; % [Wu, Nguyen, 2018, JMPS]
+    l = 0.025*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % l = 0.01*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % Small artificial residual stiffness
     k = 1e-10;
@@ -102,9 +119,9 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    BU = CIRCLE(0.0,h,2.5*unit);
-    BL = CIRCLE(-9*unit,-h,2.5*unit);
-    BR = CIRCLE(9*unit,-h,2.5*unit);
+    BU = CIRCLE(0.0,h,2*unit);
+    BL = CIRCLE(-9*unit,-h,2*unit);
+    BR = CIRCLE(9*unit,-h,2*unit);
     
     S_phase = final(S_phase,'duplicate');
     S_phase = addcl(S_phase,C,'T',1);
@@ -135,24 +152,30 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    option = 'DEFO'; % plane strain
+    option = 'DEFO'; % plane strain [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM]
+    % option = 'CONT'; % plane stress [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % Lame coefficients
     lambda = 12e9;
     mu = 8e9;
     % Young modulus and Poisson ratio
     switch lower(option)
         case 'defo'
-            E = mu*(3*lambda+2*mu)/(lambda+mu);
-            NU = lambda/(lambda+mu)/2;
+            E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 20.8e9;
+            NU = lambda/(lambda+mu)/2; % NU = 0.3;
         case 'cont'
             E = 4*mu*(lambda+mu)/(lambda+2*mu);
             NU = lambda/(lambda+2*mu);
     end
-    % E = 3.102e9; % NU = 0.35; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
+    % E = 3.102e9; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
+    % E = 3.275e9; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % NU = 0.35; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % E = 200e9; % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME]
+    % NU = 0.3; % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME]
     % Energetic degradation function
     g = @(d) (1-d).^2;
     % Thickness
     DIM3 = 1;
+    % DIM3 = 0.5*unit; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % Density
     RHO = 1;
     
@@ -181,7 +204,7 @@ if setProblem
     % b = -b;
     
     %% Time scheme
-    % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2018, AAM]
+    % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % dt = 1e-4*unit;
     % nt = 2500;
     % t = linspace(dt,nt*dt,nt);
@@ -207,7 +230,6 @@ end
 
 %% Solution
 if solveProblem
-    
     % Number of samples
     if test
         N = 8;
@@ -315,6 +337,8 @@ end
 
 %% Outputs
 fprintf('\n');
+fprintf('setup    = %d\n',setup);
+fprintf('PF model = %s\n',PFmodel);
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
@@ -385,7 +409,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
-    ylabel('Force [kN/mm]','Interpreter',interpreter)
+    ylabel('Force [kN]','Interpreter',interpreter)
     l = legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
         'mean value'},'Location','NorthWest');
     set(l,'Interpreter','latex')
@@ -404,7 +428,7 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('$f$ [kN/mm]','Interpreter',interpreter)
+    xlabel('$f$ [kN]','Interpreter',interpreter)
     ylabel('$p_{F_c}(f)$','Interpreter',interpreter)
     l = legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
@@ -458,12 +482,11 @@ if displaySolution
 % %         
 % %         evolSolution(S_phase,Hk,'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
 %     end
-
     
     %% Display mean solutions or samples of solutions at different instants
     rep = find(abs(t-0.210*unit)<eps | abs(t-0.215*unit)<eps | abs(t-0.218*unit)<eps | abs(t-0.220*unit)<eps | abs(t-0.222*unit)<eps);
+    rep = [rep,length(T)];
 %     for j=1:length(rep)
-%         close all
 %         mean_dj = getmatrixatstep(mean_dt,rep(j));
 %         mean_uj = getmatrixatstep(mean_ut,rep(j));
 %         mean_Hj = getmatrixatstep(mean_Ht,rep(j));
@@ -496,7 +519,6 @@ if displaySolution
     
     for k=1:size(ut,1)
     for j=1:length(rep)
-        close all
         dj = dt(k,:,rep(j))';
         uj = ut(k,:,rep(j))';
         Hj = Ht(k,:,rep(j))';
