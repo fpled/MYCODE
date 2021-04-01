@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,CU,CL,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
-% function [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,CU,CL,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+function [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,CU,CL,CR,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+% function [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,CU,CL,CR,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
 % Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);
@@ -74,6 +74,7 @@ for i=1:length(T)
     S_phase = final(S_phase,'duplicate');
     S_phase = addcl(S_phase,CU,'T',1);
     S_phase = addcl(S_phase,CL,'T',1);
+    S_phase = addcl(S_phase,CR,'T',1);
     
     % P_phase = calcProjection(S_phase,S_phase_old,[],'free',false);
     P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);

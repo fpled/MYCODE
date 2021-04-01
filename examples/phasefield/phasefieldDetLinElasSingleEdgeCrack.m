@@ -28,7 +28,7 @@ test = true; % coarse mesh
 
 Dim = 2; % space dimension Dim = 2, 3
 loading = 'Shear'; % 'Tension' or 'Shear'
-PFmodel = 'AnisotropicMiehe'; % 'AnisotropicMiehe', 'AnisotropicAmor', 'AnisotropicMiehe'
+PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 filename = ['phasefieldDetLinElasSingleEdgeCrack' loading PFmodel '_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...

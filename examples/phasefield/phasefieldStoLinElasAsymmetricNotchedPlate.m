@@ -30,7 +30,7 @@ test = true; % coarse mesh and small number of samples
 % test = false; % fine mesh and high number of samples
 
 setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
-PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe'
+PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 randMat = true; % random material parameters (true or false)
 randPF = true; % random phase field parameters (true or false)
 

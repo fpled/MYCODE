@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,CL,CR,BU,BL,BR,PU,PL,PR,sizemap,varargin)
-% function [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,CL,CR,BU,BL,BR,PU,PL,PR,sizemap,varargin)
+function [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,CU,CL,CR,BU,BL,BR,PU,PL,PR,sizemap,varargin)
+% function [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,CU,CL,CR,BU,BL,BR,PU,PL,PR,sizemap,varargin)
 % Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);
@@ -70,6 +70,7 @@ for i=1:length(T)
         S_phase = setmaterial(S_phase,mats_phase{m},m);
     end
     S_phase = final(S_phase,'duplicate');
+    S_phase = addcl(S_phase,CU,'T',1);
     S_phase = addcl(S_phase,CL,'T',1);
     S_phase = addcl(S_phase,CR,'T',1);
     S_phase = addcl(S_phase,BU,'T');

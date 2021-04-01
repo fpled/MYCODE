@@ -30,7 +30,7 @@ test = true; % coarse mesh and small number of samples
 % test = false; % fine mesh and high number of samples
 
 setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
-PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe'
+PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 randMat = true; % random material parameters (true or false)
 randPF = true; % random phase field parameters (true or false)
 
@@ -104,9 +104,10 @@ if setProblem
     % S_phase = gmshasymmetricnotchedplate(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),2,'gmshoptions',gmshoptions);
     S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),2,'gmshoptions',gmshoptions);
     
-    c = a/1e2;
+    c = a/1e3;
     CL = LIGNE([-b-c/2,-h],[-b,-h+a]);
     CR = LIGNE([-b+c/2,-h],[-b,-h+a]);
+    CU = LIGNE([-b-c/2,-h+a],[-b+c/2,-h+a]);
     
     % sizemap = @(d) (clC-clD)*d+clD;
     sizemap = @(d) clD*clC./((clD-clC)*d+clC);
@@ -139,6 +140,7 @@ if setProblem
     S_phase = final(S_phase,'duplicate');
     S_phase = addcl(S_phase,CL,'T',1);
     S_phase = addcl(S_phase,CR,'T',1);
+    S_phase = addcl(S_phase,CU,'T',1);
     S_phase = addcl(S_phase,BU,'T');
     S_phase = addcl(S_phase,BL,'T');
     S_phase = addcl(S_phase,BR,'T');
@@ -152,6 +154,7 @@ if setProblem
     S_phase = final(S_phase,'duplicate');
     S_phase = addcl(S_phase,CL,'T',1);
     S_phase = addcl(S_phase,CR,'T',1);
+    S_phase = addcl(S_phase,CU,'T',1);
     S_phase = addcl(S_phase,BU,'T');
     S_phase = addcl(S_phase,BL,'T');
     S_phase = addcl(S_phase,BR,'T');
@@ -250,9 +253,9 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','sizemap','C','CL','CR','B','BU','BL','BR','PU','PL','PR');
+    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','sizemap','C','CU','CL','CR','B','BU','BL','BR','PU','PL','PR');
 else
-    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','sizemap','C','CL','CR','B','BU','BL','BR','PU','PL','PR');
+    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','sizemap','C','CU','CL','CR','B','BU','BL','BR','PU','PL','PR');
 end
 
 %% Solution
@@ -316,7 +319,7 @@ if solveProblem
     tTotal = tic;
     
     nbSamples = 3;
-    fun = @(S_phase,S,filename) solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,CL,CR,BU,BL,BR,PU,PL,PR,sizemap,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    fun = @(S_phase,S,filename) solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,CU,CL,CR,BU,BL,BR,PU,PL,PR,sizemap,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     [ft,dt,ut,Ht,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,samples,'filename','gmsh_domain_asymmetric_notched_plate','pathname',pathname,'nbsamples',nbSamples);
     fmax = max(ft,[],2);
     

@@ -29,7 +29,7 @@ test = true; % coarse mesh and small number of samples
 
 Dim = 2; % space dimension Dim = 2, 3
 loading = 'Shear'; % 'Tension' or 'Shear'
-PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe'
+PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 randMat = true; % random material parameters (true or false)
 randPF = true; % random phase field parameters (true or false)
 
@@ -105,13 +105,15 @@ if setProblem
     % S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
     S_phase = gmshdomainwithedgesmearedcrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
     
-    c = a/1e2;
+    c = a/1e3;
     if Dim==2
-        CU = LIGNE([0.0,L/2+c/2],[a,L/2]);
-        CL = LIGNE([0.0,L/2-c/2],[a,L/2]);
+        CU = LIGNE([0.0,L/2+c/2],[a,L/2+c/2]);
+        CL = LIGNE([0.0,L/2-c/2],[a,L/2-c/2]);
+        CR = LIGNE([a,L/2+c/2],[a,L/2-c/2]);
     elseif Dim==3
-        CU = QUADRANGLE([0.0,L/2+c/2,0.0],[a,L/2,0.0],[a,L/2,e],[0.0,L/2+c/2,e]);
-        CL = QUADRANGLE([0.0,L/2-c/2,0.0],[a,L/2,0.0],[a,L/2,e],[0.0,L/2-c/2,e]);
+        CU = QUADRANGLE([0.0,L/2+c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[0.0,L/2+c/2,e]);
+        CL = QUADRANGLE([0.0,L/2-c/2,0.0],[a,L/2-c/2,0.0],[a,L/2-c/2,e],[0.0,L/2-c/2,e]);
+        CR = QUADRANGLE([a,L/2+c/2,0.0],[a,L/2-c/2,0.0],[a,L/2-c/2,e],[a,L/2+c/2,e]);
     end
     
     % sizemap = @(d) (clC-clD)*d+clD;
@@ -144,6 +146,7 @@ if setProblem
     S_phase = final(S_phase,'duplicate');
     S_phase = addcl(S_phase,CU,'T',1);
     S_phase = addcl(S_phase,CL,'T',1);
+    S_phase = addcl(S_phase,CL,'T',1);
     
     d = calc_init_dirichlet(S_phase);
     cl = sizemap(d);
@@ -153,6 +156,7 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     S_phase = final(S_phase,'duplicate');
     S_phase = addcl(S_phase,CU,'T',1);
+    S_phase = addcl(S_phase,CL,'T',1);
     S_phase = addcl(S_phase,CL,'T',1);
     
     %% Stiffness matrices and sollicitation vectors
@@ -355,9 +359,9 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','CU','CL','BU','BL','BRight','BLeft','BFront','BBack','loading');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','CU','CL','CR','BU','BL','BRight','BLeft','BFront','BBack','loading');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','CU','CL','BU','BL','BRight','BLeft','BFront','BBack','loading');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','CU','CL','CR','BU','BL','BRight','BLeft','BFront','BBack','loading');
 end
 
 %% Solution
@@ -421,7 +425,7 @@ if solveProblem
     tTotal = tic;
     
     nbSamples = 3;
-    fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,CU,CL,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,CU,CL,CR,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     [ft,dt,ut,Ht,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,samples,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'nbsamples',nbSamples);
     fmax = max(ft,[],2);
     
