@@ -411,7 +411,7 @@ if displaySolution
     h1 = plot(glob.S,'selgroup',[1,3+(1:numel(patches))],'FaceColor',getfacecolor(1),'EdgeColor','none');
     h2 = plot(glob.S,'selgroup',2,'FaceColor',[0 0 1],'EdgeColor','none');
     h3 = plot(glob.S,'selgroup',3,'FaceColor',[0 1 0],'EdgeColor','none');
-    h4 = plotfacets(glob.S,5,'FaceColor',[0.63,0.13,0.94],'EdgeColor','none');
+    h4 = plotfacets(glob.S,5,'FaceColor',[0.63 0.13 0.94],'EdgeColor','none');
     h5 = plotfacets(glob.S,17,'FaceColor',[1 0.5 0],'EdgeColor','none');
     hold off
     set(gca,'FontSize',16)
@@ -465,7 +465,7 @@ if displaySolution
     h1 = plot(glob.S,'selgroup',1:3,'FaceColor',getfacecolor(1),'EdgeColor','none');
     h2 = plot(glob.S,'selgroup',2,'FaceColor',[0 0 1],'EdgeColor','none');
     h3 = plot(glob.S,'selgroup',3,'FaceColor',[0 1 0],'EdgeColor','none');
-    h4 = plotfacets(glob.S,5,'FaceColor',[0.63,0.13,0.94],'EdgeColor','none');
+    h4 = plotfacets(glob.S,5,'FaceColor',[0.63 0.13 0.94],'EdgeColor','none');
     h5 = plotfacets(glob.S,17,'FaceColor',[1 0.5 0],'EdgeColor','none');
     h_patch = cell(1,n);
     leg_patch = cell(1,n);
@@ -494,7 +494,7 @@ if displaySolution
     hold on
     h2 = plot(glob.S,'selgroup',2,'FaceColor',[0 0 1]);
     h3 = plot(glob.S,'selgroup',3,'FaceColor',[0 1 0]);
-    h4 = plotfacets(glob.S,5,'FaceColor',[0.63,0.13,0.94]);
+    h4 = plotfacets(glob.S,5,'FaceColor',[0.63 0.13 0.94]);
     h5 = plotfacets(glob.S,17,'FaceColor',[1 0.5 0]);
     h_patch = cell(1,n);
     leg_patch = cell(1,n);

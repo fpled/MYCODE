@@ -32,28 +32,32 @@ end
 
 fontsize = 16;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'fig','epsc','png'};
 renderer = 'OpenGL';
 
 %% Problem
 if solveProblem
     %% Domains and meshes
     % Beams dimensions
-    H = 1995e-3; % [m]
-    L = 1990e-3;
+    L = 1990e-3; % [m]
+    l = 1495e-3;
+    H = 1950e-3;
     L1 = 445e-3;
-    l = 2100e-3;
+    L2 = 1890e-3;
+    l1 = 425e-3;
+    l2 = 490e-3;
     h = 410e-3;
     H1 = 620e-3;
     H2 = 1530e-3;
-    b1 = 20e-3;
-    b2 = 27e-3;
-    b3 = 15e-3;
+    b1 = 21e-3;
+    b2 = 28e-3;
+    b4 = 15e-3;
+    b5 = 40e-3;
     h1 = 90e-3;
     h2 = 65e-3;
+    h5 = 50e-3;
     c = 50e-3;
     d = 68e-3;
-    e = 10e-3;
     d_load = 100e-3;
     
     % Points
@@ -74,23 +78,32 @@ if solveProblem
         L-c,0.0,H2+h1/2;
         L-c,l-c,H2+h1/2;
         0.0,l-c,H2+h1/2];
-    x_botguardrail = [0.0,0.0,H2+h1+d+h1/2;
-        L-L1-c/2-h2/2,0.0,H2+h1+d+h1/2;
-        L-c,0.0,H2+h1+d+h1/2;
-        L-c,l-c,H2+h1+d+h1/2;
-        0.0,l-c,H2+h1+d+h1/2];
-    x_topguardrail = [0.0,0.0,H2+2*(h1+d)+h1/2;
-        L-L1-c/2-h2/2,0.0,H2+2*(h1+d)+h1/2;
-        L-c,0.0,H2+2*(h1+d)+h1/2;
-        L-c,l-c,H2+2*(h1+d)+h1/2;
-        0.0,l-c,H2+2*(h1+d)+h1/2];
+    x_botguardrail = [0.0,0.0,(H+H2)/2;
+        L-L1-c/2-h2/2,0.0,(H+H2)/2;
+        L-c,0.0,(H+H2)/2;
+        L-c,l-c,(H+H2)/2;
+        0.0,l-c,(H+H2)/2];
+    x_topguardrail = [0.0,0.0,H-h1/2;
+        L-L1-c/2-h2/2,0.0,H-h1/2;
+        L-c,0.0,H-h1/2;
+        L-c,l-c,H-h1/2;
+        0.0,l-c,H-h1/2];
     x_slat = zeros(14*2,3);
     for i=1:14
-        x_slat(2*i-1,:) = [b2/2+e+d/2+(i-1)*2*d,0.0,H2+h1/2];
-        x_slat(2*i,:) = [b2/2+e+d/2+(i-1)*2*d,l-c,H2+h1/2];
+        x_slat(2*i-1,:) = [(L-c)/2-(14-1)*d+(i-1)*2*d,0.0,H2+h1/2];
+        x_slat(2*i,:) = [(L-c)/2-(14-1)*d+(i-1)*2*d,l-c,H2+h1/2];
     end
-    x_load = [(L-c)/2,l-c,H2+2*(h1+d)+h1/2;
-        d_load-c/2,l-c,H2+2*(h1+d)+h1/2];
+    x_longslat = [(L-c-L2)/2,(l-c)/2-l2/2-h5,H2+h1/2;
+        (L-c+L2)/2,(l-c)/2-l2/2-h5,H2+h1/2;
+        (L-c+L2)/2,(l-c)/2+l2/2+h5,H2+h1/2;
+        (L-c-L2)/2,(l-c)/2+l2/2+h5,H2+h1/2];
+    x_slatcross = zeros(14*2,3);
+    for i=1:14
+        x_slatcross(2*i-1,:) = [(L-c)/2-(14-1)*d+(i-1)*2*d,(l-c)/2-l2/2-h5,H2+h1/2];
+        x_slatcross(2*i,:) = [(L-c)/2-(14-1)*d+(i-1)*2*d,(l-c)/2+l2/2+h5,H2+h1/2];
+    end
+    x_load = [(L-c)/2,l-c,H-h1/2;
+        d_load-c/2,l-c,H-h1/2];
     
     P_leg{1} = {x_bot(1,:),x_botrail(1,:),x_toprail(1,:),x_botguardrail(1,:),x_topguardrail(1,:),x_top(1,:)};
     P_leg{2} = {x_bot(2,:),x_botrail(2,:),x_toprail(3,:),x_botguardrail(3,:),x_topguardrail(3,:),x_top(2,:)};
@@ -101,12 +114,12 @@ if solveProblem
     P_botrail{2} = {x_botrail(3,:),x_botrail(4,:)};
     P_botrail{3} = {x_botrail(4,:),x_botrail(1,:)};
     
-    P_siderail{1} = {x_toprail(1,:),x_slat(1,:),x_slat(3,:),x_slat(5,:),x_slat(7,:),x_slat(9,:),...
-        x_slat(11,:),x_slat(13,:),x_slat(15,:),x_slat(17,:),x_slat(19,:),x_slat(21,:),...
-        x_toprail(2,:),x_slat(23,:),x_slat(25,:),x_slat(27,:),x_toprail(3,:)};
-    P_siderail{2} = {x_toprail(5,:),x_slat(2,:),x_slat(4,:),x_slat(6,:),x_slat(8,:),x_slat(10,:),...
-        x_slat(12,:),x_slat(14,:),x_slat(16,:),x_slat(18,:),x_slat(20,:),x_slat(22,:),...
-        x_slat(24,:),x_slat(26,:),x_slat(28,:),x_toprail(4,:)};
+    P_siderail{1} = {x_toprail(1,:),x_slat(2*1-1,:),x_slat(2*2-1,:),x_slat(2*3-1,:),x_slat(2*4-1,:),x_slat(2*5-1,:),...
+        x_slat(2*6-1,:),x_slat(2*7-1,:),x_slat(2*8-1,:),x_slat(2*9-1,:),x_slat(2*10-1,:),x_slat(2*11-1,:),...
+        x_toprail(2,:),x_slat(2*12-1,:),x_slat(2*13-1,:),x_slat(2*14-1,:),x_toprail(3,:)};
+    P_siderail{2} = {x_toprail(5,:),x_slat(2*1,:),x_slat(2*2,:),x_slat(2*3,:),x_slat(2*4,:),x_slat(2*5,:),...
+        x_slat(2*6,:),x_slat(2*7,:),x_slat(2*8,:),x_slat(2*9,:),x_slat(2*10,:),x_slat(2*11,:),...
+        x_slat(2*12,:),x_slat(2*13,:),x_slat(2*14,:),x_toprail(4,:)};
     
     P_endrail{1} = {x_toprail(3,:),x_toprail(4,:)};
     P_endrail{2} = {x_toprail(5,:),x_toprail(1,:)};
@@ -114,8 +127,14 @@ if solveProblem
     if slat
         P_slat = cell(1,14);
         for i=1:14
-            P_slat{i} = {x_slat(2*i-1,:),x_slat(2*i,:)};
+            P_slat{i} = {x_slat(2*i-1,:),x_slatcross(2*i-1,:),x_slatcross(2*i,:),x_slat(2*i,:)};
         end
+        P_longslat{1} = {x_longslat(1,:),x_slatcross(2*1-1,:),x_slatcross(2*2-1,:),x_slatcross(2*3-1,:),x_slatcross(2*4-1,:),x_slatcross(2*5-1,:),...
+            x_slatcross(2*6-1,:),x_slatcross(2*7-1,:),x_slatcross(2*8-1,:),x_slatcross(2*9-1,:),x_slatcross(2*10-1,:),x_slatcross(2*11-1,:),...
+            x_slatcross(2*12-1,:),x_slatcross(2*13-1,:),x_slatcross(2*14-1,:),x_longslat(2,:)};
+        P_longslat{2} = {x_longslat(4,:),x_slatcross(2*1,:),x_slatcross(2*2,:),x_slatcross(2*3,:),x_slatcross(2*4,:),x_slatcross(2*5,:),...
+            x_slatcross(2*6,:),x_slatcross(2*7,:),x_slatcross(2*8,:),x_slatcross(2*9,:),x_slatcross(2*10,:),x_slatcross(2*11,:),...
+            x_slatcross(2*12,:),x_slatcross(2*13,:),x_slatcross(2*14,:),x_longslat(3,:)};
     end
     
     P_botguardrail{1} = {x_botguardrail(1,:),x_botguardrail(2,:)};
@@ -165,6 +184,9 @@ if solveProblem
         S_slat = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_slat_' num2str(n)])),P_slat,num2cell(1:length(P_slat)),'UniformOutput',false);
         S_slat = union(S_slat{:});
         S_slat = convertelem(S_slat,elemtype,'param',VECTEUR([1;0;0]));
+        S_longslat = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_longslat_' num2str(n)])),P_longslat,num2cell(1:length(P_longslat)),'UniformOutput',false);
+        S_longslat = union(S_longslat{:});
+        S_longslat = convertelem(S_longslat,elemtype,'param',VECTEUR([0;1;0]));
     end
     
     %% Materials
@@ -180,7 +202,8 @@ if solveProblem
     Sec2 = b2*h1;
     Sec3 = b2*h2;
     if slat
-        Sec4 = b3*d;
+        Sec4 = b4*d;
+        Sec5 = b5*h5;
     end
     % Planar second moment of area (or Planar area moment of inertia)
     IY0 = c^4/12;
@@ -188,14 +211,16 @@ if solveProblem
     IY2 = h1*b2^3/12;
     IY3 = h2*b2^3/12;
     if slat
-        IY4 = d*b3^3/12;
+        IY4 = d*b4^3/12;
+        IY5 = h5*b5^3/12;
     end
     IZ0 = IY0;
     IZ1 = b1*h1^3/12;
     IZ2 = b2*h1^3/12;
     IZ3 = b2*h2^3/12;
     if slat
-        IZ4 = b3*d^3/12;
+        IZ4 = b4*d^3/12;
+        IZ5 = b5*h5^3/12;
     end
     % Polar second moment of area (or Polar area moment of inertia)
     IX0 = IY0+IZ0;
@@ -204,6 +229,7 @@ if solveProblem
     IX3 = IY3+IZ3;
     if slat
         IX4 = IY4+IZ4;
+        IX5 = IY5+IZ5;
     end
     
     % Material
@@ -225,15 +251,8 @@ if solveProblem
             if slat
                 mat_4 = ELAS_BEAM('E',E,'NU',NU,'S',Sec4,'IZ',IZ4,'IY',IY4,'IX',IX4,'RHO',RHO);
                 mat_4 = setnumber(mat_4,5);
-            end
-            S_leg = setmaterial(S_leg,mat_0);
-            S_botrail = setmaterial(S_botrail,mat_1);
-            S_siderail = setmaterial(S_siderail,mat_1);
-            S_endrail = setmaterial(S_endrail,mat_2);
-            S_guardrail = setmaterial(S_guardrail,mat_1);
-            S_guardrailsupport = setmaterial(S_guardrailsupport,mat_3);
-            if slat
-                S_slat = setmaterial(S_slat,mat_4);
+                mat_5 = ELAS_BEAM('E',E,'NU',NU,'S',Sec5,'IZ',IZ5,'IY',IY5,'IX',IX5,'RHO',RHO);
+                mat_5 = setnumber(mat_5,6);
             end
         case 'isottrans'
             % Transverse Young modulus
@@ -258,21 +277,22 @@ if solveProblem
             if slat
                 mat_4 = ELAS_BEAM_ISOT_TRANS('EL',ET,'NUT',NUT,'GL',GL,'S',Sec4,'IZ',IZ4,'IY',IY4,'IX',IX4,'RHO',RHO);
                 mat_4 = setnumber(mat_4,5);
-            end
-            S_leg = setmaterial(S_leg,mat_0);
-            S_botrail = setmaterial(S_botrail,mat_1);
-            S_siderail = setmaterial(S_siderail,mat_1);
-            S_endrail = setmaterial(S_endrail,mat_2);
-            S_guardrail = setmaterial(S_guardrail,mat_1);
-            S_guardrailsupport = setmaterial(S_guardrailsupport,mat_3);
-            if slat
-                S_slat = setmaterial(S_slat,mat_4);
+                mat_5 = ELAS_BEAM_ISOT_TRANS('EL',ET,'NUT',NUT,'GL',GL,'S',Sec5,'IZ',IZ5,'IY',IY5,'IX',IX5,'RHO',RHO);
+                mat_5 = setnumber(mat_5,6);
             end
         otherwise
             error('Wrong material symmetry !')
     end
+    S_leg = setmaterial(S_leg,mat_0);
+    S_botrail = setmaterial(S_botrail,mat_1);
+    S_siderail = setmaterial(S_siderail,mat_1);
+    S_endrail = setmaterial(S_endrail,mat_2);
+    S_guardrail = setmaterial(S_guardrail,mat_1);
+    S_guardrailsupport = setmaterial(S_guardrailsupport,mat_3);
     if slat
-        S = union(S_leg,S_botrail,S_siderail,S_endrail,S_guardrail,S_guardrailsupport,S_slat);
+        S_slat = setmaterial(S_slat,mat_4);
+        S_longslat = setmaterial(S_longslat,mat_5);
+        S = union(S_leg,S_botrail,S_siderail,S_endrail,S_guardrail,S_guardrailsupport,S_slat,S_longslat);
     else
         S = union(S_leg,S_botrail,S_siderail,S_endrail,S_guardrail,S_guardrailsupport);
     end
@@ -284,6 +304,7 @@ if solveProblem
     p3 = RHO*g*Sec3; % line load (body load for guardrail support) [N/m]
     if slat
         p4 = RHO*g*Sec4; % line load (body load for slats) [N/m]
+        p5 = RHO*g*Sec5; % line load (body load for long slats) [N/m]
     end
     p = 500; % pointwise load [N]
     
@@ -314,6 +335,7 @@ if solveProblem
     f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_3)),[],'FZ',-p3);
     if slat
         f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_4)),[],'FZ',-p4);
+        f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_5)),[],'FZ',-p5);
     end
     
     %% Solution
@@ -415,7 +437,7 @@ if solveProblem
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S','test',...
-        'H','L','L1','l','h','H1','H2','h1','h2','b1','b2','c','d','e',...
+        'L','l','H','L1','L2','l1','l2','h','H1','H2','b1','b2','b4','b5','h1','h2','h5','c','d','d_load',...
         'f');
     save(fullfile(pathname,'solution.mat'),'u','s','e','time',...
         'Ux','Uy','Uz','Rx','Ry','Rz',...
@@ -429,7 +451,7 @@ if solveProblem
         'numgroupelemnodeNmax','numgroupelemnodeMxmax','numgroupelemnodeMymax','numgroupelemnodeMzmax','numgroupelemnodeEpsxmax','numgroupelemnodeGamxmax','numgroupelemnodeGamymax','numgroupelemnodeGamzmax');
 else
     load(fullfile(pathname,'problem.mat'),'S','test',...
-        'H','L','L1','l','h','H1','H2','h1','h2','b1','b2','c','d','e',...
+        'L','l','H','L1','L2','l1','l2','h','H1','H2','b1','b2','b4','b5','h1','h2','h5','c','d','d_load',...
         'f');
     load(fullfile(pathname,'solution.mat'),'u','s','e','time',...
         'Ux','Uy','Uz','Rx','Ry','Rz',...
@@ -519,18 +541,20 @@ if displaySolution
     clf
     h1 = plot(S,'selgroup',getnumgroupelemwithfield(S,'material',mat_0),'EdgeColor','k');
     hold on
-    h2 = plot(S,'selgroup',21:23,'EdgeColor','c');
-    h3 = plot(S,'selgroup',24:54,'EdgeColor','r');
+    numelem = getnumgroupelemwithfield(S,'material',mat_1);
+    h2 = plot(S,'selgroup',numelem(1:3),'EdgeColor','c');
+    h3 = plot(S,'selgroup',numelem(4:34),'EdgeColor','r');
     h4 = plot(S,'selgroup',getnumgroupelemwithfield(S,'material',mat_2),'EdgeColor',[1 0.5 0]);
-    h5 = plot(S,'selgroup',57:66,'EdgeColor','b');
+    h5 = plot(S,'selgroup',numelem(end-10+1:end),'EdgeColor','b');
     h6 = plot(S,'selgroup',getnumgroupelemwithfield(S,'material',mat_3),'EdgeColor','m');
     if slat
         h7 = plot(S,'selgroup',getnumgroupelemwithfield(S,'material',mat_4),'EdgeColor','g');
+        h8 = plot(S,'selgroup',getnumgroupelemwithfield(S,'material',mat_5),'EdgeColor',[0 0.5 0]);
     end
     hold off
     set(gca,'FontSize',16)
     if slat
-        l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1),h7(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','slat','Location','NorthEastOutside');
+        l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1),h7(1),h8(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','slat','long slat','Location','NorthEastOutside');
     else
         l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','Location','NorthEastOutside');
     end
@@ -538,9 +562,9 @@ if displaySolution
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
-    figure('Name','Group of elements')
-    plotparamelem(S,'group')
-    mysaveas(pathname,'groupelem',formats,renderer);
+%     figure('Name','Group of elements')
+%     plotparamelem(S,'group')
+%     mysaveas(pathname,'groupelem',formats,renderer);
     
 %     figure('Name','Materials')
 %     plotparamelem(S,'material')

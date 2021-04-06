@@ -32,7 +32,7 @@ end
 
 fontsize = 16;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'fig','epsc','png'};
 renderer = 'OpenGL';
 
 %% Problem
@@ -585,16 +585,19 @@ if displaySolution
     clf
     h1 = plot(S,'selgroup',getnumgroupelemwithfield(S,'material',mat_0),'EdgeColor','k');
     hold on
-    h2 = plot(S,'selgroup',5:7,'EdgeColor','c','FaceColor','c','FaceAlpha',0.1);
-    h3 = plot(S,'selgroup',8:10,'EdgeColor','r','FaceColor','r','FaceAlpha',0.1);
-    h4 = plot(S,'selgroup',11:12,'EdgeColor',[1 0.5 0],'FaceColor',[1 0.5 0],'FaceAlpha',0.1);
-    h5 = plot(S,'selgroup',13:20,'EdgeColor','b','FaceColor','b','FaceAlpha',0.1);
-    h6 = plot(S,'selgroup',[22,24],'EdgeColor','m','FaceColor','m','FaceAlpha',0.1);
+    numelem1 = getnumgroupelemwithfield(S,'material',mat_1);
+    numelem2 = getnumgroupelemwithfield(S,'material',mat_2);
+    numelem3 = getnumgroupelemwithfield(S,'material',mat_3);
+    h2 = plot(S,'selgroup',numelem1(1:3),'EdgeColor','c','FaceColor','c','FaceAlpha',0.1);
+    h3 = plot(S,'selgroup',numelem1(4:6),'EdgeColor','r','FaceColor','r','FaceAlpha',0.1);
+    h4 = plot(S,'selgroup',numelem2(1:2),'EdgeColor',[1 0.5 0],'FaceColor',[1 0.5 0],'FaceAlpha',0.1);
+    h5 = plot(S,'selgroup',numelem1(7:14),'EdgeColor','b','FaceColor','b','FaceAlpha',0.1);
+    h6 = plot(S,'selgroup',numelem2(3:4),'EdgeColor','m','FaceColor','m','FaceAlpha',0.1);
     if slat
-        h7 = plot(S,'selgroup',26:39,'EdgeColor','g','FaceColor','g','FaceAlpha',0.1);
+        h7 = plot(S,'selgroup',numelem1(15:28),'EdgeColor','g','FaceColor','g','FaceAlpha',0.1);
     end
-    h8 = plot(S,'selgroup',21,'EdgeColor',([1 0 1]+[1 0 0])/2,'FaceColor',([1 0 1]+[1 0 0])/2,'FaceAlpha',0.1);
-    h9 = plot(S,'selgroup',[23,25],'EdgeColor',([1 0 1]+[0 0 1])/2,'FaceColor',([1 0 1]+[0 0 1])/2,'FaceAlpha',0.1);
+    h8 = plot(S,'selgroup',numelem3(1),'EdgeColor',([1 0 1]+[1 0 0])/2,'FaceColor',([1 0 1]+[1 0 0])/2,'FaceAlpha',0.1);
+    h9 = plot(S,'selgroup',numelem3(2:3),'EdgeColor',([1 0 1]+[0 0 1])/2,'FaceColor',([1 0 1]+[0 0 1])/2,'FaceAlpha',0.1);
     hold off
     set(gca,'FontSize',16)
     if slat
@@ -608,9 +611,9 @@ if displaySolution
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
-    figure('Name','Group of elements')
-    plotparamelem(S,'group')
-    mysaveas(pathname,'groupelem',formats,renderer);
+%     figure('Name','Group of elements')
+%     plotparamelem(S,'group')
+%     mysaveas(pathname,'groupelem',formats,renderer);
     
 %     figure('Name','Materials')
 %     plotparamelem(S,'material')
