@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,CU,CL,CR,BU,BL,BR,PU,PL,PR,sizemap,varargin)
-% function [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,CU,CL,CR,BU,BL,BR,PU,PL,PR,sizemap,varargin)
+function [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
+% function [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
 % Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);
@@ -61,8 +61,13 @@ for i=1:length(T)
     % Mesh adaptation
     mats = MATERIALS(S);
     S_phase_old = S_phase;
+    S_phase_old = addcl(S_phase_old,H1,'T',1);
+    S_phase_old = addcl(S_phase_old,H2,'T',1);
+    S_phase_old = addcl(S_phase_old,H3,'T',1);
+    d_old = freevector(S_phase_old,d);
+    d_old = unfreevector(S_phase_old,d_old);
     % S_old = S;
-    cl = sizemap(d);
+    cl = sizemap(d_old);
     S_phase = adaptmesh(S_phase_old,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     S = S_phase;
     
@@ -70,9 +75,7 @@ for i=1:length(T)
         S_phase = setmaterial(S_phase,mats_phase{m},m);
     end
     S_phase = final(S_phase,'duplicate');
-    S_phase = addcl(S_phase,CU,'T',1);
-    S_phase = addcl(S_phase,CL,'T',1);
-    S_phase = addcl(S_phase,CR,'T',1);
+    S_phase = addcl(S_phase,C,'T',1);
     S_phase = addcl(S_phase,BU,'T');
     S_phase = addcl(S_phase,BL,'T');
     S_phase = addcl(S_phase,BR,'T');

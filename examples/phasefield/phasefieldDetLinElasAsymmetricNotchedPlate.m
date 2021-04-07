@@ -186,7 +186,6 @@ if setProblem
     S = setmaterial(S,mat);
     
     %% Dirichlet boundary conditions
-    B = LIGNE([-L,h],[L,h]);
     PU = POINT([0.0,h]);
     PL = POINT([-ls,-h]);
     PR = POINT([ls,-h]);
@@ -222,9 +221,9 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR');
+    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','BU','BL','BR','PU','PL','PR');
 else
-    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','B','BU','BL','BR','PU','PL','PR');
+    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','BU','BL','BR','PU','PL','PR');
 end
 
 %% Solution

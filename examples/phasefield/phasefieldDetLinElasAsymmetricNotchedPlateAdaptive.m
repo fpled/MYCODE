@@ -45,7 +45,7 @@ formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 gmshoptions = '-v 0';
-mmgoptions = '-nomove -hausd 0.00001 -hgrad 1.3 -v -1';
+mmgoptions = '-nomove -hausd 0.01 -hgrad 1.1 -v -1';
 % gmshoptions = '-v 5';
 % mmgoptions = '-nomove -hausd 0.01 -hgrad 1.3 -v 1';
 
@@ -93,15 +93,15 @@ if setProblem
     % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     if test
         clD = 0.2*unit;
-        cl = 0.1*unit;
+        cl = 0.05*unit;
     end
     clC = cl; % characteristic length for edge crack/notch
     clH = cl; % characteristic length for circular holes
     c = clC; % crack width
     S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),2,'gmshoptions',gmshoptions);
     
-    % sizemap = @(d) (clC-clD)*d+clD;
-    sizemap = @(d) clD*clC./((clD-clC)*d+clC);
+    sizemap = @(d) (clC-clD)*d+clD;
+    % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
     
     %% Phase field problem
     %% Material
@@ -124,25 +124,24 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    C = LIGNE([-b,-h],[-b,-h+a]);
-    CL = LIGNE([-b-c/2,-h],[-b-c/2,-h+a]);
-    CR = LIGNE([-b+c/2,-h],[-b+c/2,-h+a]);
-    CU = LIGNE([-b-c/2,-h+a],[-b+c/2,-h+a]);
+    % C = LIGNE([-b,-h],[-b,-h+a]);
+    C = DOMAIN(2,[-b-c/2,-h]-[c/10,c/10],[-b+c/2,-h+a]+[c/10,c/10]);
     R = 2*unit;
     BU = CIRCLE(0.0,h,R);
     BL = CIRCLE(-ls,-h,R);
     BR = CIRCLE(ls,-h,R);
-%     H1 = CIRCLE(-lh,h-ph-2*dh,r+eps);
-%     H2 = CIRCLE(-lh,h-ph-dh,r+eps);
-%     H3 = CIRCLE(-lh,h-ph,r+eps);
+    H1 = CIRCLE(-lh,h-ph-2*dh,r);
+    H2 = CIRCLE(-lh,h-ph-dh,r);
+    H3 = CIRCLE(-lh,h-ph,r);
     
     S_phase = final(S_phase,'duplicate');
-    S_phase = addcl(S_phase,CU,'T',1);
-    S_phase = addcl(S_phase,CL,'T',1);
-    S_phase = addcl(S_phase,CR,'T',1);
+    S_phase = addcl(S_phase,C,'T',1);
     S_phase = addcl(S_phase,BU,'T');
     S_phase = addcl(S_phase,BL,'T');
     S_phase = addcl(S_phase,BR,'T');
+    S_phase = addcl(S_phase,H1,'T',1);
+    S_phase = addcl(S_phase,H2,'T',1);
+    S_phase = addcl(S_phase,H3,'T',1);
     
     d = calc_init_dirichlet(S_phase);
     cl = sizemap(d);
@@ -151,9 +150,7 @@ if setProblem
     
     S_phase = setmaterial(S_phase,mat_phase);
     S_phase = final(S_phase,'duplicate');
-    S_phase = addcl(S_phase,CU,'T',1);
-    S_phase = addcl(S_phase,CL,'T',1);
-    S_phase = addcl(S_phase,CR,'T',1);
+    S_phase = addcl(S_phase,C,'T',1);
     S_phase = addcl(S_phase,BU,'T');
     S_phase = addcl(S_phase,BL,'T');
     S_phase = addcl(S_phase,BR,'T');
@@ -216,7 +213,6 @@ if setProblem
     S = setmaterial(S,mat);
     
     %% Dirichlet boundary conditions
-    B = LIGNE([-L,h],[L,h]);
     PU = POINT([0.0,h]);
     PL = POINT([-ls,-h]);
     PR = POINT([ls,-h]);
@@ -252,22 +248,22 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','sizemap','C','CU','CL','CR','B','BU','BL','BR','PU','PL','PR');
+    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','sizemap','C','BU','BL','BR','H1','H2','H3','PU','PL','PR');
 else
-    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','sizemap','C','CU','CL','CR','B','BU','BL','BR','PU','PL','PR');
+    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','sizemap','C','BU','BL','BR','H1','H2','H3','PU','PL','PR');
 end
 
 %% Solution
 if solveProblem
     tTotal = tic;
     
-    [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,CU,CL,CR,BU,BL,BR,PU,PL,PR,sizemap,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
+    [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','St','St_phase','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','St_phase','St','time');
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','St','St_phase','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','St_phase','St','time');
 end
 
 %% Outputs
