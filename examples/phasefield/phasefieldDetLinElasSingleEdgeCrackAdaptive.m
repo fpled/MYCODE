@@ -46,7 +46,7 @@ renderer = 'OpenGL';
 gmshoptions = '-v 0';
 mmgoptions = '-nomove -v -1';
 % gmshoptions = '-v 5';
-% mmgoptions = '-nomove -v 1';
+% mmgoptions = '-nomove -hausd 0.01 -hgrad 1.3 -v 1';
 
 %% Problem
 if setProblem
@@ -92,19 +92,8 @@ if setProblem
             clC = 1e-5;
         end
     end
-    % S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
-    S_phase = gmshdomainwithedgesmearedcrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
-    
-    c = a/1e3;
-    if Dim==2
-        CU = LIGNE([0.0,L/2+c/2],[a,L/2+c/2]);
-        CL = LIGNE([0.0,L/2-c/2],[a,L/2-c/2]);
-        CR = LIGNE([a,L/2+c/2],[a,L/2-c/2]);
-    elseif Dim==3
-        CU = QUADRANGLE([0.0,L/2+c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[0.0,L/2+c/2,e]);
-        CL = QUADRANGLE([0.0,L/2-c/2,0.0],[a,L/2-c/2,0.0],[a,L/2-c/2,e],[0.0,L/2-c/2,e]);
-        CR = QUADRANGLE([a,L/2+c/2,0.0],[a,L/2-c/2,0.0],[a,L/2-c/2,e],[a,L/2+c/2,e]);
-    end
+    c = clC; % crack width
+    S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
     
     % sizemap = @(d) (clC-clD)*d+clD;
     sizemap = @(d) clD*clC./((clD-clC)*d+clC);
@@ -133,6 +122,15 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
+    if Dim==2
+        CU = LIGNE([0.0,L/2+c/2],[a,L/2+c/2]);
+        CL = LIGNE([0.0,L/2-c/2],[a,L/2-c/2]);
+        CR = LIGNE([a,L/2+c/2],[a,L/2-c/2]);
+    elseif Dim==3
+        CU = QUADRANGLE([0.0,L/2+c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[0.0,L/2+c/2,e]);
+        CL = QUADRANGLE([0.0,L/2-c/2,0.0],[a,L/2-c/2,0.0],[a,L/2-c/2,e],[0.0,L/2-c/2,e]);
+        CR = QUADRANGLE([a,L/2+c/2,0.0],[a,L/2-c/2,0.0],[a,L/2-c/2,e],[a,L/2+c/2,e]);
+    end
     S_phase = final(S_phase,'duplicate');
     S_phase = addcl(S_phase,CU,'T',1);
     S_phase = addcl(S_phase,CL,'T',1);

@@ -83,8 +83,14 @@ if setProblem
             a = 1.5*unit; % crack length
             b = 5.15*unit; % crack offset from the centerline
     end
-    h = 4*unit;
-    C = LIGNE([-b,-h],[-b,-h+a]);
+    L = 10*unit; % half-length
+    h = 4*unit; % half-height
+    ls = 9*unit; % location of the support from the centerline
+    lh = 4*unit; % location of the holes from the centerline
+    dh = 2*unit; % distance between the holes
+    ph = 1.25*unit; % location of the top hole from the top
+    r = 0.25*unit; % radius of the holes
+    
     clD = 0.1*unit; % characteristic length for domain
     % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
@@ -119,9 +125,11 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    BU = CIRCLE(0.0,h,2*unit);
-    BL = CIRCLE(-9*unit,-h,2*unit);
-    BR = CIRCLE(9*unit,-h,2*unit);
+    C = LIGNE([-b,-h],[-b,-h+a]);
+    R = 2*unit;
+    BU = CIRCLE(0.0,h,R);
+    BL = CIRCLE(-ls,-h,R);
+    BR = CIRCLE(ls,-h,R);
     
     S_phase = final(S_phase,'duplicate');
     S_phase = addcl(S_phase,C,'T',1);
@@ -187,10 +195,10 @@ if setProblem
     S = setmaterial(S,mat);
     
     %% Dirichlet boundary conditions
-    B = LIGNE([-10*unit,h],[10*unit,h]);
+    B = LIGNE([-L,h],[L,h]);
     PU = POINT([0.0,h]);
-    PL = POINT([-9*unit,-h]);
-    PR = POINT([9*unit,-h]);
+    PL = POINT([-ls,-h]);
+    PR = POINT([ls,-h]);
     
     S = final(S,'duplicate');
     

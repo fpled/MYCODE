@@ -45,9 +45,9 @@ formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 gmshoptions = '-v 0';
-mmgoptions = '-nomove -v -1';
+mmgoptions = '-nomove -hausd 0.00001 -hgrad 1.3 -v -1';
 % gmshoptions = '-v 5';
-% mmgoptions = '-nomove -v 1';
+% mmgoptions = '-nomove -hausd 0.01 -hgrad 1.3 -v 1';
 
 %% Problem
 if setProblem
@@ -79,8 +79,14 @@ if setProblem
             a = 1.5*unit; % crack length
             b = 5.15*unit; % crack offset from the centerline
     end
-    h = 4*unit;
-    C = LIGNE([-b,-h],[-b,-h+a]);
+    L = 10*unit; % half-length
+    h = 4*unit; % half-height
+    ls = 9*unit; % location of the support from the centerline
+    lh = 4*unit; % location of the holes from the centerline
+    dh = 2*unit; % distance between the holes
+    ph = 1.25*unit; % location of the top hole from the top
+    r = 0.25*unit; % radius of the holes
+    
     clD = 0.1*unit; % characteristic length for domain
     % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
@@ -91,13 +97,8 @@ if setProblem
     end
     clC = cl; % characteristic length for edge crack/notch
     clH = cl; % characteristic length for circular holes
-    % S_phase = gmshasymmetricnotchedplate(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),2,'gmshoptions',gmshoptions);
-    S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),2,'gmshoptions',gmshoptions);
-    
-    c = a/1e3;
-    CL = LIGNE([-b-c/2,-h],[-b-c/2,-h+a]);
-    CR = LIGNE([-b+c/2,-h],[-b+c/2,-h+a]);
-    CU = LIGNE([-b-c/2,-h+a],[-b+c/2,-h+a]);
+    c = clC; % crack width
+    S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),2,'gmshoptions',gmshoptions);
     
     % sizemap = @(d) (clC-clD)*d+clD;
     sizemap = @(d) clD*clC./((clD-clC)*d+clC);
@@ -123,9 +124,17 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    BU = CIRCLE(0.0,h,2*unit);
-    BL = CIRCLE(-9*unit,-h,2*unit);
-    BR = CIRCLE(9*unit,-h,2*unit);
+    C = LIGNE([-b,-h],[-b,-h+a]);
+    CL = LIGNE([-b-c/2,-h],[-b-c/2,-h+a]);
+    CR = LIGNE([-b+c/2,-h],[-b+c/2,-h+a]);
+    CU = LIGNE([-b-c/2,-h+a],[-b+c/2,-h+a]);
+    R = 2*unit;
+    BU = CIRCLE(0.0,h,R);
+    BL = CIRCLE(-ls,-h,R);
+    BR = CIRCLE(ls,-h,R);
+%     H1 = CIRCLE(-lh,h-ph-2*dh,r+eps);
+%     H2 = CIRCLE(-lh,h-ph-dh,r+eps);
+%     H3 = CIRCLE(-lh,h-ph,r+eps);
     
     S_phase = final(S_phase,'duplicate');
     S_phase = addcl(S_phase,CU,'T',1);
@@ -207,10 +216,10 @@ if setProblem
     S = setmaterial(S,mat);
     
     %% Dirichlet boundary conditions
-    B = LIGNE([-10*unit,h],[10*unit,h]);
+    B = LIGNE([-L,h],[L,h]);
     PU = POINT([0.0,h]);
-    PL = POINT([-9*unit,-h]);
-    PR = POINT([9*unit,-h]);
+    PL = POINT([-ls,-h]);
+    PR = POINT([ls,-h]);
     
     S = final(S,'duplicate');
     

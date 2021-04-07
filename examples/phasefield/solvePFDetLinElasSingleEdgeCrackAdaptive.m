@@ -65,7 +65,7 @@ for i=1:length(T)
     S_phase_old = S_phase;
     % S_old = S;
     cl = sizemap(d);
-    S_phase = adaptmesh(S_phase,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    S_phase = adaptmesh(S_phase_old,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     S = S_phase;
     
     for m=1:length(mats_phase)
