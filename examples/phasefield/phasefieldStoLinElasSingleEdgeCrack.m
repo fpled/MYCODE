@@ -29,7 +29,7 @@ test = true; % coarse mesh and small number of samples
 
 Dim = 2; % space dimension Dim = 2, 3
 loading = 'Shear'; % 'Tension' or 'Shear'
-PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 randMat = true; % random material parameters (true or false)
 randPF = true; % random phase field parameters (true or false)
 
@@ -41,6 +41,9 @@ if randPF
     filename = [filename 'RandPF'];
 end
 filename = [filename '_' num2str(Dim) 'D'];
+if test
+    filename = [filename '_test'];
+end
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
 if ~exist(pathname,'dir')

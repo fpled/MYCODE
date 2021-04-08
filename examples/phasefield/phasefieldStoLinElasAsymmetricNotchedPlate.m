@@ -41,6 +41,9 @@ end
 if randPF
     filename = [filename 'RandPF'];
 end
+if test
+    filename = [filename '_test'];
+end
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
 if ~exist(pathname,'dir')
@@ -491,7 +494,12 @@ if displaySolution
 %     end
     
     %% Display mean solutions or samples of solutions at different instants
-    rep = find(abs(t-0.210*unit)<eps | abs(t-0.215*unit)<eps | abs(t-0.218*unit)<eps | abs(t-0.220*unit)<eps | abs(t-0.222*unit)<eps);
+    switch setup
+        case {1,4,5}
+            rep = find(abs(t-0.190*unit)<eps | abs(t-0.201*unit)<eps | abs(t-0.203*unit)<eps | abs(t-0.205*unit)<eps | abs(t-0.207*unit)<eps);
+        case {2,3}
+            rep = find(abs(t-0.210*unit)<eps | abs(t-0.215*unit)<eps | abs(t-0.218*unit)<eps | abs(t-0.220*unit)<eps | abs(t-0.222*unit)<eps);
+    end
     rep = [rep,length(T)];
 %     for j=1:length(rep)
 %         mean_dj = getmatrixatstep(mean_dt,rep(j));

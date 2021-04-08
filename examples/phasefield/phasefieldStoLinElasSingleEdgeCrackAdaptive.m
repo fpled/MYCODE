@@ -41,6 +41,9 @@ if randPF
     filename = [filename 'RandPF'];
 end
 filename = [filename 'Adaptive_' num2str(Dim) 'D'];
+if test
+    filename = [filename '_test'];
+end
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
 if ~exist(pathname,'dir')
