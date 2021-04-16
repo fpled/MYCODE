@@ -10,6 +10,8 @@ setProblem = true;
 solveProblem = true;
 displaySolution = false;
 
+junction = true; % junction modeling
+
 filename = 'beamDetDynLinElasClampedFree';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','FCBA',filename);
@@ -61,7 +63,7 @@ if setProblem
     % Young modulus
     E = 13.8e9; % [Pa]
     % Poisson ratio
-    NU = 0.4;
+    NU = 0.3;
     % Density
     Vol = Sec*Ltot;
     Mass = 430e-3; % [kg]
@@ -72,9 +74,18 @@ if setProblem
     mat = setnumber(mat,1);
     S = setmaterial(S,mat);
     
+    if junction
+        c = 10e3; % junction rotational stiffness [N.m/rad]
+        J = 15; % moment of inertia [kg.m2/rad]=[N.m.s2/rad]
+    end
+    
     %% Dirichlet boundary conditions
     S = final(S);
-    S = addcl(S,P1);
+    if junction
+        S = addcl(S,P1,'U');
+    else
+        S = addcl(S,P1);
+    end
     
     %% Experimental data
     filenameExp = fullfile(pathnameCamera,filenameCamera);
@@ -99,10 +110,18 @@ if setProblem
     delta = uy_exp(1); % [m]
     x = getcoord(getnode(S));
     ux0 = zeros(getnbnode(S),1);
-    funuy0 = @(delta) delta/(2*L^3)*(x(:,1).^2).*(3*L-x(:,1));
-    funrz0 = @(delta) 3*delta/(2*L^3)*x(:,1).*(2*L-x(:,1));
-    funu0 = @(delta) [ux0 funuy0(delta) funrz0(delta)]';
-    u0 = funu0(delta);
+    if junction
+        lambda = @(E,c) 3*E*IZ/(c*L);
+        funuy0 = @(E,c) delta/(1+lambda(E,c))*((x(:,1).^2).*(3*L-x(:,1))/(2*L^3) + lambda(E,c)*x(:,1)/L);
+        funrz0 = @(E,c) delta/(1+lambda(E,c))*(x(:,1).*(2*L-x(:,1))*3/(2*L^3) + lambda(E,c)/L);
+        funu0 = @(E,c) [ux0 funuy0(E,c) funrz0(E,c)]';
+        u0 = funu0(E,c);
+    else
+        uy0 = delta*(x(:,1).^2).*(3*L-x(:,1))/(2*L^3);
+        rz0 = delta*x(:,1).*(2*L-x(:,1))*3/(2*L^3);
+        funu0 = [ux0 uy0 rz0]';
+        u0 = funu0;
+    end
     u0 = freevector(S,u0(:));
     v0 = zeros(getnbddlfree(S),1);
     
@@ -111,27 +130,34 @@ if setProblem
     
     N = NEWMARKSOLVER(T,'alpha',0,'gamma',1/2,'beta',1/4,'display',false);
     
-    loadFunction = @(N) one(N);
+    loadFunction = @(N) zero(N);
     
     %% Mass, stiffness and damping matrices and sollicitation vectors
     M = calc_mass(S);
     K = calc_rigi(S);
+    if junction
+        % [~,numnode,~] = intersect(S,P1,'strict',false);
+        numnode = find(S.node==P1);
+        numddl = findddl(S,'RZ',numnode,'free');
+        K(numddl,numddl) = K(numddl,numddl) + c;
+        M(numddl,numddl) = M(numddl,numddl) + J;
+    end
     % stiffness proportional Rayleigh (viscous) damping coefficient
     % alpha = 0;
     alpha = 1e-5;
     % mass proportional Rayleigh (viscous) damping coefficient
     % beta = 0;
-    beta = 3.25;
+    beta = 5;
     C = alpha*K + beta*M;
     % C = zeros(size(K));
-    pl = RHO*g*Sec; % line load (body load for beams) [N/m]
+    % pl = RHO*g*Sec; % line load (body load for beams) [N/m]
     % b = bodyload(S,[],'FY',pl);
     b = zeros(getnbddlfree(S),1);
     b = b*loadFunction(N);
     
-    save(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','K','C','b','u0','v0','uy_exp');
+    save(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','K','C','b','u0','v0','P1','uy_exp');
 else
-    load(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','K','C','b','u0','v0','uy_exp');
+    load(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','K','C','b','u0','v0','P1','uy_exp');
 end
 
 %% Solution
@@ -289,11 +315,12 @@ end
 %% Display quantity of interest
 % uyt: vertical displacement at end point as a function of time
 uyt = Uyt(end,:);
-t = gett(T);
+t = gett(ut);
+startInd = find(uy_exp>=delta*1e-2,1); % index of initial time
 
 figure('Name','Quantity of interest : vertical displacement at end point')
 clf
-plot(t,uy_exp*1e2,'-r','LineWidth',1);
+plot(t,uy_exp(startInd:end)*1e2,'-r','LineWidth',1);
 hold on
 plot(t,uyt*1e2,'-b','LineWidth',1);
 hold off

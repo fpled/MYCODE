@@ -10,6 +10,8 @@ setProblem = true;
 solveProblem = true;
 displaySolution = false;
 
+junction = true; % junction modeling
+
 filename = 'materialWoodDynamicBending';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification',filename);
@@ -39,7 +41,7 @@ uy_exp(nanInd) = [];
 uy_exp = uy_exp-uy_exp(end);
 
 delta = 2.3e-2; % initial static displacement [m]
-% % delta = uy_exp(1); % initial static displacement [m]
+% delta = uy_exp(1); % initial static displacement [m]
 startInd = find(uy_exp>delta,1,'last');
 t(1:startInd) = [];
 uy_exp(1:startInd) = [];
@@ -49,7 +51,11 @@ t = t-t(1);
 % initial guess
 E0 = 13.8; % Young modulus [GPa]
 alpha0 = 0; % mass proportional Rayleigh (viscous) damping coefficient
-beta0 = 3; % stiffness proportional Rayleigh (viscous) damping coefficient
+beta0 = 5; % stiffness proportional Rayleigh (viscous) damping coefficient
+if junction
+    c0 = 10; % junction rotational stiffness [kN.m/rad]
+    J0 = 15; % moment of inertia [kg.m2/rad]=[N.m.s2/rad]
+end
 
 disp('Initial static displacement');
 disp('---------------------------');
@@ -57,13 +63,22 @@ fprintf('delta = %g cm\n',delta*1e2);
 
 disp('Initial parameters');
 disp('------------------');
-fprintf('E  = %g GPa\n',E0);
+fprintf('E     = %g GPa\n',E0);
 fprintf('alpha = %g\n',alpha0);
 fprintf('beta  = %g\n',beta0);
+if junction
+    fprintf('c     = %g kN.m/rad\n',c0);
+    fprintf('J     = %g kg.m2/rad\n',J0);
+end
 
 param0 = [E0 alpha0 beta0];
 lb = [10 0 0];
 ub = [15 Inf Inf];
+if junction
+    param0 = [param0 c0 J0];
+    lb = [lb 0 0];
+    ub = [ub Inf Inf];
+end
 
 optimFun = 'lsqnonlin'; % optimization function
 % optimFun = 'fminsearch';
@@ -134,18 +149,35 @@ if setProblem
     mat = setnumber(mat,1);
     S = setmaterial(S,mat);
     
+    if junction
+        c = c0*1e3; % [N.m/rad]
+        J = J0; % [kg.m2/rad]=[N.m.s2/rad]
+    end
+    
     %% Dirichlet boundary conditions
     S = final(S);
-    S = addcl(S,P1);
+    if junction
+        S = addcl(S,P1,'U');
+    else
+        S = addcl(S,P1);
+    end
     
     %% Initial conditions
     delta = uy_exp(1); % [m]
     x = getcoord(getnode(S));
     ux0 = zeros(getnbnode(S),1);
-    funuy0 = @(delta) delta/(2*L^3)*(x(:,1).^2).*(3*L-x(:,1));
-    funrz0 = @(delta) 3*delta/(2*L^3)*x(:,1).*(2*L-x(:,1));
-    funu0 = @(delta) [ux0 funuy0(delta) funrz0(delta)]';
-    u0 = funu0(delta);
+    if junction
+        lambda = @(E,c) 3*E*IZ/(c*L);
+        funuy0 = @(E,c) delta/(1+lambda(E,c))*((x(:,1).^2).*(3*L-x(:,1))/(2*L^3) + lambda(E,c)*x(:,1)/L);
+        funrz0 = @(E,c) delta/(1+lambda(E,c))*(x(:,1).*(2*L-x(:,1))*3/(2*L^3) + lambda(E,c)/L);
+        funu0 = @(E,c) [ux0 funuy0(E,c) funrz0(E,c)]';
+        u0 = funu0(E,c);
+    else
+        uy0 = delta*(x(:,1).^2).*(3*L-x(:,1))/(2*L^3);
+        rz0 = delta*x(:,1).*(2*L-x(:,1))*3/(2*L^3);
+        funu0 = [ux0 uy0 rz0]';
+        u0 = funu0;
+    end
     u0 = freevector(S,u0(:));
     v0 = zeros(getnbddlfree(S),1);
     
@@ -158,18 +190,23 @@ if setProblem
     
     %% Mass, stiffness and damping matrices and sollicitation vectors
     M = calc_mass(S);
-    K = calc_rigi(S);
-    % stiffness proportional Rayleigh (viscous) damping coefficient
-    alpha = alpha0;
-    % mass proportional Rayleigh (viscous) damping coefficient
-    beta = beta0;
-    C = alpha*K + beta*M;
+%     K = calc_rigi(S);
+%     M0 = M;
+%     K0 = K;
+%     if junction
+%         % [~,numnode,~] = intersect(S,P1,'strict',false);
+%         numnode = find(S.node==P1);
+%         numddl = findddl(S,'RZ',numnode,'free');
+%         K0(numddl,numddl) = K0(numddl,numddl) + c;
+%         M0(numddl,numddl) = M0(numddl,numddl) + J;
+%     end
+%     C0 = alpha0*K0 + beta0*M0;
     b0 = zeros(getnbddlfree(S),1);
     b = b0*loadFunction(N);
     
-    save(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','b','u0','v0','uy_exp');
+    save(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','b','funu0','v0','P1','uy_exp');
 else
-%     load(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','b','u0','v0','uy_exp');
+    load(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','b','funu0','v0','P1','uy_exp');
 end
 
 %% Solution
@@ -178,29 +215,37 @@ if solveProblem
     
     switch optimFun
         case 'lsqnonlin'
-            fun = @(param) funlsqnonlin(param,uy_exp,S,N,M,b,u0,v0);
+            fun = @(param) funlsqnonlin(param,uy_exp,S,N,M,b,funu0,v0,P1);
             [param,err,~,exitflag,output] = lsqnonlin(fun,param0,lb,ub,options);
         case 'fminsearch'
-            fun = @(param) funoptim(param,uy_exp,S,N,M,b,u0,v0);
+            fun = @(param) funoptim(param,uy_exp,S,N,M,b,funu0,v0,P1);
             [param,err,exitflag,output] = fminsearch(fun,param0,options);
         case 'fminunc'
-            fun = @(param) funoptim(param,uy_exp,S,N,M,b,u0,v0);
+            fun = @(param) funoptim(param,uy_exp,S,N,M,b,funu0,v0,P1);
             [param,err,exitflag,output] = fminunc(fun,param0,options);
         case 'fmincon'
-            fun = @(param) funoptim(param,uy_exp,S,N,M,b,u0,v0);
+            fun = @(param) funoptim(param,uy_exp,S,N,M,b,funu0,v0,P1);
             [param,err,exitflag,output] = fmincon(fun,param0,[],[],[],[],lb,ub,[],options);
     end
     
     E = param(1); % [GPa]
     alpha = param(2);
     beta = param(3);
+    if junction
+        c = param(4); % [kN.m/rad]
+        J = param(5); % [kg.m2/rad]=[N.m.s2/rad]
+    end
     err = sqrt(err)./norm(uy_exp);
     
     disp('Optimal parameters');
     disp('------------------');
-    fprintf('E  = %g GPa\n',E);
+    fprintf('E     = %g GPa\n',E);
     fprintf('alpha = %g\n',alpha);
     fprintf('beta  = %g\n',beta);
+    if junction
+        fprintf('c     = %g kN.m/rad\n',c);
+        fprintf('J     = %g kg.m2/rad\n',J);
+    end
     fprintf('err = %g\n',err);
     % fprintf('exitflag = %g\n',exitflag);
     % disp(output);
@@ -209,7 +254,7 @@ if solveProblem
     
     %% Numerical solution
     t = tic;
-    [ut,result,vt,at] = solveBeamDetDynLinElasClampedFree(param,S,N,M,b,u0,v0);
+    [ut,result,vt,at] = solveBeamDetDynLinElasClampedFree(param,S,N,M,b,funu0,v0,P1);
     timeSolution = toc(t);
     
     et = calc_epsilon(S,ut,'node');
