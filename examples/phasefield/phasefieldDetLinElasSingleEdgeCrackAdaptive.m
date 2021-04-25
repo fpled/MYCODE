@@ -82,15 +82,19 @@ if setProblem
         % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         if test
-            % clD = 1.5e-5;
-            % clC = 1.5e-5;
+            % clD = 1e-5;
+            % clC = 1e-5;
             clD = 4e-5;
             clC = 1e-5;
         end
     elseif Dim==3
         clD = 4e-5;
         clC = 4e-6;
+        % clD = 4e-6;
+        % clC = 4e-6;
         if test
+            % clD = 2e-5;
+            % clC = 2e-5;
             clD = 4e-5;
             clC = 1e-5;
         end
