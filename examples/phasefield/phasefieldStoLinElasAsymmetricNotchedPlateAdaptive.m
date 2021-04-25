@@ -102,8 +102,8 @@ if setProblem
     
     clD = 0.1*unit; % characteristic length for domain
     % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
-    cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
-    % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     if test
         clD = 0.2*unit;
         cl = 0.05*unit;
@@ -139,7 +139,7 @@ if setProblem
     %% Dirichlet boundary conditions
     % C = LIGNE([-b,-h],[-b,-h+a]);
     C = DOMAIN(2,[-b-c/2,-h]-[c/10,c/10],[-b+c/2,-h+a]+[c/10,c/10]);
-    R = 2*unit;
+    R = 1.5*unit;
     BU = CIRCLE(0.0,h,R);
     BL = CIRCLE(-ls,-h,R);
     BR = CIRCLE(ls,-h,R);
