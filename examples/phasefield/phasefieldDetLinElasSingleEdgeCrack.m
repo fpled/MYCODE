@@ -85,8 +85,8 @@ if setProblem
     elseif Dim==3
         % clD = 4e-5;
         % clC = 4e-6;
-        clD = 4e-6;
-        clC = 4e-6;
+        clD = 7.5e-6;
+        clC = 7.5e-6;
         if test
             clD = 1.5e-5;
             clC = 1.5e-5;
