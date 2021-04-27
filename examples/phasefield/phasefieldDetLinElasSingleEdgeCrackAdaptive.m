@@ -93,8 +93,8 @@ if setProblem
         % clD = 4e-6;
         % clC = 4e-6;
         if test
-            % clD = 2e-5;
-            % clC = 2e-5;
+            % clD = 1.5e-5;
+            % clC = 1.5e-5;
             clD = 4e-5;
             clC = 1e-5;
         end
@@ -433,6 +433,7 @@ if displaySolution
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
+    if Dim~=3
     %% Display evolution of solutions
     ampl = 0;
     % DO NOT WORK WITH MESH ADAPTATION
@@ -457,7 +458,7 @@ if displaySolution
 %     
 %     evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
 %     evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
-    
+%     
 %     evolSolutionCell(T,St_phase,Ht,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
     
     %% Display solutions at different instants
@@ -508,6 +509,7 @@ if displaySolution
         
 %         plotSolution(Sj_phase,Hj);
 %         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
+    end
     end
     
 end

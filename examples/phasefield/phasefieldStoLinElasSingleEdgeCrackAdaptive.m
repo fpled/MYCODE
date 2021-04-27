@@ -92,15 +92,19 @@ if setProblem
         % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         if test
-            % clD = 1.5e-5;
-            % clC = 1.5e-5;
+            % clD = 1e-5;
+            % clC = 1e-5;
             clD = 4e-5;
             clC = 1e-5;
         end
     elseif Dim==3
         clD = 4e-5;
         clC = 4e-6;
+        % clD = 4e-6;
+        % clC = 4e-6;
         if test
+            % clD = 1.5e-5;
+            % clC = 1.5e-5;
             clD = 4e-5;
             clC = 1e-5;
         end
@@ -559,6 +563,7 @@ if displaySolution
     mysaveas(pathname,'pdf_fmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fmax.tex');
     
+    if Dim~=3
     %% Display evolution of samples of solutions
     ampl = 0;
     % DO NOT WORK WITH MESH ADAPTATION
@@ -637,6 +642,7 @@ if displaySolution
         
 %         plotSolution(Sj_phase,Hj);
 %         mysaveas(pathname,['internal_energy_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+    end
     end
     end
     

@@ -88,8 +88,8 @@ if setProblem
         clD = 4e-6;
         clC = 4e-6;
         if test
-            clD = 2e-5;
-            clC = 2e-5;
+            clD = 1.5e-5;
+            clC = 1.5e-5;
             % clD = 4e-5;
             % clC = 1e-5;
         end
@@ -402,6 +402,7 @@ if displaySolution
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
+    if Dim~=3
     %% Display evolution of solutions
     ampl = 0;
     % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
@@ -463,6 +464,7 @@ if displaySolution
         
 %         plotSolution(S_phase,Hj);
 %         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
+    end
     end
     
 end

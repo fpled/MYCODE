@@ -80,24 +80,28 @@ if setProblem
         % clC = 2e-6; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
         % clC = 1e-6; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
         % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-        clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-        % clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+        % clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+        % clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+        clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+        clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+        if test
+            clD = 1e-5;
+            clC = 1e-5;
+            % clD = 4e-5;
+            % clC = 1e-5;
+        end
+    elseif Dim==3
+        % clD = 4e-5;
+        % clC = 4e-6;
+        clD = 4e-6;
+        clC = 4e-6;
         if test
             clD = 1.5e-5;
             clC = 1.5e-5;
             % clD = 4e-5;
             % clC = 1e-5;
-        end
-    elseif Dim==3
-        clD = 4e-5;
-        clC = 4e-6;
-        if test
-            clD = 4e-5;
-            clC = 1e-5;
         end
     end
     S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
@@ -558,6 +562,7 @@ if displaySolution
     mysaveas(pathname,'pdf_fmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fmax.tex');
     
+    if Dim~=3
     %% Display evolution of mean solutions or samples of solutions
     sz_phase = [getnbddl(S_phase),getnbtimedof(T)];
     sz = [getnbddl(S),getnbtimedof(T)];
@@ -675,6 +680,7 @@ if displaySolution
         
 %         plotSolution(S_phase,Hj);
 %         mysaveas(pathname,['internal_energy_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+    end
     end
     end
     
