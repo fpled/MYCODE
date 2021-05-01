@@ -1,5 +1,5 @@
-%% Phase field fracture model - stochastic linear elasticity problem with single edge crack %%
-%%------------------------------------------------------------------------------------------%%
+%% Phase field fracture model - deterministic linear elasticity problem with single edge crack %%
+%%---------------------------------------------------------------------------------------------%%
 % [Bourdin, Francfort, Marigo, 2000, JMPS] (isotropic phase field model with no split of Bourdin et al.)
 % [Miehe, Welschinger, Hofacker, 2010 IJNME] (anisotropic phase field model of Miehe et al.)
 % [Miehe, Hofacker, Welschinger, 2010, CMAME] (anisotropic phase field model of Miehe et al.)
@@ -16,31 +16,21 @@
 % clc
 clearvars
 close all
-% rng('default');
-myparallel('start');
+% myparallel('start');
 
 %% Input data
 setProblem = true;
 solveProblem = true;
 displaySolution = false;
 
-test = true; % coarse mesh and small number of samples
-% test = false; % fine mesh and high number of samples
+test = true; % coarse mesh
+% test = false; % fine mesh
 
 Dim = 2; % space dimension Dim = 2, 3
 loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
-randMat = true; % random material parameters (true or false)
-randPF = true; % random phase field parameters (true or false)
 
-filename = ['phasefieldStoLinElasSingleEdgeCrack' loading PFmodel];
-if randMat
-    filename = [filename 'RandMat'];
-end
-if randPF
-    filename = [filename 'RandPF'];
-end
-filename = [filename 'Adaptive_' num2str(Dim) 'D'];
+filename = ['phasefieldDetLinElasSingleEdgeCrack' loading PFmodel 'AdaptiveHnode_' num2str(Dim) 'D'];
 if test
     filename = [filename '_test'];
 end
@@ -364,92 +354,16 @@ end
 
 %% Solution
 if solveProblem
-    % Number of samples
-    if test
-        N = 8;
-    else
-        N = 5e2;
-    end
-    
-    %% Random variables
-    % Material properties
-    if randMat % random material parameters
-        % la = -24; % la < 1/5. Parameter controlling the level of statistical fluctuation
-        % delta1 = 1/sqrt(1-la); % coefficient of variation for bulk modulus
-        % delta2 = 1/sqrt(1-5*la); % coefficient of variation for shear modulus
-        delta1 = 0.1; % coefficient of variation for bulk modulus
-        la = 1 - 1/delta1^2; % la < 1/5. Parameter controlling the level of statistical fluctuation
-        delta2 = 1/sqrt(5/delta1^2 - 4); % coefficient of variation for shear modulus
-        
-        mC1 = E/3/(1-2*NU); % mean bulk modulus
-        mC2 = mu; % mean shear modulus
-        la1 = (1-la)/mC1; % la1 > 0
-        la2 = (1-5*la)/mC2; % la2 > 0
-        
-        a1 = 1-la; % a1 > 0
-        b1 = 1/la1; % b1 > 0
-        a2 = 1-5*la; % a2 > 0
-        b2 = 1/la2; % b2 > 0
-        
-        % Sample set
-        C_sample(:,1) = gamrnd(a1,b1,N,1); % [Pa]
-        C_sample(:,2) = gamrnd(a2,b2,N,1); % [Pa]
-        % lambda_sample = C_sample(:,1) - 2/3*C_sample(:,2); % [Pa]
-        E_sample = (9*C_sample(:,1).*C_sample(:,2))./(3*C_sample(:,1)+C_sample(:,2)); % [Pa]
-        NU_sample = (3*C_sample(:,1)-2*C_sample(:,2))./(6*C_sample(:,1)+2*C_sample(:,2));
-    else
-        E_sample = E*ones(N,1);
-        NU_sample = NU*ones(N,1);
-    end
-    
-    % Phase field properties
-    if randPF % random phase field parameters
-        delta3 = 0.1; % coefficient of variation of fracture toughness
-        delta4 = 0.1; % coefficient of variation of regularization parameter
-        a3 = 1/delta3^2;
-        b3 = gc/a3;
-        a4 = 1/delta4^2;
-        b4 = l/a4;
-        gc_sample = gamrnd(a3,b3,N,1);
-        l_sample = gamrnd(a4,b4,N,1);
-    else
-        gc_sample = gc*ones(N,1);
-        l_sample = l*ones(N,1);
-    end
-    
-    samples = [E_sample,NU_sample,gc_sample,l_sample];
-
-    %% Solution
     tTotal = tic;
     
-    nbSamples = 3;
-    fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-    [ft,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,samples,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'nbsamples',nbSamples);
-    fmax = max(ft,[],2);
+    [dt,ut,ft,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptiveHnode(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
+        'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
     
     time = toc(tTotal);
     
-    %% Statistical outputs of solution
-    probs = [0.025 0.975];
-    
-    mean_ft = mean(ft);
-    std_ft = std(ft);
-    ci_ft = quantile(ft,probs);
-    
-    mean_fmax = mean(fmax);
-    std_fmax = std(fmax);
-    ci_fmax = quantile(fmax,probs);
-    
-    npts = 100;
-    [f_fmax,xi_fmax,bw_fmax] = ksdensity(fmax,'npoints',npts);
-    
-    save(fullfile(pathname,'solution.mat'),'N','dt','ut','St_phase','St',...
-        'mean_ft','std_ft','ci_ft','fmax',...
-        'mean_fmax','std_fmax','ci_fmax','probs','f_fmax','xi_fmax','bw_fmax','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','time');
 else
-    load(fullfile(pathname,'solution.mat'),'N','dt','ut','St_phase','St',...
-        'mean_ft','std_ft','ci_ft','fmax',...
-        'mean_fmax','std_fmax','ci_fmax','probs','f_fmax','xi_fmax','bw_fmax','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','time');
 end
 
 %% Outputs
@@ -461,23 +375,7 @@ fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('nb time dofs = %g\n',getnbtimedof(T));
-fprintf('nb samples = %g\n',N);
 fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
-
-if Dim==2
-    fprintf('mean(fmax)    = %g kN/mm\n',mean_fmax*1e-6);
-    fprintf('std(fmax)     = %g kN/mm\n',std_fmax*1e-6);
-elseif Dim==3
-    fprintf('mean(fmax)    = %g kN\n',mean_fmax*1e-3);
-    fprintf('std(fmax)     = %g kN\n',std_fmax*1e-3);
-end
-fprintf('disp(fmax)    = %g\n',std_fmax/mean_fmax);
-if Dim==2
-    fprintf('%d%% ci(fmax)  = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,ci_fmax(1)*1e-6,ci_fmax(2)*1e-6);
-elseif Dim==3
-    fprintf('%d%% ci(fmax)  = [%g,%g] kN\n',(probs(2)-probs(1))*100,ci_fmax(1)*1e-3,ci_fmax(2)*1e-3);
-end
 
 %% Display
 if displaySolution
@@ -512,65 +410,37 @@ if displaySolution
     
     % DO NOT WORK WITH MESH ADAPTATION
     % u = getmatrixatstep(ut,rep(end));
-%     u = ut(:,rep(end));
-    u = ut(:,end);
-    S_final = St(:,end);
-    for k=1:numel(S_final)
-        plotModel(S_final{k},'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
-        mysaveas(pathname,['mesh_final_sample_' num2str(k)],formats,renderer);
-        
-        ampl = getsize(S_final{k})/max(abs(u{k}))/20;
-        plotModelDeflection(S_final{k},u{k},'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
-        mysaveas(pathname,['mesh_deflected_sample_' num2str(k)],formats,renderer);
-        
-        figure('Name','Meshes')
-        clf
-        plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-        plot(S_final{k}+ampl*unfreevector(S_final{k},u{k}),'Color','b','FaceColor','b','FaceAlpha',0.1);
-        mysaveas(pathname,['meshes_deflected_sample_' num2str(k)],formats,renderer);
-    end
+%     u = ut{rep(end)};
+    u = ut{end};
+    S_final = St{end};
+    
+    plotModel(S_final,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+    mysaveas(pathname,'mesh_final',formats,renderer);
+    
+    ampl = getsize(S_final)/max(abs(u))/20;
+    plotModelDeflection(S_final,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+    mysaveas(pathname,'mesh_deflected',formats,renderer);
+    
+    figure('Name','Meshes')
+    clf
+    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
+    plot(S_final+ampl*unfreevector(S_final,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
+    mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display force-displacement curve
     figure('Name','Force-displacement')
     clf
-    ciplot(ci_ft(1,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),ci_ft(2,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),t*1e3,'b');
-    alpha(0.2)
-    hold on
-    plot(t*1e3,mean_ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
+    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Force [kN]','Interpreter',interpreter)
-    l = legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value'},'Location','NorthWest');
-    set(l,'Interpreter','latex')
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
-    %% Display pdf of critical force
-    figure('Name','Probability Density Estimate: Critical force')
-    clf
-    plot(xi_fmax*((Dim==2)*1e-6+(Dim==3)*1e-3),f_fmax,'-b','LineWidth',linewidth)
-    hold on
-    ind_fmax = find(xi_fmax>=ci_fmax(1) & xi_fmax<ci_fmax(2));
-    area(xi_fmax(ind_fmax)*((Dim==2)*1e-6+(Dim==3)*1e-3),f_fmax(ind_fmax),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
-    scatter(mean_fmax*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
-    hold off
-    grid on
-    box on
-    set(gca,'FontSize',fontsize)
-    xlabel('$f$ [kN]','Interpreter',interpreter)
-    ylabel('$p_{F_c}(f)$','Interpreter',interpreter)
-    l = legend('pdf',...
-        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value');
-    set(l,'Interpreter',interpreter)
-    mysaveas(pathname,'pdf_fmax',formats,renderer);
-    mymatlab2tikz(pathname,'pdf_fmax.tex');
-    
     if Dim~=3
-    %% Display evolution of samples of solutions
+    %% Display evolution of solutions
     ampl = 0;
     % DO NOT WORK WITH MESH ADAPTATION
     % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
@@ -580,25 +450,23 @@ if displaySolution
     options = {'plotiter',true,'plottime',false};
     framerate = 80;
     
-%     for k=1:size(St,1)
-%         evolModel(T,St(k,:),'FrameRate',framerate,'filename',['mesh_sample_' num2str(k)],'pathname',pathname,options{:});
-%         
-%         evolSolutionCell(T,St_phase(k,:),dt(k,:),'FrameRate',framerate,'filename',['damage_sample_' num2str(k)],'pathname',pathname,options{:});
-%         for i=1:Dim
-%             evolSolutionCell(T,St(k,:),ut(k,:),'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
-%         end
-%         
-% %         for i=1:(Dim*(Dim+1)/2)
-% %             evolSolutionCell(T,St(k,:),ut(k,:),'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
-% %             evolSolutionCell(T,St(k,:),ut(k,:),'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
-% %         end
-% %         
-% %         evolSolutionCell(T,St(k,:),ut(k,:),'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename',['epsilon_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
-% %         evolSolutionCell(T,St(k,:),ut(k,:),'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename',['sigma_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
-% %         evolSolutionCell(T,St(k,:),ut(k,:),'energyint','','ampl',ampl,'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
-%     end
+    evolModel(T,St,'FrameRate',framerate,'filename','mesh','pathname',pathname,options{:});
     
-    %% Display samples of solutions at different instants
+    evolSolutionCell(T,St_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
+    for i=1:Dim
+        evolSolutionCell(T,St,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
+    end
+    
+%     for i=1:(Dim*(Dim+1)/2)
+%         evolSolutionCell(T,St,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
+%         evolSolutionCell(T,St,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
+%     end
+%     
+%     evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
+%     evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
+%     evolSolutionCell(T,St,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
+    
+    %% Display solutions at different instants
     switch lower(loading)
         case 'tension'
             rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-5)<eps | abs(t-6e-6)<eps | abs(t-6.25e-6)<eps);
@@ -608,66 +476,62 @@ if displaySolution
             error('Wrong loading case')
     end
     rep = [rep,length(T)];
-    for k=1:size(St,1)
     for j=1:length(rep)
         % DO NOT WORK WITH MESH ADAPTATION
         % dj = getmatrixatstep(dt,rep(j));
         % uj = getmatrixatstep(ut,rep(j));
-        dj = dt{k,rep(j)};
-        uj = ut{k,rep(j)};
-        Sj = St{k,rep(j)};
-        Sj_phase = St_phase{k,rep(j)};
+        dj = dt{rep(j)};
+        uj = ut{rep(j)};
+        Sj = St{rep(j)};
+        Sj_phase = St_phase{rep(j)};
         
         plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
-        mysaveas(pathname,['mesh_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        mysaveas(pathname,['mesh_t' num2str(rep(j))],formats,renderer);
         
         plotSolution(Sj_phase,dj);
-        mysaveas(pathname,['damage_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
         
         for i=1:Dim
             plotSolution(Sj,uj,'displ',i,'ampl',ampl);
-            mysaveas(pathname,['displacement_' num2str(i) '_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+            mysaveas(pathname,['displacement_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         end
         
 %         for i=1:(Dim*(Dim+1)/2)
 %             plotSolution(Sj,uj,'epsilon',i,'ampl',ampl);
-%             mysaveas(pathname,['epsilon_' num2str(i) '_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+%             mysaveas(pathname,['epsilon_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
 %             
 %             plotSolution(Sj,uj,'sigma',i,'ampl',ampl);
-%             mysaveas(pathname,['sigma_' num2str(i) '_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+%             mysaveas(pathname,['sigma_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
 %         end
 %         
 %         plotSolution(Sj,uj,'epsilon','mises','ampl',ampl);
-%         mysaveas(pathname,['epsilon_von_mises_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+%         mysaveas(pathname,['epsilon_von_mises_t' num2str(rep(j))],formats,renderer);
 %         
 %         plotSolution(Sj,uj,'sigma','mises','ampl',ampl);
-%         mysaveas(pathname,['sigma_von_mises_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+%         mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
 %         
 %         plotSolution(Sj,uj,'energyint','','ampl',ampl);
-%         mysaveas(pathname,['internal_energy_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
-    end
+%         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
     end
     end
     
 end
 
-%% Save samples of solutions
+%% Save solutions
 [t,rep] = gettevol(T);
-for k=1:size(St,1)
 for i=1:length(T)
     % DO NOT WORK WITH MESH ADAPTATION
     % di = getmatrixatstep(dt,rep(i));
     % ui = getmatrixatstep(ut,rep(i));
-    di = dt{k,rep(i)};
-    ui = ut{k,rep(i)};
-    Si = St{k,rep(i)};
-    % Si_phase = St_phase{k,rep(i)};
+    di = dt{rep(i)};
+    ui = ut{rep(i)};
+    Si = St{rep(i)};
+    % Si_phase = St_phase{rep(i)};
     
     write_vtk_mesh(Si,{di,ui},[],...
         {'damage','displacement'},[],...
-        pathname,['solution_sample_' num2str(k)],1,i-1);
+        pathname,'solution',1,i-1);
 end
-make_pvd_file(pathname,['solution_sample_' num2str(k)],1,length(T));
-end
+make_pvd_file(pathname,'solution',1,length(T));
 
-myparallel('stop');
+% myparallel('stop');

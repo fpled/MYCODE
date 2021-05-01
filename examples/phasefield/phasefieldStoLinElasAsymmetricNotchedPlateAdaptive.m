@@ -102,8 +102,8 @@ if setProblem
     
     clD = 0.1*unit; % characteristic length for domain
     % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
-    % cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
-    cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     if test
         clD = 0.2*unit;
         cl = 0.05*unit;
@@ -127,7 +127,7 @@ if setProblem
     l = 0.025*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % l = 0.01*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % Small artificial residual stiffness
-    k = 1e-10;
+    k = 0;
     % Internal energy
     H = 0;
     
@@ -139,7 +139,7 @@ if setProblem
     %% Dirichlet boundary conditions
     % C = LIGNE([-b,-h],[-b,-h+a]);
     C = DOMAIN(2,[-b-c/2,-h]-[c/10,c/10],[-b+c/2,-h+a]+[c/10,c/10]);
-    R = 1.5*unit;
+    R = 2*unit;
     BU = CIRCLE(0.0,h,R);
     BL = CIRCLE(-ls,-h,R);
     BR = CIRCLE(ls,-h,R);
@@ -328,7 +328,7 @@ if solveProblem
     
     nbSamples = 3;
     fun = @(S_phase,S,filename) solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-    [ft,dt,ut,Ht,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,samples,'filename','gmsh_domain_asymmetric_notched_plate','pathname',pathname,'nbsamples',nbSamples);
+    [ft,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,samples,'filename','gmsh_domain_asymmetric_notched_plate','pathname',pathname,'nbsamples',nbSamples);
     fmax = max(ft,[],2);
     
     time = toc(tTotal);
@@ -346,12 +346,12 @@ if solveProblem
     
     npts = 100;
     [f_fmax,xi_fmax,bw_fmax] = ksdensity(fmax,'npoints',npts);
-
-    save(fullfile(pathname,'solution.mat'),'N','dt','ut','Ht','St_phase','St',...
+    
+    save(fullfile(pathname,'solution.mat'),'N','dt','ut','St_phase','St',...
         'mean_ft','std_ft','ci_ft','fmax',...
         'mean_fmax','std_fmax','ci_fmax','probs','f_fmax','xi_fmax','bw_fmax','time');
 else
-    load(fullfile(pathname,'solution.mat'),'N','dt','ut','Ht','St_phase','St',...
+    load(fullfile(pathname,'solution.mat'),'N','dt','ut','St_phase','St',...
         'mean_ft','std_ft','ci_ft','fmax',...
         'mean_fmax','std_fmax','ci_fmax','probs','f_fmax','xi_fmax','bw_fmax','time');
 end
@@ -479,8 +479,7 @@ if displaySolution
 % %         
 % %         evolSolutionCell(T,St(k,:),ut(k,:),'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename',['epsilon_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
 % %         evolSolutionCell(T,St(k,:),ut(k,:),'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename',['sigma_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
-% %         
-% %         evolSolutionCell(T,St_phase(k,:),Ht(k,:),'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
+% %         evolSolutionCell(T,St(k,:),ut(k,:),'energyint','','ampl',ampl,'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
 %     end
     
     %% Display samples of solutions at different instants
@@ -496,10 +495,8 @@ if displaySolution
         % DO NOT WORK WITH MESH ADAPTATION
         % dj = getmatrixatstep(dt,rep(j));
         % uj = getmatrixatstep(ut,rep(j));
-        % Hj = getmatrixatstep(Ht,rep(j));
         dj = dt{k,rep(j)};
         uj = ut{k,rep(j)};
-        Hj = Ht{k,rep(j)};
         Sj = St{k,rep(j)};
         Sj_phase = St_phase{k,rep(j)};
         
@@ -527,8 +524,8 @@ if displaySolution
 %         
 %         plotSolution(Sj,uj,'sigma','mises','ampl',ampl);
 %         mysaveas(pathname,['sigma_von_mises_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
-        
-%         plotSolution(Sj_phase,Hj);
+%         
+%         plotSolution(Sj,uj,'energyint','','ampl',ampl);
 %         mysaveas(pathname,['internal_energy_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
     end
     end
@@ -542,15 +539,13 @@ for i=1:length(T)
     % DO NOT WORK WITH MESH ADAPTATION
     % di = getmatrixatstep(dt,rep(i));
     % ui = getmatrixatstep(ut,rep(i));
-    % Hi = getmatrixatstep(Ht,rep(i));
     di = dt{k,rep(i)};
     ui = ut{k,rep(i)};
-    Hi = Ht{k,rep(i)};
     Si = St{k,rep(i)};
     % Si_phase = St_phase{k,rep(i)};
     
-    write_vtk_mesh(Si,{di,ui,Hi},[],...
-        {'damage','displacement','internal energy'},[],...
+    write_vtk_mesh(Si,{di,ui},[],...
+        {'damage','displacement'},[],...
         pathname,['solution_sample_' num2str(k)],1,i-1);
 end
 make_pvd_file(pathname,['solution_sample_' num2str(k)],1,length(T));

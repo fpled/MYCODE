@@ -1,5 +1,5 @@
-function [dt,ut,ft,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
-% function [dt,ut,ft,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+function [dt,ut,ft,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptiveHnode(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+% function [dt,ut,ft,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptiveHnode(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
 % Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);
@@ -20,9 +20,8 @@ St = cell(1,length(T));
 
 sz_d = getnbddl(S_phase);
 sz_u = getnbddl(S);
-sz_H = getnbelem(S);
 u = zeros(sz_u,1);
-H = FEELEMFIELD(zeros(sz_H,1),S);
+H = zeros(sz_d,1);
 
 if display_
     fprintf('\n+----------+-----------+-----------+----------+----------+------------+------------+\n');
@@ -40,27 +39,22 @@ end
 for i=1:length(T)
     
     % Internal energy field
-    h_old = getvalue(H);
-    H = calc_energyint(S,u,'positive');
-    h = getvalue(H);
-    for p=1:getnbgroupelem(S)
-        he = double(h{p});
-        he_old = double(h_old{p});
-        rep = find(he <= he_old);
-        he(rep) = he_old(rep);
-        h{p} = he;
-    end
-    H = FEELEMFIELD(h,'storage',getstorage(H),'type',gettype(H),'ddl',getddl(H));
+    h_old = double(H);
+    H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
+    h = double(H);
+    rep = find(h <= h_old);
+    h(rep) = h_old(rep);
+    H = setvalue(H,h);
     
     % Phase field
     mats_phase = MATERIALS(S_phase);
     for m=1:length(mats_phase)
-        mats_phase{m} = setparam(mats_phase{m},'r',r(m)+2*H);
+        mats_phase{m} = setparam(mats_phase{m},'r',FENODEFIELD(r(m)+2*H));
     end
     S_phase = actualisematerials(S_phase,mats_phase);
     
     [A_phase,b_phase] = calc_rigi(S_phase);
-    b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
+    b_phase = -b_phase + bodyload(S_phase,[],'QN',FENODEFIELD(2*H));
     
     d = A_phase\b_phase;
     d = unfreevector(S_phase,d);
@@ -79,14 +73,17 @@ for i=1:length(T)
     S_phase = final(S_phase,'duplicate');
     S_phase = addcl(S_phase,C,'T',1);
     
+    % Update fields
     P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
     d = P_phase'*d;
+    h = P_phase'*h;
+    H = setvalue(H,h);
     
-    % Displacement field
     % P = calcProjection(S,S_old,[],'free',false,'full',true);
     P = kron(P_phase,eye(Dim));
     u = P'*u;
     
+    % Displacement field
     for m=1:length(mats)
         mats{m} = setparam(mats{m},'d',d);
         mats{m} = setparam(mats{m},'u',u);
@@ -119,8 +116,6 @@ for i=1:length(T)
         otherwise
             error('Wrong loading case')
     end
-    
-    H = calc_energyint(S,u,'positive');
     
     [A,b] = calc_rigi(S,'nofree');
     b = -b;

@@ -88,10 +88,10 @@ if setProblem
         clD = 7.5e-6;
         clC = 7.5e-6;
         if test
-            clD = 1.5e-5;
-            clC = 1.5e-5;
             % clD = 4e-5;
             % clC = 1e-5;
+            clD = 2e-5;
+            clC = 2e-5;
         end
     end
     S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
@@ -111,7 +111,7 @@ if setProblem
     % l = 4e-6; % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
     % eta = 0.052; w0 = 75.94; l = eta/sqrt(w0)*1e-3; % l = 6e-7; % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
     % Small artificial residual stiffness
-    k = 1e-10;
+    k = 0;
     % Internal energy
     H = 0;
     
@@ -304,11 +304,12 @@ if setProblem
                 % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM], 
                 % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
                 dt = 1e-8;
-                % nt = 1500;
-                nt = 2000;
+                nt = 1500;
+                % nt = 2000;
                 if test
-                    dt = 1e-7;
-                    nt = 200;
+                    dt = 5e-8;
+                    % nt = 300;
+                    nt = 400;
                 end
                 t = linspace(dt,nt*dt,nt);
         end
@@ -333,13 +334,13 @@ end
 if solveProblem
     tTotal = tic;
     
-    [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
+    [dt,ut,ft] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','time');
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','time');
 end
 
 %% Outputs
@@ -422,8 +423,7 @@ if displaySolution
 %     
 %     evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
 %     evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
-%     
-%     evolSolution(S_phase,Ht,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
+%     evolSolution(S,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
     
     %% Display solutions at different instants
     switch lower(loading)
@@ -438,7 +438,6 @@ if displaySolution
     for j=1:length(rep)
         dj = getmatrixatstep(dt,rep(j));
         uj = getmatrixatstep(ut,rep(j));
-        Hj = getmatrixatstep(Ht,rep(j));
         
         plotSolution(S_phase,dj);
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
@@ -461,8 +460,8 @@ if displaySolution
 %         
 %         plotSolution(S,uj,'sigma','mises','ampl',ampl);
 %         mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
-        
-%         plotSolution(S_phase,Hj);
+%         
+%         plotSolution(S,uj,'energyint','','ampl',ampl);
 %         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
     end
     end
@@ -474,10 +473,9 @@ end
 for i=1:length(T)
     di = getmatrixatstep(dt,rep(i));
     ui = getmatrixatstep(ut,rep(i));
-    Hi = getmatrixatstep(Ht,rep(i));
     
-    write_vtk_mesh(S,{di,ui,Hi},[],...
-        {'damage','displacement','internal energy'},[],...
+    write_vtk_mesh(S,{di,ui},[],...
+        {'damage','displacement'},[],...
         pathname,'solution',1,i-1);
 end
 make_pvd_file(pathname,'solution',1,length(T));

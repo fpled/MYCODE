@@ -1,5 +1,5 @@
-function [f_sample,d_sample,u_sample,H_sample] = solvePFStoLinElas(S_phase,S,T,fun,samples,varargin)
-% function [f_sample,d_sample,u_sample,H_sample] = solvePFStoLinElas(S_phase,S,T,fun,samples,varargin)
+function [f_sample,d_sample,u_sample] = solvePFStoLinElas(S_phase,S,T,fun,samples,varargin)
+% function [f_sample,d_sample,u_sample] = solvePFStoLinElas(S_phase,S,T,fun,samples,varargin)
 % Solve stochastic Phase Field problem.
 
 fun = fcnchk(fun);
@@ -14,13 +14,12 @@ l_sample = samples(:,4);
 mats_phase = MATERIALS(S_phase);
 mats = MATERIALS(S);
 
-sz_phase = getnbddl(S_phase);
-sz = getnbddl(S);
+sz_d = getnbddl(S_phase);
+sz_u = getnbddl(S);
 
 f_sample = zeros(N,length(T));
-d_sample = zeros(nbSamples,sz_phase,length(T));
-u_sample = zeros(nbSamples,sz,length(T));
-H_sample = zeros(nbSamples,sz_phase,length(T));
+d_sample = zeros(nbSamples,sz_d,length(T));
+u_sample = zeros(nbSamples,sz_u,length(T));
 % fmax_sample = zeros(N,1);
 
 if ~verLessThan('matlab','9.2') % introduced in R2017a
@@ -59,12 +58,11 @@ parfor i=1:N
     Si = actualisematerials(Si,matsi);
     
     % Solve deterministic problem
-    [dt,ut,ft,Ht] = fun(S_phasei,Si);
+    [dt,ut,ft] = fun(S_phasei,Si);
     f_sample(i,:) = ft;
     if i<=nbSamples
         d_sample(i,:,:) = getvalue(dt);
         u_sample(i,:,:) = getvalue(ut);
-        H_sample(i,:,:) = getvalue(Ht);
     end
     % fmax_sample(i) = max(ft);
 end

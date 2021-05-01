@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR,varargin)
-% function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR,varargin)
+function [dt,ut,ft] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR,varargin)
+% function [dt,ut,ft] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR,varargin)
 % Solve deterministic Phase Field problem.
 
 display_ = ischarin('display',varargin);
@@ -9,17 +9,16 @@ t = gett(T);
 dt = cell(1,length(T));
 ut = cell(1,length(T));
 ft = zeros(1,length(T));
-Ht = cell(1,length(T));
 
-sz_phase = getnbddl(S_phase);
-sz = getnbddl(S);
-u = zeros(sz,1);
-H = zeros(sz_phase,1);
+sz_d = getnbddl(S_phase);
+sz_u = getnbddl(S);
+u = zeros(sz_u,1);
+H = calc_energyint(S,u,'positive');
 
 if display_
-    fprintf('\n+----------+-----------+-----------+------------+------------+------------+\n');
-    fprintf('|   Iter   |  u [mm]   |  f [kN]   |  norm(H)   |  norm(d)   |  norm(u)   |\n');
-    fprintf('+----------+-----------+-----------+------------+------------+------------+\n');
+    fprintf('\n+----------+-----------+-----------+------------+------------+\n');
+    fprintf('|   Iter   |  u [mm]   |  f [kN]   |  norm(d)   |  norm(u)   |\n');
+    fprintf('+----------+-----------+-----------+------------+------------+\n');
 end
 
 mats_phase = MATERIALS(S_phase);
@@ -31,22 +30,27 @@ end
 for i=1:length(T)
     
     % Internal energy field
-    h_old = double(H);
-    H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
-    h = double(H);
-    rep = find(h <= h_old);
-    h(rep) = h_old(rep);
-    H = setvalue(H,h);
+    h_old = getvalue(H);
+    H = calc_energyint(S,u,'positive');
+    h = getvalue(H);
+    for p=1:getnbgroupelem(S)
+        he = double(h{p});
+        he_old = double(h_old{p});
+        rep = find(he <= he_old);
+        he(rep) = he_old(rep);
+        h{p} = he;
+    end
+    H = FEELEMFIELD(h,'storage',getstorage(H),'type',gettype(H),'ddl',getddl(H));
     
     % Phase field
     mats_phase = MATERIALS(S_phase);
     for m=1:length(mats_phase)
-        mats_phase{m} = setparam(mats_phase{m},'r',FENODEFIELD(r(m)+2*H));
+        mats_phase{m} = setparam(mats_phase{m},'r',r(m)+2*H);
     end
     S_phase = actualisematerials(S_phase,mats_phase);
     
     [A_phase,b_phase] = calc_rigi(S_phase);
-    b_phase = -b_phase + bodyload(S_phase,[],'QN',FENODEFIELD(2*H));
+    b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
     
     d = A_phase\b_phase;
     d = unfreevector(S_phase,d);
@@ -78,19 +82,17 @@ for i=1:length(T)
     dt{i} = d;
     ut{i} = u;
     ft(i) = f;
-    Ht{i} = double(H);
     
     if display_
-        fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*1e-6,norm(Ht{i}),norm(dt{i}),norm(ut{i}));
+        fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*1e-6,norm(dt{i}),norm(ut{i}));
     end
 end
 
 if display_
-    fprintf('+----------+-----------+-----------+------------+------------+------------+\n');
+    fprintf('+----------+-----------+-----------+------------+------------+\n');
 end
 
-dt = TIMEMATRIX(dt,T,[sz_phase,1]);
-ut = TIMEMATRIX(ut,T,[sz,1]);
-Ht = TIMEMATRIX(Ht,T,[sz_phase,1]);
+dt = TIMEMATRIX(dt,T,[sz_d,1]);
+ut = TIMEMATRIX(ut,T,[sz_u,1]);
 
 end

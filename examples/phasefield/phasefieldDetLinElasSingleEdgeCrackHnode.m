@@ -30,7 +30,7 @@ Dim = 2; % space dimension Dim = 2, 3
 loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
-filename = ['phasefieldDetLinElasSingleEdgeCrackHelem' loading PFmodel '_' num2str(Dim) 'D'];
+filename = ['phasefieldDetLinElasSingleEdgeCrack' loading PFmodel 'Hnode_' num2str(Dim) 'D'];
 if test
     filename = [filename '_test'];
 end
@@ -70,24 +70,28 @@ if setProblem
         % clC = 2e-6; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
         % clC = 1e-6; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
         % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-        clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-        % clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+        % clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+        % clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+        clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+        clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         if test
-            clD = 1.5e-5;
-            clC = 1.5e-5;
+            clD = 1e-5;
+            clC = 1e-5;
             % clD = 4e-5;
             % clC = 1e-5;
         end
     elseif Dim==3
-        clD = 4e-5;
-        clC = 4e-6;
+        % clD = 4e-5;
+        % clC = 4e-6;
+        clD = 7.5e-6;
+        clC = 7.5e-6;
         if test
-            clD = 4e-5;
-            clC = 1e-5;
+            % clD = 4e-5;
+            % clC = 1e-5;
+            clD = 2e-5;
+            clC = 2e-5;
         end
     end
     S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
@@ -107,7 +111,7 @@ if setProblem
     % l = 4e-6; % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
     % eta = 0.052; w0 = 75.94; l = eta/sqrt(w0)*1e-3; % l = 6e-7; % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
     % Small artificial residual stiffness
-    k = 1e-10;
+    k = 0;
     % Internal energy
     H = 0;
     
@@ -300,11 +304,12 @@ if setProblem
                 % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM], 
                 % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
                 dt = 1e-8;
-                % nt = 1500;
-                nt = 2000;
+                nt = 1500;
+                % nt = 2000;
                 if test
-                    dt = 1e-7;
-                    nt = 200;
+                    dt = 5e-8;
+                    % nt = 300;
+                    nt = 400;
                 end
                 t = linspace(dt,nt*dt,nt);
         end
@@ -329,13 +334,13 @@ end
 if solveProblem
     tTotal = tic;
     
-    [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrackHelem(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
+    [dt,ut,ft] = solvePFDetLinElasSingleEdgeCrackHnode(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','time');
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','time');
 end
 
 %% Outputs
@@ -398,6 +403,7 @@ if displaySolution
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
+    if Dim~=3
     %% Display evolution of solutions
     ampl = 0;
     % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
@@ -417,12 +423,7 @@ if displaySolution
 %     
 %     evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
 %     evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
-%     
-%     figure('Name','Solution H')
-%     clf
-%     T = setevolparam(T,'colorbar',true,'FontSize',fontsize,options{:});
-%     frame = evol(T,Ht,S_phase,'rescale',true);
-%     saveMovie(frame,'FrameRate',framerate,'filename','internal_energy','pathname',pathname);
+%     evolSolution(S,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
     
     %% Display solutions at different instants
     switch lower(loading)
@@ -437,7 +438,6 @@ if displaySolution
     for j=1:length(rep)
         dj = getmatrixatstep(dt,rep(j));
         uj = getmatrixatstep(ut,rep(j));
-        Hj = getmatrixatstep(Ht,rep(j));
         
         plotSolution(S_phase,dj);
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
@@ -460,13 +460,10 @@ if displaySolution
 %         
 %         plotSolution(S,uj,'sigma','mises','ampl',ampl);
 %         mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
-        
-%         figure('Name','Solution H')
-%         clf
-%         plot(S_phase,Hj);
-%         colorbar
-%         set(gca,'FontSize',fontsize)
+%         
+%         plotSolution(S,uj,'energyint','','ampl',ampl);
 %         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
+    end
     end
     
 end
@@ -476,10 +473,9 @@ end
 for i=1:length(T)
     di = getmatrixatstep(dt,rep(i));
     ui = getmatrixatstep(ut,rep(i));
-    Hi = getmatrixatstep(Ht,rep(i));
     
-    write_vtk_mesh(S,{di,ui},{Hi},...
-        {'damage','displacement'},{'internal energy'},...
+    write_vtk_mesh(S,{di,ui},[],...
+        {'damage','displacement'},[],...
         pathname,'solution',1,i-1);
 end
 make_pvd_file(pathname,'solution',1,length(T));

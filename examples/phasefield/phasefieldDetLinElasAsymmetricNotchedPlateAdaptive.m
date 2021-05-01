@@ -92,8 +92,8 @@ if setProblem
     
     clD = 0.1*unit; % characteristic length for domain
     % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
-    % cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
-    cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     if test
         clD = 0.2*unit;
         cl = 0.05*unit;
@@ -117,7 +117,7 @@ if setProblem
     l = 0.025*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % l = 0.01*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % Small artificial residual stiffness
-    k = 1e-10;
+    k = 0;
     % Internal energy
     H = 0;
     
@@ -129,7 +129,7 @@ if setProblem
     %% Dirichlet boundary conditions
     % C = LIGNE([-b,-h],[-b,-h+a]);
     C = DOMAIN(2,[-b-c/2,-h]-[c/10,c/10],[-b+c/2,-h+a]+[c/10,c/10]);
-    R = 1.5*unit;
+    R = 2*unit;
     BU = CIRCLE(0.0,h,R);
     BL = CIRCLE(-ls,-h,R);
     BR = CIRCLE(ls,-h,R);
@@ -260,13 +260,13 @@ end
 if solveProblem
     tTotal = tic;
     
-    [dt,ut,ft,Ht,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
+    [dt,ut,ft,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','St_phase','St','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','time');
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','St_phase','St','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','time');
 end
 
 %% Outputs
@@ -356,8 +356,7 @@ if displaySolution
 %     
 %     evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
 %     evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
-%     
-%     evolSolutionCell(T,St_phase,Ht,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
+%     evolSolutionCell(T,St,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
     
     %% Display solutions at different instants
     switch setup
@@ -371,10 +370,8 @@ if displaySolution
         % DO NOT WORK WITH MESH ADAPTATION
         % dj = getmatrixatstep(dt,rep(j));
         % uj = getmatrixatstep(ut,rep(j));
-        % Hj = getmatrixatstep(Ht,rep(j));
         dj = dt{rep(j)};
         uj = ut{rep(j)};
-        Hj = Ht{rep(j)};
         Sj = St{rep(j)};
         Sj_phase = St_phase{rep(j)};
         
@@ -402,8 +399,8 @@ if displaySolution
 %         
 %         plotSolution(Sj,uj,'sigma','mises','ampl',ampl);
 %         mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
-        
-%         plotSolution(Sj_phase,Hj);
+%         
+%         plotSolution(Sj,uj,'energyint','','ampl',ampl);
 %         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
     end
     
@@ -415,15 +412,13 @@ for i=1:length(T)
     % DO NOT WORK WITH MESH ADAPTATION
     % di = getmatrixatstep(dt,rep(i));
     % ui = getmatrixatstep(ut,rep(i));
-    % Hi = getmatrixatstep(Ht,rep(i));
     di = dt{rep(i)};
     ui = ut{rep(i)};
-    Hi = Ht{rep(i)};
     Si = St{rep(i)};
     % Si_phase = St_phase{rep(i)};
     
-    write_vtk_mesh(Si,{di,ui,Hi},[],...
-        {'damage','displacement','internal energy'},[],...
+    write_vtk_mesh(Si,{di,ui},[],...
+        {'damage','displacement'},[],...
         pathname,'solution',1,i-1);
 end
 make_pvd_file(pathname,'solution',1,length(T));
