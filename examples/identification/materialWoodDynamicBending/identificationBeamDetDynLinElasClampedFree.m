@@ -10,7 +10,7 @@ setProblem = true;
 solveProblem = true;
 displaySolution = false;
 
-junction = true; % junction modeling
+junction = false; % junction modeling
 
 filename = 'materialWoodDynamicBending';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -19,50 +19,79 @@ if ~exist(pathname,'dir')
     mkdir(pathname);
 end
 
-filenameCamera = 'test_3_C001H001S0001.csv';
+% filenameCamera = 'test_3_C001H001S0001.csv';
+filenameCamera = 'PoutreConsole4_C001H001S0001.csv';
 pathnameCamera = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'examples','identification','materialWoodDynamicBending','resultsCamera');
 
 fontsize = 16;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'fig','epsc','png'};
 renderer = 'OpenGL';
 
 %% Experimental data
 filenameExp = fullfile(pathnameCamera,filenameCamera);
 opts = detectImportOptions(filenameExp);
 opts.SelectedVariableNames = {'time','Point1_Y_'};
-T = readtable(filenameExp,opts);
-t = T.time;
-uy_exp = T.Point1_Y_;
+T_exp = readtable(filenameExp,opts);
+t = T_exp.time;
+uy_exp = T_exp.Point1_Y_;
 nanInd = find(isnan(uy_exp));
 t(nanInd) = [];
 uy_exp(nanInd) = [];
-uy_exp = uy_exp-uy_exp(end);
+if strcmp(filenameCamera,'PoutreConsole4_C001H001S0001.csv')
+    uy_exp = uy_exp*1e-3; % conversion from [mm] to [m]
+end
 
-delta = 2.3e-2; % initial static displacement [m]
-% delta = uy_exp(1); % initial static displacement [m]
-startInd = find(uy_exp>delta,1,'last');
-t(1:startInd) = [];
-uy_exp(1:startInd) = [];
-t = t-t(1);
+[uymin,Imin] = min(uy_exp);
+Imax = find(uy_exp(1:Imin)>=-uymin,1,'last');
+% Imin = find(uy_exp>=uy_exp(1),1,'last');
+Imin = find(abs(diff(uy_exp)./diff(t))>1,1);
+tinitmin = t(Imin);
+tinitmax = t(Imax);
+repm = diff(uy_exp)<0;
+repp = diff(uy_exp)>0;
+indmax = min(find(repm,1,'last'),find(repp,1,'last'))+1;
+tmax = t(indmax);
+indmin = find(repp & t(1:end-1)<tmax,1,'last')+1;
+tmin = t(indmin);
+offsetmax = uy_exp(indmax);
+offsetmin = uy_exp(indmin);
+offset = (min(offsetmax,offsetmin)+max(offsetmax,offsetmin))/2; % vertical offset position [m]
+uy_exp = uy_exp-offset;
+
+delta = @(tinit) uy_exp(find(t>=tinit,1));
+funuy_exp = @(tinit) uy_exp(t>=tinit);
+
+% switch filenameCamera
+%     case 'test_3_C001H001S0001.csv'
+%         delta_exp = 2.3e-2; % initial vertical displacement [m]
+%     case 'PoutreConsole4_C001H001S0001.csv'
+%         delta_exp = 3e-2; % initial vertical displacement [m]
+% end
 
 %% Identification
 % initial guess
+tinit0 = (tinitmin+tinitmax)/2; % initial time [s]
+% switch filenameCamera
+%     case 'test_3_C001H001S0001.csv'
+%         tinit0 = 0.2384; % initial time [s]
+%     case 'PoutreConsole4_C001H001S0001.csv'
+%         tinit0 = 0.3184; % initial time [s]
+% end
+delta0 = delta(tinit0)*1e2; % initial vertical displacement [cm]
 E0 = 13.8; % Young modulus [GPa]
-alpha0 = 0; % mass proportional Rayleigh (viscous) damping coefficient
+alpha0 = eps; % mass proportional Rayleigh (viscous) damping coefficient
 beta0 = 5; % stiffness proportional Rayleigh (viscous) damping coefficient
 if junction
     c0 = 10; % junction rotational stiffness [kN.m/rad]
     J0 = 15; % moment of inertia [kg.m2/rad]=[N.m.s2/rad]
 end
 
-disp('Initial static displacement');
-disp('---------------------------');
-fprintf('delta = %g cm\n',delta*1e2);
-
 disp('Initial parameters');
 disp('------------------');
+fprintf('tinit = %g s\n',tinit0);
+fprintf('delta = %g cm\n',delta0);
 fprintf('E     = %g GPa\n',E0);
 fprintf('alpha = %g\n',alpha0);
 fprintf('beta  = %g\n',beta0);
@@ -71,19 +100,22 @@ if junction
     fprintf('J     = %g kg.m2/rad\n',J0);
 end
 
-param0 = [E0 alpha0 beta0];
-lb = [10 0 0];
-ub = [15 Inf Inf];
+param0 = [tinit0 E0 alpha0 beta0];
+lb = [tinitmin 10 0 0];
+ub = [tinitmax 15 Inf Inf];
+% param0 = [E0 alpha0 beta0];
+% lb = [10 0 0];
+% ub = [15 Inf Inf];
 if junction
     param0 = [param0 c0 J0];
     lb = [lb 0 0];
     ub = [ub Inf Inf];
 end
 
-optimFun = 'lsqnonlin'; % optimization function
+% optimFun = 'lsqnonlin'; % optimization function
 % optimFun = 'fminsearch';
 % optimFun = 'fminunc';
-% optimFun = 'fmincon';
+optimFun = 'fmincon';
 
 % display = 'off';
 % display = 'iter';
@@ -91,14 +123,16 @@ display = 'iter-detailed';
 % display = 'final';
 % display = 'final-detailed';
 
-tolX = 1e-5; % tolerance on the parameter value
-tolFun = 1e-5; % tolerance on the function value
+% tolX = 1e-5; % tolerance on the parameter value
+% tolFun = 1e-5; % tolerance on the function value
 
 switch optimFun
     case {'lsqnonlin','fminunc','fmincon'}
-        options  = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun);
+        options  = optimoptions(optimFun,'Display',display);
+        % options  = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun);
     case 'fminsearch'
-        options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
+        options = optimset('Display',display);
+        % options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
     otherwise
         error(['Wrong optimization function' optimFun])
 end
@@ -163,30 +197,28 @@ if setProblem
     end
     
     %% Initial conditions
-    delta = uy_exp(1); % [m]
+    tinit = tinit0; % [s]
     x = getcoord(getnode(S));
     ux0 = zeros(getnbnode(S),1);
     if junction
         lambda = @(E,c) 3*E*IZ/(c*L);
-        funuy0 = @(E,c) delta/(1+lambda(E,c))*((x(:,1).^2).*(3*L-x(:,1))/(2*L^3) + lambda(E,c)*x(:,1)/L);
-        funrz0 = @(E,c) delta/(1+lambda(E,c))*(x(:,1).*(2*L-x(:,1))*3/(2*L^3) + lambda(E,c)/L);
-        funu0 = @(E,c) [ux0 funuy0(E,c) funrz0(E,c)]';
-        u0 = funu0(E,c);
+        funuy0 = @(tinit,E,c) delta(tinit)/(1+lambda(E,c))*((x(:,1).^2).*(3*L-x(:,1))/(2*L^3) + lambda(E,c)*x(:,1)/L);
+        funrz0 = @(tinit,E,c) delta(tinit)/(1+lambda(E,c))*(x(:,1).*(2*L-x(:,1))*3/(2*L^3) + lambda(E,c)/L);
+        funu0 = @(tinit,E,c) [ux0 funuy0(tinit,E,c) funrz0(tinit,E,c)]';
+        % u0 = funu0(tinit,E,c);
     else
-        uy0 = delta*(x(:,1).^2).*(3*L-x(:,1))/(2*L^3);
-        rz0 = delta*x(:,1).*(2*L-x(:,1))*3/(2*L^3);
-        funu0 = [ux0 uy0 rz0]';
-        u0 = funu0;
+        funuy0 = @(tinit) delta(tinit)*(x(:,1).^2).*(3*L-x(:,1))/(2*L^3);
+        funrz0 = @(tinit) delta(tinit)*x(:,1).*(2*L-x(:,1))*3/(2*L^3);
+        funu0 = @(tinit) [ux0 funuy0(tinit) funrz0(tinit)]';
+        % u0 = funu0(tinit);
     end
-    u0 = freevector(S,u0(:));
+    % u0 = freevector(S,u0(:));
     v0 = zeros(getnbddlfree(S),1);
     
     %% Time scheme
-    T = TIMEMODEL(t);
-    
-    N = NEWMARKSOLVER(T,'alpha',0,'gamma',1/2,'beta',1/4,'display',false);
-    
-    loadFunction = @(N) zero(N);
+    funt = @(tinit) t(t>=tinit)-t(find(t>=tinit,1));
+    funT = @(tinit) TIMEMODEL(funt(tinit));
+    funN = @(tinit) NEWMARKSOLVER(funT(tinit),'alpha',0,'gamma',1/2,'beta',1/4,'display',false);
     
     %% Mass, stiffness and damping matrices and sollicitation vectors
     M = calc_mass(S);
@@ -202,11 +234,12 @@ if setProblem
 %     end
 %     C0 = alpha0*K0 + beta0*M0;
     b0 = zeros(getnbddlfree(S),1);
-    b = b0*loadFunction(N);
+    loadFunction = @(N) zero(N);
+    funb = @(tinit) b0*loadFunction(funN(tinit));
     
-    save(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','b','funu0','v0','P1','uy_exp');
+    save(fullfile(pathname,'problem.mat'),'S','elemtype','funN','M','funb','funu0','v0','P1');
 else
-    load(fullfile(pathname,'problem.mat'),'S','elemtype','N','M','b','funu0','v0','P1','uy_exp');
+    load(fullfile(pathname,'problem.mat'),'S','elemtype','funN','M','funb','funu0','v0','P1');
 end
 
 %% Solution
@@ -215,30 +248,42 @@ if solveProblem
     
     switch optimFun
         case 'lsqnonlin'
-            fun = @(param) funlsqnonlin(param,uy_exp,S,N,M,b,funu0,v0,P1);
+            fun = @(param) funlsqnonlin(param,funuy_exp,S,funN,M,funb,funu0,v0,P1,'display');
             [param,err,~,exitflag,output] = lsqnonlin(fun,param0,lb,ub,options);
         case 'fminsearch'
-            fun = @(param) funoptim(param,uy_exp,S,N,M,b,funu0,v0,P1);
+            fun = @(param) funoptim(param,funuy_exp,S,funN,M,funb,funu0,v0,P1,'display');
             [param,err,exitflag,output] = fminsearch(fun,param0,options);
         case 'fminunc'
-            fun = @(param) funoptim(param,uy_exp,S,N,M,b,funu0,v0,P1);
+            fun = @(param) funoptim(param,funuy_exp,S,funN,M,funb,funu0,v0,P1,'display');
             [param,err,exitflag,output] = fminunc(fun,param0,options);
         case 'fmincon'
-            fun = @(param) funoptim(param,uy_exp,S,N,M,b,funu0,v0,P1);
+            fun = @(param) funoptim(param,funuy_exp,S,funN,M,funb,funu0,v0,P1,'display');
             [param,err,exitflag,output] = fmincon(fun,param0,[],[],[],[],lb,ub,[],options);
     end
     
-    E = param(1); % [GPa]
-    alpha = param(2);
-    beta = param(3);
+    tinit = param(1); % [s]
+    E = param(2); % [GPa]
+    alpha = param(3);
+    beta = param(4);
     if junction
-        c = param(4); % [kN.m/rad]
-        J = param(5); % [kg.m2/rad]=[N.m.s2/rad]
+        c = param(5); % [kN.m/rad]
+        J = param(6); % [kg.m2/rad]=[N.m.s2/rad]
     end
+    
+%     tinit = tinit0; % initial time [s]
+%     E = param(1); % [GPa]
+%     alpha = param(2);
+%     beta = param(3);
+%     if junction
+%         c = param(4); % [kN.m/rad]
+%         J = param(5); % [kg.m2/rad]=[N.m.s2/rad]
+%     end
+    uy_exp = funuy_exp(tinit);
     err = sqrt(err)./norm(uy_exp);
     
     disp('Optimal parameters');
     disp('------------------');
+    fprintf('tinit = %g s\n',tinit);
     fprintf('E     = %g GPa\n',E);
     fprintf('alpha = %g\n',alpha);
     fprintf('beta  = %g\n',beta);
@@ -254,15 +299,17 @@ if solveProblem
     
     %% Numerical solution
     t = tic;
-    [ut,result,vt,at] = solveBeamDetDynLinElasClampedFree(param,S,N,M,b,funu0,v0,P1);
+    [ut,result,vt,at] = solveBeamDetDynLinElasClampedFree(param,S,funN,M,funb,funu0,v0,P1);
     timeSolution = toc(t);
+    
+    N = funN(tinit);
     
     et = calc_epsilon(S,ut,'node');
     st = calc_sigma(S,ut,'node');
     
-    save(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','N','timeIdentification','timeSolution');
+    save(fullfile(pathname,'solution.mat'),'ut','result','vt','at','et','st','N','uy_exp','timeIdentification','timeSolution');
 else
-    load(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','N','timeIdentification','timeSolution');
+    load(fullfile(pathname,'solution.mat'),'ut','result','vt','at','et','st','N','uy_exp','timeIdentification','timeSolution');
 end
 
 %% Outputs
@@ -408,11 +455,10 @@ end
 % uyt: vertical displacement at end point as a function of time
 uyt = Uyt(end,:);
 t = gett(ut);
-startInd = find(uy_exp>=delta*1e-2,1); % index of initial time
 
 figure('Name','Quantity of interest : vertical displacement at end point')
 clf
-plot(t,uy_exp(startInd:end)*1e2,'-r','LineWidth',1);
+plot(t,uy_exp*1e2,'-r','LineWidth',1);
 hold on
 plot(t,uyt*1e2,'-b','LineWidth',1);
 hold off
@@ -425,11 +471,11 @@ legend('Experimental','Numerical')
 mysaveas(pathname,'quantity_of_interest',formats,renderer);
 mymatlab2tikz(pathname,'quantity_of_interest.tex');
 
-for t=0:getnt(T)
+for t=0:getnt(ut)
     uk = Ut(:,t+1);
     rzk = Rzt(:,t+1);
     fields = {uk,rzk};
     fieldnames = {'displacement','rotation'};
     write_vtk_mesh(S,fields,[],fieldnames,[],pathname,filename,1,t);
 end
-make_pvd_file(pathname,filename,1,getnt(T)+1);
+make_pvd_file(pathname,filename,1,getnt(ut)+1);

@@ -10,7 +10,7 @@ setProblem = true;
 solveProblem = true;
 displaySolution = false;
 
-junction = true; % junction modeling
+junction = false; % junction modeling
 
 filename = 'beamDetDynLinElasClampedFree';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -19,13 +19,14 @@ if ~exist(pathname,'dir')
     mkdir(pathname);
 end
 
-filenameCamera = 'test_3_C001H001S0001.csv';
+% filenameCamera = 'test_3_C001H001S0001.csv';
+filenameCamera = 'PoutreConsole4_C001H001S0001.csv';
 pathnameCamera = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'examples','identification','materialWoodDynamicBending','resultsCamera');
 
 fontsize = 16;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'fig','epsc','png'};
 renderer = 'OpenGL';
 
 %% Problem
@@ -91,36 +92,42 @@ if setProblem
     filenameExp = fullfile(pathnameCamera,filenameCamera);
     opts = detectImportOptions(filenameExp);
     opts.SelectedVariableNames = {'time','Point1_Y_'};
-    T = readtable(filenameExp,opts);
-    t = T.time;
-    uy_exp = T.Point1_Y_;
+    T_exp = readtable(filenameExp,opts);
+    t = T_exp.time;
+    uy_exp = T_exp.Point1_Y_;
     nanInd = find(isnan(uy_exp));
     t(nanInd) = [];
     uy_exp(nanInd) = [];
-    uy_exp = uy_exp-uy_exp(end);
+    if strcmp(filenameCamera,'PoutreConsole4_C001H001S0001.csv')
+        uy_exp = uy_exp*1e-3; % conversion from [mm] to [m]
+    end
     
-    delta = 2.3e-2; % initial static displacement [m]
-    % delta = uy_exp(1); % initial static displacement [m]
-    startInd = find(uy_exp>delta,1,'last');
-    t(1:startInd) = [];
-    uy_exp(1:startInd) = [];
-    t = t-t(1);
+    switch filenameCamera
+        case 'test_3_C001H001S0001.csv'
+            delta_exp = 2.3e-2; % initial vertical displacement [m]
+        case 'PoutreConsole4_C001H001S0001.csv'
+            delta_exp = 3e-2; % initial vertical displacement [m]
+    end
+    offset = uy_exp(end); % vertical offset position [m]
+    index = find(abs(uy_exp-offset)<=delta_exp,1);
+    t = t(index:end)-t(index);
+    uy_exp = uy_exp(index:end)-offset;
     
     %% Initial conditions
-    delta = uy_exp(1); % [m]
+    delta = uy_exp(1); % initial vertical displacement [m]
     x = getcoord(getnode(S));
     ux0 = zeros(getnbnode(S),1);
     if junction
         lambda = @(E,c) 3*E*IZ/(c*L);
-        funuy0 = @(E,c) delta/(1+lambda(E,c))*((x(:,1).^2).*(3*L-x(:,1))/(2*L^3) + lambda(E,c)*x(:,1)/L);
-        funrz0 = @(E,c) delta/(1+lambda(E,c))*(x(:,1).*(2*L-x(:,1))*3/(2*L^3) + lambda(E,c)/L);
-        funu0 = @(E,c) [ux0 funuy0(E,c) funrz0(E,c)]';
-        u0 = funu0(E,c);
+        funuy0 = @(delta,E,c) delta/(1+lambda(E,c))*((x(:,1).^2).*(3*L-x(:,1))/(2*L^3) + lambda(E,c)*x(:,1)/L);
+        funrz0 = @(delta,E,c) delta/(1+lambda(E,c))*(x(:,1).*(2*L-x(:,1))*3/(2*L^3) + lambda(E,c)/L);
+        funu0 = @(delta,E,c) [ux0 funuy0(delta,E,c) funrz0(delta,E,c)]';
+        u0 = funu0(delta,E,c);
     else
-        uy0 = delta*(x(:,1).^2).*(3*L-x(:,1))/(2*L^3);
-        rz0 = delta*x(:,1).*(2*L-x(:,1))*3/(2*L^3);
-        funu0 = [ux0 uy0 rz0]';
-        u0 = funu0;
+        funuy0 = @(delta) delta*(x(:,1).^2).*(3*L-x(:,1))/(2*L^3);
+        funrz0 = @(delta) delta*x(:,1).*(2*L-x(:,1))*3/(2*L^3);
+        funu0 = @(delta) [ux0 funuy0(delta) funrz0(delta)]';
+        u0 = funu0(delta);
     end
     u0 = freevector(S,u0(:));
     v0 = zeros(getnbddlfree(S),1);
@@ -169,9 +176,9 @@ if solveProblem
     et = calc_epsilon(S,ut,'node');
     st = calc_sigma(S,ut,'node');
     
-    save(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','time');
+    save(fullfile(pathname,'solution.mat'),'ut','result','vt','at','et','st','time');
 else
-    load(fullfile(pathname,'solution.mat'),'ut','result','vt','et','st','time');
+    load(fullfile(pathname,'solution.mat'),'ut','result','vt','at','et','st','time');
 end
 
 %% Outputs
@@ -316,11 +323,10 @@ end
 % uyt: vertical displacement at end point as a function of time
 uyt = Uyt(end,:);
 t = gett(ut);
-startInd = find(uy_exp>=delta*1e-2,1); % index of initial time
 
 figure('Name','Quantity of interest : vertical displacement at end point')
 clf
-plot(t,uy_exp(startInd:end)*1e2,'-r','LineWidth',1);
+plot(t,uy_exp*1e2,'-r','LineWidth',1);
 hold on
 plot(t,uyt*1e2,'-b','LineWidth',1);
 hold off
@@ -333,11 +339,11 @@ legend('Experimental','Numerical')
 mysaveas(pathname,'quantity_of_interest',formats,renderer);
 mymatlab2tikz(pathname,'quantity_of_interest.tex');
 
-for t=0:getnt(T)
+for t=0:getnt(ut)
     uk = Ut(:,t+1);
     rzk = Rzt(:,t+1);
     fields = {uk,rzk};
     fieldnames = {'displacement','rotation'};
     write_vtk_mesh(S,fields,[],fieldnames,[],pathname,filename,1,t);
 end
-make_pvd_file(pathname,filename,1,getnt(T)+1);
+make_pvd_file(pathname,filename,1,getnt(ut)+1);
