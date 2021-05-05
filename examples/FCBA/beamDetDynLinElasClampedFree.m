@@ -12,8 +12,8 @@ displaySolution = false;
 
 junction = false; % junction modeling
 
-filenameCamera = 'test_3_C001H001S0001';
-% filenameCamera = 'PoutreConsole4_C001H001S0001';
+% filenameCamera = 'test_3_C001H001S0001';
+filenameCamera = 'PoutreConsole4_C001H001S0001';
 pathnameCamera = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'examples','identification','materialWoodDynamicBending','resultsCamera');
 
