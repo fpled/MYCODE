@@ -18,7 +18,7 @@ renderer = 'OpenGL';
 damageFun = 2; % choice for damage function
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','identification','materialParticleBoard',['damageFunction' num2str(damageFun)]);
+    'results','identification','materialReinforcedConcrete',['damageFunction' num2str(damageFun)]);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
