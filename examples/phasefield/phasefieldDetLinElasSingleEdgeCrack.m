@@ -28,11 +28,8 @@ test = true; % coarse mesh
 
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Anisotropic'; % 'Anisotropic' or 'Isotropic'. Material symmetry
-isotropicTest = false; % 'true' or 'false'. For comparison purposes between the isotropic and anisotropic material models
 loading = 'Tension'; % 'Tension' or 'Shear'
 PFmodel = 'AnisotropicHe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
-% /!\ For an anisotropic material, the split model 'PFmodel' should be one
-% of 'Isotropic' or 'AnisotropicHe'.
 
 filename = ['phasefieldDetLinElas' symmetry 'SingleEdgeCrack' loading PFmodel '_' num2str(Dim) 'D'];
 if test
@@ -104,7 +101,7 @@ if setProblem
     %% Phase field problem
     %% Material
     % Critical energy release rate (or fracture toughness)
-    if isequal(lower(symmetry),'isotropic') || isotropicTest % isotropic material case
+    if isequal(lower(symmetry),'isotropic') % isotropic material
         gc = 2.7e3; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
         % Regularization parameter (width of the smeared crack)
         % l = 3.75e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
@@ -115,7 +112,7 @@ if setProblem
         % l = 5e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         % l = 4e-6; % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
         % eta = 0.052; w0 = 75.94; l = eta/sqrt(w0)*1e-3; % l = 6e-7; % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
-    elseif isequal(lower(symmetry),'anisotropic') && ~isotropicTest % anisotropic material case
+    elseif isequal(lower(symmetry),'anisotropic') % anisotropic material
         gc = 10e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
         l = 8.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     else
@@ -160,74 +157,58 @@ if setProblem
     % Option
     option = 'DEFO'; % plane strain [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     % option = 'CONT'; % plane stress [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-    if isequal(lower(symmetry),'isotropic') || isotropicTest % isotropic material case
-        % Lame coefficients
-        % lambda = 121.1538e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
-        % mu = 80.7692e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
-        lambda = 121.15e9;
-        mu = 80.77e9;
-        % Young modulus and Poisson ratio
-        if Dim==2
-            switch lower(option)
-                case 'defo'
-                    E = mu*(3*lambda+2*mu)/(lambda+mu); %  E = 210e9;
-                    NU = lambda/(lambda+mu)/2; % NU = 0.3;
-                case 'cont'
-                    E = 4*mu*(lambda+mu)/(lambda+2*mu);
-                    NU = lambda/(lambda+2*mu);
-            end
-            % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-            % E = 210e9; NU = 0.3; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-            % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
-        elseif Dim==3
-            E = mu*(3*lambda+2*mu)/(lambda+mu);
-            NU = lambda/(lambda+mu)/2;
-        end
-    elseif isequal(lower(symmetry),'anisotropic') && ~isotropicTest % anisotropic material case
-        if Dim==2
-            switch lower(option)
-                case 'defo'
-                    % Elastic stiffness tensor matrix in reference coordinate
-                    % system
-                    % [Pa] [Nguyen, Yvonnet, Waldmann, He, 2020,IJNME]
-                    matElas = 1e9*[65 20 0;
-                        20 260 0;
-                        0 0 30];
-                    
-                    theta = deg2rad(30); % orientation angle
-                    c = cos(2*pi-theta);
-                    s = sin(2*pi-theta);
-                    % Transformation tensor in Voigt's notation
-                    P = [c^2 s^2 2*c*s;
-                        s^2 c^2 -2*c*s;
-                        -c*s c*s c^2-s^2];
-                    matElas = P'*matElas*P;
-                case 'cont'
-                    error('Not implemented yet')
-            end
-            %
-            if isotropicTest
-                lambda = 121.15e9;
-                mu = 80.77e9;
-                % Young modulus and Poisson ratio
+    switch lower(symmetry)
+        case 'isotropic' % isotropic material
+            % Lame coefficients
+            % lambda = 121.1538e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
+            % mu = 80.7692e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
+            lambda = 121.15e9;
+            mu = 80.77e9;
+            % Young modulus and Poisson ratio
+            if Dim==2
                 switch lower(option)
                     case 'defo'
-                        matElas = [lambda+2*mu, lambda, 0;
-                            lambda, lambda+2*mu, 0;
-                            0, 0, mu];
+                        E = mu*(3*lambda+2*mu)/(lambda+mu); %  E = 210e9;
+                        NU = lambda/(lambda+mu)/2; % NU = 0.3;
                     case 'cont'
-                        lambda = 2*mu*lambda/(lambda+2*mu);
-                        matElas = [lambda+2*mu, lambda, 0;
-                            lambda, lambda+2*mu, 0;
-                            0, 0, mu];
+                        E = 4*mu*(lambda+mu)/(lambda+2*mu);
+                        NU = lambda/(lambda+2*mu);
                 end
+                % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+                % E = 210e9; NU = 0.3; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+                % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
+            elseif Dim==3
+                E = mu*(3*lambda+2*mu)/(lambda+mu);
+                NU = lambda/(lambda+mu)/2;
             end
-        elseif Dim==3
-            error('Not implemented yet')
-        end
-        %
-    else
-        error('Wrong material symmetry class');
+            
+        case 'anisotropic' % anisotropic material
+            if Dim==2
+                switch lower(option)
+                    case 'defo'
+                        % Elastic stiffness tensor matrix in reference coordinate
+                        % system
+                        % [Pa] [Nguyen, Yvonnet, Waldmann, He, 2020,IJNME]
+                        matElas = 1e9*[65 20 0;
+                            20 260 0;
+                            0 0 30];
+                        
+                        theta = deg2rad(30); % orientation angle
+                        c = cos(2*pi-theta);
+                        s = sin(2*pi-theta);
+                        % Transformation tensor in Voigt's notation
+                        P = [c^2 s^2 2*c*s;
+                            s^2 c^2 -2*c*s;
+                            -c*s c*s c^2-s^2];
+                        matElas = P'*matElas*P;
+                    case 'cont'
+                        error('Not implemented yet')
+                end
+            elseif Dim==3
+                error('Not implemented yet')
+            end
+        otherwise
+            error('Wrong material symmetry class');
     end
     % Energetic degradation function
     g = @(d) (1-d).^2;
@@ -236,12 +217,13 @@ if setProblem
     
     % Material
     d = calc_init_dirichlet(S_phase);
-    if isequal(lower(symmetry),'isotropic') % isotropic material model for isotropic material only
-        mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
-    elseif isequal(lower(symmetry),'anisotropic') % anisotropic material model for all symmetry classes
-        mat = ELAS_ANISOT('matElas',matElas,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
-    else
-        error('Wrong material symmetry class');
+    switch lower(symmetry)
+        case 'isotropic' % isotropic material model for isotropic material only
+            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+        case 'anisotropic' % anisotropic material model for all symmetry classes
+            mat = ELAS_ANISOT('matElas',matElas,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+        otherwise
+            error('Wrong material symmetry class');
     end
     mat = setnumber(mat,1);
     S = setoption(S,option);
@@ -298,137 +280,142 @@ if setProblem
     % b = -b;
     
     %% Time scheme
-    if isequal(lower(symmetry),'isotropic') || isotropicTest % isotropic material case
-        if Dim==2
-            switch lower(loading)
-                case 'tension'
-                    % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM]
-                    % du = 1e-5 mm during the first 500 time steps (up to u = 5e-3 mm)
-                    % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
-                    dt0 = 1e-8;
-                    nt0 = 500;
-                    if test
-                        dt0 = 1e-7;
-                        nt0 = 50;
-                    end
-                    t0 = linspace(dt0,nt0*dt0,nt0);
-                    dt1 = 1e-9;
-                    nt1 = 1300;
-                    if test
-                        dt1 = 1e-8;
-                        nt1 = 130;
-                    end
-                    %
-                    t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                    t = [t0,t1];
-                    
-                    % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-                    % dt = 1e-8;
-                    % nt = 630;
-                    % t = linspace(dt,nt*dt,nt);
-                    
-                    % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
-                    % dt = 1e-7;
-                    % nt = 63;
-                    % t = linspace(dt,nt*dt,nt);
-                    
-                    % [Liu, Li, Msekh, Zuo, 2016, CMS]
-                    % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
-                    % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
-                    % dt0 = 1e-7;
-                    % nt0 = 50;
-                    % t0 = linspace(dt0,nt0*dt0,nt0);
-                    % dt1 = 1e-9;
-                    % nt1 = 1300;
-                    % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                    % t = [t0,t1];
-                case 'shear'
-                    % [Miehe, Welschinger, Hofacker, 2010 IJNME]
-                    % du = 1e-4 mm during the first 100 time steps (up to u = 10e-3 mm)
-                    % du = 1e-6 mm during the last 10 000 time steps (up to u = 20e-3 mm)
-                    % dt0 = 1e-7;
-                    % nt0 = 100;
-                    % t0 = linspace(dt0,nt0*dt0,nt0);
-                    % dt1 = 1e-9;
-                    % nt1 = 10000;
-                    % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                    % t = [t0,t1];
-                    
-                    % [Liu, Li, Msekh, Zuo, 2016, CMS]
-                    % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
-                    % du = 1e-5 mm during the last 1500 time steps (up to u = 20e-3 mm)
-                    % dt0 = 1e-7;
-                    % nt0 = 50;
-                    % t0 = linspace(dt0,nt0*dt0,nt0);
-                    % dt1 = 1e-8;
-                    % nt1 = 1500;
-                    % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                    % t = [t0,t1];
-                    
-                    % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-                    % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM],
-                    % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-                    dt = 1e-8;
-                    nt = 1500;
-                    % nt = 2000;
-                    if test
-                        dt = 5e-8;
-                        % nt = 300;
-                        nt = 400;
-                    end
-                    t = linspace(dt,nt*dt,nt);
+    switch lower(symmetry)
+        case 'isotropic' % isotropic material
+            if Dim==2
+                switch lower(loading)
+                    case 'tension'
+                        % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM]
+                        % du = 1e-5 mm during the first 500 time steps (up to u = 5e-3 mm)
+                        % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
+                        dt0 = 1e-8;
+                        nt0 = 500;
+                        if test
+                            dt0 = 1e-7;
+                            nt0 = 50;
+                        end
+                        t0 = linspace(dt0,nt0*dt0,nt0);
+                        dt1 = 1e-9;
+                        nt1 = 1300;
+                        if test
+                            dt1 = 1e-8;
+                            nt1 = 300;
+                        end
+                        %
+                        t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                        t = [t0,t1];
+                        
+                        % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+                        % dt = 1e-8;
+                        % nt = 630;
+                        % t = linspace(dt,nt*dt,nt);
+                        
+                        % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
+                        % dt = 1e-7;
+                        % nt = 63;
+                        % t = linspace(dt,nt*dt,nt);
+                        
+                        % [Liu, Li, Msekh, Zuo, 2016, CMS]
+                        % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
+                        % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
+                        % dt0 = 1e-7;
+                        % nt0 = 50;
+                        % t0 = linspace(dt0,nt0*dt0,nt0);
+                        % dt1 = 1e-9;
+                        % nt1 = 1300;
+                        % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                        % t = [t0,t1];
+                    case 'shear'
+                        % [Miehe, Welschinger, Hofacker, 2010 IJNME]
+                        % du = 1e-4 mm during the first 100 time steps (up to u = 10e-3 mm)
+                        % du = 1e-6 mm during the last 10 000 time steps (up to u = 20e-3 mm)
+                        % dt0 = 1e-7;
+                        % nt0 = 100;
+                        % t0 = linspace(dt0,nt0*dt0,nt0);
+                        % dt1 = 1e-9;
+                        % nt1 = 10000;
+                        % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                        % t = [t0,t1];
+                        
+                        % [Liu, Li, Msekh, Zuo, 2016, CMS]
+                        % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
+                        % du = 1e-5 mm during the last 1500 time steps (up to u = 20e-3 mm)
+                        % dt0 = 1e-7;
+                        % nt0 = 50;
+                        % t0 = linspace(dt0,nt0*dt0,nt0);
+                        % dt1 = 1e-8;
+                        % nt1 = 1500;
+                        % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                        % t = [t0,t1];
+                        
+                        % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+                        % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM],
+                        % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+                        dt = 1e-8;
+                        nt = 1500;
+                        % nt = 2000;
+                        if test
+                            dt = 5e-8;
+                            % nt = 300;
+                            nt = 400;
+                        end
+                        t = linspace(dt,nt*dt,nt);
+                end
+            elseif Dim==3
+                dt = 1e-8;
+                nt = 2500;
+                if test
+                    dt = 1e-7;
+                    nt = 250;
+                end
+                t = linspace(dt,nt*dt,nt);
             end
-        elseif Dim==3
-            dt = 1e-8;
-            nt = 2500;
-            if test
-                dt = 1e-7;
-                nt = 250;
+            
+        case 'anisotropic' % anisotropic material
+            if Dim==2
+                switch lower(loading)
+                    case 'tension'
+                        % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+                        % du = 6e-5 mm during the first 500 time steps (up to u = 30e-3 mm)
+                        % du = 2e-5 mm during the last 1300 time steps (up to u = 56e-3 mm)
+                        dt0 = 6e-8;
+                        nt0 = 500;
+                        if test
+                            dt0 = 6e-7;
+                            nt0 = 50;
+                        end
+                        t0 = linspace(dt0,nt0*dt0,nt0);
+                        dt1 = 2e-8;
+                        nt1 = 1300;
+                        if test
+                            dt1 = 2e-7;
+                            nt1 = 130;
+                        end
+                        %
+                        t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                        t = [t0,t1];
+                    case 'shear'
+                        dt = 1e-8;
+                        nt = 1500;
+                        % nt = 2000;
+                        if test
+                            dt = 6e-7;
+                            % nt = 300;
+                            nt = 400;
+                        end
+                        t = linspace(dt,nt*dt,nt);
+                end
+            elseif Dim==3
+                dt = 1e-8;
+                nt = 2500;
+                if test
+                    dt = 1e-7;
+                    nt = 250;
+                end
+                t = linspace(dt,nt*dt,nt);
             end
-            t = linspace(dt,nt*dt,nt);
-        end
-        %
-    elseif isequal(lower(symmetry),'anisotropic') && ~isotropicTest % anisotropic material case
-        if Dim==2
-            switch lower(loading)
-                case 'tension'
-                    dt0 = 6e-8; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-                    nt0 = 500;
-                    if test
-                        dt0 = 6e-7;
-                        nt0 = 50;
-                    end
-                    t0 = linspace(dt0,nt0*dt0,nt0);
-                    dt1 = 2e-8; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-                    nt1 = 1300;
-                    if test
-                        dt1 = 2e-7;
-                        nt1 = 130;
-                    end
-                    %
-                    t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                    t = [t0,t1];
-                case 'shear'
-                    nt = 1500;
-                    % nt = 2000;
-                    if test
-                        dt = 6e-7;
-                        % nt = 300;
-                        nt = 400;
-                    end
-                    t = linspace(dt,nt*dt,nt);
-            end
-        elseif Dim==3
-            dt = 1e-8;
-            nt = 2500;
-            if test
-                dt = 1e-7;
-                nt = 250;
-            end
-            t = linspace(dt,nt*dt,nt);
-        end
-    else
-        error('Wrong material symmetry class');
+        otherwise
+            error('Wrong material symmetry class');
     end
     T = TIMEMODEL(t);
     
@@ -455,6 +442,7 @@ end
 fprintf('\n');
 fprintf('dim      = %d\n',Dim);
 fprintf('loading  = %s\n',loading);
+fprintf('mat sym  = %s\n',symmetry);
 fprintf('PF model = %s\n',PFmodel);
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));

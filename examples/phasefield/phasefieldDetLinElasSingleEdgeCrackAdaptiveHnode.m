@@ -273,7 +273,7 @@ if setProblem
                 nt1 = 1300;
                 if test
                     dt1 = 1e-8;
-                    nt1 = 130;
+                    nt1 = 300;
                 end
                 %
                 t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
