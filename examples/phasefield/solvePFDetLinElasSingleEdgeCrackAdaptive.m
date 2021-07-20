@@ -96,13 +96,12 @@ for i=1:length(T)
     ud = t(i);
     switch lower(loading)
         case 'tension'
-            S = addcl(S,BU,'UY',ud);
-            S = addcl(S,BL,'UY');
             if Dim==2
-                S = addcl(S,POINT([0.0,0.0]),'UX');
+                S = addcl(S,BU,{'UX','UY'},[0;ud]);
             elseif Dim==3
-                S = addcl(S,POINT([0.0,0.0,0.0]),{'UX','UZ'});
+                S = addcl(S,BU,{'UX','UY','UZ'},[0;ud;0]);
             end
+            S = addcl(S,BL,'UY');
         case 'shear'
             if Dim==2
                 S = addcl(S,BU,{'UX','UY'},[ud;0]);
