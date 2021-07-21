@@ -114,7 +114,7 @@ for i=1:length(T)
     ft(i) = f;
     
     if display_
-        fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),norm(dt{i}),norm(ut{i}));
+        fprintf('| %4d/%4d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,length(T),t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),norm(dt{i}),norm(ut{i}));
     end
 end
 
