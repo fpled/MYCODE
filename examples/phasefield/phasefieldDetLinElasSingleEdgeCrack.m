@@ -304,11 +304,13 @@ if setProblem
                         t = [t0,t1];
                         
                         % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+                        % du = 1e-5 mm during 630 time steps (up to u = 6.3e-3 mm)
                         % dt = 1e-8;
                         % nt = 630;
                         % t = linspace(dt,nt*dt,nt);
                         
                         % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
+                        % du = 1e-4 mm during 63 time steps (up to u = 6.3e-3 mm)
                         % dt = 1e-7;
                         % nt = 63;
                         % t = linspace(dt,nt*dt,nt);
@@ -318,9 +320,9 @@ if setProblem
                         % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
                         % dt0 = 1e-7;
                         % nt0 = 50;
-                        % t0 = linspace(dt0,nt0*dt0,nt0);
                         % dt1 = 1e-9;
                         % nt1 = 1300;
+                        % t0 = linspace(dt0,nt0*dt0,nt0);
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
                     case 'shear'
@@ -329,9 +331,9 @@ if setProblem
                         % du = 1e-6 mm during the last 10 000 time steps (up to u = 20e-3 mm)
                         % dt0 = 1e-7;
                         % nt0 = 100;
-                        % t0 = linspace(dt0,nt0*dt0,nt0);
                         % dt1 = 1e-9;
                         % nt1 = 10000;
+                        % t0 = linspace(dt0,nt0*dt0,nt0);
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
                         
@@ -340,16 +342,16 @@ if setProblem
                         % du = 1e-5 mm during the last 1500 time steps (up to u = 20e-3 mm)
                         % dt0 = 1e-7;
                         % nt0 = 50;
-                        % t0 = linspace(dt0,nt0*dt0,nt0);
                         % dt1 = 1e-8;
                         % nt1 = 1500;
+                        % t0 = linspace(dt0,nt0*dt0,nt0);
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
                         
-                        % du = 1e-5 mm during 1500 time steps (up to u = 15e-3 mm)
                         % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
                         % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM],
                         % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+                        % du = 1e-5 mm during 1500 time steps (up to u = 15e-3 mm)
                         dt = 1e-8;
                         nt = 1500;
                         % nt = 2000;
