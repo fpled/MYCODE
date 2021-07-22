@@ -22,6 +22,7 @@ close all
 setProblem = true;
 solveProblem = true;
 displaySolution = false;
+snapshots = false;
 
 test = true; % coarse mesh
 % test = false; % fine mesh
@@ -29,14 +30,15 @@ test = true; % coarse mesh
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Anisotropic'; % 'Anisotropic' or 'Isotropic'. Material symmetry
 loading = 'Tension'; % 'Tension' or 'Shear'
-PFmodel = 'AnisotropicHe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 filename = ['phasefieldDetLinElas' symmetry 'SingleEdgeCrack' loading PFmodel 'Adaptive_' num2str(Dim) 'D'];
-if test
-    filename = [filename '_test'];
-end
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
+if test
+    pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+        'results','phasefield_test',filename);
+end
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -110,7 +112,7 @@ if setProblem
     %% Material
     % Critical energy release rate (or fracture toughness)
     if isequal(lower(symmetry),'isotropic') % isotropic material
-        gc = 2.7e3;
+        gc = 2.7e3; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
         % Regularization parameter (width of the smeared crack)
         % l = 3.75e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
         % l = 3e-5; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
@@ -227,7 +229,6 @@ if setProblem
             elseif Dim==3
                 error('Not implemented yet')
             end
-            %
         otherwise
             error('Wrong material symmetry class');
     end
@@ -238,7 +239,14 @@ if setProblem
     
     % Material
     d = calc_init_dirichlet(S_phase);
-    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+    switch lower(symmetry)
+        case 'isotropic' % isotropic material model for isotropic material only
+            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+        case 'anisotropic' % anisotropic material model for all symmetry classes
+            mat = ELAS_ANISOT('matElas',matElas,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+        otherwise
+            error('Wrong material symmetry class');
+    end
     mat = setnumber(mat,1);
     S = setoption(S,option);
     S = setmaterial(S,mat);
@@ -303,27 +311,26 @@ if setProblem
                         % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
                         dt0 = 1e-8;
                         nt0 = 500;
-                        if test
-                            dt0 = 1e-7;
-                            nt0 = 50;
-                        end
-                        t0 = linspace(dt0,nt0*dt0,nt0);
                         dt1 = 1e-9;
                         nt1 = 1300;
                         if test
+                            dt0 = 1e-7;
+                            nt0 = 50;
                             dt1 = 1e-8;
                             nt1 = 300;
                         end
-                        %
+                        t0 = linspace(dt0,nt0*dt0,nt0);
                         t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         t = [t0,t1];
                         
                         % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+                        % du = 1e-5 mm during 630 time steps (up to u = 6.3e-3 mm)
                         % dt = 1e-8;
                         % nt = 630;
                         % t = linspace(dt,nt*dt,nt);
                         
                         % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
+                        % du = 1e-4 mm during 63 time steps (up to u = 6.3e-3 mm)
                         % dt = 1e-7;
                         % nt = 63;
                         % t = linspace(dt,nt*dt,nt);
@@ -333,9 +340,9 @@ if setProblem
                         % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
                         % dt0 = 1e-7;
                         % nt0 = 50;
-                        % t0 = linspace(dt0,nt0*dt0,nt0);
                         % dt1 = 1e-9;
                         % nt1 = 1300;
+                        % t0 = linspace(dt0,nt0*dt0,nt0);
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
                     case 'shear'
@@ -344,9 +351,9 @@ if setProblem
                         % du = 1e-6 mm during the last 10 000 time steps (up to u = 20e-3 mm)
                         % dt0 = 1e-7;
                         % nt0 = 100;
-                        % t0 = linspace(dt0,nt0*dt0,nt0);
                         % dt1 = 1e-9;
                         % nt1 = 10000;
+                        % t0 = linspace(dt0,nt0*dt0,nt0);
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
                         
@@ -355,15 +362,16 @@ if setProblem
                         % du = 1e-5 mm during the last 1500 time steps (up to u = 20e-3 mm)
                         % dt0 = 1e-7;
                         % nt0 = 50;
-                        % t0 = linspace(dt0,nt0*dt0,nt0);
                         % dt1 = 1e-8;
                         % nt1 = 1500;
+                        % t0 = linspace(dt0,nt0*dt0,nt0);
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
                         
                         % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
                         % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM],
                         % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+                        % du = 1e-5 mm during 1500 time steps (up to u = 15e-3 mm)
                         dt = 1e-8;
                         nt = 1500;
                         % nt = 2000;
@@ -390,34 +398,36 @@ if setProblem
                     case 'tension'
                         % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
                         % du = 6e-5 mm during the first 500 time steps (up to u = 30e-3 mm)
-                        % du = 2e-5 mm during the last 1300 time steps (up to u = 56e-3 mm)
+                        % du = 2e-5 mm during the last 1000 time steps (up to u = 50e-3 mm)
                         dt0 = 6e-8;
                         nt0 = 500;
+                        dt1 = 2e-8;
+                        nt1 = 1000;
                         if test
                             dt0 = 6e-7;
                             nt0 = 50;
-                        end
-                        t0 = linspace(dt0,nt0*dt0,nt0);
-                        dt1 = 2e-8;
-                        nt1 = 1300;
-                        if test
                             dt1 = 2e-7;
-                            nt1 = 130;
+                            nt1 = 100;
                         end
-                        %
-                        t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                        t = [t0,t1];
+                        
                     case 'shear'
-                        dt = 1e-8;
-                        nt = 1500;
-                        % nt = 2000;
+                        % du = 1e-4 mm during the first 600 time steps (up to u = 60e-3 mm)
+                        % du = 1e-5 mm during the last 1000 time steps (up to u = 70e-3 mm)
+                        dt0 = 1e-7;
+                        nt0 = 600;
+                        dt1 = 1e-8;
+                        nt1 = 1000;
                         if test
-                            dt = 6e-7;
-                            % nt = 300;
-                            nt = 400;
+                            dt0 = 1e-6;
+                            nt0 = 60;
+                            dt1 = 1e-7;
+                            nt1 = 100;
                         end
-                        t = linspace(dt,nt*dt,nt);
                 end
+                t0 = linspace(dt0,nt0*dt0,nt0);
+                t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                t = [t0,t1];
+                
             elseif Dim==3
                 dt = 1e-8;
                 nt = 2500;
@@ -497,7 +507,7 @@ if displaySolution
     
     % DO NOT WORK WITH MESH ADAPTATION
     % u = getmatrixatstep(ut,rep(end));
-%     u = ut{rep(end)};
+    % u = ut{rep(end)};
     u = ut{end};
     S_final = St{end};
     
@@ -527,81 +537,123 @@ if displaySolution
     mymatlab2tikz(pathname,'force_displacement.tex');
     
     if Dim~=3
-    %% Display evolution of solutions
-    ampl = 0;
-    % DO NOT WORK WITH MESH ADAPTATION
-    % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
-    % umax = cellfun(@(u) max(abs(u)),ut,'UniformOutput',false);
-    % ampl = getsize(S)/max([umax{:}])/20;
-    
-    options = {'plotiter',true,'plottime',false};
-    framerate = 80;
-    
-    evolModel(T,St,'FrameRate',framerate,'filename','mesh','pathname',pathname,options{:});
-    
-    evolSolutionCell(T,St_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
-    for i=1:Dim
-        evolSolutionCell(T,St,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
-    end
-    
-%     for i=1:(Dim*(Dim+1)/2)
-%         evolSolutionCell(T,St,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
-%         evolSolutionCell(T,St,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
-%     end
-%     
-%     evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
-%     evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
-%     evolSolutionCell(T,St,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
-    
-    %% Display solutions at different instants
-    switch lower(loading)
-        case 'tension'
-            rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-5)<eps | abs(t-6e-6)<eps | abs(t-6.25e-6)<eps);
-        case 'shear'
-            rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps);
-        otherwise
-            error('Wrong loading case')
-    end
-    rep = [rep,length(T)];
-    for j=1:length(rep)
+        %% Display evolution of solutions
+        ampl = 0;
         % DO NOT WORK WITH MESH ADAPTATION
-        % dj = getmatrixatstep(dt,rep(j));
-        % uj = getmatrixatstep(ut,rep(j));
-        dj = dt{rep(j)};
-        uj = ut{rep(j)};
-        Sj = St{rep(j)};
-        Sj_phase = St_phase{rep(j)};
+        % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
+        % umax = cellfun(@(u) max(abs(u)),ut,'UniformOutput',false);
+        % ampl = getsize(S)/max([umax{:}])/20;
         
-        plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
-        mysaveas(pathname,['mesh_t' num2str(rep(j))],formats,renderer);
+        options = {'plotiter',true,'plottime',false};
+        framerate = 80;
         
-        plotSolution(Sj_phase,dj);
-        mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
+        evolModel(T,St,'FrameRate',framerate,'filename','mesh','pathname',pathname,options{:});
         
+        evolSolutionCell(T,St_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
         for i=1:Dim
-            plotSolution(Sj,uj,'displ',i,'ampl',ampl);
-            mysaveas(pathname,['displacement_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
+            evolSolutionCell(T,St,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
         end
         
+        %     for i=1:(Dim*(Dim+1)/2)
+        %         evolSolutionCell(T,St,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
+        %         evolSolutionCell(T,St,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
+        %     end
+        %
+        %     evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
+        %     evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
+        %     evolSolutionCell(T,St,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
+    end
+end
+
+if snapshots
+    [t,~] = gettevol(T);
+    ampl = 0;
+    
+    %% Display solutions at different instants
+    switch lower(symmetry)
+        case 'isotropic'
+            switch lower(loading)
+                case 'tension'
+                    rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-5)<eps | abs(t-6e-6)<eps | abs(t-6.25e-6)<eps);
+                case 'shear'
+                    rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps);
+                otherwise
+                    error('Wrong loading case')
+            end
+        case 'anisotropic'
+            switch lower(loading)
+                case 'tension'
+                    rep = find(abs(t-18e-6)<eps | abs(t-30e-6)<eps | abs(t-32e-6)<eps | abs(t-35e-6)<eps);
+                case 'shear'
+                    rep = find(abs(t-20e-6)<eps | abs(t-30e-6)<eps | abs(t-40e-6)<eps | abs(t-50e-6)<eps);
+                otherwise
+                    error('Wrong loading case')
+            end
+        otherwise
+            error('Wrong material symmetry class');
+    end
+    rep = [rep,length(T)];
+    
+    % DO NOT WORK WITH MESH ADAPTATION
+    % dj = getmatrixatstep(dt,rep(j));
+    % uj = getmatrixatstep(ut,rep(j));
+    
+    % Mesh
+    for j=1:length(rep)
+        Sj = St{rep(j)};
+        plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+        mysaveas(pathname,['mesh_t' num2str(rep(j))],formats,renderer);
+    end
+    
+    % Phase field
+    for j=1:length(rep)
+        dj = dt{rep(j)};
+        Sj_phase = St_phase{rep(j)};
+        plotSolution(Sj_phase,dj);
+        mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
+    end
+    
+%     % Displacement fields
+%     for i=1:Dim
+%         for j=1:length(rep)
+%             uj = ut{rep(j)};
+%             Sj = St{rep(j)};
+%             plotSolution(Sj,uj,'displ',i,'ampl',ampl);
+%             mysaveas(pathname,['displacement_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
+%         end
+%     end
+%     
+%     % Strain fields
+%     for j=1:length(rep)
+%         uj = ut{rep(j)};
+%         Sj = St{rep(j)};
 %         for i=1:(Dim*(Dim+1)/2)
 %             plotSolution(Sj,uj,'epsilon',i,'ampl',ampl);
 %             mysaveas(pathname,['epsilon_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
-%             
+%         end
+%         plotSolution(Sj,uj,'epsilon','mises','ampl',ampl);
+%         mysaveas(pathname,['epsilon_von_mises_t' num2str(rep(j))],formats,renderer);
+%     end
+%     
+%     % Stress fields
+%     for j=1:length(rep)
+%         uj = ut{rep(j)};
+%         Sj = St{rep(j)};
+%         for i=1:(Dim*(Dim+1)/2)
 %             plotSolution(Sj,uj,'sigma',i,'ampl',ampl);
 %             mysaveas(pathname,['sigma_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
 %         end
-%         
-%         plotSolution(Sj,uj,'epsilon','mises','ampl',ampl);
-%         mysaveas(pathname,['epsilon_von_mises_t' num2str(rep(j))],formats,renderer);
-%         
 %         plotSolution(Sj,uj,'sigma','mises','ampl',ampl);
 %         mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
-%         
+%     end
+%     
+%     % Energy field
+%     for j=1:length(rep)
+%         uj = ut{rep(j)};
+%         Sj = St{rep(j)};
 %         plotSolution(Sj,uj,'energyint','','ampl',ampl);
 %         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
-    end
-    end
-    
+%     end
 end
 
 %% Save solutions

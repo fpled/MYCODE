@@ -25,10 +25,10 @@ u = zeros(sz_u,1);
 H = FEELEMFIELD(zeros(sz_H,1),S);
 
 if display_
-    fprintf('\n+----------+-----------+-----------+----------+----------+------------+------------+\n');
-    fprintf('|   Iter   |  u [mm]   |  f [kN]   | Nb nodes | Nb elems |  norm(d)   |  norm(u)   |\n');
-    fprintf('+----------+-----------+-----------+----------+----------+------------+------------+\n');
-    fprintf('| %8d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',0,0,0,getnbnode(S),getnbelem(S),0,0);
+    fprintf('\n+-----------+-----------+-----------+----------+----------+------------+------------+\n');
+    fprintf('|   Iter    |  u [mm]   |  f [kN]   | Nb nodes | Nb elems |  norm(d)   |  norm(u)   |\n');
+    fprintf('+-----------+-----------+-----------+----------+----------+------------+------------+\n');
+    fprintf('| %4d/%4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',0,0,0,0,getnbnode(S),getnbelem(S),0,0);
 end
 
 mats_phase = MATERIALS(S_phase);
@@ -146,12 +146,12 @@ for i=1:length(T)
     St{i} = S;
     
     if display_
-        fprintf('| %8d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),getnbnode(S),getnbelem(S),norm(dt{i}),norm(ut{i}));
+        fprintf('| %4d/%4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',i,length(T),t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),getnbnode(S),getnbelem(S),norm(dt{i}),norm(ut{i}));
     end
 end
 
 if display_
-    fprintf('+----------+-----------+-----------+----------+----------+------------+------------+\n');
+    fprintf('+-----------+-----------+-----------+----------+----------+------------+------------+\n');
 end
 
 % DO NOT WORK WITH MESH ADAPTATION

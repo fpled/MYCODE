@@ -22,7 +22,7 @@ close all
 setProblem = true;
 solveProblem = true;
 displaySolution = false;
-snapshots = true;
+snapshots = false;
 
 test = true; % coarse mesh
 % test = false; % fine mesh
@@ -30,7 +30,7 @@ test = true; % coarse mesh
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Anisotropic'; % 'Anisotropic' or 'Isotropic'. Material symmetry
 loading = 'Tension'; % 'Tension' or 'Shear'
-PFmodel = 'AnisotropicHe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 filename = ['phasefieldDetLinElas' symmetry 'SingleEdgeCrack' loading PFmodel '_' num2str(Dim) 'D'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -188,9 +188,7 @@ if setProblem
             if Dim==2
                 switch lower(option)
                     case 'defo'
-                        % Elastic stiffness tensor matrix in reference coordinate
-                        % system
-                        % [Pa] [Nguyen, Yvonnet, Waldmann, He, 2020,IJNME]
+                        % Elastic stiffness tensor matrix in reference coordinate system [Pa] [Nguyen, Yvonnet, Waldmann, He, 2020,IJNME]
                         matElas = 1e9*[65 20 0;
                             20 260 0;
                             0 0 30];
@@ -527,9 +525,8 @@ if displaySolution
 end
 
 if snapshots
-    [t,rep] = gettevol(T);
+    [t,~] = gettevol(T);
     ampl = 0;
-    
     %% Display solutions at different instants
     switch lower(symmetry)
         case 'isotropic'
@@ -562,46 +559,44 @@ if snapshots
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
     end
     
-    %     % Displacement fields
-    %     for i=1:Dim
-    %         for j=1:length(rep)
-    %             uj = getmatrixatstep(ut,rep(j));
-    %             plotSolution(S,uj,'displ',i,'ampl',ampl);
-    %             mysaveas(pathname,['displacement_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
-    %         end
-    %     end
-    
-    %     % Strain fields
-    %     for j=1:length(rep)
-    %         uj = getmatrixatstep(ut,rep(j));
-    %         for i=1:(Dim*(Dim+1)/2)
-    %             plotSolution(S,uj,'epsilon',i,'ampl',ampl);
-    %             mysaveas(pathname,['epsilon_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
-    %         end
-    %         plotSolution(S,uj,'epsilon','mises','ampl',ampl);
-    %         mysaveas(pathname,['epsilon_von_mises_t' num2str(rep(j))],formats,renderer);
-    %     end
-    %
-    %     % Stress fields
-    %     for j=1:length(rep)
-    %         uj = getmatrixatstep(ut,rep(j));
-    %         for i=1:(Dim*(Dim+1)/2)
-    %             plotSolution(S,uj,'sigma',i,'ampl',ampl);
-    %             mysaveas(pathname,['sigma_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
-    %         end
-    %         plotSolution(S,uj,'sigma','mises','ampl',ampl);
-    %         mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
-    %     end
-    %
-    %     % Energy field
-    %     for j=1:length(rep)
-    %         uj = getmatrixatstep(ut,rep(j));
-    %         plotSolution(S,uj,'energyint','','ampl',ampl);
-    %         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
-    %     end
+%     % Displacement fields
+%     for i=1:Dim
+%         uj = getmatrixatstep(ut,rep(j));
+%         for j=1:length(rep)
+%             plotSolution(S,uj,'displ',i,'ampl',ampl);
+%             mysaveas(pathname,['displacement_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
+%         end
+%     end
+%     
+%     % Strain fields
+%     for j=1:length(rep)
+%         uj = getmatrixatstep(ut,rep(j));
+%         for i=1:(Dim*(Dim+1)/2)
+%             plotSolution(S,uj,'epsilon',i,'ampl',ampl);
+%             mysaveas(pathname,['epsilon_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
+%         end
+%         plotSolution(S,uj,'epsilon','mises','ampl',ampl);
+%         mysaveas(pathname,['epsilon_von_mises_t' num2str(rep(j))],formats,renderer);
+%     end
+%     
+%     % Stress fields
+%     for j=1:length(rep)
+%         uj = getmatrixatstep(ut,rep(j));
+%         for i=1:(Dim*(Dim+1)/2)
+%             plotSolution(S,uj,'sigma',i,'ampl',ampl);
+%             mysaveas(pathname,['sigma_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
+%         end
+%         plotSolution(S,uj,'sigma','mises','ampl',ampl);
+%         mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
+%     end
+%     
+%     % Energy field
+%     for j=1:length(rep)
+%         uj = getmatrixatstep(ut,rep(j));
+%         plotSolution(S,uj,'energyint','','ampl',ampl);
+%         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
+%     end
 end
-
-
 
 %% Save solutions
 [t,rep] = gettevol(T);

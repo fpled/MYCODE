@@ -16,9 +16,9 @@ u = zeros(sz_u,1);
 H = calc_energyint(S,u,'positive');
 
 if display_
-    fprintf('\n+----------+-----------+-----------+------------+------------+\n');
-    fprintf('|   Iter   |  u [mm]   |  f [kN]   |  norm(d)   |  norm(u)   |\n');
-    fprintf('+----------+-----------+-----------+------------+------------+\n');
+    fprintf('\n+-----------+-----------+-----------+------------+------------+\n');
+    fprintf('|   Iter    |  u [mm]   |  f [kN]   |  norm(d)   |  norm(u)   |\n');
+    fprintf('+-----------+-----------+-----------+------------+------------+\n');
 end
 
 mats_phase = MATERIALS(S_phase);
@@ -84,12 +84,12 @@ for i=1:length(T)
     ft(i) = f;
     
     if display_
-        fprintf('| %8d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*1e-6,norm(dt{i}),norm(ut{i}));
+        fprintf('| %4d/%4d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,length(T),t(i)*1e3,ft(i)*1e-6,norm(dt{i}),norm(ut{i}));
     end
 end
 
 if display_
-    fprintf('+----------+-----------+-----------+------------+------------+\n');
+    fprintf('+-----------+-----------+-----------+------------+------------+\n');
 end
 
 dt = TIMEMATRIX(dt,T,[sz_d,1]);

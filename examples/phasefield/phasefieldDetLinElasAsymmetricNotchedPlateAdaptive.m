@@ -24,19 +24,22 @@ close all
 setProblem = true;
 solveProblem = true;
 displaySolution = false;
+snapshots = false;
 
 test = true; % coarse mesh
 % test = false; % fine mesh
 
 setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
+Dim = 2;
 PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel 'Adaptive'];
-if test
-    filename = [filename '_test'];
-end
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
+if test
+    pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+        'results','phasefield_test',filename);
+end
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -55,20 +58,20 @@ mmgoptions = '-nomove -hausd 0.01 -hgrad 1.1 -v -1';
 %% Problem
 if setProblem
     %% Domains and meshes
-    unit = 1e-3; % for mm % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], 
+    unit = 1e-3; % for mm % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME],
     % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Passieux, Rethore, Gravouil, Baietto, 2013, CM]
-    % unit = 25.4e-3; % for inch % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], 
+    % unit = 25.4e-3; % for inch % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM],
     % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     switch setup
-        case 1 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME], 
-            % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME], [Geniaut, Galenne,2012, IJSS], 
+        case 1 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME],
+            % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME], [Geniaut, Galenne,2012, IJSS],
             % [Passieux, Rethore, Gravouil, Baietto, 2013, CM]
             a = 1.5*unit; % crack length
             b = 5*unit; % crack offset from the centerline
-        case 2 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME], 
-            % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME], 
-            % [Geniaut, Galenne, 2012, IJSS], [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Ambati, Gerasimov, De Lorenzis, 2015, CM], 
-            % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], 
+        case 2 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME],
+            % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME],
+            % [Geniaut, Galenne, 2012, IJSS], [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Ambati, Gerasimov, De Lorenzis, 2015, CM],
+            % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME],
             % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
             a = 1*unit; % crack length
             b = 6*unit; % crack offset from the centerline
@@ -242,9 +245,15 @@ if setProblem
     % du = 1e-4 mm during the last  500 time steps (up to u = 0.25 mm)
     dt0 = 1e-3*unit;
     nt0 = 200;
-    t0 = linspace(dt0,nt0*dt0,nt0);
     dt1 = 1e-4*unit;
     nt1 = 500;
+    if test
+        dt0 = 2e-3*unit;
+        nt0 = 100;
+        dt1 = 2e-4*unit;
+        nt1 = 250;
+    end
+    t0 = linspace(dt0,nt0*dt0,nt0);
     t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
     t = [t0,t1];
     
@@ -281,7 +290,7 @@ fprintf('elapsed time = %f s\n',time);
 
 %% Display
 if displaySolution
-    [t,rep] = gettevol(T);
+    [t,~] = gettevol(T);
     
     %% Display domains, boundary conditions and meshes
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
@@ -303,7 +312,7 @@ if displaySolution
     
     % DO NOT WORK WITH MESH ADAPTATION
     % u = getmatrixatstep(ut,rep(end));
-%     u = ut{rep(end)};
+    %     u = ut{rep(end)};
     u = ut{end};
     S_final = St{end};
     
@@ -349,15 +358,19 @@ if displaySolution
         evolSolutionCell(T,St,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
     end
     
-%     for i=1:3
-%         evolSolutionCell(T,St,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
-%         evolSolutionCell(T,St,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
-%     end
-%     
-%     evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
-%     evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
-%     evolSolutionCell(T,St,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
-    
+    %     for i=1:3
+    %         evolSolutionCell(T,St,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
+    %         evolSolutionCell(T,St,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
+    %     end
+    %
+    %     evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
+    %     evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
+    %     evolSolutionCell(T,St,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
+end
+
+if snapshots
+    [t,~] = gettevol(T);
+    ampl = 0;
     %% Display solutions at different instants
     switch setup
         case {1,4,5}
@@ -366,44 +379,67 @@ if displaySolution
             rep = find(abs(t-0.210*unit)<eps | abs(t-0.215*unit)<eps | abs(t-0.218*unit)<eps | abs(t-0.219*unit)<eps | abs(t-0.220*unit)<eps | abs(t-0.222*unit)<eps);
     end
     rep = [rep,length(T)];
+    
+    % DO NOT WORK WITH MESH ADAPTATION
+    % dj = getmatrixatstep(dt,rep(j));
+    % uj = getmatrixatstep(ut,rep(j));
+    
+    % Mesh
     for j=1:length(rep)
-        % DO NOT WORK WITH MESH ADAPTATION
-        % dj = getmatrixatstep(dt,rep(j));
-        % uj = getmatrixatstep(ut,rep(j));
-        dj = dt{rep(j)};
-        uj = ut{rep(j)};
         Sj = St{rep(j)};
-        Sj_phase = St_phase{rep(j)};
-        
         plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
         mysaveas(pathname,['mesh_t' num2str(rep(j))],formats,renderer);
-        
+    end
+    
+    % Phase field
+    for j=1:length(rep)
+        dj = dt{rep(j)};
+        Sj_phase = St_phase{rep(j)};
         plotSolution(Sj_phase,dj);
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
-        
-        for i=1:2
-            plotSolution(Sj,uj,'displ',i,'ampl',ampl);
-            mysaveas(pathname,['displacement_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
-        end
-        
-%         for i=1:3
+    end
+    
+%     % Displacement fields
+%     for i=1:Dim
+%         for j=1:length(rep)
+%             uj = ut{rep(j)};
+%             Sj = St{rep(j)};
+%             plotSolution(Sj,uj,'displ',i,'ampl',ampl);
+%             mysaveas(pathname,['displacement_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
+%         end
+%     end
+%     
+%     % Strain fields
+%     for j=1:length(rep)
+%         uj = ut{rep(j)};
+%         Sj = St{rep(j)};
+%         for i=1:(Dim*(Dim+1)/2)
 %             plotSolution(Sj,uj,'epsilon',i,'ampl',ampl);
 %             mysaveas(pathname,['epsilon_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
-%             
+%         end
+%         plotSolution(Sj,uj,'epsilon','mises','ampl',ampl);
+%         mysaveas(pathname,['epsilon_von_mises_t' num2str(rep(j))],formats,renderer);
+%     end
+%     
+%     % Stress fields
+%     for j=1:length(rep)
+%         uj = ut{rep(j)};
+%         Sj = St{rep(j)};
+%         for i=1:(Dim*(Dim+1)/2)
 %             plotSolution(Sj,uj,'sigma',i,'ampl',ampl);
 %             mysaveas(pathname,['sigma_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
 %         end
-%         
-%         plotSolution(Sj,uj,'epsilon','mises','ampl',ampl);
-%         mysaveas(pathname,['epsilon_von_mises_t' num2str(rep(j))],formats,renderer);
-%         
 %         plotSolution(Sj,uj,'sigma','mises','ampl',ampl);
 %         mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
-%         
+%     end
+%     
+%     % Energy field
+%     for j=1:length(rep)
+%         uj = ut{rep(j)};
+%         Sj = St{rep(j)};
 %         plotSolution(Sj,uj,'energyint','','ampl',ampl);
 %         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
-    end
-    
+%     end
 end
 
 %% Save solutions
