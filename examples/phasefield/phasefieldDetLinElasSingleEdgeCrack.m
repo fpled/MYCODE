@@ -28,10 +28,10 @@ test = true; % coarse mesh
 % test = false; % fine mesh
 
 Dim = 2; % space dimension Dim = 2, 3
-symmetry = 'Isotropic'; % 'Anisotropic' or 'Isotropic'. Material symmetry
-isotropicTest = false; % for test purposes (configutation of isotropic material with the anisotropic class). Work only for "Dim = 2", "symmetry = 'Anisotropic'" and "test = true".
+symmetry = 'Anisotropic'; % 'Anisotropic' or 'Isotropic'. Material symmetry
+isotropicTest = true; % for test purposes (configuration of isotropic material with the anisotropic class). Work only for "Dim = 2" and "symmetry = 'Anisotropic'".
 loading = 'Tension'; % 'Tension' or 'Shear'
-PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFmodel = 'AnisotropicHe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 filename = ['phasefieldDetLinElas' symmetry 'SingleEdgeCrack' loading PFmodel '_' num2str(Dim) 'D'];
 if isotropicTest
@@ -318,7 +318,7 @@ if setProblem
                             dt0 = 1e-7;
                             nt0 = 50;
                             dt1 = 1e-8;
-                            nt1 = 300;
+                            nt1 = 400;
                         end
                         t0 = linspace(dt0,nt0*dt0,nt0);
                         t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
@@ -432,16 +432,26 @@ if setProblem
                 if isotropicTest
                     switch lower(loading)
                         case 'tension'
-                            dt0 = 1e-7;
-                            nt0 = 50;
-                            dt1 = 1e-8;
-                            nt1 = 300;
+                            dt0 = 1e-8;
+                            nt0 = 500;
+                            dt1 = 1e-9;
+                            nt1 = 1300;
+                            if test
+                                dt0 = 1e-7;
+                                nt0 = 50;
+                                dt1 = 1e-8;
+                                nt1 = 400;
+                            end
                             t0 = linspace(dt0,nt0*dt0,nt0);
                             t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                             t = [t0,t1];
                         case 'shear'
-                            dt = 5e-8;
-                            nt = 400;
+                            dt = 1e-8;
+                            nt = 1500;
+                            if test
+                                dt = 5e-8;
+                                nt = 400;
+                            end
                             t = linspace(dt,nt*dt,nt);
                     end
                 end
