@@ -21,8 +21,10 @@ close all
 %% Input data
 setProblem = true;
 solveProblem = true;
+displayModel = false;
 displaySolution = false;
-snapshots = false;
+makeMovie = false;
+saveParaview = false;
 
 test = true; % coarse mesh
 % test = false; % fine mesh
@@ -31,7 +33,7 @@ Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Anisotropic'; % 'Anisotropic' or 'Isotropic'. Material symmetry
 isotropicTest = false; % for test purposes (configuration of isotropic material with the anisotropic class). Work only for "Dim = 2" and "symmetry = 'Anisotropic'".
 loading = 'Tension'; % 'Tension' or 'Shear'
-PFmodel = 'AnisotropicHe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 filename = ['phasefieldDetLinElas' symmetry 'SingleEdgeCrack' loading PFmodel '_' num2str(Dim) 'D'];
 if isotropicTest
@@ -502,9 +504,8 @@ fprintf('nb time dofs = %g\n',getnbtimedof(T));
 fprintf('elapsed time = %f s\n',time);
 
 %% Display
-if displaySolution
+if displayModel
     [t,rep] = gettevol(T);
-    
     %% Display domains, boundary conditions and meshes
     plotDomain({D,C},'legend',false);
     mysaveas(pathname,'domain',formats,renderer);
@@ -537,6 +538,11 @@ if displaySolution
     plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
     plot(S+ampl*unfreevector(S,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
+end
+
+%% Display solutions
+if displaySolution
+    [t,~] = gettevol(T);
     
     %% Display force-displacement curve
     figure('Name','Force-displacement')
@@ -550,34 +556,8 @@ if displaySolution
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
-    if Dim~=3
-        %% Display evolution of solutions
-        ampl = 0;
-        % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
-        
-        options = {'plotiter',true,'plottime',false};
-        framerate = 80;
-        
-        evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
-        for i=1:Dim
-            evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
-        end
-        
-        %     for i=1:(Dim*(Dim+1)/2)
-        %         evolSolution(S,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
-        %         evolSolution(S,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
-        %     end
-        %
-        %     evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
-        %     evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
-        %     evolSolution(S,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
-    end
-end
-
-if snapshots
-    [t,~] = gettevol(T);
-    ampl = 0;
     %% Display solutions at different instants
+    ampl = 0;
     switch lower(symmetry)
         case 'isotropic'
             switch lower(loading)
@@ -609,16 +589,16 @@ if snapshots
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
     end
     
-    %     % Displacement fields
+    %     % Displacement field
     %     for i=1:Dim
-    %         uj = getmatrixatstep(ut,rep(j));
     %         for j=1:length(rep)
+    %             uj = getmatrixatstep(ut,rep(j));
     %             plotSolution(S,uj,'displ',i,'ampl',ampl);
     %             mysaveas(pathname,['displacement_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
     %         end
     %     end
     %
-    %     % Strain fields
+    %     % Strain field
     %     for j=1:length(rep)
     %         uj = getmatrixatstep(ut,rep(j));
     %         for i=1:(Dim*(Dim+1)/2)
@@ -629,7 +609,7 @@ if snapshots
     %         mysaveas(pathname,['epsilon_von_mises_t' num2str(rep(j))],formats,renderer);
     %     end
     %
-    %     % Stress fields
+    %     % Stress field
     %     for j=1:length(rep)
     %         uj = getmatrixatstep(ut,rep(j));
     %         for i=1:(Dim*(Dim+1)/2)
@@ -648,16 +628,41 @@ if snapshots
     %     end
 end
 
-%% Save solutions
-[t,rep] = gettevol(T);
-for i=1:length(T)
-    di = getmatrixatstep(dt,rep(i));
-    ui = getmatrixatstep(ut,rep(i));
+%% Display evolution of solutions
+if makeMovie && Dim~=3
+    ampl = 0;
+    % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
     
-    write_vtk_mesh(S,{di,ui},[],...
-        {'damage','displacement'},[],...
-        pathname,'solution',1,i-1);
+    options = {'plotiter',true,'plottime',false};
+    framerate = 80;
+    
+    evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
+    for i=1:Dim
+        evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
+    end
+    
+    %     for i=1:(Dim*(Dim+1)/2)
+    %         evolSolution(S,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
+    %         evolSolution(S,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
+    %     end
+    %
+    %     evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
+    %     evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
+    %     evolSolution(S,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
 end
-make_pvd_file(pathname,'solution',1,length(T));
+
+%% Save solutions
+if saveParaview
+    [t,rep] = gettevol(T);
+    for i=1:length(T)
+        di = getmatrixatstep(dt,rep(i));
+        ui = getmatrixatstep(ut,rep(i));
+        
+        write_vtk_mesh(S,{di,ui},[],...
+            {'damage','displacement'},[],...
+            pathname,'solution',1,i-1);
+    end
+    make_pvd_file(pathname,'solution',1,length(T));
+end
 
 % myparallel('stop');
