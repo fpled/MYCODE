@@ -29,7 +29,7 @@ test = true; % coarse mesh
 
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Anisotropic'; % 'Anisotropic' or 'Isotropic'. Material symmetry
-isotropicTest = true; % for test purposes (configuration of isotropic material with the anisotropic class). Work only for "Dim = 2" and "symmetry = 'Anisotropic'".
+isotropicTest = false; % for test purposes (configuration of isotropic material with the anisotropic class). Work only for "Dim = 2" and "symmetry = 'Anisotropic'".
 loading = 'Tension'; % 'Tension' or 'Shear'
 PFmodel = 'AnisotropicHe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
