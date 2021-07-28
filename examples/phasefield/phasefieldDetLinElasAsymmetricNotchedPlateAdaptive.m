@@ -26,14 +26,14 @@ solveProblem = true;
 displayModel = false;
 displaySolution = false;
 makeMovie = false;
-saveParaview = false;
+saveParaview = true;
 
 test = true; % coarse mesh
 % test = false; % fine mesh
 
 setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
 Dim = 2;
-PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel 'Adaptive'];
 
@@ -272,13 +272,13 @@ end
 if solveProblem
     tTotal = tic;
     
-    [dt,ut,ft,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
+    [dt,ut,ft,dinct,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','dinct','St_phase','St','time');
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','dinct','St_phase','St','time');
 end
 
 %% Outputs
@@ -457,11 +457,12 @@ if saveParaview
         % ui = getmatrixatstep(ut,rep(i));
         di = dt{rep(i)};
         ui = ut{rep(i)};
+        dincti = dinct{rep(i)};
         Si = St{rep(i)};
         % Si_phase = St_phase{rep(i)};
         
-        write_vtk_mesh(Si,{di,ui},[],...
-            {'damage','displacement'},[],...
+        write_vtk_mesh(Si,{di,ui,dincti},[],...
+            {'damage','displacement','damage increment'},[],...
             pathname,'solution',1,i-1);
     end
     make_pvd_file(pathname,'solution',1,length(T));

@@ -1,5 +1,5 @@
-function [dt,ut,ft,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
-% function [dt,ut,ft,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+function [dt,ut,ft,dinct,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+% function [dt,ut,ft,dinct,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
 % Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);
@@ -15,6 +15,8 @@ t = gett(T);
 dt = cell(1,length(T));
 ut = cell(1,length(T));
 ft = zeros(1,length(T));
+dinct = cell(1,length(T)); % increment of phase field
+tol = 1e-12;
 St_phase = cell(1,length(T));
 St = cell(1,length(T));
 
@@ -22,6 +24,7 @@ sz_d = getnbddl(S_phase);
 sz_u = getnbddl(S);
 sz_H = getnbelem(S);
 u = zeros(sz_u,1);
+d = zeros(sz_d,1);
 H = FEELEMFIELD(zeros(sz_H,1),S);
 
 if display_
@@ -62,8 +65,12 @@ for i=1:length(T)
     [A_phase,b_phase] = calc_rigi(S_phase);
     b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
     
+    dold = d;
     d = A_phase\b_phase;
     d = unfreevector(S_phase,d);
+    dinc = d - dold;
+    
+    if ~isempty(find(dinc<-tol,1)), fprintf('Irreversibility error\n'), end
     
     % Mesh adaptation
     mats = MATERIALS(S);
@@ -142,6 +149,7 @@ for i=1:length(T)
     dt{i} = d;
     ut{i} = u;
     ft(i) = f;
+    dinct{i} = dinc;
     St_phase{i} = S_phase;
     St{i} = S;
     

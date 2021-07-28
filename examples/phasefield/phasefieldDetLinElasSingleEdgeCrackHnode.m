@@ -24,16 +24,16 @@ solveProblem = true;
 displayModel = false;
 displaySolution = false;
 makeMovie = false;
-saveParaview = false;
+saveParaview = true;
 
 test = true; % coarse mesh
 % test = false; % fine mesh
 
 Dim = 2; % space dimension Dim = 2, 3
-symmetry = 'Anisotropic'; % 'Anisotropic' or 'Isotropic'. Material symmetry
+symmetry = 'Isotropic'; % 'Anisotropic' or 'Isotropic'. Material symmetry
 isotropicTest = false; % for test purposes (configuration of isotropic material with the anisotropic class). Work only for "Dim = 2" and "symmetry = 'Anisotropic'".
 loading = 'Tension'; % 'Tension' or 'Shear'
-PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 filename = ['phasefieldDetLinElas' symmetry 'SingleEdgeCrack' loading PFmodel 'Hnode_' num2str(Dim) 'D'];
 if isotropicTest
@@ -482,13 +482,13 @@ end
 if solveProblem
     tTotal = tic;
     
-    [dt,ut,ft] = solvePFDetLinElasSingleEdgeCrackHnode(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
+    [dt,ut,ft,dinct] = solvePFDetLinElasSingleEdgeCrackHnode(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','dinct','time');
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','dinct','time');
 end
 
 %% Outputs
@@ -657,9 +657,10 @@ if saveParaview
     for i=1:length(T)
         di = getmatrixatstep(dt,rep(i));
         ui = getmatrixatstep(ut,rep(i));
+        dincti = getmatrixatstep(dinct,rep(i));
         
-        write_vtk_mesh(S,{di,ui},[],...
-            {'damage','displacement'},[],...
+        write_vtk_mesh(S,{di,ui,dincti},[],...
+            {'damage','displacement','damage increment'},[],...
             pathname,'solution',1,i-1);
     end
     make_pvd_file(pathname,'solution',1,length(T));
