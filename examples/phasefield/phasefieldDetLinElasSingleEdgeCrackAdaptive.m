@@ -24,16 +24,16 @@ solveProblem = true;
 displayModel = false;
 displaySolution = false;
 makeMovie = false;
-saveParaview = true;
+saveParaview = false;
 
 test = true; % coarse mesh
 % test = false; % fine mesh
 
 Dim = 2; % space dimension Dim = 2, 3
-symmetry = 'Isotropic'; % 'Anisotropic' or 'Isotropic'. Material symmetry
+symmetry = 'Anisotropic'; % 'Anisotropic' or 'Isotropic'. Material symmetry
 isotropicTest = false; % for test purposes (configuration of isotropic material with the anisotropic class). Work only for "Dim = 2" and "symmetry = 'Anisotropic'".
 loading = 'Tension'; % 'Tension' or 'Shear'
-PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 filename = ['phasefieldDetLinElas' symmetry 'SingleEdgeCrack' loading PFmodel 'Adaptive_' num2str(Dim) 'D'];
 if isotropicTest

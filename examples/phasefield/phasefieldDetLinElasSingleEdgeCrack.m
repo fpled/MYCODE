@@ -30,10 +30,10 @@ test = true; % coarse mesh
 % test = false; % fine mesh
 
 Dim = 2; % space dimension Dim = 2, 3
-symmetry = 'Isotropic'; % 'Anisotropic' or 'Isotropic'. Material symmetry
+symmetry = 'Anisotropic'; % 'Anisotropic' or 'Isotropic'. Material symmetry
 isotropicTest = false; % for test purposes (configuration of isotropic material with the anisotropic class). Work only for "Dim = 2" and "symmetry = 'Anisotropic'".
 loading = 'Tension'; % 'Tension' or 'Shear'
-PFmodel = 'AnisotropicHe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 filename = ['phasefieldDetLinElas' symmetry 'SingleEdgeCrack' loading PFmodel '_' num2str(Dim) 'D'];
 if isotropicTest
