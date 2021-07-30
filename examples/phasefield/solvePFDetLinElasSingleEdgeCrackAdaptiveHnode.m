@@ -1,5 +1,5 @@
-function [dt,ut,ft,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptiveHnode(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
-% function [dt,ut,ft,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptiveHnode(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+function [dt,ut,ft,dinct,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptiveHnode(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+% function [dt,ut,ft,dinct,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptiveHnode(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
 % Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);
@@ -15,12 +15,15 @@ t = gett(T);
 dt = cell(1,length(T));
 ut = cell(1,length(T));
 ft = zeros(1,length(T));
+dinct = cell(1,length(T)); % increment of phase field
+tol = 1e-12;
 St_phase = cell(1,length(T));
 St = cell(1,length(T));
 
 sz_d = getnbddl(S_phase);
 sz_u = getnbddl(S);
 u = zeros(sz_u,1);
+d = zeros(sz_d,1);
 H = zeros(sz_d,1);
 
 if display_
@@ -56,6 +59,7 @@ for i=1:length(T)
     [A_phase,b_phase] = calc_rigi(S_phase);
     b_phase = -b_phase + bodyload(S_phase,[],'QN',FENODEFIELD(2*H));
     
+    dold = d;
     d = A_phase\b_phase;
     d = unfreevector(S_phase,d);
     
@@ -76,6 +80,15 @@ for i=1:length(T)
     % Update fields
     P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
     d = P_phase'*d;
+    dold = P_phase'*dold;
+    dinc = d - dold;
+    
+    if i==1 % first increment put to 0 instead of being equal to the initial phase field
+        dinc = zeros(getnbddl(S_phase),1);
+    end
+    
+    if ~isempty(find(dinc<-tol,1)), fprintf('Irreversibility error\n'), end
+    
     h = P_phase'*h;
     H = setvalue(H,h);
     
@@ -137,6 +150,7 @@ for i=1:length(T)
     dt{i} = d;
     ut{i} = u;
     ft(i) = f;
+    dinct{i} = dinc;
     St_phase{i} = S_phase;
     St{i} = S;
     
