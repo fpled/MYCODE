@@ -62,9 +62,6 @@ for i=1:length(T)
     dold = d;
     d = A_phase\b_phase;
     d = unfreevector(S_phase,d);
-    dinc = d - dold;
-    
-    if ~isempty(find(dinc<-tol,1)), fprintf('Irreversibility error\n'), end
     
     % Mesh adaptation
     mats = MATERIALS(S);
@@ -83,6 +80,15 @@ for i=1:length(T)
     % Update fields
     P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
     d = P_phase'*d;
+    dold = P_phase'*dold;
+    dinc = d - dold;
+    
+    if i==1 % first increment put to 0 instead of being equal to the initial phase field
+        dinc = zeros(getnbddl(S_phase),1);
+    end
+    
+    if ~isempty(find(dinc<-tol,1)), fprintf('Irreversibility error\n'), end
+    
     h = P_phase'*h;
     H = setvalue(H,h);
     
