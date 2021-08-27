@@ -20,11 +20,9 @@ tol = 1e-12;
 St_phase = cell(1,length(T));
 St = cell(1,length(T));
 
-sz_d = getnbddl(S_phase);
-sz_u = getnbddl(S);
-u = zeros(sz_u,1);
-d = zeros(sz_d,1);
-H = zeros(sz_d,1);
+u = calc_init_dirichlet(S);
+d = calc_init_dirichlet(S_phase);
+H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
 
 if display_
     fprintf('\n+-----------+-----------+-----------+----------+----------+------------+------------+\n');
@@ -82,12 +80,7 @@ for i=1:length(T)
     d = P_phase'*d;
     dold = P_phase'*dold;
     dinc = d - dold;
-    
-    if i==1 % first increment put to 0 instead of being equal to the initial phase field
-        dinc = zeros(getnbddl(S_phase),1);
-    end
-    
-    if ~isempty(find(dinc<-tol,1)), fprintf('Irreversibility error\n'), end
+    % dincmin = min(dinc); if dincmin<-tol, dincmin, end
     
     h = P_phase'*h;
     H = setvalue(H,h);
@@ -162,9 +155,5 @@ end
 if display_
     fprintf('+-----------+-----------+-----------+----------+----------+------------+------------+\n');
 end
-
-% DO NOT WORK WITH MESH ADAPTATION
-% dt = TIMEMATRIX(dt,T,[sz_d,1]);
-% ut = TIMEMATRIX(ut,T,[sz_u,1]);
 
 end

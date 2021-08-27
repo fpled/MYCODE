@@ -31,8 +31,8 @@ saveParaview = false;
 test = true; % coarse mesh
 % test = false; % fine mesh
 
-setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
 Dim = 2;
+setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
 PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel 'Adaptive'];
@@ -285,15 +285,16 @@ end
 fprintf('\n');
 fprintf('setup    = %d\n',setup);
 fprintf('PF model = %s\n',PFmodel);
-fprintf('initial nb elements  = %g\n',getnbelem(S));
-fprintf('initial nb nodes    = %g\n',getnbnode(S));
-fprintf('initial nb dofs     = %g\n',getnbddl(S));
+fprintf('nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
+fprintf('nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));
+fprintf('nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));
 fprintf('nb time dofs = %g\n',getnbtimedof(T));
 fprintf('elapsed time = %f s\n',time);
 
 %% Display
 if displayModel
     [t,rep] = gettevol(T);
+    
     %% Display domains, boundary conditions and meshes
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;
@@ -312,8 +313,6 @@ if displayModel
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_init',formats,renderer);
     
-    % DO NOT WORK WITH MESH ADAPTATION
-    % u = getmatrixatstep(ut,rep(end));
     % u = ut{rep(end)};
     u = ut{end};
     S_final = St{end};
@@ -358,73 +357,45 @@ if displaySolution
     end
     rep = [rep,length(T)];
     
-    % DO NOT WORK WITH MESH ADAPTATION
-    % dj = getmatrixatstep(dt,rep(j));
-    % uj = getmatrixatstep(ut,rep(j));
-    
-    % Mesh
-    for j=1:length(rep)
-        Sj = St{rep(j)};
-        plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
-        mysaveas(pathname,['mesh_t' num2str(rep(j))],formats,renderer);
-    end
-    
-    % Phase field
     for j=1:length(rep)
         dj = dt{rep(j)};
+        uj = ut{rep(j)};
+        Sj = St{rep(j)};
         Sj_phase = St_phase{rep(j)};
+        
+        plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+        mysaveas(pathname,['mesh_t' num2str(rep(j))],formats,renderer);
+        
         plotSolution(Sj_phase,dj);
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
+        
+        for i=1:Dim
+            plotSolution(Sj,uj,'displ',i,'ampl',ampl);
+            mysaveas(pathname,['displacement_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
+        end
+        
+        % for i=1:(Dim*(Dim+1)/2)
+        %     plotSolution(Sj,uj,'epsilon',i,'ampl',ampl);
+        %     mysaveas(pathname,['epsilon_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
+        %
+        %     plotSolution(Sj,uj,'sigma',i,'ampl',ampl);
+        %     mysaveas(pathname,['sigma_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
+        % end
+        %
+        % plotSolution(Sj,uj,'epsilon','mises','ampl',ampl);
+        % mysaveas(pathname,['epsilon_von_mises_t' num2str(rep(j))],formats,renderer);
+        %
+        % plotSolution(Sj,uj,'sigma','mises','ampl',ampl);
+        % mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
+        %
+        % plotSolution(Sj,uj,'energyint','','ampl',ampl);
+        % mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
     end
-    
-    %     % Displacement field
-    %     for i=1:Dim
-    %         for j=1:length(rep)
-    %             uj = ut{rep(j)};
-    %             Sj = St{rep(j)};
-    %             plotSolution(Sj,uj,'displ',i,'ampl',ampl);
-    %             mysaveas(pathname,['displacement_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
-    %         end
-    %     end
-    %
-    %     % Strain field
-    %     for j=1:length(rep)
-    %         uj = ut{rep(j)};
-    %         Sj = St{rep(j)};
-    %         for i=1:(Dim*(Dim+1)/2)
-    %             plotSolution(Sj,uj,'epsilon',i,'ampl',ampl);
-    %             mysaveas(pathname,['epsilon_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
-    %         end
-    %         plotSolution(Sj,uj,'epsilon','mises','ampl',ampl);
-    %         mysaveas(pathname,['epsilon_von_mises_t' num2str(rep(j))],formats,renderer);
-    %     end
-    %
-    %     % Stress field
-    %     for j=1:length(rep)
-    %         uj = ut{rep(j)};
-    %         Sj = St{rep(j)};
-    %         for i=1:(Dim*(Dim+1)/2)
-    %             plotSolution(Sj,uj,'sigma',i,'ampl',ampl);
-    %             mysaveas(pathname,['sigma_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
-    %         end
-    %         plotSolution(Sj,uj,'sigma','mises','ampl',ampl);
-    %         mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
-    %     end
-    %
-    %     % Energy field
-    %     for j=1:length(rep)
-    %         uj = ut{rep(j)};
-    %         Sj = St{rep(j)};
-    %         plotSolution(Sj,uj,'energyint','','ampl',ampl);
-    %         mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
-    %     end
 end
 
 %% Display evolution of solutions
 if makeMovie
     ampl = 0;
-    % DO NOT WORK WITH MESH ADAPTATION
-    % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
     % umax = cellfun(@(u) max(abs(u)),ut,'UniformOutput',false);
     % ampl = getsize(S)/max([umax{:}])/20;
     
@@ -438,23 +409,20 @@ if makeMovie
         evolSolutionCell(T,St,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
     end
     
-    %     for i=1:(Dim*(Dim+1)/2)
-    %         evolSolutionCell(T,St,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
-    %         evolSolutionCell(T,St,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
-    %     end
+    % for i=1:(Dim*(Dim+1)/2)
+    %     evolSolutionCell(T,St,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
+    %     evolSolutionCell(T,St,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
+    % end
     %
-    %     evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
-    %     evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
-    %     evolSolutionCell(T,St,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
+    % evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
+    % evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
+    % evolSolutionCell(T,St,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
 end
 
 %% Save solutions
 if saveParaview
     [t,rep] = gettevol(T);
     for i=1:length(T)
-        % DO NOT WORK WITH MESH ADAPTATION
-        % di = getmatrixatstep(dt,rep(i));
-        % ui = getmatrixatstep(ut,rep(i));
         di = dt{rep(i)};
         ui = ut{rep(i)};
         dincti = dinct{rep(i)};
