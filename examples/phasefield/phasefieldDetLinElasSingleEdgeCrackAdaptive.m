@@ -1,4 +1,4 @@
-d%% Phase field fracture model - deterministic linear elasticity problem with single edge crack %%
+%% Phase field fracture model - deterministic linear elasticity problem with single edge crack %%
 %%---------------------------------------------------------------------------------------------%%
 % [Bourdin, Francfort, Marigo, 2000, JMPS] (isotropic phase field model with no split of Bourdin et al.)
 % [Miehe, Welschinger, Hofacker, 2010 IJNME] (anisotropic phase field model of Miehe et al.)

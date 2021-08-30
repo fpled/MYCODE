@@ -39,13 +39,11 @@ PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'An
 randMat = true; % random material parameters (true or false)
 randPF = true; % random phase field parameters (true or false)
 
-filename = ['phasefieldStoLinElas' symmetry 'SingleEdgeCrack' loading PFmodel];
-
 switch lower(symmetry)
     case 'isotropic' % isotropic material
-        filename = ['phasefieldDetLinElas' symmetry 'SingleEdgeCrack' loading PFmodel];
+        filename = ['phasefieldStoLinElas' symmetry 'SingleEdgeCrack' loading PFmodel];
     case 'anisotropic' % anisotropic material
-        filename = ['phasefieldDetLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel];
+        filename = ['phasefieldStoLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel];
     otherwise
         error('Wrong material symmetry class');
 end
