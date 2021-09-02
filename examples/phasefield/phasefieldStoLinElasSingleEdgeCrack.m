@@ -30,14 +30,19 @@ saveParaview = false;
 test = true; % coarse mesh and small number of samples
 % test = false; % fine mesh and high number of samples
 
+% Deterministic model's parameters
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isotropic'; % 'Isotropic' or 'Anisotropic'. Material symmetry
 ang = 30; % clockwise material orientation angle around z-axis [deg]
 isotropicTest = false; % for test purposes (configuration of isotropic material with the anisotropic class). Work only for "Dim = 2" and "symmetry = 'Anisotropic'".
 loading = 'Tension'; % 'Tension' or 'Shear'
 PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+
+% Random model's parameters
+N = 5e2; % number of samples
 randMat = true; % random material parameters (true or false)
 randPF = true; % random phase field parameters (true or false)
+correlationStructure = true;
 
 switch lower(symmetry)
     case 'isotropic' % isotropic material
@@ -505,11 +510,8 @@ end
 
 %% Solution
 if solveProblem
-    % Number of samples
     if test
-        N = 8;
-    else
-        N = 5e2;
+        N = 4; % number of samples
     end
     
     %% Random variables
@@ -518,26 +520,26 @@ if solveProblem
         % la = -24; % la < 1/5. Parameter controlling the level of statistical fluctuation
         % delta1 = 1/sqrt(1-la); % coefficient of variation for bulk modulus
         % delta2 = 1/sqrt(1-5*la); % coefficient of variation for shear modulus
-        delta1 = 0.1; % coefficient of variation for bulk modulus
-        la = 1 - 1/delta1^2; % la < 1/5. Parameter controlling the level of statistical fluctuation
-        delta2 = 1/sqrt(5/delta1^2 - 4); % coefficient of variation for shear modulus
+        deltaC1 = 0.1; % coefficient of variation for bulk modulus
+        la = 1 - 1/deltaC1^2; % la < 1/5. Parameter controlling the level of statistical fluctuation
+        % deltaC2 = 1/sqrt(5/deltaC1^2 - 4); % coefficient of variation for shear modulus
         
         mC1 = E/3/(1-2*NU); % mean bulk modulus
         mC2 = mu; % mean shear modulus
-        la1 = (1-la)/mC1; % la1 > 0
-        la2 = (1-5*la)/mC2; % la2 > 0
+        laC1 = (1-la)/mC1; % la1 > 0
+        laC2 = (1-5*la)/mC2; % la2 > 0
         
-        a1 = 1-la; % a1 > 0
-        b1 = 1/la1; % b1 > 0
-        a2 = 1-5*la; % a2 > 0
-        b2 = 1/la2; % b2 > 0
+        aC1 = 1-la; % a1 > 0
+        bC1 = 1/laC1; % b1 > 0
+        aC2 = 1-5*la; % a2 > 0
+        bC2 = 1/laC2; % b2 > 0
         
         % Sample set
-        C_sample(:,1) = gamrnd(a1,b1,N,1); % [Pa]
-        C_sample(:,2) = gamrnd(a2,b2,N,1); % [Pa]
+        C_sample(:,1) = gamrnd(aC1,bC1,N,1); % [Pa] Bulk modulus sample
+        C_sample(:,2) = gamrnd(aC2,bC2,N,1); % [Pa] Shear modulus sample
         % lambda_sample = C_sample(:,1) - 2/3*C_sample(:,2); % [Pa]
         E_sample = (9*C_sample(:,1).*C_sample(:,2))./(3*C_sample(:,1)+C_sample(:,2)); % [Pa]
-        NU_sample = (3*C_sample(:,1)-2*C_sample(:,2))./(6*C_sample(:,1)+2*C_sample(:,2));
+        NU_sample = (3*C_sample(:,1)-2*C_sample(:,2))./(6*C_sample(:,1)+2*C_sample(:,2)); % [1]
     else
         E_sample = E*ones(N,1);
         NU_sample = NU*ones(N,1);
@@ -545,14 +547,22 @@ if solveProblem
     
     % Phase field properties
     if randPF % random phase field parameters
-        delta3 = 0.1; % coefficient of variation of fracture toughness
-        delta4 = 0.1; % coefficient of variation of regularization parameter
-        a3 = 1/delta3^2;
-        b3 = gc/a3;
-        a4 = 1/delta4^2;
-        b4 = l/a4;
-        gc_sample = gamrnd(a3,b3,N,1);
-        l_sample = gamrnd(a4,b4,N,1);
+        deltaP1 = 0.1; % coefficient of variation of fracture toughness
+        deltaP2 = 0.1; % coefficient of variation of regularization parameter
+        aP1 = 1/deltaP1^2;
+        bP1 = gc/aP1;
+        aP2 = 1/deltaP2^2;
+        bP2 = l/aP2;
+        switch correlationStructure
+            case false
+                gc_sample = gamrnd(aP1,bP1,N,1); % [N.m^(-2)] Fracture toughness sample
+                l_sample = gamrnd(aP2,bP2,N,1); % [m] regularization parameter sample
+            case true
+                rhoBP = 0.5; % Bravais-Pearson correlation coefficient
+                Xi = randn(N,2); % random matrix with independent centered reduced Gaussian components
+                gc_sample = gaminv( normcdf(Xi(:,1)) , aP1,bP1);
+                l_sample = gaminv( normcdf(rhoBP*Xi(:,1) + sqrt(1-rhoBP^2)*Xi(:,2)) , aP2,bP2);
+        end
     else
         gc_sample = gc*ones(N,1);
         l_sample = l*ones(N,1);
