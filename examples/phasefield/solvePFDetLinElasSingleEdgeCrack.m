@@ -13,12 +13,9 @@ ft = zeros(1,length(T));
 dinct = cell(1,length(T)); % increment of phase field
 tol = 1e-12;
 
-sz_d = getnbddl(S_phase);
-sz_u = getnbddl(S);
-sz_H = getnbelem(S);
-u = zeros(sz_u,1);
-d = zeros(sz_d,1);
-H = FEELEMFIELD(zeros(sz_H,1),S);
+u = calc_init_dirichlet(S);
+d = calc_init_dirichlet(S_phase);
+H = calc_energyint(S,u,'positive');
 
 if display_
     fprintf('\n+-----------+-----------+-----------+------------+------------+\n');
@@ -61,8 +58,7 @@ for i=1:length(T)
     d = A_phase\b_phase;
     d = unfreevector(S_phase,d);
     dinc = d - dold;
-    
-    if ~isempty(find(dinc<-tol,1)), fprintf('Irreversibility error\n'), end
+    % dincmin = min(dinc); if dincmin<-tol, dincmin, end
     
     % Displacement field
     mats = MATERIALS(S);
@@ -130,9 +126,8 @@ if display_
     fprintf('+-----------+-----------+-----------+------------+------------+\n');
 end
 
-dt = TIMEMATRIX(dt,T,[sz_d,1]);
-ut = TIMEMATRIX(ut,T,[sz_u,1]);
-dinct{1} = zeros(sz_d,1);
-dinct = TIMEMATRIX(dinct,T,[sz_d,1]);
+dt = TIMEMATRIX(dt,T,size(d));
+ut = TIMEMATRIX(ut,T,size(u));
+dinct = TIMEMATRIX(dinct,T,size(dinc));
 
 end
