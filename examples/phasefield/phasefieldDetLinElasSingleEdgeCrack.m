@@ -593,7 +593,7 @@ if displaySolution
         case 'anisotropic'
             switch lower(loading)
                 case 'tension'
-                    rep = find(abs(t-18e-6)<eps | abs(t-30e-6)<eps | abs(t-32e-6)<eps | abs(t-35e-6)<eps);
+                    rep = find(abs(t-9e-6)<eps | abs(t-12e-6)<eps | abs(t-13.5e-6)<eps | abs(t-15e-6)<eps | abs(t-20e-6)<eps);
                 case 'shear'
                     rep = find(abs(t-20e-6)<eps | abs(t-30e-6)<eps | abs(t-40e-6)<eps | abs(t-50e-6)<eps);
                 otherwise

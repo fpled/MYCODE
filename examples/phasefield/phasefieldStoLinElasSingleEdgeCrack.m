@@ -30,7 +30,7 @@ saveParaview = false;
 test = true; % coarse mesh and small number of samples
 % test = false; % fine mesh and high number of samples
 
-% Deterministic model's parameters
+% Deterministic model parameters
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isotropic'; % 'Isotropic' or 'Anisotropic'. Material symmetry
 ang = 30; % clockwise material orientation angle around z-axis [deg]
@@ -38,7 +38,7 @@ isotropicTest = false; % for test purposes (configuration of isotropic material 
 loading = 'Tension'; % 'Tension' or 'Shear'
 PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
-% Random model's parameters
+% Random model parameters
 N = 5e2; % number of samples
 randMat = true; % random material parameters (true or false)
 randPF = true; % random phase field parameters (true or false)
@@ -510,19 +510,15 @@ end
 
 %% Solution
 if solveProblem
-    if test
-        N = 4; % number of samples
-    end
-    
     %% Random variables
     % Material properties
     if randMat % random material parameters
         % la = -24; % la < 1/5. Parameter controlling the level of statistical fluctuation
-        % delta1 = 1/sqrt(1-la); % coefficient of variation for bulk modulus
-        % delta2 = 1/sqrt(1-5*la); % coefficient of variation for shear modulus
+        % deltaC1 = 1/sqrt(1-la); % coefficient of variation for bulk modulus
+        % deltaC2 = 1/sqrt(1-5*la); % coefficient of variation for shear modulus
         deltaC1 = 0.1; % coefficient of variation for bulk modulus
         la = 1 - 1/deltaC1^2; % la < 1/5. Parameter controlling the level of statistical fluctuation
-        % deltaC2 = 1/sqrt(5/deltaC1^2 - 4); % coefficient of variation for shear modulus
+        deltaC2 = 1/sqrt(5/deltaC1^2 - 4); % coefficient of variation for shear modulus
         
         mC1 = E/3/(1-2*NU); % mean bulk modulus
         mC2 = mu; % mean shear modulus
@@ -535,11 +531,11 @@ if solveProblem
         bC2 = 1/laC2; % b2 > 0
         
         % Sample set
-        C_sample(:,1) = gamrnd(aC1,bC1,N,1); % [Pa] Bulk modulus sample
-        C_sample(:,2) = gamrnd(aC2,bC2,N,1); % [Pa] Shear modulus sample
+        C_sample(:,1) = gamrnd(aC1,bC1,N,1); % samples for bulk modulus [Pa]
+        C_sample(:,2) = gamrnd(aC2,bC2,N,1); % samples for shear modulus [Pa]
         % lambda_sample = C_sample(:,1) - 2/3*C_sample(:,2); % [Pa]
         E_sample = (9*C_sample(:,1).*C_sample(:,2))./(3*C_sample(:,1)+C_sample(:,2)); % [Pa]
-        NU_sample = (3*C_sample(:,1)-2*C_sample(:,2))./(6*C_sample(:,1)+2*C_sample(:,2)); % [1]
+        NU_sample = (3*C_sample(:,1)-2*C_sample(:,2))./(6*C_sample(:,1)+2*C_sample(:,2));
     else
         E_sample = E*ones(N,1);
         NU_sample = NU*ones(N,1);
@@ -555,13 +551,13 @@ if solveProblem
         bP2 = l/aP2;
         switch correlationStructure
             case false
-                gc_sample = gamrnd(aP1,bP1,N,1); % [N.m^(-2)] Fracture toughness sample
-                l_sample = gamrnd(aP2,bP2,N,1); % [m] regularization parameter sample
+                gc_sample = gamrnd(aP1,bP1,N,1); % samples for fracture toughness [N/m^2]
+                l_sample = gamrnd(aP2,bP2,N,1); % samples regularization parameter [m]
             case true
                 rhoBP = 0.5; % Bravais-Pearson correlation coefficient
-                Xi = randn(N,2); % random matrix with independent centered reduced Gaussian components
-                gc_sample = gaminv( normcdf(Xi(:,1)) , aP1,bP1);
-                l_sample = gaminv( normcdf(rhoBP*Xi(:,1) + sqrt(1-rhoBP^2)*Xi(:,2)) , aP2,bP2);
+                Xi = randn(N,2); % random matrix with statistically independent normalized Gaussian components
+                gc_sample = gaminv(normcdf(Xi(:,1)),aP1,bP1);
+                l_sample = gaminv(normcdf(rhoBP*Xi(:,1) + sqrt(1-rhoBP^2)*Xi(:,2)),aP2,bP2);
         end
     else
         gc_sample = gc*ones(N,1);
@@ -736,7 +732,7 @@ if displaySolution
         case 'anisotropic'
             switch lower(loading)
                 case 'tension'
-                    rep = find(abs(t-18e-6)<eps | abs(t-30e-6)<eps | abs(t-32e-6)<eps | abs(t-35e-6)<eps);
+                    rep = find(abs(t-9e-6)<eps | abs(t-12e-6)<eps | abs(t-13.5e-6)<eps | abs(t-15e-6)<eps | abs(t-20e-6)<eps);
                 case 'shear'
                     rep = find(abs(t-20e-6)<eps | abs(t-30e-6)<eps | abs(t-40e-6)<eps | abs(t-50e-6)<eps);
                 otherwise
