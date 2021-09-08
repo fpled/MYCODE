@@ -71,7 +71,16 @@ if setProblem
     a = L/2;
     if Dim==2
         e = 1;
-        D = DOMAIN(2,[0.0,0.0],[L,L]);
+        % P1 is tip of the crack
+        P2 = [0.0,L/2];
+        P3 = [0.0,0.0];
+        P4 = [0.99*a,0.0];
+        P5 = [L,0.0];
+        P6 = [L,L];
+        P7 = [0.99*a,L];
+        P8 = [0.0,L];
+        D = POLYGON(P2,P3,P4,P5,P6,P7,P8);
+        % D = DOMAIN(2,[0.0,0.0],[L,L]);
         C = LIGNE([0.0,L/2],[a,L/2]);
     elseif Dim==3
         e = 0.1e-3;
@@ -97,7 +106,7 @@ if setProblem
         if test
             % clD = 4e-5;
             % clC = 1e-5;
-            clD = 1e-5;
+            clD = 5e-5;
             clC = 1e-5;
         end
     elseif Dim==3
@@ -112,7 +121,8 @@ if setProblem
             clC = 2e-5;
         end
     end
-    S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+    % S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+    S_phase = gmshdomainwithedgecrackoptim(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
     S = S_phase;
     
     %% Phase field problem
