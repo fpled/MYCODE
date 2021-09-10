@@ -87,7 +87,15 @@ if setProblem
     a = L/2;
     if Dim==2
         e = 1;
-        D = DOMAIN(2,[0.0,0.0],[L,L]);
+        % P1 is tip of the crack
+        P2 = [0.0,L/2];
+        P3 = [0.0,0.0];
+        P4 = [0.99*a,0.0];
+        P5 = [L,0.0];
+        P6 = [L,L];
+        P7 = [0.99*a,L];
+        P8 = [0.0,L];
+        D = POLYGON(P2,P3,P4,P5,P6,P7,P8);
         C = LIGNE([0.0,L/2],[a,L/2]);
     elseif Dim==3
         e = 0.1e-3;
@@ -113,7 +121,7 @@ if setProblem
         if test
             % clD = 4e-5;
             % clC = 1e-5;
-            clD = 1e-5;
+            clD = 5e-5;
             clC = 1e-5;
         end
     elseif Dim==3
@@ -128,7 +136,7 @@ if setProblem
             clC = 2e-5;
         end
     end
-    S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+    S_phase = gmshdomainwithedgecrackoptim(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
     S = S_phase;
     
     %% Phase field problem
@@ -569,9 +577,8 @@ if solveProblem
     %% Solution
     tTotal = tic;
     
-    nbSamples = 3;
     fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading);
-    [ft,dt,ut] = solvePFStoLinElas(S_phase,S,T,fun,samples,'display','nbsamples',nbSamples);
+    [ft,dt_mean,ut_mean,dt_var,ut_var] = solvePFStoLinElas(S_phase,S,T,fun,samples,'display');
     fmax = max(ft,[],2);
     
     time = toc(tTotal);
@@ -579,7 +586,7 @@ if solveProblem
     %% Statistical outputs of solution
     probs = [0.025 0.975];
     
-    mean_ft = mean(ft);
+    ft_mean = mean(ft);
     std_ft = std(ft);
     ci_ft = quantile(ft,probs);
     
@@ -590,12 +597,12 @@ if solveProblem
     npts = 100;
     [f_fmax,xi_fmax,bw_fmax] = ksdensity(fmax,'npoints',npts);
     
-    save(fullfile(pathname,'solution.mat'),'N','dt','ut',...
-        'mean_ft','std_ft','ci_ft','fmax',...
+    save(fullfile(pathname,'solution.mat'),'N','dt_mean','ut_mean',...
+        'dt_var','ut_var','ft_mean','std_ft','ci_ft','fmax',...
         'mean_fmax','std_fmax','ci_fmax','probs','f_fmax','xi_fmax','bw_fmax','time');
 else
-    load(fullfile(pathname,'solution.mat'),'N','dt','ut',...
-        'mean_ft','std_ft','ci_ft','fmax',...
+    load(fullfile(pathname,'solution.mat'),'N','dt_mean','ut_mean',...
+        'dt_var','ut_var','ft_mean','std_ft','ci_ft','fmax',...
         'mean_fmax','std_fmax','ci_fmax','probs','f_fmax','xi_fmax','bw_fmax','time');
 end
 
@@ -674,7 +681,7 @@ if displayModel
     % end
 end
 
-%% Display samples of solutions
+%% Display statistics of solutions
 if displaySolution
     [t,~] = gettevol(T);
     
@@ -684,7 +691,7 @@ if displaySolution
     ciplot(ci_ft(1,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),ci_ft(2,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),t*1e3,'b');
     alpha(0.2)
     hold on
-    plot(t*1e3,mean_ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
+    plot(t*1e3,ft_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -717,7 +724,7 @@ if displaySolution
     mysaveas(pathname,'pdf_fmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fmax.tex');
     
-    %% Display samples of solutions at different instants
+    %% Display means of solutions at different instants
     ampl = 0;
     switch lower(symmetry)
         case 'isotropic'
@@ -743,17 +750,16 @@ if displaySolution
     end
     rep = [rep,length(T)];
     
-    for k=1:size(ut,1)
     for j=1:length(rep)
-        dj = dt(k,:,rep(j))';
-        uj = ut(k,:,rep(j))';
+        dj = dt_mean(:,rep(j));
+        uj = ut_mean(:,rep(j));
         
         plotSolution(S_phase,dj);
-        mysaveas(pathname,['damage_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        mysaveas(pathname,['damage_mean_t' num2str(rep(j))],formats,renderer);
         
         for i=1:Dim
             plotSolution(S,uj,'displ',i,'ampl',ampl);
-            mysaveas(pathname,['displacement_' num2str(i) '_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+            mysaveas(pathname,['displacement_mean_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         end
         
         % for i=1:(Dim*(Dim+1)/2)
@@ -773,11 +779,10 @@ if displaySolution
         % plotSolution(S,uj,'energyint','','ampl',ampl);
         % mysaveas(pathname,['internal_energy_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
     end
-    end
     
 end
 
-%% Display evolution of samples of solutions
+%% Display evolution of means of solutions
 if makeMovie
     sz_d = [getnbddl(S_phase),getnbtimedof(T)];
     sz_u = [getnbddl(S),getnbtimedof(T)];
@@ -787,40 +792,38 @@ if makeMovie
     options = {'plotiter',true,'plottime',false};
     framerate = 80;
     
-    for k=1:size(St,1)
-        dk = TIMEMATRIX(reshape(dt(k,:,:),sz_d),T);
-        uk = TIMEMATRIX(reshape(ut(k,:,:),sz_u),T);
-        
-        evolSolution(S_phase,dk,'FrameRate',framerate,'filename',['damage_sample_' num2str(k)],'pathname',pathname,options{:});
-        for i=1:Dim
-            evolSolution(S,uk,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
-        end
-        
-        % for i=1:(Dim*(Dim+1)/2)
-        %     evolSolution(S,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
-        %     evolSolution(S,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
-        % end
-        %
-        % evolSolution(S,uk,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename',['epsilon_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
-        % evolSolution(S,uk,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename',['sigma_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
-        % evolSolution(S,uk,'energyint','','ampl',ampl,'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
+    dk = TIMEMATRIX(reshape(dt_mean(:,:),sz_d),T);
+    uk = TIMEMATRIX(reshape(ut_mean(:,:),sz_u),T);
+    
+    evolSolution(S_phase,dk,'FrameRate',framerate,'filename','damage_mean','pathname',pathname,options{:});
+    for i=1:Dim
+        evolSolution(S,uk,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_mean_' num2str(i)],'pathname',pathname,options{:});
     end
+    
+    % for i=1:(Dim*(Dim+1)/2)
+    %     evolSolution(S,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
+    %     evolSolution(S,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
+    % end
+    %
+    % evolSolution(S,uk,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename',['epsilon_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
+    % evolSolution(S,uk,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename',['sigma_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
+    % evolSolution(S,uk,'energyint','','ampl',ampl,'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
 end
 
-%% Save samples of solutions
+%% Save means and variances of solutions
 if saveParaview
     [t,rep] = gettevol(T);
-    for k=1:size(ut,1)
-        for i=1:length(T)
-            di = dt(k,:,rep(i))';
-            ui = ut(k,:,rep(i))';
-            
-            write_vtk_mesh(S,{di,ui},[],...
-                {'damage','displacement'},[],...
-                pathname,['solution_sample_' num2str(k)],1,i-1);
-        end
-        make_pvd_file(pathname,['solution_sample_' num2str(k)],1,length(T));
+    for i=1:length(T)
+        di = dt_mean(:,rep(i))';
+        ui = ut_mean(:,rep(i))';
+        dvi = dt_var(:,rep(i))';
+        uvi = ut_var(:,rep(i))';
+        
+        write_vtk_mesh(S,{di,ui,dvi,uvi},[],...
+            {'damage_mean','displacement_mean','damage_variance','displacement_variance'},[],...
+            pathname,'solution',1,i-1);
     end
+    make_pvd_file(pathname,'solution',1,length(T));
 end
 
 myparallel('stop');
