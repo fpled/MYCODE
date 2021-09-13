@@ -71,7 +71,16 @@ if setProblem
     a = L/2;
     if Dim==2
         e = 1;
-        D = DOMAIN(2,[0.0,0.0],[L,L]);
+        % P1 is tip of the crack
+        P2 = [0.0,L/2];
+        P3 = [0.0,0.0];
+        P4 = [0.99*a,0.0];
+        P5 = [L,0.0];
+        P6 = [L,L];
+        P7 = [0.99*a,L];
+        P8 = [0.0,L];
+        D = POLYGON(P2,P3,P4,P5,P6,P7,P8);
+        % D = DOMAIN(2,[0.0,0.0],[L,L]);
         C = LIGNE([0.0,L/2],[a,L/2]);
     elseif Dim==3
         e = 0.1e-3;
@@ -97,7 +106,7 @@ if setProblem
         if test
             % clD = 4e-5;
             % clC = 1e-5;
-            clD = 1e-5;
+            clD = 5e-5;
             clC = 1e-5;
         end
     elseif Dim==3
@@ -112,7 +121,8 @@ if setProblem
             clC = 2e-5;
         end
     end
-    S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+    % S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+    S_phase = gmshdomainwithedgecrackoptim(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
     S = S_phase;
     
     %% Phase field problem
@@ -131,13 +141,17 @@ if setProblem
             % l = 4e-6; % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
             % eta = 0.052; w0 = 75.94; l = eta/sqrt(w0)*1e-3; % l = 6e-7; % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
         case 'anisotropic' % anisotropic material
+            % Critical energy release rate (or fracture toughness)
             gc = 10e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            % Regularization parameter (width of the smeared crack)
             l = 8.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
         otherwise
             error('Wrong material symmetry class');
     end
     if isotropicTest
+        % Critical energy release rate (or fracture toughness)
         gc = 2.7e3; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
+        % Regularization parameter (width of the smeared crack)
         l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     end
     % Small artificial residual stiffness
