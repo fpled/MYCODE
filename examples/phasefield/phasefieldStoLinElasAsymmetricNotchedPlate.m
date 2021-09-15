@@ -28,8 +28,9 @@ displaySolution = false;
 makeMovie = false;
 saveParaview = false;
 
-test = true; % coarse mesh and small number of samples
-% test = false; % fine mesh and high number of samples
+test = true; % coarse mesh
+% test = false; % fine mesh
+numWorkers = 20;
 
 % Deterministic model parameters
 Dim = 2;
@@ -41,6 +42,7 @@ N = 5e2; % number of samples
 randMat = true; % random material parameters (true or false)
 randPF = true; % random phase field parameters (true or false)
 correlationStructure = true;
+rhoBP = 0.1; % Bravais-Pearson correlation coefficient
 
 filename = ['phasefieldStoLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel];
 if randMat
@@ -257,7 +259,7 @@ end
 
 %% Solution
 if solveProblem
-    myparallel('start');
+    myparallel('start',numWorkers);
     %% Random variables
     % Material properties
     if randMat % random material parameters
@@ -302,7 +304,6 @@ if solveProblem
                 gc_sample = gamrnd(aP1,bP1,N,1); % samples for fracture toughness [N/m^2]
                 l_sample = gamrnd(aP2,bP2,N,1); % samples regularization parameter [m]
             case true
-                rhoBP = 0.5; % Bravais-Pearson correlation coefficient
                 Xi = randn(N,2); % random matrix with statistically independent normalized Gaussian components
                 gc_sample = gaminv(normcdf(Xi(:,1)),aP1,bP1);
                 l_sample = gaminv(normcdf(rhoBP*Xi(:,1) + sqrt(1-rhoBP^2)*Xi(:,2)),aP2,bP2);
