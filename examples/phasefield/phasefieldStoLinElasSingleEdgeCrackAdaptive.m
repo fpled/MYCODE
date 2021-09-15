@@ -17,7 +17,6 @@
 clearvars
 close all
 % rng('default');
-myparallel('start');
 
 %% Input data
 setProblem = true;
@@ -61,7 +60,7 @@ end
 if randPF
     filename = [filename 'RandPF'];
 end
-filename = [filename 'Adaptive_' num2str(Dim) 'D'];
+filename = [filename 'Adaptive_' num2str(Dim) 'D_' num2str(N) 'samples'];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -531,6 +530,7 @@ end
 
 %% Solution
 if solveProblem
+    myparallel('start');
     %% Random variables
     % Material properties
     if randMat % random material parameters
