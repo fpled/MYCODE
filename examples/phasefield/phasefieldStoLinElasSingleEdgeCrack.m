@@ -726,7 +726,7 @@ if displaySolution
     mysaveas(pathname,'pdf_fmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fmax.tex');
     
-    %% Display means of solutions at different instants
+    %% Display means and variances of solutions at different instants
     ampl = 0;
     switch lower(symmetry)
         case 'isotropic'
@@ -754,37 +754,44 @@ if displaySolution
     
     for j=1:length(rep)
         dj = dt_mean(:,rep(j));
+        dj_var = dt_var(:,rep(j));
         uj = ut_mean(:,rep(j));
+        uj_var = ut_var(:,rep(j));
         
         plotSolution(S_phase,dj);
         mysaveas(pathname,['damage_mean_t' num2str(rep(j))],formats,renderer);
+        plotSolution(S_phase,dj_var);
+        mysaveas(pathname,['damage_var_t' num2str(rep(j))],formats,renderer);
         
         for i=1:Dim
             plotSolution(S,uj,'displ',i,'ampl',ampl);
             mysaveas(pathname,['displacement_mean_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
+            plotSolution(S,uj_var,'displ_var',i,'ampl',ampl);
+            mysaveas(pathname,['displacement_var_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         end
         
+        % /!\ epsilon of the mean is not the mean of epsilon
         % for i=1:(Dim*(Dim+1)/2)
         %     plotSolution(S,uj,'epsilon',i,'ampl',ampl);
-        %     mysaveas(pathname,['epsilon_' num2str(i) '_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        %     mysaveas(pathname,['epsilon_mean_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         %
         %     plotSolution(S,uj,'sigma',i,'ampl',ampl);
-        %     mysaveas(pathname,['sigma_' num2str(i) '_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        %     mysaveas(pathname,['sigma_mean_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         % end
         %
         % plotSolution(S,uj,'epsilon','mises','ampl',ampl);
-        % mysaveas(pathname,['epsilon_von_mises_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        % mysaveas(pathname,['epsilon_von_mises_means_t' num2str(rep(j))],formats,renderer);
         %
         % plotSolution(S,uj,'sigma','mises','ampl',ampl);
-        % mysaveas(pathname,['sigma_von_mises_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        % mysaveas(pathname,['sigma_von_mises_mean_t' num2str(rep(j))],formats,renderer);
         %
         % plotSolution(S,uj,'energyint','','ampl',ampl);
-        % mysaveas(pathname,['internal_energy_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        % mysaveas(pathname,['internal_energy_mean_t' num2str(rep(j))],formats,renderer);
     end
     
 end
 
-%% Display evolution of means of solutions
+%% Display evolution of means and variances of solutions
 if makeMovie
     sz_d = [getnbddl(S_phase),getnbtimedof(T)];
     sz_u = [getnbddl(S),getnbtimedof(T)];
@@ -795,21 +802,26 @@ if makeMovie
     framerate = 80;
     
     dk = TIMEMATRIX(reshape(dt_mean(:,:),sz_d),T);
+    dk_var = TIMEMATRIX(reshape(dt_var(:,:),sz_d),T);
     uk = TIMEMATRIX(reshape(ut_mean(:,:),sz_u),T);
+    uk_var = TIMEMATRIX(reshape(ut_var(:,:),sz_u),T);
     
     evolSolution(S_phase,dk,'FrameRate',framerate,'filename','damage_mean','pathname',pathname,options{:});
+    evolSolution(S_phase,dk_var,'FrameRate',framerate,'filename','damage_var','pathname',pathname,options{:});
     for i=1:Dim
         evolSolution(S,uk,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_mean_' num2str(i)],'pathname',pathname,options{:});
+        evolSolution(S,uk_var,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_var_' num2str(i)],'pathname',pathname,options{:});
     end
     
+    % /!\ epsilon of the mean is not the mean of epsilon
     % for i=1:(Dim*(Dim+1)/2)
-    %     evolSolution(S,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
-    %     evolSolution(S,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
+    %     evolSolution(S,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_mean_' num2str(i)],'pathname',pathname,options{:});
+    %     evolSolution(S,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_mean_' num2str(i)],'pathname',pathname,options{:});
     % end
     %
-    % evolSolution(S,uk,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename',['epsilon_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
-    % evolSolution(S,uk,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename',['sigma_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
-    % evolSolution(S,uk,'energyint','','ampl',ampl,'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
+    % evolSolution(S,uk,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises_mean','pathname',pathname,options{:});
+    % evolSolution(S,uk,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises_mean','pathname',pathname,options{:});
+    % evolSolution(S,uk,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_mean','pathname',pathname,options{:});
 end
 
 %% Save means and variances of solutions
