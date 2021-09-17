@@ -589,23 +589,23 @@ if solveProblem
     probs = [0.025 0.975];
     
     ft_mean = mean(ft);
-    std_ft = std(ft);
-    ci_ft = quantile(ft,probs);
+    ft_std = std(ft);
+    ft_ci = quantile(ft,probs);
     
-    mean_fmax = mean(fmax);
-    std_fmax = std(fmax);
-    ci_fmax = quantile(fmax,probs);
+    fmax_mean = mean(fmax);
+    fmax_std = std(fmax);
+    fmax_ci = quantile(fmax,probs);
     
     npts = 100;
-    [f_fmax,xi_fmax,bw_fmax] = ksdensity(fmax,'npoints',npts);
+    [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'npoints',npts);
     
     save(fullfile(pathname,'solution.mat'),'N','dt_mean','ut_mean',...
-        'dt_var','ut_var','ft_mean','std_ft','ci_ft','fmax',...
-        'mean_fmax','std_fmax','ci_fmax','probs','f_fmax','xi_fmax','bw_fmax','time');
+        'dt_var','ut_var','ft_mean','ft_std','ft_ci','fmax',...
+        'fmax_mean','fmax_std','fmax_ci','probs','fmax_f','fmax_xi','fmax_bw','time');
 else
     load(fullfile(pathname,'solution.mat'),'N','dt_mean','ut_mean',...
-        'dt_var','ut_var','ft_mean','std_ft','ci_ft','fmax',...
-        'mean_fmax','std_fmax','ci_fmax','probs','f_fmax','xi_fmax','bw_fmax','time');
+        'dt_var','ut_var','ft_mean','ft_std','ft_ci','fmax',...
+        'fmax_mean','fmax_std','fmax_ci','probs','fmax_f','fmax_xi','fmax_bw','time');
 end
 
 %% Outputs
@@ -630,17 +630,17 @@ fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
 if Dim==2
-    fprintf('mean(fmax)    = %g kN/mm\n',mean_fmax*1e-6);
-    fprintf('std(fmax)     = %g kN/mm\n',std_fmax*1e-6);
+    fprintf('mean(fmax)    = %g kN/mm\n',fmax_mean*1e-6);
+    fprintf('std(fmax)     = %g kN/mm\n',fmax_std*1e-6);
 elseif Dim==3
-    fprintf('mean(fmax)    = %g kN\n',mean_fmax*1e-3);
-    fprintf('std(fmax)     = %g kN\n',std_fmax*1e-3);
+    fprintf('mean(fmax)    = %g kN\n',fmax_mean*1e-3);
+    fprintf('std(fmax)     = %g kN\n',fmax_std*1e-3);
 end
-fprintf('disp(fmax)    = %g\n',std_fmax/mean_fmax);
+fprintf('disp(fmax)    = %g\n',fmax_std/fmax_mean);
 if Dim==2
-    fprintf('%d%% ci(fmax)  = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,ci_fmax(1)*1e-6,ci_fmax(2)*1e-6);
+    fprintf('%d%% ci(fmax)  = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
 elseif Dim==3
-    fprintf('%d%% ci(fmax)  = [%g,%g] kN\n',(probs(2)-probs(1))*100,ci_fmax(1)*1e-3,ci_fmax(2)*1e-3);
+    fprintf('%d%% ci(fmax)  = [%g,%g] kN\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-3,fmax_ci(2)*1e-3);
 end
 
 %% Display
@@ -690,7 +690,7 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force-displacement')
     clf
-    ciplot(ci_ft(1,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),ci_ft(2,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),t*1e3,'b');
+    ciplot(ft_ci(1,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),ft_ci(2,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),t*1e3,'b');
     alpha(0.2)
     hold on
     plot(t*1e3,ft_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
@@ -708,11 +708,11 @@ if displaySolution
     %% Display pdf of critical force
     figure('Name','Probability Density Estimate: Critical force')
     clf
-    plot(xi_fmax*((Dim==2)*1e-6+(Dim==3)*1e-3),f_fmax,'-b','LineWidth',linewidth)
+    plot(fmax_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f,'-b','LineWidth',linewidth)
     hold on
-    ind_fmax = find(xi_fmax>=ci_fmax(1) & xi_fmax<ci_fmax(2));
-    area(xi_fmax(ind_fmax)*((Dim==2)*1e-6+(Dim==3)*1e-3),f_fmax(ind_fmax),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
-    scatter(mean_fmax*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
+    ind_fmax = find(fmax_xi>=fmax_ci(1) & fmax_xi<fmax_ci(2));
+    area(fmax_xi(ind_fmax)*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f(ind_fmax),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
+    scatter(fmax_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
     hold off
     grid on
     box on
@@ -770,7 +770,6 @@ if displaySolution
             mysaveas(pathname,['displacement_var_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         end
         
-        % /!\ epsilon of the mean is not the mean of epsilon
         % for i=1:(Dim*(Dim+1)/2)
         %     plotSolution(S,uj,'epsilon',i,'ampl',ampl);
         %     mysaveas(pathname,['epsilon_mean_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
@@ -813,7 +812,6 @@ if makeMovie
         evolSolution(S,uk_var,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_var_' num2str(i)],'pathname',pathname,options{:});
     end
     
-    % /!\ epsilon of the mean is not the mean of epsilon
     % for i=1:(Dim*(Dim+1)/2)
     %     evolSolution(S,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_mean_' num2str(i)],'pathname',pathname,options{:});
     %     evolSolution(S,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_mean_' num2str(i)],'pathname',pathname,options{:});
