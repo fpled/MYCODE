@@ -55,6 +55,17 @@ end
 
 filename = [filename 'SingleEdgeCrackParamInfluence' loading PFmodel '_' num2str(Dim) 'D_' num2str(N) 'samples'];
 
+switch lower(variedParam)
+    case 'e'
+        filename = [filename '_varied_E'];
+    case 'nu'
+        filename = [filename '_varied_NU'];
+    case 'gc'
+        filename = [filename '_varied_gc'];
+    case 'l'
+        filename = [filename '_varied_l'];
+end
+
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
 if test
