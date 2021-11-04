@@ -192,7 +192,7 @@ if setProblem
     
     % r_phase = BILINFORM(0,0,gc/l+2*H,0); % nodal values
     % R_phase = calc_matrix(r_phase,S_phase);
-    % A_phase = K_phase + M_phase;
+    % A_phase = K_phase + R_phase;
     
     % l_phase = LINFORM(0,2*H,0); % nodal values
     % l_phase = setfree(l_phase,1);
