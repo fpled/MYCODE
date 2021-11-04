@@ -24,7 +24,7 @@ solveProblem = true;
 displayModel = false;
 displaySolution = false;
 makeMovie = false;
-saveParaview = false;
+saveParaview = true;
 
 test = true; % coarse mesh
 % test = false; % fine mesh
@@ -35,15 +35,16 @@ Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isotropic'; % 'Isotropic' or 'Anisotropic'. Material symmetry
 ang = 30; % clockwise material orientation angle around z-axis [deg]
 isotropicTest = false; % for test purposes (configuration of isotropic material with the anisotropic class). Work only for "Dim = 2" and "symmetry = 'Anisotropic'".
-loading = 'Tension'; % 'Tension' or 'Shear'
+loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 % Random model parameters
-N = 5e2; % number of samples
+% N = 5e2; % number of samples
+N = 8;
 randMat = true; % random material parameters (true or false)
 randPF = true; % random phase field parameters (true or false)
-correlationStructure = true;
-rhoBP = 0.1; % Bravais-Pearson correlation coefficient
+rhoMat = 0.1; % Bravais-Pearson correlation coefficient for material field parameters
+rhoPF = 0.1; % Bravais-Pearson correlation coefficient for phase field parameters
 
 switch lower(symmetry)
     case 'isotropic' % isotropic material
@@ -88,7 +89,7 @@ if setProblem
     a = L/2;
     if Dim==2
         e = 1;
-        % P1 is tip of the crack
+        % P1 is the crack tip position
         P2 = [0.0,L/2];
         P3 = [0.0,0.0];
         P4 = [0.99*a,0.0];
@@ -96,7 +97,8 @@ if setProblem
         P6 = [L,L];
         P7 = [0.99*a,L];
         P8 = [0.0,L];
-        D = POLYGON(P2,P3,P4,P5,P6,P7,P8);
+        % D = POLYGON(P2,P3,P4,P5,P6,P7,P8);
+        D = DOMAIN(2,[0.0,0.0],[L,L]);
         C = LIGNE([0.0,L/2],[a,L/2]);
     elseif Dim==3
         e = 0.1e-3;
@@ -123,7 +125,7 @@ if setProblem
         if test
             % clD = 4e-5;
             % clC = 1e-5;
-            clD = 5e-5;
+            clD = 1e-5;
             clC = 1e-5;
         end
     elseif Dim==3
@@ -138,7 +140,8 @@ if setProblem
             clC = 2e-5;
         end
     end
-    S_phase = gmshdomainwithedgecrackoptim(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+    S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+    % S_phase = gmshdomainwithedgecrackoptim(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
     S = S_phase;
     
     %% Phase field problem
@@ -524,11 +527,11 @@ if solveProblem
     %% Random variables
     % Material properties
     if randMat % random material parameters
-        % la = -24; % la < 1/5. Parameter controlling the level of statistical fluctuation
+        % la = -24; % la < 1/5. Parameter controlling the level of statistical fluctuations
         % deltaC1 = 1/sqrt(1-la); % coefficient of variation for bulk modulus
         % deltaC2 = 1/sqrt(1-5*la); % coefficient of variation for shear modulus
         deltaC1 = 0.1; % coefficient of variation for bulk modulus
-        la = 1 - 1/deltaC1^2; % la < 1/5. Parameter controlling the level of statistical fluctuation
+        la = 1 - 1/deltaC1^2; % la < 1/5. Parameter controlling the level of statistical fluctuations
         deltaC2 = 1/sqrt(5/deltaC1^2 - 4); % coefficient of variation for shear modulus
         
         mC1 = E/3/(1-2*NU); % mean bulk modulus
@@ -542,8 +545,14 @@ if solveProblem
         bC2 = 1/laC2; % b2 > 0
         
         % Sample set
-        C_sample(:,1) = gamrnd(aC1,bC1,N,1); % samples for bulk modulus [Pa]
-        C_sample(:,2) = gamrnd(aC2,bC2,N,1); % samples for shear modulus [Pa]
+        if rhoMat==0
+            C_sample(:,1) = gamrnd(aC1,bC1,N,1); % samples for bulk modulus [Pa]
+            C_sample(:,2) = gamrnd(aC2,bC2,N,1); % samples for shear modulus [Pa]
+        else
+            Xi = randn(N,2); % random matrix with statistically independent normalized Gaussian components
+            C_sample(:,1) = gaminv(normcdf(Xi(:,1)),aC1,bC1); % samples for bulk modulus [Pa]
+            C_sample(:,2) = gaminv(normcdf(rhoMat*Xi(:,1) + sqrt(1-rhoMat^2)*Xi(:,2)),aC2,bC2); % samples for shear modulus [Pa]
+        end
         % lambda_sample = C_sample(:,1) - 2/3*C_sample(:,2); % [Pa]
         E_sample = (9*C_sample(:,1).*C_sample(:,2))./(3*C_sample(:,1)+C_sample(:,2)); % [Pa]
         NU_sample = (3*C_sample(:,1)-2*C_sample(:,2))./(6*C_sample(:,1)+2*C_sample(:,2));
@@ -560,14 +569,15 @@ if solveProblem
         bP1 = gc/aP1;
         aP2 = 1/deltaP2^2;
         bP2 = l/aP2;
-        switch correlationStructure
-            case false
-                gc_sample = gamrnd(aP1,bP1,N,1); % samples for fracture toughness [N/m^2]
-                l_sample = gamrnd(aP2,bP2,N,1); % samples regularization parameter [m]
-            case true
-                Xi = randn(N,2); % random matrix with statistically independent normalized Gaussian components
-                gc_sample = gaminv(normcdf(Xi(:,1)),aP1,bP1);
-                l_sample = gaminv(normcdf(rhoBP*Xi(:,1) + sqrt(1-rhoBP^2)*Xi(:,2)),aP2,bP2);
+        
+        % Sample set
+        if rhoPF==0
+            gc_sample = gamrnd(aP1,bP1,N,1); % samples for fracture toughness [N/m^2]
+            l_sample = gamrnd(aP2,bP2,N,1); % samples regularization parameter [m]
+        else
+            Xi = randn(N,2); % random matrix with statistically independent normalized Gaussian components
+            gc_sample = gaminv(normcdf(Xi(:,1)),aP1,bP1); % samples for fracture toughness [N/m^2]
+            l_sample = gaminv(normcdf(rhoPF*Xi(:,1) + sqrt(1-rhoPF^2)*Xi(:,2)),aP2,bP2); % samples regularization parameter [m]
         end
     else
         gc_sample = gc*ones(N,1);

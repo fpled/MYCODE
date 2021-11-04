@@ -1,5 +1,5 @@
 function [f_sample,dt_mean,ut_mean,dt_var,ut_var] = solvePFStoLinElas(S_phase,S,T,fun,samples,varargin)
-% function [f_sample,dt_mean,ut_mean] = solvePFStoLinElas(S_phase,S,T,fun,samples,varargin)
+% function [f_sample,dt_mean,ut_mean,dt_var,ut_var] = solvePFStoLinElas(S_phase,S,T,fun,samples,varargin)
 % Solve stochastic Phase Field problem.
 
 fun = fcnchk(fun);
@@ -18,7 +18,8 @@ sz_u = getnbddl(S);
 
 f_sample = zeros(N,length(T));
 % fmax_sample = zeros(N,1);
-% Initialize statistical means and second order moments
+
+% Initialize statistical means and second-order moments
 dt_mean = zeros(sz_d,length(T));
 dt_moment2 = zeros(sz_d,length(T));
 ut_mean = zeros(sz_u,length(T));
@@ -61,12 +62,14 @@ parfor i=1:N
     
     % Solve deterministic problem
     [dt,ut,ft] = fun(S_phasei,Si);
-    temp_dt = getvalue(dt);
-    dt_mean = dt_mean + temp_dt/N;
-    dt_moment2 = dt_moment2 + temp_dt.^2/N;
-    temp_ut = getvalue(ut);
-    ut_mean = ut_mean + temp_ut/N;
-    ut_moment2 = ut_moment2 + temp_ut.^2/N;
+    
+    % Compute second-order statistics
+    dt_val = getvalue(dt);
+    dt_mean = dt_mean + dt_val/N;
+    dt_moment2 = dt_moment2 + dt_val.^2/N;
+    ut_val = getvalue(ut);
+    ut_mean = ut_mean + ut_val/N;
+    ut_moment2 = ut_moment2 + ut_val.^2/N;
     
     f_sample(i,:) = ft;
     % fmax_sample(i) = max(ft);

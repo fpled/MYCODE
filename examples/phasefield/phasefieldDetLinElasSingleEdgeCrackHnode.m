@@ -24,7 +24,7 @@ solveProblem = true;
 displayModel = false;
 displaySolution = false;
 makeMovie = false;
-saveParaview = false;
+saveParaview = true;
 
 test = true; % coarse mesh
 % test = false; % fine mesh
@@ -33,7 +33,7 @@ Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isotropic'; % 'Isotropic' or 'Anisotropic'. Material symmetry
 ang = 30; % clockwise material orientation angle around z-axis [deg]
 isotropicTest = false; % for test purposes (configuration of isotropic material with the anisotropic class). Work only for "Dim = 2" and "symmetry = 'Anisotropic'".
-loading = 'Tension'; % 'Tension' or 'Shear'
+loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 switch lower(symmetry)
@@ -71,7 +71,7 @@ if setProblem
     a = L/2;
     if Dim==2
         e = 1;
-        % P1 is tip of the crack
+        % P1 is the crack tip position
         P2 = [0.0,L/2];
         P3 = [0.0,0.0];
         P4 = [0.99*a,0.0];
@@ -79,8 +79,8 @@ if setProblem
         P6 = [L,L];
         P7 = [0.99*a,L];
         P8 = [0.0,L];
-        D = POLYGON(P2,P3,P4,P5,P6,P7,P8);
-        % D = DOMAIN(2,[0.0,0.0],[L,L]);
+        % D = POLYGON(P2,P3,P4,P5,P6,P7,P8);
+        D = DOMAIN(2,[0.0,0.0],[L,L]);
         C = LIGNE([0.0,L/2],[a,L/2]);
     elseif Dim==3
         e = 0.1e-3;
@@ -107,7 +107,7 @@ if setProblem
         if test
             % clD = 4e-5;
             % clC = 1e-5;
-            clD = 5e-5;
+            clD = 1e-5;
             clC = 1e-5;
         end
     elseif Dim==3
@@ -122,8 +122,8 @@ if setProblem
             clC = 2e-5;
         end
     end
-    % S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
-    S_phase = gmshdomainwithedgecrackoptim(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+    S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+    % S_phase = gmshdomainwithedgecrackoptim(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
     S = S_phase;
     
     %% Phase field problem
@@ -507,13 +507,13 @@ end
 if solveProblem
     tTotal = tic;
     
-    [dt,ut,ft,dinct] = solvePFDetLinElasSingleEdgeCrackHnode(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
+    [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrackHnode(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','dinct','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','time');
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','dinct','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','time');
 end
 
 %% Outputs
@@ -618,6 +618,7 @@ if displaySolution
     for j=1:length(rep)
         dj = getmatrixatstep(dt,rep(j));
         uj = getmatrixatstep(ut,rep(j));
+        Hj = getmatrixatstep(Ht,rep(j));
         
         plotSolution(S_phase,dj);
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
@@ -642,7 +643,10 @@ if displaySolution
         % mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
         %
         % plotSolution(S,uj,'energyint','','ampl',ampl);
-        % mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
+        % mysaveas(pathname,['internal_energy_density_t' num2str(rep(j))],formats,renderer);
+        %
+        % plotSolution(S_phase,Hj,'ampl',ampl);
+        % mysaveas(pathname,['internal_energy_density_history_t' num2str(rep(j))],formats,renderer);
     end
 end
 
@@ -666,7 +670,8 @@ if makeMovie
     %
     % evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
     % evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
-    % evolSolution(S,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
+    % evolSolution(S,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density','pathname',pathname,options{:});
+    % evolSolution(S_phase,Ht,'ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density_history','pathname',pathname,options{:});
 end
 
 %% Save solutions
@@ -675,11 +680,15 @@ if saveParaview
     for i=1:length(T)
         di = getmatrixatstep(dt,rep(i));
         ui = getmatrixatstep(ut,rep(i));
-        dincti = getmatrixatstep(dinct,rep(i));
-        
-        write_vtk_mesh(S,{di,ui,dincti},[],...
-            {'damage','displacement','damage increment'},[],...
+        Hi = getmatrixatstep(Ht,rep(i));
+        % dincti = getmatrixatstep(dinct,rep(i));
+
+        write_vtk_mesh(S,{di,ui,Hi},[],...
+            {'damage','displacement','internal energy density history'},[],...
             pathname,'solution',1,i-1);
+%         write_vtk_mesh(S,{di,ui,Hi,dincti},[],...
+%             {'damage','displacement','internal energy density history','damage increment'},[],...
+%             pathname,'solution',1,i-1);
     end
     make_pvd_file(pathname,'solution',1,length(T));
 end

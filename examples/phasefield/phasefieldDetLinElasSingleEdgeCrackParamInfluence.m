@@ -89,7 +89,7 @@ if setProblem
     a = L/2;
     if Dim==2
         e = 1;
-        % P1 is tip of the crack
+        % P1 is the crack tip position
         P2 = [0.0,L/2];
         P3 = [0.0,0.0];
         P4 = [0.99*a,0.0];
@@ -97,7 +97,8 @@ if setProblem
         P6 = [L,L];
         P7 = [0.99*a,L];
         P8 = [0.0,L];
-        D = POLYGON(P2,P3,P4,P5,P6,P7,P8);
+        % D = POLYGON(P2,P3,P4,P5,P6,P7,P8);
+        D = DOMAIN(2,[0.0,0.0],[L,L]);
         C = LIGNE([0.0,L/2],[a,L/2]);
     elseif Dim==3
         e = 0.1e-3;
@@ -110,9 +111,8 @@ if setProblem
         % clD = 3e-5; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
         % clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
         % clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-        % clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+        clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        clD = 1e-5;
         
         % clC = 3.906e-6; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
         % clC = 2.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
@@ -125,7 +125,7 @@ if setProblem
         if test
             % clD = 4e-5;
             % clC = 1e-5;
-            clD = 5e-5;
+            clD = 1e-5;
             clC = 1e-5;
         end
     elseif Dim==3
@@ -140,7 +140,8 @@ if setProblem
             clC = 2e-5;
         end
     end
-    S_phase = gmshdomainwithedgecrackoptim(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+    S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+    % S_phase = gmshdomainwithedgecrackoptim(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
     S = S_phase;
     
     %% Phase field problem
