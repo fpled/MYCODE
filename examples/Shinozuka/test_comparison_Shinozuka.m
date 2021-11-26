@@ -89,7 +89,7 @@ fprintf('\n');
 %% Standard Shinozuka method
 fprintf('\nStandard Shinozuka method\n');
 
-Phi = 2*pi*rand(1,order,nV); % random phase shifts Phi uniformly distributed on [0,2*pi]
+Phi = rand(1,order,nV)*2*pi; % random phase shifts Phi uniformly distributed on [0,2*pi]
 Psi = rand(1,order,nV); % random variables Psi uniformly distributed on [0,1]
 Z = sqrt(-log(Psi)); % random amplitudes Z with values in [0,+Inf[
 clear Psi
