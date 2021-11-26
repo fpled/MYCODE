@@ -24,7 +24,7 @@ Dim = 2; % space dimension Dim = 2, 3
 % n = Dim*(Dim+1)/2; % size of elasticity matrix
 % nU = n*(n+1)/2; % number of Gaussian random fields
 nU = 1; % number of Gaussian random fields
-N = 1; % number of independent realizations for each Gaussian random field
+N = 1e3; % number of independent realizations for each Gaussian random field
 nV = nU*N; % number of independent realizations for all Gaussian random fields
 
 nu = 2^3; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
