@@ -17,6 +17,24 @@ renderer = 'OpenGL';
 
 Dim = 2; % space dimension Dim = 2, 3
 
+% n3D = 6; % size of 3D elasticity matrix
+% n = Dim*(Dim+1)/2; % size of elasticity matrix
+% nU = n*(n+1)/2; % number of Gaussian random fields
+nU = 1; % number of Gaussian random fields
+% N = [20 100 500 2500 12500]; % number of independent realizations for each Gaussian random field
+N = 100;
+nV = nU*N; % number of independent realizations for all Gaussian random fields
+
+% nu = [2^2 2^3 2^4 2^5]; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
+nu = 2^3;
+order = nu.^Dim; % Dim-dimensional order (number of terms) of the spectral representation
+
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'results','Shinozuka');
+if ~exist(pathname,'dir')
+    mkdir(pathname);
+end
+
 %% Domains and meshes
 L = 1e-3; % [m]
 a = L/2;
@@ -43,8 +61,8 @@ option = 'CONT'; % plane stress
 if Dim==1
     cl = 2e-6;
 elseif Dim==2
-    % cl = 1e-5;
-    cl = 2e-6;
+    cl = 1e-5;
+    % cl = 2e-6;
 elseif Dim==3
     cl = 2e-5;
     % cl = 7.5e-6;
@@ -67,44 +85,71 @@ nx = size(x,1); % number of points
 
 lcorr = repmat(L/50,Dim,1); % spatial correlation lengths
 
-% n3D = 6; % size of 3D elasticity matrix
-% n = Dim*(Dim+1)/2; % size of elasticity matrix
-% nU = n*(n+1)/2; % number of Gaussian random fields
-nU = 1; % number of Gaussian random fields
-for N = [20 100 500 2500 12500] % number of independent realizations for each Gaussian random field
-    nV = nU*N; % number of independent realizations for all Gaussian random fields
-    for nu = [2^2 2^3 2^4 2^5] % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
+s = rng('default');
+
+%% Analytic autocorrelation with the middle point as a reference
+if displayCorrelationStructure
+    IDLineX = find(x(:,2)==L/2);
+    IDLineY = find(x(:,1)==L/2);
+    XMid = x(IDLineX,1);
+    YMid = x(IDLineY,2);
+    [XMid, reOrderX] = sort(XMid);
+    [YMid, reOrderY] = sort(YMid);
+    nX = size(IDLineX,1);
+    nY = size(IDLineY,1);
+    IDCenterX = floor((nX+1)/2);
+    IDCenterY = floor((nY+1)/2);
+    IDCenter = intersect(IDLineX,IDLineY);
+    xCenter = x(IDCenter,:);
+
+    % Expected correlation function
+    corrAna = prod(sinc((x-xCenter)/2./lcorr').^2,2); % vector of correlation to the central point
+    corrAnaX = corrAna(IDLineX);
+    corrAnaX = corrAnaX(reOrderX);
+    corrAnaY = corrAna(IDLineY);
+    corrAnaY = corrAnaY(reOrderY);
+
+    figure('Name','Expected autocorrelation function')
+    clf
+    plot(corrAna,S);
+    colorbar
+    set(gca,'FontSize',fontsize)
+    mysaveas(pathname,'Autocorrelation_Analytic_Shinozuka',formats,renderer);
+end
+
+%% Computation
+for Ni = N
+    nV = nU*Ni; % number of independent realizations for all Gaussian random fields
+    for nui = nu
         close all
-        order = nu^Dim; % Dim-dimensional order (number of terms) of the spectral representation
+        orderi = nui^Dim; % Dim-dimensional order (number of terms) of the spectral representation
 
-        pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-            'results','Shinozuka',['N' num2str(N) 'Order' num2str(order)]);
-        if ~exist(pathname,'dir')
-            mkdir(pathname);
+        pathnamei = fullfile(pathname,['N' num2str(Ni) 'Order' num2str(orderi)]);
+        if ~exist(pathnamei,'dir')
+            mkdir(pathnamei);
         end
-
-        pathResults = fullfile(pathname,'results.txt');
-        fid = fopen(pathResults,'wt');
+        pathResultsi = fullfile(pathnamei,'results.txt');
+        fid = fopen(pathResultsi,'wt');
 
         fprintf('\nNumber of points  = %d',nx);
         fprintf('\nNumber of fields  = %d',nU);
-        fprintf('\nNumber of samples = %d for each Gaussian random field',N);
+        fprintf('\nNumber of samples = %d for each Gaussian random field',Ni);
         fprintf('\nTotal number of realizations = %d',nV);
+        fprintf('\nOrder of the approximation = %d',orderi);
         fprintf('\n');
 
         fprintf(fid,'\nNumber of points  = %d',nx);
         fprintf(fid,'\nNumber of fields  = %d',nU);
-        fprintf(fid,'\nNumber of samples = %d for each Gaussian random field',N);
+        fprintf(fid,'\nNumber of samples = %d for each Gaussian random field',Ni);
         fprintf(fid,'\nTotal number of realizations = %d',nV);
-        fprintf('\n');
-
-        s = rng('default');
+        fprintf(fid,'\nOrder of the approximation = %d',orderi);
+        fprintf(fid,'\n');
 
         %% Standard Shinozuka method
         fprintf('\nStandard Shinozuka method\n');
         tShinozuka = tic;
 
-        V = shinozuka(x,lcorr,nU,N,'order',nu,'state',s);
+        V = shinozuka(x,lcorr,nU,Ni,'order',nui,'state',s);
 
         timeShinozuka = toc(tShinozuka);
         fprintf('\nelapsed time = %f s\n',timeShinozuka);
@@ -116,7 +161,7 @@ for N = [20 100 500 2500 12500] % number of independent realizations for each Ga
         fprintf('\nRandomized Shinozuka method\n');
         tShinozukaRand = tic;
 
-        W = shinozukaRand(x,lcorr,nU,N,'order',order,'state',s);
+        W = shinozukaRand(x,lcorr,nU,Ni,'order',orderi,'state',s);
 
         timeShinozukaRand = toc(tShinozukaRand);
         fprintf('\nelapsed time = %f s\n',timeShinozukaRand);
@@ -132,14 +177,14 @@ for N = [20 100 500 2500 12500] % number of independent realizations for each Ga
                 plot_sol(S,V(:,1,1));
                 colorbar
                 set(gca,'FontSize',fontsize)
-                mysaveas(pathname,'gaussian_germ_Shinozuka_std',formats,renderer);
+                mysaveas(pathnamei,'gaussian_germ_Shinozuka_std',formats,renderer);
 
                 figure('Name','Gaussian germ - Randomized Shinozuka method')
                 clf
                 plot_sol(S,W(:,1,1));
                 colorbar
                 set(gca,'FontSize',fontsize)
-                mysaveas(pathname,'gaussian_germ_Shinozuka_rand',formats,renderer);
+                mysaveas(pathnamei,'gaussian_germ_Shinozuka_rand',formats,renderer);
             else
                 Ve = cell(getnbgroupelem(S),1);
                 We = cell(getnbgroupelem(S),1);
@@ -177,27 +222,6 @@ for N = [20 100 500 2500 12500] % number of independent realizations for each Ga
 
         %% Display correlation structure
         if displayCorrelationStructure
-            % Correlation with the middle point as a reference
-            IDLineX = find(x(:,2)==L/2);
-            IDLineY = find(x(:,1)==L/2);
-            XMid = x(IDLineX,1);
-            YMid = x(IDLineY,2);
-            [XMid, reOrderX] = sort(XMid);
-            [YMid, reOrderY] = sort(YMid);
-            nX = size(IDLineX,1);
-            nY = size(IDLineY,1);
-            IDCenterX = floor((nX+1)/2);
-            IDCenterY = floor((nY+1)/2);
-            IDCenter = intersect(IDLineX,IDLineY);
-            xCenter = x(IDCenter,:);
-
-            % Expected correlation function
-            corrAna = prod(sinc((x-xCenter)/2./lcorr').^2,2); % vector of correlation to the central point
-            corrAnaX = corrAna(IDLineX);
-            corrAnaX = corrAnaX(reOrderX);
-            corrAnaY = corrAna(IDLineY);
-            corrAnaY = corrAnaY(reOrderY);
-
             % Computed correlation function
             corrV = corr(V'); % correlation matrix
             corrV = corrV(:,IDCenter); % vector of correlation to the central point
@@ -243,26 +267,17 @@ for N = [20 100 500 2500 12500] % number of independent realizations for each Ga
 
             % Plotting
 
-            figure('Name','Expected autocorrelation function')
-            clf
-            plot(corrAna,S);
-            colorbar
-            set(gca,'FontSize',fontsize)
-            mysaveas(pathname,'Autocorrelation_Analytic_Shinozuka',formats,renderer);
-
             figure('Name','Autocorrelation function with the standard Shinozuka method')
-            clf
             plot(corrV,S);
             colorbar
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,'Autocorrelation_Shinozuka_std',formats,renderer);
+            mysaveas(pathnamei,'Autocorrelation_Shinozuka_std',formats,renderer);
 
             figure('Name','Autocorrelation function with the randomized Shinozuka method')
-            clf
             plot(corrW,S);
             colorbar
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,'Autocorrelation_Shinozuka_rand',formats,renderer);
+            mysaveas(pathnamei,'Autocorrelation_Shinozuka_rand',formats,renderer);
 
             figure('Name','Autocorrelation on central x axis using the standard Shinozuka method')
             hold on
@@ -270,9 +285,11 @@ for N = [20 100 500 2500 12500] % number of independent realizations for each Ga
             plot(XMid,corrAnaX,'r--');
             xlabel('$x$ [m]')
             ylabel('$R(x - x_c)$')
+            grid on
+            grid minor
             % legend('Numerical computation','Analytical computation')
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,'autocorrelation_X_Shinozuka_std',formats,renderer);
+            mysaveas(pathnamei,'autocorrelation_X_Shinozuka_std',formats,renderer);
 
             figure('Name','Autocorrelation on central y axis using the standard Shinozuka method')
             hold on
@@ -280,9 +297,11 @@ for N = [20 100 500 2500 12500] % number of independent realizations for each Ga
             plot(YMid,corrAnaY,'r--');
             xlabel('$y$ [m]')
             ylabel('$R(y - y_c)$')
+            grid on
+            grid minor
             % legend('Numerical computation','Analytical computation')
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,'autocorrelation_Y_Shinozuka_std',formats,renderer);
+            mysaveas(pathnamei,'autocorrelation_Y_Shinozuka_std',formats,renderer);
 
             figure('Name','Autocorrelation on central x axis using the randomized Shinozuka method')
             hold on
@@ -291,9 +310,10 @@ for N = [20 100 500 2500 12500] % number of independent realizations for each Ga
             xlabel('$x$ [m]')
             ylabel('$R(x - x_c)$')
             grid on
+            grid minor
             % legend('Numerical computation','Analytical computation')
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,'autocorrelation_X_Shinozuka_rand',formats,renderer);
+            mysaveas(pathnamei,'autocorrelation_X_Shinozuka_rand',formats,renderer);
 
             figure('Name','Autocorrelation on central y axis using the randomized Shinozuka method')
             hold on
@@ -302,9 +322,10 @@ for N = [20 100 500 2500 12500] % number of independent realizations for each Ga
             xlabel('$y$ [m]')
             ylabel('$R(y - y_c)$')
             grid on
+            grid minor
             % legend('Numerical computation','Analytical computation')
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,'autocorrelation_Y_Shinozuka_rand',formats,renderer);
+            mysaveas(pathnamei,'autocorrelation_Y_Shinozuka_rand',formats,renderer);
         end
 
         %% Probability density functions
@@ -341,9 +362,10 @@ for N = [20 100 500 2500 12500] % number of independent realizations for each Ga
             xlabel('$V(x_c, y_c)$')
             ylabel('$f(V(x_c, y_c))$')
             grid on
+            grid minor
             % legend('Numerical estimation','Analytical computation')
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,'pdf_Shinozuka_std',formats,renderer);
+            mysaveas(pathnamei,'pdf_Shinozuka_std',formats,renderer);
 
             figure('Name','ksdensity of the center node using the randomized Shinozuka method')
             hold on
@@ -352,12 +374,13 @@ for N = [20 100 500 2500 12500] % number of independent realizations for each Ga
             xlabel('$W(x_c, y_c)$')
             ylabel('$f(W(x_c, y_c))$')
             grid on
+            grid minor
             % legend('Numerical estimation','Analytical computation')
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,'pdf_Shinozuka_rand',formats,renderer);
-
-            fclose(fid);
+            mysaveas(pathnamei,'pdf_Shinozuka_rand',formats,renderer);
         end
+        fclose(fid);
+        fprintf(['\n' repmat('-',1,76) '\n'])
     end
 end
 myparallel('stop');
