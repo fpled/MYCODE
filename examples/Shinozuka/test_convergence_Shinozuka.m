@@ -21,12 +21,12 @@ Dim = 2; % space dimension Dim = 2, 3
 % n = Dim*(Dim+1)/2; % size of elasticity matrix
 % nU = n*(n+1)/2; % number of Gaussian random fields
 nU = 1; % number of Gaussian random fields
-% N = [20 100 500 2500 12500]; % number of independent realizations for each Gaussian random field
-N = 100;
+N = [20 100 500 2500 12500]; % number of independent realizations for each Gaussian random field
+% N = 100;
 nV = nU*N; % number of independent realizations for all Gaussian random fields
 
-% nu = [2^2 2^3 2^4 2^5]; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
-nu = 2^3;
+nu = [2^2 2^3 2^4 2^5]; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
+% nu = 2^3;
 order = nu.^Dim; % Dim-dimensional order (number of terms) of the spectral representation
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -61,8 +61,9 @@ option = 'CONT'; % plane stress
 if Dim==1
     cl = 2e-6;
 elseif Dim==2
-    cl = 1e-5;
-    % cl = 2e-6;
+    % cl = 1e-5;
+    cl = 2e-6;
+    % cl = 1.25e-6;
 elseif Dim==3
     cl = 2e-5;
     % cl = 7.5e-6;
@@ -112,6 +113,9 @@ if displayCorrelationStructure
     figure('Name','Expected autocorrelation function')
     clf
     plot(corrAna,S);
+    xlabel('$x$ [m]')
+    ylabel('$y$ [m]')
+    axis on
     colorbar
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'Autocorrelation_Analytic_Shinozuka',formats,renderer);
@@ -119,7 +123,7 @@ end
 
 %% Computation
 for Ni = N
-    nV = nU*Ni; % number of independent realizations for all Gaussian random fields
+    nVi = nU*Ni; % number of independent realizations for all Gaussian random fields
     for nui = nu
         close all
         orderi = nui^Dim; % Dim-dimensional order (number of terms) of the spectral representation
@@ -134,14 +138,14 @@ for Ni = N
         fprintf('\nNumber of points  = %d',nx);
         fprintf('\nNumber of fields  = %d',nU);
         fprintf('\nNumber of samples = %d for each Gaussian random field',Ni);
-        fprintf('\nTotal number of realizations = %d',nV);
+        fprintf('\nTotal number of realizations = %d',nVi);
         fprintf('\nOrder of the approximation = %d',orderi);
         fprintf('\n');
 
         fprintf(fid,'\nNumber of points  = %d',nx);
         fprintf(fid,'\nNumber of fields  = %d',nU);
         fprintf(fid,'\nNumber of samples = %d for each Gaussian random field',Ni);
-        fprintf(fid,'\nTotal number of realizations = %d',nV);
+        fprintf(fid,'\nTotal number of realizations = %d',nVi);
         fprintf(fid,'\nOrder of the approximation = %d',orderi);
         fprintf(fid,'\n');
 
@@ -175,6 +179,9 @@ for Ni = N
                 figure('Name','Gaussian germ - Standard Shinozuka method')
                 clf
                 plot_sol(S,V(:,1,1));
+                xlabel('$x$ [m]')
+                ylabel('$y$ [m]')
+                axis on
                 colorbar
                 set(gca,'FontSize',fontsize)
                 mysaveas(pathnamei,'gaussian_germ_Shinozuka_std',formats,renderer);
@@ -182,6 +189,9 @@ for Ni = N
                 figure('Name','Gaussian germ - Randomized Shinozuka method')
                 clf
                 plot_sol(S,W(:,1,1));
+                xlabel('$x$ [m]')
+                ylabel('$y$ [m]')
+                axis on
                 colorbar
                 set(gca,'FontSize',fontsize)
                 mysaveas(pathnamei,'gaussian_germ_Shinozuka_rand',formats,renderer);
@@ -207,6 +217,9 @@ for Ni = N
                 figure('Name','Gaussian germ - Standard Shinozuka method')
                 clf
                 plot(Ve(1),S);
+                xlabel('$x$ [m]')
+                ylabel('$y$ [m]')
+                axis on
                 colorbar
                 set(gca,'FontSize',fontsize)
                 mysaveas(pathname,'gaussian_germ_Shinozuka_std',formats,renderer);
@@ -214,6 +227,9 @@ for Ni = N
                 figure('Name','Gaussian germ - Randomized Shinozuka method')
                 clf
                 plot(We(1),S);
+                xlabel('$x$ [m]')
+                ylabel('$y$ [m]')
+                axis on
                 colorbar
                 set(gca,'FontSize',fontsize)
                 mysaveas(pathname,'gaussian_germ_Shinozuka_rand',formats,renderer);
@@ -222,13 +238,20 @@ for Ni = N
 
         %% Display correlation structure
         if displayCorrelationStructure
-            % Computed correlation function
-            corrV = corr(V'); % correlation matrix
-            corrV = corrV(:,IDCenter); % vector of correlation to the central point
+            % Correlation functions on the mesh
+            % corrV = V * V(IDCenter,:)'/(N-1); % vector of correlation to the central point
+            corrV = autocorrVec(V,IDCenter);
             errCorrV = norm(corrV - corrAna)/norm(corrAna);
-            corrW = corr(W');
-            corrW = corrW(:,IDCenter);
+            % corrVold = corr(V'); % correlation matrix
+            % corrVold = corrVold(:,IDCenter); % vector of correlation to the central point
+            % errCorrVV = norm(corrV - corrVold)/norm(corrVold);
+
+            % corrW = W * W(IDCenter,:)'/(N-1);
+            corrW = autocorrVec(W,IDCenter);
             errCorrW = norm(corrW - corrAna)/norm(corrAna);
+            % corrWold = corr(W');
+            % corrWold = corrWold(:,IDCenter);
+            % errCorrWW = norm(corrW - corrWold)/norm(corrWold);
 
             % Correlation functions on the central lines
             corrVX = corrV(IDLineX);
@@ -269,12 +292,18 @@ for Ni = N
 
             figure('Name','Autocorrelation function with the standard Shinozuka method')
             plot(corrV,S);
+            xlabel('$x$ [m]')
+            ylabel('$y$ [m]')
+            axis on
             colorbar
             set(gca,'FontSize',fontsize)
             mysaveas(pathnamei,'Autocorrelation_Shinozuka_std',formats,renderer);
 
             figure('Name','Autocorrelation function with the randomized Shinozuka method')
             plot(corrW,S);
+            xlabel('$x$ [m]')
+            ylabel('$y$ [m]')
+            axis on
             colorbar
             set(gca,'FontSize',fontsize)
             mysaveas(pathnamei,'Autocorrelation_Shinozuka_rand',formats,renderer);
