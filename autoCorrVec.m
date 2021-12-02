@@ -1,4 +1,4 @@
-function R = autoCorrVec(V,ID)
+function R = autocorrVec(V,ID)
 % function R = autocorrVec(V,ID)
 %
 % R = autocorrVec(V,ID) returns the columns of the autocorrelation matrix
