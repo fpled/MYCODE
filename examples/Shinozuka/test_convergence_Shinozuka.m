@@ -21,12 +21,12 @@ Dim = 2; % space dimension Dim = 2, 3
 % n = Dim*(Dim+1)/2; % size of elasticity matrix
 % nU = n*(n+1)/2; % number of Gaussian random fields
 nU = 1; % number of Gaussian random fields
-N = [20 100 500 2500 12500]; % number of independent realizations for each Gaussian random field
-% N = 100;
+% N = [20 100 500 2500 12500]; % number of independent realizations for each Gaussian random field
+N = 100;
 nV = nU*N; % number of independent realizations for all Gaussian random fields
 
-nu = [2^2 2^3 2^4 2^5]; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
-% nu = 2^3;
+% nu = [2^2 2^3 2^4 2^5]; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
+nu = 2^3;
 order = nu.^Dim; % Dim-dimensional order (number of terms) of the spectral representation
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -239,14 +239,12 @@ for Ni = N
         %% Display correlation structure
         if displayCorrelationStructure
             % Correlation functions on the mesh
-            % corrV = V * V(IDCenter,:)'/(N-1); % vector of correlation to the central point
-            corrV = autocorrVec(V,IDCenter);
+            corrV = autocorrVec(V,IDCenter); % vector of correlation to the central point
             errCorrV = norm(corrV - corrAna)/norm(corrAna);
             % corrVold = corr(V'); % correlation matrix
             % corrVold = corrVold(:,IDCenter); % vector of correlation to the central point
             % errCorrVV = norm(corrV - corrVold)/norm(corrVold);
 
-            % corrW = W * W(IDCenter,:)'/(N-1);
             corrW = autocorrVec(W,IDCenter);
             errCorrW = norm(corrW - corrAna)/norm(corrAna);
             % corrWold = corr(W');
