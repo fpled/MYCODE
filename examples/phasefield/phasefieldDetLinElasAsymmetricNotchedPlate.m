@@ -26,7 +26,7 @@ solveProblem = true;
 displayModel = false;
 displaySolution = false;
 makeMovie = false;
-saveParaview = false;
+saveParaview = true;
 
 test = true; % coarse mesh
 % test = false; % fine mesh
@@ -245,13 +245,13 @@ end
 if solveProblem
     tTotal = tic;
     
-    [dt,ut,ft,dinct] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR,'display');
+    [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR,'display');
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','dinct','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','time');
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','dinct','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','time');
 end
 
 %% Outputs
@@ -331,6 +331,7 @@ if displaySolution
     for j=1:length(rep)
         dj = getmatrixatstep(dt,rep(j));
         uj = getmatrixatstep(ut,rep(j));
+        Hj = getmatrixatstep(Ht,rep(j));
         
         plotSolution(S_phase,dj);
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
@@ -355,7 +356,14 @@ if displaySolution
         % mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
         %
         % plotSolution(S,uj,'energyint','','ampl',ampl);
-        % mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
+        % mysaveas(pathname,['internal_energy_density_t' num2str(rep(j))],formats,renderer);
+        %
+        % figure('Name','Solution H')
+        % clf
+        % plot(Hj,S_phase);
+        % colorbar
+        % set(gca,'FontSize',fontsize)
+        % mysaveas(pathname,['internal_energy_density_history_t' num2str(rep(j))],formats,renderer);
     end
 end
 
@@ -379,7 +387,12 @@ if makeMovie
     %
     % evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
     % evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
-    % evolSolution(S,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
+    % evolSolution(S,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density','pathname',pathname,options{:});
+    % figure('Name','Solution H')
+    % clf
+    % T = setevolparam(T,'colorbar',true,'FontSize',fontsize,options{:});
+    % frame = evol(T,Ht,S_phase,'rescale',true);
+    % saveMovie(frame,'FrameRate',framerate,'filename','internal_energy_density_history','pathname',pathname);
 end
 
 %% Save solutions
@@ -388,11 +401,15 @@ if saveParaview
     for i=1:length(T)
         di = getmatrixatstep(dt,rep(i));
         ui = getmatrixatstep(ut,rep(i));
-        dincti = getmatrixatstep(dinct,rep(i));
+        Hi = getmatrixatstep(Ht,rep(i));
+        % dincti = getmatrixatstep(dinct,rep(i));
         
-        write_vtk_mesh(S,{di,ui,dincti},[],...
-            {'damage','displacement','damage increment'},[],...
+        write_vtk_mesh(S,{di,ui},{Hi},...
+            {'damage','displacement'},{'internal energy density history'},...
             pathname,'solution',1,i-1);
+%         write_vtk_mesh(S,{di,ui,dincti},{Hi},...
+%             {'damage','displacement','damage increment'},{'internal energy density history'},...
+%             pathname,'solution',1,i-1);
     end
     make_pvd_file(pathname,'solution',1,length(T));
 end

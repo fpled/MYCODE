@@ -24,7 +24,7 @@ solveProblem = true;
 displayModel = false;
 displaySolution = false;
 makeMovie = false;
-saveParaview = false;
+saveParaview = true;
 
 test = true; % coarse mesh
 % test = false; % fine mesh
@@ -33,7 +33,7 @@ Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isotropic'; % 'Isotropic' or 'Anisotropic'. Material symmetry
 ang = 30; % clockwise material orientation angle around z-axis [deg]
 isotropicTest = false; % for test purposes (configuration of isotropic material with the anisotropic class). Work only for "Dim = 2" and "symmetry = 'Anisotropic'".
-loading = 'Tension'; % 'Tension' or 'Shear'
+loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 switch lower(symmetry)
@@ -88,16 +88,17 @@ if setProblem
         % clD = 6.25e-5; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
         % clD = 3e-5; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
         clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+        % clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+        % clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+        % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+        
         % clC = 3.906e-6; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
         % clC = 2.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        clC = 2e-6; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
-        % clC = 1e-6; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
+        % clC = 2e-6; % (shear test) [Miehe, Hofacker, Welschinger, 2010, CMAME]
+        % clC = 1e-6; % (tension test) [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
         % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        % clD = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
         % clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-        % clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+        clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         if test
             clD = 4e-5;
@@ -191,7 +192,7 @@ if setProblem
     
     % r_phase = BILINFORM(0,0,gc/l+2*H,0); % nodal values
     % R_phase = calc_matrix(r_phase,S_phase);
-    % A_phase = K_phase + M_phase;
+    % A_phase = K_phase + R_phase;
     
     % l_phase = LINFORM(0,2*H,0); % nodal values
     % l_phase = setfree(l_phase,1);
@@ -210,8 +211,8 @@ if setProblem
             % Lame coefficients
             % lambda = 121.1538e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
             % mu = 80.7692e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
-            lambda = 121.15e9;
-            mu = 80.77e9;
+            lambda = 121.15e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
+            mu = 80.77e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
             % Young modulus and Poisson ratio
             if Dim==2
                 switch lower(option)
@@ -518,14 +519,14 @@ end
 if solveProblem
     tTotal = tic;
     
-    [dt,ut,ft,dinct,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
+    [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
         'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','dinct','St_phase','St','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','Ht','time');
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','dinct','St_phase','St','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','Ht','time');
 end
 
 %% Outputs
@@ -643,6 +644,7 @@ if displaySolution
         uj = ut{rep(j)};
         Sj = St{rep(j)};
         Sj_phase = St_phase{rep(j)};
+        Hj = Ht{rep(j)};
         
         plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
         mysaveas(pathname,['mesh_t' num2str(rep(j))],formats,renderer);
@@ -670,7 +672,14 @@ if displaySolution
         % mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
         %
         % plotSolution(Sj,uj,'energyint','','ampl',ampl);
-        % mysaveas(pathname,['internal_energy_t' num2str(rep(j))],formats,renderer);
+        % mysaveas(pathname,['internal_energy_density_t' num2str(rep(j))],formats,renderer);
+        %
+        % figure('Name','Solution H')
+        % clf
+        % plot(Hj,Sj_phase);
+        % colorbar
+        % set(gca,'FontSize',fontsize)
+        % mysaveas(pathname,['internal_energy_density_history_t' num2str(rep(j))],formats,renderer);
     end
 end
 
@@ -697,7 +706,7 @@ if makeMovie
     %
     % evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
     % evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
-    % evolSolutionCell(T,St,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy','pathname',pathname,options{:});
+    % evolSolutionCell(T,St,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density','pathname',pathname,options{:});
 end
 
 %% Save solutions
@@ -706,13 +715,17 @@ if saveParaview
     for i=1:length(T)
         di = dt{rep(i)};
         ui = ut{rep(i)};
-        dincti = dinct{rep(i)};
         Si = St{rep(i)};
         % Si_phase = St_phase{rep(i)};
+        Hi = Ht{rep(i)};
+        % dincti = dinct{rep(i)};
         
-        write_vtk_mesh(Si,{di,ui,dincti},[],...
-            {'damage','displacement','damage increment'},[],...
+        write_vtk_mesh(Si,{di,ui},{Hi},...
+            {'damage','displacement'},{'internal energy density history'},...
             pathname,'solution',1,i-1);
+%         write_vtk_mesh(Si,{di,ui,dincti},{Hi},...
+%             {'damage','displacement','damage increment'},{'internal energy density history'},...
+%             pathname,'solution',1,i-1);
     end
     make_pvd_file(pathname,'solution',1,length(T));
 end

@@ -1,6 +1,6 @@
-function [f_sample,dt_mean,ut_mean,dt_var,ut_var] = solvePFStoLinElas(S_phase,S,T,fun,samples,varargin)
-% function [f_sample,dt_mean,ut_mean,dt_var,ut_var] = solvePFStoLinElas(S_phase,S,T,fun,samples,varargin)
-% Solve stochastic Phase Field problem.
+function [f_sample] = solvePFDetLinElasParamInfluence(S_phase,S,T,fun,samples,varargin)
+% function [f_sample] = solvePFDetLinElasParamInfluence(S_phase,S,T,fun,samples,varargin)
+% Solve deterministic Phase Field problem.
 
 fun = fcnchk(fun);
 
@@ -13,17 +13,8 @@ l_sample = samples(:,4);
 mats_phase = MATERIALS(S_phase);
 mats = MATERIALS(S);
 
-sz_d = getnbddl(S_phase);
-sz_u = getnbddl(S);
-
 f_sample = zeros(N,length(T));
 % fmax_sample = zeros(N,1);
-
-% Initialize statistical means and second-order moments
-dt_mean = zeros(sz_d,length(T));
-dt_moment2 = zeros(sz_d,length(T));
-ut_mean = zeros(sz_u,length(T));
-ut_moment2 = zeros(sz_u,length(T));
 
 if ~verLessThan('matlab','9.2') % introduced in R2017a
     q = parallel.pool.DataQueue;
@@ -37,7 +28,6 @@ parfor i=1:N
     if ~verLessThan('matlab','9.2') % introduced in R2017a
         send(q,i);
     end
-    
     % Update phase field parameters
     gci = gc_sample(i);
     li = l_sample(i);
@@ -61,24 +51,12 @@ parfor i=1:N
     Si = actualisematerials(Si,matsi);
     
     % Solve deterministic problem
-    [dt,ut,ft] = fun(S_phasei,Si);
-    
-    % Compute second-order statistics
-    dt_val = getvalue(dt);
-    dt_mean = dt_mean + dt_val/N;
-    dt_moment2 = dt_moment2 + dt_val.^2/N;
-    ut_val = getvalue(ut);
-    ut_mean = ut_mean + ut_val/N;
-    ut_moment2 = ut_moment2 + ut_val.^2/N;
+    [~,~,ft] = fun(S_phasei,Si);
     
     f_sample(i,:) = ft;
     % fmax_sample(i) = max(ft);
 end
 textprogressbar(' done');
-
-% Compute unbiased variances
-dt_var = (N/(N-1))*(dt_moment2 - dt_mean.^2);
-ut_var = (N/(N-1))*(ut_moment2 - ut_mean.^2);
 
 function nUpdateProgressBar(~)
 j = j+1;

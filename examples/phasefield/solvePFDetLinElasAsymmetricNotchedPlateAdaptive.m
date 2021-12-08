@@ -1,5 +1,5 @@
-function [dt,ut,ft,dinct,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
-% function [dt,ut,ft,dinct,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
+function [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
+% function [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
 % Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);
@@ -13,14 +13,17 @@ t = gett(T);
 dt = cell(1,length(T));
 ut = cell(1,length(T));
 ft = zeros(1,length(T));
-dinct = cell(1,length(T)); % increment of phase field
-tol = 1e-12;
 St_phase = cell(1,length(T));
 St = cell(1,length(T));
+if nargout>=6
+    Ht = cell(1,length(T));
+end
+% dinct = cell(1,length(T)); % increment of phase field
+% tol = 1e-12;
 
-u = calc_init_dirichlet(S);
 d = calc_init_dirichlet(S_phase);
-H = calc_energyint(S,u,'positive');
+u = calc_init_dirichlet(S);
+H = calc_energyint(S,u,'positive','intorder','mass');
 
 if display_
     fprintf('\n+-----------+-----------+-----------+----------+----------+------------+------------+\n');
@@ -39,7 +42,7 @@ for i=1:length(T)
     
     % Internal energy field
     h_old = getvalue(H);
-    H = calc_energyint(S,u,'positive');
+    H = calc_energyint(S,u,'positive','intorder','mass');
     h = getvalue(H);
     for p=1:getnbgroupelem(S)
         he = double(h{p});
@@ -60,21 +63,21 @@ for i=1:length(T)
     [A_phase,b_phase] = calc_rigi(S_phase);
     b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
     
-    dold = d;
+    % d_old = d;
     d = A_phase\b_phase;
     d = unfreevector(S_phase,d);
     
     % Mesh adaptation
     mats = MATERIALS(S);
     S_phase_old = S_phase;
-    S_phase_old = addcl(S_phase_old,H1,'T',1);
-    S_phase_old = addcl(S_phase_old,H2,'T',1);
-    S_phase_old = addcl(S_phase_old,H3,'T',1);
-    d_old = freevector(S_phase_old,d);
-    d_old = unfreevector(S_phase_old,d_old);
+    S_phase_ref = addcl(S_phase_old,H1,'T',1);
+    S_phase_ref = addcl(S_phase_ref,H2,'T',1);
+    S_phase_ref = addcl(S_phase_ref,H3,'T',1);
+    d_ref = freevector(S_phase_ref,d);
+    d_ref = unfreevector(S_phase_ref,d_ref);
     % S_old = S;
-    cl = sizemap(d_old);
-    S_phase = adaptmesh(S_phase_old,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    cl = sizemap(d_ref);
+    S_phase = adaptmesh(S_phase_ref,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     S = S_phase;
     
     for m=1:length(mats_phase)
@@ -86,17 +89,18 @@ for i=1:length(T)
     S_phase = addcl(S_phase,BL,'T');
     S_phase = addcl(S_phase,BR,'T');
     
+    % Update fields
     P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
     d = P_phase'*d;
-    dold = P_phase'*dold;
-    dinc = d - dold;
+    % d_old = P_phase'*d_old;
+    % dinc = d - d_old;
     % dincmin = min(dinc); if dincmin<-tol, dincmin, end
     
-    % Displacement field
     % P = calcProjection(S,S_old,[],'free',false,'full',true);
     P = kron(P_phase,eye(2));
     u = P'*u;
     
+    % Displacement field
     for m=1:length(mats)
         mats{m} = setparam(mats{m},'d',d);
         mats{m} = setparam(mats{m},'u',u);
@@ -108,7 +112,7 @@ for i=1:length(T)
     S = addcl(S,PL,{'UX','UY'});
     S = addcl(S,PR,'UY');
     
-    H = calc_energyint(S,u,'positive');
+    H = calc_energyint(S,u,'positive','intorder','mass');
     
     [A,b] = calc_rigi(S,'nofree');
     b = -b;
@@ -124,9 +128,12 @@ for i=1:length(T)
     dt{i} = d;
     ut{i} = u;
     ft(i) = f;
-    dinct{i} = dinc;
     St_phase{i} = S_phase;
     St{i} = S;
+    if nargout>=6
+        Ht{i} = reshape(double(mean(H,4)),[getnbelem(S),1]);
+    end
+    % dinct{i} = dinc;
     
     if display_
         fprintf('| %4d/%4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',i,length(T),t(i)*1e3,ft(i)*1e-6,getnbnode(S),getnbelem(S),norm(dt{i}),norm(ut{i}));

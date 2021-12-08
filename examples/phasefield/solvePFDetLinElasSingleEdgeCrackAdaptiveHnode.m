@@ -1,5 +1,5 @@
-function [dt,ut,ft,dinct,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptiveHnode(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
-% function [dt,ut,ft,dinct,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptiveHnode(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+function [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasSingleEdgeCrackAdaptiveHnode(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+% function [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasSingleEdgeCrackAdaptiveHnode(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
 % Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);
@@ -15,20 +15,23 @@ t = gett(T);
 dt = cell(1,length(T));
 ut = cell(1,length(T));
 ft = zeros(1,length(T));
-dinct = cell(1,length(T)); % increment of phase field
-tol = 1e-12;
 St_phase = cell(1,length(T));
 St = cell(1,length(T));
+if nargout>=6
+    Ht = cell(1,length(T));
+end
+% dinct = cell(1,length(T)); % increment of phase field
+% tol = 1e-12;
 
-u = calc_init_dirichlet(S);
 d = calc_init_dirichlet(S_phase);
+u = calc_init_dirichlet(S);
 H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
 
 if display_
     fprintf('\n+-----------+-----------+-----------+----------+----------+------------+------------+\n');
     fprintf('|   Iter    |  u [mm]   |  f [kN]   | Nb nodes | Nb elems |  norm(d)   |  norm(u)   |\n');
     fprintf('+-----------+-----------+-----------+----------+----------+------------+------------+\n');
-    fprintf('| %4d/%4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',0,0,0,0,getnbnode(S),getnbelem(S),0,0);
+    fprintf('| %4d/%4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',0,length(T),0,0,getnbnode(S),getnbelem(S),0,0);
 end
 
 mats_phase = MATERIALS(S_phase);
@@ -57,7 +60,7 @@ for i=1:length(T)
     [A_phase,b_phase] = calc_rigi(S_phase);
     b_phase = -b_phase + bodyload(S_phase,[],'QN',FENODEFIELD(2*H));
     
-    dold = d;
+    % d_old = d;
     d = A_phase\b_phase;
     d = unfreevector(S_phase,d);
     
@@ -78,8 +81,8 @@ for i=1:length(T)
     % Update fields
     P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
     d = P_phase'*d;
-    dold = P_phase'*dold;
-    dinc = d - dold;
+    % d_old = P_phase'*d_old;
+    % dinc = d - d_old;
     % dincmin = min(dinc); if dincmin<-tol, dincmin, end
     
     h = P_phase'*h;
@@ -143,9 +146,12 @@ for i=1:length(T)
     dt{i} = d;
     ut{i} = u;
     ft(i) = f;
-    dinct{i} = dinc;
     St_phase{i} = S_phase;
     St{i} = S;
+    if nargout>=6
+        Ht{i} = double(H);
+    end
+    % dinct{i} = dinc;
     
     if display_
         fprintf('| %4d/%4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',i,length(T),t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),getnbnode(S),getnbelem(S),norm(dt{i}),norm(ut{i}));
