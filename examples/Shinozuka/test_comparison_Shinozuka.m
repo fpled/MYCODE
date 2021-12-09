@@ -85,7 +85,6 @@ fprintf('\nNumber of fields  = %d',nU);
 fprintf('\nNumber of samples = %d for each Gaussian random field',N);
 fprintf('\nNumber of samples = %d for all Gaussian random fields',nV);
 fprintf('\nNumber of terms   = %d in the spectral representation',order);
-fprintf('\n');
 
 %% Standard Shinozuka method
 fprintf('\nStandard Shinozuka method\n');

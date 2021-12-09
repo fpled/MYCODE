@@ -85,6 +85,12 @@ nx = size(x,1); % number of points
 
 lcorr = repmat(L/50,Dim,1); % spatial correlation lengths
 
+fprintf('\nNumber of points  = %d',nx);
+fprintf('\nNumber of fields  = %d',nU);
+fprintf('\nNumber of samples = %d for each Gaussian random field',N);
+fprintf('\nNumber of samples = %d for all Gaussian random fields',nV);
+fprintf('\n');
+
 s = rng('default');
 
 %% Analytical computation of normalized autocorrelation function indexed by the center point as reference point
