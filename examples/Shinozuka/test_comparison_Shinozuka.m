@@ -89,10 +89,12 @@ fprintf('\nNumber of terms   = %d in the spectral representation',order);
 %% Standard Shinozuka method
 fprintf('\nStandard Shinozuka method\n');
 
-Phi = rand(1,order,nV)*2*pi; % random phase shifts Phi uniformly distributed on [0,2*pi]
-Psi = rand(1,order,nV); % random variables Psi uniformly distributed on [0,1]
+srng = rng; % get current random number generator settings
+X = rand(2,order,nV);
+Phi = X(1,:,:)*2*pi; % random phase shifts Phi uniformly distributed on [0,2*pi]
+Psi = X(2,:,:); % random variables Psi uniformly distributed on [0,1]
 Z = sqrt(-log(Psi)); % random amplitudes Z with values in [0,+Inf[
-clear Psi
+clear X Psi
 
 supp = 2*pi./lcorr; % support of power spectral density (PSD) functions
 
@@ -155,7 +157,13 @@ fprintf('\n');
 %% Randomized Shinozuka method
 fprintf('\nRandomized Shinozuka method\n');
 
-Tau = (-1+2*rand(Dim,order,nV)); % random wave numbers Tau uniformly distributed on [-1,1]
+rng(srng) % set same random number generator settings as for standard Shinozuka method
+X = rand(2+Dim,order,nV);
+Phi = X(1,:,:)*2*pi; % random phase shifts Phi uniformly distributed on [0,2*pi]
+Psi = X(2,:,:); % random variables Psi uniformly distributed on [0,1]
+Z = sqrt(-log(Psi)); % random amplitudes Z with values in [0,+Inf[
+Tau = (-1+2*X(2+(1:Dim),:,:)); % random wave numbers Tau uniformly distributed on [-1,1]
+clear X Psi
 
 tWscalar = tic;
 Wscalar = zeros(nx,nV);

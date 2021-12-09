@@ -91,8 +91,6 @@ fprintf('\nNumber of samples = %d for each Gaussian random field',N);
 fprintf('\nNumber of samples = %d for all Gaussian random fields',nV);
 fprintf('\n');
 
-s = rng('default');
-
 %% Analytical computation of normalized autocorrelation function indexed by the center point as reference point
 idxm = find(x(:,2)==L/2);
 idym = find(x(:,1)==L/2);
@@ -115,6 +113,7 @@ corrAnaX = corrAnaX(repxm);
 corrAnaY = corrAnaY(repym);
 
 %% Numerical computation of normalized autocorrelation function with the standard and randomized Shinozuka methods
+s = rng; % get current random number generator settings
 for k=1:length(nu)
     nuk = nu(k); % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
     orderk = order(k); % Dim-dimensional order (number of terms) of the spectral representation
