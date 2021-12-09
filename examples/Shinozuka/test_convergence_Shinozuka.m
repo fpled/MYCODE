@@ -5,7 +5,7 @@ close all
 myparallel('start');
 
 %% Inputs
-displayGaussianGerms = true;
+displayGaussianFields = true;
 displayCorrelationStructure = true;
 displayPdf = true; % display probability density function
 
@@ -123,9 +123,6 @@ for k=1:length(nu)
 
     %% Standard Shinozuka method
     fprintf('\nStandard Shinozuka method\n');
-
-    %% Gaussian germs
-    fprintf('\nComputation of Gaussian germs\n');
     tShinozuka = tic;
 
     V = shinozuka(x,lcorr,nU,max(N),'order',nuk,'state',s);
@@ -133,8 +130,8 @@ for k=1:length(nu)
     timeShinozuka = toc(tShinozuka);
     fprintf('\nelapsed time = %f s\n',timeShinozuka);
 
-    %% Normalized autocorrelation function at center point
-    fprintf('\nComputation of autocorrelation function\n');
+    % Normalized autocorrelation function at center point
+    fprintf('\nComputing autocorrelation function\n');
     tCorrV = tic;
 
     corrV = corr(V',V(idxc,:)'); % Dim-dimensional autocorrelation function at center point
@@ -151,14 +148,11 @@ for k=1:length(nu)
     fprintf('\nelapsed time = %f s\n',timeCorrV);
 
     % Save variables
-    save(fullfile(pathname,['gaussian_germ_Shinozuka_std_order_' num2str(orderk) '.mat']),...
+    save(fullfile(pathname,['shinozuka_std_order_' num2str(orderk) '.mat']),...
         'V','corrV','corrVX','corrVY','timeShinozuka','timeCorrV');
 
     %% Randomized Shinozuka method
     fprintf('\nRandomized Shinozuka method\n');
-
-    %% Gaussian germs
-    fprintf('\nComputation of Gaussian germs\n');
     tShinozukaRand = tic;
 
     W = shinozukaRand(x,lcorr,nU,max(N),'order',orderk,'state',s);
@@ -166,8 +160,8 @@ for k=1:length(nu)
     timeShinozukaRand = toc(tShinozukaRand);
     fprintf('\nelapsed time = %f s\n',timeShinozukaRand);
 
-    %% Normalized autocorrelation function at center point
-    fprintf('\nComputation of autocorrelation function\n');
+    % Normalized autocorrelation function at center point
+    fprintf('\nComputing autocorrelation function\n');
     tCorrW = tic;
     
     corrW = corr(W',W(idxc,:)'); % Dim-dimensional autocorrelation function at center point
@@ -184,19 +178,19 @@ for k=1:length(nu)
     fprintf('\nelapsed time = %f s\n',timeCorrW);
 
     % Save variables
-    save(fullfile(pathname,['gaussian_germ_Shinozuka_rand_order_' num2str(orderk) '.mat']),...
+    save(fullfile(pathname,['shinozuka_rand_order_' num2str(orderk) '.mat']),...
         'W','corrW','corrWX','corrWY','timeShinozukaRand','timeCorrW');
 end
 
-%% Display one realization of a Gaussian germ
-if displayGaussianGerms
+%% Display one realization of a Gaussian random field
+if displayGaussianFields
     for k=1:length(nu)
     orderk = order(k);
-    load(fullfile(pathname,['gaussian_germ_Shinozuka_std_order_' num2str(orderk) '.mat']),'V');
-    load(fullfile(pathname,['gaussian_germ_Shinozuka_rand_order_' num2str(orderk) '.mat']),'W');
+    load(fullfile(pathname,['shinozuka_std_order_' num2str(orderk) '.mat']),'V');
+    load(fullfile(pathname,['shinozuka_rand_order_' num2str(orderk) '.mat']),'W');
     
     if nx==getnbnode(S)
-        figure('Name',['Gaussian germ - Standard Shinozuka method with order ' num2str(orderk)])
+        figure('Name',['Gaussian field - standard Shinozuka method with order ' num2str(orderk)])
         clf
         plot_sol(S,V(:,1,1));
         xlabel('$x$ [m]','Interpreter',interpreter)
@@ -209,9 +203,9 @@ if displayGaussianGerms
         axis on
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['gaussian_germ_Shinozuka_std_order_' num2str(orderk)],formats,renderer);
+        mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(orderk)],formats,renderer);
 
-        figure('Name',['Gaussian germ - Randomized Shinozuka method with order ' num2str(orderk)])
+        figure('Name',['Gaussian field - randomized Shinozuka method with order ' num2str(orderk)])
         clf
         plot_sol(S,W(:,1,1));
         xlabel('$x$ [m]','Interpreter',interpreter)
@@ -224,7 +218,7 @@ if displayGaussianGerms
         axis on
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['gaussian_germ_Shinozuka_rand_order_' num2str(orderk)],formats,renderer);
+        mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(orderk)],formats,renderer);
     else
         Ve = cell(getnbgroupelem(S),1);
         We = cell(getnbgroupelem(S),1);
@@ -244,7 +238,7 @@ if displayGaussianGerms
         Ve = FEELEMFIELD(Ve,'storage','gauss','type','scalar','ddl',DDL('V'));
         We = FEELEMFIELD(We,'storage','gauss','type','scalar','ddl',DDL('W'));
 
-        figure('Name',['Gaussian germ - Standard Shinozuka method with order ' num2str(orderk)])
+        figure('Name',['Gaussian field - standard Shinozuka method with order ' num2str(orderk)])
         clf
         plot(Ve(1),S);
         xlabel('$x$ [m]','Interpreter',interpreter)
@@ -257,9 +251,9 @@ if displayGaussianGerms
         axis on
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['gaussian_germ_Shinozuka_std_order_' num2str(orderk)],formats,renderer);
+        mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(orderk)],formats,renderer);
 
-        figure('Name',['Gaussian germ - Randomized Shinozuka method with order ' num2str(orderk)])
+        figure('Name',['Gaussian field - randomized Shinozuka with order ' num2str(orderk)])
         clf
         plot(We(1),S);
         xlabel('$x$ [m]','Interpreter',interpreter)
@@ -272,7 +266,7 @@ if displayGaussianGerms
         axis on
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['gaussian_germ_Shinozuka_rand_order_' num2str(orderk)],formats,renderer);
+        mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(orderk)],formats,renderer);
     end
     end
 end
@@ -291,10 +285,10 @@ if displayCorrelationStructure
 
     for k=1:length(nu)
         orderk = order(k);
-        load(fullfile(pathname,['gaussian_germ_Shinozuka_std_order_' num2str(orderk) '.mat']),'corrV');
-        load(fullfile(pathname,['gaussian_germ_Shinozuka_rand_order_' num2str(orderk) '.mat']),'corrW');
+        load(fullfile(pathname,['shinozuka_std_order_' num2str(orderk) '.mat']),'corrV');
+        load(fullfile(pathname,['shinozuka_rand_order_' num2str(orderk) '.mat']),'corrW');
 
-        figure('Name',['Autocorrelation function - Standard Shinozuka method with order ' num2str(orderk)])
+        figure('Name',['Autocorrelation function - standard Shinozuka with order ' num2str(orderk)])
         clf
         plot(corrV,S);
         xlabel('$x$ [m]','Interpreter',interpreter)
@@ -302,9 +296,9 @@ if displayCorrelationStructure
         axis on
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['autocorrelation_function_Shinozuka_std_order_' num2str(orderk)],formats,renderer);
+        mysaveas(pathname,['autocorrelation_function_shinozuka_std_order_' num2str(orderk)],formats,renderer);
 
-        figure('Name',['Autocorrelation function - Randomized Shinozuka method with order ' num2str(orderk)])
+        figure('Name',['Autocorrelation function - randomized Shinozuka with order ' num2str(orderk)])
         clf
         plot(corrW,S);
         xlabel('$x$ [m]','Interpreter',interpreter)
@@ -312,22 +306,22 @@ if displayCorrelationStructure
         axis on
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['autocorrelation_function_Shinozuka_rand_order_' num2str(orderk)],formats,renderer);
+        mysaveas(pathname,['autocorrelation_function_shinozuka_rand_order_' num2str(orderk)],formats,renderer);
     end
 
     figure('Name','Autocorrelation function along x axis')
     plot(xm,corrAnaX,'r-');
     hold on
     leg = cell(1+2*length(nu),1);
-    leg{1} = 'Reference';
+    leg{1} = 'reference';
     for k=1:length(nu)
         orderk = order(k);
-        load(fullfile(pathname,['gaussian_germ_Shinozuka_std_order_' num2str(orderk) '.mat']),'corrVX');
-        load(fullfile(pathname,['gaussian_germ_Shinozuka_rand_order_' num2str(orderk) '.mat']),'corrWX');
+        load(fullfile(pathname,['shinozuka_std_order_' num2str(orderk) '.mat']),'corrVX');
+        load(fullfile(pathname,['shinozuka_rand_order_' num2str(orderk) '.mat']),'corrWX');
         plot(xm,corrVX,'-','Color',getfacecolor(k+1));
         plot(xm,corrWX,'--','Color',getfacecolor(k+1));
-        leg{2*k} = ['Standard Shinozuka - order = ' num2str(orderk)];
-        leg{2*k+1} = ['Randomized Shinozuka - order = ' num2str(orderk)];
+        leg{2*k} = ['standard Shinozuka - order = ' num2str(orderk)];
+        leg{2*k+1} = ['randomized Shinozuka - order = ' num2str(orderk)];
     end
     hold off
     grid on
@@ -342,15 +336,15 @@ if displayCorrelationStructure
     plot(ym,corrAnaY,'r--');
     hold on
     leg = cell(1+2*length(nu),1);
-    leg{1} = 'Reference';
+    leg{1} = 'reference';
     for k=1:length(nu)
         orderk = order(k);
-        load(fullfile(pathname,['gaussian_germ_Shinozuka_std_order_' num2str(orderk) '.mat']),'corrVY');
-        load(fullfile(pathname,['gaussian_germ_Shinozuka_rand_order_' num2str(orderk) '.mat']),'corrWY');
+        load(fullfile(pathname,['shinozuka_std_order_' num2str(orderk) '.mat']),'corrVY');
+        load(fullfile(pathname,['shinozuka_rand_order_' num2str(orderk) '.mat']),'corrWY');
         plot(ym,corrVY,'-','Color',getfacecolor(i+1));
         plot(ym,corrWY,'--','Color',getfacecolor(i+1));
-        leg{2*k} = ['Standard Shinozuka - order = ' num2str(orderk)];
-        leg{2*k+1} = ['Randomized Shinozuka - order = ' num2str(orderk)];
+        leg{2*k} = ['standard Shinozuka - order = ' num2str(orderk)];
+        leg{2*k+1} = ['randomized Shinozuka - order = ' num2str(orderk)];
     end
     hold off
     grid on

@@ -248,24 +248,24 @@ timeWvec = toc(tWvec);
 errWvec = norm(Wvec-Wscalar)/norm(Wscalar);
 fprintf('\nVectorized implementation : elapsed time = %f s, relative error = %e',timeWvec,errWvec);
 
-%% Display one realization of a Gaussian germ
+%% Display one realization of a Gaussian random field
 V = reshape(Vcpp,nx,N,nU);
 W = reshape(Wcpp,nx,N,nU);
 if displayGaussianGerms
     if nx==getnbnode(S)
-        figure('Name','Gaussian germ - Standard Shinozuka method')
+        figure('Name',['Gaussian field - standard Shinozuka method with order = ' num2str(order)])
         clf
         plot_sol(S,V(:,1,1));
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,'gaussian_germ_Shinozuka_std',formats,renderer);
+        mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
 
-        figure('Name','Gaussian germ - Randomized Shinozuka method')
+        figure('Name','Gaussian field - randomized Shinozuka method')
         clf
         plot_sol(S,W(:,1,1));
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,'gaussian_germ_Shinozuka_rand',formats,renderer);
+        mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(order)],formats,renderer);
     else
         Ve = cell(getnbgroupelem(S),1);
         We = cell(getnbgroupelem(S),1);
@@ -285,19 +285,19 @@ if displayGaussianGerms
         Ve = FEELEMFIELD(Ve,'storage','gauss','type','scalar','ddl',DDL('V'));
         We = FEELEMFIELD(We,'storage','gauss','type','scalar','ddl',DDL('W'));
 
-        figure('Name','Gaussian germ - Standard Shinozuka method')
+        figure('Name',['Gaussian field - standard Shinozuka method with order = ' num2str(order)])
         clf
         plot(Ve(1),S);
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,'gaussian_germ_Shinozuka_std',formats,renderer);
+        mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
 
-        figure('Name','Gaussian germ - Randomized Shinozuka method')
+        figure('Name',['Gaussian field - randomized Shinozuka method with order = ' num2str(order)])
         clf
         plot(We(1),S);
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,'gaussian_germ_Shinozuka_rand',formats,renderer);
+        mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(order)],formats,renderer);
     end
 end
 
