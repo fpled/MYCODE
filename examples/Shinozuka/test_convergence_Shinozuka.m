@@ -28,11 +28,11 @@ Dim = 2; % space dimension Dim = 2, 3
 % nU = n*(n+1)/2; % number of Gaussian random fields
 nU = 1; % number of Gaussian random fields
 % N = 10.^(1:5); % number of independent realizations for each Gaussian random field
-N = 1e5;
+N = 1e3;
 nV = nU*N; % number of independent realizations for all Gaussian random fields
 
-% nu = 2.^(2:6); % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
-nu = 2^3;
+nu = 2.^(2:6); % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
+% nu = 2^3;
 order = nu.^Dim; % Dim-dimensional order (number of terms) of the spectral representation
 
 %% Domains and meshes
@@ -105,9 +105,9 @@ ym = x(idym,2);
 
 % Normalized autocorrelation function at center point
 if verLessThan('matlab','9.1') % compatibility (<R2016b)
-    corrAna = prod(sinc(pi/2*bsxfun(@rdivide,x-xc,lcorr')).^2,2);
+    corrAna = prod(sinc(bsxfun(@rdivide,x-xc,2*lcorr')).^2,2);
 else
-    corrAna = prod(sinc(pi/2*(x-xc)./lcorr').^2,2);
+    corrAna = prod(sinc((x-xc)./(2*lcorr')).^2,2);
 end
 corrAnaX = corrAna(idxm);
 corrAnaY = corrAna(idym);
@@ -169,7 +169,7 @@ for k=1:length(nu)
 
     %% Normalized autocorrelation function at center point
     fprintf('\nComputation of autocorrelation function\n');
-    tCorrV = tic;
+    tCorrW = tic;
     
     corrW = corr(W',W(idxc,:)'); % Dim-dimensional autocorrelation function at center point
     corrWX = corrW(idxm); % one-dimensional autocorrelation function at center point along x axis
@@ -325,18 +325,18 @@ if displayCorrelationStructure
         orderk = order(k);
         load(fullfile(pathname,['gaussian_germ_Shinozuka_std_order_' num2str(orderk) '.mat']),'corrVX');
         load(fullfile(pathname,['gaussian_germ_Shinozuka_rand_order_' num2str(orderk) '.mat']),'corrWX');
-        plot(xm,corrVX,'-','Color',getfacecolor(i+1));
-        plot(xm,corrWX,'--','Color',getfacecolor(i+1));
-        leg{2*k-1} = ['Standard Shinozuka - order = ' num2str(orderk)];
-        leg{2*k} = ['Randomized Shinozuka - order = ' num2str(orderk)];
+        plot(xm,corrVX,'-','Color',getfacecolor(k+1));
+        plot(xm,corrWX,'--','Color',getfacecolor(k+1));
+        leg{2*k} = ['Standard Shinozuka - order = ' num2str(orderk)];
+        leg{2*k+1} = ['Randomized Shinozuka - order = ' num2str(orderk)];
     end
     hold off
-    xlabel('$x$ [m]','Interpreter',interpreter)
-    ylabel('$R(x - x_c)$','Interpreter',interpreter)
     grid on
-    grid minor
-    legend(leg{:})
+    box on
     set(gca,'FontSize',fontsize)
+    xlabel('$x$ [m]','Interpreter',interpreter)
+    ylabel('$\rho(x - x_c)$','Interpreter',interpreter)
+    legend(leg{:})
     mysaveas(pathname,'autocorrelation_function_x_axis',formats,renderer);
 
     figure('Name','Autocorrelation function along y axis')
@@ -350,16 +350,16 @@ if displayCorrelationStructure
         load(fullfile(pathname,['gaussian_germ_Shinozuka_rand_order_' num2str(orderk) '.mat']),'corrWY');
         plot(ym,corrVY,'-','Color',getfacecolor(i+1));
         plot(ym,corrWY,'--','Color',getfacecolor(i+1));
-        leg{2*k-1} = ['Standard Shinozuka - order = ' num2str(orderk)];
-        leg{2*k} = ['Randomized Shinozuka - order = ' num2str(orderk)];
+        leg{2*k} = ['Standard Shinozuka - order = ' num2str(orderk)];
+        leg{2*k+1} = ['Randomized Shinozuka - order = ' num2str(orderk)];
     end
     hold off
-    xlabel('$y$ [m]','Interpreter',interpreter)
-    ylabel('$R(y - y_c)$','Interpreter',interpreter)
     grid on
-    grid minor
-    legend(leg{:})
+    box on
     set(gca,'FontSize',fontsize)
+    xlabel('$y$ [m]','Interpreter',interpreter)
+    ylabel('$\rho(y - y_c)$','Interpreter',interpreter)
+    legend(leg{:})
     mysaveas(pathnamei,'autocorrelation_function_y_axis',formats,renderer);
 end
 
