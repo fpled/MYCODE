@@ -84,6 +84,7 @@ fprintf('\nNumber of points  = %d',nx);
 fprintf('\nNumber of fields  = %d',nU);
 fprintf('\nNumber of samples = %d for each Gaussian random field',N);
 fprintf('\nNumber of samples = %d for all Gaussian random fields',nV);
+fprintf('\nNumber of terms   = %d in the spectral representation',order);
 fprintf('\n');
 
 %% Standard Shinozuka method
@@ -240,7 +241,7 @@ timeWvec = toc(tWvec);
 errWvec = norm(Wvec-Wscalar)/norm(Wscalar);
 fprintf('\nVectorized implementation : elapsed time = %f s, relative error = %e',timeWvec,errWvec);
 
-%% Display Gaussian germs
+%% Display one realization of a Gaussian germ
 V = reshape(Vcpp,nx,N,nU);
 W = reshape(Wcpp,nx,N,nU);
 if displayGaussianGerms
