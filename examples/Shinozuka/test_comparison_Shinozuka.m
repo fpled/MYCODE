@@ -5,7 +5,7 @@ close all
 myparallel('start');
 
 %% Inputs
-displayGaussianGerms = false;
+displayGaussianFields = false;
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
         'results','Shinozuka');
@@ -251,7 +251,7 @@ fprintf('\nVectorized implementation : elapsed time = %f s, relative error = %e'
 %% Display one realization of a Gaussian random field
 V = reshape(Vcpp,nx,N,nU);
 W = reshape(Wcpp,nx,N,nU);
-if displayGaussianGerms
+if displayGaussianFields
     if nx==getnbnode(S)
         figure('Name',['Gaussian field - standard Shinozuka method with order = ' num2str(order)])
         clf
