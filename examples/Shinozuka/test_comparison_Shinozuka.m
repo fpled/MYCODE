@@ -1,7 +1,6 @@
 % clc
 clearvars
 close all
-% rng('default');
 myparallel('start');
 
 %% Inputs
@@ -89,6 +88,7 @@ fprintf('\nNumber of terms   = %d in the spectral representation',order);
 %% Standard Shinozuka method
 fprintf('\nStandard Shinozuka method\n');
 
+rng('default');
 srng = rng; % get current random number generator settings
 X = rand(2,order,nV);
 Phi = X(1,:,:)*2*pi; % random phase shifts Phi uniformly distributed on [0,2*pi]
@@ -253,14 +253,14 @@ V = reshape(Vcpp,nx,N,nU);
 W = reshape(Wcpp,nx,N,nU);
 if displayGaussianFields
     if nx==getnbnode(S)
-        figure('Name',['Gaussian field - standard Shinozuka method with order = ' num2str(order)])
+        figure('Name',['Gaussian field - standard Shinozuka with order = ' num2str(order)])
         clf
         plot_sol(S,V(:,1,1));
         colorbar
         set(gca,'FontSize',fontsize)
         mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
 
-        figure('Name','Gaussian field - randomized Shinozuka method')
+        figure('Name','Gaussian field - randomized Shinozuka with order = ' num2str(order)])
         clf
         plot_sol(S,W(:,1,1));
         colorbar
@@ -285,14 +285,14 @@ if displayGaussianFields
         Ve = FEELEMFIELD(Ve,'storage','gauss','type','scalar','ddl',DDL('V'));
         We = FEELEMFIELD(We,'storage','gauss','type','scalar','ddl',DDL('W'));
 
-        figure('Name',['Gaussian field - standard Shinozuka method with order = ' num2str(order)])
+        figure('Name',['Gaussian field - standard Shinozuka with order = ' num2str(order)])
         clf
         plot(Ve(1),S);
         colorbar
         set(gca,'FontSize',fontsize)
         mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
 
-        figure('Name',['Gaussian field - randomized Shinozuka method with order = ' num2str(order)])
+        figure('Name',['Gaussian field - randomized Shinozuka with order = ' num2str(order)])
         clf
         plot(We(1),S);
         colorbar
