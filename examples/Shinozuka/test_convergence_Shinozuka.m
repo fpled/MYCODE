@@ -10,7 +10,7 @@ displayGaussianFields = false;
 displayAutocorrelation = true;
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','Shinozuka');
+    'results','shinozuka');
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -287,7 +287,7 @@ if displayGaussianFields
             Ve = FEELEMFIELD(Ve,'storage','gauss','type','scalar','ddl',DDL('V'));
             We = FEELEMFIELD(We,'storage','gauss','type','scalar','ddl',DDL('W'));
 
-            figure('Name',['Gaussian field - standard Shinozuka with order ' num2str(orderk)])
+            figure('Name',['Gaussian field - standard Shinozuka (order ' num2str(orderk) ')'])
             clf
             plot(Ve(1),S);
             xlabel('$x$ [m]','Interpreter',interpreter)
@@ -302,7 +302,7 @@ if displayGaussianFields
             set(gca,'FontSize',fontsize)
             mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(orderk)],formats,renderer);
 
-            figure('Name',['Gaussian field - randomized Shinozuka with order ' num2str(orderk)])
+            figure('Name',['Gaussian field - randomized Shinozuka (order ' num2str(orderk) ')'])
             clf
             plot(We(1),S);
             xlabel('$x$ [m]','Interpreter',interpreter)

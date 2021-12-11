@@ -7,7 +7,7 @@ myparallel('start');
 displayGaussianFields = false;
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-        'results','Shinozuka');
+        'results','shinozuka');
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -253,14 +253,14 @@ V = reshape(Vcpp,nx,N,nU);
 W = reshape(Wcpp,nx,N,nU);
 if displayGaussianFields
     if nx==getnbnode(S)
-        figure('Name',['Gaussian field - standard Shinozuka with order = ' num2str(order)])
+        figure('Name',['Gaussian field - standard Shinozuka (order ' num2str(order) ')'])
         clf
         plot_sol(S,V(:,1,1));
         colorbar
         set(gca,'FontSize',fontsize)
         mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
 
-        figure('Name','Gaussian field - randomized Shinozuka with order = ' num2str(order)])
+        figure('Name','Gaussian field - randomized Shinozuka (order ' num2str(order) ')'])
         clf
         plot_sol(S,W(:,1,1));
         colorbar
