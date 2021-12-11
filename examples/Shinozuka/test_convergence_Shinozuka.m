@@ -322,6 +322,7 @@ end
 
 %% Display normalized autocorrelation functions
 if displayAutocorrelation
+    %% Autocorrelation function
     figure('Name','Autocorrelation function')
     clf
     plot(corrAna,S);
@@ -332,10 +333,20 @@ if displayAutocorrelation
     set(gca,'FontSize',fontsize)
     mysaveas(pathname,'autocorrelation_function',formats,renderer);
 
+    %% Autocorrelation functions computed with standard and randomized Shinozuka methods
     for k=1:length(nu)
         orderk = order(k);
         load(fullfile(pathname,['autocorr_shinozuka_std_order_' num2str(orderk) '.mat']),'corrV');
         load(fullfile(pathname,['autocorr_shinozuka_rand_order_' num2str(orderk) '.mat']),'corrW');
+
+        pathnameShinozukaStd = fullfile(pathname,['autocorr_shinozuka_std_order_' num2str(orderk)]);
+        pathnameShinozukaRand = fullfile(pathname,['autocorr_shinozuka_rand_order_' num2str(orderk)]);
+        if ~exist(pathnameShinozukaStd,'dir')
+            mkdir(pathnameShinozukaStd);
+        end
+        if ~exist(pathnameShinozukaRand,'dir')
+            mkdir(pathnameShinozukaRand);
+        end
 
         close all
         for j=1:length(N)
@@ -347,7 +358,8 @@ if displayAutocorrelation
             axis on
             colorbar
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,['autocorr_shinozuka_std_order_' num2str(orderk) '_N_' num2str(N(j))],formats,renderer);
+            
+            mysaveas(pathnameShinozukaStd,['autocorr_shinozuka_std_order_' num2str(orderk) '_N_' num2str(N(j))],formats,renderer);
         end
         for j=1:length(N)
             figure('Name',['Autocorrelation function - randomized Shinozuka (order ' num2str(orderk) ', ' num2str(N(j)) ' samples)'])
@@ -358,7 +370,8 @@ if displayAutocorrelation
             axis on
             colorbar
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,['autocorr_shinozuka_rand_order_' num2str(orderk) '_N_' num2str(N(j))],formats,renderer);
+            pathnamek = fullfile(pathname,['autocorr_shinozuka_rand_order_' num2str(orderk)]);
+            mysaveas(pathnameShinozukaRand,['autocorr_shinozuka_rand_order_' num2str(orderk) '_N_' num2str(N(j))],formats,renderer);
         end
     end
 
@@ -454,7 +467,7 @@ if displayAutocorrelation
     mysaveas(pathname,'autocorr_y_axis_shinozuka_rand',formats,renderer);
     mymatlab2tikz(pathname,'autocorr_y_axis_shinozuka_rand.tex');
 
-    %% Relative errors
+    %% Relative errors on autocorrelation functions
     figure('Name','Relative error on autocorrelation function - standard Shinozuka')
     clf
     leg = cell(length(nu),1);
@@ -631,7 +644,7 @@ if displayAutocorrelation
     xlabel('Realizations')
     ylabel('Order')
     zlabel('Relative error')
-    mysaveas(pathname,'error_autocorr_y_axis_shinozuka_rand_surf',formats,renderer);
+    mysaveas(pathname,'error_autocorr_x_axis_shinozuka_rand_surf',formats,renderer);
 
     figure('Name','Relative error on autocorrelation function along x axis - randomized Shinozuka')
     clf
