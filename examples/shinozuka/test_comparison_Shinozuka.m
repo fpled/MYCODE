@@ -248,9 +248,10 @@ timeWvec = toc(tWvec);
 errWvec = norm(Wvec-Wscalar)/norm(Wscalar);
 fprintf('\nVectorized implementation : elapsed time = %f s, relative error = %e',timeWvec,errWvec);
 
+V = reshape(Vcpp,nx,nU,N);
+W = reshape(Wcpp,nx,nU,N);
+
 %% Display one realization of a Gaussian random field
-V = reshape(Vcpp,nx,N,nU);
-W = reshape(Wcpp,nx,N,nU);
 if displayGaussianFields
     if nx==getnbnode(S)
         figure('Name',['Gaussian field - standard Shinozuka (order ' num2str(order) ')'])
@@ -260,7 +261,7 @@ if displayGaussianFields
         set(gca,'FontSize',fontsize)
         mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
 
-        figure('Name','Gaussian field - randomized Shinozuka (order ' num2str(order) ')'])
+        figure('Name',['Gaussian field - randomized Shinozuka (order ' num2str(order) ')'])
         clf
         plot_sol(S,W(:,1,1));
         colorbar
@@ -275,8 +276,8 @@ if displayGaussianFields
             nbelem = getnbelem(elem);
             gauss = calc_gauss(elem,'rigi');
             rep = nbgauss + (1:nbelem*gauss.nbgauss);
-            Vi = reshape(V(rep,:,:),N,nU,nbelem,gauss.nbgauss);
-            Wi = reshape(W(rep,:,:),N,nU,nbelem,gauss.nbgauss);
+            Vi = reshape(V(rep,:)',nU,N,nbelem,gauss.nbgauss);
+            Wi = reshape(W(rep,:)',nU,N,nbelem,gauss.nbgauss);
             Ve{i} = MYDOUBLEND(Vi);
             We{i} = MYDOUBLEND(Wi);
             nbgauss = rep(end);

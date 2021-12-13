@@ -4,10 +4,10 @@ close all
 myparallel('start');
 
 %% Inputs
-computeGaussianFields = false;
-computeAutocorrelation = false;
+computeGaussianFields = true;
+computeAutocorrelation = true;
 displayGaussianFields = false;
-displayAutocorrelation = true;
+displayAutocorrelation = false;
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','shinozuka');
@@ -35,6 +35,7 @@ nV = nU*N; % number of independent realizations for all Gaussian random fields
 
 nu = [4 8 16 20 24 28 32 36 40 44 48 56 64]; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
 % nu = [4 8 16 20 24];
+% nu = [124 128];
 order = nu.^Dim; % Dim-dimensional order (number of terms) of the spectral representation
 
 %% Domains and meshes
@@ -86,6 +87,8 @@ x = getcoord(node);
 nx = size(x,1); % number of points
 
 lcorr = repmat(L/50,Dim,1); % spatial correlation lengths
+% lcorr = repmat(7.5e-6,Dim,1);
+% lcorr = repmat(4e-6,Dim,1);
 
 fprintf('\nNumber of points  = %d',nx);
 fprintf('\nNumber of fields  = %d',nU);
@@ -277,8 +280,8 @@ if displayGaussianFields
                 nbelem = getnbelem(elem);
                 gauss = calc_gauss(elem,'rigi');
                 rep = nbgauss + (1:nbelem*gauss.nbgauss);
-                Vi = reshape(V(rep,:,:),N,nU,nbelem,gauss.nbgauss);
-                Wi = reshape(W(rep,:,:),N,nU,nbelem,gauss.nbgauss);
+                Vi = reshape(V(rep,:)',nU,N,nbelem,gauss.nbgauss);
+                Wi = reshape(W(rep,:)',nU,N,nbelem,gauss.nbgauss);
                 Ve{i} = MYDOUBLEND(Vi);
                 We{i} = MYDOUBLEND(Wi);
                 nbgauss = rep(end);
