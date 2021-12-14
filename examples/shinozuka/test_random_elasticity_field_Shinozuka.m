@@ -161,10 +161,10 @@ S = setmaterial(S,mat);
 S = final(S);
 
 % Gauss point coordinates
-% x = calc_gausscoord(S,'rigi');
+x = calc_gausscoord(S,'rigi');
 % Node coordinates
-node = getnode(S);
-x = getcoord(node);
+% node = getnode(S);
+% x = getcoord(node);
 
 nx = size(x,1); % number of points
 
@@ -199,7 +199,7 @@ fprintf('\nelapsed time = %f s\n',timeGaussShinozukaRand);
 
 %% Random elasticity field
 delta = 0.1; % dispersion coefficient
-mC = calc_opmat() % mean elasticity matrix
+mC = double(calc_opmat(S)); % mean elasticity matrix
 mL = chol(mC); % 
 C = randAnisotElasField(delta,mL,V);
 
