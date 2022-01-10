@@ -1,14 +1,20 @@
 % clc
 clearvars
 close all
-% rng('default');
 myparallel('start');
 
 %% Inputs
-displayGaussianGerms = true;
-displayCorrelationStructure = true;
-displayPdf = true; % display probability density function
+computeGaussianFields = true;
+computeAutocorrelation = true;
+displayGaussianFields = false;
+displayAutocorrelation = false;
 
+pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'results','shinozuka');
+if ~exist(pathname,'dir')
+    mkdir(pathname);
+end
+% sprintf('_%g',lcorr)
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
@@ -21,19 +27,16 @@ Dim = 2; % space dimension Dim = 2, 3
 % n = Dim*(Dim+1)/2; % size of elasticity matrix
 % nU = n*(n+1)/2; % number of Gaussian random fields
 nU = 1; % number of Gaussian random fields
-% N = 12500; % number of independent realizations for each Gaussian random field
-N = 100;
+
+N = [1e1 5e1 1e2 2.5e2 5e2 7.5e2 1e3 2.5e3 5e3 7.5e3 1e4]; % number of independent realizations for each Gaussian random field
+% N = [1e1 5e1 1e2];
+
 nV = nU*N; % number of independent realizations for all Gaussian random fields
 
-% nu = [2^2 2^3 2^4 2^5]; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
-nu = 2^3;
+nu = [4 8 16 20 24 28 32 36 40 44 48 56 64]; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
+% nu = [4 8 16 20 24];
+% nu = [124 128];
 order = nu.^Dim; % Dim-dimensional order (number of terms) of the spectral representation
-
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','Shinozuka');
-if ~exist(pathname,'dir')
-    mkdir(pathname);
-end
 
 %% Domains and meshes
 L = 1e-3; % [m]
@@ -63,7 +66,6 @@ if Dim==1
 elseif Dim==2
     % cl = 1e-5;
     cl = 2e-6;
-    % cl = 1.25e-6;
 elseif Dim==3
     cl = 2e-5;
     % cl = 7.5e-6;
@@ -85,114 +87,190 @@ x = getcoord(node);
 nx = size(x,1); % number of points
 
 lcorr = repmat(L/50,Dim,1); % spatial correlation lengths
+% lcorr = repmat(7.5e-6,Dim,1);
+% lcorr = repmat(4e-6,Dim,1);
 
-s = rng('default');
+fprintf('\nNumber of points  = %d',nx);
+fprintf('\nNumber of fields  = %d',nU);
+fprintf('\nNumber of samples =%s for each Gaussian random field',sprintf(' %g',N));
+fprintf('\nNumber of samples =%s for all Gaussian random fields',sprintf(' %g',nV));
+fprintf('\nNumber of terms   =%s in the spectral representation',sprintf(' %g',order));
+fprintf('\n');
 
-%% Analytic autocorrelation with the middle point as a reference
-if displayCorrelationStructure
-    IDLineX = find(x(:,2)==L/2);
-    IDLineY = find(x(:,1)==L/2);
-    XMid = x(IDLineX,1);
-    YMid = x(IDLineY,2);
-    [XMid, reOrderX] = sort(XMid);
-    [YMid, reOrderY] = sort(YMid);
-    nX = size(IDLineX,1);
-    nY = size(IDLineY,1);
-    IDCenterX = floor((nX+1)/2);
-    IDCenterY = floor((nY+1)/2);
-    IDCenter = intersect(IDLineX,IDLineY);
-    xCenter = x(IDCenter,:);
+%% Analytical computation of normalized autocorrelation function indexed by the center point as reference point
+idxm = find(x(:,2)==L/2);
+idym = find(x(:,1)==L/2);
+idxc = intersect(idxm,idym);
+xc = x(idxc,:);
+xm = x(idxm,1);
+ym = x(idym,2);
+[xm, repxm] = sort(xm);
+[ym, repym] = sort(ym);
 
-    % Expected correlation function
-    corrAna = prod(sinc((x-xCenter)/2./lcorr').^2,2); % vector of correlation to the central point
-    corrAnaX = corrAna(IDLineX);
-    corrAnaX = corrAnaX(reOrderX);
-    corrAnaY = corrAna(IDLineY);
-    corrAnaY = corrAnaY(reOrderY);
-
-    figure('Name','Expected autocorrelation function')
-    clf
-    plot(corrAna,S);
-    xlabel('$x$ [m]')
-    ylabel('$y$ [m]')
-    axis on
-    colorbar
-    set(gca,'FontSize',fontsize)
-    mysaveas(pathname,'Autocorrelation_Analytic_Shinozuka',formats,renderer);
+% Normalized autocorrelation function at center point
+if verLessThan('matlab','9.1') % compatibility (<R2016b)
+    corrAna = prod(sinc(bsxfun(@rdivide,x-xc,2*lcorr')).^2,2);
+else
+    corrAna = prod(sinc((x-xc)./(2*lcorr')).^2,2);
 end
+corrAnaX = corrAna(idxm);
+corrAnaY = corrAna(idym);
+corrAnaX = corrAnaX(repxm);
+corrAnaY = corrAnaY(repym);
 
-%% Computation
-for nui = nu
-    close all
-    orderi = nui^Dim; % Dim-dimensional order (number of terms) of the spectral representation
+%% Numerical computation of normalized autocorrelation function with the standard and randomized Shinozuka methods
+rng('default');
+s = rng; % get current random number generator settings
+if computeAutocorrelation
+    errCorrV = zeros(length(order),length(N));
+    errCorrVX = zeros(length(order),length(N));
+    errCorrVY = zeros(length(order),length(N));
+    errCorrW = zeros(length(order),length(N));
+    errCorrWX = zeros(length(order),length(N));
+    errCorrWY = zeros(length(order),length(N));
+end
+for k=1:length(order)
+    nuk = nu(k); % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
+    orderk = order(k); % Dim-dimensional order (number of terms) of the spectral representation
 
-    pathnamei = fullfile(pathname,['N' num2str(N) 'Order' num2str(orderi)]);
-    if ~exist(pathnamei,'dir')
-        mkdir(pathnamei);
-    end
-    pathResultsi = fullfile(pathnamei,'results.txt');
-    fid = fopen(pathResultsi,'wt');
-
-    fprintf('\nNumber of points  = %d',nx);
-    fprintf('\nNumber of fields  = %d',nU);
-    fprintf('\nNumber of samples = %d for each Gaussian random field',N);
-    fprintf('\nTotal number of realizations = %d',nV);
-    fprintf('\nOrder of the approximation = %d',orderi);
+    fprintf('\nOrder = %d (number of terms in the spectral representation)',orderk);
     fprintf('\n');
 
-    fprintf(fid,'\nNumber of points  = %d',nx);
-    fprintf(fid,'\nNumber of fields  = %d',nU);
-    fprintf(fid,'\nNumber of samples = %d for each Gaussian random field',N);
-    fprintf(fid,'\nTotal number of realizations = %d',nV);
-    fprintf(fid,'\nOrder of the approximation = %d',orderi);
-    fprintf(fid,'\n');
+    %% Gaussian random fields
+    if computeGaussianFields
+        %% Standard Shinozuka method
+        fprintf('\nStandard Shinozuka method\n');
+        tGaussShinozukaStd = tic;
 
-    %% Standard Shinozuka method
-    fprintf('\nStandard Shinozuka method\n');
-    tShinozuka = tic;
+        V = shinozuka(x,lcorr,nU,max(N),'order',nuk,'state',s);
 
-    V = shinozuka(x,lcorr,nU,N,'order',nui,'state',s);
+        timeGaussShinozukaStd = toc(tGaussShinozukaStd);
+        fprintf('\nelapsed time = %f s\n',timeGaussShinozukaStd);
 
-    timeShinozuka = toc(tShinozuka);
-    fprintf('\nelapsed time = %f s\n',timeShinozuka);
+        %% Randomized Shinozuka method
+        fprintf('\nRandomized Shinozuka method\n');
+        tGaussShinozukaRand = tic;
 
-    fprintf(fid,'\nStandard Shinozuka method');
-    fprintf(fid,'\nelapsed time = %f s\n',timeShinozuka);
+        W = shinozukaRand(x,lcorr,nU,max(N),'order',orderk,'state',s);
 
-    %% Randomized Shinozuka method
-    fprintf('\nRandomized Shinozuka method\n');
-    tShinozukaRand = tic;
+        timeGaussShinozukaRand = toc(tGaussShinozukaRand);
+        fprintf('\nelapsed time = %f s\n',timeGaussShinozukaRand);
 
-    W = shinozukaRand(x,lcorr,nU,N,'order',orderi,'state',s);
+        save(fullfile(pathname,['gauss_shinozuka_std_order_' num2str(orderk) '.mat']),'V','timeGaussShinozukaStd');
+        save(fullfile(pathname,['gauss_shinozuka_rand_order_' num2str(orderk) '.mat']),'W','timeGaussShinozukaRand');
+    elseif (displayGaussianFields || computeAutocorrelation)
+        load(fullfile(pathname,['gauss_shinozuka_std_order_' num2str(orderk) '.mat']),'V','timeGaussShinozukaStd');
+        load(fullfile(pathname,['gauss_shinozuka_rand_order_' num2str(orderk) '.mat']),'W','timeGaussShinozukaRand');
+    end
 
-    timeShinozukaRand = toc(tShinozukaRand);
-    fprintf('\nelapsed time = %f s\n',timeShinozukaRand);
+    %% Normalized autocorrelation function at center point
+    if computeAutocorrelation
+        %% Standard Shinozuka method
+        fprintf('\nStandard Shinozuka method');
+        tCorrShinozukaStd = tic;
 
-    fprintf(fid,'\nRandomized Shinozuka method');
-    fprintf(fid,'\nelapsed time = %f s\n',timeShinozukaRand);
+        fprintf('\nComputing autocorrelation function\n');
+        corrV = zeros(nx,length(N));
+        corrVX = zeros(length(idxm),length(N));
+        corrVY = zeros(length(idym),length(N));
+        for j=1:length(N)
+            idN = 1:N(j);
+            corrV(:,j) = corr(V(:,idN)',V(idxc,idN)'); % Dim-dimensional autocorrelation function at center point
+            corrVX(:,j) = corrV(idxm,j); % one-dimensional autocorrelation function at center point along x axis
+            corrVY(:,j) = corrV(idym,j); % one-dimensional autocorrelation function at center point along y axis
+            corrVX(:,j) = corrVX(repxm,j);
+            corrVY(:,j) = corrVY(repym,j);
 
-    %% Display Gaussian germs
-    if displayGaussianGerms
+            errCorrV(k,j) = norm(corrV(:,j) - corrAna)/norm(corrAna);
+            errCorrVX(k,j) = norm(corrVX(:,j) - corrAnaX)/norm(corrAnaX);
+            errCorrVY(k,j) = norm(corrVY(:,j) - corrAnaY)/norm(corrAnaY);
+        end
+        timeCorrShinozukaStd = toc(tCorrShinozukaStd);
+        fprintf('\nelapsed time = %f s\n',timeCorrShinozukaStd);
+
+        %% Randomized Shinozuka method
+        fprintf('\nRandomized Shinozuka method');
+        tCorrShinozukaRand = tic;
+
+        fprintf('\nComputing autocorrelation function\n');
+        corrW = zeros(nx,length(N));
+        corrWX = zeros(length(idxm),length(N));
+        corrWY = zeros(length(idym),length(N));
+        for j=1:length(N)
+            idN = 1:N(j);
+            corrW(:,j) = corr(W(:,idN)',W(idxc,idN)'); % Dim-dimensional autocorrelation function at center point
+            corrWX(:,j) = corrW(idxm,j); % one-dimensional autocorrelation function at center point along x axis
+            corrWY(:,j) = corrW(idym,j); % one-dimensional autocorrelation function at center point along y axis
+            corrWX(:,j) = corrWX(repxm,j);
+            corrWY(:,j) = corrWY(repym,j);
+
+            errCorrW(k,j) = norm(corrW(:,j) - corrAna)/norm(corrAna);
+            errCorrWX(k,j) = norm(corrWX(:,j) - corrAnaX)/norm(corrAnaX);
+            errCorrWY(k,j) = norm(corrWY(:,j) - corrAnaY)/norm(corrAnaY);
+        end
+        timeCorrShinozukaRand = toc(tCorrShinozukaRand);
+        fprintf('\nelapsed time = %f s\n',timeCorrShinozukaRand);
+
+        save(fullfile(pathname,['autocorr_shinozuka_std_order_' num2str(orderk) '.mat']),...
+            'corrV','corrVX','corrVY','timeCorrShinozukaStd');
+        save(fullfile(pathname,['autocorr_shinozuka_rand_order_' num2str(orderk) '.mat']),...
+            'corrW','corrWX','corrWY','timeCorrShinozukaRand');
+    else
+        load(fullfile(pathname,['autocorr_shinozuka_std_order_' num2str(orderk) '.mat']),...
+            'corrV','corrVX','corrVY','timeCorrShinozukaStd');
+        load(fullfile(pathname,['autocorr_shinozuka_rand_order_' num2str(orderk) '.mat']),...
+            'corrW','corrWX','corrWY','timeCorrShinozukaRand');
+    end
+end
+if computeAutocorrelation
+    save(fullfile(pathname,'error_autocorr_shinozuka_std.mat'),...
+        'errCorrV','errCorrVX','errCorrVY');
+    save(fullfile(pathname,'error_autocorr_shinozuka_rand.mat'),...
+        'errCorrW','errCorrWX','errCorrWY');
+else
+    load(fullfile(pathname,'error_autocorr_shinozuka_std.mat'),...
+        'errCorrV','errCorrVX','errCorrVY');
+    load(fullfile(pathname,'error_autocorr_shinozuka_rand.mat'),...
+        'errCorrW','errCorrWX','errCorrWY');
+end
+
+%% Display one realization of a Gaussian random field
+if displayGaussianFields
+    for k=1:length(nu)
+        orderk = order(k);
+        load(fullfile(pathname,['gauss_shinozuka_std_order_' num2str(orderk) '.mat']),'V');
+        load(fullfile(pathname,['gauss_shinozuka_rand_order_' num2str(orderk) '.mat']),'W');
+
         if nx==getnbnode(S)
-            figure('Name','Gaussian germ - Standard Shinozuka method')
+            figure('Name',['Gaussian field - standard Shinozuka with order ' num2str(orderk)])
             clf
             plot_sol(S,V(:,1,1));
-            xlabel('$x$ [m]')
-            ylabel('$y$ [m]')
+            xlabel('$x$ [m]','Interpreter',interpreter)
+            if Dim>=2
+                ylabel('$y$ [m]','Interpreter',interpreter)
+            end
+            if Dim==3
+                zlabel('$z$ [m]','Interpreter',interpreter)
+            end
             axis on
             colorbar
             set(gca,'FontSize',fontsize)
-            mysaveas(pathnamei,'gaussian_germ_Shinozuka_std',formats,renderer);
+            mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(orderk)],formats,renderer);
 
-            figure('Name','Gaussian germ - Randomized Shinozuka method')
+            figure('Name',['Gaussian field - randomized Shinozuka with order ' num2str(orderk)])
             clf
             plot_sol(S,W(:,1,1));
-            xlabel('$x$ [m]')
-            ylabel('$y$ [m]')
+            xlabel('$x$ [m]','Interpreter',interpreter)
+            if Dim>=2
+                ylabel('$y$ [m]','Interpreter',interpreter)
+            end
+            if Dim==3
+                zlabel('$z$ [m]','Interpreter',interpreter)
+            end
             axis on
             colorbar
             set(gca,'FontSize',fontsize)
-            mysaveas(pathnamei,'gaussian_germ_Shinozuka_rand',formats,renderer);
+            mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(orderk)],formats,renderer);
         else
             Ve = cell(getnbgroupelem(S),1);
             We = cell(getnbgroupelem(S),1);
@@ -202,8 +280,8 @@ for nui = nu
                 nbelem = getnbelem(elem);
                 gauss = calc_gauss(elem,'rigi');
                 rep = nbgauss + (1:nbelem*gauss.nbgauss);
-                Vi = reshape(V(rep,:,:),N,nU,nbelem,gauss.nbgauss);
-                Wi = reshape(W(rep,:,:),N,nU,nbelem,gauss.nbgauss);
+                Vi = reshape(V(rep,:)',nU,N,nbelem,gauss.nbgauss);
+                Wi = reshape(W(rep,:)',nU,N,nbelem,gauss.nbgauss);
                 Ve{i} = MYDOUBLEND(Vi);
                 We{i} = MYDOUBLEND(Wi);
                 nbgauss = rep(end);
@@ -212,198 +290,378 @@ for nui = nu
             Ve = FEELEMFIELD(Ve,'storage','gauss','type','scalar','ddl',DDL('V'));
             We = FEELEMFIELD(We,'storage','gauss','type','scalar','ddl',DDL('W'));
 
-            figure('Name','Gaussian germ - Standard Shinozuka method')
+            figure('Name',['Gaussian field - standard Shinozuka (order ' num2str(orderk) ')'])
             clf
             plot(Ve(1),S);
-            xlabel('$x$ [m]')
-            ylabel('$y$ [m]')
+            xlabel('$x$ [m]','Interpreter',interpreter)
+            if Dim>=2
+                ylabel('$y$ [m]','Interpreter',interpreter)
+            end
+            if Dim==3
+                zlabel('$z$ [m]','Interpreter',interpreter)
+            end
             axis on
             colorbar
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,'gaussian_germ_Shinozuka_std',formats,renderer);
+            mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(orderk)],formats,renderer);
 
-            figure('Name','Gaussian germ - Randomized Shinozuka method')
+            figure('Name',['Gaussian field - randomized Shinozuka (order ' num2str(orderk) ')'])
             clf
             plot(We(1),S);
-            xlabel('$x$ [m]')
-            ylabel('$y$ [m]')
+            xlabel('$x$ [m]','Interpreter',interpreter)
+            if Dim>=2
+                ylabel('$y$ [m]','Interpreter',interpreter)
+            end
+            if Dim==3
+                zlabel('$z$ [m]','Interpreter',interpreter)
+            end
             axis on
             colorbar
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,'gaussian_germ_Shinozuka_rand',formats,renderer);
+            mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(orderk)],formats,renderer);
+        end
+    end
+end
+
+%% Display normalized autocorrelation functions
+if displayAutocorrelation
+    %% Autocorrelation function
+    figure('Name','Autocorrelation function')
+    clf
+    plot(corrAna,S);
+    xlabel('$x$ [m]','Interpreter',interpreter)
+    ylabel('$y$ [m]','Interpreter',interpreter)
+    axis on
+    colorbar
+    set(gca,'FontSize',fontsize)
+    mysaveas(pathname,'autocorrelation_function',formats,renderer);
+
+    %% Autocorrelation functions computed with standard and randomized Shinozuka methods
+    for k=1:length(nu)
+        orderk = order(k);
+        load(fullfile(pathname,['autocorr_shinozuka_std_order_' num2str(orderk) '.mat']),'corrV');
+        load(fullfile(pathname,['autocorr_shinozuka_rand_order_' num2str(orderk) '.mat']),'corrW');
+
+        pathnameShinozukaStd = fullfile(pathname,['autocorr_shinozuka_std_order_' num2str(orderk)]);
+        pathnameShinozukaRand = fullfile(pathname,['autocorr_shinozuka_rand_order_' num2str(orderk)]);
+        if ~exist(pathnameShinozukaStd,'dir')
+            mkdir(pathnameShinozukaStd);
+        end
+        if ~exist(pathnameShinozukaRand,'dir')
+            mkdir(pathnameShinozukaRand);
+        end
+
+        close all
+        for j=1:length(N)
+            figure('Name',['Autocorrelation function - standard Shinozuka (order ' num2str(orderk) ', ' num2str(N(j)) ' samples)'])
+            clf
+            plot(corrV(:,j),S);
+            xlabel('$x$ [m]','Interpreter',interpreter)
+            ylabel('$y$ [m]','Interpreter',interpreter)
+            axis on
+            colorbar
+            set(gca,'FontSize',fontsize)
+            
+            mysaveas(pathnameShinozukaStd,['autocorr_shinozuka_std_order_' num2str(orderk) '_N_' num2str(N(j))],formats,renderer);
+        end
+        for j=1:length(N)
+            figure('Name',['Autocorrelation function - randomized Shinozuka (order ' num2str(orderk) ', ' num2str(N(j)) ' samples)'])
+            clf
+            plot(corrW(:,j),S);
+            xlabel('$x$ [m]','Interpreter',interpreter)
+            ylabel('$y$ [m]','Interpreter',interpreter)
+            axis on
+            colorbar
+            set(gca,'FontSize',fontsize)
+            pathnamek = fullfile(pathname,['autocorr_shinozuka_rand_order_' num2str(orderk)]);
+            mysaveas(pathnameShinozukaRand,['autocorr_shinozuka_rand_order_' num2str(orderk) '_N_' num2str(N(j))],formats,renderer);
         end
     end
 
-    %% Display correlation structure
-    if displayCorrelationStructure
-        % Correlation functions on the mesh
-        corrV = autocorrVec(V,IDCenter); % vector of correlation to the central point
-        errCorrV = norm(corrV - corrAna)/norm(corrAna);
-        % corrVold = corr(V'); % correlation matrix
-        % corrVold = corrVold(:,IDCenter); % vector of correlation to the central point
-        % errCorrVV = norm(corrV - corrVold)/norm(corrVold);
+    %% Autocorrelation functions along each axis 
+    close all
+    color = distinguishable_colors(1+length(nu));
 
-        corrW = autocorrVec(W,IDCenter);
-        errCorrW = norm(corrW - corrAna)/norm(corrAna);
-        % corrWold = corr(W');
-        % corrWold = corrWold(:,IDCenter);
-        % errCorrWW = norm(corrW - corrWold)/norm(corrWold);
-
-        % Correlation functions on the central lines
-        corrVX = corrV(IDLineX);
-        corrVX = corrVX(reOrderX);
-        corrVY = corrV(IDLineY);
-        corrVY = corrVY(reOrderY);
-        errCorrVX = norm(corrVX - corrAnaX)/norm(corrAnaX);
-        errCorrVY = norm(corrVY - corrAnaY)/norm(corrAnaY);
-
-        corrWX = corrW(IDLineX);
-        corrWX = corrWX(reOrderX);
-        corrWY = corrW(IDLineY);
-        corrWY = corrWY(reOrderY);
-        errCorrWX = norm(corrWX - corrAnaX)/norm(corrAnaX);
-        errCorrWY = norm(corrWY - corrAnaY)/norm(corrAnaY);
-
-        fprintf('\nRelative error to the expected correlation function using the standard Shinozuka method');
-        fprintf('\nRelative error on the entire mesh = %f',errCorrV);
-        fprintf('\nRelative error on the central x axis = %f',errCorrVX);
-        fprintf('\nRelative error on the central y axis = %f\n',errCorrVY);
-
-        fprintf('\nRelative error to the expected correlation function using the randomized Shinozuka method');
-        fprintf('\nRelative error on the entire mesh = %f',errCorrW);
-        fprintf('\nRelative error on the central x axis = %f',errCorrWX);
-        fprintf('\nRelative error on the central y axis = %f\n',errCorrWY);
-
-        fprintf(fid,'\nRelative error to the expected correlation function using the standard Shinozuka method');
-        fprintf(fid,'\nRelative error on the entire mesh = %f',errCorrV);
-        fprintf(fid,'\nRelative error on the central x axis = %f',errCorrVX);
-        fprintf(fid,'\nRelative error on the central y axis = %f\n',errCorrVY);
-
-        fprintf(fid,'\nRelative error to the expected correlation function using the randomized Shinozuka method');
-        fprintf(fid,'\nRelative error on the entire mesh = %f',errCorrW);
-        fprintf(fid,'\nRelative error on the central x axis = %f',errCorrWX);
-        fprintf(fid,'\nRelative error on the central y axis = %f\n',errCorrWY);
-
-        % Plotting
-
-        figure('Name','Autocorrelation function with the standard Shinozuka method')
-        plot(corrV,S);
-        xlabel('$x$ [m]')
-        ylabel('$y$ [m]')
-        axis on
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathnamei,'Autocorrelation_Shinozuka_std',formats,renderer);
-
-        figure('Name','Autocorrelation function with the randomized Shinozuka method')
-        plot(corrW,S);
-        xlabel('$x$ [m]')
-        ylabel('$y$ [m]')
-        axis on
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathnamei,'Autocorrelation_Shinozuka_rand',formats,renderer);
-
-        figure('Name','Autocorrelation on central x axis using the standard Shinozuka method')
-        hold on
-        plot(XMid,corrVX,'b');
-        plot(XMid,corrAnaX,'r--');
-        xlabel('$x$ [m]')
-        ylabel('$R(x - x_c)$')
-        grid on
-        grid minor
-        % legend('Numerical computation','Analytical computation')
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathnamei,'autocorrelation_X_Shinozuka_std',formats,renderer);
-
-        figure('Name','Autocorrelation on central y axis using the standard Shinozuka method')
-        hold on
-        plot(YMid,corrVY,'b');
-        plot(YMid,corrAnaY,'r--');
-        xlabel('$y$ [m]')
-        ylabel('$R(y - y_c)$')
-        grid on
-        grid minor
-        % legend('Numerical computation','Analytical computation')
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathnamei,'autocorrelation_Y_Shinozuka_std',formats,renderer);
-
-        figure('Name','Autocorrelation on central x axis using the randomized Shinozuka method')
-        hold on
-        plot(XMid,corrWX,'b');
-        plot(XMid,corrAnaX,'r--');
-        xlabel('$x$ [m]')
-        ylabel('$R(x - x_c)$')
-        grid on
-        grid minor
-        % legend('Numerical computation','Analytical computation')
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathnamei,'autocorrelation_X_Shinozuka_rand',formats,renderer);
-
-        figure('Name','Autocorrelation on central y axis using the randomized Shinozuka method')
-        hold on
-        plot(YMid,corrWY,'b');
-        plot(YMid,corrAnaY,'r--');
-        xlabel('$y$ [m]')
-        ylabel('$R(y - y_c)$')
-        grid on
-        grid minor
-        % legend('Numerical computation','Analytical computation')
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathnamei,'autocorrelation_Y_Shinozuka_rand',formats,renderer);
+    figure('Name','Autocorrelation function along x axis - standard Shinozuka')
+    clf
+    plot(xm,corrAnaX,'-','Color',color(1,:),'LineWidth',linewidth);
+    hold on
+    leg = cell(1+length(nu),1);
+    leg{1} = 'reference';
+    for k=1:length(nu)
+        orderk = order(k);
+        load(fullfile(pathname,['autocorr_shinozuka_std_order_' num2str(orderk) '.mat']),'corrVX');
+        plot(xm,corrVX(:,end),'--','Color',color(k+1,:),'LineWidth',linewidth);
+        leg{k+1} = ['order = ' num2str(orderk)];
     end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$x$ [m]','Interpreter',interpreter)
+    ylabel('$\rho(x - x_c)$','Interpreter',interpreter)
+    legend(leg{:})
+    mysaveas(pathname,'autocorr_x_axis_shinozuka_std',formats,renderer);
+    mymatlab2tikz(pathname,'autocorr_x_axis_shinozuka_std.tex');
 
-    %% Probability density functions
-    if displayPdf
-        % Pdf of the middle point
-        IDLineX = find(x(:,2)==L/2);
-        IDLineY = find(x(:,1)==L/2);
-        IDCenter = intersect(IDLineX,IDLineY);
-
-        nPts = 201;
-        [FV,XIV] = ksdensity(V(IDCenter,:));
-        [FW,XIW] = ksdensity(W(IDCenter,:));
-
-        gaussV = normpdf(XIV,0,1);
-        gaussW = normpdf(XIW,0,1);
-
-        errGaussV = norm(FV - gaussV)/norm(gaussV);
-        errGaussW = norm(FW - gaussW)/norm(gaussW);
-
-        fprintf('\nRelative error to the Gaussian of the distribution at the center point');
-        fprintf('\nRelative error with the standard method = %f',errGaussV);
-        fprintf('\nRelative error with the randomized method = %f\n',errGaussW);
-
-        fprintf(fid,'\nRelative error to the Gaussian of the distribution at the center point');
-        fprintf(fid,'\nRelative error with the standard method = %f',errGaussV);
-        fprintf(fid,'\nRelative error with the randomized method = %f\n',errGaussW);
-
-        % Plotting
-        figure('Name','ksdensity of the center node using the standard Shinozuka method')
-        hold on
-        plot(XIV,FV,'b')
-        plot(XIV,gaussV,'r--')
-        xlabel('$v(x_c, y_c)$')
-        ylabel('$f(v(x_c, y_c))$')
-        grid on
-        grid minor
-        % legend('Numerical estimation','Analytical computation')
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathnamei,'pdf_Shinozuka_std',formats,renderer);
-
-        figure('Name','ksdensity of the center node using the randomized Shinozuka method')
-        hold on
-        plot(XIW,FW,'b')
-        plot(XIW,gaussW,'r--')
-        xlabel('$w(x_c, y_c)$')
-        ylabel('$f(w(x_c, y_c))$')
-        grid on
-        grid minor
-        % legend('Numerical estimation','Analytical computation')
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathnamei,'pdf_Shinozuka_rand',formats,renderer);
+    figure('Name','Autocorrelation function along y axis - standard Shinozuka')
+    clf
+    plot(ym,corrAnaY,'-','Color',color(1,:),'LineWidth',linewidth);
+    hold on
+    leg = cell(1+length(nu),1);
+    leg{1} = 'reference';
+    for k=1:length(nu)
+        orderk = order(k);
+        load(fullfile(pathname,['autocorr_shinozuka_std_order_' num2str(orderk) '.mat']),'corrVY');
+        plot(ym,corrVY(:,end),'--','Color',color(k+1,:),'LineWidth',linewidth);
+        leg{k+1} = ['order = ' num2str(orderk)];
     end
-    fclose(fid);
-    fprintf(['\n' repmat('-',1,76) '\n'])
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$y$ [m]','Interpreter',interpreter)
+    ylabel('$\rho(y - y_c)$','Interpreter',interpreter)
+    legend(leg{:})
+    mysaveas(pathname,'autocorr_y_axis_shinozuka_std',formats,renderer);
+    mymatlab2tikz(pathname,'autocorr_y_axis_shinozuka_std.tex');
+
+    figure('Name','Autocorrelation function along x axis - randomized Shinozuka')
+    clf
+    plot(xm,corrAnaX,'-','Color',color(1,:),'LineWidth',linewidth);
+    hold on
+    leg = cell(1+length(nu),1);
+    leg{1} = 'reference';
+    for k=1:length(nu)
+        orderk = order(k);
+        load(fullfile(pathname,['autocorr_shinozuka_rand_order_' num2str(orderk) '.mat']),'corrWX');
+        plot(xm,corrWX(:,end),'--','Color',color(k+1,:),'LineWidth',linewidth);
+        leg{k+1} = ['order = ' num2str(orderk)];
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$x$ [m]','Interpreter',interpreter)
+    ylabel('$\rho(x - x_c)$','Interpreter',interpreter)
+    legend(leg{:})
+    mysaveas(pathname,'autocorr_x_axis_shinozuka_rand',formats,renderer);
+    mymatlab2tikz(pathname,'autocorr_x_axis_shinozuka_rand.tex');
+
+    figure('Name','Autocorrelation function along y axis - randomized Shinozuka')
+    clf
+    plot(ym,corrAnaY,'-','Color',color(1,:),'LineWidth',linewidth);
+    hold on
+    leg = cell(1+length(nu),1);
+    leg{1} = 'reference';
+    for k=1:length(nu)
+        orderk = order(k);
+        load(fullfile(pathname,['autocorr_shinozuka_rand_order_' num2str(orderk) '.mat']),'corrWY');
+        plot(ym,corrWY(:,end),'--','Color',color(k+1,:),'LineWidth',linewidth);
+        leg{k+1} = ['order = ' num2str(orderk)];
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$y$ [m]','Interpreter',interpreter)
+    ylabel('$\rho(y - y_c)$','Interpreter',interpreter)
+    legend(leg{:})
+    mysaveas(pathname,'autocorr_y_axis_shinozuka_rand',formats,renderer);
+    mymatlab2tikz(pathname,'autocorr_y_axis_shinozuka_rand.tex');
+
+    %% Relative errors on autocorrelation functions
+    figure('Name','Relative error on autocorrelation function - standard Shinozuka')
+    clf
+    leg = cell(length(nu),1);
+    for k=1:length(nu)
+        loglog(N,errCorrV(k,:),'-','Color',color(k,:),'LineWidth',linewidth);
+        hold on
+        leg{k} = ['order = ' num2str(order(k))];
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Realizations')
+    ylabel('Relative error')
+    legend(leg{:})
+    mysaveas(pathname,'error_autocorr_shinozuka_std',formats,renderer);
+    mymatlab2tikz(pathname,'error_autocorr_shinozuka_std.tex');
+
+    figure('Name','Relative error on autocorrelation function along x axis - standard Shinozuka')
+    clf
+    leg = cell(length(nu),1);
+    for k=1:length(nu)
+        loglog(N,errCorrVX(k,:),'-','Color',color(k,:),'LineWidth',linewidth);
+        hold on
+        leg{k} = ['order = ' num2str(order(k))];
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Realizations')
+    ylabel('Relative error')
+    legend(leg{:})
+    mysaveas(pathname,'error_autocorr_x_axis_shinozuka_std',formats,renderer);
+    mymatlab2tikz(pathname,'error_autocorr_x_axis_shinozuka_std.tex');
+
+    figure('Name','Relative error on autocorrelation function along y axis - standard Shinozuka')
+    clf
+    leg = cell(length(nu),1);
+    for k=1:length(nu)
+        loglog(N,errCorrVY(k,:),'-','Color',color(k,:),'LineWidth',linewidth);
+        hold on
+        leg{k} = ['order = ' num2str(order(k))];
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Realizations')
+    ylabel('Relative error')
+    legend(leg{:})
+    mysaveas(pathname,'error_autocorr_y_axis_shinozuka_std',formats,renderer);
+    mymatlab2tikz(pathname,'error_autocorr_y_axis_shinozuka_std.tex');
+
+    figure('Name','Relative error on autocorrelation function - randomized Shinozuka')
+    clf
+    leg = cell(length(nu),1);
+    for k=1:length(nu)
+        loglog(N,errCorrW(k,:),'-','Color',color(k,:),'LineWidth',linewidth);
+        hold on
+        leg{k} = ['order = ' num2str(order(k))];
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Realizations')
+    ylabel('Relative error')
+    legend(leg{:})
+    mysaveas(pathname,'error_autocorr_shinozuka_rand',formats,renderer);
+    mymatlab2tikz(pathname,'error_autocorr_shinozuka_rand.tex');
+
+    figure('Name','Relative error on autocorrelation function along x axis - randomized Shinozuka')
+    clf
+    leg = cell(length(nu),1);
+    for k=1:length(nu)
+        loglog(N,errCorrWX(k,:),'-','Color',color(k,:),'LineWidth',linewidth);
+        hold on
+        leg{k} = ['order = ' num2str(order(k))];
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Realizations')
+    ylabel('Relative error')
+    legend(leg{:})
+    mysaveas(pathname,'error_autocorr_x_axis_shinozuka_rand',formats,renderer);
+    mymatlab2tikz(pathname,'error_autocorr_x_axis_shinozuka_rand.tex');
+    
+    figure('Name','Relative error on autocorrelation function along y axis - randomized Shinozuka')
+    clf
+    leg = cell(length(nu),1);
+    for k=1:length(nu)
+        loglog(N,errCorrWY(k,:),'-','Color',color(k,:),'LineWidth',linewidth);
+        hold on
+        leg{k} = ['order = ' num2str(order(k))];
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Realizations')
+    ylabel('Relative error')
+    legend(leg{:})
+    mysaveas(pathname,'error_autocorr_y_axis_shinozuka_rand',formats,renderer);
+    mymatlab2tikz(pathname,'error_autocorr_y_axis_shinozuka_rand.tex');
+
+    figure('Name','Relative error on autocorrelation function - standard Shinozuka')
+    clf
+    surf(N,order,errCorrV,'EdgeColor','none')
+    colorbar
+    set(gca,'FontSize',fontsize)
+    set(gca,'Xdir','reverse','Ydir','reverse')
+    set(gca,'XScale','log')
+    set(gca,'YScale','log')
+    set(gca,'ZScale','log')
+    xlabel('Realizations')
+    ylabel('Order')
+    zlabel('Relative error')
+    mysaveas(pathname,'error_autocorr_shinozuka_std_surf',formats,renderer);
+    
+    figure('Name','Relative error on autocorrelation function along x axis - standard Shinozuka')
+    clf
+    surf(N,order,errCorrVX,'EdgeColor','none')
+    colorbar
+    set(gca,'FontSize',fontsize)
+    set(gca,'Xdir','reverse','Ydir','reverse')
+    set(gca,'XScale','log')
+    set(gca,'YScale','log')
+    set(gca,'ZScale','log')
+    xlabel('Realizations')
+    ylabel('Order')
+    zlabel('Relative error')
+    mysaveas(pathname,'error_autocorr_x_axis_shinozuka_std_surf',formats,renderer);
+
+    figure('Name','Relative error on autocorrelation function along y axis - standard Shinozuka')
+    clf
+    surf(N,order,errCorrVY,'EdgeColor','none')
+    colorbar
+    set(gca,'FontSize',fontsize)
+    set(gca,'Xdir','reverse','Ydir','reverse')
+    set(gca,'XScale','log')
+    set(gca,'YScale','log')
+    set(gca,'ZScale','log')
+    xlabel('Realizations')
+    ylabel('Order')
+    zlabel('Relative error')
+    mysaveas(pathname,'error_autocorr_y_axis_shinozuka_std_surf',formats,renderer);
+
+    figure('Name','Relative error on autocorrelation function - randomized Shinozuka')
+    clf
+    surf(N,order,errCorrW,'EdgeColor','none')
+    colorbar
+    set(gca,'FontSize',fontsize)
+    set(gca,'Xdir','reverse','Ydir','reverse')
+    set(gca,'XScale','log')
+    set(gca,'YScale','log')
+    set(gca,'ZScale','log')
+    xlabel('Realizations')
+    ylabel('Order')
+    zlabel('Relative error')
+    mysaveas(pathname,'error_autocorr_shinozuka_rand_surf',formats,renderer);
+
+    figure('Name','Relative error on autocorrelation function along x axis - randomized Shinozuka')
+    clf
+    surf(N,order,errCorrWX,'EdgeColor','none')
+    colorbar
+    set(gca,'FontSize',fontsize)
+    set(gca,'Xdir','reverse','Ydir','reverse')
+    set(gca,'XScale','log')
+    set(gca,'YScale','log')
+    set(gca,'ZScale','log')
+    xlabel('Realizations')
+    ylabel('Order')
+    zlabel('Relative error')
+    mysaveas(pathname,'error_autocorr_x_axis_shinozuka_rand_surf',formats,renderer);
+
+    figure('Name','Relative error on autocorrelation function along x axis - randomized Shinozuka')
+    clf
+    surf(N,order,errCorrWY,'EdgeColor','none')
+    colorbar
+    set(gca,'FontSize',fontsize)
+    set(gca,'Xdir','reverse','Ydir','reverse')
+    set(gca,'XScale','log')
+    set(gca,'YScale','log')
+    set(gca,'ZScale','log')
+    xlabel('Realizations')
+    ylabel('Order')
+    zlabel('Relative error')
+    mysaveas(pathname,'error_autocorr_y_axis_shinozuka_rand_surf',formats,renderer);
 end
+
 myparallel('stop');

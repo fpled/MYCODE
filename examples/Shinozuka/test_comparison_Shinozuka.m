@@ -1,14 +1,13 @@
 % clc
 clearvars
 close all
-% rng('default');
 myparallel('start');
 
 %% Inputs
-displayGaussianGerms = false;
+displayGaussianFields = false;
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-        'results','Shinozuka');
+        'results','shinozuka');
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -83,16 +82,19 @@ lcorr = repmat(L/50,Dim,1); % spatial correlation lengths
 fprintf('\nNumber of points  = %d',nx);
 fprintf('\nNumber of fields  = %d',nU);
 fprintf('\nNumber of samples = %d for each Gaussian random field',N);
-fprintf('\nTotal number of realizations = %d',nV);
-fprintf('\n');
+fprintf('\nNumber of samples = %d for all Gaussian random fields',nV);
+fprintf('\nNumber of terms   = %d in the spectral representation',order);
 
 %% Standard Shinozuka method
 fprintf('\nStandard Shinozuka method\n');
 
-Phi = rand(1,order,nV)*2*pi; % random phase shifts Phi uniformly distributed on [0,2*pi]
-Psi = rand(1,order,nV); % random variables Psi uniformly distributed on [0,1]
+rng('default');
+srng = rng; % get current random number generator settings
+X = rand(2,order,nV);
+Phi = X(1,:,:)*2*pi; % random phase shifts Phi uniformly distributed on [0,2*pi]
+Psi = X(2,:,:); % random variables Psi uniformly distributed on [0,1]
 Z = sqrt(-log(Psi)); % random amplitudes Z with values in [0,+Inf[
-clear Psi
+clear X Psi
 
 supp = 2*pi./lcorr; % support of power spectral density (PSD) functions
 
@@ -155,7 +157,13 @@ fprintf('\n');
 %% Randomized Shinozuka method
 fprintf('\nRandomized Shinozuka method\n');
 
-Tau = (-1+2*rand(Dim,order,nV)); % random wave numbers Tau uniformly distributed on [-1,1]
+rng(srng) % set same random number generator settings as for standard Shinozuka method
+X = rand(2+Dim,order,nV);
+Phi = X(1,:,:)*2*pi; % random phase shifts Phi uniformly distributed on [0,2*pi]
+Psi = X(2,:,:); % random variables Psi uniformly distributed on [0,1]
+Z = sqrt(-log(Psi)); % random amplitudes Z with values in [0,+Inf[
+Tau = (-1+2*X(2+(1:Dim),:,:)); % random wave numbers Tau uniformly distributed on [-1,1]
+clear X Psi
 
 tWscalar = tic;
 Wscalar = zeros(nx,nV);
@@ -240,24 +248,25 @@ timeWvec = toc(tWvec);
 errWvec = norm(Wvec-Wscalar)/norm(Wscalar);
 fprintf('\nVectorized implementation : elapsed time = %f s, relative error = %e',timeWvec,errWvec);
 
-%% Display Gaussian germs
-V = reshape(Vcpp,nx,N,nU);
-W = reshape(Wcpp,nx,N,nU);
-if displayGaussianGerms
+V = reshape(Vcpp,nx,nU,N);
+W = reshape(Wcpp,nx,nU,N);
+
+%% Display one realization of a Gaussian random field
+if displayGaussianFields
     if nx==getnbnode(S)
-        figure('Name','Gaussian germ - Standard Shinozuka method')
+        figure('Name',['Gaussian field - standard Shinozuka (order ' num2str(order) ')'])
         clf
         plot_sol(S,V(:,1,1));
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,'gaussian_germ_Shinozuka_std',formats,renderer);
+        mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
 
-        figure('Name','Gaussian germ - Randomized Shinozuka method')
+        figure('Name',['Gaussian field - randomized Shinozuka (order ' num2str(order) ')'])
         clf
         plot_sol(S,W(:,1,1));
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,'gaussian_germ_Shinozuka_rand',formats,renderer);
+        mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(order)],formats,renderer);
     else
         Ve = cell(getnbgroupelem(S),1);
         We = cell(getnbgroupelem(S),1);
@@ -267,8 +276,8 @@ if displayGaussianGerms
             nbelem = getnbelem(elem);
             gauss = calc_gauss(elem,'rigi');
             rep = nbgauss + (1:nbelem*gauss.nbgauss);
-            Vi = reshape(V(rep,:,:),N,nU,nbelem,gauss.nbgauss);
-            Wi = reshape(W(rep,:,:),N,nU,nbelem,gauss.nbgauss);
+            Vi = reshape(V(rep,:)',nU,N,nbelem,gauss.nbgauss);
+            Wi = reshape(W(rep,:)',nU,N,nbelem,gauss.nbgauss);
             Ve{i} = MYDOUBLEND(Vi);
             We{i} = MYDOUBLEND(Wi);
             nbgauss = rep(end);
@@ -277,19 +286,19 @@ if displayGaussianGerms
         Ve = FEELEMFIELD(Ve,'storage','gauss','type','scalar','ddl',DDL('V'));
         We = FEELEMFIELD(We,'storage','gauss','type','scalar','ddl',DDL('W'));
 
-        figure('Name','Gaussian germ - Standard Shinozuka method')
+        figure('Name',['Gaussian field - standard Shinozuka with order = ' num2str(order)])
         clf
         plot(Ve(1),S);
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,'gaussian_germ_Shinozuka_std',formats,renderer);
+        mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
 
-        figure('Name','Gaussian germ - Randomized Shinozuka method')
+        figure('Name',['Gaussian field - randomized Shinozuka with order = ' num2str(order)])
         clf
         plot(We(1),S);
         colorbar
         set(gca,'FontSize',fontsize)
-        mysaveas(pathname,'gaussian_germ_Shinozuka_rand',formats,renderer);
+        mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(order)],formats,renderer);
     end
 end
 
