@@ -28,14 +28,13 @@ test = true; % coarse mesh
 
 N = 7; % number of samples
 numWorkers = 7;
-variedParam = 'E'; % 'E' xor 'NU' xor 'gc' xor 'l'. Uniformly distributed parameter
+variedParam = 'E'; % 'E' or 'NU' or 'gc' or 'l'. Uniformly distributed parameter
 varWidth = .5; % relative half-width of variation around the mean. Ex : .5 means 50% to 150%
 
 % Deterministic model parameters
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isotropic'; % 'Isotropic' or 'Anisotropic'. Material symmetry
-ang = 30; % clockwise material orientation angle around z-axis [deg]
-isotropicTest = false; % for test purposes (configuration of isotropic material with the anisotropic class). Work only for "Dim = 2" and "symmetry = 'Anisotropic'".
+ang = 30; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 loading = 'Tension'; % 'Tension' or 'Shear'
 PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
@@ -47,10 +46,6 @@ switch lower(symmetry)
         filename = [filename symmetry num2str(ang) 'deg'];
     otherwise
         error('Wrong material symmetry class');
-end
-
-if isotropicTest
-    filename = ['phasefieldDetLinElas' 'IsotTest'];
 end
 
 filename = [filename 'SingleEdgeCrackParamInfluence' loading PFmodel '_' num2str(Dim) 'D_' num2str(N) 'samples'];
@@ -167,12 +162,6 @@ if setProblem
         otherwise
             error('Wrong material symmetry class');
     end
-    if isotropicTest
-        % Critical energy release rate (or fracture toughness)
-        gc = 2.7e3; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
-        % Regularization parameter (width of the smeared crack)
-        l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-    end
     % Small artificial residual stiffness
     k = 1e-10;
     % Internal energy
@@ -198,7 +187,7 @@ if setProblem
     
     % r_phase = BILINFORM(0,0,gc/l+2*H,0); % nodal values
     % R_phase = calc_matrix(r_phase,S_phase);
-    % A_phase = K_phase + M_phase;
+    % A_phase = K_phase + R_phase;
     
     % l_phase = LINFORM(0,2*H,0); % nodal values
     % l_phase = setfree(l_phase,1);
@@ -243,7 +232,7 @@ if setProblem
                     case 'defo'
                         % [Nguyen, Yvonnet, Waldmann, He, 2020,IJNME]
                         % Elasticity matrix in reference material coordinate system [Pa]
-                        matElas = 1e9*[65 20 0;
+                        Cmat = 1e9*[65 20 0;
                             20 260 0;
                             0 0 30];
                         theta = deg2rad(ang); % clockwise material orientation angle around z-axis [rad]
@@ -254,24 +243,10 @@ if setProblem
                             s^2 c^2 c*s;
                             2*c*s -2*c*s c^2-s^2];
                         % Elasticity matrix in global coordinate system [Pa]
-                        matElas = P'*matElas*P;
+                        Cmat = P'*Cmat*P;
                     case 'cont'
                         error('Not implemented yet')
-                end
-                
-                if isotropicTest
-                    lambda = 121.15e9;
-                    mu = 80.77e9;
-                    if strcmpi(option,'cont')
-                        E = mu*(3*lambda+2*mu)/(lambda+mu);
-                        NU = lambda/(lambda+mu)/2;
-                        lambda = E*NU/(1-NU^2); % first Lamé coefficient
-                    end
-                    matElas = [lambda+2*mu,lambda,0;...
-                        lambda,lambda+2*mu,0;...
-                        0,0,mu];
-                end
-                
+                end 
             elseif Dim==3
                 error('Not implemented yet')
             end
@@ -286,10 +261,10 @@ if setProblem
     % Material
     d = calc_init_dirichlet(S_phase);
     switch lower(symmetry)
-        case 'isotropic' % isotropic material model for isotropic material only
+        case 'isotropic' % isotropic material
             mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
-        case 'anisotropic' % anisotropic material model for all symmetry classes
-            mat = ELAS_ANISOT('matElas',matElas,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+        case 'anisotropic' % anisotropic material
+            mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
         otherwise
             error('Wrong material symmetry class');
     end
@@ -474,33 +449,6 @@ if setProblem
                 t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                 t = [t0,t1];
                 
-                if isotropicTest
-                    switch lower(loading)
-                        case 'tension'
-                            dt0 = 1e-8;
-                            nt0 = 500;
-                            dt1 = 1e-9;
-                            nt1 = 1300;
-                            if test
-                                dt0 = 1e-7;
-                                nt0 = 50;
-                                dt1 = 1e-8;
-                                nt1 = 400;
-                            end
-                            t0 = linspace(dt0,nt0*dt0,nt0);
-                            t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                            t = [t0,t1];
-                        case 'shear'
-                            dt = 1e-8;
-                            nt = 1500;
-                            if test
-                                dt = 5e-8;
-                                nt = 400;
-                            end
-                            t = linspace(dt,nt*dt,nt);
-                    end
-                end
-                
             elseif Dim==3
                 dt = 1e-8;
                 nt = 2500;
@@ -580,13 +528,9 @@ end
 fprintf('\n');
 fprintf('dim      = %d\n',Dim);
 fprintf('loading  = %s\n',loading);
-if isotropicTest
-    fprintf('mat sym  = isotropic test\n');
-else
-    fprintf('mat sym  = %s\n',symmetry);
-    if strcmpi(symmetry,'anisotropic')
-        fprintf('angle    = %g deg\n',ang);
-    end
+fprintf('mat sym  = %s\n',symmetry);
+if strcmpi(symmetry,'anisotropic')
+    fprintf('angle    = %g deg\n',ang);
 end
 fprintf('PF model = %s\n',PFmodel);
 fprintf('nb elements = %g\n',getnbelem(S));

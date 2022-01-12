@@ -31,8 +31,7 @@ test = true; % coarse mesh
 
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isotropic'; % 'Isotropic' or 'Anisotropic'. Material symmetry
-ang = 30; % clockwise material orientation angle around z-axis [deg]
-isotropicTest = false; % for test purposes (configuration of isotropic material with the anisotropic class). Work only for "Dim = 2" and "symmetry = 'Anisotropic'".
+ang = 30; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
@@ -43,9 +42,6 @@ switch lower(symmetry)
         filename = ['phasefieldDetLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel 'Hnode_' num2str(Dim) 'D'];
     otherwise
         error('Wrong material symmetry class');
-end
-if isotropicTest
-    filename = ['phasefieldDetLinElas' 'IsotTest' 'SingleEdgeCrack' loading PFmodel 'Hnode_' num2str(Dim) 'D'];
 end
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -149,12 +145,6 @@ if setProblem
         otherwise
             error('Wrong material symmetry class');
     end
-    if isotropicTest
-        % Critical energy release rate (or fracture toughness)
-        gc = 2.7e3; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
-        % Regularization parameter (width of the smeared crack)
-        l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-    end
     % Small artificial residual stiffness
     k = 1e-10;
     % Internal energy
@@ -225,9 +215,10 @@ if setProblem
                     case 'defo'
                         % [Nguyen, Yvonnet, Waldmann, He, 2020,IJNME]
                         % Elasticity matrix in reference material coordinate system [Pa]
-                        matElas = 1e9*[65 20 0;
+                        matElas = e*...
+                            [65 20 0;
                             20 260 0;
-                            0 0 30];
+                            0 0 30]*1e9;
                         theta = deg2rad(ang); % clockwise material orientation angle around z-axis [rad]
                         c = cos(theta);
                         s = sin(theta);
@@ -240,20 +231,6 @@ if setProblem
                     case 'cont'
                         error('Not implemented yet')
                 end
-                
-                if isotropicTest
-                    lambda = 121.15e9;
-                    mu = 80.77e9;
-                    if strcmpi(option,'cont')
-                        E = mu*(3*lambda+2*mu)/(lambda+mu);
-                        NU = lambda/(lambda+mu)/2;
-                        lambda = E*NU/(1-NU^2); % first Lamé coefficient
-                    end
-                    matElas = [lambda+2*mu,lambda,0;...
-                        lambda,lambda+2*mu,0;...
-                        0,0,mu];
-                end
-                
             elseif Dim==3
                 error('Not implemented yet')
             end
@@ -268,10 +245,10 @@ if setProblem
     % Material
     d = calc_init_dirichlet(S_phase);
     switch lower(symmetry)
-        case 'isotropic' % isotropic material model for isotropic material only
+        case 'isotropic' % isotropic material
             mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
-        case 'anisotropic' % anisotropic material model for all symmetry classes
-            mat = ELAS_ANISOT('matElas',matElas,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+        case 'anisotropic' % anisotropic material
+            mat = ELAS_ANISOT('C',matElas,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
         otherwise
             error('Wrong material symmetry class');
     end

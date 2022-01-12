@@ -8,6 +8,8 @@ pathname = getcharin('pathname',varargin,'.');
 gmshoptions = getcharin('gmshoptions',varargin,'-v 0');
 mmgoptions = getcharin('mmgoptions',varargin,'-nomove -v -1');
 
+Dim = getdim(S);
+
 t = gett(T);
 
 dt = cell(1,length(T));
@@ -97,7 +99,7 @@ for i=1:length(T)
     % dincmin = min(dinc); if dincmin<-tol, dincmin, end
     
     % P = calcProjection(S,S_old,[],'free',false,'full',true);
-    P = kron(P_phase,eye(2));
+    P = kron(P_phase,eye(Dim));
     u = P'*u;
     
     % Displacement field

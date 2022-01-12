@@ -4,7 +4,7 @@ close all
 myparallel('start');
 
 %% Inputs
-displayGaussianFields = false;
+displayGaussianField = false;
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
         'results','shinozuka');
@@ -18,6 +18,8 @@ formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 Dim = 2; % space dimension Dim = 2, 3
+storage = 'node'; % storage at nodal points
+% storage = 'gauss'; % storage at gauss points
 
 % n3D = 6; % size of 3D elasticity matrix
 % n = Dim*(Dim+1)/2; % size of elasticity matrix
@@ -69,12 +71,17 @@ S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
 
 S = final(S);
 
-% Gauss point coordinates
-% x = calc_gausscoord(S,'rigi');
-% Node coordinates
-node = getnode(S);
-x = getcoord(node);
-
+switch storage
+    case 'node'
+        % Node coordinates
+        node = getnode(S);
+        x = getcoord(node);
+    case 'gauss'
+        % Gauss point coordinates
+        x = calc_gausscoord(S,'rigi');
+    otherwise
+        error('Wrong storage');
+end
 nx = size(x,1); % number of points
 
 lcorr = repmat(L/50,Dim,1); % spatial correlation lengths
@@ -252,53 +259,56 @@ V = reshape(Vcpp,nx,nU,N);
 W = reshape(Wcpp,nx,nU,N);
 
 %% Display one realization of a Gaussian random field
-if displayGaussianFields
-    if nx==getnbnode(S)
-        figure('Name',['Gaussian field - standard Shinozuka (order ' num2str(order) ')'])
-        clf
-        plot_sol(S,V(:,1,1));
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
+if displayGaussianField
+    switch storage
+        case 'node'
+            figure('Name',['Gaussian field - standard Shinozuka (order ' num2str(order) ')'])
+            clf
+            plot_sol(S,V(:,1,1));
+            colorbar
+            set(gca,'FontSize',fontsize)
+            mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
 
-        figure('Name',['Gaussian field - randomized Shinozuka (order ' num2str(order) ')'])
-        clf
-        plot_sol(S,W(:,1,1));
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(order)],formats,renderer);
-    else
-        Ve = cell(getnbgroupelem(S),1);
-        We = cell(getnbgroupelem(S),1);
-        nbgauss = 0;
-        for i=1:getnbgroupelem(S)
-            elem = getgroupelem(S,i);
-            nbelem = getnbelem(elem);
-            gauss = calc_gauss(elem,'rigi');
-            rep = nbgauss + (1:nbelem*gauss.nbgauss);
-            Vi = reshape(V(rep,:)',nU,N,nbelem,gauss.nbgauss);
-            Wi = reshape(W(rep,:)',nU,N,nbelem,gauss.nbgauss);
-            Ve{i} = MYDOUBLEND(Vi);
-            We{i} = MYDOUBLEND(Wi);
-            nbgauss = rep(end);
-        end
+            figure('Name',['Gaussian field - randomized Shinozuka (order ' num2str(order) ')'])
+            clf
+            plot_sol(S,W(:,1,1));
+            colorbar
+            set(gca,'FontSize',fontsize)
+            mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(order)],formats,renderer);
+        case 'gauss'
+            Ve = cell(getnbgroupelem(S),1);
+            We = cell(getnbgroupelem(S),1);
+            nbgauss = 0;
+            for i=1:getnbgroupelem(S)
+                elem = getgroupelem(S,i);
+                nbelem = getnbelem(elem);
+                gauss = calc_gauss(elem,'rigi');
+                rep = nbgauss + (1:nbelem*gauss.nbgauss);
+                Vi = reshape(V(rep,:,1)',nU,1,nbelem,gauss.nbgauss);
+                Wi = reshape(W(rep,:,1)',nU,1,nbelem,gauss.nbgauss);
+                Ve{i} = MYDOUBLEND(Vi);
+                We{i} = MYDOUBLEND(Wi);
+                nbgauss = rep(end);
+            end
 
-        Ve = FEELEMFIELD(Ve,'storage','gauss','type','scalar','ddl',DDL('V'));
-        We = FEELEMFIELD(We,'storage','gauss','type','scalar','ddl',DDL('W'));
+            Ve = FEELEMFIELD(Ve,'storage','gauss','type','scalar','ddl',DDL('V'));
+            We = FEELEMFIELD(We,'storage','gauss','type','scalar','ddl',DDL('W'));
 
-        figure('Name',['Gaussian field - standard Shinozuka with order = ' num2str(order)])
-        clf
-        plot(Ve(1),S);
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
+            figure('Name',['Gaussian field - standard Shinozuka with order = ' num2str(order)])
+            clf
+            plot(Ve(1),S);
+            colorbar
+            set(gca,'FontSize',fontsize)
+            mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
 
-        figure('Name',['Gaussian field - randomized Shinozuka with order = ' num2str(order)])
-        clf
-        plot(We(1),S);
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(order)],formats,renderer);
+            figure('Name',['Gaussian field - randomized Shinozuka with order = ' num2str(order)])
+            clf
+            plot(We(1),S);
+            colorbar
+            set(gca,'FontSize',fontsize)
+            mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(order)],formats,renderer);
+        otherwise
+            error('Wrong storage');
     end
 end
 
