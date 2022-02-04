@@ -41,14 +41,14 @@ if Dim==1
 elseif Dim==2
     e = 1;
     D = DOMAIN(2,[0.0,0.0],[L,L]);
-    c = LIGNE([0.0,L/2],[a,L/2]);
+    C = LIGNE([0.0,L/2],[a,L/2]);
     % elemtype = 'TRI3';
     elemtype = 'QUA4';
     % elemtype = 'TRI6';
 elseif Dim==3
     e = 0.1e-3;
     D = DOMAIN(3,[0.0,0.0,0.0],[L,L,e]);
-    c = QUADRANGLE([0.0,L/2,0.0],[a,L/2,0.0],[a,L/2,e],[0.0,L/2,e]);
+    C = QUADRANGLE([0.0,L/2,0.0],[a,L/2,0.0],[a,L/2,e],[0.0,L/2,e]);
     % elemtype = 'TET4';
     elemtype = 'CUB8';
     % elemtype = 'TET10';
