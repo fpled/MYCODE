@@ -13,8 +13,8 @@ makeMovie = false;
 saveParaview = false;
 displayExamples = false;
 
-% test = true; % coarse meshes
 test = false; % fine meshes
+% test = true; % coarse meshes
 
 % Parameters for the Monte Carlo estimation and the parallelization
 % NMC = 500; % number of independent realizations for Gaussian random fields, number of Monte-carlo simulations
@@ -85,7 +85,9 @@ g = @(d) (1-d).^2; % energetic degradation function
 k = 1e-10; % small artificial residual stiffness
 
 % Parameters for the Shinozuka method
-nu = 28; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
+% nu = 28; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
+% Let the order be computed automatically to avoid periodicity in the
+% domain
 
 % lcorr = L/50; % [m] correlation length(s). Set to 0 for homogeneous parameters
 % lcorr = 2e-5; % [m] correlation length(s)
@@ -140,8 +142,8 @@ if rhoPF~=0 % statistical correlation between phase field parameters
 end
 
 %% Computation of dependent parameters
-% Order of spectral representation (Shinozuka method) and number of Gaussian fields
-order = nu^Dim; % Dim-dimensional order (number of terms) of the spectral representation
+[gc,l] = paramMatPhaseSingleEdgeCrack(symmetry,test); % mean phase field parameters
+gc = 1*gc;
 
 % Number of independant Gaussian random variables/fields to generate for the random elasticity matrix
 nbGermsElas = 0;
@@ -162,6 +164,7 @@ nbGermsTot = nbGermsPF + nbGermsElas; % total number of independent Gaussian var
 % Replace the dot by a comma when printing (to avoid file extension issues)
 clDString = strrep(num2str(clD),'.',',');
 clCString = strrep(num2str(clC),'.',',');
+gcString = strrep(num2str(gc),'.',',');
 lcorrString = strrep(num2str(lcorr),'.',',');
 CVElasString = strrep(num2str(deltaC),'.',',');
 CVPFString = strrep([num2str(deltaP1) '_' num2str(deltaP2)],'.',',');
@@ -195,8 +198,8 @@ end
 pbFileName = ['pb_clD' clDString '_clC' clCString]; % problem file
 
 % Appendix to add to the files' name
-fileAppend = ['_clD' clDString '_clC' clCString]; % appendix to add to files
-if lcorr~=0, fileAppend = [fileAppend '_Order' num2str(order) '_lcorr' lcorrString]; end
+fileAppend = ['_clD' clDString '_clC' clCString '_gc' gcString]; % appendix to add to files
+if lcorr~=0, fileAppend = [fileAppend '_lcorr' lcorrString]; end
 if deltaC~=0, fileAppend = [fileAppend '_CVElas' CVElasString]; end
 if (deltaP1~=0)||(deltaP2~=0), fileAppend = [fileAppend '_CVPF' CVPFString]; end
 if rhoPF~=0, fileAppend = [fileAppend, '_rhoPF' rhoPFString]; end
@@ -243,7 +246,6 @@ if setProblem
 
     %% Computation of mean parameters
     % Phase field parameters
-    [gc,l] = paramMatPhaseSingleEdgeCrack(symmetry,test); % mean phase field parameters
     mat_phaseInit = FOUR_ISOT('k',gc*l,'r',gc/l);
     mat_phaseInit = setnumber(mat_phaseInit,1);
     S_phaseInit = setmaterial(S_phaseInit,mat_phaseInit);
@@ -297,10 +299,26 @@ if setProblem
     matInit = setnumber(matInit,1);
     SInit = setmaterial(SInit,matInit);
 
-    %% Save problem
-    save(fullfile(pathname, [pbFileName '.mat']),'T','idSnap','S_phaseInit','SInit','D','C','BU','BL','BRight','BLeft','BFront','BBack','d');
+    %% Compute the order for the spectral representation such that there is no periodicity in the domain
+    if test
+        nu = 28;
+    else
+        % Node coordinates
+        node = getnode(SInit);
+        x = getcoord(node);
+        domainExtent = max(x) - min(x);
+        nu = ceil(max(domainExtent./lcorr')); % one-dimensional order nu
+        % such that domainExtent(j) <= period(j)/2 = nu*lcorr(j) for all spatial dimensions j=1,...,dim
+        nu = 2*floor((nu+1)/2); % ensure one-dimensional order nu is even
+    end
+    order = nu^Dim; % d-dimensional order of the spectral representation for all spatial dimensions
+
+%% Save problem
+save(fullfile(pathname, [pbFileName '.mat']),'T','idSnap','S_phaseInit','SInit',...
+    'D','C','BU','BL','BRight','BLeft','BFront','BBack','d','order');
 else
-    load(fullfile(pathname, [pbFileName '.mat']),'T','idSnap','S_phaseInit','SInit','D','C','BU','BL','BRight','BLeft','BFront','BBack','d');
+    load(fullfile(pathname, [pbFileName '.mat']),'T','idSnap','S_phaseInit','SInit',...
+    'D','C','BU','BL','BRight','BLeft','BFront','BBack','d','order');
 end
 
 % Mesh parameters, also used to reshape random fields
