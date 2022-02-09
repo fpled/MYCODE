@@ -8,6 +8,8 @@ pathname = getcharin('pathname',varargin,'.');
 gmshoptions = getcharin('gmshoptions',varargin,'-v 0');
 mmgoptions = getcharin('mmgoptions',varargin,'-nomove -v -1');
 
+Dim = getdim(S);
+
 t = gett(T);
 
 dt = cell(1,length(T));
@@ -33,9 +35,9 @@ if display_
 end
 
 mats_phase = MATERIALS(S_phase);
-r = zeros(length(mats_phase),1);
+r = cell(length(mats_phase),1);
 for m=1:length(mats_phase)
-    r(m) = getparam(mats_phase{m},'r');
+    r{m} = getparam(mats_phase{m},'r');
 end
 
 for i=1:length(T)
@@ -56,7 +58,7 @@ for i=1:length(T)
     % Phase field
     mats_phase = MATERIALS(S_phase);
     for m=1:length(mats_phase)
-        mats_phase{m} = setparam(mats_phase{m},'r',r(m)+2*H);
+        mats_phase{m} = setparam(mats_phase{m},'r',r{m}+2*H);
     end
     S_phase = actualisematerials(S_phase,mats_phase);
     
@@ -97,7 +99,7 @@ for i=1:length(T)
     % dincmin = min(dinc); if dincmin<-tol, dincmin, end
     
     % P = calcProjection(S,S_old,[],'free',false,'full',true);
-    P = kron(P_phase,eye(2));
+    P = kron(P_phase,eye(Dim));
     u = P'*u;
     
     % Displacement field

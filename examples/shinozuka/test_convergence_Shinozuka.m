@@ -4,7 +4,7 @@ close all
 myparallel('start');
 
 %% Inputs
-computeGaussianFields = true;
+computeGaussianField = true;
 computeAutocorrelation = true;
 displayGaussianFields = false;
 displayAutocorrelation = false;
@@ -22,19 +22,22 @@ formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 Dim = 2; % space dimension Dim = 2, 3
+storage = 'node'; % storage at nodal points
+% storage = 'gauss'; % storage at gauss points
 
 % n3D = 6; % size of 3D elasticity matrix
 % n = Dim*(Dim+1)/2; % size of elasticity matrix
 % nU = n*(n+1)/2; % number of Gaussian random fields
 nU = 1; % number of Gaussian random fields
 
-N = [1e1 5e1 1e2 2.5e2 5e2 7.5e2 1e3 2.5e3 5e3 7.5e3 1e4]; % number of independent realizations for each Gaussian random field
-% N = [1e1 5e1 1e2];
+% N = [1e1 5e1 1e2 2.5e2 5e2 7.5e2 1e3 2.5e3 5e3 7.5e3 1e4]; % number of independent realizations for each Gaussian random field
+N = [1e1 5e1 1e2];
 
 nV = nU*N; % number of independent realizations for all Gaussian random fields
 
-nu = [4 8 16 20 24 28 32 36 40 44 48 56 64]; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
+% nu = [4 8 16 20 24 28 32 36 40 44 48 56 64]; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
 % nu = [4 8 16 20 24];
+% nu = [64 68];
 % nu = [124 128];
 order = nu.^Dim; % Dim-dimensional order (number of terms) of the spectral representation
 
@@ -78,12 +81,17 @@ S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
 
 S = final(S);
 
-% Gauss point coordinates
-% x = calc_gausscoord(S,'rigi');
-% Node coordinates
-node = getnode(S);
-x = getcoord(node);
-
+switch storage
+    case 'node'
+        % Node coordinates
+        node = getnode(S);
+        x = getcoord(node);
+    case 'gauss'
+        % Gauss point coordinates
+        x = calc_gausscoord(S,'rigi');
+    otherwise
+        error('Wrong storage');
+end
 nx = size(x,1); % number of points
 
 lcorr = repmat(L/50,Dim,1); % spatial correlation lengths
@@ -137,7 +145,7 @@ for k=1:length(order)
     fprintf('\n');
 
     %% Gaussian random fields
-    if computeGaussianFields
+    if computeGaussianField
         %% Standard Shinozuka method
         fprintf('\nStandard Shinozuka method\n');
         tGaussShinozukaStd = tic;
@@ -145,7 +153,7 @@ for k=1:length(order)
         V = shinozuka(x,lcorr,nU,max(N),'order',nuk,'state',s);
 
         timeGaussShinozukaStd = toc(tGaussShinozukaStd);
-        fprintf('\nelapsed time = %f s\n',timeGaussShinozukaStd);
+        fprintf('elapsed time = %f s\n',timeGaussShinozukaStd);
 
         %% Randomized Shinozuka method
         fprintf('\nRandomized Shinozuka method\n');
@@ -154,7 +162,7 @@ for k=1:length(order)
         W = shinozukaRand(x,lcorr,nU,max(N),'order',orderk,'state',s);
 
         timeGaussShinozukaRand = toc(tGaussShinozukaRand);
-        fprintf('\nelapsed time = %f s\n',timeGaussShinozukaRand);
+        fprintf('elapsed time = %f s\n',timeGaussShinozukaRand);
 
         save(fullfile(pathname,['gauss_shinozuka_std_order_' num2str(orderk) '.mat']),'V','timeGaussShinozukaStd');
         save(fullfile(pathname,['gauss_shinozuka_rand_order_' num2str(orderk) '.mat']),'W','timeGaussShinozukaRand');
@@ -166,10 +174,10 @@ for k=1:length(order)
     %% Normalized autocorrelation function at center point
     if computeAutocorrelation
         %% Standard Shinozuka method
-        fprintf('\nStandard Shinozuka method');
+        fprintf('\nStandard Shinozuka method\n');
         tCorrShinozukaStd = tic;
 
-        fprintf('\nComputing autocorrelation function\n');
+        fprintf('Computing autocorrelation function\n');
         corrV = zeros(nx,length(N));
         corrVX = zeros(length(idxm),length(N));
         corrVY = zeros(length(idym),length(N));
@@ -186,13 +194,13 @@ for k=1:length(order)
             errCorrVY(k,j) = norm(corrVY(:,j) - corrAnaY)/norm(corrAnaY);
         end
         timeCorrShinozukaStd = toc(tCorrShinozukaStd);
-        fprintf('\nelapsed time = %f s\n',timeCorrShinozukaStd);
+        fprintf('elapsed time = %f s\n',timeCorrShinozukaStd);
 
         %% Randomized Shinozuka method
-        fprintf('\nRandomized Shinozuka method');
+        fprintf('\nRandomized Shinozuka method\n');
         tCorrShinozukaRand = tic;
 
-        fprintf('\nComputing autocorrelation function\n');
+        fprintf('Computing autocorrelation function\n');
         corrW = zeros(nx,length(N));
         corrWX = zeros(length(idxm),length(N));
         corrWY = zeros(length(idym),length(N));
@@ -209,7 +217,7 @@ for k=1:length(order)
             errCorrWY(k,j) = norm(corrWY(:,j) - corrAnaY)/norm(corrAnaY);
         end
         timeCorrShinozukaRand = toc(tCorrShinozukaRand);
-        fprintf('\nelapsed time = %f s\n',timeCorrShinozukaRand);
+        fprintf('elapsed time = %f s\n',timeCorrShinozukaRand);
 
         save(fullfile(pathname,['autocorr_shinozuka_std_order_' num2str(orderk) '.mat']),...
             'corrV','corrVX','corrVY','timeCorrShinozukaStd');
@@ -241,84 +249,55 @@ if displayGaussianFields
         load(fullfile(pathname,['gauss_shinozuka_std_order_' num2str(orderk) '.mat']),'V');
         load(fullfile(pathname,['gauss_shinozuka_rand_order_' num2str(orderk) '.mat']),'W');
 
-        if nx==getnbnode(S)
-            figure('Name',['Gaussian field - standard Shinozuka with order ' num2str(orderk)])
-            clf
-            plot_sol(S,V(:,1,1));
-            xlabel('$x$ [m]','Interpreter',interpreter)
-            if Dim>=2
-                ylabel('$y$ [m]','Interpreter',interpreter)
-            end
-            if Dim==3
-                zlabel('$z$ [m]','Interpreter',interpreter)
-            end
-            axis on
-            colorbar
-            set(gca,'FontSize',fontsize)
-            mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(orderk)],formats,renderer);
+        switch storage
+            case 'node'
+                figure('Name',['Gaussian field - standard Shinozuka with order ' num2str(orderk)])
+                clf
+                plot_sol(S,V(:,1,1));
+                colorbar
+                set(gca,'FontSize',fontsize)
+                mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(orderk)],formats,renderer);
 
-            figure('Name',['Gaussian field - randomized Shinozuka with order ' num2str(orderk)])
-            clf
-            plot_sol(S,W(:,1,1));
-            xlabel('$x$ [m]','Interpreter',interpreter)
-            if Dim>=2
-                ylabel('$y$ [m]','Interpreter',interpreter)
-            end
-            if Dim==3
-                zlabel('$z$ [m]','Interpreter',interpreter)
-            end
-            axis on
-            colorbar
-            set(gca,'FontSize',fontsize)
-            mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(orderk)],formats,renderer);
-        else
-            Ve = cell(getnbgroupelem(S),1);
-            We = cell(getnbgroupelem(S),1);
-            nbgauss = 0;
-            for i=1:getnbgroupelem(S)
-                elem = getgroupelem(S,i);
-                nbelem = getnbelem(elem);
-                gauss = calc_gauss(elem,'rigi');
-                rep = nbgauss + (1:nbelem*gauss.nbgauss);
-                Vi = reshape(V(rep,:)',nU,N,nbelem,gauss.nbgauss);
-                Wi = reshape(W(rep,:)',nU,N,nbelem,gauss.nbgauss);
-                Ve{i} = MYDOUBLEND(Vi);
-                We{i} = MYDOUBLEND(Wi);
-                nbgauss = rep(end);
-            end
+                figure('Name',['Gaussian field - randomized Shinozuka with order ' num2str(orderk)])
+                clf
+                plot_sol(S,W(:,1,1));
+                colorbar
+                set(gca,'FontSize',fontsize)
+                mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(orderk)],formats,renderer);
+            case 'gauss'
+                Ve = cell(getnbgroupelem(S),1);
+                We = cell(getnbgroupelem(S),1);
+                nbgauss = 0;
+                for i=1:getnbgroupelem(S)
+                    elem = getgroupelem(S,i);
+                    nbelem = getnbelem(elem);
+                    gauss = calc_gauss(elem,'rigi');
+                    rep = nbgauss + (1:nbelem*gauss.nbgauss);
+                    Vi = reshape(V(rep,:,1)',nU,1,nbelem,gauss.nbgauss);
+                    Wi = reshape(W(rep,:,1)',nU,1,nbelem,gauss.nbgauss);
+                    Ve{i} = MYDOUBLEND(Vi);
+                    We{i} = MYDOUBLEND(Wi);
+                    nbgauss = rep(end);
+                end
 
-            Ve = FEELEMFIELD(Ve,'storage','gauss','type','scalar','ddl',DDL('V'));
-            We = FEELEMFIELD(We,'storage','gauss','type','scalar','ddl',DDL('W'));
+                Ve = FEELEMFIELD(Ve,'storage','gauss','type','scalar','ddl',DDL('V'));
+                We = FEELEMFIELD(We,'storage','gauss','type','scalar','ddl',DDL('W'));
 
-            figure('Name',['Gaussian field - standard Shinozuka (order ' num2str(orderk) ')'])
-            clf
-            plot(Ve(1),S);
-            xlabel('$x$ [m]','Interpreter',interpreter)
-            if Dim>=2
-                ylabel('$y$ [m]','Interpreter',interpreter)
-            end
-            if Dim==3
-                zlabel('$z$ [m]','Interpreter',interpreter)
-            end
-            axis on
-            colorbar
-            set(gca,'FontSize',fontsize)
-            mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(orderk)],formats,renderer);
+                figure('Name',['Gaussian field - standard Shinozuka (order ' num2str(orderk) ')'])
+                clf
+                plot(Ve(1),S);
+                colorbar
+                set(gca,'FontSize',fontsize)
+                mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(orderk)],formats,renderer);
 
-            figure('Name',['Gaussian field - randomized Shinozuka (order ' num2str(orderk) ')'])
-            clf
-            plot(We(1),S);
-            xlabel('$x$ [m]','Interpreter',interpreter)
-            if Dim>=2
-                ylabel('$y$ [m]','Interpreter',interpreter)
-            end
-            if Dim==3
-                zlabel('$z$ [m]','Interpreter',interpreter)
-            end
-            axis on
-            colorbar
-            set(gca,'FontSize',fontsize)
-            mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(orderk)],formats,renderer);
+                figure('Name',['Gaussian field - randomized Shinozuka (order ' num2str(orderk) ')'])
+                clf
+                plot(We(1),S);
+                colorbar
+                set(gca,'FontSize',fontsize)
+                mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(orderk)],formats,renderer);
+            otherwise
+                error('Wrong storage');
         end
     end
 end
@@ -330,7 +309,12 @@ if displayAutocorrelation
     clf
     plot(corrAna,S);
     xlabel('$x$ [m]','Interpreter',interpreter)
-    ylabel('$y$ [m]','Interpreter',interpreter)
+    if Dim>=2
+        ylabel('$y$ [m]','Interpreter',interpreter)
+    end
+    if Dim==3
+        zlabel('$z$ [m]','Interpreter',interpreter)
+    end
     axis on
     colorbar
     set(gca,'FontSize',fontsize)
@@ -357,7 +341,12 @@ if displayAutocorrelation
             clf
             plot(corrV(:,j),S);
             xlabel('$x$ [m]','Interpreter',interpreter)
-            ylabel('$y$ [m]','Interpreter',interpreter)
+            if Dim>=2
+                ylabel('$y$ [m]','Interpreter',interpreter)
+            end
+            if Dim==3
+                zlabel('$z$ [m]','Interpreter',interpreter)
+            end
             axis on
             colorbar
             set(gca,'FontSize',fontsize)
@@ -369,7 +358,12 @@ if displayAutocorrelation
             clf
             plot(corrW(:,j),S);
             xlabel('$x$ [m]','Interpreter',interpreter)
-            ylabel('$y$ [m]','Interpreter',interpreter)
+            if Dim>=2
+                ylabel('$y$ [m]','Interpreter',interpreter)
+            end
+            if Dim==3
+                zlabel('$z$ [m]','Interpreter',interpreter)
+            end
             axis on
             colorbar
             set(gca,'FontSize',fontsize)

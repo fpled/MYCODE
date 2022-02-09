@@ -1,10 +1,10 @@
 % clc
 clearvars
-% close all
+close all
 myparallel('start');
 
 %% Inputs
-displayGaussianFields = true;
+displayGaussianField = true;
 displayElasticityField = true;
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -19,6 +19,8 @@ formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
 Dim = 2; % space dimension Dim = 2, 3
+% storage = 'node'; % storage at nodal points
+storage = 'gauss'; % storage at gauss points
 
 n3D = 6; % size of 3D elasticity matrix
 n = Dim*(Dim+1)/2; % size of elasticity matrix
@@ -39,14 +41,14 @@ if Dim==1
 elseif Dim==2
     e = 1;
     D = DOMAIN(2,[0.0,0.0],[L,L]);
-    c = LIGNE([0.0,L/2],[a,L/2]);
+    C = LIGNE([0.0,L/2],[a,L/2]);
     % elemtype = 'TRI3';
     elemtype = 'QUA4';
     % elemtype = 'TRI6';
 elseif Dim==3
     e = 0.1e-3;
     D = DOMAIN(3,[0.0,0.0,0.0],[L,L,e]);
-    c = QUADRANGLE([0.0,L/2,0.0],[a,L/2,0.0],[a,L/2,e],[0.0,L/2,e]);
+    C = QUADRANGLE([0.0,L/2,0.0],[a,L/2,0.0],[a,L/2,e],[0.0,L/2,e]);
     % elemtype = 'TET4';
     elemtype = 'CUB8';
     % elemtype = 'TET10';
@@ -107,7 +109,7 @@ switch lower(symmetry)
                 case 'defo'
                     % [Nguyen, Yvonnet, Waldmann, He, 2020,IJNME]
                     % Elasticity matrix in reference material coordinate system [Pa]
-                    matElas = 1e9*[65 20 0;
+                    Cmat = 1e9*[65 20 0;
                         20 260 0;
                         0 0 30];
                     theta = deg2rad(ang); % clockwise material orientation angle around z-axis [rad]
@@ -118,7 +120,7 @@ switch lower(symmetry)
                         s^2 c^2 c*s;
                         2*c*s -2*c*s c^2-s^2];
                     % Elasticity matrix in global coordinate system [Pa]
-                    matElas = P'*matElas*P;
+                    Cmat = P'*Cmat*P;
                 case 'cont'
                     error('Not implemented yet')
             end
@@ -131,7 +133,7 @@ switch lower(symmetry)
                     NU = lambda/(lambda+mu)/2;
                     lambda = E*NU/(1-NU^2); % first Lamé coefficient
                 end
-                matElas = [lambda+2*mu,lambda,0;...
+                Cmat = [lambda+2*mu,lambda,0;...
                     lambda,lambda+2*mu,0;...
                     0,0,mu];
             end
@@ -150,7 +152,7 @@ switch lower(symmetry)
     case 'isotropic' % isotropic material model for isotropic material only
         mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e);
     case 'anisotropic' % anisotropic material model for all symmetry classes
-        mat = ELAS_ANISOT('matElas',matElas,'RHO',RHO,'DIM3',e);
+        mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e);
     otherwise
         error('Wrong material symmetry class');
 end
@@ -160,12 +162,17 @@ S = setmaterial(S,mat);
 
 S = final(S);
 
-% Gauss point coordinates
-x = calc_gausscoord(S,'rigi');
-% Node coordinates
-% node = getnode(S);
-% x = getcoord(node);
-
+switch storage
+    case 'node'
+        % Node coordinates
+        node = getnode(S);
+        x = getcoord(node);
+    case 'gauss'
+        % Gauss point coordinates
+        x = calc_gausscoord(S,'rigi');
+    otherwise
+        error('Wrong storage');
+end
 nx = size(x,1); % number of points
 
 lcorr = repmat(L/50,Dim,1); % spatial correlation lengths
@@ -179,78 +186,216 @@ fprintf('\nNumber of terms   = %d in the spectral representation',order);
 rng('default');
 s = rng; % get current random number generator settings
 
-%% Standard Shinozuka method
+%% Gaussian random fields
+% Standard Shinozuka method
 fprintf('\nStandard Shinozuka method\n');
 tGaussShinozukaStd = tic;
 
 V = shinozuka(x,lcorr,nU,N,'order',nu,'state',s);
 
 timeGaussShinozukaStd = toc(tGaussShinozukaStd);
-fprintf('\nelapsed time = %f s\n',timeGaussShinozukaStd);
+fprintf('elapsed time = %f s\n',timeGaussShinozukaStd);
 
-%% Randomized Shinozuka method
+% Randomized Shinozuka method
 fprintf('\nRandomized Shinozuka method\n');
 tGaussShinozukaRand = tic;
 
 W = shinozukaRand(x,lcorr,nU,N,'order',order,'state',s);
 
 timeGaussShinozukaRand = toc(tGaussShinozukaRand);
-fprintf('\nelapsed time = %f s\n',timeGaussShinozukaRand);
+fprintf('elapsed time = %f s\n',timeGaussShinozukaRand);
 
-%% Random elasticity field
+%% Non-Gaussian random elasticity fields
 delta = 0.1; % dispersion coefficient
 mC = double(calc_opmat(S)); % mean elasticity matrix
-mL = chol(mC); % 
-C = randAnisotElasField(delta,mL,V);
+mL = chol(mC); % upper triangular matrix of the Cholesky factor of mean elasticity matrix
 
-%% Display one realization of a Gaussian random field
-if displayGaussianFields
-    if nx==getnbnode(S)
-        figure('Name',['Gaussian field - standard Shinozuka (order ' num2str(order) ')'])
-        clf
-        plot_sol(S,V(:,1,1));
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
+% Standard Shinozuka method
+fprintf('\nStandard Shinozuka method\n');
+fprintf('Computing non-Gaussian random elasticity fields\n');
+tElasShinozukaStd = tic;
 
-        figure('Name',['Gaussian field - randomized Shinozuka (order ' num2str(order) ')'])
-        clf
-        plot_sol(S,W(:,1,1));
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(order)],formats,renderer);
-    else
-        Ve = cell(getnbgroupelem(S),1);
-        We = cell(getnbgroupelem(S),1);
-        nbgauss = 0;
-        for i=1:getnbgroupelem(S)
-            elem = getgroupelem(S,i);
-            nbelem = getnbelem(elem);
-            gauss = calc_gauss(elem,'rigi');
-            rep = nbgauss + (1:nbelem*gauss.nbgauss);
-            Vi = reshape(V(rep,:)',nU,N,nbelem,gauss.nbgauss);
-            Wi = reshape(W(rep,:)',nU,N,nbelem,gauss.nbgauss);
-            Ve{i} = MYDOUBLEND(Vi);
-            We{i} = MYDOUBLEND(Wi);
-            nbgauss = rep(end);
-        end
+CV = randAnisotElasField(delta,mL,shiftdim(V,1));
 
-        Ve = FEELEMFIELD(Ve,'storage','gauss','type','scalar','ddl',DDL('V'));
-        We = FEELEMFIELD(We,'storage','gauss','type','scalar','ddl',DDL('W'));
+timeElasShinozukaStd = toc(tElasShinozukaStd);
+fprintf('elapsed time = %f s\n',timeElasShinozukaStd);
 
-        figure('Name',['Gaussian field - standard Shinozuka with order = ' num2str(order)])
-        clf
-        plot(Ve(1),S);
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
+% Randomized Shinozuka method
+fprintf('\nRandomized Shinozuka method\n');
+fprintf('Computing non-Gaussian random elasticity fields\n');
+tElasShinozukaRand = tic;
 
-        figure('Name',['Gaussian field - randomized Shinozuka with order = ' num2str(order)])
-        clf
-        plot(We(1),S);
-        colorbar
-        set(gca,'FontSize',fontsize)
-        mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(order)],formats,renderer);
+CW = randAnisotElasField(delta,mL,shiftdim(W,1));
+
+timeElasShinozukaRand = toc(tElasShinozukaRand);
+fprintf('elapsed time = %f s\n',timeElasShinozukaRand);
+
+%% Display one realization of Gaussian random fields
+if displayGaussianField
+    switch storage
+        case 'node'
+            figure('Name',['Gaussian fields - standard Shinozuka (order ' num2str(order) ')'])
+            clf
+            iU = 0;
+            for i=1:n
+                for j=i:n
+                    iU = iU+1;
+                    subplot(n,n,(i-1)*n+j);
+                    plot_sol(S_scalar,V(:,iU,1));
+                    colorbar
+                    set(gca,'FontSize',12)
+                    title(['$U_{' num2str(iU) '}$'],'FontSize',12,'Interpreter',interpreter)
+                end
+            end
+            mysaveas(pathname,['gaussian_fields_shinozuka_std_order_' num2str(order)],formats,renderer);
+
+            figure('Name',['Gaussian fields - randomized Shinozuka (order ' num2str(order) ')'])
+            clf
+            iU = 0;
+            for i=1:n
+                for j=i:n
+                    iU = iU+1;
+                    subplot(n,n,(i-1)*n+j);
+                    plot_sol(S_scalar,W(:,iU,1));
+                    colorbar
+                    set(gca,'FontSize',12)
+                    title(['$U_{' num2str(iU) '}$'],'FontSize',12,'Interpreter',interpreter)
+                end
+            end
+            mysaveas(pathname,['gaussian_fields_shinozuka_rand_order_' num2str(order)],formats,renderer);
+        case 'gauss'
+            Ve = cell(getnbgroupelem(S_scalar),1);
+            We = cell(getnbgroupelem(S_scalar),1);
+            nbgauss = 0;
+            for i=1:getnbgroupelem(S_scalar)
+                elem = getgroupelem(S_scalar,i);
+                nbelem = getnbelem(elem);
+                gauss = calc_gauss(elem,'rigi');
+                rep = nbgauss + (1:nbelem*gauss.nbgauss);
+                Vi = reshape(V(rep,:,1)',nU,1,nbelem,gauss.nbgauss);
+                Wi = reshape(W(rep,:,1)',nU,1,nbelem,gauss.nbgauss);
+                Ve{i} = MYDOUBLEND(Vi);
+                We{i} = MYDOUBLEND(Wi);
+                nbgauss = rep(end);
+            end
+
+            Ve = FEELEMFIELD(Ve,'storage','gauss','type','scalar','ddl',DDL('V'));
+            We = FEELEMFIELD(We,'storage','gauss','type','scalar','ddl',DDL('W'));
+
+            figure('Name',['Gaussian fields - standard Shinozuka with order = ' num2str(order)])
+            clf
+            iU = 0;
+            for i=1:n
+                for j=i:n
+                    iU = iU+1;
+                    subplot(n,n,(i-1)*n+j);
+                    plot(Ve(iU,1),S_scalar);
+                    colorbar
+                    set(gca,'FontSize',12)
+                    title(['$U_{' num2str(iU) '}$'],'FontSize',12,'Interpreter',interpreter)
+                end
+            end
+            mysaveas(pathname,['gaussian_fields_shinozuka_std_order_' num2str(order)],formats,renderer);
+
+            figure('Name',['Gaussian fields - randomized Shinozuka with order = ' num2str(order)])
+            clf
+            iU = 0;
+            for i=1:n
+                for j=i:n
+                    iU = iU+1;
+                    subplot(n,n,(i-1)*n+j);
+                    plot(We(iU,1),S_scalar);
+                    colorbar
+                    set(gca,'FontSize',12)
+                    title(['$U_{' num2str(iU) '}$'],'FontSize',12,'Interpreter',interpreter)
+                end
+            end
+            mysaveas(pathname,['gaussian_fields_shinozuka_rand_order_' num2str(order)],formats,renderer);
+        otherwise
+            error('Wrong storage');
+    end
+end
+
+%% Display one realization of non-Gaussian random elasticity field
+if displayElasticityField
+    switch storage
+        case 'node'
+            figure('Name',['Elasticity field - standard Shinozuka (order ' num2str(order) ')'])
+            clf
+            for i=1:n
+                for j=i:n
+                    subplot(n,n,(i-1)*n+j);
+                    CVij = reshape(CV(i,j,1,:),nx,1);
+                    plot_sol(S_scalar,CVij);
+                    colorbar
+                    set(gca,'FontSize',12)
+                    title(['$C_{' num2str(i) num2str(j) '}$'],'FontSize',12,'Interpreter',interpreter)
+                end
+            end
+            mysaveas(pathname,['elasticity_field_shinozuka_std_order_' num2str(order)],formats,renderer);
+
+            figure('Name',['Elasticity field - randomized Shinozuka (order ' num2str(order) ')'])
+            clf
+            for i=1:n
+                for j=i:n
+                    subplot(n,n,(i-1)*n+j);
+                    CWij = reshape(CW(i,j,1,:),nx,1);
+                    plot_sol(S_scalar,CWij);
+                    colorbar
+                    set(gca,'FontSize',12)
+                    title(['$C_{' num2str(i) num2str(j) '}$'],'FontSize',12,'Interpreter',interpreter)
+                end
+            end
+            mysaveas(pathname,['elasticity_field_shinozuka_rand_order_' num2str(order)],formats,renderer);
+
+        case 'gauss'
+            CVe = cell(getnbgroupelem(S_scalar),1);
+            CWe = cell(getnbgroupelem(S_scalar),1);
+            nbgauss = 0;
+            for i=1:getnbgroupelem(S_scalar)
+                elem = getgroupelem(S_scalar,i);
+                nbelem = getnbelem(elem);
+                gauss = calc_gauss(elem,'rigi');
+                rep = nbgauss + (1:nbelem*gauss.nbgauss);
+                CVi = reshape(CV(:,:,1,rep),n,n,nbelem,gauss.nbgauss);
+                CWi = reshape(CW(:,:,1,rep),n,n,nbelem,gauss.nbgauss);
+                CVe{i} = MYDOUBLEND(CVi);
+                CWe{i} = MYDOUBLEND(CWi);
+                nbgauss = rep(end);
+                syscoordgauss = getsyscoordlocal(elem);
+                fieldddl = DDL(DDLTENS4('C',syscoordgauss));
+            end
+
+            CVe = FEELEMFIELD(CVe,'storage','gauss','type','scalar','ddl',fieldddl);
+            CWe = FEELEMFIELD(CWe,'storage','gauss','type','scalar','ddl',fieldddl);
+
+            figure('Name',['Gaussian field - standard Shinozuka with order = ' num2str(order)])
+            clf
+            for i=1:n
+                for j=i:n
+                    subplot(n,n,(i-1)*n+j)
+                    plot(CVe(i,j),S_scalar);
+                    colorbar
+                    set(gca,'FontSize',12)
+                    title(['$C_{' num2str(i) num2str(j) '}$'],'FontSize',12,'Interpreter',interpreter)
+                end
+            end
+            mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
+
+            figure('Name',['Gaussian field - randomized Shinozuka with order = ' num2str(order)])
+            clf
+            for i=1:n
+                for j=i:n
+                    subplot(n,n,(i-1)*n+j)
+                    plot(CWe(i,j),S_scalar);
+                    colorbar
+                    set(gca,'FontSize',12)
+                    title(['$C_{' num2str(i) num2str(j) '}$'],'FontSize',12,'Interpreter',interpreter)
+                end
+            end
+            mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(order)],formats,renderer);
+        otherwise
+            error('Wrong storage');
     end
 end
 

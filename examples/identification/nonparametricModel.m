@@ -32,7 +32,7 @@ A = R*R'; % construct a symmetric positive (semi-)definite matrix
 % A = eye(n);
 L = chol(A); % upper Cholesky factor of A so that A = L'*L
 
-N = 1e3; % nb samples
+N = 1e3; % number of samples
 
 delta = 0.1; % dispersion parameter
 delta_sup = sqrt((n+1)/(n+5));
