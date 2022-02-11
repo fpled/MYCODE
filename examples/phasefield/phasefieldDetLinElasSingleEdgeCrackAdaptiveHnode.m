@@ -207,7 +207,7 @@ if setProblem
             if Dim==2
                 switch lower(option)
                     case 'defo'
-                        E = mu*(3*lambda+2*mu)/(lambda+mu); %  E = 210e9;
+                        E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 210e9;
                         NU = lambda/(lambda+mu)/2; % NU = 0.3;
                     case 'cont'
                         E = 4*mu*(lambda+mu)/(lambda+2*mu);
@@ -460,9 +460,9 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
 end
 
 %% Solution

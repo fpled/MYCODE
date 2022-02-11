@@ -68,13 +68,13 @@ if setProblem
     if Dim==2
         e = 1;
         % P1 is the crack tip position
-        P2 = [0.0,L/2];
-        P3 = [0.0,0.0];
-        P4 = [0.99*a,0.0];
-        P5 = [L,0.0];
-        P6 = [L,L];
-        P7 = [0.99*a,L];
-        P8 = [0.0,L];
+        % P2 = [0.0,L/2];
+        % P3 = [0.0,0.0];
+        % P4 = [0.99*a,0.0];
+        % P5 = [L,0.0];
+        % P6 = [L,L];
+        % P7 = [0.99*a,L];
+        % P8 = [0.0,L];
         % D = POLYGON(P2,P3,P4,P5,P6,P7,P8);
         D = DOMAIN(2,[0.0,0.0],[L,L]);
         C = LIGNE([0.0,L/2],[a,L/2]);
@@ -195,7 +195,7 @@ if setProblem
             if Dim==2
                 switch lower(option)
                     case 'defo'
-                        E = mu*(3*lambda+2*mu)/(lambda+mu); %  E = 210e9;
+                        E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 210e9;
                         NU = lambda/(lambda+mu)/2; % NU = 0.3;
                     case 'cont'
                         E = 4*mu*(lambda+mu)/(lambda+2*mu);
@@ -432,34 +432,7 @@ if setProblem
                 t0 = linspace(dt0,nt0*dt0,nt0);
                 t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                 t = [t0,t1];
-                
-                if isotropicTest
-                    switch lower(loading)
-                        case 'tension'
-                            dt0 = 1e-8;
-                            nt0 = 500;
-                            dt1 = 1e-9;
-                            nt1 = 1300;
-                            if test
-                                dt0 = 1e-7;
-                                nt0 = 50;
-                                dt1 = 1e-8;
-                                nt1 = 400;
-                            end
-                            t0 = linspace(dt0,nt0*dt0,nt0);
-                            t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                            t = [t0,t1];
-                        case 'shear'
-                            dt = 1e-8;
-                            nt = 1500;
-                            if test
-                                dt = 5e-8;
-                                nt = 400;
-                            end
-                            t = linspace(dt,nt*dt,nt);
-                    end
-                end
-                
+
             elseif Dim==3
                 dt = 1e-8;
                 nt = 2500;
@@ -475,9 +448,9 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
 end
 
 %% Solution
@@ -497,13 +470,9 @@ end
 fprintf('\n');
 fprintf('dim      = %d\n',Dim);
 fprintf('loading  = %s\n',loading);
-if isotropicTest
-    fprintf('mat sym  = isotropic test\n');
-else
-    fprintf('mat sym  = %s\n',symmetry);
-    if strcmpi(symmetry,'anisotropic')
-        fprintf('angle    = %g deg\n',ang);
-    end
+fprintf('mat sym  = %s\n',symmetry);
+if strcmpi(symmetry,'anisotropic')
+    fprintf('angle    = %g deg\n',ang);
 end
 fprintf('PF model = %s\n',PFmodel);
 fprintf('nb elements = %g\n',getnbelem(S));

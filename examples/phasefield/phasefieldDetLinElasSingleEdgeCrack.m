@@ -68,13 +68,13 @@ if setProblem
     if Dim==2
         e = 1;
         % P1 is the crack tip position
-        P2 = [0.0,L/2];
-        P3 = [0.0,0.0];
-        P4 = [0.99*a,0.0];
-        P5 = [L,0.0];
-        P6 = [L,L];
-        P7 = [0.99*a,L];
-        P8 = [0.0,L];
+        % P2 = [0.0,L/2];
+        % P3 = [0.0,0.0];
+        % P4 = [0.99*a,0.0];
+        % P5 = [L,0.0];
+        % P6 = [L,L];
+        % P7 = [0.99*a,L];
+        % P8 = [0.0,L];
         % D = POLYGON(P2,P3,P4,P5,P6,P7,P8);
         D = DOMAIN(2,[0.0,0.0],[L,L]);
         C = LIGNE([0.0,L/2],[a,L/2]);
@@ -195,7 +195,7 @@ if setProblem
             if Dim==2
                 switch lower(option)
                     case 'defo'
-                        E = mu*(3*lambda+2*mu)/(lambda+mu); %  E = 210e9;
+                        E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 210e9;
                         NU = lambda/(lambda+mu)/2; % NU = 0.3;
                     case 'cont'
                         E = 4*mu*(lambda+mu)/(lambda+2*mu);
@@ -448,9 +448,9 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
 end
 
 %% Solution
