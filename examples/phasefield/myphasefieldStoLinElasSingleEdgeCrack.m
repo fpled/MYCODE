@@ -83,23 +83,25 @@ symmetry = 'Isotropic'; % symmetry class of random elasticity matrix
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 g = @(d) (1-d).^2; % energetic degradation function
 k = 1e-10; % small artificial residual stiffness
+coeff_gc = 1.0;
+coeff_l = 1.0;
 
 % Parameters for the Shinozuka method
 % nu = 28; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
 % Let the order be computed automatically to avoid periodicity in the
 % domain
 
-% lcorr = L/50; % [m] correlation length(s). Set to 0 for homogeneous parameters
+% lcorr = L/50; % [m] correlation length(s). Set to Inf for homogeneous parameters
 % lcorr = 2e-5; % [m] correlation length(s)
 lcorr = 1e-5;
 % lcorr = 5e-6;
-% lcorr = 0; % no correlation structure
+% lcorr = Inf; % no correlation structure
 
 % Statistical fluctuation parameters
 deltaC = 0.1; % coefficient of variation of the material (for bulk modulus for an isotropic material)
 deltaP1 = 0; % coefficient of variation of fracture toughness
 deltaP2 = 0; % coefficient of variation of regularization length
-rhoPF = 0; % correlation coefficient between fracture toughness (gc) and regularization length (l)
+rhoPF = 0; % correlation coefficient between fracture toughness 'gc' and regularization length 'l'
 
 
 % Display settings
@@ -142,8 +144,10 @@ if rhoPF~=0 % statistical correlation between phase field parameters
 end
 
 %% Computation of dependent parameters
+% Phase field parameters
 [gc,l] = paramMatPhaseSingleEdgeCrack(symmetry,test); % mean phase field parameters
-gc = 1*gc;
+gc = coeff_gc*gc;
+l = coeff_l*l;
 
 % Number of independant Gaussian random variables/fields to generate for the random elasticity matrix
 nbGermsElas = 0;
@@ -158,13 +162,14 @@ if (deltaC~=0)
 end
 
 % Number of independent Gaussian variables/fields to generate for the phase field parameters
-nbGermsPF = (deltaP1~=0)+(deltaP2~=0);
+nbGermsPF = (deltaP1~=0) + (deltaP2~=0);
 nbGermsTot = nbGermsPF + nbGermsElas; % total number of independent Gaussian variables/fields to generate
 
 % Replace the dot by a comma when printing (to avoid file extension issues)
 clDString = strrep(num2str(clD),'.',',');
 clCString = strrep(num2str(clC),'.',',');
 gcString = strrep(num2str(gc),'.',',');
+lString = strrep(num2str(l),'.',',');
 lcorrString = strrep(num2str(lcorr),'.',',');
 CVElasString = strrep(num2str(deltaC),'.',',');
 CVPFString = strrep([num2str(deltaP1) '_' num2str(deltaP2)],'.',',');
@@ -181,9 +186,11 @@ pathname = fullfile(pathname,'StoLinElasSingleEdgeCrack');
 
 dirName = [num2str(Dim) 'D'];
 if Dim==2, dirName = [dirName option]; end
-dirName = [dirName symmetry];
-subDirName = [loading PFmodel elemtype];
-pathname = fullfile(pathname,dirName,subDirName);
+dirName = [dirName symmetry elemtype];
+subDirName = [loading PFmodel];
+
+pbPathname = fullfile(pathname,dirName); % pathname for the common problem file, containing the same mesh
+pathname = fullfile(pathname,dirName,subDirName); % pathname for the solution files and folders
 
 figPathname = fullfile(pathname,'Figures');
 visualPathname = fullfile(pathname,'Visualization');
@@ -198,8 +205,8 @@ end
 pbFileName = ['pb_clD' clDString '_clC' clCString]; % problem file
 
 % Appendix to add to the files' name
-fileAppend = ['_clD' clDString '_clC' clCString '_gc' gcString]; % appendix to add to files
-if lcorr~=0, fileAppend = [fileAppend '_lcorr' lcorrString]; end
+fileAppend = ['_clD' clDString '_clC' clCString '_gc' gcString '_l' lString]; % appendix to add to files
+if lcorr<Inf, fileAppend = [fileAppend '_lcorr' lcorrString]; end
 if deltaC~=0, fileAppend = [fileAppend '_CVElas' CVElasString]; end
 if (deltaP1~=0)||(deltaP2~=0), fileAppend = [fileAppend '_CVPF' CVPFString]; end
 if rhoPF~=0, fileAppend = [fileAppend, '_rhoPF' rhoPFString]; end
@@ -236,29 +243,20 @@ if setProblem
     % Phase field model
     switch upper(elemtype)
         case {'TRI3','TRI6'}
-            S_phaseInit = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+            S_phaseInit = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pbPathname,'gmsh_domain_single_edge_crack'));
         case 'QUA4'
-            S_phaseInit = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),2,'recombine');
+            S_phaseInit = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pbPathname,'gmsh_domain_single_edge_crack'),2,'recombine');
         case {'TET4','TET10'}
         case 'CUB8'
     end
     SInit = S_phaseInit; % displacement field model
 
-    %% Computation of mean parameters
-    % Phase field parameters
-    mat_phaseInit = FOUR_ISOT('k',gc*l,'r',gc/l);
+    % Declaration of material class to get the correct number of dof
+    mat_phaseInit = FOUR_ISOT;
     mat_phaseInit = setnumber(mat_phaseInit,1);
     S_phaseInit = setmaterial(S_phaseInit,mat_phaseInit);
 
-    % Elasticity properties
-    if Dim == 2, SInit = setoption(SInit,option); end
-    switch lower(symmetry)
-        case 'isotropic'
-            [E,NU] = paramMatIsot(Dim,lambda,mu,'option',option); % mean elasticity properties
-            matInit = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e);
-        case 'anisotropic'
-            error('Not implemented yet')
-    end
+    matInit = ELAS_ISOT;
     matInit = setnumber(matInit,1);
     SInit = setmaterial(SInit,matInit);
 
@@ -266,7 +264,6 @@ if setProblem
     % Phase field
     S_phaseInit = final(S_phaseInit,'duplicate');
     S_phaseInit = addcl(S_phaseInit,C,'T',1);
-    d = calc_init_dirichlet(S_phaseInit);
 
     % Displacement field
     BU = LIGNE([0.0,L],[L,L]);
@@ -289,7 +286,45 @@ if setProblem
             SInit = addcl(SInit,BL);
     end
 
+%% Save problem
+save(fullfile(pbPathname, [pbFileName '.mat']),'T','idSnap','S_phaseInit','SInit',...
+    'D','C','BU','BL','BRight','BLeft','BFront','BBack');
+else
+    load(fullfile(pbPathname, [pbFileName '.mat']),'T','idSnap','S_phaseInit','SInit',...
+    'D','C','BU','BL','BRight','BLeft','BFront','BBack');
+end
+
+% Mesh parameters, also used to reshape random fields
+nbElemTot = getnbelem(SInit);
+elem = SInit.groupelem{1};
+% gauss = calc_gauss(elem,'mass');
+gauss = calc_gauss(elem,'rigi');
+nbGauss = gauss.nbgauss; % number of Gauss points per element
+
+%% Solve Problem
+if solveProblem
+    %% Mean parameters
+    % Phase field parameters
+    %     [gc,l] = paramMatPhaseSingleEdgeCrack(symmetry,test); % mean phase field parameters
+    %     gc = coeff_gc*gc;
+    %     l = coeff_l*l;
+    mat_phaseInit = FOUR_ISOT('k',gc*l,'r',gc/l);
+    mat_phaseInit = setnumber(mat_phaseInit,1);
+    S_phaseInit = setmaterial(S_phaseInit,mat_phaseInit);
+
+    % Elasticity properties
+    if Dim == 2, SInit = setoption(SInit,option); end
+    switch lower(symmetry)
+        case 'isotropic'
+            [E,NU] = paramMatIsot(Dim,lambda,mu,'option',option); % mean elasticity properties
+            matInit = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e);
+        case 'anisotropic'
+            matInit = ELAS_ANISOT();
+    end
+
     %% Update material properties to take the initial crack into account
+    d = calc_init_dirichlet(S_phaseInit);
+
     switch lower(symmetry)
         case 'isotropic'
             matInit = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
@@ -300,36 +335,21 @@ if setProblem
     SInit = setmaterial(SInit,matInit);
 
     %% Compute the order for the spectral representation such that there is no periodicity in the domain
-    if test
-        nu = 28;
-    else
-        % Node coordinates
-        node = getnode(SInit);
-        x = getcoord(node);
-        domainExtent = max(x) - min(x);
-        nu = ceil(max(domainExtent./lcorr')); % one-dimensional order nu
-        % such that domainExtent(j) <= period(j)/2 = nu*lcorr(j) for all spatial dimensions j=1,...,dim
-        nu = 2*floor((nu+1)/2); % ensure one-dimensional order nu is even
+    if lcorr<Inf
+        if test
+            nu = 28;
+        else
+            % Node coordinates
+            node = getnode(SInit);
+            x = getcoord(node);
+            domainExtent = max(x) - min(x);
+            nu = ceil(max(domainExtent./lcorr')); % one-dimensional order nu
+            % such that domainExtent(j) <= period(j)/2 = nu*lcorr(j) for all spatial dimensions j=1,...,dim
+            nu = 2*floor((nu+1)/2); % ensure one-dimensional order nu is even
+        end
     end
-    order = nu^Dim; % d-dimensional order of the spectral representation for all spatial dimensions
 
-%% Save problem
-save(fullfile(pathname, [pbFileName '.mat']),'T','idSnap','S_phaseInit','SInit',...
-    'D','C','BU','BL','BRight','BLeft','BFront','BBack','d','order');
-else
-    load(fullfile(pathname, [pbFileName '.mat']),'T','idSnap','S_phaseInit','SInit',...
-    'D','C','BU','BL','BRight','BLeft','BFront','BBack','d','order');
-end
-
-% Mesh parameters, also used to reshape random fields
-nbElemTot = getnbelem(SInit);
-elem = SInit.groupelem{1};
-gauss = calc_gauss(elem,'mass');
-nbGauss = gauss.nbgauss; % number of Gauss points per element
-
-%% Solve Problem
-if solveProblem
-    % Initialize statistical means and second-order moments
+    %% Initialize statistical means and second-order moments
     sz_d = getnbddl(S_phaseInit);
     sz_u = getnbddl(SInit);
     dt_mean = zeros(sz_d,length(T));
@@ -356,31 +376,32 @@ if solveProblem
     ticBytes(parPoolObj);
     parfor kMC = 1:NMC % Monte-Carlo iterations
 
-        %         % Sequential computation
-        %         runSequential = true;
-        %         fprintf(['\nComputing ' num2str(NMC) ' sequential Monte Carlo iterations : '])
-        %         progressbar(['Computing ' num2str(NMC) ' sequential Monte Carlo iterations : '])
-        %         timerMC = tic;
-        %         for kMC = 1:NMC % Monte-Carlo iterations
+        %     % Sequential computation
+        %     runSequential = true;
+        %     fprintf(['\nComputing ' num2str(NMC) ' sequential Monte Carlo iterations : '])
+        %     progressbar(['Computing ' num2str(NMC) ' sequential Monte Carlo iterations : '])
+        %     timerMC = tic;
+        %     for kMC = 1:NMC % Monte-Carlo iterations
 
         S_phase = S_phaseInit;
         S = SInit;
 
-        % Recovery of homogeneous mean phase field parameters (necessary as
-        % fracture toughness may vary from one computation to another)
-        mats_phase = MATERIALS(S_phase);
-        k = getparam(mats_phase{1},'k');
-        r = getparam(mats_phase{1},'r');
-        gc = sqrt(k*r);
-        l = sqrt(k/r);
+        %         % Recovery of homogeneous mean phase field parameters (necessary as
+        %         % fracture toughness may vary from one computation to another)
+        %         mats_phase = MATERIALS(S_phase);
+        %         k = getparam(mats_phase{1},'k');
+        %         r = getparam(mats_phase{1},'r');
+        %         gc = sqrt(k*r);
+        %         l = sqrt(k/r);
 
         %% Generation of random parameter/property fields
         substream = RandStream.create('mlfg6331_64','NumStreams',NMC,'StreamIndices',kMC);
 
-        if lcorr==0 % all parameters are homogeneous
-            V = rand(substream,1,nbGermsTot);
+        if lcorr==Inf % all parameters are homogeneous
+            V = randn(substream,1,nbGermsTot);
         else % there are heterogeneous parameters
-            xgauss = calc_gausscoord(S,'mass'); % gauss points coordinates
+            %             xgauss = calc_gausscoord(S,'mass'); % gauss points coordinates
+            xgauss = calc_gausscoord(S,'rigi'); % gauss points coordinates
             V = shinozukaSample(xgauss,lcorr,substream,nbGermsTot,'order',nu);
         end
 
@@ -402,7 +423,7 @@ if solveProblem
                 l_k = gaminv(normcdf(rhoPF*V(:,1) + sqrt(1-rhoPF^2)*V(:,2)),aP2,bP2);
             end
 
-            if lcorr~=0 % heterogenous properties
+            if lcorr<Inf % heterogeneous properties
                 if deltaP1~=0
                     gc_k = reshape(gc_k,1,1,nbElemTot,nbGauss);
                     gc_k = MYDOUBLEND(gc_k);
@@ -438,7 +459,7 @@ if solveProblem
                     E_k = (9*C1_k.*C2_k)./(3*C1_k+C2_k); % [Pa]
                     NU_k = (3*C1_k-2*C2_k)./(6*C1_k+2*C2_k);
 
-                    if lcorr~=0 % heterogenous properties
+                    if lcorr<Inf % heterogeneous properties
                         E_k = reshape(E_k,1,1,nbElemTot,nbGauss);
                         E_k = MYDOUBLEND(E_k);
                         E_k = FEELEMFIELD(cell(E_k),'type','scalar','storage','gauss');
@@ -515,12 +536,12 @@ if solveProblem
 
     %% Save solution
     save(fullfile(pathname, [solFileName '.mat']),'timeMC','nbWorkers','NMC',...
-        'runSequential','dt_ex',...
+        'nu','runSequential','dt_ex',...
         'dt_mean','ut_mean','dt_var','ut_var','ft_mean','ft_std','ft_ci',...
         'fmax','fmax_mean','fmax_std','fmax_ci','probs','fmax_f','fmax_xi','fmax_bw');
 else
     load(fullfile(pathname, [solFileName '.mat']),'timeMC','nbWorkers','NMC',...
-        'runSequential','dt_ex',...
+        'nu','runSequential','dt_ex',...
         'dt_mean','ut_mean','dt_var','ut_var','ft_mean','ft_std','ft_ci',...
         'fmax','fmax_mean','fmax_std','fmax_ci','probs','fmax_f','fmax_xi','fmax_bw');
 end
@@ -555,6 +576,7 @@ if printInfos
     fprintf('\n')
 
     % Gaussian fields
+    order = nu^Dim; % d-dimensional order of the spectral representation for all spatial dimensions
     xgauss = calc_gausscoord(SInit,'mass'); % gauss points coordinates
     nx = size(xgauss,1); % number of points
     nV = nbGermsTot*NMC; % number of independent realizations for all Gaussian random fields
