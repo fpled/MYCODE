@@ -28,43 +28,37 @@ saveParaview = true;
 
 test = true; % coarse mesh
 % test = false; % fine mesh
-numWorkers = 20;
+numWorkers = 4;
+% numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 
 % Deterministic model parameters
 Dim = 2; % space dimension Dim = 2, 3
-symmetry = 'Isotropic'; % 'Isotropic' or 'Anisotropic'. Material symmetry
-ang = 30; % clockwise material orientation angle around z-axis [deg]
-isotropicTest = false; % for test purposes (configuration of isotropic material with the anisotropic class). Work only for "Dim = 2" and "symmetry = 'Anisotropic'".
+symmetry = 'Isotropic'; % 'Isotropic', 'MeanIsotropic', 'Anisotropic'. Material symmetry
+ang = 30; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 loading = 'Shear'; % 'Tension' or 'Shear'
-PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 % Random model parameters
 % N = 5e2; % number of samples
-N = 8;
-randMat = true; % random material parameters (true or false)
-randPF = true; % random phase field parameters (true or false)
-rhoMat = 0.1; % Bravais-Pearson correlation coefficient for material field parameters
-rhoPF = 0.1; % Bravais-Pearson correlation coefficient for phase field parameters
+N = 4;
+randMat = struct('delta',0.2,'lcorr',20e-6,'rcorr',0); % random material parameters model
+randPF = struct('delta',0,'lcorr',Inf,'rcorr',0); % random phase field parameters model
 
 switch lower(symmetry)
-    case 'isotropic' % isotropic material
+    case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
         filename = ['phasefieldStoLinElas' symmetry 'SingleEdgeCrack' loading PFmodel];
     case 'anisotropic' % anisotropic material
         filename = ['phasefieldStoLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel];
     otherwise
         error('Wrong material symmetry class');
 end
-
-if isotropicTest
-    filename = ['phasefieldStoLinElas' 'IsotTest' 'SingleEdgeCrack' loading PFmodel];
-end
-if randMat
-    filename = [filename 'RandMat'];
-end
-if randPF
-    filename = [filename 'RandPF'];
-end
 filename = [filename '_' num2str(Dim) 'D_' num2str(N) 'samples'];
+if any(randMat.delta)
+    filename = [filename '_RandMatDelta' num2str(randMat.delta) 'Lcorr' num2str(randMat.lcorr) 'Rcorr' num2str(randMat.rcorr)];
+end
+if randPF.delta
+    filename = [filename '_RandPFDelta' num2str(randMat.delta) 'Lcorr' num2str(randMat.lcorr) 'Rcorr' num2str(randMat.rcorr)];
+end
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -90,13 +84,13 @@ if setProblem
     if Dim==2
         e = 1;
         % P1 is the crack tip position
-        P2 = [0.0,L/2];
-        P3 = [0.0,0.0];
-        P4 = [0.99*a,0.0];
-        P5 = [L,0.0];
-        P6 = [L,L];
-        P7 = [0.99*a,L];
-        P8 = [0.0,L];
+        % P2 = [0.0,L/2];
+        % P3 = [0.0,0.0];
+        % P4 = [0.99*a,0.0];
+        % P5 = [L,0.0];
+        % P6 = [L,L];
+        % P7 = [0.99*a,L];
+        % P8 = [0.0,L];
         % D = POLYGON(P2,P3,P4,P5,P6,P7,P8);
         D = DOMAIN(2,[0.0,0.0],[L,L]);
         C = LIGNE([0.0,L/2],[a,L/2]);
@@ -147,7 +141,7 @@ if setProblem
     %% Phase field problem
     %% Material
     switch lower(symmetry)
-        case 'isotropic' % isotropic material
+        case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
             % Critical energy release rate (or fracture toughness)
             gc = 2.7e3; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
             % Regularization parameter (width of the smeared crack)
@@ -167,19 +161,13 @@ if setProblem
         otherwise
             error('Wrong material symmetry class');
     end
-    if isotropicTest
-        % Critical energy release rate (or fracture toughness)
-        gc = 2.7e3; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
-        % Regularization parameter (width of the smeared crack)
-        l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-    end
     % Small artificial residual stiffness
     k = 1e-10;
     % Internal energy
     H = 0;
     
     % Material
-    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H);
+    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H,'delta',randPF.delta,'lcorr',randPF.lcorr,'rcorr',randPF.rcorr);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
     
@@ -213,28 +201,45 @@ if setProblem
     option = 'DEFO'; % plane strain [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     % option = 'CONT'; % plane stress [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
     switch lower(symmetry)
-        case 'isotropic' % isotropic material
+        case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
             % Lame coefficients
             % lambda = 121.1538e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
             % mu = 80.7692e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
             lambda = 121.15e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
             mu = 80.77e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
-            % Young modulus and Poisson ratio
-            if Dim==2
-                switch lower(option)
-                    case 'defo'
-                        E = mu*(3*lambda+2*mu)/(lambda+mu); %  E = 210e9;
-                        NU = lambda/(lambda+mu)/2; % NU = 0.3;
-                    case 'cont'
-                        E = 4*mu*(lambda+mu)/(lambda+2*mu);
-                        NU = lambda/(lambda+2*mu);
+            if strcmpi(symmetry,'isotropic')
+                % Young modulus and Poisson ratio
+                if Dim==2
+                    switch lower(option)
+                        case 'defo'
+                            E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 210e9;
+                            NU = lambda/(lambda+mu)/2; % NU = 0.3;
+                        case 'cont'
+                            E = 4*mu*(lambda+mu)/(lambda+2*mu);
+                            NU = lambda/(lambda+2*mu);
+                    end
+                    % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+                    % E = 210e9; NU = 0.3; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+                    % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
+                elseif Dim==3
+                    E = mu*(3*lambda+2*mu)/(lambda+mu);
+                    NU = lambda/(lambda+mu)/2;
                 end
-                % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-                % E = 210e9; NU = 0.3; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-                % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
-            elseif Dim==3
-                E = mu*(3*lambda+2*mu)/(lambda+mu);
-                NU = lambda/(lambda+mu)/2;
+            elseif strcmpi(symmetry,'meanisotropic')
+                % Elasticity matrix
+                if Dim==2
+                    Cmat = e*...
+                        [lambda+2*mu,lambda,0;...
+                        lambda,lambda+2*mu,0;...
+                        0,0,mu];
+                elseif Dim==3
+                    Cmat = [lambda+2*mu,lambda,lambda,0,0,0;...
+                        lambda,lambda+2*mu,lambda,0,0,0;...
+                        lambda,lambda,lambda+2*mu,0,0,0;...
+                        0,0,0,mu,0,0;...
+                        0,0,0,0,mu,0;...
+                        0,0,0,0,0,mu];
+                end
             end
             
         case 'anisotropic' % anisotropic material
@@ -243,9 +248,10 @@ if setProblem
                     case 'defo'
                         % [Nguyen, Yvonnet, Waldmann, He, 2020,IJNME]
                         % Elasticity matrix in reference material coordinate system [Pa]
-                        matElas = 1e9*[65 20 0;
+                        Cmat = e*...
+                            [65 20 0;
                             20 260 0;
-                            0 0 30];
+                            0 0 30]*1e9;
                         theta = deg2rad(ang); % clockwise material orientation angle around z-axis [rad]
                         c = cos(theta);
                         s = sin(theta);
@@ -254,24 +260,10 @@ if setProblem
                             s^2 c^2 c*s;
                             2*c*s -2*c*s c^2-s^2];
                         % Elasticity matrix in global coordinate system [Pa]
-                        matElas = P'*matElas*P;
+                        Cmat = P'*Cmat*P;
                     case 'cont'
                         error('Not implemented yet')
                 end
-                
-                if isotropicTest
-                    lambda = 121.15e9;
-                    mu = 80.77e9;
-                    if strcmpi(option,'cont')
-                        E = mu*(3*lambda+2*mu)/(lambda+mu);
-                        NU = lambda/(lambda+mu)/2;
-                        lambda = E*NU/(1-NU^2); % first Lamé coefficient
-                    end
-                    matElas = [lambda+2*mu,lambda,0;...
-                        lambda,lambda+2*mu,0;...
-                        0,0,mu];
-                end
-                
             elseif Dim==3
                 error('Not implemented yet')
             end
@@ -286,10 +278,10 @@ if setProblem
     % Material
     d = calc_init_dirichlet(S_phase);
     switch lower(symmetry)
-        case 'isotropic' % isotropic material model for isotropic material only
-            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
-        case 'anisotropic' % anisotropic material model for all symmetry classes
-            mat = ELAS_ANISOT('matElas',matElas,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+        case 'isotropic' % almost surely isotropic material
+            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'delta',randMat.delta,'lcorr',randMat.lcorr,'rcorr',randMat.rcorr);
+        case {'meanisotropic','anisotropic'} % mean isotropic or anisotropic material
+            mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'delta',randMat.delta,'lcorr',randMat.lcorr,'rcorr',randMat.rcorr);
         otherwise
             error('Wrong material symmetry class');
     end
@@ -348,7 +340,7 @@ if setProblem
     
     %% Time scheme
     switch lower(symmetry)
-        case 'isotropic' % isotropic material
+        case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
             if Dim==2
                 switch lower(loading)
                     case 'tension'
@@ -474,33 +466,6 @@ if setProblem
                 t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                 t = [t0,t1];
                 
-                if isotropicTest
-                    switch lower(loading)
-                        case 'tension'
-                            dt0 = 1e-8;
-                            nt0 = 500;
-                            dt1 = 1e-9;
-                            nt1 = 1300;
-                            if test
-                                dt0 = 1e-7;
-                                nt0 = 50;
-                                dt1 = 1e-8;
-                                nt1 = 400;
-                            end
-                            t0 = linspace(dt0,nt0*dt0,nt0);
-                            t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                            t = [t0,t1];
-                        case 'shear'
-                            dt = 1e-8;
-                            nt = 1500;
-                            if test
-                                dt = 5e-8;
-                                nt = 400;
-                            end
-                            t = linspace(dt,nt*dt,nt);
-                    end
-                end
-                
             elseif Dim==3
                 dt = 1e-8;
                 nt = 2500;
@@ -516,81 +481,21 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
 end
 
 %% Solution
 if solveProblem
     myparallel('start',numWorkers);
-    %% Random variables
-    % Material properties
-    if randMat % random material parameters
-        % la = -24; % la < 1/5. Parameter controlling the level of statistical fluctuations
-        % deltaC1 = 1/sqrt(1-la); % coefficient of variation for bulk modulus
-        % deltaC2 = 1/sqrt(1-5*la); % coefficient of variation for shear modulus
-        deltaC1 = 0.1; % coefficient of variation for bulk modulus
-        la = 1 - 1/deltaC1^2; % la < 1/5. Parameter controlling the level of statistical fluctuations
-        deltaC2 = 1/sqrt(5/deltaC1^2 - 4); % coefficient of variation for shear modulus
-        
-        mC1 = E/3/(1-2*NU); % mean bulk modulus
-        mC2 = mu; % mean shear modulus
-        laC1 = (1-la)/mC1; % la1 > 0
-        laC2 = (1-5*la)/mC2; % la2 > 0
-        
-        aC1 = 1-la; % a1 > 0
-        bC1 = 1/laC1; % b1 > 0
-        aC2 = 1-5*la; % a2 > 0
-        bC2 = 1/laC2; % b2 > 0
-        
-        % Sample set
-        if rhoMat==0
-            C_sample(:,1) = gamrnd(aC1,bC1,N,1); % samples for bulk modulus [Pa]
-            C_sample(:,2) = gamrnd(aC2,bC2,N,1); % samples for shear modulus [Pa]
-        else
-            Xi = randn(N,2); % random matrix with statistically independent normalized Gaussian components
-            C_sample(:,1) = gaminv(normcdf(Xi(:,1)),aC1,bC1); % samples for bulk modulus [Pa]
-            C_sample(:,2) = gaminv(normcdf(rhoMat*Xi(:,1) + sqrt(1-rhoMat^2)*Xi(:,2)),aC2,bC2); % samples for shear modulus [Pa]
-        end
-        % lambda_sample = C_sample(:,1) - 2/3*C_sample(:,2); % [Pa]
-        E_sample = (9*C_sample(:,1).*C_sample(:,2))./(3*C_sample(:,1)+C_sample(:,2)); % [Pa]
-        NU_sample = (3*C_sample(:,1)-2*C_sample(:,2))./(6*C_sample(:,1)+2*C_sample(:,2));
-    else
-        E_sample = E*ones(N,1);
-        NU_sample = NU*ones(N,1);
-    end
     
-    % Phase field properties
-    if randPF % random phase field parameters
-        deltaP1 = 0.1; % coefficient of variation of fracture toughness
-        deltaP2 = 0.1; % coefficient of variation of regularization parameter
-        aP1 = 1/deltaP1^2;
-        bP1 = gc/aP1;
-        aP2 = 1/deltaP2^2;
-        bP2 = l/aP2;
-        
-        % Sample set
-        if rhoPF==0
-            gc_sample = gamrnd(aP1,bP1,N,1); % samples for fracture toughness [N/m^2]
-            l_sample = gamrnd(aP2,bP2,N,1); % samples regularization parameter [m]
-        else
-            Xi = randn(N,2); % random matrix with statistically independent normalized Gaussian components
-            gc_sample = gaminv(normcdf(Xi(:,1)),aP1,bP1); % samples for fracture toughness [N/m^2]
-            l_sample = gaminv(normcdf(rhoPF*Xi(:,1) + sqrt(1-rhoPF^2)*Xi(:,2)),aP2,bP2); % samples regularization parameter [m]
-        end
-    else
-        gc_sample = gc*ones(N,1);
-        l_sample = l*ones(N,1);
-    end
-    
-    samples = [E_sample,NU_sample,gc_sample,l_sample];
-
     %% Solution
     tTotal = tic;
     
-    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading);
-    [ft,dt_mean,ut_mean,dt_var,ut_var] = solvePFStoLinElas(S_phase,S,T,fun,samples,'display');
+    nbSamples = 3;
+    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
+    [ft,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
     fmax = max(ft,[],2);
     
     time = toc(tTotal);
@@ -610,11 +515,11 @@ if solveProblem
     [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'npoints',npts);
     
     save(fullfile(pathname,'solution.mat'),'N','dt_mean','ut_mean',...
-        'dt_var','ut_var','ft_mean','ft_std','ft_ci','fmax',...
+        'dt_var','ut_var','dt_sample','ut_sample','ft_mean','ft_std','ft_ci','fmax',...
         'fmax_mean','fmax_std','fmax_ci','probs','fmax_f','fmax_xi','fmax_bw','time');
 else
     load(fullfile(pathname,'solution.mat'),'N','dt_mean','ut_mean',...
-        'dt_var','ut_var','ft_mean','ft_std','ft_ci','fmax',...
+        'dt_var','ut_var','dt_sample','ut_sample','ft_mean','ft_std','ft_ci','fmax',...
         'fmax_mean','fmax_std','fmax_ci','probs','fmax_f','fmax_xi','fmax_bw','time');
 end
 
@@ -622,13 +527,9 @@ end
 fprintf('\n');
 fprintf('dim      = %d\n',Dim);
 fprintf('loading  = %s\n',loading);
-if isotropicTest
-    fprintf('mat sym  = isotropic test\n');
-else
-    fprintf('mat sym  = %s\n',symmetry);
-    if strcmpi(symmetry,'anisotropic')
-        fprintf('angle    = %g deg\n',ang);
-    end
+fprintf('mat sym  = %s\n',symmetry);
+if strcmpi(symmetry,'anisotropic')
+    fprintf('angle    = %g deg\n',ang);
 end
 fprintf('PF model = %s\n',PFmodel);
 fprintf('nb elements = %g\n',getnbelem(S));
@@ -736,10 +637,10 @@ if displaySolution
     mysaveas(pathname,'pdf_fmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fmax.tex');
     
-    %% Display means and variances of solutions at different instants
+    %% Display means, variances and samples of solutions at different instants
     ampl = 0;
     switch lower(symmetry)
-        case 'isotropic'
+        case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
             switch lower(loading)
                 case 'tension'
                     rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-5)<eps | abs(t-6e-6)<eps | abs(t-6.25e-6)<eps);
@@ -748,7 +649,7 @@ if displaySolution
                 otherwise
                     error('Wrong loading case')
             end
-        case 'anisotropic'
+        case 'anisotropic' % anisotropic material
             switch lower(loading)
                 case 'tension'
                     rep = find(abs(t-9e-6)<eps | abs(t-12e-6)<eps | abs(t-13.5e-6)<eps | abs(t-15e-6)<eps | abs(t-20e-6)<eps);
@@ -789,7 +690,7 @@ if displaySolution
         % end
         %
         % plotSolution(S,uj,'epsilon','mises','ampl',ampl);
-        % mysaveas(pathname,['epsilon_von_mises_means_t' num2str(rep(j))],formats,renderer);
+        % mysaveas(pathname,['epsilon_von_mises_mean_t' num2str(rep(j))],formats,renderer);
         %
         % plotSolution(S,uj,'sigma','mises','ampl',ampl);
         % mysaveas(pathname,['sigma_von_mises_mean_t' num2str(rep(j))],formats,renderer);
@@ -797,10 +698,42 @@ if displaySolution
         % plotSolution(S,uj,'energyint','','ampl',ampl);
         % mysaveas(pathname,['internal_energy_mean_t' num2str(rep(j))],formats,renderer);
     end
+
+    for k=1:size(dt_sample,1)
+    for j=1:length(rep)
+        dj = dt_sample(k,:,rep(j))';
+        uj = ut_sample(k,:,rep(j))';
+        
+        plotSolution(S_phase,dj);
+        mysaveas(pathname,['damage_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        
+        for i=1:Dim
+            plotSolution(S,uj,'displ',i,'ampl',ampl);
+            mysaveas(pathname,['displacement_' num2str(i) '_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        end
+        
+        % for i=1:(Dim*(Dim+1)/2)
+        %     plotSolution(S,uj,'epsilon',i,'ampl',ampl);
+        %     mysaveas(pathname,['epsilon_' num2str(i) '_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        %
+        %     plotSolution(S,uj,'sigma',i,'ampl',ampl);
+        %     mysaveas(pathname,['sigma_' num2str(i) '_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        % end
+        %
+        % plotSolution(S,uj,'epsilon','mises','ampl',ampl);
+        % mysaveas(pathname,['epsilon_von_mises_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        %
+        % plotSolution(S,uj,'sigma','mises','ampl',ampl);
+        % mysaveas(pathname,['sigma_von_mises_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        %
+        % plotSolution(S,uj,'energyint','','ampl',ampl);
+        % mysaveas(pathname,['internal_energy_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+    end
+    end
     
 end
 
-%% Display evolution of means and variances of solutions
+%% Display evolution of means, variances and samples of solutions
 if makeMovie
     sz_d = [getnbddl(S_phase),getnbtimedof(T)];
     sz_u = [getnbddl(S),getnbtimedof(T)];
@@ -830,9 +763,28 @@ if makeMovie
     % evolSolution(S,uk,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises_mean','pathname',pathname,options{:});
     % evolSolution(S,uk,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises_mean','pathname',pathname,options{:});
     % evolSolution(S,uk,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_mean','pathname',pathname,options{:});
+
+    for k=1:size(dt_sample,1)
+        dk = TIMEMATRIX(reshape(dt_sample(k,:,:),sz_d),T);
+        uk = TIMEMATRIX(reshape(ut_sample(k,:,:),sz_u),T);
+        
+        evolSolution(S_phase,dk,'FrameRate',framerate,'filename',['damage_sample_' num2str(k)],'pathname',pathname,options{:});
+        for i=1:Dim
+            evolSolution(S,uk,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
+        end
+        
+        % for i=1:(Dim*(Dim+1)/2)
+        %     evolSolution(S,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
+        %     evolSolution(S,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
+        % end
+        %
+        % evolSolution(S,uk,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename',['epsilon_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
+        % evolSolution(S,uk,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename',['sigma_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
+        % evolSolution(S,uk,'energyint','','ampl',ampl,'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
+    end
 end
 
-%% Save means and variances of solutions
+%% Save means, variances and samples of solutions
 if saveParaview
     [t,rep] = gettevol(T);
     for i=1:length(T)
@@ -843,9 +795,21 @@ if saveParaview
         
         write_vtk_mesh(S,{di,ui,dvi,uvi},[],...
             {'damage_mean','displacement_mean','damage_variance','displacement_variance'},[],...
-            pathname,'solution',1,i-1);
+            pathname,'solution_mean_variance',1,i-1);
     end
-    make_pvd_file(pathname,'solution',1,length(T));
+    make_pvd_file(pathname,'solution_mean_variance',1,length(T));
+
+    for k=1:size(dt_sample,1)
+        for i=1:length(T)
+            di = dt_sample(k,:,rep(i))';
+            ui = ut_sample(k,:,rep(i))';
+            
+            write_vtk_mesh(S,{di,ui},[],...
+                {'damage','displacement'},[],...
+                pathname,['solution_sample_' num2str(k)],1,i-1);
+        end
+        make_pvd_file(pathname,['solution_sample_' num2str(k)],1,length(T));
+    end
 end
 
 myparallel('stop');

@@ -58,7 +58,7 @@ for i=1:length(T)
     % Phase field
     mats_phase = MATERIALS(S_phase);
     for m=1:length(mats_phase)
-        mats_phase{m} = setparam(mats_phase{m},'r',r{m}+2*H);
+        mats_phase{m} = setparam(mats_phase{m},'r',r{m}+2*H{m});
     end
     S_phase = actualisematerials(S_phase,mats_phase);
     

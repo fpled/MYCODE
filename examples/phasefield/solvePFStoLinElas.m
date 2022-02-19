@@ -1,22 +1,17 @@
-function [f_sample,dt_mean,ut_mean,dt_var,ut_var] = solvePFStoLinElas(S_phase,S,T,fun,samples,varargin)
-% function [f_sample,dt_mean,ut_mean,dt_var,ut_var] = solvePFStoLinElas(S_phase,S,T,fun,samples,varargin)
+function [ft_sample,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,varargin)
+% function [ft_sample,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,varargin)
 % Solve stochastic Phase Field problem.
 
 fun = fcnchk(fun);
-
-N = size(samples,1);
-E_sample = samples(:,1);
-NU_sample = samples(:,2);
-gc_sample = samples(:,3);
-l_sample = samples(:,4);
-
-mats_phase = MATERIALS(S_phase);
-mats = MATERIALS(S);
+nbSamples = getcharin('nbsamples',varargin,3);
 
 sz_d = getnbddl(S_phase);
 sz_u = getnbddl(S);
 
-f_sample = zeros(N,length(T));
+% Initialize samples
+ft_sample = zeros(N,length(T));
+dt_sample = zeros(nbSamples,sz_d,length(T));
+ut_sample = zeros(nbSamples,sz_u,length(T));
 % fmax_sample = zeros(N,1);
 
 % Initialize statistical means and second-order moments
@@ -37,28 +32,161 @@ parfor i=1:N
     if ~verLessThan('matlab','9.2') % introduced in R2017a
         send(q,i);
     end
-    
-    % Update phase field parameters
-    gci = gc_sample(i);
-    li = l_sample(i);
+    si = RandStream.create('mrg32k3a','NumStreams',N,'StreamIndices',i);
+
+    % Generate random phase field parameters
     S_phasei = S_phase;
-    mats_phasei = mats_phase;
-    for m=1:length(mats_phasei)
-        mats_phasei{m} = setparam(mats_phasei{m},'k',gci*li);
-        mats_phasei{m} = setparam(mats_phasei{m},'r',gci/li);
+    mats_phase = MATERIALS(S_phase);
+    node_phase = getnode(S_phase);
+    for m=1:getnbgroupelem(S_phase)
+        elem = getgroupelem(S_phase,m);
+        mat = getmaterial(elem);
+        if isparam(mat,'delta') && any(getparam(mat,'delta')>0) % random phase field parameters
+            nbelem = getnbelem(elem);
+            xnode = node_phase(elem);
+            gauss = calc_gauss(elem,'mass');
+            xgauss = gauss.coord;
+            k = evalparam(mat,'k',elem,xnode,xgauss);
+            r = evalparam(mat,'r',elem,xnode,xgauss);
+            gc = sqrt(k.*r);
+            l = sqrt(k./r);
+            delta = getparam(mat,'delta');
+            if length(delta)==1
+                delta = repmat(delta,2,1);
+            end
+            deltaGc = delta(1); % coefficient of variation for fracture toughness
+            deltaL = delta(2); % coefficient of variation for regularization parameter
+            aGc = 1/deltaGc^2;
+            bGc = gc/aGc;
+            aL = 1/deltaL^2;
+            bL = l/aL;
+
+            % Sample set
+            nU = nnz(delta);
+            if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
+                lcorr = getparam(mat,'lcorr'); % spatial correlation length
+                x = calc_x(elem,xnode,xgauss);
+                x = getcoord(NODE(POINT(x(:,:,:))));
+                Xi = shinozukaSample(x,lcorr,si,nU); % sample for bivariate Gaussian random field with statistically independent normalized Gaussian components
+            else % random matrix model
+                Xi = randn(si,1,nU); % sample for bivariate Gaussian random variable with statistically independent normalized Gaussian components
+            end
+            if deltaGc && deltaL
+                rho = 0;
+                if isparam(mat,'rcorr')
+                    rho = getparam(mat,'rcorr'); % correlation coefficient between fracture toughness and regularization parameter
+                end
+                gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m^2]
+                l = gaminv(normcdf(rho*Xi(:,1) + sqrt(1-rho^2)*Xi(:,2)),aL,bL); % sample for regularization parameter [m]
+            elseif deltaGc
+                gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m^2]
+            else
+                l = gaminv(normcdf(Xi(:,1)),aL,bL); % sample for regularization parameter [m]
+            end
+            if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
+                if deltaGc
+                    gc = reshape(gc,1,1,nbelem,gauss.nbgauss);
+                    gc = MYDOUBLEND(gc);
+                    gc = FEELEMFIELD({gc},'storage','gauss','type','scalar','ddl',DDL('gc'));
+                end
+                if deltaL
+                    l = reshape(l,1,1,nbelem,gauss.nbgauss);
+                    l = MYDOUBLEND(l);
+                    l = FEELEMFIELD({l},'storage','gauss','type','scalar','ddl',DDL('l'));
+                end
+            end
+            k = gc.*l;
+            r = gc./l;
+            mats_phase{m} = setparam(mats_phase{m},'k',k);
+            mats_phase{m} = setparam(mats_phase{m},'r',r);
+        end
     end
-    S_phasei = actualisematerials(S_phasei,mats_phasei);
+    S_phasei = actualisematerials(S_phasei,mats_phase);
     
-    % Update material parameters
-    Ei = E_sample(i);
-    NUi = NU_sample(i);
+    % Generate random material parameters
     Si = S;
-    matsi = mats;
-    for m=1:length(matsi)
-        matsi{m} = setparam(matsi{m},'E',Ei);
-        matsi{m} = setparam(matsi{m},'NU',NUi);
+    mats = MATERIALS(S);
+    node = getnode(S);
+    for m=1:getnbgroupelem(S)
+        elem = getgroupelem(S,m);
+        mat = getmaterial(elem);
+        if isparam(mat,'delta') && getparam(mat,'delta')>0 % random material parameters
+            nbelem = getnbelem(elem);
+            xnode = node(elem);
+            gauss = calc_gauss(elem,'rigi');
+            xgauss = gauss.coord;
+            if isa(mat,'ELAS_ISOT') % almost surely isotropic material
+                E = evalparam(mat,'E',elem,xnode,xgauss);
+                NU = evalparam(mat,'NU',elem,xnode,xgauss); 
+                % la = -24; % la < 1/5. Parameter controlling the level of statistical fluctuations
+                % deltaC1 = 1/sqrt(1-la); % coefficient of variation for bulk modulus
+                % deltaC2 = 1/sqrt(1-5*la); % coefficient of variation for shear modulus
+                deltaC1 = getparam(mat,'delta'); % coefficient of variation for bulk modulus
+                la = 1 - 1/deltaC1^2; % la < 1/5. Parameter controlling the level of statistical fluctuations
+                deltaC2 = 1/sqrt(5/deltaC1^2 - 4); % coefficient of variation for shear modulus
+                mC1 = E/3/(1-2*NU); % mean bulk modulus
+                mC2 = E/(1+NU)/2; % mean shear modulus
+                laC1 = (1-la)/mC1; % la1 > 0
+                laC2 = (1-5*la)/mC2; % la2 > 0
+                aC1 = 1-la; % a1 > 0
+                bC1 = 1/laC1; % b1 > 0
+                aC2 = 1-5*la; % a2 > 0
+                bC2 = 1/laC2; % b2 > 0
+                rho = 0;
+                if isparam(mat,'rcorr')
+                    rho = getparam(mat,'rcorr'); % correlation coefficient between bulk and shear moduli
+                end
+                if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
+                    lcorr = getparam(mat,'lcorr');
+                    x = calc_x(elem,xnode,xgauss);
+                    x = getcoord(NODE(POINT(x(:,:,:))));
+                    Xi = shinozukaSample(x,lcorr,si,2); % sample for bivariate Gaussian random field with statistically independent normalized Gaussian components
+                    C1 = gaminv(normcdf(Xi(:,1)),aC1,bC1); % sample for bulk modulus [Pa]
+                    C2 = gaminv(normcdf(rho*Xi(:,1) + sqrt(1-rho^2)*Xi(:,2)),aC2,bC2); % sample for shear modulus [Pa]
+                    C1 = reshape(C1,1,1,nbelem,gauss.nbgauss);
+                    C2 = reshape(C2,1,1,nbelem,gauss.nbgauss);
+                    C1 = MYDOUBLEND(C1);
+                    C2 = MYDOUBLEND(C2);
+                    C1 = FEELEMFIELD({C1},'storage','gauss','type','scalar','ddl',DDL('C1'));
+                    C2 = FEELEMFIELD({C2},'storage','gauss','type','scalar','ddl',DDL('C2'));
+                else % random matrix model
+                    Xi = randn(si,1,2); % sample for bivariate Gaussian random variable with statistically independent normalized Gaussian components
+                    C1 = gaminv(normcdf(Xi(:,1)),aC1,bC1); % sample for bulk modulus [Pa]
+                    C2 = gaminv(normcdf(rho*Xi(:,1) + sqrt(1-rho^2)*Xi(:,2)),aC2,bC2); % sample for shear modulus [Pa]
+                end
+                % lambda = C1 - 2/3*C2; % [Pa]
+                E = (9*C1.*C2)./(3*C1+C2); % [Pa]
+                NU = (3*C1-2*C2)./(6*C1+2*C2);
+                mats{m} = setparam(mats{m},'E',E);
+                mats{m} = setparam(mats{m},'NU',NU);
+            elseif isa(mat,'ELAS_ANISOT') % anisotropic material
+                C = evalparam(mat,'C',elem,xnode,xgauss); % mean elasticity matrix
+                delta = getparam(mat,'delta'); % coefficient of variation for elasticity matrix/field
+                mL = chol(C); % upper triangular matrix of the Cholesky factor of mean elasticity matrix
+                n = size(C,1);
+                if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
+                    lcorr = getparam(mat,'lcorr'); % spatial correlation length
+                    x = calc_x(elem,xnode,xgauss);
+                    x = getcoord(NODE(POINT(x(:,:,:))));
+                    Xi = shinozukaSample(x,lcorr,si,n*(n+1)/2); % sample for multivariate Gaussian random field with statistically independent normalized Gaussian components
+                    C = randAnisotElasField(delta,mL,shitdim(Xi,1)); % sample for non-Gaussian random elasticity field
+                    C = C(:,:,:); % n-by-n-by-nx array
+                    C = reshape(C,n,n,nbelem,gauss.nbgauss);
+                    C = MYDOUBLEND(C);
+                    syscoordgauss = getsyscoordlocal(elem);
+                    fieldddl = DDL(DDLTENS4('C',syscoordgauss));
+                    C = FEELEMFIELD({C},'storage','gauss','type','scalar','ddl',fieldddl);
+                else % random matrix model
+                    Xi = randn(si,n*(n+1)/2,1); % sample for multivariate Gaussian random variable with statistically independent normalized Gaussian components
+                    C = randAnisotElasMatrix(delta,mL,Xi); % sample for non-Gaussian random elasticity matrix
+                end
+                mats{m} = setparam(mats{m},'C',C);
+            else
+                error('Wrong material symmetry class');
+            end
+        end
     end
-    Si = actualisematerials(Si,matsi);
+    Si = actualisematerials(Si,mats);
     
     % Solve deterministic problem
     [dt,ut,ft] = fun(S_phasei,Si);
@@ -71,14 +199,23 @@ parfor i=1:N
     ut_mean = ut_mean + ut_val/N;
     ut_moment2 = ut_moment2 + ut_val.^2/N;
     
-    f_sample(i,:) = ft;
+    ft_sample(i,:) = ft;
+    if i<=nbSamples
+        dt_sample(i,:,:) = getvalue(dt);
+        ut_sample(i,:,:) = getvalue(ut);
+    end
     % fmax_sample(i) = max(ft);
 end
 textprogressbar(' done');
 
 % Compute unbiased variances
-dt_var = (N/(N-1))*(dt_moment2 - dt_mean.^2);
-ut_var = (N/(N-1))*(ut_moment2 - ut_mean.^2);
+if N>1
+    dt_var = (N/(N-1))*(dt_moment2 - dt_mean.^2);
+    ut_var = (N/(N-1))*(ut_moment2 - ut_mean.^2);
+else
+    dt_var = zeros(sz_d,length(T));
+    ut_var = zeros(sz_u,length(T));
+end
 
 function nUpdateProgressBar(~)
 j = j+1;
