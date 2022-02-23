@@ -34,11 +34,8 @@ if display_
     fprintf('| %4d/%4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',0,length(T),0,0,getnbnode(S),getnbelem(S),0,0);
 end
 
-mats_phase = MATERIALS(S_phase);
-r = cell(length(mats_phase),1);
-for m=1:length(mats_phase)
-    r{m} = getparam(mats_phase{m},'r');
-end
+materials_phase = MATERIALS(S_phase);
+materials = MATERIALS(S);
 
 for i=1:length(T)
     
@@ -58,7 +55,13 @@ for i=1:length(T)
     % Phase field
     mats_phase = MATERIALS(S_phase);
     for m=1:length(mats_phase)
-        mats_phase{m} = setparam(mats_phase{m},'r',r{m}+2*H);
+        mat = mats_phase{m};
+        if isparam(mat,'delta') && any(getparam(mat,'delta')>0) && isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
+            r = getparam(mat,'r');
+        else
+            r = getparam(materials_phase{m},'r');
+        end
+        mats_phase{m} = setparam(mats_phase{m},'r',r+2*H{m});
     end
     S_phase = actualisematerials(S_phase,mats_phase);
     
@@ -77,7 +80,62 @@ for i=1:length(T)
     S_phase = adaptmesh(S_phase_old,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     S = S_phase;
     
+    node_phase = getnode(S_phase);
     for m=1:length(mats_phase)
+        mat = materials_phase{m};
+        if isparam(mat,'delta') && any(getparam(mat,'delta')>0) && isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
+            elem = getgroupelem(S_phase,m);
+            nbelem = getnbelem(elem);
+            xnode = node_phase(elem);
+            gauss = calc_gauss(elem,'mass');
+            xgauss = gauss.coord;
+            k = evalparam(mat,'k',elem,xnode,xgauss);
+            r = evalparam(mat,'r',elem,xnode,xgauss);
+            gc = sqrt(k.*r); % mean fracture toughness
+            l = sqrt(k./r); % mean regularization parameter
+            delta = getparam(mat,'delta'); % coefficients of variation for fracture toughness and regularization parameter
+            if length(delta)==1
+                deltaGc = delta; % coefficient of variation for fracture toughness
+                deltaL = delta; % coefficient of variation for regularization parameter
+            else
+                deltaGc = delta(1); % coefficient of variation for fracture toughness
+                deltaL = delta(2); % coefficient of variation for regularization parameter
+            end
+            aGc = 1/deltaGc^2;
+            bGc = gc/aGc;
+            aL = 1/deltaL^2;
+            bL = l/aL;
+            x = calc_x(elem,xnode,xgauss);
+            x = getcoord(NODE(POINT(x(:,:,:))));
+            shinozukaPF = getparam(mat,'shinozuka');
+            Xi = shinozukaPF(x); % sample for bivariate Gaussian random field with statistically independent normalized Gaussian components
+            if deltaGc && deltaL
+                rho = 0;
+                if isparam(mat,'rcorr')
+                    rho = getparam(mat,'rcorr'); % correlation coefficient between fracture toughness and regularization parameter
+                end
+                gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m^2]
+                l = gaminv(normcdf(rho*Xi(:,1) + sqrt(1-rho^2)*Xi(:,2)),aL,bL); % sample for regularization parameter [m]
+            elseif deltaGc
+                gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m^2]
+            else
+                l = gaminv(normcdf(Xi(:,1)),aL,bL); % sample for regularization parameter [m]
+            end
+            if deltaGc
+                gc = reshape(gc,1,1,nbelem,gauss.nbgauss);
+                gc = MYDOUBLEND(gc);
+                gc = FEELEMFIELD({gc},'storage','gauss','type','scalar','ddl',DDL('gc'));
+            end
+            if deltaL
+                l = reshape(l,1,1,nbelem,gauss.nbgauss);
+                l = MYDOUBLEND(l);
+                l = FEELEMFIELD({l},'storage','gauss','type','scalar','ddl',DDL('l'));
+            end
+            k = gc.*l;
+            r = gc./l;
+            mats_phase{m} = setparam(mats_phase{m},'k',k);
+            mats_phase{m} = setparam(mats_phase{m},'r',r);
+        end
         S_phase = setmaterial(S_phase,mats_phase{m},m);
     end
     S_phase = final(S_phase,'duplicate');
@@ -95,9 +153,71 @@ for i=1:length(T)
     u = P'*u;
     
     % Displacement field
+    node = getnode(S);
     for m=1:length(mats)
         mats{m} = setparam(mats{m},'d',d);
         mats{m} = setparam(mats{m},'u',u);
+        mat = materials{m};
+        if isparam(mat,'delta') && getparam(mat,'delta')>0 && isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
+            elem = getgroupelem(S,m);
+            nbelem = getnbelem(elem);
+            xnode = node(elem);
+            gauss = calc_gauss(elem,'rigi');
+            xgauss = gauss.coord;
+            x = calc_x(elem,xnode,xgauss);
+            x = getcoord(NODE(POINT(x(:,:,:))));
+            shinozukaMat = getparam(mat,'shinozuka');
+            Xi = shinozukaMat(x); % sample for multivariate Gaussian random field with statistically independent normalized Gaussian components
+            if isa(mat,'ELAS_ISOT') % almost surely isotropic material
+                E = evalparam(mat,'E',elem,xnode,xgauss);
+                NU = evalparam(mat,'NU',elem,xnode,xgauss);
+                % la = -24; % la < 1/5. Parameter controlling the level of statistical fluctuations
+                % deltaC1 = 1/sqrt(1-la); % coefficient of variation for bulk modulus
+                % deltaC2 = 1/sqrt(1-5*la); % coefficient of variation for shear modulus
+                deltaC1 = getparam(mat,'delta'); % coefficient of variation for bulk modulus
+                la = 1 - 1/deltaC1^2; % la < 1/5. Parameter controlling the level of statistical fluctuations
+                deltaC2 = 1/sqrt(5/deltaC1^2 - 4); % coefficient of variation for shear modulus
+                mC1 = E/3/(1-2*NU); % mean bulk modulus
+                mC2 = E/(1+NU)/2; % mean shear modulus
+                laC1 = (1-la)/mC1; % la1 > 0
+                laC2 = (1-5*la)/mC2; % la2 > 0
+                aC1 = 1-la; % a1 > 0
+                bC1 = 1/laC1; % b1 > 0
+                aC2 = 1-5*la; % a2 > 0
+                bC2 = 1/laC2; % b2 > 0
+                rho = 0;
+                if isparam(mat,'rcorr')
+                    rho = getparam(mat,'rcorr'); % correlation coefficient between bulk and shear moduli
+                end
+                C1 = gaminv(normcdf(Xi(:,1)),aC1,bC1); % sample for bulk modulus [Pa]
+                C2 = gaminv(normcdf(rho*Xi(:,1) + sqrt(1-rho^2)*Xi(:,2)),aC2,bC2); % sample for shear modulus [Pa]
+                C1 = reshape(C1,1,1,nbelem,gauss.nbgauss);
+                C2 = reshape(C2,1,1,nbelem,gauss.nbgauss);
+                C1 = MYDOUBLEND(C1);
+                C2 = MYDOUBLEND(C2);
+                C1 = FEELEMFIELD({C1},'storage','gauss','type','scalar','ddl',DDL('C1'));
+                C2 = FEELEMFIELD({C2},'storage','gauss','type','scalar','ddl',DDL('C2'));
+                % lambda = C1 - 2/3*C2; % [Pa]
+                E = (9*C1.*C2)./(3*C1+C2); % [Pa]
+                NU = (3*C1-2*C2)./(6*C1+2*C2);
+                mats{m} = setparam(mats{m},'E',E);
+                mats{m} = setparam(mats{m},'NU',NU);
+            elseif isa(mat,'ELAS_ANISOT') % anisotropic material
+                C = evalparam(mat,'C',elem,xnode,xgauss); % mean elasticity matrix
+                delta = getparam(mat,'delta'); % coefficient of variation for elasticity matrix/field
+                mL = chol(C); % upper triangular matrix of the Cholesky factor of mean elasticity matrix
+                C = randAnisotElasField(delta,mL,shitdim(Xi,1)); % sample for non-Gaussian random elasticity field
+                C = C(:,:,:); % n-by-n-by-nx array
+                C = reshape(C,n,n,nbelem,gauss.nbgauss);
+                C = MYDOUBLEND(C);
+                syscoordgauss = getsyscoordlocal(elem);
+                fieldddl = DDL(DDLTENS4('C',syscoordgauss));
+                C = FEELEMFIELD({C},'storage','gauss','type','scalar','ddl',fieldddl);
+                mats{m} = setparam(mats{m},'C',C);
+            else
+                error('Wrong material symmetry class');
+            end
+        end
         S = setmaterial(S,mats{m},m);
     end
     S = final(S,'duplicate');

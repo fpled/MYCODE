@@ -471,12 +471,15 @@ if solveProblem
     
     [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasSingleEdgeCrackAdaptiveHnode(S_phase,S,T,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
         'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
-    
+    [fmax,idmax] = max(ft,[],2);
+    t = gettevol(T);
+    udmax = t(idmax);
+
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','Ht','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','Ht','fmax','udmax','time');
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','Ht','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','Ht','fmax','udmax','time');
 end
 
 %% Outputs
@@ -493,6 +496,14 @@ fprintf('nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{en
 fprintf('nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));
 fprintf('nb time dofs = %g\n',getnbtimedof(T));
 fprintf('elapsed time = %f s\n',time);
+fprintf('\n');
+
+if Dim==2
+    fprintf('fmax  = %g kN/mm\n',fmax*1e-6);
+elseif Dim==3
+    fprintf('fmax  = %g kN\n',fmax*1e-3);
+end
+fprintf('udmax = %g mm\n',udmax*1e3);
 
 %% Display
 if displayModel

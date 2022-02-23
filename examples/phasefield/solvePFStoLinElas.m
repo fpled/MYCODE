@@ -3,7 +3,7 @@ function [ft_sample,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePF
 % Solve stochastic Phase Field problem.
 
 fun = fcnchk(fun);
-nbSamples = getcharin('nbsamples',varargin,3);
+nbSamples = getcharin('nbsamples',varargin,1);
 
 sz_d = getnbddl(S_phase);
 sz_u = getnbddl(S);
@@ -48,28 +48,27 @@ parfor i=1:N
             xgauss = gauss.coord;
             k = evalparam(mat,'k',elem,xnode,xgauss);
             r = evalparam(mat,'r',elem,xnode,xgauss);
-            gc = sqrt(k.*r);
-            l = sqrt(k./r);
-            delta = getparam(mat,'delta');
+            gc = sqrt(k.*r); % mean fracture toughness
+            l = sqrt(k./r); % mean regularization parameter
+            delta = getparam(mat,'delta'); % coefficients of variation for fracture toughness and regularization parameter
             if length(delta)==1
-                delta = repmat(delta,2,1);
+                deltaGc = delta; % coefficient of variation for fracture toughness
+                deltaL = delta; % coefficient of variation for regularization parameter
+            else
+                deltaGc = delta(1); % coefficient of variation for fracture toughness
+                deltaL = delta(2); % coefficient of variation for regularization parameter
             end
-            deltaGc = delta(1); % coefficient of variation for fracture toughness
-            deltaL = delta(2); % coefficient of variation for regularization parameter
             aGc = 1/deltaGc^2;
             bGc = gc/aGc;
             aL = 1/deltaL^2;
             bL = l/aL;
-
-            % Sample set
-            nU = nnz(delta);
             if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
                 lcorr = getparam(mat,'lcorr'); % spatial correlation length
                 x = calc_x(elem,xnode,xgauss);
                 x = getcoord(NODE(POINT(x(:,:,:))));
-                Xi = shinozukaSample(x,lcorr,si,nU); % sample for bivariate Gaussian random field with statistically independent normalized Gaussian components
+                Xi = shinozukaSample(si,x,lcorr,2); % sample for bivariate Gaussian random field with statistically independent normalized Gaussian components
             else % random matrix model
-                Xi = randn(si,1,nU); % sample for bivariate Gaussian random variable with statistically independent normalized Gaussian components
+                Xi = randn(si,1,2); % sample for bivariate Gaussian random variable with statistically independent normalized Gaussian components
             end
             if deltaGc && deltaL
                 rho = 0;
@@ -132,27 +131,27 @@ parfor i=1:N
                 bC1 = 1/laC1; % b1 > 0
                 aC2 = 1-5*la; % a2 > 0
                 bC2 = 1/laC2; % b2 > 0
-                rho = 0;
-                if isparam(mat,'rcorr')
-                    rho = getparam(mat,'rcorr'); % correlation coefficient between bulk and shear moduli
-                end
                 if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
                     lcorr = getparam(mat,'lcorr');
                     x = calc_x(elem,xnode,xgauss);
                     x = getcoord(NODE(POINT(x(:,:,:))));
-                    Xi = shinozukaSample(x,lcorr,si,2); % sample for bivariate Gaussian random field with statistically independent normalized Gaussian components
-                    C1 = gaminv(normcdf(Xi(:,1)),aC1,bC1); % sample for bulk modulus [Pa]
-                    C2 = gaminv(normcdf(rho*Xi(:,1) + sqrt(1-rho^2)*Xi(:,2)),aC2,bC2); % sample for shear modulus [Pa]
+                    Xi = shinozukaSample(si,x,lcorr,2); % sample for bivariate Gaussian random field with statistically independent normalized Gaussian components
+                else % random matrix model
+                    Xi = randn(si,1,2); % sample for bivariate Gaussian random variable with statistically independent normalized Gaussian components
+                end
+                rho = 0;
+                if isparam(mat,'rcorr')
+                    rho = getparam(mat,'rcorr'); % correlation coefficient between bulk and shear moduli
+                end
+                C1 = gaminv(normcdf(Xi(:,1)),aC1,bC1); % sample for bulk modulus [Pa]
+                C2 = gaminv(normcdf(rho*Xi(:,1) + sqrt(1-rho^2)*Xi(:,2)),aC2,bC2); % sample for shear modulus [Pa]
+                if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
                     C1 = reshape(C1,1,1,nbelem,gauss.nbgauss);
                     C2 = reshape(C2,1,1,nbelem,gauss.nbgauss);
                     C1 = MYDOUBLEND(C1);
                     C2 = MYDOUBLEND(C2);
                     C1 = FEELEMFIELD({C1},'storage','gauss','type','scalar','ddl',DDL('C1'));
                     C2 = FEELEMFIELD({C2},'storage','gauss','type','scalar','ddl',DDL('C2'));
-                else % random matrix model
-                    Xi = randn(si,1,2); % sample for bivariate Gaussian random variable with statistically independent normalized Gaussian components
-                    C1 = gaminv(normcdf(Xi(:,1)),aC1,bC1); % sample for bulk modulus [Pa]
-                    C2 = gaminv(normcdf(rho*Xi(:,1) + sqrt(1-rho^2)*Xi(:,2)),aC2,bC2); % sample for shear modulus [Pa]
                 end
                 % lambda = C1 - 2/3*C2; % [Pa]
                 E = (9*C1.*C2)./(3*C1+C2); % [Pa]
@@ -168,7 +167,7 @@ parfor i=1:N
                     lcorr = getparam(mat,'lcorr'); % spatial correlation length
                     x = calc_x(elem,xnode,xgauss);
                     x = getcoord(NODE(POINT(x(:,:,:))));
-                    Xi = shinozukaSample(x,lcorr,si,n*(n+1)/2); % sample for multivariate Gaussian random field with statistically independent normalized Gaussian components
+                    Xi = shinozukaSample(si,x,lcorr,n*(n+1)/2); % sample for multivariate Gaussian random field with statistically independent normalized Gaussian components
                     C = randAnisotElasField(delta,mL,shitdim(Xi,1)); % sample for non-Gaussian random elasticity field
                     C = C(:,:,:); % n-by-n-by-nx array
                     C = reshape(C,n,n,nbelem,gauss.nbgauss);

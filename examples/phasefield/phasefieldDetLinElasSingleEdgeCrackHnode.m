@@ -458,12 +458,15 @@ if solveProblem
     tTotal = tic;
     
     [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrackHnode(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
-    
+    [fmax,idmax] = max(ft,[],2);
+    t = gettevol(T);
+    udmax = t(idmax);
+
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','fmax','udmax','time');
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','fmax','udmax','time');
 end
 
 %% Outputs
@@ -480,6 +483,14 @@ fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('nb time dofs = %g\n',getnbtimedof(T));
 fprintf('elapsed time = %f s\n',time);
+fprintf('\n');
+
+if Dim==2
+    fprintf('fmax  = %g kN/mm\n',fmax*1e-6);
+elseif Dim==3
+    fprintf('fmax  = %g kN\n',fmax*1e-3);
+end
+fprintf('udmax = %g mm\n',udmax*1e3);
 
 %% Display
 if displayModel

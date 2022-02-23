@@ -34,22 +34,22 @@ numWorkers = 4;
 % numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 
 % Deterministic model parameters
-Dim = 2;
+Dim = 2; % space dimension Dim = 2
 setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
 % Random model parameters
 % N = 5e2; % number of samples
-N = 4;
-randMat = struct('delta',0.2,'lcorr',20e-6,'rcorr',0); % random material parameters model
+N = numWorkers;
+randMat = struct('delta',0.1,'lcorr',Inf,'rcorr',0); % random material parameters model
 randPF = struct('delta',0,'lcorr',Inf,'rcorr',0); % random phase field parameters model
 
 filename = ['phasefieldStoLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel '_' num2str(N) 'samples'];
 if any(randMat.delta)
-    filename = [filename 'RandMatDelta' num2str(randMat.delta) 'Lcorr' num2str(randMat.lcorr) 'Rcorr' num2str(randMat.rcorr)];
+    filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g') '_Rcorr' num2str(randMat.rcorr,'_%g')];
 end
 if randPF.delta
-    filename = [filename 'RandPFDelta' num2str(randMat.delta) 'Lcorr' num2str(randMat.lcorr) 'Rcorr' num2str(randMat.rcorr)];
+    filename = [filename '_RandPF_Delta' num2str(randPF.delta,'_%g') '_Lcorr' num2str(randPF.lcorr,'_%g') '_Rcorr' num2str(randPF.rcorr,'_%g')];
 end
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -263,12 +263,16 @@ if solveProblem
     %% Solution
     tTotal = tic;
     
-    nbSamples = 3;
+    nbSamples = 1;
     fun = @(S_phase,S) solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR);
     [ft,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
-    fmax = max(ft,[],2);
-    
+    [fmax,idmax] = max(ft,[],2);
+    t = gettevol(T);
+    udmax = t(idmax);
+
     time = toc(tTotal);
+
+    myparallel('stop');
     
     %% Statistical outputs of solution
     probs = [0.025 0.975];
@@ -281,16 +285,23 @@ if solveProblem
     fmax_std = std(fmax);
     fmax_ci = quantile(fmax,probs);
     
+    udmax_mean = mean(udmax);
+    udmax_std = std(udmax);
+    udmax_ci = quantile(udmax,probs);
+    
     npts = 100;
     [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'npoints',npts);
+    [udmax_f,udmax_xi,udmax_bw] = ksdensity(udmax,'npoints',npts);
     
     save(fullfile(pathname,'solution.mat'),'N','dt_mean','ut_mean',...
-        'dt_var','ut_var','dt_sample','ut_sample','ft_mean','ft_std','ft_ci','fmax',...
-        'fmax_mean','fmax_std','fmax_ci','probs','fmax_f','fmax_xi','fmax_bw','time');
+        'dt_var','ut_var','dt_sample','ut_sample','ft_mean','ft_std','ft_ci','probs',...
+        'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
+        'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw','time');
 else
     load(fullfile(pathname,'solution.mat'),'N','dt_mean','ut_mean',...
-        'dt_var','ut_var','dt_sample','ut_sample','ft_mean','ft_std','ft_ci','fmax',...
-        'fmax_mean','fmax_std','fmax_ci','probs','fmax_f','fmax_xi','fmax_bw','time');
+        'dt_var','ut_var','dt_sample','ut_sample','ft_mean','ft_std','ft_ci','probs',...
+        'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
+        'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw','time');
 end
 
 %% Outputs
@@ -309,6 +320,12 @@ fprintf('mean(fmax)    = %g kN/mm\n',fmax_mean*1e-6);
 fprintf('std(fmax)     = %g kN/mm\n',fmax_std*1e-6);
 fprintf('disp(fmax)    = %g\n',fmax_std/fmax_mean);
 fprintf('%d%% ci(fmax)  = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
+fprintf('\n');
+
+fprintf('mean(udmax)   = %g mm\n',udmax_mean*1e3);
+fprintf('std(udmax)    = %g mm\n',udmax_std*1e3);
+fprintf('disp(udmax)   = %g\n',udmax_std/udmax_mean);
+fprintf('%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
 
 %% Display
 if displayModel
@@ -547,5 +564,3 @@ if saveParaview
         make_pvd_file(pathname,['solution_sample_' num2str(k)],1,length(T));
     end
 end
-
-myparallel('stop');

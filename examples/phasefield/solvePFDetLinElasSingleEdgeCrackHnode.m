@@ -46,12 +46,12 @@ for i=1:length(T)
     % Phase field
     mats_phase = MATERIALS(S_phase);
     for m=1:length(mats_phase)
-        mats_phase{m} = setparam(mats_phase{m},'r',FENODEFIELD(r{m}+2*H));
+        mats_phase{m} = setparam(mats_phase{m},'r',r{m}+2*H);
     end
     S_phase = actualisematerials(S_phase,mats_phase);
     
     [A_phase,b_phase] = calc_rigi(S_phase);
-    b_phase = -b_phase + bodyload(S_phase,[],'QN',FENODEFIELD(2*H));
+    b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
     
     % d_old = d;
     d = A_phase\b_phase;

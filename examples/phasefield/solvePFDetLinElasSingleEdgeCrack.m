@@ -3,6 +3,7 @@ function [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,BU,BL,BRig
 % Solve deterministic Phase Field problem.
 
 display_ = ischarin('display',varargin);
+
 Dim = getdim(S);
 
 t = gett(T);

@@ -31,7 +31,7 @@ saveParaview = true;
 test = true; % coarse mesh
 % test = false; % fine mesh
 
-Dim = 2;
+Dim = 2; % space dimension Dim = 2
 setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 
@@ -246,12 +246,15 @@ if solveProblem
     tTotal = tic;
     
     [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR,'display');
-    
+    [fmax,idmax] = max(ft,[],2);
+    t = gettevol(T);
+    udmax = t(idmax);
+
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','fmax','udmax','time');
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','fmax','udmax','time');
 end
 
 %% Outputs
@@ -263,6 +266,10 @@ fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('nb time dofs = %g\n',getnbtimedof(T));
 fprintf('elapsed time = %f s\n',time);
+fprintf('\n');
+
+fprintf('fmax  = %g kN/mm\n',fmax*1e-6);
+fprintf('udmax = %g mm\n',udmax*1e3);
 
 %% Display
 if displayModel
