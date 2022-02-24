@@ -34,8 +34,9 @@ test = true; % coarse mesh
 Dim = 2; % space dimension Dim = 2
 setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFsolver = 'HistoryFieldNode'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 
-filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel];
+filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel PFsolver];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -245,22 +246,34 @@ end
 if solveProblem
     tTotal = tic;
     
-    [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR,'display');
+    switch lower(PFsolver)
+        case {'historyfieldelem','historyfieldnode'}
+            [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,'display');
+        otherwise
+            [dt,ut,ft] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,'display');
+    end
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);
     udmax = t(idmax);
 
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','fmax','udmax','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','fmax','udmax','time');
+    if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+        save(fullfile(pathname,'solution.mat'),'Ht','-append')
+    end
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Ht','fmax','udmax','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','fmax','udmax','time');
+    if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+        load(fullfile(pathname,'solution.mat'),'Ht');
+    end
 end
 
 %% Outputs
 fprintf('\n');
 fprintf('setup    = %d\n',setup);
 fprintf('PF model = %s\n',PFmodel);
+fprintf('PF solver = %s\n',PFsolver);
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
@@ -338,7 +351,9 @@ if displaySolution
     for j=1:length(rep)
         dj = getmatrixatstep(dt,rep(j));
         uj = getmatrixatstep(ut,rep(j));
-        Hj = getmatrixatstep(Ht,rep(j));
+        if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+            Hj = getmatrixatstep(Ht,rep(j));
+        end
         
         plotSolution(S_phase,dj);
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
@@ -365,11 +380,15 @@ if displaySolution
         % plotSolution(S,uj,'energyint','','ampl',ampl);
         % mysaveas(pathname,['internal_energy_density_t' num2str(rep(j))],formats,renderer);
         %
-        % figure('Name','Solution H')
-        % clf
-        % plot(Hj,S_phase);
-        % colorbar
-        % set(gca,'FontSize',fontsize)
+        % if strcmpi(PFsolver,'historyfieldelem')
+        %     figure('Name','Solution H')
+        %     clf
+        %     plot(Hj,S_phase);
+        %     colorbar
+        %     set(gca,'FontSize',fontsize)
+        % elseif strcmpi(PFsolver,'historyfieldnode')
+        %     plotSolution(S_phase,Hj,'ampl',ampl);
+        % end
         % mysaveas(pathname,['internal_energy_density_history_t' num2str(rep(j))],formats,renderer);
     end
 end
@@ -395,11 +414,15 @@ if makeMovie
     % evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
     % evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
     % evolSolution(S,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density','pathname',pathname,options{:});
-    % figure('Name','Solution H')
-    % clf
-    % T = setevolparam(T,'colorbar',true,'FontSize',fontsize,options{:});
-    % frame = evol(T,Ht,S_phase,'rescale',true);
-    % saveMovie(frame,'FrameRate',framerate,'filename','internal_energy_density_history','pathname',pathname);
+    % if strcmpi(PFsolver,'historyfieldelem')
+    %     figure('Name','Solution H')
+    %     clf
+    %     T = setevolparam(T,'colorbar',true,'FontSize',fontsize,options{:});
+    %     frame = evol(T,Ht,S_phase,'rescale',true);
+    %     saveMovie(frame,'FrameRate',framerate,'filename','internal_energy_density_history','pathname',pathname);
+    % elseif strcmpi(PFsolver,'historyfieldnode')
+    %     evolSolution(S_phase,Ht,'ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density_history','pathname',pathname,options{:});
+    % end
 end
 
 %% Save solutions
@@ -408,15 +431,34 @@ if saveParaview
     for i=1:length(T)
         di = getmatrixatstep(dt,rep(i));
         ui = getmatrixatstep(ut,rep(i));
-        Hi = getmatrixatstep(Ht,rep(i));
+        if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+            Hi = getmatrixatstep(Ht,rep(i));
+        end
         % dincti = getmatrixatstep(dinct,rep(i));
         
-        write_vtk_mesh(S,{di,ui},{Hi},...
-            {'damage','displacement'},{'internal energy density history'},...
-            pathname,'solution',1,i-1);
-%         write_vtk_mesh(S,{di,ui,dincti},{Hi},...
-%             {'damage','displacement','damage increment'},{'internal energy density history'},...
-%             pathname,'solution',1,i-1);
+        switch lower(PFsolver)
+            case 'historyfieldelem'
+                write_vtk_mesh(S,{di,ui},{Hi},...
+                    {'damage','displacement'},{'internal energy density history'},...
+                    pathname,'solution',1,i-1);
+%                 write_vtk_mesh(S,{di,ui,dincti},{Hi},...
+%                     {'damage','displacement','damage increment'},{'internal energy density history'},...
+%                     pathname,'solution',1,i-1);
+            case 'historyfieldnode'
+                write_vtk_mesh(S,{di,ui,Hi},[],...
+                    {'damage','displacement','internal energy density history'},[],...
+                    pathname,'solution',1,i-1);
+%                 write_vtk_mesh(S,{di,ui,Hi,dincti},[],...
+%                     {'damage','displacement','internal energy density history','damage increment'},[],...
+%                     pathname,'solution',1,i-1);
+            otherwise
+                write_vtk_mesh(S,{di,ui},[],...
+                    {'damage','displacement'},[],...
+                    pathname,'solution',1,i-1);
+%                 write_vtk_mesh(S,{di,ui,dincti},[],...
+%                     {'damage','displacement','damage increment'},[],...
+%                     pathname,'solution',1,i-1);
+        end
     end
     make_pvd_file(pathname,'solution',1,length(T));
 end

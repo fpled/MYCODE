@@ -1,5 +1,5 @@
-function [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
-% function [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
+function [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
+% function [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
 % Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);
@@ -25,7 +25,11 @@ end
 
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
-H = calc_energyint(S,u,'positive','intorder','mass');
+if strcmpi(PFsolver,'historyfieldnode')
+    H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
+else
+    H = calc_energyint(S,u,'positive','intorder','mass');
+end
 
 if display_
     fprintf('\n+-----------+-----------+-----------+----------+----------+------------+------------+\n');
@@ -40,17 +44,29 @@ materials = MATERIALS(S);
 for i=1:length(T)
     
     % Internal energy field
-    h_old = getvalue(H);
-    H = calc_energyint(S,u,'positive','intorder','mass');
-    h = getvalue(H);
-    for p=1:getnbgroupelem(S)
-        he = double(h{p});
-        he_old = double(h_old{p});
-        rep = find(he <= he_old);
-        he(rep) = he_old(rep);
-        h{p} = he;
+    switch lower(PFsolver)
+        case 'historyfieldelem'
+            h_old = getvalue(H);
+            H = calc_energyint(S,u,'positive','intorder','mass');
+            h = getvalue(H);
+            for p=1:getnbgroupelem(S)
+                he = double(h{p});
+                he_old = double(h_old{p});
+                rep = find(he <= he_old);
+                he(rep) = he_old(rep);
+                h{p} = he;
+            end
+            H = FEELEMFIELD(h,'storage',getstorage(H),'type',gettype(H),'ddl',getddl(H));
+        case 'historyfieldnode'
+            h_old = double(H);
+            H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
+            h = double(H);
+            rep = find(h <= h_old);
+            h(rep) = h_old(rep);
+            H = setvalue(H,h);
+        otherwise
+            H = calc_energyint(S,u,'positive','intorder','mass');
     end
-    H = FEELEMFIELD(h,'storage',getstorage(H),'type',gettype(H),'ddl',getddl(H));
     
     % Phase field
     mats_phase = MATERIALS(S_phase);
@@ -61,7 +77,11 @@ for i=1:length(T)
         else
             r = getparam(materials_phase{m},'r');
         end
-        mats_phase{m} = setparam(mats_phase{m},'r',r+2*H{m});
+        if strcmpi(PFsolver,'historyfieldnode')
+            mats_phase{m} = setparam(mats_phase{m},'r',r+2*H);
+        else
+            mats_phase{m} = setparam(mats_phase{m},'r',r+2*H{m});
+        end
     end
     S_phase = actualisematerials(S_phase,mats_phase);
     
@@ -156,6 +176,11 @@ for i=1:length(T)
     % dinc = d - d_old;
     % dincmin = min(dinc); if dincmin<-tol, dincmin, end
     
+    if strcmpi(PFsolver,'historyfieldnode')
+        h = P_phase'*h;
+        H = setvalue(H,h);
+    end
+    
     % P = calcProjection(S,S_old,[],'free',false,'full',true);
     P = kron(P_phase,eye(Dim));
     u = P'*u;
@@ -234,7 +259,9 @@ for i=1:length(T)
     S = addcl(S,PL,{'UX','UY'});
     S = addcl(S,PR,'UY');
     
-    H = calc_energyint(S,u,'positive','intorder','mass');
+    if strcmpi(PFsolver,'historyfieldelem')
+        H = calc_energyint(S,u,'positive','intorder','mass');
+    end
     
     [A,b] = calc_rigi(S,'nofree');
     b = -b;
@@ -253,7 +280,11 @@ for i=1:length(T)
     St_phase{i} = S_phase;
     St{i} = S;
     if nargout>=6
-        Ht{i} = reshape(double(mean(H,4)),[getnbelem(S),1]);
+        if strcmpi(PFsolver,'historyfieldnode')
+            Ht{i} = double(H);
+        else
+            Ht{i} = reshape(double(mean(H,4)),[getnbelem(S),1]);
+        end
     end
     % dinct{i} = dinc;
     

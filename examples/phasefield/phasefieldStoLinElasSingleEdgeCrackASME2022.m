@@ -26,9 +26,9 @@ displaySolution = false;
 makeMovie = false;
 saveParaview = true;
 
-% test = true; % coarse mesh
-test = false; % fine mesh
-numWorkers = 96;
+test = true; % coarse mesh
+% test = false; % fine mesh
+numWorkers = 50;
 % numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 
 % Deterministic model parameters
@@ -37,18 +37,20 @@ symmetry = 'Isotropic'; % 'Isotropic', 'MeanIsotropic', 'Anisotropic'. Material 
 ang = 30; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 
 % Random model parameters
-N = 480; % number of samples
+N = 100; % number of samples
 % N = numWorkers;
+coeff_gc = 1.0;
 randMat = struct('delta',0.1,'lcorr',1e-5,'rcorr',0); % random material parameters model
 randPF = struct('delta',0,'lcorr',Inf,'rcorr',0); % random phase field parameters model
 
 switch lower(symmetry)
     case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
-        filename = ['phasefieldStoLinElas' symmetry 'SingleEdgeCrack' loading PFmodel];
+        filename = ['phasefieldStoLinElas' symmetry 'SingleEdgeCrack' loading PFmodel PFsolver];
     case 'anisotropic' % anisotropic material
-        filename = ['phasefieldStoLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel];
+        filename = ['phasefieldStoLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel PFsolver];
     otherwise
         error('Wrong material symmetry class');
 end
@@ -59,6 +61,7 @@ end
 if randPF.delta
     filename = [filename '_RandPF_Delta' num2str(randPF.delta,'_%g') '_Lcorr' num2str(randPF.lcorr,'_%g') '_Rcorr' num2str(randPF.rcorr,'_%g')];
 end
+filename = [filename '_coeffgc' num2str(coeff_gc,'_%g')];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -164,6 +167,7 @@ if setProblem
         otherwise
             error('Wrong material symmetry class');
     end
+    gc = gc*coeff_gc;
     % Small artificial residual stiffness
     k = 1e-10;
     % Internal energy
@@ -497,7 +501,7 @@ if solveProblem
     tTotal = tic;
     
     nbSamples = 1;
-    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
+    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
     [ft,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);
@@ -546,6 +550,7 @@ if strcmpi(symmetry,'anisotropic')
     fprintf('angle    = %g deg\n',ang);
 end
 fprintf('PF model = %s\n',PFmodel);
+fprintf('PF solver = %s\n',PFsolver);
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));

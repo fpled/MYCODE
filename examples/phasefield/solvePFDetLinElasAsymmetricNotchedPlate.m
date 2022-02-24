@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR,varargin)
-% function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR,varargin)
+function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
+% function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
 % Solve deterministic Phase Field problem.
 
 display_ = ischarin('display',varargin);
@@ -17,7 +17,11 @@ end
 
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
-H = calc_energyint(S,u,'positive','intorder','mass');
+if strcmpi(PFsolver,'historyfieldnode')
+    H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
+else
+    H = calc_energyint(S,u,'positive','intorder','mass');
+end
 
 if display_
     fprintf('\n+-----------+-----------+-----------+------------+------------+\n');
@@ -34,22 +38,38 @@ end
 for i=1:length(T)
     
     % Internal energy field
-    h_old = getvalue(H);
-    H = calc_energyint(S,u,'positive','intorder','mass');
-    h = getvalue(H);
-    for p=1:getnbgroupelem(S)
-        he = double(h{p});
-        he_old = double(h_old{p});
-        rep = find(he <= he_old);
-        he(rep) = he_old(rep);
-        h{p} = he;
+    switch lower(PFsolver)
+        case 'historyfieldelem'
+            h_old = getvalue(H);
+            H = calc_energyint(S,u,'positive','intorder','mass');
+            h = getvalue(H);
+            for p=1:getnbgroupelem(S)
+                he = double(h{p});
+                he_old = double(h_old{p});
+                rep = find(he <= he_old);
+                he(rep) = he_old(rep);
+                h{p} = he;
+            end
+            H = FEELEMFIELD(h,'storage',getstorage(H),'type',gettype(H),'ddl',getddl(H));
+        case 'historyfieldnode'
+            h_old = double(H);
+            H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
+            h = double(H);
+            rep = find(h <= h_old);
+            h(rep) = h_old(rep);
+            H = setvalue(H,h);
+        otherwise
+            H = calc_energyint(S,u,'positive','intorder','mass');
     end
-    H = FEELEMFIELD(h,'storage',getstorage(H),'type',gettype(H),'ddl',getddl(H));
     
     % Phase field
     mats_phase = MATERIALS(S_phase);
     for m=1:length(mats_phase)
-        mats_phase{m} = setparam(mats_phase{m},'r',r{m}+2*H{m});
+        if strcmpi(PFsolver,'historyfieldnode')
+            mats_phase{m} = setparam(mats_phase{m},'r',r{m}+2*H);
+        else
+            mats_phase{m} = setparam(mats_phase{m},'r',r{m}+2*H{m});
+        end
     end
     S_phase = actualisematerials(S_phase,mats_phase);
     
@@ -90,7 +110,11 @@ for i=1:length(T)
     ut{i} = u;
     ft(i) = f;
     if nargout>=4
-        Ht{i} = reshape(double(mean(H,4)),[getnbelem(S),1]);
+        if strcmpi(PFsolver,'historyfieldnode')
+            Ht{i} = double(H);
+        else
+            Ht{i} = reshape(double(mean(H,4)),[getnbelem(S),1]);
+        end
     end
     % dinct{i} = dinc;
     
@@ -106,7 +130,11 @@ end
 dt = TIMEMATRIX(dt,T,size(d));
 ut = TIMEMATRIX(ut,T,size(u));
 if nargout>=4
-    Ht = TIMEMATRIX(Ht,T,[getnbelem(S),1]);
+    if strcmpi(PFsolver,'historyfieldnode')
+        Ht = TIMEMATRIX(Ht,T,size(d));
+    else
+        Ht = TIMEMATRIX(Ht,T,[getnbelem(S),1]);
+    end
 end
 % dinct = TIMEMATRIX(dinct,T,size(dinc));
 
