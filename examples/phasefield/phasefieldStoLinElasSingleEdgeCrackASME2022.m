@@ -26,9 +26,9 @@ displaySolution = false;
 makeMovie = false;
 saveParaview = true;
 
-test = true; % coarse mesh
-% test = false; % fine mesh
-numWorkers = 50;
+% test = true; % coarse mesh
+test = false; % fine mesh
+numWorkers = 100;
 % numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 
 % Deterministic model parameters
