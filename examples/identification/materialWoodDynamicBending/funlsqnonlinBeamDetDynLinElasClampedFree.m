@@ -1,5 +1,5 @@
-function f = funoptim(param,uy_exp,S,N,M,b,funu0,v0,P1,varargin)
-% function f = funoptim(param,uy_exp,S,N,M,b,funu0,v0,P1,varargin)
+function f = funlsqnonlinBeamDetDynLinElasClampedFree(param,uy_exp,S,N,M,b,funu0,v0,P1,varargin)
+% function f = funlsqnonlinBeamDetDynLinElasClampedFree(param,uy_exp,S,N,M,b,funu0,v0,P1,varargin)
 
 if ischarin('display',varargin)
     fprintf('E     = %g GPa\n',param(1));
@@ -24,6 +24,6 @@ Uyt = ut_val(findddl(S,'UY'),:);
 
 uy = Uyt(end,:);
 
-f = norm(uy(:) - uy_exp(:))^2;
+f = uy(:) - uy_exp(:);
 
 end

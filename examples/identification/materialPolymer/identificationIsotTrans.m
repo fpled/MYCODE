@@ -164,16 +164,16 @@ end
 t = tic;
 switch optimFun
     case 'lsqnonlin'
-        fun = @(x) funlsqnonlin(x,@solveTractionIsotTrans,u_exp_in,S);
+        fun = @(x) funlsqnonlinIsotTrans(x,@solveTractionIsotTrans,u_exp_in,S);
         [x,err,~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
     case 'fminsearch'
-        fun = @(x) funoptim(x,@solveTractionIsotTrans,u_exp_in,S);
+        fun = @(x) funoptimIsotTrans(x,@solveTractionIsotTrans,u_exp_in,S);
         [x,err,exitflag,output] = fminsearch(fun,x0,options);
     case 'fminunc'
-        fun = @(x) funoptim(x,@solveTractionIsotTrans,u_exp_in,S);
+        fun = @(x) funoptimIsotTrans(x,@solveTractionIsotTrans,u_exp_in,S);
         [x,err,exitflag,output] = fminunc(fun,x0,options);
     case 'fmincon'
-        fun = @(x) funoptim(x,@solveTractionIsotTrans,u_exp_in,S);
+        fun = @(x) funoptimIsotTrans(x,@solveTractionIsotTrans,u_exp_in,S);
         [x,err,exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
 end
 toc(t)
