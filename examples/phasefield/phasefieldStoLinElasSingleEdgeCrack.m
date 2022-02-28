@@ -37,7 +37,7 @@ symmetry = 'Isotropic'; % 'Isotropic', 'MeanIsotropic', 'Anisotropic'. Material 
 ang = 30; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
-PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
+PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 
 % Random model parameters
 % N = 5e2; % number of samples
@@ -518,7 +518,7 @@ if solveProblem
     fmax_mean = mean(fmax);
     fmax_std = std(fmax);
     fmax_ci = quantile(fmax,probs);
-
+    
     udmax_mean = mean(udmax);
     udmax_std = std(udmax);
     udmax_ci = quantile(udmax,probs);
@@ -658,6 +658,27 @@ if displaySolution
     set(l,'Interpreter',interpreter)
     mysaveas(pathname,'pdf_fmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fmax.tex');
+    
+    %% Display pdf of critical displacement
+    figure('Name','Probability Density Estimate: Critical displacement')
+    clf
+    plot(udmax_xi*1e3,udmax_f,'-b','LineWidth',linewidth)
+    hold on
+    ind_udmax = find(udmax_xi>=udmax_ci(1) & udmax_xi<udmax_ci(2));
+    area(udmax_xi(ind_udmax)*1e3,udmax_f(ind_udmax),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
+    scatter(udmax_mean*1e3,0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$u$ [mm]','Interpreter',interpreter)
+    ylabel('$p_{U_c}(u)$','Interpreter',interpreter)
+    l = legend('pdf',...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+        'mean value');
+    set(l,'Interpreter',interpreter)
+    mysaveas(pathname,'pdf_udmax',formats,renderer);
+    mymatlab2tikz(pathname,'pdf_udmax.tex');
     
     %% Display means, variances and samples of solutions at different instants
     ampl = 0;
