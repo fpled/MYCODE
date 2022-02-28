@@ -402,7 +402,7 @@ if solveProblem
         else % there are heterogeneous parameters
             %             xgauss = calc_gausscoord(S,'mass'); % gauss points coordinates
             xgauss = calc_gausscoord(S,'rigi'); % gauss points coordinates
-            V = shinozukaSample(xgauss,lcorr,substream,nbGermsTot,'order',nu);
+            V = shinozukaSample(substream,xgauss,lcorr,nbGermsTot,'order',nu);
         end
 
         % Phase field parameters
