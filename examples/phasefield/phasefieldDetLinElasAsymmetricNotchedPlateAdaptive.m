@@ -422,10 +422,11 @@ if displaySolution
         %     plot(Hj,Sj_phase);
         %     colorbar
         %     set(gca,'FontSize',fontsize)
+        %     mysaveas(pathname,['internal_energy_density_history_t' num2str(rep(j))],formats,renderer);
         % elseif strcmpi(PFsolver,'historyfieldnode')
         %     plotSolution(Sj_phase,Hj,'ampl',ampl);
+        %     mysaveas(pathname,['internal_energy_density_history_t' num2str(rep(j))],formats,renderer);
         % end
-        % mysaveas(pathname,['internal_energy_density_history_t' num2str(rep(j))],formats,renderer);
     end
 end
 
