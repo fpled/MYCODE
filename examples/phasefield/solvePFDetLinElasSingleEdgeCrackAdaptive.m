@@ -51,7 +51,6 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     % optimAlgo = 'active-set';
     % optimAlgo = 'levenberg-marquardt';
 
-    % options  = optimoptions(optimFun,'Display',displayoptim,'TolX',tolX,'TolFun',tolFun,'MaxFunEvals',maxFunEvals);
     % options  = optimoptions(optimFun,'Display',displayoptim,'StepTolerance',tolX,'FunctionTolerance',tolFun,...
     %     'OptimalityTolerance',tolFun...%,'MaxFunctionEvaluations',maxFunEvals...%,'Algorithm',optimAlgo...
     %     ,'SpecifyObjectiveGradient',true...
@@ -117,21 +116,25 @@ for i=1:length(T)
     b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
     
     % d_old = d;
-    switch lower(PFsolver)
-        case {'historyfieldelem','historyfieldnode'}
-            d = A_phase\b_phase;
-        otherwise
-            d0 = freevector(S_phase,d);
-            lb = d0;
-            ub = ones(size(d0));
-            switch optimFun
-                case 'lsqnonlin'
-                    fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-                    [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
-                case 'fmincon'
-                    fun = @(d) funoptimPF(d,A_phase,b_phase);
-                    [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
-            end
+    if i==1
+        d = A_phase\b_phase;
+    else
+        switch lower(PFsolver)
+            case {'historyfieldelem','historyfieldnode'}
+                d = A_phase\b_phase;
+            otherwise
+                d0 = freevector(S_phase,d);
+                lb = d0;
+                ub = ones(size(d0));
+                switch optimFun
+                    case 'lsqnonlin'
+                        fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
+                        [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
+                    case 'fmincon'
+                        fun = @(d) funoptimPF(d,A_phase,b_phase);
+                        [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
+                end
+        end
     end
     d = unfreevector(S_phase,d);
     
