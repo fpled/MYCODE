@@ -80,6 +80,7 @@ symmetry = 'Isotropic'; % symmetry class of random elasticity matrix
 % symmetry = 'Anisotropic';
 
 % Phase field parameters
+PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 g = @(d) (1-d).^2; % energetic degradation function
 k = 1e-10; % small artificial residual stiffness
@@ -480,7 +481,7 @@ if solveProblem
         end
 
         %% Solve deterministic problem
-        [dt,ut,ft] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,BU,BL,BRight,BLeft,BFront,BBack,loading);
+        [dt,ut,ft] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading);
 
         %% Compute second-order statistics
         dt_val = getvalue(dt);
