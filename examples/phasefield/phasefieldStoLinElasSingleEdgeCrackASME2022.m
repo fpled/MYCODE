@@ -802,8 +802,8 @@ if makeMovie
     end
     
     % for i=1:(Dim*(Dim+1)/2)
-    %     evolSolution(S,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_mean_' num2str(i)],'pathname',pathname,options{:});
-    %     evolSolution(S,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_mean_' num2str(i)],'pathname',pathname,options{:});
+    %     evolSolution(S,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i) '_mean'],'pathname',pathname,options{:});
+    %     evolSolution(S,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i) '_mean'],'pathname',pathname,options{:});
     % end
     %
     % evolSolution(S,uk,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises_mean','pathname',pathname,options{:});
