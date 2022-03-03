@@ -269,10 +269,10 @@ if setProblem
                         % Elasticity matrix in global coordinate system [Pa]
                         Cmat = P'*Cmat*P;
                     case 'cont'
-                        error('Not implemented yet')
+                        error('Not implemented yet');
                 end
             elseif Dim==3
-                error('Not implemented yet')
+                error('Not implemented yet');
             end
         otherwise
             error('Wrong material symmetry class');
@@ -338,7 +338,7 @@ if setProblem
             end
             S = addcl(S,BL);
         otherwise
-            error('Wrong loading case')
+            error('Wrong loading case');
     end
     
     %% Stiffness matrices and sollicitation vectors
@@ -693,7 +693,7 @@ if displaySolution
                 case 'shear'
                     rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps);
                 otherwise
-                    error('Wrong loading case')
+                    error('Wrong loading case');
             end
         case 'anisotropic' % anisotropic material
             switch lower(loading)
@@ -702,7 +702,7 @@ if displaySolution
                 case 'shear'
                     rep = find(abs(t-20e-6)<eps | abs(t-30e-6)<eps | abs(t-40e-6)<eps | abs(t-50e-6)<eps);
                 otherwise
-                    error('Wrong loading case')
+                    error('Wrong loading case');
             end
         otherwise
             error('Wrong material symmetry class');

@@ -569,7 +569,7 @@ if displaySolution
                 case 'shear'
                     rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps);
                 otherwise
-                    error('Wrong loading case')
+                    error('Wrong loading case');
             end
         case 'anisotropic'
             switch lower(loading)
@@ -578,7 +578,7 @@ if displaySolution
                 case 'shear'
                     rep = find(abs(t-20e-6)<eps | abs(t-30e-6)<eps | abs(t-40e-6)<eps | abs(t-50e-6)<eps);
                 otherwise
-                    error('Wrong loading case')
+                    error('Wrong loading case');
             end
         otherwise
             error('Wrong material symmetry class');

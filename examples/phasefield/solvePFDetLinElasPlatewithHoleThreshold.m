@@ -138,11 +138,11 @@ while ti < tf
         dti = dt1;
     end
     ti = ti + dti;
-
+	
     d = unfreevector(S_phase,d);
     % dinc = d - d_old;
     % dincmin = min(dinc); if dincmin<-tol, dincmin, end
-
+    
     % Displacement field
     mats = MATERIALS(S);
     for m=1:length(mats)
@@ -182,7 +182,7 @@ while ti < tf
             Ht{i} = reshape(double(mean(H,4)),[getnbelem(S),1]);
         end
     end
-    % dinct{iter} = dinc;
+    % dinct{i} = dinc;
     
     if display_
         fprintf('| %4d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),norm(dt{i}),norm(ut{i}));
