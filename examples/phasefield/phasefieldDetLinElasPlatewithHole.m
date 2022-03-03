@@ -70,22 +70,22 @@ if setProblem
     
     if Dim==2
         % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        cl = 0.06e-3;
-        if test
-            cl = 0.12e-3;
-        end
-        clD = cl; % characteristic length for domain
-        clC = cl; % characteristic length for circular hole
+        clD = 0.06e-3; % characteristic length for domain
+        clC = 0.06e-3; % characteristic length for circular hole
         % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
         % clD = 0.25e-3; % characteristic length for domain
         % clC = 0.05e-3; % characteristic length for circular hole
+        if test
+            clD = 0.25e-3;
+            clC = 0.12e-3;
+        end
     elseif Dim==3
         % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
         clD = 0.25e-3; % characteristic length for domain
         clC = 0.05e-3; % characteristic length for circular hole
         if test
-            clD = 0.5e-3;
-            clC = 0.1e-3;
+            clD = 0.25e-3;
+            clC = 0.12e-3;
         end
     end
     S_phase = gmshdomainwithhole(D,C,clD,clC,fullfile(pathname,'gmsh_domain_with_hole'));
@@ -159,7 +159,7 @@ if setProblem
         BL = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
     end
     P0 = getvertices(D);
-    P0 = P0{1};
+    P0 = POINT(P0{1});
     
     S = final(S);
     
@@ -169,7 +169,7 @@ if setProblem
     elseif Dim==3
         S = addcl(S,BU,'UY',ud);
     end
-    S = addcl(S,P0,'UX',0);
+    S = addcl(S,P0,'UX');
     S = addcl(S,BL,'UY');
     
     %% Stiffness matrices and sollicitation vectors
@@ -181,7 +181,7 @@ if setProblem
         % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
         % du = 1e-3 mm during the first stage (until the phase field reaches the threshold value)
         % du = 1e-4 mm during the last stage (as soon as the phase field exceeds the threshold value)
-        % dt0 = 1e-8;
+        % dt0 = 1e-6;
         % dt1 = 1e-7;
         % tf = 25e-6;
         % dthreshold = 0.9;
@@ -201,10 +201,10 @@ if setProblem
         % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
         % du = 1e-3 mm during the first stage (until the phase field reaches the threshold value)
         % du = 1e-4 mm during the last stage (as soon as the phase field exceeds the threshold value)
-        % dt0 = 1e-8;
-        % dt1 = 1e-7;
+        dt0 = 1e-6;
+        dt1 = 1e-7;
         if test
-            dt0 = 2e-8;
+            dt0 = 2e-6;
             dt1 = 2e-7;
         end
         tf = 25e-6;

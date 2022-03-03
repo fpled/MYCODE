@@ -49,7 +49,8 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     %     'OptimalityTolerance',tolFun...%,'MaxFunctionEvaluations',maxFunEvals...%,'Algorithm',optimAlgo...
     %     ,'SpecifyObjectiveGradient',true...
     %     );
-    options  = optimoptions(optimFun,'Display',displayoptim,'SpecifyObjectiveGradient',true);
+    options  = optimoptions(optimFun,'Display',displayoptim,...%'MaxFunctionEvaluations',maxFunEvals,
+        'SpecifyObjectiveGradient',true);
 end
 
 if display_
@@ -106,13 +107,13 @@ for i=1:length(T)
     b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
     
     % d_old = d;
-    if i==1
-        d = A_phase\b_phase;
-    else
-        switch lower(PFsolver)
-            case {'historyfieldelem','historyfieldnode'}
+    switch lower(PFsolver)
+        case {'historyfieldelem','historyfieldnode'}
+            d = A_phase\b_phase;
+        otherwise
+            if i==1
                 d = A_phase\b_phase;
-            otherwise
+            else
                 d0 = freevector(S_phase,d);
                 lb = d0;
                 ub = ones(size(d0));
@@ -124,7 +125,7 @@ for i=1:length(T)
                         fun = @(d) funoptimPF(d,A_phase,b_phase);
                         [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                 end
-        end
+            end
     end
     d = unfreevector(S_phase,d);
     % dinc = d - d_old;

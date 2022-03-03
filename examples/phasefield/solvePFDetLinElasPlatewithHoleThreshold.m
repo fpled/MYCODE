@@ -38,8 +38,8 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     % displayoptim = 'final';
     % displayoptim = 'final-detailed';
 
-    % tolX = 1e-6; % tolerance on the parameter value
-    % tolFun = 1e-6; % tolerance on the function value
+    tolX = 1e-9; % tolerance on the parameter value
+    tolFun = 1e-9; % tolerance on the function value
     % maxFunEvals = Inf; % maximum number of function evaluations
 
     % optimAlgo = 'interior-point';
@@ -52,7 +52,8 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     %     'OptimalityTolerance',tolFun...%,'MaxFunctionEvaluations',maxFunEvals...%,'Algorithm',optimAlgo...
     %     ,'SpecifyObjectiveGradient',true...
     %     );
-    options  = optimoptions(optimFun,'Display',displayoptim,'SpecifyObjectiveGradient',true);
+    options  = optimoptions(optimFun,'Display',displayoptim,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+        'SpecifyObjectiveGradient',true);
 end
 
 if display_
@@ -72,7 +73,7 @@ ti = 0;
 dti = dt0;
 while ti < tf
     i = i+1;
-
+    
     % Internal energy field
     switch lower(PFsolver)
         case 'historyfieldelem'
@@ -113,13 +114,13 @@ while ti < tf
     b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
     
     % d_old = d;
-    if i==1
-        d = A_phase\b_phase;
-    else
-        switch lower(PFsolver)
-            case {'historyfieldelem','historyfieldnode'}
+    switch lower(PFsolver)
+        case {'historyfieldelem','historyfieldnode'}
+            d = A_phase\b_phase;
+        otherwise
+            if i<=2
                 d = A_phase\b_phase;
-            otherwise
+            else
                 d0 = freevector(S_phase,d);
                 lb = d0;
                 ub = ones(size(d0));
@@ -131,16 +132,16 @@ while ti < tf
                         fun = @(d) funoptimPF(d,A_phase,b_phase);
                         [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                 end
-        end
+            end
     end
-    d = unfreevector(S_phase,d);
-    % dinc = d - d_old;
-    % dincmin = min(dinc); if dincmin<-tol, dincmin, end
-    
     if any(d > dthreshold)
         dti = dt1;
     end
     ti = ti + dti;
+
+    d = unfreevector(S_phase,d);
+    % dinc = d - d_old;
+    % dincmin = min(dinc); if dincmin<-tol, dincmin, end
 
     % Displacement field
     mats = MATERIALS(S);
@@ -156,7 +157,7 @@ while ti < tf
     elseif Dim==3
         S = addcl(S,BU,'UY',ud);
     end
-    S = addcl(S,P0,'UX',0);
+    S = addcl(S,P0,'UX');
     S = addcl(S,BL,'UY');
     
     [A,b] = calc_rigi(S,'nofree');

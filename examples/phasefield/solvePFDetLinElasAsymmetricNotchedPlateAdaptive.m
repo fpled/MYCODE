@@ -15,8 +15,12 @@ t = gett(T);
 dt = cell(1,length(T));
 ut = cell(1,length(T));
 ft = zeros(1,length(T));
-St_phase = cell(1,length(T));
-St = cell(1,length(T));
+if nargout>=4
+    St_phase = cell(1,length(T));
+end
+if nargout>=5
+    St = cell(1,length(T));
+end
 if nargout>=6
     Ht = cell(1,length(T));
 end
@@ -35,15 +39,15 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     optimFun = 'lsqnonlin'; % 'fmincon' or 'lsqnonlin'
     % optimFun = 'fmincon';
 
-    displayoptim = 'off';
+    % displayoptim = 'off';
     % displayoptim = 'iter';
-    % displayoptim = 'iter-detailed';
+    displayoptim = 'iter-detailed';
     % displayoptim = 'final';
     % displayoptim = 'final-detailed';
 
-    % tolX = 1e-6; % tolerance on the parameter value
-    % tolFun = 1e-6; % tolerance on the function value
-    % maxFunEvals = Inf; % maximum number of function evaluations
+    tolX = 1e-6; % tolerance on the parameter value
+    tolFun = 1e-6; % tolerance on the function value
+    maxFunEvals = 20; % maximum number of function evaluations
 
     % optimAlgo = 'interior-point';
     % optimAlgo = 'trust-region-reflective';
@@ -55,7 +59,9 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     %     'OptimalityTolerance',tolFun...%,'MaxFunctionEvaluations',maxFunEvals...%,'Algorithm',optimAlgo...
     %     ,'SpecifyObjectiveGradient',true...
     %     );
-    options  = optimoptions(optimFun,'Display',displayoptim,'SpecifyObjectiveGradient',true);
+    % options  = optimoptions(optimFun,'Display',displayoptim,'SpecifyObjectiveGradient',true);
+    options  = optimoptions(optimFun,'Display',displayoptim,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+        'MaxFunctionEvaluations',maxFunEvals,'SpecifyObjectiveGradient',true);
 end
 
 if display_
@@ -116,13 +122,13 @@ for i=1:length(T)
     b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
     
     % d_old = d;
-    if i==1
-        d = A_phase\b_phase;
-    else
-        switch lower(PFsolver)
-            case {'historyfieldelem','historyfieldnode'}
+    switch lower(PFsolver)
+        case {'historyfieldelem','historyfieldnode'}
+            d = A_phase\b_phase;
+        otherwise
+            if i==1
                 d = A_phase\b_phase;
-            otherwise
+            else
                 d0 = freevector(S_phase,d);
                 lb = d0;
                 ub = ones(size(d0));
@@ -134,7 +140,7 @@ for i=1:length(T)
                         fun = @(d) funoptimPF(d,A_phase,b_phase);
                         [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                 end
-        end
+            end
     end
     d = unfreevector(S_phase,d);
     
@@ -323,8 +329,12 @@ for i=1:length(T)
     dt{i} = d;
     ut{i} = u;
     ft(i) = f;
-    St_phase{i} = S_phase;
-    St{i} = S;
+    if nargout>=4
+        St_phase{i} = S_phase;
+    end
+    if nargout>=5
+        St{i} = S;
+    end
     if nargout>=6
         if strcmpi(PFsolver,'historyfieldnode')
             Ht{i} = double(H);
