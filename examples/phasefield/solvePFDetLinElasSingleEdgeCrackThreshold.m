@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,P0,varargin)
-% function [dt,ut,ft,Ht] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,P0,varargin)
+function [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrackThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+% function [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrackThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
 % Solve deterministic Phase Field problem.
 
 display_ = ischarin('display',varargin);
@@ -38,8 +38,8 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     % displayoptim = 'final';
     % displayoptim = 'final-detailed';
 
-    tolX = 1e-9; % tolerance on the parameter value
-    tolFun = 1e-9; % tolerance on the function value
+    % tolX = 1e-6; % tolerance on the parameter value
+    % tolFun = 1e-6; % tolerance on the function value
     % maxFunEvals = Inf; % maximum number of function evaluations
 
     % optimAlgo = 'interior-point';
@@ -52,7 +52,7 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     %     'OptimalityTolerance',tolFun...%,'MaxFunctionEvaluations',maxFunEvals...%,'Algorithm',optimAlgo...
     %     ,'SpecifyObjectiveGradient',true...
     %     );
-    options  = optimoptions(optimFun,'Display',displayoptim,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+    options  = optimoptions(optimFun,'Display',displayoptim,...%'MaxFunctionEvaluations',maxFunEvals,
         'SpecifyObjectiveGradient',true);
 end
 
@@ -118,7 +118,7 @@ while ti < tf
         case {'historyfieldelem','historyfieldnode'}
             d = A_phase\b_phase;
         otherwise
-            if i<=2
+            if i==1
                 d = A_phase\b_phase;
             else
                 d0 = freevector(S_phase,d);
@@ -138,7 +138,7 @@ while ti < tf
         dti = dt1;
     end
     ti = ti + dti;
-	
+
     d = unfreevector(S_phase,d);
     % dinc = d - d_old;
     % dincmin = min(dinc); if dincmin<-tol, dincmin, end
@@ -151,14 +151,31 @@ while ti < tf
     end
     S = actualisematerials(S,mats);
     S = removebc(S);
-    ud = -ti;
-    if Dim==2
-        S = addcl(S,BU,'UY',ud);
-    elseif Dim==3
-        S = addcl(S,BU,'UY',ud);
+    ud = ti;
+    switch lower(loading)
+        case 'tension'
+            if Dim==2
+                S = addcl(S,BU,{'UX','UY'},[0;ud]);
+            elseif Dim==3
+                S = addcl(S,BU,{'UX','UY','UZ'},[0;ud;0]);
+            end
+            S = addcl(S,BL,'UY');
+        case 'shear'
+            if Dim==2
+                S = addcl(S,BU,{'UX','UY'},[ud;0]);
+                S = addcl(S,BLeft,'UY');
+                S = addcl(S,BRight,'UY');
+            elseif Dim==3
+                S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
+                S = addcl(S,BLeft,{'UY','UZ'});
+                S = addcl(S,BRight,{'UY','UZ'});
+                S = addcl(S,BFront,{'UY','UZ'});
+                S = addcl(S,BBack,{'UY','UZ'});
+            end
+            S = addcl(S,BL);
+        otherwise
+            error('Wrong loading case');
     end
-    S = addcl(S,BL,'UY');
-    S = addcl(S,P0,'UX');
     
     [A,b] = calc_rigi(S,'nofree');
     b = -b;
@@ -166,8 +183,15 @@ while ti < tf
     u = freematrix(S,A)\b;
     u = unfreevector(S,u);
     
-    numddl = findddl(S,'UY',BU);
-    f = -A(numddl,:)*u;
+    switch lower(loading)
+        case 'tension'
+            numddl = findddl(S,'UY',BU);
+        case 'shear'
+            numddl = findddl(S,'UX',BU);
+        otherwise
+            error('Wrong loading case');
+    end
+    f = A(numddl,:)*u;
     f = sum(f);
     
     % Update fields

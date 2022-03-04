@@ -1,10 +1,8 @@
-function [dt,ut,ft,Ht] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,P0,varargin)
-% function [dt,ut,ft,Ht] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,P0,varargin)
+function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlateThreshold(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
+% function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlateThreshold(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
 % Solve deterministic Phase Field problem.
 
 display_ = ischarin('display',varargin);
-
-Dim = getdim(S);
 
 dt0 = T.dt0;
 dt1 = T.dt1;
@@ -32,15 +30,15 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     optimFun = 'lsqnonlin'; % 'fmincon' or 'lsqnonlin'
     % optimFun = 'fmincon';
 
-    displayoptim = 'off';
+    % displayoptim = 'off';
     % displayoptim = 'iter';
-    % displayoptim = 'iter-detailed';
+    displayoptim = 'iter-detailed';
     % displayoptim = 'final';
     % displayoptim = 'final-detailed';
 
-    tolX = 1e-9; % tolerance on the parameter value
-    tolFun = 1e-9; % tolerance on the function value
-    % maxFunEvals = Inf; % maximum number of function evaluations
+    tolX = 1e-6; % tolerance on the parameter value
+    tolFun = 1e-6; % tolerance on the function value
+    maxFunEvals = 20; % maximum number of function evaluations
 
     % optimAlgo = 'interior-point';
     % optimAlgo = 'trust-region-reflective';
@@ -52,8 +50,9 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     %     'OptimalityTolerance',tolFun...%,'MaxFunctionEvaluations',maxFunEvals...%,'Algorithm',optimAlgo...
     %     ,'SpecifyObjectiveGradient',true...
     %     );
+    % options  = optimoptions(optimFun,'Display',displayoptim,'SpecifyObjectiveGradient',true);
     options  = optimoptions(optimFun,'Display',displayoptim,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
-        'SpecifyObjectiveGradient',true);
+        'MaxFunctionEvaluations',maxFunEvals,'SpecifyObjectiveGradient',true);
 end
 
 if display_
@@ -118,7 +117,7 @@ while ti < tf
         case {'historyfieldelem','historyfieldnode'}
             d = A_phase\b_phase;
         otherwise
-            if i<=2
+            if i==1
                 d = A_phase\b_phase;
             else
                 d0 = freevector(S_phase,d);
@@ -138,7 +137,7 @@ while ti < tf
         dti = dt1;
     end
     ti = ti + dti;
-	
+
     d = unfreevector(S_phase,d);
     % dinc = d - d_old;
     % dincmin = min(dinc); if dincmin<-tol, dincmin, end
@@ -152,13 +151,9 @@ while ti < tf
     S = actualisematerials(S,mats);
     S = removebc(S);
     ud = -ti;
-    if Dim==2
-        S = addcl(S,BU,'UY',ud);
-    elseif Dim==3
-        S = addcl(S,BU,'UY',ud);
-    end
-    S = addcl(S,BL,'UY');
-    S = addcl(S,P0,'UX');
+    S = addcl(S,PU,'UY',ud);
+    S = addcl(S,PL,{'UX','UY'});
+    S = addcl(S,PR,'UY');
     
     [A,b] = calc_rigi(S,'nofree');
     b = -b;
@@ -166,9 +161,9 @@ while ti < tf
     u = freematrix(S,A)\b;
     u = unfreevector(S,u);
     
-    numddl = findddl(S,'UY',BU);
+    numddl = findddl(S,'UY',PU);
     f = -A(numddl,:)*u;
-    f = sum(f);
+    % f = sum(f);
     
     % Update fields
     t(i) = ti;
@@ -185,7 +180,7 @@ while ti < tf
     % dinct{i} = dinc;
     
     if display_
-        fprintf('| %4d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),norm(dt{i}),norm(ut{i}));
+        fprintf('| %4d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*1e-6,norm(dt{i}),norm(ut{i}));
     end
 end
 

@@ -145,8 +145,8 @@ for i=1:length(T)
     elseif Dim==3
         S = addcl(S,BU,'UY',ud);
     end
-    S = addcl(S,P0,'UX');
     S = addcl(S,BL,'UY');
+    S = addcl(S,P0,'UX');
     
     [A,b] = calc_rigi(S,'nofree');
     b = -b;

@@ -25,7 +25,7 @@ Dim = 2; % space dimension Dim = 2
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 
-filename = ['phasefieldDetLinElasPlatewithHole' PFmodel PFsolver];
+filename = ['phasefieldDetLinElasPlatewithHole' PFmodel PFsolver 'Adaptive'];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -42,6 +42,11 @@ linewidth = 1;
 interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
+
+gmshoptions = '-v 5';
+mmgoptions = '-nomove -hausd 0.01 -hgrad 1.1 -v -1';
+% gmshoptions = '-v 5';
+% mmgoptions = '-nomove -hausd 0.01 -hgrad 1.3 -v 1';
 
 %% Problem
 if setProblem
@@ -70,11 +75,11 @@ if setProblem
     
     if Dim==2
         % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        clD = 0.06e-3; % characteristic length for domain
-        clC = 0.06e-3; % characteristic length for circular hole
+        % clD = 0.06e-3; % characteristic length for domain
+        % clC = 0.06e-3; % characteristic length for circular hole
         % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-        % clD = 0.25e-3; % characteristic length for domain
-        % clC = 0.05e-3; % characteristic length for circular hole
+        clD = 0.25e-3; % characteristic length for domain
+        clC = 0.05e-3; % characteristic length for circular hole
         if test
             clD = 0.25e-3;
             clC = 0.12e-3;
@@ -89,7 +94,9 @@ if setProblem
         end
     end
     S_phase = gmshdomainwithhole(D,C,clD,clC,fullfile(pathname,'gmsh_domain_with_hole'));
-    S = S_phase;
+    
+    sizemap = @(d) (clC-clD)*d+clD;
+    % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
     
     %% Phase field problem
     %% Material
@@ -108,6 +115,15 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
+    S_phase = final(S_phase);
+    S_phase = addcl(S_phase,C,'T',1);
+    
+    d = calc_init_dirichlet(S_phase);
+    cl = sizemap(d);
+    S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_with_hole'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    S = S_phase;
+    
+    S_phase = setmaterial(S_phase,mat_phase);
     S_phase = final(S_phase);
     
     %% Stiffness matrices and sollicitation vectors
@@ -219,9 +235,9 @@ if setProblem
     T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL');
 end
 
 %% Solution
@@ -230,23 +246,24 @@ if solveProblem
     
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,P0,'display');
+            [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,P0,C,sizemap,...
+                'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
         otherwise
-            [dt,ut,ft] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,P0,'display');
+            [dt,ut,ft,T,St_phase,St] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,P0,C,sizemap,...
+                'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
     end
     [fmax,idmax] = max(ft,[],2);
-    T = gettimemodel(dt);
     t = gettevol(T);
     udmax = t(idmax);
 
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','fmax','udmax','T','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','T','St_phase','St','fmax','udmax','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
-        save(fullfile(pathname,'solution.mat'),'Ht','-append')
+        save(fullfile(pathname,'solution.mat'),'Ht','-append');
     end
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','fmax','udmax','T','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','T','St_phase','St','fmax','udmax','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         load(fullfile(pathname,'solution.mat'),'Ht');
     end
@@ -257,9 +274,9 @@ fprintf('\n');
 fprintf('dim      = %d\n',Dim);
 fprintf('PF model = %s\n',PFmodel);
 fprintf('PF solver = %s\n',PFsolver);
-fprintf('nb elements = %g\n',getnbelem(S));
-fprintf('nb nodes    = %g\n',getnbnode(S));
-fprintf('nb dofs     = %g\n',getnbddl(S));
+fprintf('nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
+fprintf('nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));
+fprintf('nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));
 fprintf('nb time dofs = %g\n',getnbtimedof(T));
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
@@ -288,20 +305,26 @@ if displayModel
     mysaveas(pathname,'boundary_conditions_damage',formats,renderer);
     
     % plotModel(S,'legend',false);
-    % mysaveas(pathname,'mesh',formats,renderer);
+    % mysaveas(pathname,'mesh_init',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
-    mysaveas(pathname,'mesh',formats,renderer);
+    mysaveas(pathname,'mesh_init',formats,renderer);
     
-    u = getmatrixatstep(ut,rep(end));
-    ampl = getsize(S)/max(abs(u))/20;
-    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+    % u = ut{rep(end)};
+    u = ut{end};
+    S_final = St{end};
+    
+    plotModel(S_final,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+    mysaveas(pathname,'mesh_final',formats,renderer);
+    
+    ampl = getsize(S_final)/max(abs(u))/20;
+    plotModelDeflection(S_final,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
     plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-    plot(S+ampl*unfreevector(S,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
+    plot(S_final+ampl*unfreevector(S_final,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
 end
 
@@ -327,46 +350,51 @@ if displaySolution
     rep = [rep,length(T)];
     
     for j=1:length(rep)
-        dj = getmatrixatstep(dt,rep(j));
-        uj = getmatrixatstep(ut,rep(j));
+        dj = dt{rep(j)};
+        uj = ut{rep(j)};
+        Sj = St{rep(j)};
+        Sj_phase = St_phase{rep(j)};
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
-            Hj = getmatrixatstep(Ht,rep(j));
+            Hj = Ht{rep(j)};
         end
         
-        plotSolution(S_phase,dj);
+        plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+        mysaveas(pathname,['mesh_t' num2str(rep(j))],formats,renderer);
+        
+        plotSolution(Sj_phase,dj);
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
         
         for i=1:Dim
-            plotSolution(S,uj,'displ',i,'ampl',ampl);
+            plotSolution(Sj,uj,'displ',i,'ampl',ampl);
             mysaveas(pathname,['displacement_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         end
         
         % for i=1:(Dim*(Dim+1)/2)
-        %     plotSolution(S,uj,'epsilon',i,'ampl',ampl);
+        %     plotSolution(Sj,uj,'epsilon',i,'ampl',ampl);
         %     mysaveas(pathname,['epsilon_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         %
-        %     plotSolution(S,uj,'sigma',i,'ampl',ampl);
+        %     plotSolution(Sj,uj,'sigma',i,'ampl',ampl);
         %     mysaveas(pathname,['sigma_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         % end
         %
-        % plotSolution(S,uj,'epsilon','mises','ampl',ampl);
+        % plotSolution(Sj,uj,'epsilon','mises','ampl',ampl);
         % mysaveas(pathname,['epsilon_von_mises_t' num2str(rep(j))],formats,renderer);
         %
-        % plotSolution(S,uj,'sigma','mises','ampl',ampl);
+        % plotSolution(Sj,uj,'sigma','mises','ampl',ampl);
         % mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
         %
-        % plotSolution(S,uj,'energyint','','ampl',ampl);
+        % plotSolution(Sj,uj,'energyint','','ampl',ampl);
         % mysaveas(pathname,['internal_energy_density_t' num2str(rep(j))],formats,renderer);
         %
         % if strcmpi(PFsolver,'historyfieldelem')
         %     figure('Name','Solution H')
         %     clf
-        %     plot(Hj,S_phase);
+        %     plot(Hj,Sj_phase);
         %     colorbar
         %     set(gca,'FontSize',fontsize)
         %     mysaveas(pathname,['internal_energy_density_history_t' num2str(rep(j))],formats,renderer);
         % elseif strcmpi(PFsolver,'historyfieldnode')
-        %     plotSolution(S_phase,Hj,'ampl',ampl);
+        %     plotSolution(Sj_phase,Hj,'ampl',ampl);
         %     mysaveas(pathname,['internal_energy_density_history_t' num2str(rep(j))],formats,renderer);
         % end
     end
@@ -375,32 +403,29 @@ end
 %% Display evolution of solutions
 if makeMovie
     ampl = 0;
-    % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
+    % umax = cellfun(@(u) max(abs(u)),ut,'UniformOutput',false);
+    % ampl = getsize(S)/max([umax{:}])/20;
     
     options = {'plotiter',true,'plottime',false};
     framerate = 80;
     
-    evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
+    evolModel(T,St,'FrameRate',framerate,'filename','mesh','pathname',pathname,options{:});
+    
+    evolSolutionCell(T,St_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
     for i=1:Dim
-        evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
+        evolSolutionCell(T,St,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
     end
     
     % for i=1:(Dim*(Dim+1)/2)
-    %     evolSolution(S,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
-    %     evolSolution(S,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
+    %     evolSolutionCell(T,St,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
+    %     evolSolutionCell(T,St,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
     % end
     %
-    % evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
-    % evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
-    % evolSolution(S,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density','pathname',pathname,options{:});
-    % if strcmpi(PFsolver,'historyfieldelem')
-    %     figure('Name','Solution H')
-    %     clf
-    %     T = setevolparam(T,'colorbar',true,'FontSize',fontsize,options{:});
-    %     frame = evol(T,Ht,S_phase,'rescale',true);
-    %     saveMovie(frame,'FrameRate',framerate,'filename','internal_energy_density_history','pathname',pathname);
-    % elseif strcmpi(PFsolver,'historyfieldnode')
-    %     evolSolution(S_phase,Ht,'ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density_history','pathname',pathname,options{:});
+    % evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
+    % evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
+    % evolSolutionCell(T,St,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density','pathname',pathname,options{:});
+    % if strcmpi(PFsolver,'historyfieldnode')
+    %     evolSolutionCell(T,St_phase,Ht,'ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density_history','pathname',pathname,options{:});
     % end
 end
 
@@ -408,33 +433,35 @@ end
 if saveParaview
     [t,rep] = gettevol(T);
     for i=1:length(T)
-        di = getmatrixatstep(dt,rep(i));
-        ui = getmatrixatstep(ut,rep(i));
+        di = dt{rep(i)};
+        ui = ut{rep(i)};
+        Si = St{rep(i)};
+        % Si_phase = St_phase{rep(i)};
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
-            Hi = getmatrixatstep(Ht,rep(i));
+            Hi = Ht{rep(i)};
         end
-        % dincti = getmatrixatstep(dinct,rep(i));
+        % dincti = dinct{rep(i)};
         
         switch lower(PFsolver)
             case 'historyfieldelem'
-                write_vtk_mesh(S,{di,ui},{Hi},...
+                write_vtk_mesh(Si,{di,ui},{Hi},...
                     {'damage','displacement'},{'internal energy density history'},...
                     pathname,'solution',1,i-1);
-%                 write_vtk_mesh(S,{di,ui,dincti},{Hi},...
+%                 write_vtk_mesh(Si,{di,ui,dincti},{Hi},...
 %                     {'damage','displacement','damage increment'},{'internal energy density history'},...
 %                     pathname,'solution',1,i-1);
             case 'historyfieldnode'
-                write_vtk_mesh(S,{di,ui,Hi},[],...
+                write_vtk_mesh(Si,{di,ui,Hi},[],...
                     {'damage','displacement','internal energy density history'},[],...
                     pathname,'solution',1,i-1);
-%                 write_vtk_mesh(S,{di,ui,Hi,dincti},[],...
+%                 write_vtk_mesh(Si,{di,ui,Hi,dincti},[],...
 %                     {'damage','displacement','internal energy density history','damage increment'},[],...
 %                     pathname,'solution',1,i-1);
             otherwise
-                write_vtk_mesh(S,{di,ui},[],...
+                write_vtk_mesh(Si,{di,ui},[],...
                     {'damage','displacement'},[],...
                     pathname,'solution',1,i-1);
-%                 write_vtk_mesh(S,{di,ui,dincti},[],...
+%                 write_vtk_mesh(Si,{di,ui,dincti},[],...
 %                     {'damage','displacement','damage increment'},[],...
 %                     pathname,'solution',1,i-1);
         end
