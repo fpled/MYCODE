@@ -42,7 +42,7 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 % Random model parameters
 % N = 100; % number of samples
 N = numWorkers;
-randMat = struct('delta',0.1,'lcorr',1e-4,'rcorr',0); % random material parameters model
+randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
 randPF = struct('delta',0,'lcorr',Inf,'rcorr',0); % random phase field parameters model
 
 switch lower(symmetry)
@@ -55,7 +55,7 @@ switch lower(symmetry)
 end
 filename = [filename 'Adaptive_' num2str(Dim) 'D_' num2str(N) 'samples'];
 if any(randMat.delta)
-    filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g') '_Rcorr' num2str(randMat.rcorr,'_%g')];
+    filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 end
 if randPF.delta
     filename = [filename '_RandPF_Delta' num2str(randPF.delta,'_%g') '_Lcorr' num2str(randPF.lcorr,'_%g') '_Rcorr' num2str(randPF.rcorr,'_%g')];
@@ -294,9 +294,9 @@ if setProblem
     d = calc_init_dirichlet(S_phase);
     switch lower(symmetry)
         case 'isotropic' % almost surely isotropic material
-            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'delta',randMat.delta,'lcorr',randMat.lcorr,'rcorr',randMat.rcorr);
+            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'delta',randMat.delta,'lcorr',randMat.lcorr);
         case {'meanisotropic','anisotropic'} % mean isotropic or anisotropic material
-            mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'delta',randMat.delta,'lcorr',randMat.lcorr,'rcorr',randMat.rcorr);
+            mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'delta',randMat.delta,'lcorr',randMat.lcorr);
         otherwise
             error('Wrong material symmetry class');
     end
