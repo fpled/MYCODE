@@ -58,14 +58,10 @@ parfor i=1:N
                 deltaGc = delta(1); % coefficient of variation for fracture toughness
                 deltaL = delta(2); % coefficient of variation for regularization parameter
             end
-            if deltaGc
-                aGc = 1/deltaGc^2;
-                bGc = gc/aGc;
-            end
-            if deltaL
-                aL = 1/deltaL^2;
-                bL = l/aL;
-            end
+            aGc = 1/deltaGc^2;
+            bGc = gc/aGc;
+            aL = 1/deltaL^2;
+            bL = l/aL;
             if deltaGc && deltaL
                 nU = 2;
             else
@@ -176,15 +172,11 @@ parfor i=1:N
                 if deltaE>=1/sqrt(2)
                     error(['Coefficient of variation for Young modulus must be < 1/sqrt(2) = ' num2str(1/sqrt(2))]);
                 end
-                if deltaE
-                    aE = 1/deltaE^2; % aE > 2
-                    bE = E/aE; % 0 < bE = E/aE < E/2 since E > 0 and aE > 2
-                end
-                if deltaNU
-                    m2NU = 2*NU; % 0 < m2NU < 1
-                    a2NU = (1-m2NU)/deltaNU^2-m2NU; % a2NU > 0
-                    b2NU = a2NU/m2NU-a2NU; % b2NU > 0
-                end
+                aE = 1/deltaE^2; % aE > 2
+                bE = E/aE; % 0 < bE = E/aE < E/2 since E > 0 and aE > 2
+                m2NU = 2*NU; % 0 < m2NU < 1
+                a2NU = (1-m2NU)/deltaNU^2-m2NU; % a2NU > 0
+                b2NU = a2NU/m2NU-a2NU; % b2NU > 0
                 if deltaE && deltaNU
                     nU = 2;
                 else

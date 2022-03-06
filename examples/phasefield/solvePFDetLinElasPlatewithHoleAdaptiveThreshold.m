@@ -301,15 +301,11 @@ while ti < tf
                 if deltaE>=1/sqrt(2)
                     error(['Coefficient of variation for Young modulus must be < 1/sqrt(2) = ' num2str(1/sqrt(2))]);
                 end
-                if deltaE
-                    aE = 1/deltaE^2; % aE > 2
-                    bE = E/aE; % 0 < bE = E/aE < E/2 since E > 0 and aE > 2
-                end
-                if deltaNU
-                    m2NU = 2*NU; % 0 < m2NU < 1
-                    a2NU = (1-m2NU)/deltaNU^2-m2NU; % a2NU > 0
-                    b2NU = a2NU/m2NU-a2NU; % b2NU > 0
-                end
+                aE = 1/deltaE^2; % aE > 2
+                bE = E/aE; % 0 < bE = E/aE < E/2 since E > 0 and aE > 2
+                m2NU = 2*NU; % 0 < m2NU < 1
+                a2NU = (1-m2NU)/deltaNU^2-m2NU; % a2NU > 0
+                b2NU = a2NU/m2NU-a2NU; % b2NU > 0
                 if deltaE && deltaNU
                     E = gaminv(normcdf(Xi(:,1)),aE,bE); % sample for Young modulus [Pa]
                     NU = betainv(normcdf(Xi(:,2)),a2NU,b2NU)/2; % sample for Poisson ratio
