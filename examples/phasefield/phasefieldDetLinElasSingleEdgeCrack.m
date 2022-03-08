@@ -58,7 +58,7 @@ end
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {epsc'};
 renderer = 'OpenGL';
 
 %% Problem
@@ -632,9 +632,9 @@ if makeMovie
     framerate = 80;
     
     evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
-    for i=1:Dim
-        evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
-    end
+    % for i=1:Dim
+    %     evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
+    % end
     
     % for i=1:(Dim*(Dim+1)/2)
     %     evolSolution(S,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});

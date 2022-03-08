@@ -37,7 +37,7 @@ end
 
 if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode')
     optimFun = 'lsqlin'; % 'lsqlin' or 'lsqnonlin' or 'fmincon'
-    % optimFun = 'lsqlin';
+    % optimFun = 'lsqnonlin';
     % optimFun = 'fmincon';
 
     displayoptim = 'off';

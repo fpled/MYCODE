@@ -28,7 +28,7 @@ end
 
 if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode')
     optimFun = 'lsqlin'; % 'lsqlin' or 'lsqnonlin' or 'fmincon'
-    % optimFun = 'lsqlin';
+    % optimFun = 'lsqnonlin';
     % optimFun = 'fmincon';
 
     displayoptim = 'off';
@@ -118,22 +118,18 @@ while ti < tf
         case {'historyfieldelem','historyfieldnode'}
             d = A_phase\b_phase;
         otherwise
-            if i==1
-                d = A_phase\b_phase;
-            else
-                d0 = freevector(S_phase,d);
-                lb = d0;
-                ub = ones(size(d0));
-                switch optimFun
-                    case 'lsqlin'
-                        [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
-                    case 'lsqnonlin'
-                        fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-                        [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
-                    case 'fmincon'
-                        fun = @(d) funoptimPF(d,A_phase,b_phase);
-                        [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
-                end
+            d0 = freevector(S_phase,d);
+            lb = d0;
+            ub = ones(size(d0));
+            switch optimFun
+                case 'lsqlin'
+                    [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                case 'lsqnonlin'
+                    fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
+                    [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
+                case 'fmincon'
+                    fun = @(d) funoptimPF(d,A_phase,b_phase);
+                    [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
             end
     end
     if any(d > dthreshold)

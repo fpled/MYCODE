@@ -66,7 +66,7 @@ end
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc'};
 renderer = 'OpenGL';
 
 %% Problem
@@ -521,16 +521,16 @@ if makeMovie
     
     dk = TIMEMATRIX(reshape(dt_mean(:,:),sz_d),T);
     dk_var = TIMEMATRIX(reshape(dt_var(:,:),sz_d),T);
-    uk = TIMEMATRIX(reshape(ut_mean(:,:),sz_u),T);
-    uk_var = TIMEMATRIX(reshape(ut_var(:,:),sz_u),T);
+    % uk = TIMEMATRIX(reshape(ut_mean(:,:),sz_u),T);
+    % uk_var = TIMEMATRIX(reshape(ut_var(:,:),sz_u),T);
     
     evolSolution(S_phase,dk,'FrameRate',framerate,'filename','damage_mean','pathname',pathname,options{:});
     evolSolution(S_phase,dk_var,'FrameRate',framerate,'filename','damage_var','pathname',pathname,options{:});
-    for i=1:Dim
-        evolSolution(S,uk,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_mean'],'pathname',pathname,options{:});
-        evolSolution(S,uk_var,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_var'],'pathname',pathname,options{:});
-    end
-    
+    % for i=1:Dim
+    %     evolSolution(S,uk,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_mean'],'pathname',pathname,options{:});
+    %     evolSolution(S,uk_var,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_var'],'pathname',pathname,options{:});
+    % end
+    %
     % for i=1:(Dim*(Dim+1)/2)
     %     evolSolution(S,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i) '_mean'],'pathname',pathname,options{:});
     %     evolSolution(S,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i) '_mean'],'pathname',pathname,options{:});
@@ -542,13 +542,13 @@ if makeMovie
 
     for k=1:size(dt_sample,1)
         dk = TIMEMATRIX(reshape(dt_sample(k,:,:),sz_d),T);
-        uk = TIMEMATRIX(reshape(ut_sample(k,:,:),sz_u),T);
+        % uk = TIMEMATRIX(reshape(ut_sample(k,:,:),sz_u),T);
         
         evolSolution(S_phase,dk,'FrameRate',framerate,'filename',['damage_sample_' num2str(k)],'pathname',pathname,options{:});
-        for i=1:Dim
-            evolSolution(S,uk,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
-        end
-        
+        % for i=1:Dim
+        %     evolSolution(S,uk,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
+        % end
+        %
         % for i=1:(Dim*(Dim+1)/2)
         %     evolSolution(S,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
         %     evolSolution(S,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
