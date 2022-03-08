@@ -119,6 +119,9 @@ if setProblem
     if test
         clD = 0.2*unit;
         cl = 0.025*unit;
+    else
+        clD = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clD);
+        cl = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,cl);
     end
     clC = cl; % characteristic length for edge crack/notch
     clH = cl; % characteristic length for circular holes

@@ -22,10 +22,19 @@ test = true; % coarse mesh
 % test = false; % fine mesh
 
 Dim = 2; % space dimension Dim = 2
+symmetry = 'Isotropic'; % 'Isotropic' or 'Anisotropic'. Material symmetry
+ang = 30; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 
-filename = ['phasefieldDetLinElasPlatewithHole' PFmodel PFsolver];
+switch lower(symmetry)
+    case 'isotropic' % isotropic material
+        filename = ['phasefieldDetLinElas' symmetry 'PlatewithHole' loading PFmodel PFsolver '_' num2str(Dim) 'D'];
+    case 'anisotropic' % anisotropic material
+        filename = ['phasefieldDetLinElas' symmetry num2str(ang) 'deg' 'PlatewithHole' loading PFmodel PFsolver '_' num2str(Dim) 'D'];
+    otherwise
+        error('Wrong material symmetry class');
+end
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -93,10 +102,20 @@ if setProblem
     
     %% Phase field problem
     %% Material
-    % Critical energy release rate (or fracture toughness)
-    gc = 1.4; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-    % Regularization parameter (width of the smeared crack)
-    l = 0.12e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    switch lower(symmetry)
+        case 'isotropic' % isotropic material
+            % Critical energy release rate (or fracture toughness)
+            gc = 1.4; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            % Regularization parameter (width of the smeared crack)
+            l = 0.12e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+        case 'anisotropic' % anisotropic material
+            % Critical energy release rate (or fracture toughness)
+            gc = 10e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            % Regularization parameter (width of the smeared crack)
+            l = 8.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+        otherwise
+            error('Wrong material symmetry class');
+    end
     % Small artificial residual stiffness
     k = 1e-10;
     % Internal energy
@@ -135,9 +154,40 @@ if setProblem
     % Option
     option = 'DEFO'; % plane strain [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     % option = 'CONT'; % plane stress [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-    % Young modulus and Poisson ratio
-    E = 12e9; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-    NU = 0.3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    switch lower(symmetry)
+        case 'isotropic' % isotropic material
+            % Lame coefficients
+            % Young modulus and Poisson ratio
+            E = 12e9; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            NU = 0.3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+        case 'anisotropic' % anisotropic material
+            if Dim==2
+                switch lower(option)
+                    case 'defo'
+                        % [Nguyen, Yvonnet, Waldmann, He, 2020,IJNME]
+                        % Elasticity matrix in reference material coordinate system [Pa]
+                        Cmat = e*...
+                            [65 20 0;
+                            20 260 0;
+                            0 0 30]*1e9;
+                        theta = deg2rad(ang); % clockwise material orientation angle around z-axis [rad]
+                        c = cos(theta);
+                        s = sin(theta);
+                        % Transition matrix for elasticity matrix from material coordinate system to global coordinate system
+                        P = [c^2 s^2 -c*s;
+                            s^2 c^2 c*s;
+                            2*c*s -2*c*s c^2-s^2];
+                        % Elasticity matrix in global coordinate system [Pa]
+                        Cmat = P'*Cmat*P;
+                    case 'cont'
+                        error('Not implemented yet');
+                end
+            elseif Dim==3
+                error('Not implemented yet');
+            end
+        otherwise
+            error('Wrong material symmetry class');
+    end
     % Energetic degradation function
     g = @(d) (1-d).^2;
     % Density
@@ -145,7 +195,14 @@ if setProblem
     
     % Material
     d = calc_init_dirichlet(S_phase);
-    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+    switch lower(symmetry)
+        case 'isotropic' % isotropic material
+            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+        case 'anisotropic' % anisotropic material
+            mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+        otherwise
+            error('Wrong material symmetry class');
+    end
     mat = setnumber(mat,1);
     S = setoption(S,option);
     S = setmaterial(S,mat);
@@ -219,9 +276,9 @@ if setProblem
     T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','symmetry','ang');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','symmetry','ang');
 end
 
 %% Solution
@@ -255,6 +312,10 @@ end
 %% Outputs
 fprintf('\n');
 fprintf('dim      = %d\n',Dim);
+fprintf('mat sym  = %s\n',symmetry);
+if strcmpi(symmetry,'anisotropic')
+    fprintf('angle    = %g deg\n',ang);
+end
 fprintf('PF model = %s\n',PFmodel);
 fprintf('PF solver = %s\n',PFsolver);
 fprintf('nb elements = %g\n',getnbelem(S));
