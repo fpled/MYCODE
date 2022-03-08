@@ -2,7 +2,7 @@
 %  Plate with a central circular hole under compression                 %%
 %%----------------------------------------------------------------------%%
 % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS] (experimental tests)
-% [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF] ()
+% [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF] (anisotropic phase field model of Miehe et al.)
 % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase field model of Nguyen et al.)
 
 % clc

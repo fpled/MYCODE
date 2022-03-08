@@ -36,7 +36,8 @@ else
 end
 
 if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode')
-    optimFun = 'lsqnonlin'; % 'fmincon' or 'lsqnonlin'
+    optimFun = 'lsqlin'; % 'lsqlin' or 'lsqnonlin' or 'fmincon'
+    % optimFun = 'lsqlin';
     % optimFun = 'fmincon';
 
     displayoptim = 'off';
@@ -50,7 +51,7 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     % maxFunEvals = Inf; % maximum number of function evaluations
 
     % optimAlgo = 'interior-point';
-    % optimAlgo = 'trust-region-reflective';
+    optimAlgo = 'trust-region-reflective';
     % optimAlgo = 'sqp';
     % optimAlgo = 'active-set';
     % optimAlgo = 'levenberg-marquardt';
@@ -59,8 +60,9 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     %     'OptimalityTolerance',tolFun...%,'MaxFunctionEvaluations',maxFunEvals...%,'Algorithm',optimAlgo...
     %     ,'SpecifyObjectiveGradient',true...
     %     );
-    options  = optimoptions(optimFun,'Display',displayoptim,...%'MaxFunctionEvaluations',maxFunEvals,
-        'SpecifyObjectiveGradient',true);
+    % options  = optimoptions(optimFun,'Display',displayoptim,...
+    %     'SpecifyObjectiveGradient',true);
+    options = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo);
 end
 
 if display_
@@ -125,20 +127,18 @@ for i=1:length(T)
         case {'historyfieldelem','historyfieldnode'}
             d = A_phase\b_phase;
         otherwise
-            if i==1
-                d = A_phase\b_phase;
-            else
-                d0 = freevector(S_phase,d);
-                lb = d0;
-                ub = ones(size(d0));
-                switch optimFun
-                    case 'lsqnonlin'
-                        fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-                        [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
-                    case 'fmincon'
-                        fun = @(d) funoptimPF(d,A_phase,b_phase);
-                        [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
-                end
+            d0 = freevector(S_phase,d);
+            lb = d0;
+            ub = ones(size(d0));
+            switch optimFun
+                case 'lsqlin'
+                    [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                case 'lsqnonlin'
+                    fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
+                    [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
+                case 'fmincon'
+                    fun = @(d) funoptimPF(d,A_phase,b_phase);
+                    [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
             end
     end
     d = unfreevector(S_phase,d);

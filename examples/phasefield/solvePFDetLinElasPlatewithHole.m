@@ -26,7 +26,8 @@ else
 end
 
 if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode')
-    optimFun = 'lsqnonlin'; % 'fmincon' or 'lsqnonlin'
+    optimFun = 'lsqlin'; % 'lsqlin' or 'lsqnonlin' or 'fmincon'
+    % optimFun = 'lsqlin';
     % optimFun = 'fmincon';
 
     displayoptim = 'off';
@@ -35,12 +36,12 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     % displayoptim = 'final';
     % displayoptim = 'final-detailed';
 
-    tolX = 1e-9; % tolerance on the parameter value
-    tolFun = 1e-9; % tolerance on the function value
+    % tolX = 1e-6; % tolerance on the parameter value
+    % tolFun = 1e-6; % tolerance on the function value
     % maxFunEvals = Inf; % maximum number of function evaluations
 
     % optimAlgo = 'interior-point';
-    % optimAlgo = 'trust-region-reflective';
+    optimAlgo = 'trust-region-reflective';
     % optimAlgo = 'sqp';
     % optimAlgo = 'active-set';
     % optimAlgo = 'levenberg-marquardt';
@@ -49,8 +50,9 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     %     'OptimalityTolerance',tolFun...%,'MaxFunctionEvaluations',maxFunEvals...%,'Algorithm',optimAlgo...
     %     ,'SpecifyObjectiveGradient',true...
     %     );
-    options  = optimoptions(optimFun,'Display',displayoptim,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
-        'SpecifyObjectiveGradient',true);
+    % options  = optimoptions(optimFun,'Display',displayoptim,...
+    %     'SpecifyObjectiveGradient',true);
+    options = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo);
 end
 
 if display_
@@ -118,6 +120,8 @@ for i=1:length(T)
                 lb = d0;
                 ub = ones(size(d0));
                 switch optimFun
+                    case 'lsqlin'
+                        [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
                     case 'lsqnonlin'
                         fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
                         [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
