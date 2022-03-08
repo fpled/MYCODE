@@ -58,7 +58,7 @@ end
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-formats = {epsc'};
+formats = {'epsc'};
 renderer = 'OpenGL';
 
 %% Problem
