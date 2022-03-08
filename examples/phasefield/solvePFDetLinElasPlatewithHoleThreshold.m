@@ -73,7 +73,7 @@ end
 i = 0;
 ti = 0;
 dti = dt0;
-while ti < tf
+while ti <= tf
     i = i+1;
     
     % Internal energy field

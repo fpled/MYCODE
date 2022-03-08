@@ -435,10 +435,10 @@ if setProblem
                         dt1 = 2e-8;
                         nt1 = 600;
                         if test
-                            dt0 = 6e-7;
-                            nt0 = 20;
-                            dt1 = 2e-7;
-                            nt1 = 50;
+                            dt0 = 24e-8;
+                            nt0 = 50;
+                            dt1 = 6e-8;
+                            nt1 = 200;
                         end
                         
                     case 'shear'
@@ -449,8 +449,8 @@ if setProblem
                         dt1 = 2e-8;
                         nt1 = 2000;
                         if test
-                            dt0 = 1e-6;
-                            nt0 = 20;
+                            dt0 = 4e-7;
+                            nt0 = 50;
                             dt1 = 2e-7;
                             nt1 = 200;
                         end
