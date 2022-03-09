@@ -293,7 +293,7 @@ if solveProblem
     tTotal = tic;
     
     nbSamples = 1;
-    fun = @(S_phase,S,filename) solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,...
+    fun = @(S_phase,S,filename) solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,...
         'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
     [ft,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_domain_asymmetric_notched_plate','pathname',pathname,'nbsamples',nbSamples);
     [fmax,idmax] = max(ft,[],2);

@@ -1,4 +1,4 @@
-function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
+function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,BU,BL,BR,PU,PL,PR,varargin)
 % function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
 % Solve deterministic Phase Field problem.
 
@@ -129,6 +129,15 @@ for i=1:length(T)
     % dinc = d - d_old;
     % dincmin = min(dinc); if dincmin<-tol, dincmin, end
     
+    S_phase = removebc(S_phase);
+    numnodes = find(d>=1);
+    if ~isempty(numnodes)
+        S_phase = addcl(S_phase,numnodes,'T',1);
+    end
+    S_phase = addcl(S_phase,BU,'T');
+    S_phase = addcl(S_phase,BL,'T');
+    S_phase = addcl(S_phase,BR,'T');
+
     % Displacement field
     mats = MATERIALS(S);
     for m=1:length(mats)

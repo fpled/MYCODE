@@ -265,7 +265,7 @@ if solveProblem
     tTotal = tic;
     
     nbSamples = 1;
-    fun = @(S_phase,S) solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,'display');
+    fun = @(S_phase,S) solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,BU,BL,BR,PU,PL,PR,'display');
     [ft,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);

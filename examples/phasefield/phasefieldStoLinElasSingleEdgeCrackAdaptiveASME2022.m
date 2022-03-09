@@ -510,7 +510,7 @@ if solveProblem
     tTotal = tic;
     
     nbSamples = 1;
-    fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
+    fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
         'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
     [ft,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'nbsamples',nbSamples);
     [fmax,idmax] = max(ft,[],2);

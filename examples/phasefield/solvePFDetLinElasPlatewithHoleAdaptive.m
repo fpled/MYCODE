@@ -128,21 +128,17 @@ for i=1:length(T)
             d = A_phase\b_phase;
         otherwise
             d0 = freevector(S_phase,d);
+            lb = d0;
             ub = ones(size(d0));
-            if isequal(d0,ub)
-                d = d0;
-            else
-                lb = d0;
-                switch optimFun
-                    case 'lsqlin'
-                        [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
-                    case 'lsqnonlin'
-                        fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-                        [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
-                    case 'fmincon'
-                        fun = @(d) funoptimPF(d,A_phase,b_phase);
-                        [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
-                end
+            switch optimFun
+                case 'lsqlin'
+                    [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                case 'lsqnonlin'
+                    fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
+                    [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
+                case 'fmincon'
+                    fun = @(d) funoptimPF(d,A_phase,b_phase);
+                    [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
             end
     end
     d = unfreevector(S_phase,d);
@@ -224,6 +220,11 @@ for i=1:length(T)
     % d_old = P_phase'*d_old;
     % dinc = d - d_old;
     % dincmin = min(dinc); if dincmin<-tol, dincmin, end
+    
+    numnodes = find(d>=1);
+    if ~isempty(numnodes)
+        S_phase = addcl(S_phase,numnodes,'T',1);
+    end
     
     if strcmpi(PFsolver,'historyfieldnode')
         h = P_phase'*h;

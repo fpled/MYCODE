@@ -121,21 +121,17 @@ while ti < tf
             d = A_phase\b_phase;
         otherwise
             d0 = freevector(S_phase,d);
+            lb = d0;
             ub = ones(size(d0));
-            if isequal(d0,ub)
-                d = d0;
-            else
-                lb = d0;
-                switch optimFun
-                    case 'lsqlin'
-                        [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
-                    case 'lsqnonlin'
-                        fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-                        [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
-                    case 'fmincon'
-                        fun = @(d) funoptimPF(d,A_phase,b_phase);
-                        [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
-                end
+            switch optimFun
+                case 'lsqlin'
+                    [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                case 'lsqnonlin'
+                    fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
+                    [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
+                case 'fmincon'
+                    fun = @(d) funoptimPF(d,A_phase,b_phase);
+                    [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
             end
     end
     if any(d > dthreshold)
@@ -146,6 +142,12 @@ while ti < tf
     d = unfreevector(S_phase,d);
     % dinc = d - d_old;
     % dincmin = min(dinc); if dincmin<-tol, dincmin, end
+    
+    S_phase = removebc(S_phase);
+    numnodes = find(d>=1);
+    if ~isempty(numnodes)
+        S_phase = addcl(S_phase,numnodes,'T',1);
+    end
     
     % Displacement field
     mats = MATERIALS(S);

@@ -1,5 +1,5 @@
-function [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
-% function [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+function [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+% function [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
 % Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);
@@ -128,21 +128,17 @@ for i=1:length(T)
             d = A_phase\b_phase;
         otherwise
             d0 = freevector(S_phase,d);
+            lb = d0;
             ub = ones(size(d0));
-            if isequal(d0,ub)
-                d = d0;
-            else
-                lb = d0;
-                switch optimFun
-                    case 'lsqlin'
-                        [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
-                    case 'lsqnonlin'
-                        fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-                        [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
-                    case 'fmincon'
-                        fun = @(d) funoptimPF(d,A_phase,b_phase);
-                        [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
-                end
+            switch optimFun
+                case 'lsqlin'
+                    [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                case 'lsqnonlin'
+                    fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
+                    [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
+                case 'fmincon'
+                    fun = @(d) funoptimPF(d,A_phase,b_phase);
+                    [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
             end
     end
     d = unfreevector(S_phase,d);
@@ -214,7 +210,6 @@ for i=1:length(T)
         S_phase = setmaterial(S_phase,mats_phase{m},m);
     end
     S_phase = final(S_phase);
-    S_phase = addcl(S_phase,C,'T',1);
     
     % Update fields
     P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
@@ -223,6 +218,11 @@ for i=1:length(T)
     % dinc = d - d_old;
     % dincmin = min(dinc); if dincmin<-tol, dincmin, end
     
+    numnodes = find(d>=1);
+    if ~isempty(numnodes)
+        S_phase = addcl(S_phase,numnodes,'T',1);
+    end
+
     if strcmpi(PFsolver,'historyfieldnode')
         h = P_phase'*h;
         H = setvalue(H,h);

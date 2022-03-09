@@ -248,9 +248,9 @@ if solveProblem
     
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,'display');
+            [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,BU,BL,BR,PU,PL,PR,'display');
         otherwise
-            [dt,ut,ft] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,'display');
+            [dt,ut,ft] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,BU,BL,BR,PU,PL,PR,'display');
     end
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);
