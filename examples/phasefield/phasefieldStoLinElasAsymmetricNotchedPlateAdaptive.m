@@ -125,8 +125,7 @@ if setProblem
     end
     clC = cl; % characteristic length for edge crack/notch
     clH = cl; % characteristic length for circular holes
-    c = clC; % crack width
-    S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),2,'gmshoptions',gmshoptions);
+    S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'));
     
     sizemap = @(d) (clC-clD)*d+clD;
     % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
@@ -152,8 +151,7 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    % C = LIGNE([-b,-h],[-b,-h+a]);
-    C = DOMAIN(2,[-b-c/2,-h]-[c/10,c/10],[-b+c/2,-h+a]+[c/10,c/10]);
+    C = LIGNE([-b,-h],[-b,-h+a]);
     R = 2*unit;
     BU = CIRCLE(0.0,h,R);
     BL = CIRCLE(-ls,-h,R);
@@ -162,7 +160,7 @@ if setProblem
     H2 = CIRCLE(-lh,h-ph-dh,r);
     H3 = CIRCLE(-lh,h-ph,r);
     
-    S_phase = final(S_phase,'duplicate');
+    S_phase = final(S_phase);
     S_phase = addcl(S_phase,C,'T',1);
     S_phase = addcl(S_phase,BU,'T');
     S_phase = addcl(S_phase,BL,'T');
@@ -177,7 +175,7 @@ if setProblem
     S = S_phase;
     
     S_phase = setmaterial(S_phase,mat_phase);
-    S_phase = final(S_phase,'duplicate');
+    S_phase = final(S_phase);
     S_phase = addcl(S_phase,C,'T',1);
     S_phase = addcl(S_phase,BU,'T');
     S_phase = addcl(S_phase,BL,'T');
@@ -245,7 +243,7 @@ if setProblem
     PL = POINT([-ls,-h]);
     PR = POINT([ls,-h]);
     
-    S = final(S,'duplicate');
+    S = final(S);
     
     ud = 0;
     S = addcl(S,PU,'UY',ud);
@@ -294,7 +292,7 @@ if solveProblem
     %% Solution
     tTotal = tic;
     
-    nbSamples = 2;
+    nbSamples = 1;
     fun = @(S_phase,S,filename) solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,...
         'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
     [ft,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_domain_asymmetric_notched_plate','pathname',pathname,'nbsamples',nbSamples);

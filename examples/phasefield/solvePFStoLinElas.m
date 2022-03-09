@@ -213,27 +213,27 @@ parfor i=1:N
                 mats{m} = setparam(mats{m},'E',E);
                 mats{m} = setparam(mats{m},'NU',NU);
             elseif isa(mat,'ELAS_ANISOT') % anisotropic material
-                C = evalparam(mat,'C',elem,xnode,xgauss); % mean elasticity matrix
+                Cmat = evalparam(mat,'C',elem,xnode,xgauss); % mean elasticity matrix
                 delta = getparam(mat,'delta'); % coefficient of variation for elasticity matrix/field
-                mL = chol(C); % upper triangular matrix of the Cholesky factor of mean elasticity matrix
-                n = size(C,1);
+                mL = chol(Cmat); % upper triangular matrix of the Cholesky factor of mean elasticity matrix
+                n = size(Cmat,1);
                 if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
                     lcorr = getparam(mat,'lcorr'); % spatial correlation length
                     x = calc_x(elem,xnode,xgauss);
                     x = getcoord(NODE(POINT(x(:,:,:))));
                     Xi = shinozukaSample(si,x,lcorr,n*(n+1)/2); % sample for multivariate Gaussian random field with statistically independent normalized Gaussian components
-                    C = randAnisotElasField(delta,mL,shiftdim(Xi,1)); % sample for non-Gaussian random elasticity field
-                    C = C(:,:,:); % n-by-n-by-nx array
-                    C = reshape(C,n,n,nbelem,gauss.nbgauss);
-                    C = MYDOUBLEND(C);
+                    Cmat = randAnisotElasField(delta,mL,shiftdim(Xi,1)); % sample for non-Gaussian random elasticity field
+                    Cmat = Cmat(:,:,:); % n-by-n-by-nx array
+                    Cmat = reshape(Cmat,n,n,nbelem,gauss.nbgauss);
+                    Cmat = MYDOUBLEND(Cmat);
                     syscoordgauss = getsyscoordlocal(elem);
                     fieldddl = DDL(DDLTENS4('C',syscoordgauss));
-                    C = FEELEMFIELD({C},'storage','gauss','type','scalar','ddl',fieldddl);
+                    Cmat = FEELEMFIELD({Cmat},'storage','gauss','type','scalar','ddl',fieldddl);
                 else % random matrix model
                     Xi = randn(si,n*(n+1)/2,1); % sample for multivariate Gaussian random variable with statistically independent normalized Gaussian components
-                    C = randAnisotElasMatrix(delta,mL,Xi); % sample for non-Gaussian random elasticity matrix
+                    Cmat = randAnisotElasMatrix(delta,mL,Xi); % sample for non-Gaussian random elasticity matrix
                 end
-                mats{m} = setparam(mats{m},'C',C);
+                mats{m} = setparam(mats{m},'C',Cmat);
             else
                 error('Wrong material symmetry class');
             end

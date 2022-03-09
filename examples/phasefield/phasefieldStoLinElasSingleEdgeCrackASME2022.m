@@ -28,7 +28,7 @@ saveParaview = true;
 
 % test = true; % coarse mesh
 test = false; % fine mesh
-numWorkers = 100;
+numWorkers = 96;
 % numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 
 % Deterministic model parameters
@@ -40,7 +40,7 @@ PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMieh
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 
 % Random model parameters
-N = 100; % number of samples
+N = 96; % number of samples
 % N = numWorkers;
 coeff_gc = 1.0;
 randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
@@ -130,7 +130,7 @@ if setProblem
             clC = 2e-5;
         end
     end
-    S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+    S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate');
     S = S_phase;
     
     %% Phase field problem

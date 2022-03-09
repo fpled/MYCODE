@@ -137,8 +137,7 @@ if setProblem
         clD = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clD);
         clC = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clC);
     end
-    c = clC; % crack width
-    S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
+    S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
     
     sizemap = @(d) (clC-clD)*d+clD;
     % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
@@ -177,12 +176,7 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    if Dim==2
-        C = DOMAIN(2,[0.0,L/2-c/2]-[eps,eps],[a,L/2+c/2]+[eps,eps]);
-    elseif Dim==3
-        C = DOMAIN(3,[0.0,L/2-c/2,0.0]-[eps,eps,eps],[a,L/2+c/2,e]+[eps,eps,eps]);
-    end
-    S_phase = final(S_phase,'duplicate');
+    S_phase = final(S_phase);
     S_phase = addcl(S_phase,C,'T',1);
     
     d = calc_init_dirichlet(S_phase);
@@ -191,7 +185,7 @@ if setProblem
     S = S_phase;
     
     S_phase = setmaterial(S_phase,mat_phase);
-    S_phase = final(S_phase,'duplicate');
+    S_phase = final(S_phase);
     S_phase = addcl(S_phase,C,'T',1);
     
     %% Stiffness matrices and sollicitation vectors
@@ -325,7 +319,7 @@ if setProblem
         BBack = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
     end
     
-    S = final(S,'duplicate');
+    S = final(S);
     
     ud = 0;
     switch lower(loading)
@@ -512,7 +506,7 @@ if solveProblem
     %% Solution
     tTotal = tic;
     
-    nbSamples = 2;
+    nbSamples = 1;
     fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
         'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
     [ft,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'nbsamples',nbSamples);
@@ -597,12 +591,7 @@ if displayModel
     [t,rep] = gettevol(T);
     
     %% Display domains, boundary conditions and meshes
-    figure('Name','Domain')
-    clf
-    plot(D,'FaceColor',getfacecolor(1));
-    plot(C,'FaceColor','w');
-    axis image
-    axis off
+    plotDomain({D,C},'legend',false);
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     

@@ -36,7 +36,7 @@ if setProblem
     option = 'DEFO'; % plane strain
     clD = 0.25;
     clB = 0.05;
-    S = gmshdomainwithedgecrack(D,B,clD,clB,fullfile(pathname,'gmsh_domain_edge_crack'));
+    S = gmshdomainwithedgecrack(D,B,clD,clB,fullfile(pathname,'gmsh_domain_edge_crack'),getindim(D),'duplicate');
     S = setoption(S,option);
     
     %% Materials

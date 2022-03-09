@@ -180,13 +180,13 @@ parfor i=1:N
                     mats{m} = setparam(mats{m},'E',E);
                     mats{m} = setparam(mats{m},'NU',NU);
                 elseif isa(mat,'ELAS_ANISOT') % anisotropic material
-                    C = evalparam(mat,'C',elem,xnode,xgauss); % mean elasticity matrix
+                    Cmat = evalparam(mat,'C',elem,xnode,xgauss); % mean elasticity matrix
                     delta = getparam(mat,'delta'); % coefficient of variation for elasticity matrix
-                    mL = chol(C); % upper triangular matrix of the Cholesky factor of mean elasticity matrix
-                    n = size(C,1);
+                    mL = chol(Cmat); % upper triangular matrix of the Cholesky factor of mean elasticity matrix
+                    n = size(Cmat,1);
                     Xi = randn(si,n*(n+1)/2,1); % sample for multivariate Gaussian random variable with statistically independent normalized Gaussian components
-                    C = randAnisotElasMatrix(delta,mL,Xi); % sample for non-Gaussian random elasticity matrix
-                    mats{m} = setparam(mats{m},'C',C);
+                    Cmat = randAnisotElasMatrix(delta,mL,Xi); % sample for non-Gaussian random elasticity matrix
+                    mats{m} = setparam(mats{m},'C',Cmat);
                 else
                     error('Wrong material symmetry class');
                 end

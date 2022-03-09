@@ -225,7 +225,7 @@ while ti < tf
         end
         S_phase = setmaterial(S_phase,mats_phase{m},m);
     end
-    S_phase = final(S_phase,'duplicate');
+    S_phase = final(S_phase);
     S_phase = addcl(S_phase,C,'T',1);
     
     % Update fields
@@ -329,24 +329,24 @@ while ti < tf
                 mats{m} = setparam(mats{m},'E',E);
                 mats{m} = setparam(mats{m},'NU',NU);
             elseif isa(mat,'ELAS_ANISOT') % anisotropic material
-                C = evalparam(mat,'C',elem,xnode,xgauss); % mean elasticity matrix
+                Cmat = evalparam(mat,'C',elem,xnode,xgauss); % mean elasticity matrix
                 delta = getparam(mat,'delta'); % coefficient of variation for elasticity matrix/field
-                mL = chol(C); % upper triangular matrix of the Cholesky factor of mean elasticity matrix
-                C = randAnisotElasField(delta,mL,shiftdim(Xi,1)); % sample for non-Gaussian random elasticity field
-                C = C(:,:,:); % n-by-n-by-nx array
-                C = reshape(C,n,n,nbelem,gauss.nbgauss);
-                C = MYDOUBLEND(C);
+                mL = chol(Cmat); % upper triangular matrix of the Cholesky factor of mean elasticity matrix
+                Cmat = randAnisotElasField(delta,mL,shiftdim(Xi,1)); % sample for non-Gaussian random elasticity field
+                Cmat = Cmat(:,:,:); % n-by-n-by-nx array
+                Cmat = reshape(Cmat,n,n,nbelem,gauss.nbgauss);
+                Cmat = MYDOUBLEND(Cmat);
                 syscoordgauss = getsyscoordlocal(elem);
                 fieldddl = DDL(DDLTENS4('C',syscoordgauss));
-                C = FEELEMFIELD({C},'storage','gauss','type','scalar','ddl',fieldddl);
-                mats{m} = setparam(mats{m},'C',C);
+                Cmat = FEELEMFIELD({Cmat},'storage','gauss','type','scalar','ddl',fieldddl);
+                mats{m} = setparam(mats{m},'C',Cmat);
             else
                 error('Wrong material symmetry class');
             end
         end
         S = setmaterial(S,mats{m},m);
     end
-    S = final(S,'duplicate');
+    S = final(S);
     ud = ti;
     switch lower(loading)
         case 'tension'
