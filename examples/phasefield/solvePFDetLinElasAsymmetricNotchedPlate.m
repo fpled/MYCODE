@@ -137,7 +137,7 @@ for i=1:length(T)
     S_phase = addcl(S_phase,BU,'T');
     S_phase = addcl(S_phase,BL,'T');
     S_phase = addcl(S_phase,BR,'T');
-
+    
     % Displacement field
     mats = MATERIALS(S);
     for m=1:length(mats)

@@ -222,7 +222,7 @@ for i=1:length(T)
     if ~isempty(numnodes)
         S_phase = addcl(S_phase,numnodes,'T',1);
     end
-
+    
     if strcmpi(PFsolver,'historyfieldnode')
         h = P_phase'*h;
         H = setvalue(H,h);

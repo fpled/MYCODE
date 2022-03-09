@@ -231,7 +231,7 @@ for i=1:length(T)
     S_phase = addcl(S_phase,BU,'T');
     S_phase = addcl(S_phase,BL,'T');
     S_phase = addcl(S_phase,BR,'T');
-
+    
     if strcmpi(PFsolver,'historyfieldnode')
         h = P_phase'*h;
         H = setvalue(H,h);
