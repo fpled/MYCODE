@@ -1,5 +1,5 @@
-function [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
-% function [dt,ut,T,ft,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
+function [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
+% function [dt,ut,T,ft,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
 % Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);
@@ -227,6 +227,10 @@ while ti < tf
         S_phase = setmaterial(S_phase,mats_phase{m},m);
     end
     S_phase = final(S_phase);
+    S_phase = addcl(S_phase,C,'T',1);
+    S_phase = addcl(S_phase,BU,'T');
+    S_phase = addcl(S_phase,BL,'T');
+    S_phase = addcl(S_phase,BR,'T');
     
     % Update fields
     P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
@@ -234,14 +238,6 @@ while ti < tf
     % d_old = P_phase'*d_old;
     % dinc = d - d_old;
     % dincmin = min(dinc); if dincmin<-tol, dincmin, end
-    
-    numnodes = find(d>=1);
-    if ~isempty(numnodes)
-        S_phase = addcl(S_phase,numnodes,'T',1);
-    end
-    S_phase = addcl(S_phase,BU,'T');
-    S_phase = addcl(S_phase,BL,'T');
-    S_phase = addcl(S_phase,BR,'T');
     
     if strcmpi(PFsolver,'historyfieldnode')
         h = P_phase'*h;

@@ -233,11 +233,6 @@ while ti < tf
     % dinc = d - d_old;
     % dincmin = min(dinc); if dincmin<-tol, dincmin, end
     
-    numnodes = find(d>=1);
-    if ~isempty(numnodes)
-        S_phase = addcl(S_phase,numnodes,'T',1);
-    end
-    
     if strcmpi(PFsolver,'historyfieldnode')
         h = P_phase'*h;
         H = setvalue(H,h);

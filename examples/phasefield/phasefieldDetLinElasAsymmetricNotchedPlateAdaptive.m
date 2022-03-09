@@ -107,7 +107,8 @@ if setProblem
     end
     clC = cl; % characteristic length for edge crack/notch
     clH = cl; % characteristic length for circular holes
-    S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'));
+    c = clC; % crack width
+    S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),2,'gmshoptions',gmshoptions);
     
     sizemap = @(d) (clC-clD)*d+clD;
     % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
@@ -133,7 +134,8 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    C = LIGNE([-b,-h],[-b,-h+a]);
+    % C = LIGNE([-b,-h],[-b,-h+a]);
+    C = DOMAIN(2,[-b-c/2,-h]-[c/10,c/10],[-b+c/2,-h+a]+[c/10,c/10]);
     R = 2*unit;
     BU = CIRCLE(0.0,h,R);
     BL = CIRCLE(-ls,-h,R);
@@ -273,10 +275,10 @@ if solveProblem
     
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,...
+            [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,...
                 'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
         otherwise
-            [dt,ut,ft,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,...
+            [dt,ut,ft,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,...
                 'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
     end
     [fmax,idmax] = max(ft,[],2);

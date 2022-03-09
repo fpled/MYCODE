@@ -143,12 +143,6 @@ while ti < tf
     % dinc = d - d_old;
     % dincmin = min(dinc); if dincmin<-tol, dincmin, end
     
-    S_phase = removebc(S_phase);
-    numnodes = find(d>=1);
-    if ~isempty(numnodes)
-        S_phase = addcl(S_phase,numnodes,'T',1);
-    end
-    
     % Displacement field
     mats = MATERIALS(S);
     for m=1:length(mats)
