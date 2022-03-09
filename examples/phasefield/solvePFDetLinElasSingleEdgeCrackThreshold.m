@@ -122,6 +122,7 @@ while ti < tf
         otherwise
             d0 = freevector(S_phase,d);
             lb = d0;
+            lb(lb==1) = 1-eps;
             ub = ones(size(d0));
             switch optimFun
                 case 'lsqlin'
