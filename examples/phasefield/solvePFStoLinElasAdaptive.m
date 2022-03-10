@@ -66,9 +66,8 @@ parfor i=1:N
                 bGc = gc/aGc;
                 aL = 1/deltaL^2;
                 bL = l/aL;
-                if deltaGc && deltaL
-                    nU = 2;
-                else
+                nU = 2;
+                if deltaGc==0 || deltaL==0
                     nU = 1;
                 end
                 Xi = randn(si,1,nU); % sample for bivariate Gaussian random variable with statistically independent normalized Gaussian components
@@ -108,13 +107,10 @@ parfor i=1:N
                 lcorr = getparam(mat,'lcorr'); % spatial correlation length
                 x = calc_x(elem,xnode,xgauss);
                 x = getcoord(NODE(POINT(x(:,:,:))));
+                n = Dim*(Dim+1)/2;
+                nU = n*(n+1)/2; % multivariate Gaussian random field for anisotropic material
                 if isa(mat,'ELAS_ISOT') % almost surely isotropic material
                     nU = 2; % bivariate Gaussian random field
-                elseif isa(mat,'ELAS_ANISOT') % anisotropic material
-                    n = Dim*(Dim+1)/2;
-                    nU = n*(n+1)/2; % multivariate Gaussian random field
-                else
-                    error('Wrong material symmetry class');
                 end
                 [~,~,Z,Phi,k,c] = shinozukaSample(si,x,lcorr,nU); % sample for multivariate Gaussian random field with statistically independent normalized Gaussian components
                 shinozukaMat = @(x) shinozukaFun(x,Z,Phi,k,c);
@@ -163,9 +159,8 @@ parfor i=1:N
                     m2NU = 2*NU; % 0 < m2NU < 1
                     a2NU = (1-m2NU)/deltaNU^2-m2NU; % a2NU > 0
                     b2NU = a2NU/m2NU-a2NU; % b2NU > 0
-                    if deltaE && deltaNU
-                        nU = 2;
-                    else
+                    nU = 2;
+                    if deltaE==0 || deltaNU==0
                         nU = 1;
                     end
                     Xi = randn(si,1,nU); % sample for bivariate Gaussian random variable with statistically independent normalized Gaussian components

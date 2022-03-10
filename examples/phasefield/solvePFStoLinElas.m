@@ -62,9 +62,8 @@ parfor i=1:N
             bGc = gc/aGc;
             aL = 1/deltaL^2;
             bL = l/aL;
-            if deltaGc && deltaL
-                nU = 2;
-            else
+            nU = 2;
+            if deltaGc==0 || deltaL==0
                 nU = 1;
             end
             if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
@@ -177,9 +176,8 @@ parfor i=1:N
                 m2NU = 2*NU; % 0 < m2NU < 1
                 a2NU = (1-m2NU)/deltaNU^2-m2NU; % a2NU > 0
                 b2NU = a2NU/m2NU-a2NU; % b2NU > 0
-                if deltaE && deltaNU
-                    nU = 2;
-                else
+                nU = 2;
+                if deltaE==0 || deltaNU==0
                     nU = 1;
                 end
                 if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
