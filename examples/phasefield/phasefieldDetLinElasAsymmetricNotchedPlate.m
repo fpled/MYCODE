@@ -289,10 +289,6 @@ if displayModel
     [t,rep] = gettevol(T);
     
     %% Display domains, boundary conditions and meshes
-    plotDomain({D,C},'legend',false);
-    mysaveas(pathname,'domain',formats,renderer);
-    mymatlab2tikz(pathname,'domain.tex');
-    
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;
     v = calc_init_dirichlet(S);

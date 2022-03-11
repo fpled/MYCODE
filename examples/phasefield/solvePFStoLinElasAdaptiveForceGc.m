@@ -1,20 +1,16 @@
-function [ft_sample,dt_sample,ut_sample,St_phase_sample,St_sample] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,varargin)
-% function [ft_sample,dt_sample,ut_sample,St_phase_sample,St_sample] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,varargin)
+function [ft_sample,gc_sample] = solvePFStoLinElasAdaptiveForceGc(S_phase,S,T,fun,N,varargin)
+% function [ft_sample,gc_sample] = solvePFStoLinElasAdaptiveForceGc(S_phase,S,T,fun,N,varargin)
 % Solve stochastic Phase Field problem with mesh adaptation.
 
 fun = fcnchk(fun);
 filename = getcharin('filename',varargin,'filename');
 pathname = getcharin('pathname',varargin,'.');
-nbSamples = getcharin('nbsamples',varargin,1);
 
 Dim = getdim(S);
 
 % Initialize samples
 ft_sample = zeros(N,length(T));
-dt_sample = cell(nbSamples,length(T));
-ut_sample = cell(nbSamples,length(T));
-St_phase_sample = cell(nbSamples,length(T));
-St_sample = cell(nbSamples,length(T));
+gc_sample = zeros(N,1);
 % fmax_sample = zeros(N,1);
 
 if ~verLessThan('matlab','9.2') % introduced in R2017a
@@ -30,11 +26,12 @@ parfor i=1:N
         send(q,i);
     end
     si = RandStream.create('mrg32k3a','NumStreams',N,'StreamIndices',i);
-
+    
     % Generate random phase field parameters
     S_phasei = S_phase;
     mats_phase = MATERIALS(S_phase);
     node_phase = getnode(S_phase);
+    gc = 0;
     for m=1:getnbgroupelem(S_phase)
         elem = getgroupelem(S_phase,m);
         mat = getmaterial(elem);
@@ -206,14 +203,9 @@ parfor i=1:N
     dos(command);
 
     % Solve deterministic problem
-    [dt,ut,ft,St_phase,St] = fun(S_phasei,Si,filenamei);
+    ft = fun(S_phasei,Si,filenamei);
     ft_sample(i,:) = ft;
-    if i<=nbSamples
-        dt_sample(i,:) = dt;
-        ut_sample(i,:) = ut;
-        St_phase_sample(i,:) = St_phase;
-        St_sample(i,:) = St;
-    end
+    gc_sample(i,:) = gc;
     % fmax_sample(i) = max(ft);
 end
 textprogressbar(' done');

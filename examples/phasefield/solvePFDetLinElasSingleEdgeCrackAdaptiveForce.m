@@ -1,5 +1,5 @@
-function [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasSingleEdgeCrackAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
-% function [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasSingleEdgeCrackAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+function ft = solvePFDetLinElasSingleEdgeCrackAdaptiveForce(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+% function ft = solvePFDetLinElasSingleEdgeCrackAdaptiveFor(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
 % Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);
@@ -10,25 +10,9 @@ mmgoptions = getcharin('mmgoptions',varargin,'-nomove -v -1');
 
 Dim = getdim(S);
 
-dt0 = T.dt0;
-dt1 = T.dt1;
-tf = T.tf;
-dthreshold = T.dthreshold;
+t = gett(T);
 
-% dt = cell(1,length(T));
-% ut = cell(1,length(T));
-% ft = zeros(1,length(T));
-% if nargout>=5
-%     St_phase = cell(1,length(T));
-% end
-% if nargout>=6
-%     St = cell(1,length(T));
-% end
-% if nargout>=7
-%     Ht = cell(1,length(T));
-% end
-% % dinct = cell(1,length(T)); % increment of phase field
-% % tol = 1e-12;
+ft = zeros(1,length(T));
 
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
@@ -69,20 +53,16 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
 end
 
 if display_
-    fprintf('\n+------+-----------+-----------+----------+----------+------------+------------+\n');
-    fprintf('| Iter |  u [mm]   |  f [kN]   | Nb nodes | Nb elems |  norm(d)   |  norm(u)   |\n');
-    fprintf('+------+-----------+-----------+----------+----------+------------+------------+\n');
-    fprintf('| %4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',0,0,0,getnbnode(S),getnbelem(S),0,0);
+    fprintf('\n+-----------+-----------+-----------+----------+----------+------------+------------+\n');
+    fprintf('|   Iter    |  u [mm]   |  f [kN]   | Nb nodes | Nb elems |  norm(d)   |  norm(u)   |\n');
+    fprintf('+-----------+-----------+-----------+----------+----------+------------+------------+\n');
+    fprintf('| %4d/%4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',0,length(T),0,0,getnbnode(S),getnbelem(S),0,0);
 end
 
 materials_phase = MATERIALS(S_phase);
 materials = MATERIALS(S);
 
-i = 0;
-ti = 0;
-dti = dt0;
-while ti < tf
-    i = i+1;
+for i=1:length(T)
     
     % Internal energy field
     switch lower(PFsolver)
@@ -149,11 +129,6 @@ while ti < tf
                     [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
             end
     end
-    if any(d > dthreshold)
-        dti = dt1;
-    end
-    ti = ti + dti;
-	
     d = unfreevector(S_phase,d);
     
     % Mesh adaptation
@@ -230,7 +205,7 @@ while ti < tf
     end
     S_phase = final(S_phase);
     S_phase = addcl(S_phase,C,'T',1);
-    
+
     % Update fields
     P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
     d = P_phase'*d;
@@ -350,7 +325,7 @@ while ti < tf
         S = setmaterial(S,mats{m},m);
     end
     S = final(S);
-    ud = ti;
+    ud = t(i);
     switch lower(loading)
         case 'tension'
             if Dim==2
@@ -398,34 +373,15 @@ while ti < tf
     f = sum(f);
     
     % Update fields
-    t(i) = ti;
-    dt{i} = d;
-    ut{i} = u;
     ft(i) = f;
-    if nargout>=5
-        St_phase{i} = S_phase;
-    end
-    if nargout>=6
-        St{i} = S;
-    end
-    if nargout>=7
-        if strcmpi(PFsolver,'historyfieldnode')
-            Ht{i} = double(H);
-        else
-            Ht{i} = reshape(double(mean(H,4)),[getnbelem(S),1]);
-        end
-    end
-    % dinct{i} = dinc;
     
     if display_
-        fprintf('| %4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),getnbnode(S),getnbelem(S),norm(dt{i}),norm(ut{i}));
+        fprintf('| %4d/%4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',i,length(T),t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),getnbnode(S),getnbelem(S),norm(d),norm(u));
     end
 end
 
 if display_
-    fprintf('+------+-----------+-----------+----------+----------+------------+------------+\n');
+    fprintf('+-----------+-----------+-----------+----------+----------+------------+------------+\n');
 end
-
-T = TIMEMODEL(t);
 
 end

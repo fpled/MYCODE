@@ -176,16 +176,22 @@ for i=1:length(T)
             l = sqrt(k./r); % mean regularization parameter
             delta = getparam(mat,'delta'); % coefficients of variation for fracture toughness and regularization parameter
             if length(delta)==1
-                deltaGc = delta; % coefficient of variation for fracture toughness
-                deltaL = delta; % coefficient of variation for regularization parameter
+                deltaGc = delta; % 0 <= deltaGc < 1/sqrt(2). coefficient of variation for fracture toughness
+                deltaL = delta; % 0 <= deltaL < 1/sqrt(2). coefficient of variation for regularization parameter
             else
-                deltaGc = delta(1); % coefficient of variation for fracture toughness
-                deltaL = delta(2); % coefficient of variation for regularization parameter
+                deltaGc = delta(1); % 0 <= deltaGc < 1/sqrt(2). coefficient of variation for fracture toughness
+                deltaL = delta(2); % 0 <= deltaL < 1/sqrt(2). coefficient of variation for regularization parameter
             end
-            aGc = 1/deltaGc^2;
-            bGc = gc/aGc;
-            aL = 1/deltaL^2;
-            bL = l/aL;
+            if deltaGc<0 || deltaGc>=1/sqrt(2)
+                error('Coefficient of variation delta = %g for fracture toughness should be between 0 and %g',deltaGc,1/sqrt(2))
+            end
+            if deltaL<0 || deltaL>=1/sqrt(2)
+                error('Coefficient of variation delta = %g for regularization parameter should be between 0 and %g',deltaL,1/sqrt(2))
+            end
+            aGc = 1/deltaGc^2; % aGc > 2
+            bGc = gc/aGc; % 0 < bGc = gc/aGc < gc/2 since gc > 0 and aGc > 2
+            aL = 1/deltaL^2; % aL > 2
+            bL = l/aL; % 0 < bL = l/aL < l/2 since l > 0 and aL > 2
             if deltaGc && deltaL
                 rho = 0;
                 if isparam(mat,'rcorr')
@@ -293,8 +299,8 @@ for i=1:length(T)
                     deltaE = delta(1); % 0 <= deltaE < 1/sqrt(2). coefficient of variation for Young modulus
                     deltaNU = delta(2); % coefficient of variation for Poisson ratio
                 end
-                if deltaE>=1/sqrt(2)
-                    error(['Coefficient of variation for Young modulus must be < 1/sqrt(2) = ' num2str(1/sqrt(2))]);
+                if deltaE<0 || deltaE>=1/sqrt(2)
+                    error(['Coefficient of variation delta = %d for Young modulus should be between 0 and %d',deltaE,1/sqrt(2)]);
                 end
                 aE = 1/deltaE^2; % aE > 2
                 bE = E/aE; % 0 < bE = E/aE < E/2 since E > 0 and aE > 2

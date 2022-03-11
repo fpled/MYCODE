@@ -28,6 +28,7 @@ saveParaview = true;
 
 test = true; % coarse mesh
 % test = false; % fine mesh
+
 numWorkers = 4;
 % numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 

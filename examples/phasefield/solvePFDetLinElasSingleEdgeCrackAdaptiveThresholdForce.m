@@ -1,5 +1,5 @@
-function [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasSingleEdgeCrackAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
-% function [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasSingleEdgeCrackAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+function [ft,T] = solvePFDetLinElasSingleEdgeCrackAdaptiveThresholdForce(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
+% function [ft,T] = solvePFDetLinElasSingleEdgeCrackAdaptiveThresholdForce(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,varargin)
 % Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);
@@ -15,20 +15,7 @@ dt1 = T.dt1;
 tf = T.tf;
 dthreshold = T.dthreshold;
 
-% dt = cell(1,length(T));
-% ut = cell(1,length(T));
 % ft = zeros(1,length(T));
-% if nargout>=5
-%     St_phase = cell(1,length(T));
-% end
-% if nargout>=6
-%     St = cell(1,length(T));
-% end
-% if nargout>=7
-%     Ht = cell(1,length(T));
-% end
-% % dinct = cell(1,length(T)); % increment of phase field
-% % tol = 1e-12;
 
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
@@ -399,26 +386,10 @@ while ti < tf
     
     % Update fields
     t(i) = ti;
-    dt{i} = d;
-    ut{i} = u;
     ft(i) = f;
-    if nargout>=5
-        St_phase{i} = S_phase;
-    end
-    if nargout>=6
-        St{i} = S;
-    end
-    if nargout>=7
-        if strcmpi(PFsolver,'historyfieldnode')
-            Ht{i} = double(H);
-        else
-            Ht{i} = reshape(double(mean(H,4)),[getnbelem(S),1]);
-        end
-    end
-    % dinct{i} = dinc;
     
     if display_
-        fprintf('| %4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),getnbnode(S),getnbelem(S),norm(dt{i}),norm(ut{i}));
+        fprintf('| %4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),getnbnode(S),getnbelem(S),norm(d),norm(u));
     end
 end
 
