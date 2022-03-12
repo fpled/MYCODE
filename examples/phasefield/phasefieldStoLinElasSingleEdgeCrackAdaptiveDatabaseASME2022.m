@@ -23,13 +23,11 @@ setProblem = true;
 solveProblem = true;
 displayModel = false;
 displaySolution = false;
-makeMovie = false;
-saveParaview = true;
 
-test = true; % coarse mesh
-% test = false; % fine mesh
+% test = true; % coarse mesh
+test = false; % fine mesh
 
-numWorkers = 4;
+numWorkers = 112;
 % numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 
 % Deterministic model parameters
@@ -41,7 +39,7 @@ PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMieh
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 
 % Random model parameters
-N = 4; % number of samples
+N = 224; % number of samples
 % N = numWorkers;
 randMat = struct('delta',0.3,'lcorr',1e-4); % random material parameters model
 deltaGc = 0.7;
@@ -601,6 +599,22 @@ fprintf('mean(udmax)   = %g mm\n',udmax_mean*1e3);
 fprintf('std(udmax)    = %g mm\n',udmax_std*1e3);
 fprintf('disp(udmax)   = %g\n',udmax_std/udmax_mean);
 fprintf('%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
+fprintf('\n');
+
+aGc = 1/deltaGc^2; % aGc > 2
+bGc = gc/aGc; % 0 < bGc = gc/aGc < gc/2 since gc > 0 and aGc > 2
+gc_xigam = linspace(min(gc_xi),max(gc_xi),1e3);
+gc_fgam = gampdf(gc_xigam,aGc,bGc);
+gc_cigam = gaminv(probs,aGc,bGc);
+
+fprintf('mean(gc)   = %g N/mm (estimate)\n',gc_mean*1e-3);
+fprintf('           = %g N/mm (exact)\n',gc*1e-3);
+fprintf('std(gc)    = %g N/mm (estimate)\n',gc_std*1e-3);
+fprintf('           = %g N/mm (exact)\n',sqrt(aGc)*bGc*1e-3);
+fprintf('disp(gc)   = %g (estimate)\n',gc_std/gc_mean);
+fprintf('           = %g (exact)\n',deltaGc);
+fprintf('%d%% ci(gc) = [%g,%g] N/mm (estimate)\n',(probs(2)-probs(1))*100,gc_ci(1)*1e-3,gc_ci(2)*1e-3);
+fprintf('           = [%g,%g] N/mm (exact)\n',gc_cigam(1)*1e-3,gc_cigam(2)*1e-3);
 
 %% Display
 if displayModel
@@ -697,7 +711,7 @@ if displaySolution
     set(l,'Interpreter',interpreter)
     mysaveas(pathname,'pdf_udmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_udmax.tex');
-
+    
     %% Display pdf of fracture toughness
     figure('Name','Probability Density Estimate: Fracture toughness')
     clf
@@ -706,13 +720,8 @@ if displaySolution
     ind_gc = find(gc_xi>=gc_ci(1) & gc_xi<gc_ci(2));
     area(gc_xi(ind_gc)*1e-3,gc_f(ind_gc),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
     scatter(gc_mean*1e-3,0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
-    aGc = 1/deltaGc^2; % aGc > 2
-    bGc = gc/aGc; % 0 < bGc = gc/aGc < gc/2 since gc > 0 and aGc > 2
-    gc_xigam = linspace(min(gc_xi),max(gc_xi),1e3)
-    gc_fgam = gampdf(gc_xigam,aGc,bGc);
-    gc_cigam = gaminv(probs,aGc,bGc);
-    ind_gcgam = find(gc_xigam>=gc_cigam(1) & gc_xigam<gc_cigam(2));
     plot(gc_xigam*1e-3,gc_fgam,'-r','LineWidth',linewidth)
+    ind_gcgam = find(gc_xigam>=gc_cigam(1) & gc_xigam<gc_cigam(2));
     area(gc_xigam(ind_gcgam)*1e-3,gc_fgam(ind_gcgam),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
     scatter(gc*1e-3,0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','r')
     hold off
