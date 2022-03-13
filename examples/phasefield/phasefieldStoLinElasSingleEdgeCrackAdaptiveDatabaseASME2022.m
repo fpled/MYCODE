@@ -41,7 +41,7 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 % Random model parameters
 Ntotal = 12e3; % total number of samples
 % N = numWorkers*10; % number of samples
-N = 3*numWorkers;
+N = 5*numWorkers;
 Nstart = 1; % index of first sample for gpumeca02
 % Nstart = 1120+1;
 % Nstart = 2*1120+1;
