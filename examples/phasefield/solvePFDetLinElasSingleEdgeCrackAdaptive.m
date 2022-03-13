@@ -218,7 +218,7 @@ for i=1:length(T)
     end
     S_phase = final(S_phase);
     S_phase = addcl(S_phase,C,'T',1);
-
+    
     % Update fields
     P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
     d = P_phase'*d;

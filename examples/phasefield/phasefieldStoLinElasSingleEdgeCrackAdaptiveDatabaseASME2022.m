@@ -21,13 +21,13 @@ close all
 %% Input data
 setProblem = true;
 solveProblem = true;
-displayModel = false;
-displaySolution = false;
+displayModel = true;
+displaySolution = true;
 
-% test = true; % coarse mesh
-test = false; % fine mesh
+test = true; % coarse mesh
+% test = false; % fine mesh
 
-numWorkers = 112;
+numWorkers = maxNumCompThreads;
 % numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 
 % Deterministic model parameters
@@ -39,8 +39,21 @@ PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMieh
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 
 % Random model parameters
-N = 224; % number of samples
-% N = numWorkers;
+Ntotal = 12e3; % total number of samples
+% N = numWorkers*10; % number of samples
+N = 3*numWorkers;
+Nstart = 1; % index of first sample for gpumeca02
+% Nstart = 1120+1;
+% Nstart = 2*1120+1;
+% Nstart = 3*1120+1; % smeca46
+% Nstart = 3*1120+960+1;
+% Nstart = 3*1120+2*960+1;
+% Nstart = 3*1120+3*960+1; % smeca47
+% Nstart = 3*1120+4*960+1;
+% Nstart = 3*1120+5*960+1;
+% Nstart = 3*1120+6*960+1; % smeca48
+% Nstart = 3*1120+7*960+1;
+% Nstart = 3*1120+8*960+1;
 randMat = struct('delta',0.3,'lcorr',1e-4); % random material parameters model
 deltaGc = 0.7;
 deltaL = 0;
@@ -54,13 +67,13 @@ switch lower(symmetry)
     otherwise
         error('Wrong material symmetry class');
 end
-filename = [filename 'Adaptive_' num2str(Dim) 'D_' num2str(N) 'samples'];
-if any(randMat.delta)
-    filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
-end
-if randPF.delta
-    filename = [filename '_RandPF_Delta' num2str(randPF.delta,'_%g') '_Lcorr' num2str(randPF.lcorr,'_%g') '_Rcorr' num2str(randPF.rcorr,'_%g')];
-end
+filename = [filename 'Adaptive_' num2str(Dim) 'D_' num2str(N) 'samples_from_' num2str(Nstart) '_to_' num2str(Nstart+N-1)];
+% if any(randMat.delta)
+%     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
+% end
+% if any(randPF.delta)
+%     filename = [filename '_RandPF_Delta' num2str(randPF.delta,'_%g') '_Lcorr' num2str(randPF.lcorr,'_%g') '_Rcorr' num2str(randPF.rcorr,'_%g')];
+% end
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -368,18 +381,18 @@ if setProblem
                         % du = 1e-5 mm during the first 500 time steps (up to u = 5e-3 mm)
                         % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
                         dt0 = 1e-8;
-                        nt0 = 500;
+                        % nt0 = 500;
                         dt1 = 1e-9;
-                        nt1 = 1300;
+                        % nt1 = 1300;
                         if test
                             dt0 = 1e-7;
-                            nt0 = 50;
+                            % nt0 = 50;
                             dt1 = 1e-8;
-                            nt1 = 400;
+                            % nt1 = 400;
                         end
-                        t0 = linspace(dt0,nt0*dt0,nt0);
-                        t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                        t = [t0,t1];
+                        % t0 = linspace(dt0,nt0*dt0,nt0);
+                        % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                        % t = [t0,t1];
                         
                         % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
                         % du = 1e-5 mm during 630 time steps (up to u = 6.3e-3 mm)
@@ -403,6 +416,9 @@ if setProblem
                         % t0 = linspace(dt0,nt0*dt0,nt0);
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
+
+                        tf = 6.3e-6;
+                        dthreshold = 0.9;
                     case 'shear'
                         % [Miehe, Welschinger, Hofacker, 2010 IJNME]
                         % du = 1e-4 mm during the first 100 time steps (up to u = 10e-3 mm)
@@ -418,10 +434,16 @@ if setProblem
                         % [Liu, Li, Msekh, Zuo, 2016, CMS]
                         % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
                         % du = 1e-5 mm during the last 1500 time steps (up to u = 20e-3 mm)
-                        % dt0 = 1e-7;
+                        dt0 = 1e-7;
                         % nt0 = 50;
-                        % dt1 = 1e-8;
+                        dt1 = 1e-8;
                         % nt1 = 1500;
+                        if test
+                            dt0 = 5e-7;
+                            % nt0 = 10;
+                            dt1 = 5e-8;
+                            % nt1 = 300;
+                        end
                         % t0 = linspace(dt0,nt0*dt0,nt0);
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
@@ -430,24 +452,36 @@ if setProblem
                         % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM],
                         % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
                         % du = 1e-5 mm during 1500 time steps (up to u = 15e-3 mm)
-                        dt = 1e-8;
-                        nt = 1500;
-                        % nt = 2000;
-                        if test
-                            dt = 5e-8;
-                            % nt = 300;
-                            nt = 400;
-                        end
-                        t = linspace(dt,nt*dt,nt);
+                        % dt = 1e-8;
+                        % nt = 1500;
+                        % % nt = 2000;
+                        % if test
+                        %     dt = 5e-8;
+                        %     % nt = 300;
+                        %     nt = 400;
+                        % end
+                        % t = linspace(dt,nt*dt,nt);
+                        
+                        tf = 20e-6;
+                        dthreshold = 0.9;
                 end
             elseif Dim==3
-                dt = 1e-8;
-                nt = 2500;
+                % dt = 1e-8;
+                % nt = 2500;
+                % if test
+                %     dt = 1e-7;
+                %     nt = 250;
+                % end
+                % t = linspace(dt,nt*dt,nt);
+                
+                dt0 = 1e-7;
+                dt1 = 1e-8;
                 if test
-                    dt = 1e-7;
-                    nt = 250;
+                    dt0 = 5e-7;
+                    dt1 = 5e-8;
                 end
-                t = linspace(dt,nt*dt,nt);
+                tf = 25e-6;
+                dthreshold = 0.9;
             end
             
         case 'anisotropic' % anisotropic material
@@ -458,47 +492,56 @@ if setProblem
                         % du = 6e-5 mm during the first 200 time steps (up to u = 12e-3 mm)
                         % du = 2e-5 mm during the last 600 time steps (up to u = 24e-3 mm)
                         dt0 = 6e-8;
-                        nt0 = 200;
+                        % nt0 = 200;
                         dt1 = 2e-8;
-                        nt1 = 600;
+                        % nt1 = 600;
                         if test
                             dt0 = 24e-8;
-                            nt0 = 50;
+                            % nt0 = 50;
                             dt1 = 6e-8;
-                            nt1 = 200;
+                            % nt1 = 200;
                         end
+                        tf = 24e-6;
+                        dthreshold = 0.9;
                         
                     case 'shear'
                         % du = 1e-4 mm during the first 200 time steps (up to u = 20e-3 mm)
                         % du = 2e-5 mm during the last 2000 time steps (up to u = 60e-3 mm)
                         dt0 = 1e-7;
-                        nt0 = 200;
+                        % nt0 = 200;
                         dt1 = 2e-8;
-                        nt1 = 2000;
+                        % nt1 = 2000;
                         if test
                             dt0 = 4e-7;
-                            nt0 = 50;
+                            % nt0 = 50;
                             dt1 = 2e-7;
-                            nt1 = 200;
+                            % nt1 = 200;
                         end
+                        tf = 60e-6;
+                        dthreshold = 0.9;
                 end
-                t0 = linspace(dt0,nt0*dt0,nt0);
-                t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                t = [t0,t1];
+                % t0 = linspace(dt0,nt0*dt0,nt0);
+                % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                % t = [t0,t1];
                 
             elseif Dim==3
-                dt = 1e-8;
-                nt = 2500;
-                if test
-                    dt = 1e-7;
-                    nt = 250;
-                end
-                t = linspace(dt,nt*dt,nt);
+                % dt = 1e-8;
+                % nt = 2500;
+                % if test
+                %     dt = 1e-7;
+                %     nt = 250;
+                % end
+                % t = linspace(dt,nt*dt,nt);
+                dt0 = 1e-7;
+                dt1 = 1e-8;
+                tf = 25e-6;
+                dthreshold = 0.9;
             end
         otherwise
             error('Wrong material symmetry class');
     end
-    T = TIMEMODEL(t);
+    % T = TIMEMODEL(t);
+    T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang','gc','deltaGc');
@@ -513,23 +556,16 @@ if solveProblem
     %% Solution
     tTotal = tic;
     
-    fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptiveForce(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
+    fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptiveThresholdForce(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
         'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
-    [ft,gct] = solvePFStoLinElasAdaptiveForceGc(S_phase,S,T,fun,N,'filename','gmsh_domain_single_edge_crack','pathname',pathname);
-    [fmax,idmax] = max(ft,[],2);
-    t = gettevol(T);
-    udmax = t(idmax);
-
+    [ft,gc_sample,T_sample,fmax,udmax] = solvePFStoLinElasAdaptiveForceGc(S_phase,S,fun,N,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'initsample',Nstart,'numsamples',Ntotal);
+    
     time = toc(tTotal);
 
     myparallel('stop');
     
     %% Statistical outputs of solution
     probs = [0.025 0.975];
-    
-    ft_mean = mean(ft);
-    ft_std = std(ft);
-    ft_ci = quantile(ft,probs);
     
     fmax_mean = mean(fmax);
     fmax_std = std(fmax);
@@ -539,27 +575,24 @@ if solveProblem
     udmax_std = std(udmax);
     udmax_ci = quantile(udmax,probs);
 
-    gc_mean = mean(gct);
-    gc_std = std(gct);
-    gc_ci = quantile(gct,probs);
+    gc_mean = mean(gc_sample);
+    gc_std = std(gc_sample);
+    gc_ci = quantile(gc_sample,probs);
     
     npts = 100;
     [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'npoints',npts);
     [udmax_f,udmax_xi,udmax_bw] = ksdensity(udmax,'npoints',npts);
-    [gc_f,gc_xi,gc_bw] = ksdensity(gct,'npoints',npts);
+    [gc_f,gc_xi,gc_bw] = ksdensity(gc_sample,'npoints',npts);
     
-
-    save(fullfile(pathname,'solution.mat'),'N','ft','gct',...
-        'ft_mean','ft_std','ft_ci','probs','time',...
+    save(fullfile(pathname,'solution.mat'),'N','ft','T_sample','probs','time',...
         'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
         'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw',...
-        'gc_mean','gc_std','gc_ci','gc_f','gc_xi','gc_bw');
+        'gc_sample','gc_mean','gc_std','gc_ci','gc_f','gc_xi','gc_bw');
 else
-    load(fullfile(pathname,'solution.mat'),'N','ft','gct',...
-        'ft_mean','ft_std','ft_ci','probs','time',...
+    load(fullfile(pathname,'solution.mat'),'N','ft','T_sample','probs','time',...
         'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
         'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw',...
-        'gc_mean','gc_std','gc_ci','gc_f','gc_xi','gc_bw');
+        'gc_sample','gc_mean','gc_std','gc_ci','gc_f','gc_xi','gc_bw');
 end
 
 %% Outputs
@@ -575,8 +608,10 @@ fprintf('PF solver = %s\n',PFsolver);
 fprintf('nb elements = %g (initial)\n',getnbelem(S));
 fprintf('nb nodes    = %g (initial)\n',getnbnode(S));
 fprintf('nb dofs     = %g (initial)\n',getnbddl(S));
-fprintf('nb time dofs = %g\n',getnbtimedof(T));
 fprintf('nb samples = %g\n',N);
+for i=1:N
+    fprintf('nb time dofs = %g for sample #%d\n',getnbtimedof(T_sample{i}),i);
+end
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
@@ -618,8 +653,6 @@ fprintf('           = [%g,%g] N/mm (exact)\n',gc_cigam(1)*1e-3,gc_cigam(2)*1e-3)
 
 %% Display
 if displayModel
-    [t,rep] = gettevol(T);
-    
     %% Display domains, boundary conditions and meshes
     figure('Name','Domain')
     clf
@@ -650,25 +683,23 @@ end
 
 %% Display samples of solutions
 if displaySolution
-    [t,~] = gettevol(T);
-    
     %% Display force-displacement curve
     figure('Name','Force-displacement')
     clf
-    ciplot(ft_ci(1,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),ft_ci(2,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),t*1e3,'b');
-    alpha(0.2)
-    hold on
-    plot(t*1e3,ft_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
+    color = distinguishable_colors(N);
+    for i=1:N
+        [t,~] = gettevol(T_sample{i});
+        plot(t*1e3,ft{i}*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
+        hold on
+    end
+    hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Force [kN]','Interpreter',interpreter)
-    l = legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value'},'Location','NorthWest');
-    set(l,'Interpreter','latex')
-    mysaveas(pathname,'force_displacement',formats);
-    mymatlab2tikz(pathname,'force_displacement.tex');
+    mysaveas(pathname,'forces_displacement',formats);
+    mymatlab2tikz(pathname,'forces_displacement.tex');
     
     %% Display pdf of critical force
     figure('Name','Probability Density Estimate: Critical force')

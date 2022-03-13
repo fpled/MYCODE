@@ -50,7 +50,7 @@ filename = ['phasefieldStoLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFm
 if any(randMat.delta)
     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 end
-if randPF.delta
+if any(randPF.delta)
     filename = [filename '_RandPF_Delta' num2str(randPF.delta,'_%g') '_Lcorr' num2str(randPF.lcorr,'_%g') '_Rcorr' num2str(randPF.rcorr,'_%g')];
 end
 
@@ -423,6 +423,22 @@ if displaySolution
     set(l,'Interpreter','latex')
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
+
+    figure('Name','Force-displacement')
+    clf
+    color = distinguishable_colors(N);
+    for i=1:N
+        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
+        hold on
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Force [kN]','Interpreter',interpreter)
+    mysaveas(pathname,'forces_displacement',formats);
+    mymatlab2tikz(pathname,'forces_displacement.tex');
     
     %% Display pdf of critical force
     figure('Name','Probability Density Estimate: Critical force')

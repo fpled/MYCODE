@@ -1,5 +1,5 @@
 function [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
-% function [dt,ut,T,ft,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
+% function [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,varargin)
 % Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);

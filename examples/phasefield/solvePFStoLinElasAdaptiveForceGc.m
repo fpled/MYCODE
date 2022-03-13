@@ -1,17 +1,21 @@
-function [ft_sample,gc_sample] = solvePFStoLinElasAdaptiveForceGc(S_phase,S,T,fun,N,varargin)
-% function [ft_sample,gc_sample] = solvePFStoLinElasAdaptiveForceGc(S_phase,S,T,fun,N,varargin)
+function [ft_sample,gc_sample,T_sample,fmax_sample,udmax_sample] = solvePFStoLinElasAdaptiveForceGc(S_phase,S,fun,N,varargin)
+% function [ft_sample,gc_sample,T_sample,fmax_sample,udmax_sample] = solvePFStoLinElasAdaptiveForceGc(S_phase,S,fun,N,varargin)
 % Solve stochastic Phase Field problem with mesh adaptation.
 
 fun = fcnchk(fun);
 filename = getcharin('filename',varargin,'filename');
 pathname = getcharin('pathname',varargin,'.');
+initSample = getcharin('initsample',varargin,1);
+numSamples = getcharin('numsamples',varargin,N);
 
 Dim = getdim(S);
 
 % Initialize samples
-ft_sample = zeros(N,length(T));
+ft_sample = cell(N,1);
 gc_sample = zeros(N,1);
-% fmax_sample = zeros(N,1);
+T_sample = cell(N,1);
+fmax_sample = zeros(N,1);
+udmax_sample = zeros(N,1);
 
 if ~verLessThan('matlab','9.2') % introduced in R2017a
     q = parallel.pool.DataQueue;
@@ -25,7 +29,8 @@ parfor i=1:N
     if ~verLessThan('matlab','9.2') % introduced in R2017a
         send(q,i);
     end
-    si = RandStream.create('mrg32k3a','NumStreams',N,'StreamIndices',i);
+    sampleIndex = i+initSample-1;
+    si = RandStream.create('mrg32k3a','NumStreams',numSamples,'StreamIndices',sampleIndex);
     
     % Generate random phase field parameters
     S_phasei = S_phase;
@@ -203,10 +208,16 @@ parfor i=1:N
     dos(command);
 
     % Solve deterministic problem
-    ft = fun(S_phasei,Si,filenamei);
-    ft_sample(i,:) = ft;
-    gc_sample(i,:) = gc;
-    % fmax_sample(i) = max(ft);
+    [ft,T] = fun(S_phasei,Si,filenamei);
+    [fmax,idmax] = max(ft);
+    t = gettevol(T);
+    udmax = t(idmax);
+
+    ft_sample{i} = ft;
+    gc_sample(i) = gc;
+    T_sample{i} = T;
+    fmax_sample(i) = fmax;
+    udmax_sample(i) = udmax;
 end
 textprogressbar(' done');
 
