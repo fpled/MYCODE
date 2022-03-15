@@ -55,7 +55,7 @@ Nstart = 1; % index of first sample for gpumeca02
 % Nstart = 3*1120+7*960+1;
 % Nstart = 3*1120+8*960+1;
 randMat = struct('delta',0.3,'lcorr',1e-4); % random material parameters model
-deltaGc = 0.7;
+deltaGc = 0.2;
 deltaL = 0;
 randPF = struct('delta',[deltaGc,deltaL],'lcorr',Inf,'rcorr',0); % random phase field parameters model
 
