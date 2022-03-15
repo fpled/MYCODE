@@ -4,19 +4,12 @@ function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlateThreshold(S_phas
 
 display_ = ischarin('display',varargin);
 
+Dim = getdim(S);
+
 dt0 = T.dt0;
 dt1 = T.dt1;
 tf = T.tf;
 dthreshold = T.dthreshold;
-
-% dt = cell(1,length(T));
-% ut = cell(1,length(T));
-% ft = zeros(1,length(T));
-% if nargout>=4
-%     Ht = cell(1,length(T));
-% end
-% % dinct = cell(1,length(T)); % increment of phase field
-% % tol = 1e-12;
 
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
@@ -139,8 +132,6 @@ while ti < tf
     ti = ti + dti;
 	
     d = unfreevector(S_phase,d);
-    % dinc = d - d_old;
-    % dincmin = min(dinc); if dincmin<-tol, dincmin, end
     
     % Displacement field
     mats = MATERIALS(S);
@@ -163,7 +154,7 @@ while ti < tf
     
     numddl = findddl(S,'UY',PU);
     f = -A(numddl,:)*u;
-    % f = sum(f);
+    f = sum(f);
     
     % Update fields
     t(i) = ti;
@@ -177,10 +168,9 @@ while ti < tf
             Ht{i} = reshape(double(mean(H,4)),[getnbelem(S),1]);
         end
     end
-    % dinct{i} = dinc;
     
     if display_
-        fprintf('| %4d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,t(i)*1e3,ft(i)*1e-6,norm(dt{i}),norm(ut{i}));
+        fprintf('| %4d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),norm(d),norm(u));
     end
 end
 
@@ -198,6 +188,5 @@ if nargout>=4
         Ht = TIMEMATRIX(Ht,T,[getnbelem(S),1]);
     end
 end
-% dinct = TIMEMATRIX(dinct,T,size(dinc));
 
 end
