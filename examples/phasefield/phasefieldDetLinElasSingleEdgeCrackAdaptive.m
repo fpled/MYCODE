@@ -35,7 +35,6 @@ ang = 30; % clockwise material orientation angle around z-axis for anisotopic ma
 loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
-coeff_gc = 1.0;
 
 switch lower(symmetry)
     case 'isotropic' % isotropic material
@@ -45,7 +44,6 @@ switch lower(symmetry)
     otherwise
         error('Wrong material symmetry class');
 end
-filename = [filename '_coeffgc' num2str(coeff_gc,'_%g')];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -148,7 +146,6 @@ if setProblem
         otherwise
             error('Wrong material symmetry class');
     end
-    coeff_gc*gc;
     % Small artificial residual stiffness
     k = 1e-10;
     % Internal energy

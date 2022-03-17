@@ -616,17 +616,17 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force-displacement')
     clf
+    plot(t*1e3,ft_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
+    hold on
     ciplot(ft_ci(1,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),ft_ci(2,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),t*1e3,'b');
     alpha(0.2)
-    hold on
-    plot(t*1e3,ft_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Force [kN]','Interpreter',interpreter)
-    l = legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value'},'Location','NorthWest');
+    l = legend({'mean function',...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval']});
     set(l,'Interpreter','latex')
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
