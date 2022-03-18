@@ -21,8 +21,8 @@ close all
 %% Input data
 setProblem = true;
 solveProblem = true;
-displayModel = true;
-displaySolution = true;
+displayModel = false;
+displaySolution = false;
 
 % test = true; % coarse mesh
 test = false; % fine mesh
