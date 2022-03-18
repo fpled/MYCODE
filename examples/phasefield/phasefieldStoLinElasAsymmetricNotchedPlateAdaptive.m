@@ -418,8 +418,9 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Force [kN]','Interpreter',interpreter)
-    l = legend({['mean function',...
-        '$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval']});
+    l = legend({'mean function',...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval']},...
+        'Location','NorthWest');
     set(l,'Interpreter','latex')
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');

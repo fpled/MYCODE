@@ -15,6 +15,11 @@ dt1 = T.dt1;
 tf = T.tf;
 dthreshold = T.dthreshold;
 
+materials_phase = MATERIALS(S_phase);
+materials = MATERIALS(S);
+S_phase = setphasefieldproperties(S_phase,materials_phase);
+S = setmaterialproperties(S,materials);
+
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
 if strcmpi(PFsolver,'historyfieldnode')

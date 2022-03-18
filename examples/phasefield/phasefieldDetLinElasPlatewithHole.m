@@ -300,7 +300,7 @@ if solveProblem
     
     save(fullfile(pathname,'solution.mat'),'dt','ut','ft','fmax','udmax','T','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
-        save(fullfile(pathname,'solution.mat'),'Ht','-append')
+        save(fullfile(pathname,'solution.mat'),'Ht','-append');
     end
 else
     load(fullfile(pathname,'solution.mat'),'dt','ut','ft','fmax','udmax','T','time');
