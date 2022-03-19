@@ -64,7 +64,7 @@ formats = {'epsc'};
 renderer = 'OpenGL';
 
 gmshoptions = '-v 0';
-mmgoptions = '-nomove -hausd 0.01 -hgrad 1.1 -v -1';
+mmgoptions = '-nomove -hausd 0.01 -hgrad 1.05 -v -1';
 % gmshoptions = '-v 5';
 % mmgoptions = '-nomove -hausd 0.01 -hgrad 1.3 -v 1';
 
@@ -120,8 +120,7 @@ if setProblem
         end
     end
     c = clC; % crack width
-    % S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
-    S_phase = gmshdomainwithedgesmearedcrackboundary(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
+    S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
     
     sizemap = @(d) (clC-clD)*d+clD;
     % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
