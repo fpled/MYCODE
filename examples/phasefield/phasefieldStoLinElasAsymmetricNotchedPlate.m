@@ -119,7 +119,7 @@ if setProblem
     clC = cl; % characteristic length for edge crack/notch
     clH = cl; % characteristic length for circular holes
     % S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),Dim,'duplicate');
-    c = 0.025*unit; % crack width
+    c = clC; % crack width
     S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'));
     S = S_phase;
     

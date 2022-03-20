@@ -135,7 +135,7 @@ if setProblem
         end
     end
     % S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate');
-    c = 1e-5; % crack width
+    c = clC; % crack width
     S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
     S = S_phase;
     

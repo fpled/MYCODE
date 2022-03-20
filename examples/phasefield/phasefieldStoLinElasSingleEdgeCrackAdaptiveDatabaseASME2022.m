@@ -144,7 +144,7 @@ if setProblem
         clD = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clD);
         clC = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clC);
     end
-    c = 1e-5; % crack width
+    c = clC; % crack width
     S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
     
     sizemap = @(d) (clC-clD)*d+clD;
