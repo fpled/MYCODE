@@ -28,8 +28,8 @@ displaySolution = false;
 makeMovie = false;
 saveParaview = true;
 
-% test = true; % coarse mesh
-test = false; % fine mesh
+test = true; % coarse mesh
+% test = false; % fine mesh
 
 Dim = 2; % space dimension Dim = 2
 setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
