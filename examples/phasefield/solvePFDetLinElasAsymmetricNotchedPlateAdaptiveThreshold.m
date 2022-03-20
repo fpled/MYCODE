@@ -192,7 +192,8 @@ while ti < tf
     if ti<tf
         % Mesh adaptation
         S_phase_old = S_phase;
-        S_phase_ref = addcl(S_phase_old,H1,'T',1);
+        S_phase_ref = addcl(S_phase_old,C,'T',1);
+        S_phase_ref = addcl(S_phase_ref,H1,'T',1);
         S_phase_ref = addcl(S_phase_ref,H2,'T',1);
         S_phase_ref = addcl(S_phase_ref,H3,'T',1);
         d_ref = freevector(S_phase_ref,d);
@@ -205,7 +206,6 @@ while ti < tf
         % Update phase field properties
         S_phase = setphasefieldproperties(S_phase,materials_phase);
         S_phase = final(S_phase);
-        S_phase = addcl(S_phase,C,'T',1);
         S_phase = addcl(S_phase,BU,'T');
         S_phase = addcl(S_phase,BL,'T');
         S_phase = addcl(S_phase,BR,'T');

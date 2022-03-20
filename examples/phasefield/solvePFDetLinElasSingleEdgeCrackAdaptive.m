@@ -220,15 +220,17 @@ for i=1:length(T)
     if i<length(T)
         % Mesh adaptation
         S_phase_old = S_phase;
+        S_phase_ref = addcl(S_phase_old,C,'T',1);
+        d_ref = freevector(S_phase_ref,d);
+        d_ref = unfreevector(S_phase_ref,d_ref);
         % S_old = S;
-        cl = sizemap(d);
-        S_phase = adaptmesh(S_phase_old,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+        cl = sizemap(d_ref);
+        S_phase = adaptmesh(S_phase_ref,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
         S = S_phase;
         
         % Update phase field properties
         S_phase = setphasefieldproperties(S_phase,materials_phase);
         S_phase = final(S_phase);
-        S_phase = addcl(S_phase,C,'T',1);
         
         % Update material properties
         S = setmaterialproperties(S,materials);

@@ -118,7 +118,9 @@ if setProblem
     end
     clC = cl; % characteristic length for edge crack/notch
     clH = cl; % characteristic length for circular holes
-    S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),Dim,'duplicate');
+    % S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),Dim,'duplicate');
+    c = 0.025*unit; % crack width
+    S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'));
     S = S_phase;
     
     %% Phase field problem
@@ -142,14 +144,13 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    C = LIGNE([-b,-h],[-b,-h+a]);
     R = 2*unit;
     BU = CIRCLE(0.0,h,R);
     BL = CIRCLE(-ls,-h,R);
     BR = CIRCLE(ls,-h,R);
     
-    S_phase = final(S_phase,'duplicate');
-    S_phase = addcl(S_phase,C,'T',1);
+    % S_phase = final(S_phase,'duplicate');
+    S_phase = final(S_phase);
     S_phase = addcl(S_phase,BU,'T');
     S_phase = addcl(S_phase,BL,'T');
     S_phase = addcl(S_phase,BR,'T');
@@ -216,7 +217,8 @@ if setProblem
     PL = POINT([-ls,-h]);
     PR = POINT([ls,-h]);
     
-    S = final(S,'duplicate');
+    % S = final(S,'duplicate');
+    S = final(S);
     
     ud = 0;
     S = addcl(S,PU,'UY',ud);

@@ -71,7 +71,7 @@ formats = {'epsc'};
 renderer = 'OpenGL';
 
 gmshoptions = '-v 0';
-mmgoptions = '-nomove -hausd 0.01 -hgrad 1.1 -v -1';
+mmgoptions = '-nomove -hausd 0.01 -hgrad 1.06 -v -1';
 % gmshoptions = '-v 5';
 % mmgoptions = '-nomove -hausd 0.01 -hgrad 1.3 -v 1';
 
@@ -126,7 +126,7 @@ if setProblem
     end
     clC = cl; % characteristic length for edge crack/notch
     clH = cl; % characteristic length for circular holes
-    c = clC; % crack width
+    c = 0.025*unit; % crack width
     S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),2,'gmshoptions',gmshoptions);
     
     sizemap = @(d) (clC-clD)*d+clD;
@@ -153,8 +153,7 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    % C = LIGNE([-b,-h],[-b,-h+a]);
-    C = DOMAIN(2,[-b-c/2,-h]-[c/10,c/10],[-b+c/2,-h+a]+[c/10,c/10]);
+    C = LIGNE([-b-c/2,-h+a],[-b+c/2,-h+a]);
     R = 2*unit;
     BU = CIRCLE(0.0,h,R);
     BL = CIRCLE(-ls,-h,R);
@@ -179,7 +178,6 @@ if setProblem
     
     S_phase = setmaterial(S_phase,mat_phase);
     S_phase = final(S_phase);
-    S_phase = addcl(S_phase,C,'T',1);
     S_phase = addcl(S_phase,BU,'T');
     S_phase = addcl(S_phase,BL,'T');
     S_phase = addcl(S_phase,BR,'T');
