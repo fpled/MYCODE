@@ -135,7 +135,7 @@ if setProblem
         end
     end
     % S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate');
-    c = clC; % crack width
+    c = 1e-5; % crack width
     S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
     S = S_phase;
     
@@ -580,9 +580,9 @@ if displayModel
     [t,rep] = gettevol(T);
     
     %% Display domains, boundary conditions and meshes
-    plotDomain({D,C},'legend',false);
-    mysaveas(pathname,'domain',formats,renderer);
-    mymatlab2tikz(pathname,'domain.tex');
+%     plotDomain({D,C},'legend',false);
+%     mysaveas(pathname,'domain',formats,renderer);
+%     mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;

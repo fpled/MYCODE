@@ -144,7 +144,7 @@ if setProblem
         clD = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clD);
         clC = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clC);
     end
-    c = clC; % crack width
+    c = 1e-5; % crack width
     S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
     
     sizemap = @(d) (clC-clD)*d+clD;
@@ -185,7 +185,7 @@ if setProblem
     
     %% Dirichlet boundary conditions
     if Dim==2
-        C = LIGNE([a,L/2-c/2],[a,L/2+c/2]);
+        C = CIRCLE(a-c/2,L/2,c/2);
     elseif Dim==3
         C = QUADRANGLE([a,L/2-c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[a,L/2-c/2,e]);
     end
@@ -646,14 +646,14 @@ fprintf('           = [%g,%g] N/mm (exact)\n',gc_cigam(1)*1e-3,gc_cigam(2)*1e-3)
 %% Display
 if displayModel
     %% Display domains, boundary conditions and meshes
-    figure('Name','Domain')
-    clf
-    plot(D,'FaceColor',getfacecolor(1));
-    plot(C,'FaceColor','w');
-    axis image
-    axis off
-    mysaveas(pathname,'domain',formats,renderer);
-    mymatlab2tikz(pathname,'domain.tex');
+%     figure('Name','Domain')
+%     clf
+%     plot(D,'FaceColor',getfacecolor(1));
+%     plot(C,'FaceColor','w');
+%     axis image
+%     axis off
+%     mysaveas(pathname,'domain',formats,renderer);
+%     mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;
