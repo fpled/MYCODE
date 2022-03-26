@@ -65,7 +65,7 @@ formats = {'epsc'};
 renderer = 'OpenGL';
 
 gmshoptions = '-v 0';
-mmgoptions = '-nomove -hausd 0.000001 -hgrad 1.05 -v -1';
+mmgoptions = '-nomove -hausd 0.000001 -hgrad 1.1 -v -1';
 % gmshoptions = '-v 5';
 % mmgoptions = '-nomove -hausd 0.01 -hgrad 1.3 -v 1';
 
