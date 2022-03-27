@@ -35,8 +35,12 @@ Dim = 2; % space dimension Dim = 2
 setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
+pluginCrack = true;
 
 filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel PFsolver];
+if pluginCrack
+    filename = [filename 'PluginCrack'];
+end
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -102,9 +106,12 @@ if setProblem
     end
     clC = cl; % characteristic length for edge crack/notch
     clH = cl; % characteristic length for circular holes
-    % S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),Dim,'duplicate');
-    c = clC; % crack width
-    S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'));
+    if pluginCrack
+        S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),Dim,'duplicate');
+    else
+        c = clC; % crack width
+        S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'));
+    end
     S = S_phase;
     
     %% Phase field problem
@@ -133,8 +140,11 @@ if setProblem
     BL = CIRCLE(-ls,-h,R);
     BR = CIRCLE(ls,-h,R);
     
-    % S_phase = final(S_phase,'duplicate');
-    S_phase = final(S_phase);
+    if pluginCrack
+        S_phase = final(S_phase,'duplicate');
+    else
+        S_phase = final(S_phase);
+    end
     S_phase = addcl(S_phase,BU,'T');
     S_phase = addcl(S_phase,BL,'T');
     S_phase = addcl(S_phase,BR,'T');
@@ -201,8 +211,11 @@ if setProblem
     PL = POINT([-ls,-h]);
     PR = POINT([ls,-h]);
     
-    % S = final(S,'duplicate');
-    S = final(S);
+    if pluginCrack
+        S = final(S,'duplicate');
+    else
+        S = final(S);
+    end
     
     ud = 0;
     S = addcl(S,PU,'UY',ud);

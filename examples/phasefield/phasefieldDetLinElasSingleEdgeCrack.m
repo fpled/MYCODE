@@ -36,16 +36,21 @@ ang = 30; % clockwise material orientation angle around z-axis for anisotopic ma
 loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
+pluginCrack = true;
 coeff_gc = 1.0;
 
 switch lower(symmetry)
     case 'isotropic' % isotropic material
-        filename = ['phasefieldDetLinElas' symmetry 'SingleEdgeCrack' loading PFmodel PFsolver '_' num2str(Dim) 'D'];
+        filename = ['phasefieldDetLinElas' symmetry 'SingleEdgeCrack' loading PFmodel PFsolver];
     case 'anisotropic' % anisotropic material
-        filename = ['phasefieldDetLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel PFsolver '_' num2str(Dim) 'D'];
+        filename = ['phasefieldDetLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel PFsolver];
     otherwise
         error('Wrong material symmetry class');
 end
+if pluginCrack
+    filename = [filename 'PluginCrack'];
+end
+filename = [filename '_' num2str(Dim) 'D'];
 filename = [filename '_coeffgc' num2str(coeff_gc,'_%g')];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -117,9 +122,12 @@ if setProblem
             clC = 2e-5;
         end
     end
-    % S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate');
-    c = 1e-5; % crack width
-    S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+    if pluginCrack
+        S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate');
+    else
+        c = 1e-5; % crack width
+        S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+    end
     S = S_phase;
     
     %% Phase field problem
@@ -158,8 +166,11 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    % S_phase = final(S_phase,'duplicate');
-    S_phase = final(S_phase);
+    if pluginCrack
+        S_phase = final(S_phase,'duplicate');
+    else
+        S_phase = final(S_phase);
+    end
     
     %% Stiffness matrices and sollicitation vectors
     % a_phase = BILINFORM(1,1,gc*l); % uniform values
@@ -275,8 +286,11 @@ if setProblem
         BBack = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
     end
     
-    % S = final(S,'duplicate');
-    S = final(S);
+    if pluginCrack
+        S = final(S,'duplicate');
+    else
+        S = final(S);
+    end
     
     ud = 0;
     switch lower(loading)
