@@ -7,6 +7,7 @@ filename = getcharin('filename',varargin,'gmsh_domain_asymmetric_notched_plate')
 pathname = getcharin('pathname',varargin,'.');
 gmshoptions = getcharin('gmshoptions',varargin,'-v 0');
 mmgoptions = getcharin('mmgoptions',varargin,'-nomove -v -1');
+duplicate = ischarin('duplicate',varargin);
 
 Dim = getdim(S);
 
@@ -205,14 +206,14 @@ while ti < tf
         
         % Update phase field properties
         S_phase = setphasefieldproperties(S_phase,materials_phase);
-        S_phase = final(S_phase);
+        S_phase = final(S_phase,'duplicate');
         S_phase = addcl(S_phase,BU,'T');
         S_phase = addcl(S_phase,BL,'T');
         S_phase = addcl(S_phase,BR,'T');
         
         % Update material properties
         S = setmaterialproperties(S,materials);
-        S = final(S);
+        S = final(S,'duplicate');
         S = addcl(S,PU,'UY',ud);
         S = addcl(S,PL,{'UX','UY'});
         S = addcl(S,PR,'UY');

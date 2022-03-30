@@ -40,6 +40,7 @@ ang = 30; % clockwise material orientation angle around z-axis for anisotopic ma
 loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
+pluginCrack = true;
 
 % Random model parameters
 % N = 100; % number of samples
@@ -49,13 +50,16 @@ randPF = struct('delta',0,'lcorr',Inf,'rcorr',0); % random phase field parameter
 
 switch lower(symmetry)
     case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
-        filename = ['phasefieldStoLinElas' symmetry 'SingleEdgeCrack' loading PFmodel PFsolver];
+        filename = ['phasefieldStoLinElas' symmetry 'SingleEdgeCrack' loading PFmodel PFsolver 'Adaptive'];
     case 'anisotropic' % anisotropic material
-        filename = ['phasefieldStoLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel PFsolver];
+        filename = ['phasefieldStoLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel PFsolver 'Adaptive'];
     otherwise
         error('Wrong material symmetry class');
 end
-filename = [filename 'Adaptive_' num2str(Dim) 'D_' num2str(N) 'samples'];
+if pluginCrack
+    filename = [filename 'PluginCrack'];
+end
+filename = [filename '_' num2str(Dim) 'D_' num2str(N) 'samples'];
 if any(randMat.delta)
     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 end
@@ -141,8 +145,12 @@ if setProblem
         clD = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clD);
         clC = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clC);
     end
-    c = 1e-5; % crack width
-    S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'gmshoptions',gmshoptions);
+    if pluginCrack
+        S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate',lower(loading));
+    else
+        c = 1e-5; % crack width
+        S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+    end
     
     sizemap = @(d) (clC-clD)*d+clD;
     % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
@@ -181,12 +189,21 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    if Dim==2
-        C = CIRCLE(a-c/2,L/2,c/2);
-    elseif Dim==3
-        C = QUADRANGLE([a,L/2-c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[a,L/2-c/2,e]);
+    if pluginCrack
+        if Dim==2
+            C = POINT([a,L/2]);
+        elseif Dim==3
+            C = LIGNE([a,L/2,0.0],[a,L/2,e]);
+        end
+        S_phase = final(S_phase,'duplicate');
+    else
+        if Dim==2
+            C = CIRCLE(a-c/2,L/2,c/2);
+        elseif Dim==3
+            C = QUADRANGLE([a,L/2-c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[a,L/2-c/2,e]);
+        end
+        S_phase = final(S_phase);
     end
-    S_phase = final(S_phase);
     S_phase = addcl(S_phase,C,'T',1);
     
     d = calc_init_dirichlet(S_phase);
@@ -195,7 +212,11 @@ if setProblem
     S = S_phase;
     
     S_phase = setmaterial(S_phase,mat_phase);
-    S_phase = final(S_phase);
+    if pluginCrack
+        S_phase = final(S_phase,'duplicate');
+    else
+        S_phase = final(S_phase);
+    end
     
     %% Stiffness matrices and sollicitation vectors
     % a_phase = BILINFORM(1,1,gc*l); % uniform values
@@ -328,7 +349,11 @@ if setProblem
         BBack = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
     end
     
-    S = final(S);
+    if pluginCrack
+        S = final(S,'duplicate');
+    else
+        S = final(S);
+    end
     
     ud = 0;
     switch lower(loading)

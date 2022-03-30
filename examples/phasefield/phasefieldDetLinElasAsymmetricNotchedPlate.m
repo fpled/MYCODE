@@ -109,7 +109,7 @@ if setProblem
     if pluginCrack
         S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),Dim,'duplicate');
     else
-        c = clC; % crack width
+        c = 0.025*unit; % crack width
         S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'));
     end
     S = S_phase;

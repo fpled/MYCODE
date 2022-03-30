@@ -215,11 +215,11 @@ while ti < tf
         
         % Update phase field properties
         S_phase = setphasefieldproperties(S_phase,materials_phase);
-        S_phase = final(S_phase);
+        S_phase = final(S_phase,'duplicate');
         
         % Update material properties
         S = setmaterialproperties(S,materials);
-        S = final(S);
+        S = final(S,'duplicate');
         switch lower(loading)
             case 'tension'
                 if Dim==2

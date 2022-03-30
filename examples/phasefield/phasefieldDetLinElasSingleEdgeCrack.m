@@ -102,7 +102,7 @@ if setProblem
         % clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
         % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        clD = 2.5e-6;
+        clD = 2.5e-5;
         clC = 2.5e-6;
         if test
             % clD = 4e-5;
@@ -111,10 +111,10 @@ if setProblem
             clC = 1e-5;
         end
     elseif Dim==3
-        % clD = 4e-5;
-        % clC = 4e-6;
-        clD = 7.5e-6;
-        clC = 7.5e-6;
+        clD = 4e-5;
+        clC = 5e-6;
+        % clD = 7.5e-6;
+        % clC = 7.5e-6;
         if test
             % clD = 4e-5;
             % clC = 1e-5;
@@ -123,7 +123,7 @@ if setProblem
         end
     end
     if pluginCrack
-        S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate');
+        S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate',lower(loading));
     else
         c = 1e-5; % crack width
         S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));

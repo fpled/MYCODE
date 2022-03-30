@@ -205,14 +205,14 @@ for i=1:length(T)
         
         % Update phase field properties
         S_phase = setphasefieldproperties(S_phase,materials_phase);
-        S_phase = final(S_phase);
+        S_phase = final(S_phase,'duplicate');
         S_phase = addcl(S_phase,BU,'T');
         S_phase = addcl(S_phase,BL,'T');
         S_phase = addcl(S_phase,BR,'T');
         
         % Update material properties
         S = setmaterialproperties(S,materials);
-        S = final(S);
+        S = final(S,'duplicate');
         S = addcl(S,PU,'UY',ud);
         S = addcl(S,PL,{'UX','UY'});
         S = addcl(S,PR,'UY');
