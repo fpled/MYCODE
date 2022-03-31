@@ -31,32 +31,30 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     optimFun = 'lsqlin'; % 'lsqlin' or 'lsqnonlin' or 'fmincon'
     % optimFun = 'lsqnonlin';
     % optimFun = 'fmincon';
-
+    
     displayoptim = 'off';
     % displayoptim = 'iter';
     % displayoptim = 'iter-detailed';
     % displayoptim = 'final';
     % displayoptim = 'final-detailed';
-
+    
     % tolX = 1e-6; % tolerance on the parameter value
     % tolFun = 1e-6; % tolerance on the function value
     % maxFunEvals = Inf; % maximum number of function evaluations
-    tolFun = 1e-8;
-
+    
     % optimAlgo = 'interior-point';
     optimAlgo = 'trust-region-reflective';
     % optimAlgo = 'sqp';
     % optimAlgo = 'active-set';
     % optimAlgo = 'levenberg-marquardt';
-
+    
     % options  = optimoptions(optimFun,'Display',displayoptim,'StepTolerance',tolX,'FunctionTolerance',tolFun,...
     %     'OptimalityTolerance',tolFun...%,'MaxFunctionEvaluations',maxFunEvals...%,'Algorithm',optimAlgo...
     %     ,'SpecifyObjectiveGradient',true...
     %     );
     % options  = optimoptions(optimFun,'Display',displayoptim,...
     %     'SpecifyObjectiveGradient',true);
-    options = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo,...
-        'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun);
+    options = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo);
 end
 
 if display_
