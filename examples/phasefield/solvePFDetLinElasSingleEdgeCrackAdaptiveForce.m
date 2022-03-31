@@ -41,6 +41,7 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     % tolX = 1e-6; % tolerance on the parameter value
     % tolFun = 1e-6; % tolerance on the function value
     % maxFunEvals = Inf; % maximum number of function evaluations
+    tolFun = 1e-8;
 
     % optimAlgo = 'interior-point';
     optimAlgo = 'trust-region-reflective';
@@ -54,7 +55,8 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     %     );
     % options  = optimoptions(optimFun,'Display',displayoptim,...
     %     'SpecifyObjectiveGradient',true);
-    options = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo);
+    options = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo,...
+        'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun);
 end
 
 if display_
