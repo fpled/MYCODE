@@ -117,7 +117,7 @@ if setProblem
         end
     elseif Dim==3
         clD = 4e-5;
-        clC = 4e-6;
+        clC = 5e-6;
         % clD = 7.5e-6;
         % clC = 7.5e-6;
         if test

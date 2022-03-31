@@ -121,21 +121,21 @@ if setProblem
         clD = 2.5e-5;
         clC = 2.5e-6;
         if test
-            clD = 4e-5;
-            clC = 1e-5;
-            % clD = 1e-5;
+            % clD = 4e-5;
             % clC = 1e-5;
+            clD = 1e-5;
+            clC = 1e-5;
         end
     elseif Dim==3
         clD = 4e-5;
-        clC = 4e-6;
+        clC = 5e-6;
         % clD = 7.5e-6;
         % clC = 7.5e-6;
         if test
-            clD = 4e-5;
-            clC = 1e-5;
-            % clD = 2e-5;
-            % clC = 2e-5;
+            % clD = 4e-5;
+            % clC = 1e-5;
+            clD = 2e-5;
+            clC = 2e-5;
         end
     end
     if pluginCrack
