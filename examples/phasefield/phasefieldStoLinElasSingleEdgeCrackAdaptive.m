@@ -433,10 +433,10 @@ if setProblem
                         % t = [t0,t1];
                         
                         dt = 1e-9;
-                        nt = 7000;
+                        nt = 8000;
                         if test
                             dt = 1e-8;
-                            nt = 700;
+                            nt = 800;
                         end
                         t = linspace(dt,nt*dt,nt);
                     case 'shear'
