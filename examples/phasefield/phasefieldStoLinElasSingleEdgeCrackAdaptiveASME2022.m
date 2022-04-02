@@ -469,8 +469,8 @@ if setProblem
                         % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
                         % du = 1e-5 mm during 1500 time steps (up to u = 15e-3 mm)
                         dt = 1e-8;
-                        nt = 1500;
-                        % nt = 2000;
+                        % nt = 1500;
+                        nt = 2000;
                         if test
                             dt = 5e-8;
                             % nt = 300;
