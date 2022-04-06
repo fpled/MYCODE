@@ -162,8 +162,8 @@ if setProblem
     end
     gc = gc*coeff_gc;
     % Small artificial residual stiffness
-    % k = 1e-10;
-    k = 0;
+    k = 1e-12;
+    % k = 0;
     % Internal energy
     H = 0;
     
@@ -399,10 +399,10 @@ if setProblem
                         % t = [t0,t1];
                         
                         dt = 1e-9;
-                        nt = 8000;
+                        nt = 10000;
                         if test
                             dt = 1e-8;
-                            nt = 800;
+                            nt = 1000;
                         end
                         t = linspace(dt,nt*dt,nt);
                     case 'shear'
@@ -632,7 +632,7 @@ if displaySolution
         case 'isotropic'
             switch lower(loading)
                 case 'tension'
-                    rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-5)<eps | abs(t-6e-6)<eps | abs(t-6.25e-6)<eps);
+                    rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-6)<eps | abs(t-6e-6)<eps | abs(t-6.25e-6)<eps | abs(t-6.5e-6)<eps);
                 case 'shear'
                     rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps);
                 otherwise
