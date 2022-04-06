@@ -43,7 +43,7 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 pluginCrack = true;
 
 % Random model parameters
-N = 500; % number of samples
+N = 100; % number of samples
 % N = numWorkers;
 coeff_gc = 1.0;
 randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
