@@ -435,11 +435,11 @@ if setProblem
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
                         
-                        dt = 1e-9;
-                        nt = 8000;
+                        dt = 5e-9;
+                        nt = 1600;
                         if test
-                            dt = 1e-8;
-                            nt = 800;
+                            dt = 2e-8;
+                            nt = 400;
                         end
                         t = linspace(dt,nt*dt,nt);
                     case 'shear'

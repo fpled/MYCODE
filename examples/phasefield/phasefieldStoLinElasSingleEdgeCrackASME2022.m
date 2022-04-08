@@ -401,11 +401,11 @@ if setProblem
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
                         
-                        dt = 1e-9;
-                        nt = 8000;
+                        dt = 5e-9;
+                        nt = 1600;
                         if test
-                            dt = 1e-8;
-                            nt = 800;
+                            dt = 2e-8;
+                            nt = 400;
                         end
                         t = linspace(dt,nt*dt,nt);
                     case 'shear'
@@ -666,6 +666,7 @@ if displaySolution
     for i=1:N
         plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
         hold on
+        % scatter(fmax_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','+','MarkerEdgeColor','k','MarkerFaceColor',color(i,:))
     end
     hold off
     grid on
