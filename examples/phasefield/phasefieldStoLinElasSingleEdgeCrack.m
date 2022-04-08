@@ -168,7 +168,7 @@ if setProblem
             error('Wrong material symmetry class');
     end
     % Small artificial residual stiffness
-    k = 1e-12;
+    k = 1e-8;
     % k = 0;
     % Internal energy
     H = 0;
@@ -721,9 +721,9 @@ if displaySolution
         case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
             switch lower(loading)
                 case 'tension'
-                    rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-6)<eps | abs(t-6e-6)<eps | abs(t-6.25e-6)<eps | abs(t-6.5e-6)<eps);
+                    rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-6)<eps | abs(t-6e-6)<eps | abs(t-6.15e-6)<eps | abs(t-6.25e-6)<eps | abs(t-6.35e-6)<eps | abs(t-6.45e-6)<eps | abs(t-6.5e-6)<eps);
                 case 'shear'
-                    rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps);
+                    rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps | abs(t-1.75e-5)<eps);
                 otherwise
                     error('Wrong loading case');
             end
