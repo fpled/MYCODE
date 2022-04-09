@@ -435,13 +435,19 @@ if setProblem
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
                         
-                        dt = 5e-9;
-                        nt = 1600;
+                        dt0 = 1e-8;
+                        nt0 = 400;
+                        dt1 = 1e-9;
+                        nt1 = 4000;
                         if test
-                            dt = 2e-8;
-                            nt = 400;
+                            dt0 = 1e-7;
+                            nt0 = 40;
+                            dt1 = 1e-8;
+                            nt1 = 400;
                         end
-                        t = linspace(dt,nt*dt,nt);
+                        t0 = linspace(dt0,nt0*dt0,nt0);
+                        t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                        t = [t0,t1];
                     case 'shear'
                         % [Miehe, Welschinger, Hofacker, 2010 IJNME]
                         % du = 1e-4 mm during the first 100 time steps (up to u = 10e-3 mm)
