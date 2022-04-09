@@ -182,7 +182,7 @@ if setProblem
             error('Wrong material symmetry class');
     end
     % Small artificial residual stiffness
-    k = 1e-8;
+    k = 1e-12;
     % k = 0;
     % Internal energy
     H = 0;

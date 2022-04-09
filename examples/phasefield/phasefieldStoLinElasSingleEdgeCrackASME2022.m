@@ -46,7 +46,7 @@ pluginCrack = true;
 N = 500; % number of samples
 % N = numWorkers;
 coeff_gc = 1.0;
-randMat = struct('delta',0.1,'lcorr',1e-5); % random material parameters model
+randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
 randPF = struct('delta',0,'lcorr',Inf,'rcorr',0); % random phase field parameters model
 
 switch lower(symmetry)
@@ -171,7 +171,7 @@ if setProblem
     end
     gc = gc*coeff_gc;
     % Small artificial residual stiffness
-    k = 1e-8;
+    k = 1e-12;
     % k = 0;
     % Internal energy
     H = 0;

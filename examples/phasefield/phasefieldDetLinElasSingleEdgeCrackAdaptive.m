@@ -162,7 +162,7 @@ if setProblem
     end
     gc = gc*coeff_gc;
     % Small artificial residual stiffness
-    k = 1e-8;
+    k = 1e-12;
     % k = 0;
     % Internal energy
     H = 0;
