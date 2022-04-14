@@ -75,125 +75,135 @@ if display_
     fprintf('| %4d/%4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',0,length(T),0,0,getnbnode(S),getnbelem(S),0,0);
 end
 
+dbthreshold = 0.99;
+numddlb = findddl(S_phase,'T',BRight);
+db = d(numddlb,:);
+
 for i=1:length(T)
     
-    % Internal energy field
-    switch lower(PFsolver)
-        case 'historyfieldelem'
-            h_old = getvalue(H);
-            H = calc_energyint(S,u,'positive','intorder','mass');
-            h = getvalue(H);
-            for p=1:getnbgroupelem(S)
-                he = double(h{p});
-                he_old = double(h_old{p});
-                rep = find(he <= he_old);
-                he(rep) = he_old(rep);
-                h{p} = MYDOUBLEND(he);
-            end
-            H = FEELEMFIELD(h,'storage',getstorage(H),'type',gettype(H),'ddl',getddl(H));
-        case 'historyfieldnode'
-            h_old = double(H);
-            H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
-            h = double(H);
-            rep = find(h <= h_old);
-            h(rep) = h_old(rep);
-            H = setvalue(H,h);
-        otherwise
-            H = calc_energyint(S,u,'positive','intorder','mass');
-    end
-    
-    % Phase field
-    mats_phase = MATERIALS(S_phase);
-    for m=1:length(mats_phase)
-        mat = mats_phase{m};
-        if isparam(mat,'delta') && any(getparam(mat,'delta')>0) && isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
-            r = getparam(mat,'r');
-        else
-            r = getparam(materials_phase{m},'r');
+    if any(db > dbthreshold)
+        f = 0;
+    else
+        % Internal energy field
+        switch lower(PFsolver)
+            case 'historyfieldelem'
+                h_old = getvalue(H);
+                H = calc_energyint(S,u,'positive','intorder','mass');
+                h = getvalue(H);
+                for p=1:getnbgroupelem(S)
+                    he = double(h{p});
+                    he_old = double(h_old{p});
+                    rep = find(he <= he_old);
+                    he(rep) = he_old(rep);
+                    h{p} = MYDOUBLEND(he);
+                end
+                H = FEELEMFIELD(h,'storage',getstorage(H),'type',gettype(H),'ddl',getddl(H));
+            case 'historyfieldnode'
+                h_old = double(H);
+                H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
+                h = double(H);
+                rep = find(h <= h_old);
+                h(rep) = h_old(rep);
+                H = setvalue(H,h);
+            otherwise
+                H = calc_energyint(S,u,'positive','intorder','mass');
         end
-        if strcmpi(PFsolver,'historyfieldnode')
-            mats_phase{m} = setparam(mats_phase{m},'r',r+2*H);
-        else
-            mats_phase{m} = setparam(mats_phase{m},'r',r+2*H{m});
+        
+        % Phase field
+        mats_phase = MATERIALS(S_phase);
+        for m=1:length(mats_phase)
+            mat = mats_phase{m};
+            if isparam(mat,'delta') && any(getparam(mat,'delta')>0) && isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
+                r = getparam(mat,'r');
+            else
+                r = getparam(materials_phase{m},'r');
+            end
+            if strcmpi(PFsolver,'historyfieldnode')
+                mats_phase{m} = setparam(mats_phase{m},'r',r+2*H);
+            else
+                mats_phase{m} = setparam(mats_phase{m},'r',r+2*H{m});
+            end
         end
+        S_phase = actualisematerials(S_phase,mats_phase);
+        
+        [A_phase,b_phase] = calc_rigi(S_phase);
+        b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
+        
+        % d_old = d;
+        switch lower(PFsolver)
+            case {'historyfieldelem','historyfieldnode'}
+                d = A_phase\b_phase;
+            otherwise
+                d0 = freevector(S_phase,d);
+                lb = d0;
+                lb(lb==1) = 1-eps;
+                ub = ones(size(d0));
+                switch optimFun
+                    case 'lsqlin'
+                        [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                    case 'lsqnonlin'
+                        fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
+                        [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
+                    case 'fmincon'
+                        fun = @(d) funoptimPF(d,A_phase,b_phase);
+                        [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
+                end
+        end
+        d = unfreevector(S_phase,d);
+        numddlb = findddl(S_phase,'T',BRight);
+        db = d(numddlb,:);
+        
+        % Displacement field
+        mats = MATERIALS(S);
+        for m=1:length(mats)
+            mats{m} = setparam(mats{m},'d',d);
+            mats{m} = setparam(mats{m},'u',u);
+        end
+        S = actualisematerials(S,mats);
+        S = removebc(S);
+        ud = t(i);
+        switch lower(loading)
+            case 'tension'
+                if Dim==2
+                    S = addcl(S,BU,{'UX','UY'},[0;ud]);
+                elseif Dim==3
+                    S = addcl(S,BU,{'UX','UY','UZ'},[0;ud;0]);
+                end
+                S = addcl(S,BL,'UY');
+            case 'shear'
+                if Dim==2
+                    S = addcl(S,BU,{'UX','UY'},[ud;0]);
+                    S = addcl(S,BLeft,'UY');
+                    S = addcl(S,BRight,'UY');
+                elseif Dim==3
+                    S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
+                    S = addcl(S,BLeft,{'UY','UZ'});
+                    S = addcl(S,BRight,{'UY','UZ'});
+                    S = addcl(S,BFront,{'UY','UZ'});
+                    S = addcl(S,BBack,{'UY','UZ'});
+                end
+                S = addcl(S,BL);
+            otherwise
+                error('Wrong loading case');
+        end
+        
+        [A,b] = calc_rigi(S,'nofree');
+        b = -b;
+        
+        u = freematrix(S,A)\b;
+        u = unfreevector(S,u);
+        
+        switch lower(loading)
+            case 'tension'
+                numddl = findddl(S,'UY',BU);
+            case 'shear'
+                numddl = findddl(S,'UX',BU);
+            otherwise
+                error('Wrong loading case');
+        end
+        f = A(numddl,:)*u;
+        f = sum(f);
     end
-    S_phase = actualisematerials(S_phase,mats_phase);
-    
-    [A_phase,b_phase] = calc_rigi(S_phase);
-    b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
-    
-    % d_old = d;
-    switch lower(PFsolver)
-        case {'historyfieldelem','historyfieldnode'}
-            d = A_phase\b_phase;
-        otherwise
-            d0 = freevector(S_phase,d);
-            lb = d0;
-            lb(lb==1) = 1-eps;
-            ub = ones(size(d0));
-            switch optimFun
-                case 'lsqlin'
-                    [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
-                case 'lsqnonlin'
-                    fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-                    [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
-                case 'fmincon'
-                    fun = @(d) funoptimPF(d,A_phase,b_phase);
-                    [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
-            end
-    end
-    d = unfreevector(S_phase,d);
-    
-    % Displacement field
-    mats = MATERIALS(S);
-    for m=1:length(mats)
-        mats{m} = setparam(mats{m},'d',d);
-        mats{m} = setparam(mats{m},'u',u);
-    end
-    S = actualisematerials(S,mats);
-    S = removebc(S);
-    ud = t(i);
-    switch lower(loading)
-        case 'tension'
-            if Dim==2
-                S = addcl(S,BU,{'UX','UY'},[0;ud]);
-            elseif Dim==3
-                S = addcl(S,BU,{'UX','UY','UZ'},[0;ud;0]);
-            end
-            S = addcl(S,BL,'UY');
-        case 'shear'
-            if Dim==2
-                S = addcl(S,BU,{'UX','UY'},[ud;0]);
-                S = addcl(S,BLeft,'UY');
-                S = addcl(S,BRight,'UY');
-            elseif Dim==3
-                S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
-                S = addcl(S,BLeft,{'UY','UZ'});
-                S = addcl(S,BRight,{'UY','UZ'});
-                S = addcl(S,BFront,{'UY','UZ'});
-                S = addcl(S,BBack,{'UY','UZ'});
-            end
-            S = addcl(S,BL);
-        otherwise
-            error('Wrong loading case');
-    end
-    
-    [A,b] = calc_rigi(S,'nofree');
-    b = -b;
-    
-    u = freematrix(S,A)\b;
-    u = unfreevector(S,u);
-    
-    switch lower(loading)
-        case 'tension'
-            numddl = findddl(S,'UY',BU);
-        case 'shear'
-            numddl = findddl(S,'UX',BU);
-        otherwise
-            error('Wrong loading case');
-    end
-    f = A(numddl,:)*u;
-    f = sum(f);
     
     % Update fields
     dt{i} = d;
@@ -217,7 +227,7 @@ for i=1:length(T)
         fprintf('| %4d/%4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',i,length(T),t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),getnbnode(S),getnbelem(S),norm(d),norm(u));
     end
     
-    if i<length(T)
+    if i<length(T) && ~any(db > dbthreshold)
         % Mesh adaptation
         S_phase_old = S_phase;
         S_phase_ref = addcl(S_phase_old,C,'T',1);
