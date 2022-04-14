@@ -43,7 +43,7 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 pluginCrack = true;
 
 % Random model parameters
-% N = 100; % number of samples
+% N = 500; % number of samples
 N = numWorkers;
 randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
 randPF = struct('delta',0,'lcorr',Inf,'rcorr',0); % random phase field parameters model
@@ -727,7 +727,7 @@ if displaySolution
         case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
             switch lower(loading)
                 case 'tension'
-                    rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-6)<eps | abs(t-6e-6)<eps | abs(t-6.15e-6)<eps | abs(t-6.25e-6)<eps | abs(t-6.35e-6)<eps | abs(t-6.45e-6)<eps | abs(t-6.5e-6)<eps);
+                    rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-6)<eps | abs(t-6e-6)<eps | abs(t-6.15e-6)<eps | abs(t-6.25e-6)<eps | abs(t-6.30e-6)<eps | abs(t-6.45e-6)<eps | abs(t-6.5e-6)<eps);
                 case 'shear'
                     rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps | abs(t-1.75e-5)<eps);
                 otherwise
