@@ -29,6 +29,7 @@ parfor i=1:N
     S_phasei = S_phase;
     mats_phase = MATERIALS(S_phase);
     node_phase = getnode(S_phase);
+    gc = 0;
     for m=1:getnbgroupelem(S_phase)
         elem = getgroupelem(S_phase,m);
         mat = getmaterial(elem);
