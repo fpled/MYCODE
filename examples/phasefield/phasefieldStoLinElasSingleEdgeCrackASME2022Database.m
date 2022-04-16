@@ -42,14 +42,15 @@ pluginCrack = true;
 
 % Random model parameters
 Ntotal = 12e3; % total number of samples
-% N = numWorkers*10; % number of samples
-N = 5*numWorkers;
-Nstart = 1; % index of first sample for gpumeca02
+N = 5*numWorkers; % number of samples
+% N = 2*numWorkers;
+Nstart = 1; % index of first sample
 % Nstart = 1120+1;
-randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
-gcmin = 0;
-gcmax = 4e3;
-randPF = struct('bounds',[gcmin,gcmax],'lcorr',Inf,'rcorr',0); % random phase field parameters model
+randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
+gc = 2.7e3;
+aGc = 0.6*gc;
+bGc = 1.4*gc;
+randPF = struct('gcb',[aGc,bGc],'lcorr',Inf); % random phase field parameters model
 
 switch lower(symmetry)
     case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
@@ -63,12 +64,6 @@ if pluginCrack
     filename = [filename 'PluginCrack'];
 end
 filename = [filename '_' num2str(Dim) 'D_' num2str(N) 'samples_from_' num2str(Nstart) '_to_' num2str(Nstart+N-1)];
-% if any(randMat.delta)
-%     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
-% end
-% if any(randPF.delta)
-%     filename = [filename '_RandPF_Delta' num2str(randPF.delta,'_%g') '_Lcorr' num2str(randPF.lcorr,'_%g') '_Rcorr' num2str(randPF.rcorr,'_%g')];
-% end
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -85,11 +80,6 @@ linewidth = 1;
 interpreter = 'latex';
 formats = {'epsc'};
 renderer = 'OpenGL';
-
-gmshoptions = '-v 0';
-mmgoptions = '-nomove -hausd 0.000001 -hgrad 1.1 -v -1';
-% gmshoptions = '-v 5';
-% mmgoptions = '-nomove -hausd 0.01 -hgrad 1.3 -v 1';
 
 %% Problem
 if setProblem
@@ -127,10 +117,10 @@ if setProblem
         clD = 2.5e-5;
         clC = 2.5e-6;
         if test
-            clD = 4e-5;
-            clC = 1e-5;
-            % clD = 1e-5;
+            % clD = 4e-5;
             % clC = 1e-5;
+            clD = 1e-5;
+            clC = 1e-5;
         end
     elseif Dim==3
         clD = 4e-5;
@@ -138,15 +128,11 @@ if setProblem
         % clD = 7.5e-6;
         % clC = 7.5e-6;
         if test
-            clD = 4e-5;
-            clC = 1e-5;
-            % clD = 2e-5;
-            % clC = 2e-5;
+            % clD = 4e-5;
+            % clC = 1e-5;
+            clD = 2e-5;
+            clC = 2e-5;
         end
-    end
-    if ~test
-        clD = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clD);
-        clC = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clC);
     end
     if pluginCrack
         S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate',lower(loading),lower(symmetry));
@@ -154,9 +140,7 @@ if setProblem
         c = 1e-5; % crack width
         S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,lower(loading),lower(symmetry));
     end
-    
-    sizemap = @(d) (clC-clD)*d+clD;
-    % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
+    S = S_phase;
     
     %% Phase field problem
     %% Material
@@ -188,34 +172,11 @@ if setProblem
     H = 0;
     
     % Material
-    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H,'delta',randPF.delta,'lcorr',randPF.lcorr,'rcorr',randPF.rcorr);
+    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H,'gcb',randPF.gcb,'lcorr',randPF.lcorr);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    if pluginCrack
-        if Dim==2
-            C = POINT([a,L/2]);
-        elseif Dim==3
-            C = LIGNE([a,L/2,0.0],[a,L/2,e]);
-        end
-        S_phase = final(S_phase,'duplicate');
-    else
-        if Dim==2
-            C = CIRCLE(a-c/2,L/2,c/2);
-        elseif Dim==3
-            C = QUADRANGLE([a,L/2-c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[a,L/2-c/2,e]);
-        end
-        S_phase = final(S_phase);
-    end
-    S_phase = addcl(S_phase,C,'T',1);
-    
-    d = calc_init_dirichlet(S_phase);
-    cl = sizemap(d);
-    S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-    S = S_phase;
-    
-    S_phase = setmaterial(S_phase,mat_phase);
     if pluginCrack
         S_phase = final(S_phase,'duplicate');
     else
@@ -435,13 +396,19 @@ if setProblem
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
                         
-                        dt = 5e-9;
-                        nt = 1600;
+                        dt0 = 1e-8;
+                        nt0 = 400;
+                        dt1 = 1e-9;
+                        nt1 = 4000;
                         if test
-                            dt = 2e-8;
-                            nt = 400;
+                            dt0 = 1e-7;
+                            nt0 = 40;
+                            dt1 = 1e-8;
+                            nt1 = 400;
                         end
-                        t = linspace(dt,nt*dt,nt);
+                        t0 = linspace(dt0,nt0*dt0,nt0);
+                        t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                        t = [t0,t1];
                     case 'shear'
                         % [Miehe, Welschinger, Hofacker, 2010 IJNME]
                         % du = 1e-4 mm during the first 100 time steps (up to u = 10e-3 mm)
@@ -540,22 +507,24 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang','gcmin','gcmax');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang','gcmin','gcmax');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
 end
 
-%% Solution 
+%% Solution
 if solveProblem
     myparallel('start',numWorkers);
     
     %% Solution
     tTotal = tic;
     
-    fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
-        'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
-    [ft,gc_sample,T_sample,fmax,udmax] = solvePFStoLinElasAdaptiveForceGc(S_phase,S,fun,N,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'initsample',Nstart,'numsamples',Ntotal);
-    
+    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
+    [ft,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,'initsample',Nstart,'numsamples',Ntotal);
+    [fmax,idmax] = max(ft,[],2);
+    t = gettevol(T);
+    udmax = t(idmax);
+
     time = toc(tTotal);
 
     myparallel('stop');
@@ -574,7 +543,7 @@ if solveProblem
     udmax_mean = mean(udmax);
     udmax_std = std(udmax);
     udmax_ci = quantile(udmax,probs);
-
+	
     gc_mean = mean(gc_sample);
     gc_std = std(gc_sample);
     gc_ci = quantile(gc_sample,probs);
@@ -584,12 +553,12 @@ if solveProblem
     [udmax_f,udmax_xi,udmax_bw] = ksdensity(udmax,'npoints',npts);
     [gc_f,gc_xi,gc_bw] = ksdensity(gc_sample,'npoints',npts);
     
-    save(fullfile(pathname,'solution.mat'),'N','ft','T_sample','probs','time',...
+    save(fullfile(pathname,'solution.mat'),'N','ft','probs','time',...
         'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
         'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw',...
         'gc_sample','gc_mean','gc_std','gc_ci','gc_f','gc_xi','gc_bw');
 else
-    load(fullfile(pathname,'solution.mat'),'N','ft','T_sample','probs','time',...
+    load(fullfile(pathname,'solution.mat'),'N','ft','probs','time',...
         'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
         'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw',...
         'gc_sample','gc_mean','gc_std','gc_ci','gc_f','gc_xi','gc_bw');
@@ -605,13 +574,11 @@ if strcmpi(symmetry,'anisotropic')
 end
 fprintf('PF model = %s\n',PFmodel);
 fprintf('PF solver = %s\n',PFsolver);
-fprintf('nb elements = %g (initial)\n',getnbelem(S));
-fprintf('nb nodes    = %g (initial)\n',getnbnode(S));
-fprintf('nb dofs     = %g (initial)\n',getnbddl(S));
+fprintf('nb elements = %g\n',getnbelem(S));
+fprintf('nb nodes    = %g\n',getnbnode(S));
+fprintf('nb dofs     = %g\n',getnbddl(S));
+fprintf('nb time dofs = %g\n',getnbtimedof(T));
 fprintf('nb samples = %g\n',N);
-for i=1:N
-    fprintf('nb time dofs = %g for sample #%d\n',getnbtimedof(T_sample{i}),i);
-end
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
@@ -636,30 +603,27 @@ fprintf('disp(udmax)   = %g\n',udmax_std/udmax_mean);
 fprintf('%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
 fprintf('\n');
 
-aGc = 1/deltaGc^2; % aGc > 2
-bGc = gc/aGc; % 0 < bGc = gc/aGc < gc/2 since gc > 0 and aGc > 2
-gc_xigam = linspace(min(gc_xi),max(gc_xi),1e3);
-gc_fgam = gampdf(gc_xigam,aGc,bGc);
-gc_cigam = gaminv(probs,aGc,bGc);
+gc_xiunif = linspace(min(gc_xi),max(gc_xi),1e3);
+gc_funif = unifpdf(gc_xiunif,aGc,bGc);
+gc_ciunif = unifinv(probs,aGc,bGc);
 
+[gc_meanunif,gc_varunif] = unifstat(aGc,bGc);
+gc_stdunif = sqrt(gc_varunif);
 fprintf('mean(gc)   = %g N/mm (estimate)\n',gc_mean*1e-3);
-fprintf('           = %g N/mm (exact)\n',gc*1e-3);
+fprintf('           = %g N/mm (exact)\n',gc_meanunif*1e-3);
 fprintf('std(gc)    = %g N/mm (estimate)\n',gc_std*1e-3);
-fprintf('           = %g N/mm (exact)\n',sqrt(aGc)*bGc*1e-3);
+fprintf('           = %g N/mm (exact)\n',gc_stdunif*1e-3);
 fprintf('disp(gc)   = %g (estimate)\n',gc_std/gc_mean);
-fprintf('           = %g (exact)\n',deltaGc);
+fprintf('           = %g (exact)\n',gc_stdunif/gc_meanunif);
 fprintf('%d%% ci(gc) = [%g,%g] N/mm (estimate)\n',(probs(2)-probs(1))*100,gc_ci(1)*1e-3,gc_ci(2)*1e-3);
-fprintf('           = [%g,%g] N/mm (exact)\n',gc_cigam(1)*1e-3,gc_cigam(2)*1e-3);
+fprintf('           = [%g,%g] N/mm (exact)\n',gc_ciunif(1)*1e-3,gc_ciunif(2)*1e-3);
 
 %% Display
 if displayModel
+    [t,rep] = gettevol(T);
+    
     %% Display domains, boundary conditions and meshes
-%     figure('Name','Domain')
-%     clf
-%     plot(D,'FaceColor',getfacecolor(1));
-%     plot(C,'FaceColor','w');
-%     axis image
-%     axis off
+%     plotDomain({D,C},'legend',false);
 %     mysaveas(pathname,'domain',formats,renderer);
 %     mymatlab2tikz(pathname,'domain.tex');
     
@@ -675,22 +639,42 @@ if displayModel
     mysaveas(pathname,'boundary_conditions_damage',formats,renderer);
     
     % plotModel(S,'legend',false);
-    % mysaveas(pathname,'mesh_init',formats,renderer);
+    % mysaveas(pathname,'mesh',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
-    mysaveas(pathname,'mesh_init',formats,renderer);
+    mysaveas(pathname,'mesh',formats,renderer);
 end
 
-%% Display samples of solutions
+%% Display statistics of solutions
 if displaySolution
+    [t,~] = gettevol(T);
+    
     %% Display force-displacement curve
+    figure('Name','Force-displacement')
+    clf
+    plot(t*1e3,ft_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
+    hold on
+    ciplot(ft_ci(1,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),ft_ci(2,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),t*1e3,'b');
+    alpha(0.2)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Force [kN]','Interpreter',interpreter)
+    l = legend({'mean function',...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval']},...
+        'Location','NorthWest');
+    set(l,'Interpreter','latex')
+    mysaveas(pathname,'force_displacement',formats);
+    mymatlab2tikz(pathname,'force_displacement.tex');
+    
     figure('Name','Force-displacement')
     clf
     color = distinguishable_colors(N);
     for i=1:N
-        [t,~] = gettevol(T_sample{i});
-        plot(t*1e3,ft{i}*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
+        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
         hold on
+        % scatter(fmax_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','+','MarkerEdgeColor','k','MarkerFaceColor',color(i,:))
     end
     hold off
     grid on
@@ -751,9 +735,9 @@ if displaySolution
     ind_gc = find(gc_xi>=gc_ci(1) & gc_xi<gc_ci(2));
     area(gc_xi(ind_gc)*1e-3,gc_f(ind_gc),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
     scatter(gc_mean*1e-3,0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
-    plot(gc_xigam*1e-3,gc_fgam,'-r','LineWidth',linewidth)
-    ind_gcgam = find(gc_xigam>=gc_cigam(1) & gc_xigam<gc_cigam(2));
-    area(gc_xigam(ind_gcgam)*1e-3,gc_fgam(ind_gcgam),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
+    plot(gc_xiunif*1e-3,gc_funif,'-r','LineWidth',linewidth)
+    ind_gcgam = find(gc_xiunif>=gc_ciunif(1) & gc_xiunif<gc_ciunif(2));
+    area(gc_xiunif(ind_gcgam)*1e-3,gc_funif(ind_gcgam),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
     scatter(gc*1e-3,0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','r')
     hold off
     grid on

@@ -1,24 +1,14 @@
-function [ft_sample,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,varargin)
-% function [ft_sample,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,varargin)
+function [ft_sample,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,varargin)
+% function [ft_sample,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,varargin)
 % Solve stochastic Phase Field problem.
 
 fun = fcnchk(fun);
-nbSamples = getcharin('nbsamples',varargin,1);
-
-sz_d = getnbddl(S_phase);
-sz_u = getnbddl(S);
+initSample = getcharin('initsample',varargin,1);
+numSamples = getcharin('numsamples',varargin,N);
 
 % Initialize samples
 ft_sample = zeros(N,length(T));
-dt_sample = zeros(nbSamples,sz_d,length(T));
-ut_sample = zeros(nbSamples,sz_u,length(T));
-% fmax_sample = zeros(N,1);
-
-% Initialize statistical means and second-order moments
-dt_mean = zeros(sz_d,length(T));
-dt_moment2 = zeros(sz_d,length(T));
-ut_mean = zeros(sz_u,length(T));
-ut_moment2 = zeros(sz_u,length(T));
+gc_sample = zeros(N,1);
 
 if ~verLessThan('matlab','9.2') % introduced in R2017a
     q = parallel.pool.DataQueue;
@@ -32,7 +22,8 @@ parfor i=1:N
     if ~verLessThan('matlab','9.2') % introduced in R2017a
         send(q,i);
     end
-    si = RandStream.create('mrg32k3a','NumStreams',N,'StreamIndices',i);
+    sampleIndex = i+initSample-1;
+    si = RandStream.create('mrg32k3a','NumStreams',numSamples,'StreamIndices',sampleIndex);
     
     % Generate random phase field parameters
     S_phasei = S_phase;
@@ -288,33 +279,12 @@ parfor i=1:N
     Si = actualisematerials(Si,mats);
     
     % Solve deterministic problem
-    [dt,ut,ft] = fun(S_phasei,Si);
-    
-    % Compute second-order statistics
-    dt_val = getvalue(dt);
-    dt_mean = dt_mean + dt_val/N;
-    dt_moment2 = dt_moment2 + dt_val.^2/N;
-    ut_val = getvalue(ut);
-    ut_mean = ut_mean + ut_val/N;
-    ut_moment2 = ut_moment2 + ut_val.^2/N;
+    ft = fun(S_phasei,Si);
     
     ft_sample(i,:) = ft;
-    if i<=nbSamples
-        dt_sample(i,:,:) = getvalue(dt);
-        ut_sample(i,:,:) = getvalue(ut);
-    end
-    % fmax_sample(i) = max(ft);
+    gc_sample(i) = gc;
 end
 textprogressbar(' done');
-
-% Compute unbiased variances
-if N>1
-    dt_var = (N/(N-1))*(dt_moment2 - dt_mean.^2);
-    ut_var = (N/(N-1))*(ut_moment2 - ut_mean.^2);
-else
-    dt_var = zeros(sz_d,length(T));
-    ut_var = zeros(sz_u,length(T));
-end
 
 function nUpdateProgressBar(~)
 j = j+1;

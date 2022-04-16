@@ -21,6 +21,9 @@ for m=1:length(materials)
 %             % deltaC1 = 1/sqrt(1-la); % coefficient of variation for bulk modulus
 %             % deltaC2 = 1/sqrt(1-5*la); % coefficient of variation for shear modulus
 %             deltaC1 = getparam(mat,'delta'); % coefficient of variation for bulk modulus
+%             if deltaC1<0
+%                 error('Coefficient of variation delta = %g for bulk modulus must be positive (superior to 0)',deltaC1)
+%             end
 %             la = 1 - 1/deltaC1^2; % la < 1/5. Parameter controlling the level of statistical fluctuations
 %             deltaC2 = 1/sqrt(5/deltaC1^2 - 4); % coefficient of variation for shear modulus
 %             mC1 = E/3/(1-2*NU); % mean bulk modulus
