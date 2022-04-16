@@ -35,7 +35,7 @@ numWorkers = maxNumCompThreads;
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isotropic'; % 'Isotropic', 'MeanIsotropic', 'Anisotropic'. Material symmetry
 ang = 30; % clockwise material orientation angle around z-axis for anisotopic material [deg]
-loading = 'Tension'; % 'Tension' or 'Shear'
+loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 pluginCrack = true;
@@ -46,7 +46,7 @@ N = 5*numWorkers; % number of samples
 % N = 2*numWorkers;
 Nstart = 1; % index of first sample
 % Nstart = 480+1;
-randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
+randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
 gc = 2.7e3;
 aGc = 0.6*gc;
 bGc = 1.4*gc;
