@@ -667,7 +667,15 @@ if makeMovie
     % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
     
     options = {'plotiter',true,'plottime',false};
-    framerate = 80;
+    % framerate = 80;
+    switch lower(loading)
+        case 'tension'
+            framerate = 400;
+        case 'shear'
+            framerate = 200;
+        otherwise
+            error('Wrong loading case');
+    end
     
     evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
     % for i=1:Dim

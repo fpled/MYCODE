@@ -827,7 +827,15 @@ if makeMovie
     % ampl = getsize(S)/max(max(max(abs(ut))))/20;
     
     options = {'plotiter',true,'plottime',false};
-    framerate = 80;
+    % framerate = 80;
+    switch lower(loading)
+        case 'tension'
+            framerate = 400;
+        case 'shear'
+            framerate = 200;
+        otherwise
+            error('Wrong loading case');
+    end
     
     dk = TIMEMATRIX(reshape(dt_mean(:,:),sz_d),T);
     dk_var = TIMEMATRIX(reshape(dt_var(:,:),sz_d),T);

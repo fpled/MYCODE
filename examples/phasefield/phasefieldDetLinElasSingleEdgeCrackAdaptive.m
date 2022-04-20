@@ -716,7 +716,15 @@ if makeMovie
     % ampl = getsize(S)/max([umax{:}])/20;
     
     options = {'plotiter',true,'plottime',false};
-    framerate = 80;
+    % framerate = 80;
+    switch lower(loading)
+        case 'tension'
+            framerate = 400;
+        case 'shear'
+            framerate = 200;
+        otherwise
+            error('Wrong loading case');
+    end
     
     evolModel(T,St,'FrameRate',framerate,'filename','mesh','pathname',pathname,options{:});
     

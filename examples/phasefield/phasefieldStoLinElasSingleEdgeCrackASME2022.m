@@ -47,7 +47,7 @@ N = 500; % number of samples
 % N = numWorkers;
 coeff_gc = 1.0;
 randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
-randPF = struct('delta',0,'lcorr',Inf,'rcorr',0); % random phase field parameters model
+randPF = struct('gcb',[0,0],'lcorr',Inf); % random phase field parameters model
 
 switch lower(symmetry)
     case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
@@ -64,8 +64,8 @@ filename = [filename '_' num2str(Dim) 'D_' num2str(N) 'samples'];
 if any(randMat.delta)
     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 end
-if any(randPF.delta)
-    filename = [filename '_RandPF_Delta' num2str(randPF.delta,'_%g') '_Lcorr' num2str(randPF.lcorr,'_%g') '_Rcorr' num2str(randPF.rcorr,'_%g')];
+if any(randPF.gcb)
+    filename = [filename '_RandPF_Gc' num2str(randPF.gcb,'_%g') '_Lcorr' num2str(randPF.lcorr,'_%g')];
 end
 filename = [filename '_coeffgc' num2str(coeff_gc,'_%g')];
 
@@ -177,7 +177,7 @@ if setProblem
     H = 0;
     
     % Material
-    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H,'delta',randPF.delta,'lcorr',randPF.lcorr,'rcorr',randPF.rcorr);
+    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H,'gcb',randPF.gcb,'lcorr',randPF.lcorr);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
     
@@ -555,12 +555,14 @@ if solveProblem
     [udmax_f,udmax_xi,udmax_bw] = ksdensity(udmax,'npoints',npts);
     
     save(fullfile(pathname,'solution.mat'),'N','ft','dt_mean','ut_mean',...
-        'dt_var','ut_var','dt_sample','ut_sample','ft_mean','ft_std','ft_ci','probs','time',...
+        'dt_var','ut_var','dt_sample','ut_sample',...
+        'ft_mean','ft_std','ft_ci','probs','time',...
         'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
         'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw');
 else
     load(fullfile(pathname,'solution.mat'),'N','ft','dt_mean','ut_mean',...
-        'dt_var','ut_var','dt_sample','ut_sample','ft_mean','ft_std','ft_ci','probs','time',...
+        'dt_var','ut_var','dt_sample','ut_sample',...
+        'ft_mean','ft_std','ft_ci','probs','time',...
         'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
         'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw');
 end
@@ -829,7 +831,15 @@ if makeMovie
     % ampl = getsize(S)/max(max(max(abs(ut))))/20;
     
     options = {'plotiter',true,'plottime',false};
-    framerate = 80;
+    % framerate = 80;
+    switch lower(loading)
+        case 'tension'
+            framerate = 400;
+        case 'shear'
+            framerate = 200;
+        otherwise
+            error('Wrong loading case');
+    end
     
     dk = TIMEMATRIX(reshape(dt_mean(:,:),sz_d),T);
     dk_var = TIMEMATRIX(reshape(dt_var(:,:),sz_d),T);
