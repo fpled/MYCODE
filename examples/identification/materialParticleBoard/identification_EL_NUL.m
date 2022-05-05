@@ -115,16 +115,16 @@ for j=1:numSamples
         
         switch optimFun
             case 'lsqnonlin'
-                fun = @(x) funlsqnonlin(x,@solveThreePointBendingNum,u_exp_in,S);
+                fun = @(x) funlsqnonlinThreePointBending(x,@solveThreePointBendingNum,u_exp_in,S);
                 [x,err(k),~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
             case 'fminsearch'
-                fun = @(x) funoptim(x,@solveThreePointBendingNum,u_exp_in,S);
+                fun = @(x) funoptimThreePointBending(x,@solveThreePointBendingNum,u_exp_in,S);
                 [x,err(k),exitflag,output] = fminsearch(fun,x0,options);
             case 'fminunc'
-                fun = @(x) funoptim(x,@solveThreePointBendingNum,u_exp_in,S);
+                fun = @(x) funoptimThreePointBending(x,@solveThreePointBendingNum,u_exp_in,S);
                 [x,err(k),exitflag,output] = fminunc(fun,x0,options);
             case 'fmincon'
-                fun = @(x) funoptim(x,@solveThreePointBendingNum,u_exp_in,S);
+                fun = @(x) funoptimThreePointBending(x,@solveThreePointBendingNum,u_exp_in,S);
                 [x,err(k),exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
         end
         

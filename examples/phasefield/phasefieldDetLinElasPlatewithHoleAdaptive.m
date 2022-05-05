@@ -1,19 +1,9 @@
 %% Phase field fracture model - deterministic linear elasticity problem %%
-%  Asymmetric notched plate with three holes under three-point bending  %%
+%  Plate with a central circular hole under compression                 %%
 %%----------------------------------------------------------------------%%
-% [Ingraffea, Grigoriu, 1990] (experimental tests)
-% [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM] (SIF-based method with local remeshing and special FE)
-% [Ventura, Xu, Belytschko, 2002, IJNME] (vector level set method with discontinuous enrichment in meshless method)
-% [Guidault, Allix, Champaney, Cornuault, 2008, CMAME] (MsXFEM)
-% [Miehe, Welschinger, Hofacker, 2010, IJNME] (anisotropic phase field model of Miehe et al.)
-% [Miehe, Hofacker, Welschinger, 2010, CMAME] (anisotropic phase field model of Miehe et al.)
-% [Häusler, Lindhorst, Horst, 2011, IJNME] (XFEM)
-% [Geniaut, Galenne, 2012, IJSS] (XFEM)
-% [Passieux, Rethore, Gravouil, Baietto, 2013, CM] (XFEM)
-% [Ambati, Gerasimov, De Lorenzis, 2015, CM] (hybrid isotropic-anisotropic phase field model of Ambati et al. compared with the anisotropic one of Miehe et al.)
-% [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (isotropic phase field model with no split of Bourdin et al. compared to experimental data of [Winkler PhD thesis, 2001])
-% [Wu, Nguyen, 2018, JMPS] (hybrid isotropic-anisotropic phase field model of Wu et al.)
-% [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM] (anisotropic phase field model of Wu et al.)
+% [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS] (experimental tests)
+% [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF] (anisotropic phase field model of Miehe et al.)
+% [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase field model of Nguyen et al.)
 
 % clc
 clearvars
@@ -32,14 +22,18 @@ test = true; % coarse mesh
 % test = false; % fine mesh
 
 Dim = 2; % space dimension Dim = 2
-setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
+symmetry = 'Isotropic'; % 'Isotropic' or 'Anisotropic'. Material symmetry
+ang = 30; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
-pluginCrack = true;
 
-filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel PFsolver 'Adaptive'];
-if pluginCrack
-    filename = [filename 'PluginCrack'];
+switch lower(symmetry)
+    case 'isotropic' % isotropic material
+        filename = ['phasefieldDetLinElas' symmetry 'PlatewithHole' PFmodel PFsolver 'Adaptive_' num2str(Dim) 'D'];
+    case 'anisotropic' % anisotropic material
+        filename = ['phasefieldDetLinElas' symmetry num2str(ang) 'deg' 'PlatewithHole' PFmodel PFsolver 'Adaptive_' num2str(Dim) 'D'];
+    otherwise
+        error('Wrong material symmetry class');
 end
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -66,71 +60,69 @@ mmgoptions = '-nomove -hausd 0.01 -hgrad 1.1 -v -1';
 %% Problem
 if setProblem
     %% Domains and meshes
-    unit = 1e-3; % for mm % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME],
-    % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Passieux, Rethore, Gravouil, Baietto, 2013, CM]
-    % unit = 25.4e-3; % for inch % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM],
-    % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-    switch setup
-        case 1 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME],
-            % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME], [Geniaut, Galenne,2012, IJSS],
-            % [Passieux, Rethore, Gravouil, Baietto, 2013, CM]
-            a = 1.5*unit; % crack length
-            b = 5*unit; % crack offset from the centerline
-        case 2 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME],
-            % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME],
-            % [Geniaut, Galenne, 2012, IJSS], [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Ambati, Gerasimov, De Lorenzis, 2015, CM],
-            % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME],
-            % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-            a = 1*unit; % crack length
-            b = 6*unit; % crack offset from the centerline
-        case 3 % [Ingraffea, Grigoriu, 1990], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
-            a = 2.5*unit; % crack length
-            b = 6*unit; % crack offset from the centerline
-        case 4 % [Ingraffea, Grigoriu, 1990], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-            a = 1.5*unit; % crack length
-            b = 4.75*unit; % crack offset from the centerline
-        case 5 % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-            a = 1.5*unit; % crack length
-            b = 5.15*unit; % crack offset from the centerline
+    if Dim==2
+        % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+        L = 15e-3; % length
+        h = 2*L; % height
+        e = 1; % thickness
+        r = 3e-3; % radius of the hole
+        % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+        % L = 100e-3; % length
+        % h = 65e-3; % height
+        % e = 40e-3; % thickness
+        % r = 2.5e-3; % radius of the hole
+        D = DOMAIN(2,[0.0,0.0],[L,h]);
+        C = CIRCLE(L/2,h/2,r);
+    elseif Dim==3 % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+        L = 100e-3; % length
+        h = 65e-3; % height
+        e = 40e-3; % thickness
+        r = 2.5e-3; % radius of the hole
+        D = DOMAIN(3,[0.0,0.0,0.0],[L,h,e]);
+        % C = CYLINDER
     end
-    L = 10*unit; % half-length
-    h = 4*unit; % half-height
-    ls = 9*unit; % location of the support from the centerline
-    lh = 4*unit; % location of the holes from the centerline
-    dh = 2*unit; % distance between the holes
-    ph = 1.25*unit; % location of the top hole from the top
-    r = 0.25*unit; % radius of the holes
     
-    clD = 0.1*unit; % characteristic length for domain
-    % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
-    cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
-    % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-    if test
-        clD = 0.2*unit;
-        cl = 0.025*unit;
+    if Dim==2
+        % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+        % clD = 0.06e-3; % characteristic length for domain
+        % clC = 0.06e-3; % characteristic length for circular hole
+        % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+        clD = 0.25e-3; % characteristic length for domain
+        clC = 0.05e-3; % characteristic length for circular hole
+        if test
+            clD = 0.25e-3;
+            clC = 0.12e-3;
+        end
+    elseif Dim==3
+        % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+        clD = 0.25e-3; % characteristic length for domain
+        clC = 0.05e-3; % characteristic length for circular hole
+        if test
+            clD = 0.25e-3;
+            clC = 0.12e-3;
+        end
     end
-    clC = cl; % characteristic length for edge crack/notch
-    clH = cl; % characteristic length for circular holes
-    if pluginCrack
-        S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),Dim,'duplicate');
-    else
-        c = 0.025*unit; % crack width
-        S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'));
-    end
+    S_phase = gmshdomainwithhole(D,C,clD,clC,fullfile(pathname,'gmsh_domain_with_hole'));
     
     sizemap = @(d) (clC-clD)*d+clD;
     % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
     
     %% Phase field problem
     %% Material
-    % Critical energy release rate (or fracture toughness)
-    gc = 1e3;
-    % gc = 304.321; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
-    % gc = 315; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-    % Regularization parameter (width of the smeared crack)
-    % l = 0.05*unit; % [Wu, Nguyen, 2018, JMPS]
-    l = 0.025*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-    % l = 0.01*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
+    switch lower(symmetry)
+        case 'isotropic' % isotropic material
+            % Critical energy release rate (or fracture toughness)
+            gc = 1.4; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            % Regularization parameter (width of the smeared crack)
+            l = 0.12e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+        case 'anisotropic' % anisotropic material
+            % Critical energy release rate (or fracture toughness)
+            gc = 10e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            % Regularization parameter (width of the smeared crack)
+            l = 8.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+        otherwise
+            error('Wrong material symmetry class');
+    end
     % Small artificial residual stiffness
     k = 1e-12;
     % k = 0;
@@ -143,46 +135,16 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    if pluginCrack
-        C = POINT([-b,-h+a]);
-    else
-        C = LIGNE([-b-c/2,-h+a],[-b+c/2,-h+a]);
-    end
-    R = 2*unit;
-    BU = CIRCLE(0.0,h,R);
-    BL = CIRCLE(-ls,-h,R);
-    BR = CIRCLE(ls,-h,R);
-    H1 = CIRCLE(-lh,h-ph-2*dh,r);
-    H2 = CIRCLE(-lh,h-ph-dh,r);
-    H3 = CIRCLE(-lh,h-ph,r);
-    
-    if pluginCrack
-        S_phase = final(S_phase,'duplicate');
-    else
-        S_phase = final(S_phase);
-    end
+    S_phase = final(S_phase);
     S_phase = addcl(S_phase,C,'T',1);
-    S_phase = addcl(S_phase,BU,'T');
-    S_phase = addcl(S_phase,BL,'T');
-    S_phase = addcl(S_phase,BR,'T');
-    S_phase = addcl(S_phase,H1,'T',1);
-    S_phase = addcl(S_phase,H2,'T',1);
-    S_phase = addcl(S_phase,H3,'T',1);
     
     d = calc_init_dirichlet(S_phase);
     cl = sizemap(d);
-    S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_with_hole'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     S = S_phase;
     
     S_phase = setmaterial(S_phase,mat_phase);
-    if pluginCrack
-        S_phase = final(S_phase,'duplicate');
-    else
-        S_phase = final(S_phase);
-    end
-    S_phase = addcl(S_phase,BU,'T');
-    S_phase = addcl(S_phase,BL,'T');
-    S_phase = addcl(S_phase,BR,'T');
+    S_phase = final(S_phase);
     
     %% Stiffness matrices and sollicitation vectors
     % a_phase = BILINFORM(1,1,gc*l); % uniform values
@@ -207,89 +169,133 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    option = 'DEFO'; % plane strain [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM]
-    % option = 'CONT'; % plane stress [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-    % Lame coefficients
-    lambda = 12e9;
-    mu = 8e9;
-    % Young modulus and Poisson ratio
-    switch lower(option)
-        case 'defo'
-            E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 20.8e9;
-            NU = lambda/(lambda+mu)/2; % NU = 0.3;
-        case 'cont'
-            E = 4*mu*(lambda+mu)/(lambda+2*mu);
-            NU = lambda/(lambda+2*mu);
+    option = 'DEFO'; % plane strain [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % option = 'CONT'; % plane stress [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    switch lower(symmetry)
+        case 'isotropic' % isotropic material
+            % Lame coefficients
+            % Young modulus and Poisson ratio
+            E = 12e9; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            NU = 0.3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+        case 'anisotropic' % anisotropic material
+            if Dim==2
+                switch lower(option)
+                    case 'defo'
+                        % [Nguyen, Yvonnet, Waldmann, He, 2020,IJNME]
+                        % Elasticity matrix in reference material coordinate system [Pa]
+                        Cmat = e*...
+                            [65 20 0;
+                            20 260 0;
+                            0 0 30]*1e9;
+                        theta = deg2rad(ang); % clockwise material orientation angle around z-axis [rad]
+                        c = cos(theta);
+                        s = sin(theta);
+                        % Transition matrix for elasticity matrix from material coordinate system to global coordinate system
+                        P = [c^2 s^2 -c*s;
+                            s^2 c^2 c*s;
+                            2*c*s -2*c*s c^2-s^2];
+                        % Elasticity matrix in global coordinate system [Pa]
+                        Cmat = P'*Cmat*P;
+                    case 'cont'
+                        error('Not implemented yet');
+                end
+            elseif Dim==3
+                error('Not implemented yet');
+            end
+        otherwise
+            error('Wrong material symmetry class');
     end
-    % E = 3.102e9; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
-    % E = 3.275e9; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-    % NU = 0.35; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-    % E = 200e9; % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME]
-    % NU = 0.3; % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME]
     % Energetic degradation function
     g = @(d) (1-d).^2;
-    % Thickness
-    DIM3 = 1;
-    % DIM3 = 0.5*unit; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % Density
     RHO = 1;
     
     % Material
     d = calc_init_dirichlet(S_phase);
-    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+    switch lower(symmetry)
+        case 'isotropic' % isotropic material
+            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+        case 'anisotropic' % anisotropic material
+            mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+        otherwise
+            error('Wrong material symmetry class');
+    end
     mat = setnumber(mat,1);
     S = setoption(S,option);
     S = setmaterial(S,mat);
     
     %% Dirichlet boundary conditions
-    PU = POINT([0.0,h]);
-    PL = POINT([-ls,-h]);
-    PR = POINT([ls,-h]);
-    
-    if pluginCrack
-        S = final(S,'duplicate');
-    else
-        S = final(S);
+    if Dim==2
+        BU = LIGNE([0.0,h],[L,h]);
+        BL = LIGNE([0.0,0.0],[L,0.0]);
+    elseif Dim==3
+        BU = PLAN([0.0,h,0.0],[L,h,0.0],[0.0,h,e]);
+        BL = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
     end
+    P0 = getvertices(D);
+    P0 = POINT(P0{1});
+    
+    S = final(S);
     
     ud = 0;
-    S = addcl(S,PU,'UY',ud);
-    S = addcl(S,PL,{'UX','UY'});
-    S = addcl(S,PR,'UY');
+    if Dim==2
+        S = addcl(S,BU,'UY',ud);
+    elseif Dim==3
+        S = addcl(S,BU,'UY',ud);
+    end
+    S = addcl(S,BL,'UY');
+    S = addcl(S,P0,'UX');
     
     %% Stiffness matrices and sollicitation vectors
     % [A,b] = calc_rigi(S);
     % b = -b;
     
     %% Time scheme
-    % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-    % dt = 1e-4*unit;
-    % nt = 2500;
-    % t = linspace(dt,nt*dt,nt);
-    
-    % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
-    % du = 1e-3 mm during the first 200 time steps (up to u = 0.2 mm)
-    % du = 1e-4 mm during the last  500 time steps (up to u = 0.25 mm)
-    dt0 = 1e-3*unit;
-    nt0 = 200;
-    dt1 = 1e-4*unit;
-    nt1 = 500;
-    if test
-        dt0 = 2e-3*unit;
-        nt0 = 100;
-        dt1 = 2e-4*unit;
-        nt1 = 250;
+    if Dim==2
+        % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+        % du = 1e-3 mm during the first stage (until the phase field reaches the threshold value)
+        % du = 1e-4 mm during the last stage (as soon as the phase field exceeds the threshold value)
+        % dt0 = 1e-6;
+        % dt1 = 1e-7;
+        % tf = 25e-6;
+        % dthreshold = 0.9;
+        
+        % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+        % du = 8e-5 mm during the first stage (until the phase field reaches the threshold value)
+        % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value)
+        dt0 = 8e-8;
+        dt1 = 2e-8;
+        if test
+            dt0 = 16e-8;
+            dt1 = 4e-8;
+        end
+        tf = 25e-6;
+        dthreshold = 0.6;
+    elseif Dim==3
+        % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+        % du = 1e-3 mm during the first stage (until the phase field reaches the threshold value)
+        % du = 1e-4 mm during the last stage (as soon as the phase field exceeds the threshold value)
+        dt0 = 1e-6;
+        dt1 = 1e-7;
+        if test
+            dt0 = 2e-6;
+            dt1 = 2e-7;
+        end
+        tf = 25e-6;
+        dthreshold = 0.9;
     end
-    t0 = linspace(dt0,nt0*dt0,nt0);
-    t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-    t = [t0,t1];
     
-    T = TIMEMODEL(t);
+%     t0 = linspace(dt0,nt0*dt0,nt0);
+%     t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+%     t = [t0,t1];
+%     
+%     T = TIMEMODEL(t);
+    T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','sizemap','C','BU','BL','BR','H1','H2','H3','PU','PL','PR');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','symmetry','ang');
 else
-    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','sizemap','C','BU','BL','BR','H1','H2','H3','PU','PL','PR');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','symmetry','ang');
 end
 
 %% Solution
@@ -298,10 +304,10 @@ if solveProblem
     
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,...
+            [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,P0,C,sizemap,...
                 'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
         otherwise
-            [dt,ut,ft,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,...
+            [dt,ut,ft,T,St_phase,St] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,P0,C,sizemap,...
                 'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
     end
     [fmax,idmax] = max(ft,[],2);
@@ -310,12 +316,12 @@ if solveProblem
 
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','fmax','udmax','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','T','St_phase','St','fmax','udmax','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         save(fullfile(pathname,'solution.mat'),'Ht','-append');
     end
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','fmax','udmax','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','T','St_phase','St','fmax','udmax','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         load(fullfile(pathname,'solution.mat'),'Ht');
     end
@@ -323,7 +329,11 @@ end
 
 %% Outputs
 fprintf('\n');
-fprintf('setup    = %d\n',setup);
+fprintf('dim      = %d\n',Dim);
+fprintf('mat sym  = %s\n',symmetry);
+if strcmpi(symmetry,'anisotropic')
+    fprintf('angle    = %g deg\n',ang);
+end
 fprintf('PF model = %s\n',PFmodel);
 fprintf('PF solver = %s\n',PFsolver);
 fprintf('nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
@@ -341,6 +351,10 @@ if displayModel
     [t,rep] = gettevol(T);
     
     %% Display domains, boundary conditions and meshes
+    plotDomain({D,C},'legend',false);
+    mysaveas(pathname,'domain',formats,renderer);
+    mymatlab2tikz(pathname,'domain.tex');
+    
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;
     v = calc_init_dirichlet(S);
@@ -383,7 +397,7 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force-displacement')
     clf
-    plot(t*1e3,ft*1e-6,'-b','Linewidth',linewidth)
+    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -394,12 +408,7 @@ if displaySolution
     
     %% Display solutions at different instants
     ampl = 0;
-    switch setup
-        case {1,4,5}
-            rep = find(abs(t-0.190*unit)<eps | abs(t-0.201*unit)<eps | abs(t-0.203*unit)<eps | abs(t-0.204*unit)<eps | abs(t-0.205*unit)<eps | abs(t-0.207*unit)<eps);
-        case {2,3}
-            rep = find(abs(t-0.210*unit)<eps | abs(t-0.215*unit)<eps | abs(t-0.218*unit)<eps | abs(t-0.219*unit)<eps | abs(t-0.220*unit)<eps | abs(t-0.222*unit)<eps);
-    end
+    rep = find(abs(t-18.5e-6)<eps | abs(t-24.6e-6)<eps);
     rep = [rep,length(T)];
     
     for j=1:length(rep)

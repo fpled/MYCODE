@@ -85,7 +85,8 @@ maxFunEvals = 1e3; % maximum number of function evaluations
 switch optimFun
     case {'lsqnonlin','fminunc','fmincon'}
         options  = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun,'MaxFunEvals',maxFunEvals);
-        % options  = optimoptions(optimFun,'Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,'MaxFunctionEvaluations',maxFunEvals);
+        % options  = optimoptions(optimFun,'Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,...
+        %     'OptimalityTolerance',tolFun,'MaxFunctionEvaluations',maxFunEvals);
     case 'fminsearch'
         options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun,'MaxFunEvals',maxFunEvals);
     otherwise
@@ -95,16 +96,16 @@ end
 t = tic;
 switch optimFun
     case 'lsqnonlin'
-        fun = @(x) funlsqnonlin(x,delta_exp,N);
+        fun = @(x) funlsqnonlinCyclicCompression(x,delta_exp,N);
         [x,err,~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
     case 'fminsearch'
-        fun = @(x) funoptim(x,delta_exp,N);
+        fun = @(x) funoptimCyclicCompression(x,delta_exp,N);
         [x,err,exitflag,output] = fminsearch(fun,x0,options);
     case 'fminunc'
-        fun = @(x) funoptim(x,delta_exp,N);
+        fun = @(x) funoptimCyclicCompression(x,delta_exp,N);
         [x,err,exitflag,output] = fminunc(fun,x0,options);
     case 'fmincon'
-        fun = @(x) funoptim(x,delta_exp,N);
+        fun = @(x) funoptimCyclicCompression(x,delta_exp,N);
         [x,err,exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
 end
 

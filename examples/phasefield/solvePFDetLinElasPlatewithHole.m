@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
-% function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
+function [dt,ut,ft,Ht] = solvePFDetLinElasPlatewithHole(S_phase,S,T,PFsolver,BU,BL,P0,varargin)
+% function [dt,ut,ft,Ht] = solvePFDetLinElasPlatewithHole(S_phase,S,T,PFsolver,BU,BL,P0,varargin)
 % Solve deterministic Phase Field problem.
 
 display_ = ischarin('display',varargin);
@@ -137,9 +137,13 @@ for i=1:length(T)
     S = actualisematerials(S,mats);
     S = removebc(S);
     ud = -t(i);
-    S = addcl(S,PU,'UY',ud);
-    S = addcl(S,PL,{'UX','UY'});
-    S = addcl(S,PR,'UY');
+    if Dim==2
+        S = addcl(S,BU,'UY',ud);
+    elseif Dim==3
+        S = addcl(S,BU,'UY',ud);
+    end
+    S = addcl(S,BL,'UY');
+    S = addcl(S,P0,'UX');
     
     [A,b] = calc_rigi(S,'nofree');
     b = -b;
@@ -147,7 +151,7 @@ for i=1:length(T)
     u = freematrix(S,A)\b;
     u = unfreevector(S,u);
     
-    numddl = findddl(S,'UY',PU);
+    numddl = findddl(S,'UY',BU);
     f = -A(numddl,:)*u;
     f = sum(f);
     

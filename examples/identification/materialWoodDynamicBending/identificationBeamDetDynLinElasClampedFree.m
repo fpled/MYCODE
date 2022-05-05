@@ -230,16 +230,16 @@ if solveProblem
     
     switch optimFun
         case 'lsqnonlin'
-            fun = @(param) funlsqnonlin(param,uy_exp,S,N,M,b,funu0,v0,P1);
+            fun = @(param) funlsqnonlinBeamDetDynLinElasClampedFree(param,uy_exp,S,N,M,b,funu0,v0,P1);
             [param,err,~,exitflag,output] = lsqnonlin(fun,param0,lb,ub,options);
         case 'fminsearch'
-            fun = @(param) funoptim(param,uy_exp,S,N,M,b,funu0,v0,P1);
+            fun = @(param) funoptimBeamDetDynLinElasClampedFree(param,uy_exp,S,N,M,b,funu0,v0,P1);
             [param,err,exitflag,output] = fminsearch(fun,param0,options);
         case 'fminunc'
-            fun = @(param) funoptim(param,uy_exp,S,N,M,b,funu0,v0,P1);
+            fun = @(param) funoptimBeamDetDynLinElasClampedFree(param,uy_exp,S,N,M,b,funu0,v0,P1);
             [param,err,exitflag,output] = fminunc(fun,param0,options);
         case 'fmincon'
-            fun = @(param) funoptim(param,uy_exp,S,N,M,b,funu0,v0,P1);
+            fun = @(param) funoptimBeamDetDynLinElasClampedFree(param,uy_exp,S,N,M,b,funu0,v0,P1);
             [param,err,exitflag,output] = fmincon(fun,param0,[],[],[],[],lb,ub,[],options);
     end
     

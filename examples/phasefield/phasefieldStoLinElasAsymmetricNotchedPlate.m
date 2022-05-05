@@ -10,7 +10,7 @@
 % [Häusler, Lindhorst, Horst, 2011, IJNME] (XFEM)
 % [Geniaut, Galenne, 2012, IJSS] (XFEM)
 % [Passieux, Rethore, Gravouil, Baietto, 2013, CM] (XFEM)
-% [Ambati, Gerasimov, De Lorenzis, 2015, CM] (hybrid isotropic-anisotropic phase field model of Ambati et al. compared with the isotropic one of Bourdin et al. and the anisotropic ones of Amor et al. and Miehe et al.)
+% [Ambati, Gerasimov, De Lorenzis, 2015, CM] (hybrid isotropic-anisotropic phase field model of Ambati et al. compared with the anisotropic one of Miehe et al.)
 % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (isotropic phase field model with no split of Bourdin et al. compared to experimental data of [Winkler PhD thesis, 2001])
 % [Wu, Nguyen, 2018, JMPS] (hybrid isotropic-anisotropic phase field model of Wu et al.)
 % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM] (anisotropic phase field model of Wu et al.)
@@ -30,28 +30,34 @@ saveParaview = true;
 
 test = true; % coarse mesh
 % test = false; % fine mesh
-numWorkers = 20;
+
+numWorkers = 4;
+% numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 
 % Deterministic model parameters
-Dim = 2;
+Dim = 2; % space dimension Dim = 2
 setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
-PFmodel = 'Isotropic'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
+pluginCrack = true;
 
 % Random model parameters
-N = 5e2; % number of samples
-randMat = true; % random material parameters (true or false)
-randPF = true; % random phase field parameters (true or false)
-rhoMat = 0.1; % Bravais-Pearson correlation coefficient for material field parameters
-rhoPF = 0.1; % Bravais-Pearson correlation coefficient for phase field parameters
+% N = 100; % number of samples
+N = numWorkers;
+randMat = struct('delta',0.1,'lcorr',Inf); % random material parameters model
+randPF = struct('delta',0,'lcorr',Inf,'rcorr',0); % random phase field parameters model
 
-filename = ['phasefieldStoLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel];
-if randMat
-    filename = [filename 'RandMat'];
+filename = ['phasefieldStoLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel PFsolver];
+if pluginCrack
+    filename = [filename 'PluginCrack'];
 end
-if randPF
-    filename = [filename 'RandPF'];
+filename =  [filename '_' num2str(N) 'samples'];
+if any(randMat.delta)
+    filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 end
-filename = [filename '_' num2str(N) 'samples'];
+if any(randPF.delta)
+    filename = [filename '_RandPF_Delta' num2str(randPF.delta,'_%g') '_Lcorr' num2str(randPF.lcorr,'_%g') '_Rcorr' num2str(randPF.rcorr,'_%g')];
+end
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -66,7 +72,7 @@ end
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc'};
 renderer = 'OpenGL';
 
 %% Problem
@@ -113,11 +119,16 @@ if setProblem
     % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     if test
         clD = 0.2*unit;
-        cl = 0.05*unit;
+        cl = 0.025*unit;
     end
     clC = cl; % characteristic length for edge crack/notch
     clH = cl; % characteristic length for circular holes
-    S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'));
+    if pluginCrack
+        S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),Dim,'duplicate');
+    else
+        c = 0.025*unit; % crack width
+        S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'));
+    end
     S = S_phase;
     
     %% Phase field problem
@@ -131,24 +142,27 @@ if setProblem
     l = 0.025*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % l = 0.01*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % Small artificial residual stiffness
-    k = 1e-10;
+    k = 1e-12;
+    % k = 0;
     % Internal energy
     H = 0;
     
     % Material
-    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H);
+    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H,'delta',randPF.delta,'lcorr',randPF.lcorr,'rcorr',randPF.rcorr);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    C = LIGNE([-b,-h],[-b,-h+a]);
     R = 2*unit;
     BU = CIRCLE(0.0,h,R);
     BL = CIRCLE(-ls,-h,R);
     BR = CIRCLE(ls,-h,R);
     
-    S_phase = final(S_phase,'duplicate');
-    S_phase = addcl(S_phase,C,'T',1);
+    if pluginCrack
+        S_phase = final(S_phase,'duplicate');
+    else
+        S_phase = final(S_phase);
+    end
     S_phase = addcl(S_phase,BU,'T');
     S_phase = addcl(S_phase,BL,'T');
     S_phase = addcl(S_phase,BR,'T');
@@ -164,7 +178,7 @@ if setProblem
     
     % r_phase = BILINFORM(0,0,gc/l+2*H,0); % nodal values
     % R_phase = calc_matrix(r_phase,S_phase);
-    % A_phase = K_phase + M_phase;
+    % A_phase = K_phase + R_phase;
     
     % l_phase = LINFORM(0,2*H,0); % nodal values
     % l_phase = setfree(l_phase,1);
@@ -205,7 +219,7 @@ if setProblem
     
     % Material
     d = calc_init_dirichlet(S_phase);
-    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'delta',randMat.delta,'lcorr',randMat.lcorr);
     mat = setnumber(mat,1);
     S = setoption(S,option);
     S = setmaterial(S,mat);
@@ -215,7 +229,11 @@ if setProblem
     PL = POINT([-ls,-h]);
     PR = POINT([ls,-h]);
     
-    S = final(S,'duplicate');
+    if pluginCrack
+        S = final(S,'duplicate');
+    else
+        S = final(S);
+    end
     
     ud = 0;
     S = addcl(S,PU,'UY',ud);
@@ -260,77 +278,20 @@ end
 %% Solution
 if solveProblem
     myparallel('start',numWorkers);
-    %% Random variables
-    % Material properties
-    if randMat % random material parameters
-        % la = -24; % la < 1/5. Parameter controlling the level of statistical fluctuations
-        % deltaC1 = 1/sqrt(1-la); % coefficient of variation for bulk modulus
-        % deltaC2 = 1/sqrt(1-5*la); % coefficient of variation for shear modulus
-        deltaC1 = 0.1; % coefficient of variation for bulk modulus
-        la = 1 - 1/deltaC1^2; % la < 1/5. Parameter controlling the level of statistical fluctuations
-        deltaC2 = 1/sqrt(5/deltaC1^2 - 4); % coefficient of variation for shear modulus
-        
-        mC1 = E/3/(1-2*NU); % mean bulk modulus
-        mC2 = mu; % mean shear modulus
-        laC1 = (1-la)/mC1; % la1 > 0
-        laC2 = (1-5*la)/mC2; % la2 > 0
-        
-        aC1 = 1-la; % a1 > 0
-        bC1 = 1/laC1; % b1 > 0
-        aC2 = 1-5*la; % a2 > 0
-        bC2 = 1/laC2; % b2 > 0
-        
-        % Sample set
-        if rhoMat==0
-            C_sample(:,1) = gamrnd(aC1,bC1,N,1); % samples for bulk modulus [Pa]
-            C_sample(:,2) = gamrnd(aC2,bC2,N,1); % samples for shear modulus [Pa]
-        else
-            Xi = randn(N,2); % random matrix with statistically independent normalized Gaussian components
-            C_sample(:,1) = gaminv(normcdf(Xi(:,1)),aC1,bC1); % samples for bulk modulus [Pa]
-            C_sample(:,2) = gaminv(normcdf(rhoMat*Xi(:,1) + sqrt(1-rhoMat^2)*Xi(:,2)),aC2,bC2); % samples for shear modulus [Pa]
-        end
-        % lambda_sample = C_sample(:,1) - 2/3*C_sample(:,2); % [Pa]
-        E_sample = (9*C_sample(:,1).*C_sample(:,2))./(3*C_sample(:,1)+C_sample(:,2)); % [Pa]
-        NU_sample = (3*C_sample(:,1)-2*C_sample(:,2))./(6*C_sample(:,1)+2*C_sample(:,2));
-    else
-        E_sample = E*ones(N,1);
-        NU_sample = NU*ones(N,1);
-    end
     
-    % Phase field properties
-    if randPF % random phase field parameters
-        deltaP1 = 0.1; % coefficient of variation of fracture toughness
-        deltaP2 = 0.1; % coefficient of variation of regularization parameter
-        aP1 = 1/deltaP1^2;
-        bP1 = gc/aP1;
-        aP2 = 1/deltaP2^2;
-        bP2 = l/aP2;
-        
-        % Sample set
-        if rhoPF==0
-            gc_sample = gamrnd(aP1,bP1,N,1); % samples for fracture toughness [N/m^2]
-            l_sample = gamrnd(aP2,bP2,N,1); % samples regularization parameter [m]
-        else
-            Xi = randn(N,2); % random matrix with statistically independent normalized Gaussian components
-            gc_sample = gaminv(normcdf(Xi(:,1)),aP1,bP1); % samples for fracture toughness [N/m^2]
-            l_sample = gaminv(normcdf(rhoPF*Xi(:,1) + sqrt(1-rhoPF^2)*Xi(:,2)),aP2,bP2); % samples regularization parameter [m]
-        end
-    else
-        gc_sample = gc*ones(N,1);
-        l_sample = l*ones(N,1);
-    end
-    
-    samples = [E_sample,NU_sample,gc_sample,l_sample];
-
     %% Solution
     tTotal = tic;
     
-    nbSamples = 3;
-    fun = @(S_phase,S) solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PU,PL,PR);
-    [ft,dt,ut] = solvePFStoLinElas(S_phase,S,T,fun,samples,'display','nbsamples',nbSamples);
-    fmax = max(ft,[],2);
-    
+    nbSamples = 1;
+    fun = @(S_phase,S) solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,'display');
+    [ft,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
+    [fmax,idmax] = max(ft,[],2);
+    t = gettevol(T);
+    udmax = t(idmax);
+
     time = toc(tTotal);
+
+    myparallel('stop');
     
     %% Statistical outputs of solution
     probs = [0.025 0.975];
@@ -343,22 +304,30 @@ if solveProblem
     fmax_std = std(fmax);
     fmax_ci = quantile(fmax,probs);
     
+    udmax_mean = mean(udmax);
+    udmax_std = std(udmax);
+    udmax_ci = quantile(udmax,probs);
+    
     npts = 100;
     [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'npoints',npts);
+    [udmax_f,udmax_xi,udmax_bw] = ksdensity(udmax,'npoints',npts);
     
-    save(fullfile(pathname,'solution.mat'),'N','dt','ut',...
-        'ft_mean','ft_std','ft_ci','fmax',...
-        'fmax_mean','fmax_std','fmax_ci','probs','fmax_f','fmax_xi','fmax_bw','time');
+    save(fullfile(pathname,'solution.mat'),'N','ft','dt_mean','ut_mean',...
+        'dt_var','ut_var','dt_sample','ut_sample','ft_mean','ft_std','ft_ci','probs','time',...
+        'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
+        'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw');
 else
-    load(fullfile(pathname,'solution.mat'),'N','dt','ut',...
-        'ft_mean','ft_std','ft_ci','fmax',...
-        'fmax_mean','fmax_std','fmax_ci','probs','fmax_f','fmax_xi','fmax_bw','time');
+    load(fullfile(pathname,'solution.mat'),'N','ft','dt_mean','ut_mean',...
+        'dt_var','ut_var','dt_sample','ut_sample','ft_mean','ft_std','ft_ci','probs','time',...
+        'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
+        'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw');
 end
 
 %% Outputs
 fprintf('\n');
 fprintf('setup    = %d\n',setup);
 fprintf('PF model = %s\n',PFmodel);
+fprintf('PF solver = %s\n',PFsolver);
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
@@ -367,10 +336,16 @@ fprintf('nb samples = %g\n',N);
 fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
-fprintf('mean(fmax)    = %g kN/mm\n',fmax_mean*1e-6);
-fprintf('std(fmax)     = %g kN/mm\n',fmax_std*1e-6);
-fprintf('disp(fmax)    = %g\n',fmax_std/fmax_mean);
-fprintf('%d%% ci(fmax)  = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
+fprintf('mean(fmax)   = %g kN/mm\n',fmax_mean*1e-6);
+fprintf('std(fmax)    = %g kN/mm\n',fmax_std*1e-6);
+fprintf('disp(fmax)   = %g\n',fmax_std/fmax_mean);
+fprintf('%d%% ci(fmax) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
+fprintf('\n');
+
+fprintf('mean(udmax)   = %g mm\n',udmax_mean*1e3);
+fprintf('std(udmax)    = %g mm\n',udmax_std*1e3);
+fprintf('disp(udmax)   = %g\n',udmax_std/udmax_mean);
+fprintf('%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
 
 %% Display
 if displayModel
@@ -415,20 +390,37 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force-displacement')
     clf
+    plot(t*1e3,ft_mean*1e-6,'-b','Linewidth',linewidth)
+    hold on
     ciplot(ft_ci(1,:)*1e-6,ft_ci(2,:)*1e-6,t*1e3,'b');
     alpha(0.2)
-    hold on
-    plot(t*1e3,ft_mean*1e-6,'-b','Linewidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Force [kN]','Interpreter',interpreter)
-    l = legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value'},'Location','NorthWest');
+    l = legend({'mean function',...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval']},...
+        'Location','NorthWest');
     set(l,'Interpreter','latex')
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
+
+    figure('Name','Force-displacement')
+    clf
+    color = distinguishable_colors(N);
+    for i=1:N
+        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
+        hold on
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Force [kN]','Interpreter',interpreter)
+    mysaveas(pathname,'forces_displacement',formats);
+    mymatlab2tikz(pathname,'forces_displacement.tex');
     
     %% Display pdf of critical force
     figure('Name','Probability Density Estimate: Critical force')
@@ -451,7 +443,28 @@ if displaySolution
     mysaveas(pathname,'pdf_fmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fmax.tex');
     
-    %% Display samples of solutions at different instants
+    %% Display pdf of critical displacement
+    figure('Name','Probability Density Estimate: Critical displacement')
+    clf
+    plot(udmax_xi*1e3,udmax_f,'-b','LineWidth',linewidth)
+    hold on
+    ind_udmax = find(udmax_xi>=udmax_ci(1) & udmax_xi<udmax_ci(2));
+    area(udmax_xi(ind_udmax)*1e3,udmax_f(ind_udmax),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
+    scatter(udmax_mean*1e3,0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$u$ [mm]','Interpreter',interpreter)
+    ylabel('$p_{U_c}(u)$','Interpreter',interpreter)
+    l = legend('pdf',...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+        'mean value');
+    set(l,'Interpreter',interpreter)
+    mysaveas(pathname,'pdf_udmax',formats,renderer);
+    mymatlab2tikz(pathname,'pdf_udmax.tex');
+    
+    %% Display means, variances and samples of solutions at different instants
     ampl = 0;
     switch setup
         case {1,4,5}
@@ -461,10 +474,46 @@ if displaySolution
     end
     rep = [rep,length(T)];
     
-    for k=1:size(ut,1)
     for j=1:length(rep)
-        dj = dt(k,:,rep(j))';
-        uj = ut(k,:,rep(j))';
+        dj = dt_mean(:,rep(j));
+        dj_var = dt_var(:,rep(j));
+        uj = ut_mean(:,rep(j));
+        uj_var = ut_var(:,rep(j));
+        
+        plotSolution(S_phase,dj);
+        mysaveas(pathname,['damage_mean_t' num2str(rep(j))],formats,renderer);
+        plotSolution(S_phase,dj_var);
+        mysaveas(pathname,['damage_var_t' num2str(rep(j))],formats,renderer);
+        
+        for i=1:Dim
+            plotSolution(S,uj,'displ',i,'ampl',ampl);
+            mysaveas(pathname,['displacement_' num2str(i) '_mean_t' num2str(rep(j))],formats,renderer);
+            plotSolution(S,uj_var,'displ_var',i,'ampl',ampl);
+            mysaveas(pathname,['displacement_' num2str(i) '_var_t' num2str(rep(j))],formats,renderer);
+        end
+        
+        % for i=1:(Dim*(Dim+1)/2)
+        %     plotSolution(S,uj,'epsilon',i,'ampl',ampl);
+        %     mysaveas(pathname,['epsilon_' num2str(i) '_mean_t' num2str(rep(j))],formats,renderer);
+        %
+        %     plotSolution(S,uj,'sigma',i,'ampl',ampl);
+        %     mysaveas(pathname,['sigma_' num2str(i) '_mean_t' num2str(rep(j))],formats,renderer);
+        % end
+        %
+        % plotSolution(S,uj,'epsilon','mises','ampl',ampl);
+        % mysaveas(pathname,['epsilon_von_mises_mean_t' num2str(rep(j))],formats,renderer);
+        %
+        % plotSolution(S,uj,'sigma','mises','ampl',ampl);
+        % mysaveas(pathname,['sigma_von_mises_mean_t' num2str(rep(j))],formats,renderer);
+        %
+        % plotSolution(S,uj,'energyint','','ampl',ampl);
+        % mysaveas(pathname,['internal_energy_mean_t' num2str(rep(j))],formats,renderer);
+    end
+
+    for k=1:size(dt_sample,1)
+    for j=1:length(rep)
+        dj = dt_sample(k,:,rep(j))';
+        uj = ut_sample(k,:,rep(j))';
         
         plotSolution(S_phase,dj);
         mysaveas(pathname,['damage_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
@@ -495,7 +544,7 @@ if displaySolution
     
 end
 
-%% Display evolution of samples of solutions
+%% Display evolution of means, variances and samples of solutions
 if makeMovie
     sz_d = [getnbddl(S_phase),getnbtimedof(T)];
     sz_u = [getnbddl(S),getnbtimedof(T)];
@@ -505,15 +554,36 @@ if makeMovie
     options = {'plotiter',true,'plottime',false};
     framerate = 80;
     
-    for k=1:size(St,1)
-        dk = TIMEMATRIX(reshape(dt(k,:,:),sz_d),T);
-        uk = TIMEMATRIX(reshape(ut(k,:,:),sz_u),T);
+    dk = TIMEMATRIX(reshape(dt_mean(:,:),sz_d),T);
+    dk_var = TIMEMATRIX(reshape(dt_var(:,:),sz_d),T);
+    % uk = TIMEMATRIX(reshape(ut_mean(:,:),sz_u),T);
+    % uk_var = TIMEMATRIX(reshape(ut_var(:,:),sz_u),T);
+    
+    evolSolution(S_phase,dk,'FrameRate',framerate,'filename','damage_mean','pathname',pathname,options{:});
+    evolSolution(S_phase,dk_var,'FrameRate',framerate,'filename','damage_var','pathname',pathname,options{:});
+    % for i=1:Dim
+    %     evolSolution(S,uk,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_mean'],'pathname',pathname,options{:});
+    %     evolSolution(S,uk_var,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_var'],'pathname',pathname,options{:});
+    % end
+    %
+    % for i=1:(Dim*(Dim+1)/2)
+    %     evolSolution(S,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i) '_mean'],'pathname',pathname,options{:});
+    %     evolSolution(S,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i) '_mean'],'pathname',pathname,options{:});
+    % end
+    %
+    % evolSolution(S,uk,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises_mean','pathname',pathname,options{:});
+    % evolSolution(S,uk,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises_mean','pathname',pathname,options{:});
+    % evolSolution(S,uk,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_mean','pathname',pathname,options{:});
+
+    for k=1:size(dt_sample,1)
+        dk = TIMEMATRIX(reshape(dt_sample(k,:,:),sz_d),T);
+        % uk = TIMEMATRIX(reshape(ut_sample(k,:,:),sz_u),T);
         
         evolSolution(S_phase,dk,'FrameRate',framerate,'filename',['damage_sample_' num2str(k)],'pathname',pathname,options{:});
-        for i=1:Dim
-            evolSolution(S,uk,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
-        end
-        
+        % for i=1:Dim
+        %     evolSolution(S,uk,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
+        % end
+        %
         % for i=1:(Dim*(Dim+1)/2)
         %     evolSolution(S,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
         %     evolSolution(S,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
@@ -525,13 +595,25 @@ if makeMovie
     end
 end
 
-%% Save samples of solutions
+%% Save means, variances and samples of solutions
 if saveParaview
     [t,rep] = gettevol(T);
-    for k=1:size(ut,1)
+    for i=1:length(T)
+        di = dt_mean(:,rep(i))';
+        ui = ut_mean(:,rep(i))';
+        dvi = dt_var(:,rep(i))';
+        uvi = ut_var(:,rep(i))';
+        
+        write_vtk_mesh(S,{di,ui,dvi,uvi},[],...
+            {'damage_mean','displacement_mean','damage_variance','displacement_variance'},[],...
+            pathname,'solution_mean_variance',1,i-1);
+    end
+    make_pvd_file(pathname,'solution_mean_variance',1,length(T));
+
+    for k=1:size(dt_sample,1)
         for i=1:length(T)
-            di = dt(k,:,rep(i))';
-            ui = ut(k,:,rep(i))';
+            di = dt_sample(k,:,rep(i))';
+            ui = ut_sample(k,:,rep(i))';
             
             write_vtk_mesh(S,{di,ui},[],...
                 {'damage','displacement'},[],...
@@ -540,5 +622,3 @@ if saveParaview
         make_pvd_file(pathname,['solution_sample_' num2str(k)],1,length(T));
     end
 end
-
-myparallel('stop');

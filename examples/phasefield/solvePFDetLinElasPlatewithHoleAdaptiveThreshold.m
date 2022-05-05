@@ -1,19 +1,24 @@
-function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
-% function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
-% Solve deterministic Phase Field problem.
+function [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,P0,C,sizemap,varargin)
+% function [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,P0,C,sizemap,varargin)
+% Solve deterministic Phase Field problem with mesh adaptation.
 
 display_ = ischarin('display',varargin);
+filename = getcharin('filename',varargin,'gmsh_domain_with_hole');
+pathname = getcharin('pathname',varargin,'.');
+gmshoptions = getcharin('gmshoptions',varargin,'-v 0');
+mmgoptions = getcharin('mmgoptions',varargin,'-nomove -v -1');
 
 Dim = getdim(S);
 
-t = gett(T);
+dt0 = T.dt0;
+dt1 = T.dt1;
+tf = T.tf;
+dthreshold = T.dthreshold;
 
-dt = cell(1,length(T));
-ut = cell(1,length(T));
-ft = zeros(1,length(T));
-if nargout>=4
-    Ht = cell(1,length(T));
-end
+materials_phase = MATERIALS(S_phase);
+materials = MATERIALS(S);
+S_phase = setphasefieldproperties(S_phase,materials_phase);
+S = setmaterialproperties(S,materials);
 
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
@@ -54,18 +59,17 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
 end
 
 if display_
-    fprintf('\n+-----------+-----------+-----------+------------+------------+\n');
-    fprintf('|   Iter    |  u [mm]   |  f [kN]   |  norm(d)   |  norm(u)   |\n');
-    fprintf('+-----------+-----------+-----------+------------+------------+\n');
+    fprintf('\n+------+-----------+-----------+----------+----------+------------+------------+\n');
+    fprintf('| Iter |  u [mm]   |  f [kN]   | Nb nodes | Nb elems |  norm(d)   |  norm(u)   |\n');
+    fprintf('+------+-----------+-----------+----------+----------+------------+------------+\n');
+    fprintf('| %4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',0,0,0,getnbnode(S),getnbelem(S),0,0);
 end
 
-mats_phase = MATERIALS(S_phase);
-r = cell(length(mats_phase),1);
-for m=1:length(mats_phase)
-    r{m} = getparam(mats_phase{m},'r');
-end
-
-for i=1:length(T)
+i = 0;
+ti = 0;
+dti = dt0;
+while ti < tf
+    i = i+1;
     
     % Internal energy field
     switch lower(PFsolver)
@@ -95,10 +99,16 @@ for i=1:length(T)
     % Phase field
     mats_phase = MATERIALS(S_phase);
     for m=1:length(mats_phase)
-        if strcmpi(PFsolver,'historyfieldnode')
-            mats_phase{m} = setparam(mats_phase{m},'r',r{m}+2*H);
+        mat = mats_phase{m};
+        if isparam(mat,'delta') && any(getparam(mat,'delta')>0) && isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
+            r = getparam(mat,'r');
         else
-            mats_phase{m} = setparam(mats_phase{m},'r',r{m}+2*H{m});
+            r = getparam(materials_phase{m},'r');
+        end
+        if strcmpi(PFsolver,'historyfieldnode')
+            mats_phase{m} = setparam(mats_phase{m},'r',r+2*H);
+        else
+            mats_phase{m} = setparam(mats_phase{m},'r',r+2*H{m});
         end
     end
     S_phase = actualisematerials(S_phase,mats_phase);
@@ -126,6 +136,11 @@ for i=1:length(T)
                     [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
             end
     end
+    if any(d > dthreshold)
+        dti = dt1;
+    end
+    ti = ti + dti;
+	
     d = unfreevector(S_phase,d);
     
     % Displacement field
@@ -136,10 +151,14 @@ for i=1:length(T)
     end
     S = actualisematerials(S,mats);
     S = removebc(S);
-    ud = -t(i);
-    S = addcl(S,PU,'UY',ud);
-    S = addcl(S,PL,{'UX','UY'});
-    S = addcl(S,PR,'UY');
+    ud = -ti;
+    if Dim==2
+        S = addcl(S,BU,'UY',ud);
+    elseif Dim==3
+        S = addcl(S,BU,'UY',ud);
+    end
+    S = addcl(S,BL,'UY');
+    S = addcl(S,P0,'UX');
     
     [A,b] = calc_rigi(S,'nofree');
     b = -b;
@@ -147,15 +166,22 @@ for i=1:length(T)
     u = freematrix(S,A)\b;
     u = unfreevector(S,u);
     
-    numddl = findddl(S,'UY',PU);
+    numddl = findddl(S,'UY',BU);
     f = -A(numddl,:)*u;
     f = sum(f);
     
     % Update fields
+    t(i) = ti;
     dt{i} = d;
     ut{i} = u;
     ft(i) = f;
-    if nargout>=4
+    if nargout>=5
+        St_phase{i} = S_phase;
+    end
+    if nargout>=6
+        St{i} = S;
+    end
+    if nargout>=7
         if strcmpi(PFsolver,'historyfieldnode')
             Ht{i} = double(H);
         else
@@ -164,22 +190,56 @@ for i=1:length(T)
     end
     
     if display_
-        fprintf('| %4d/%4d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,length(T),t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),norm(d),norm(u));
+        fprintf('| %4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',i,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),getnbnode(S),getnbelem(S),norm(d),norm(u));
+    end
+    
+    if ti<tf
+        % Mesh adaptation
+        S_phase_old = S_phase;
+        S_phase_ref = addcl(S_phase_old,C,'T',1);
+        d_ref = freevector(S_phase_ref,d);
+        d_ref = unfreevector(S_phase_ref,d_ref);
+        % S_old = S;
+        cl = sizemap(d_ref);
+        S_phase = adaptmesh(S_phase_ref,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+        S = S_phase;
+        
+        % Update phase field properties
+        S_phase = setphasefieldproperties(S_phase,materials_phase);
+        S_phase = final(S_phase);
+        
+        % Update material properties
+        S = setmaterialproperties(S,materials);
+        S = final(S);
+        if Dim==2
+            S = addcl(S,BU,'UY',ud);
+        elseif Dim==3
+            S = addcl(S,BU,'UY',ud);
+        end
+        S = addcl(S,BL,'UY');
+        S = addcl(S,P0,'UX');
+        
+        % Update fields
+        P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
+        d = P_phase'*d;
+        
+        if strcmpi(PFsolver,'historyfieldnode')
+            h = P_phase'*h;
+            H = setvalue(H,h);
+        elseif strcmpi(PFsolver,'historyfieldelem')
+            H = calc_energyint(S,u,'positive','intorder','mass');
+        end
+        
+        % P = calcProjection(S,S_old,[],'free',false,'full',true);
+        P = kron(P_phase,eye(Dim));
+        u = P'*u;
     end
 end
 
 if display_
-    fprintf('+-----------+-----------+-----------+------------+------------+\n');
+    fprintf('+------+-----------+-----------+----------+----------+------------+------------+\n');
 end
 
-dt = TIMEMATRIX(dt,T,size(d));
-ut = TIMEMATRIX(ut,T,size(u));
-if nargout>=4
-    if strcmpi(PFsolver,'historyfieldnode')
-        Ht = TIMEMATRIX(Ht,T,size(d));
-    else
-        Ht = TIMEMATRIX(Ht,T,[getnbelem(S),1]);
-    end
-end
+T = TIMEMODEL(t);
 
 end

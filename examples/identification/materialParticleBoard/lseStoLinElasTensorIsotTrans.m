@@ -100,7 +100,8 @@ tolCon = 1e-12; % tolerance on the constraint violation
 
 % options  = optimoptions('fmincon','Display',display);
 % options  = optimoptions('fmincon','Display',display,'TolX',tolX,'TolFun',tolFun,'TolCon',tolCon);
-options  = optimoptions('fmincon','Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,'ConstraintTolerance',tolCon);
+options  = optimoptions('fmincon','Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,...
+    'OptimalityTolerance',tolFun,'ConstraintTolerance',tolCon);
 
 fun = @(lambda) funoptimlseIsotTrans(lambda,C_data,mC_data,nuC_data,MCMCalg);
 [lambda,err,exitflag,output] = fmincon(fun,lambda0,[],[],[],[],lb,ub,nonlcon,options);

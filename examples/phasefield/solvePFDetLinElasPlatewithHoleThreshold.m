@@ -1,19 +1,15 @@
-function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
-% function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
+function [dt,ut,ft,Ht] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,P0,varargin)
+% function [dt,ut,ft,Ht] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,P0,varargin)
 % Solve deterministic Phase Field problem.
 
 display_ = ischarin('display',varargin);
 
 Dim = getdim(S);
 
-t = gett(T);
-
-dt = cell(1,length(T));
-ut = cell(1,length(T));
-ft = zeros(1,length(T));
-if nargout>=4
-    Ht = cell(1,length(T));
-end
+dt0 = T.dt0;
+dt1 = T.dt1;
+tf = T.tf;
+dthreshold = T.dthreshold;
 
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
@@ -54,9 +50,9 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
 end
 
 if display_
-    fprintf('\n+-----------+-----------+-----------+------------+------------+\n');
-    fprintf('|   Iter    |  u [mm]   |  f [kN]   |  norm(d)   |  norm(u)   |\n');
-    fprintf('+-----------+-----------+-----------+------------+------------+\n');
+    fprintf('\n+------+-----------+-----------+------------+------------+\n');
+    fprintf('| Iter |  u [mm]   |  f [kN]   |  norm(d)   |  norm(u)   |\n');
+    fprintf('+------+-----------+-----------+------------+------------+\n');
 end
 
 mats_phase = MATERIALS(S_phase);
@@ -65,7 +61,11 @@ for m=1:length(mats_phase)
     r{m} = getparam(mats_phase{m},'r');
 end
 
-for i=1:length(T)
+i = 0;
+ti = 0;
+dti = dt0;
+while ti < tf
+    i = i+1;
     
     % Internal energy field
     switch lower(PFsolver)
@@ -126,6 +126,11 @@ for i=1:length(T)
                     [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
             end
     end
+    if any(d > dthreshold)
+        dti = dt1;
+    end
+    ti = ti + dti;
+	
     d = unfreevector(S_phase,d);
     
     % Displacement field
@@ -136,10 +141,14 @@ for i=1:length(T)
     end
     S = actualisematerials(S,mats);
     S = removebc(S);
-    ud = -t(i);
-    S = addcl(S,PU,'UY',ud);
-    S = addcl(S,PL,{'UX','UY'});
-    S = addcl(S,PR,'UY');
+    ud = -ti;
+    if Dim==2
+        S = addcl(S,BU,'UY',ud);
+    elseif Dim==3
+        S = addcl(S,BU,'UY',ud);
+    end
+    S = addcl(S,BL,'UY');
+    S = addcl(S,P0,'UX');
     
     [A,b] = calc_rigi(S,'nofree');
     b = -b;
@@ -147,11 +156,12 @@ for i=1:length(T)
     u = freematrix(S,A)\b;
     u = unfreevector(S,u);
     
-    numddl = findddl(S,'UY',PU);
+    numddl = findddl(S,'UY',BU);
     f = -A(numddl,:)*u;
     f = sum(f);
     
     % Update fields
+    t(i) = ti;
     dt{i} = d;
     ut{i} = u;
     ft(i) = f;
@@ -164,14 +174,15 @@ for i=1:length(T)
     end
     
     if display_
-        fprintf('| %4d/%4d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,length(T),t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),norm(d),norm(u));
+        fprintf('| %4d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),norm(d),norm(u));
     end
 end
 
 if display_
-    fprintf('+-----------+-----------+-----------+------------+------------+\n');
+    fprintf('+------+-----------+-----------+------------+------------+\n');
 end
 
+T = TIMEMODEL(t);
 dt = TIMEMATRIX(dt,T,size(d));
 ut = TIMEMATRIX(ut,T,size(u));
 if nargout>=4

@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
-% function [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+function ft = solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+% function ft = solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
 % Solve deterministic Phase Field problem.
 
 display_ = ischarin('display',varargin);
@@ -8,12 +8,7 @@ Dim = getdim(S);
 
 t = gett(T);
 
-dt = cell(1,length(T));
-ut = cell(1,length(T));
 ft = zeros(1,length(T));
-if nargout>=4
-    Ht = cell(1,length(T));
-end
 
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
@@ -189,16 +184,7 @@ for i=1:length(T)
     end
     
     % Update fields
-    dt{i} = d;
-    ut{i} = u;
     ft(i) = f;
-    if nargout>=4
-        if strcmpi(PFsolver,'historyfieldnode')
-            Ht{i} = double(H);
-        else
-            Ht{i} = reshape(double(mean(H,4)),[getnbelem(S),1]);
-        end
-    end
     
     if display_
         fprintf('| %4d/%4d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,length(T),t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),norm(d),norm(u));
@@ -207,16 +193,6 @@ end
 
 if display_
     fprintf('+-----------+-----------+-----------+------------+------------+\n');
-end
-
-dt = TIMEMATRIX(dt,T,size(d));
-ut = TIMEMATRIX(ut,T,size(u));
-if nargout>=4
-    if strcmpi(PFsolver,'historyfieldnode')
-        Ht = TIMEMATRIX(Ht,T,size(d));
-    else
-        Ht = TIMEMATRIX(Ht,T,[getnbelem(S),1]);
-    end
 end
 
 end

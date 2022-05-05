@@ -239,16 +239,16 @@ if solveProblem
     
     switch optimFun
         case 'lsqnonlin'
-            fun = @(param) funlsqnonlinInitialTime(param,funuy_exp,S,funN,M,funb,funu0,v0,P1);
+            fun = @(param) funlsqnonlinBeamDetDynLinElasClampedFreeInitialTime(param,funuy_exp,S,funN,M,funb,funu0,v0,P1);
             [param,err,~,exitflag,output] = lsqnonlin(fun,param0,lb,ub,options);
         case 'fminsearch'
-            fun = @(param) funoptimInitialTime(param,funuy_exp,S,funN,M,funb,funu0,v0,P1);
+            fun = @(param) funoptimBeamDetDynLinElasClampedFreeInitialTime(param,funuy_exp,S,funN,M,funb,funu0,v0,P1);
             [param,err,exitflag,output] = fminsearch(fun,param0,options);
         case 'fminunc'
-            fun = @(param) funoptimInitialTime(param,funuy_exp,S,funN,M,funb,funu0,v0,P1);
+            fun = @(param) funoptimBeamDetDynLinElasClampedFreeInitialTime(param,funuy_exp,S,funN,M,funb,funu0,v0,P1);
             [param,err,exitflag,output] = fminunc(fun,param0,options);
         case 'fmincon'
-            fun = @(param) funoptimInitialTime(param,funuy_exp,S,funN,M,funb,funu0,v0,P1);
+            fun = @(param) funoptimBeamDetDynLinElasClampedFreeInitialTime(param,funuy_exp,S,funN,M,funb,funu0,v0,P1);
             [param,err,exitflag,output] = fmincon(fun,param0,[],[],[],[],lb,ub,[],options);
     end
     

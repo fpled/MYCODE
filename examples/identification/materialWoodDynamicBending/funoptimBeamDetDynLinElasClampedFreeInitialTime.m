@@ -1,5 +1,5 @@
-function f = funlsqnonlinInitialTime(param,funuy_exp,S,funN,M,funb,funu0,v0,P1,varargin)
-% function f = funlsqnonlinInitialTime(param,funuy_exp,S,funN,M,funb,funu0,v0,P1,varargin)
+function f = funoptimBeamDetDynLinElasClampedFreeInitialTime(param,funuy_exp,S,funN,M,funb,funu0,v0,P1,varargin)
+% function f = funoptimBeamDetDynLinElasClampedFreeInitialTime(param,funuy_exp,S,funN,M,funb,funu0,v0,P1,varargin)
 
 if ischarin('display',varargin)
     fprintf('tinit = %g s\n',param(1));
@@ -28,6 +28,6 @@ uy = Uyt(end,:);
 tinit = param(1); % [s]
 uy_exp = funuy_exp(tinit); % [m]
 
-f = uy(:) - uy_exp(:);
+f = norm(uy(:) - uy_exp(:))^2;
 
 end
