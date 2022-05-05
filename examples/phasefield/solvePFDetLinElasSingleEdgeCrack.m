@@ -15,7 +15,11 @@ if nargout>=4
     Ht = cell(1,length(T));
 end
 
-d = calc_init_dirichlet(S_phase);
+% d = calc_init_dirichlet(S_phase);
+elem = S.groupelem{1};
+mat = getmaterial(elem);
+d = evalparam(mat,'d',elem,[],[]);
+% plotSolution(S_phase,d);
 u = calc_init_dirichlet(S);
 if strcmpi(PFsolver,'historyfieldnode')
     H = FENODEFIELD(calc_energyint(S,u,'node','positive'));

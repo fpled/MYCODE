@@ -27,8 +27,8 @@ displaySolution = false;
 makeMovie = false;
 saveParaview = true;
 
-% test = true; % coarse mesh
-test = false; % fine mesh
+test = true; % coarse mesh
+% test = false; % fine mesh
 
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isotropic'; % 'Isotropic' or 'Anisotropic'. Material symmetry
@@ -36,7 +36,7 @@ ang = 30; % clockwise material orientation angle around z-axis for anisotopic ma
 loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
-pluginCrack = true;
+pluginCrack = false;
 coeff_gc = 1.0;
 
 switch lower(symmetry)
@@ -259,7 +259,16 @@ if setProblem
     RHO = 1;
     
     % Material
+    S_phase = addcl(S_phase,C,'T',1);
     d = calc_init_dirichlet(S_phase);
+    nD_d = findddl(S_phase,'T',C); % indices of nodes where Dirichlet conditions are imposed
+    % nD_d = find(d==1);
+    nF_d = setdiff((1:numel(d))',nD_d); % indices of free nodes
+    [A_phase,b_phase] = calc_rigi(S_phase,'nofree');
+    % b_phase = A_phase(nL_d,nD_d)*d(nD_d);
+    b_phase = -b_phase;
+    % b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
+    d(nF_d) = A_phase(nF_d,nF_d)\b_phase;
     switch lower(symmetry)
         case 'isotropic' % isotropic material
             mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
