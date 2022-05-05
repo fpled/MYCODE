@@ -36,7 +36,7 @@ ang = 30; % clockwise material orientation angle around z-axis for anisotopic ma
 loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
-pluginCrack = false;
+pluginCrack = true;
 coeff_gc = 1.0;
 
 switch lower(symmetry)
