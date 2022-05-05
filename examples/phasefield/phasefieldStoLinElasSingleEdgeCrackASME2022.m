@@ -47,7 +47,7 @@ N = 500; % number of samples
 % N = numWorkers;
 coeff_gc = 1.0;
 randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
-randPF = struct('gcb',[0,0],'lcorr',Inf); % random phase field parameters model
+randPF = struct('aGc',0,'bGc',0,'lcorr',Inf); % random phase field parameters model
 
 switch lower(symmetry)
     case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
@@ -64,8 +64,9 @@ filename = [filename '_' num2str(Dim) 'D_' num2str(N) 'samples'];
 if any(randMat.delta)
     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 end
-if any(randPF.gcb)
-    filename = [filename '_RandPF_Gc' num2str(randPF.gcb,'_%g') '_Lcorr' num2str(randPF.lcorr,'_%g')];
+if any(randPF.aGc) && any(randPF.bGc)
+    gcbounds = [randPF.aGc(:),randPF.bGc(:)]';
+    filename = [filename '_RandPF_Gc' num2str(gcbounds(:)','_%g') '_Lcorr' num2str(randPF.lcorr,'_%g')];
 end
 filename = [filename '_coeffgc' num2str(coeff_gc,'_%g')];
 
@@ -177,7 +178,7 @@ if setProblem
     H = 0;
     
     % Material
-    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H,'gcb',randPF.gcb,'lcorr',randPF.lcorr);
+    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H,'aGc',randPF.aGc,'bGc',randPF.bGc,'lcorr',randPF.lcorr);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
     

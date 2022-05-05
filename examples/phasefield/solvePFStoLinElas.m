@@ -109,7 +109,7 @@ parfor i=1:N
 %             mats_phase{m} = setparam(mats_phase{m},'k',k);
 %             mats_phase{m} = setparam(mats_phase{m},'r',r);
 %         end
-        if isparam(mat,'gcb') % random phase field parameters
+        if isparam(mat,'aGc') && isparam(mat,'bGc') % random phase field parameters
             nbelem = getnbelem(elem);
             xnode = node_phase(elem);
             gauss = calc_gauss(elem,'mass');
@@ -117,9 +117,20 @@ parfor i=1:N
             k = evalparam(mat,'k',elem,xnode,xgauss);
             r = evalparam(mat,'r',elem,xnode,xgauss);
             l = sqrt(k./r); % regularization parameter
-            gcb = getparam(mat,'gcb'); % lower and upper bounds for fracture toughness
-            aGc = gcb(1); % aGc > 0
-            bGc = gcb(2); % bGc > aGc > 0
+            aGc = getparam(mat,'aGc'); % lower bound(s) for fracture toughness aGc > 0
+            bGc = getparam(mat,'bGc'); % upper bound(s) for fracture toughness bGc > aGc > 0
+            if isvector(aGc) || isvector(bGc)
+                imax = max(length(aGc),length(bGc));
+                iGc = randi(si,imax); % support index for univariate uniform distribution with multiple lower and upper endpoints aGc and bGc
+                if isvector(aGc)
+                    aGc = aGc(iGc); % lower bound for fracture toughness aGc > 0
+                end
+                if isvector(bGc)
+                    bGc = bGc(iGc); % upper bound for fracture toughness bGc > aGc > 0
+                end
+                mats_phase{m} = setparam(mats_phase{m},'aGc',aGc);
+                mats_phase{m} = setparam(mats_phase{m},'bGc',bGc);
+            end
             if aGc<0 || bGc<0
                 error('Lower bound a = %g and upper bound b = %g for fracture toughness must be positive (superior to 0)',aGc,bGc)
             end

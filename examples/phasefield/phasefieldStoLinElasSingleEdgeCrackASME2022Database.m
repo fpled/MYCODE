@@ -41,17 +41,55 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 pluginCrack = true;
 
 % Random model parameters
-Ntotal = 1e4; % total number of samples
-N = 5*numWorkers; % number of samples
+% Ntotal = 1e4; % total number of samples
+Ntotal = 500;
+% N = 5*numWorkers; % number of samples
+% N = 10*numWorkers; % number of samples
+% N = 1120;
+% N = 960;
+N = 500;
 % N = 480;
+% N = 400;
 Nstart = 1; % index of first sample
-% Nstart = 480+1;
+% Nstart = 1120+1; % tension test
+% Nstart = 2240+1;
+% Nstart = 3360+1;
+% Nstart = 4320+1;
+% Nstart = 5280+1;
+% Nstart = 6240+1;
+% Nstart = 7200+1;
+% Nstart = 8160+1;
+% Nstart = 9120+1;
+% Nstart = 9600+1;
+% Nstart = 480+1; % shear test
 % Nstart = 960+1;
+% Nstart = 1440+1;
+% Nstart = 1920+1;
+% Nstart = 2400+1;
+% Nstart = 2880+1;
+% Nstart = 3360+1;
+% Nstart = 3840+1;
+% Nstart = 4320+1;
+% Nstart = 4800+1;
+% Nstart = 5280+1;
+% Nstart = 5760+1;
+% Nstart = 6240+1;
+% Nstart = 6720+1;
+% Nstart = 7200+1;
+% Nstart = 7680+1;
+% Nstart = 8160+1;
+% Nstart = 8640+1;
+% Nstart = 9120+1;
+% Nstart = 9600+1;
 randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
 gc = 2.7e3;
-aGc = 0.6*gc;
-bGc = 1.4*gc;
-randPF = struct('gcb',[aGc,bGc],'lcorr',Inf); % random phase field parameters model
+% aGc = 0.6*gc;
+% bGc = 1.4*gc;
+aGc = [0.9,1.1]*gc;
+bGc = [0.9,1.1]*gc;
+% aGc = [0.7,1.2]*gc;
+% bGc = [0.8,1.3]*gc;
+randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase field parameters model
 
 switch lower(symmetry)
     case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
@@ -64,7 +102,11 @@ end
 if pluginCrack
     filename = [filename 'PluginCrack'];
 end
-filename = [filename '_' num2str(Dim) 'D_' num2str(N) 'samples_from_' num2str(Nstart) '_to_' num2str(Nstart+N-1)];
+filename = [filename '_' num2str(Dim) 'D_' num2str(Ntotal) 'samples_from_' num2str(Nstart) '_to_' num2str(Nstart+N-1)];
+if any(randPF.aGc) && any(randPF.bGc)
+    gcbounds = [randPF.aGc(:),randPF.bGc(:)]';
+    filename = [filename '_RandPF_Gc' num2str(gcbounds(:)','_%g') '_Lcorr' num2str(randPF.lcorr,'_%g')];
+end
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -173,7 +215,7 @@ if setProblem
     H = 0;
     
     % Material
-    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H,'gcb',randPF.gcb,'lcorr',randPF.lcorr);
+    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H,'aGc',randPF.aGc,'bGc',randPF.bGc,'lcorr',randPF.lcorr);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
     

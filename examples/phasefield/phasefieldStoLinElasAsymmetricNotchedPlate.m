@@ -45,7 +45,7 @@ pluginCrack = true;
 % N = 100; % number of samples
 N = numWorkers;
 randMat = struct('delta',0.1,'lcorr',Inf); % random material parameters model
-randPF = struct('delta',0,'lcorr',Inf,'rcorr',0); % random phase field parameters model
+randPF = struct('aGc',0,'bGc',0,'lcorr',Inf); % random phase field parameters model
 
 filename = ['phasefieldStoLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel PFsolver];
 if pluginCrack
@@ -55,8 +55,9 @@ filename =  [filename '_' num2str(N) 'samples'];
 if any(randMat.delta)
     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 end
-if any(randPF.delta)
-    filename = [filename '_RandPF_Delta' num2str(randPF.delta,'_%g') '_Lcorr' num2str(randPF.lcorr,'_%g') '_Rcorr' num2str(randPF.rcorr,'_%g')];
+if any(randPF.aGc) && any(randPF.bGc)
+    gcbounds = [randPF.aGc(:),randPF.bGc(:)]';
+    filename = [filename '_RandPF_Gc' num2str(gcbounds(:)','_%g') '_Lcorr' num2str(randPF.lcorr,'_%g')];
 end
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -148,7 +149,7 @@ if setProblem
     H = 0;
     
     % Material
-    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H,'delta',randPF.delta,'lcorr',randPF.lcorr,'rcorr',randPF.rcorr);
+    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H,'aGc',randPF.aGc,'bGc',randPF.bGc,'lcorr',randPF.lcorr);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
     
