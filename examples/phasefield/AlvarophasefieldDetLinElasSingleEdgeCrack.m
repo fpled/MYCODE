@@ -440,7 +440,9 @@ if setProblem
                         t0 = linspace(dt0,nt0*dt0,nt0);
                         t1 = linspace(dt1,nt1*dt1,nt1);
                         t2 = linspace(dt2,nt2*dt2,nt2);
-                        t = tInit + [t0, t1,     t2];
+                        t = tInit + t0;
+                        t = [t, t(end) + t1];
+                        t = [t, t(end) + t2];
                         if test
                             dt = 5e-8;
                             % nt = 300;
