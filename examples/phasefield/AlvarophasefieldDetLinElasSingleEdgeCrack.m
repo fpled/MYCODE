@@ -36,7 +36,7 @@ ang = 30; % clockwise material orientation angle around z-axis for anisotopic ma
 loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
-pluginCrack = false;
+pluginCrack = true;
 coeff_gc = 1.0;
 
 switch lower(symmetry)
@@ -52,7 +52,8 @@ if pluginCrack
 end
 filename = [filename '_' num2str(Dim) 'D'];
 filename = [filename '_coeffgc' num2str(coeff_gc,'_%g')];
-filename = [filename 'FullD'];
+% filename = [filename 'FullD'];
+% filename = [filename 'Dirichlet'];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -260,16 +261,19 @@ if setProblem
     RHO = 1;
     
     % Material
-    S_phase = addcl(S_phase,C,'T',1);
     d = calc_init_dirichlet(S_phase);
-    nD_d = findddl(S_phase,'T',C); % indices of nodes where Dirichlet conditions are imposed
-    % nD_d = find(d==1);
-    nF_d = setdiff((1:numel(d))',nD_d); % indices of free nodes
-    [A_phase,b_phase] = calc_rigi(S_phase,'nofree');
-    % b_phase = A_phase(nL_d,nD_d)*d(nD_d);
-    b_phase = -b_phase;
-    % b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
-    d(nF_d) = A_phase(nF_d,nF_d)\b_phase;
+
+    %     S_phase = addcl(S_phase,C,'T',1);
+    %     d = calc_init_dirichlet(S_phase);
+    %     nD_d = findddl(S_phase,'T',C); % indices of nodes where Dirichlet conditions are imposed
+    %     % nD_d = find(d==1);
+    %     nF_d = setdiff((1:numel(d))',nD_d); % indices of free nodes
+    %     [A_phase,b_phase] = calc_rigi(S_phase,'nofree');
+    %     % b_phase = A_phase(nL_d,nD_d)*d(nD_d);
+    %     b_phase = -b_phase;
+    %     % b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
+    %     d(nF_d) = A_phase(nF_d,nF_d)\b_phase;
+
     switch lower(symmetry)
         case 'isotropic' % isotropic material
             mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
@@ -421,15 +425,28 @@ if setProblem
                         % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM],
                         % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
                         % du = 1e-5 mm during 1500 time steps (up to u = 15e-3 mm)
-                        dt = 1e-8;
-                        nt = 1500;
+                        % dt = 1e-8;
+                        % nt = 1500;
                         % nt = 2000;
+                        tInit = 5e-6; % start at 5 µm
+                        dt0 = 2e-7;
+                        nt0 = 20; % up to 9 µm
+                        dt1 = 1e-7;
+                        nt1 = 5; % up to 9.5 µm
+                        dt2 = 1e-8;
+                        nt2 = 550; % up to 15 µm
+                        % dt3 = 1e-7;
+                        % nt3 = 50; % up to 20 µm
+                        t0 = linspace(dt0,nt0*dt0,nt0);
+                        t1 = linspace(dt1,nt1*dt1,nt1);
+                        t2 = linspace(dt2,nt2*dt2,nt2);
+                        t = tInit + [t0, t1,     t2];
                         if test
                             dt = 5e-8;
                             % nt = 300;
                             nt = 400;
+                            t = linspace(dt,nt*dt,nt);
                         end
-                        t = linspace(dt,nt*dt,nt);
                 end
             elseif Dim==3
                 dt = 1e-8;

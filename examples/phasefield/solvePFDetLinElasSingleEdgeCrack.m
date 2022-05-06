@@ -114,27 +114,27 @@ for i=1:length(T)
         end
         S_phase = actualisematerials(S_phase,mats_phase);
 
-        % [A_phase,b_phase] = calc_rigi(S_phase);
-        % b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
-        [A_phase,~] = calc_rigi(S_phase,'nofree');
-        b_phase = bodyload(S_phase,[],'QN',2*H,'nofree');
+        [A_phase,b_phase] = calc_rigi(S_phase);
+        b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
+        % [A_phase,~] = calc_rigi(S_phase,'nofree');
+        % b_phase = bodyload(S_phase,[],'QN',2*H,'nofree');
 
         % d_old = d;
         switch lower(PFsolver)
             case {'historyfieldelem','historyfieldnode'}
                 d = A_phase\b_phase;
             otherwise
-                % d0 = freevector(S_phase,d);
-                % lb = d0;
-                % lb(lb==1) = 1-eps;
-                % ub = ones(size(d0));
-                lb = d;
+                d0 = freevector(S_phase,d);
+                lb = d0;
                 lb(lb==1) = 1-eps;
-                ub = ones(size(d));
+                ub = ones(size(d0));
+                % lb = d;
+                % lb(lb==1) = 1-eps;
+                % ub = ones(size(d));
                 switch optimFun
                     case 'lsqlin'
-                        % [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
-                        [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d,options);
+                        [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                        % [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d,options);
                     case 'lsqnonlin'
                         fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
                         [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
