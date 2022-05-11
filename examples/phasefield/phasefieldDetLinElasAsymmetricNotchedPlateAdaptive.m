@@ -35,12 +35,9 @@ Dim = 2; % space dimension Dim = 2
 setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
-pluginCrack = true;
+initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
-filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel PFsolver 'Adaptive'];
-if pluginCrack
-    filename = [filename 'PluginCrack'];
-end
+filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel PFsolver initialCrack 'Adaptive'];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -111,11 +108,16 @@ if setProblem
     end
     clC = cl; % characteristic length for edge crack/notch
     clH = cl; % characteristic length for circular holes
-    if pluginCrack
-        S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),Dim,'duplicate');
-    else
-        c = 0.025*unit; % crack width
-        S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'));
+    switch lower(initialCrack)
+        case 'geometriccrack'
+            S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),Dim,'duplicate');
+        case 'geometricnotch'
+            c = 0.025*unit; % crack width
+            S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'));
+        case 'initialphasefield'
+            S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),Dim,lower(initialCrack));
+        otherwise
+            error('Wrong model for initial crack');
     end
     
     sizemap = @(d) (clC-clD)*d+clD;
@@ -143,11 +145,6 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    if pluginCrack
-        C = POINT([-b,-h+a]);
-    else
-        C = LIGNE([-b-c/2,-h+a],[-b+c/2,-h+a]);
-    end
     R = 2*unit;
     BU = CIRCLE(0.0,h,R);
     BL = CIRCLE(-ls,-h,R);
@@ -156,10 +153,17 @@ if setProblem
     H2 = CIRCLE(-lh,h-ph-dh,r);
     H3 = CIRCLE(-lh,h-ph,r);
     
-    if pluginCrack
-        S_phase = final(S_phase,'duplicate');
-    else
-        S_phase = final(S_phase);
+    switch lower(initialCrack)
+        case 'geometriccrack'
+            C = POINT([-b,-h+a]);
+            S_phase = final(S_phase,'duplicate');
+        case 'geometricnotch'
+            C = LIGNE([-b-c/2,-h+a],[-b+c/2,-h+a]);
+            S_phase = final(S_phase);
+        case 'initialphasefield'
+            S_phase = final(S_phase);
+        otherwise
+            error('Wrong model for initial crack');
     end
     S_phase = addcl(S_phase,C,'T',1);
     S_phase = addcl(S_phase,BU,'T');
@@ -174,11 +178,16 @@ if setProblem
     S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     S = S_phase;
     
-    S_phase = setmaterial(S_phase,mat_phase);
-    if pluginCrack
-        S_phase = final(S_phase,'duplicate');
-    else
-        S_phase = final(S_phase);
+    switch lower(initialCrack)
+        case 'geometriccrack'
+            S_phase = final(S_phase,'duplicate');
+        case 'geometricnotch'
+            S_phase = final(S_phase);
+        case 'initialphasefield'
+            S_phase = final(S_phase);
+            S_phase = addcl(S_phase,C,'T',1);
+        otherwise
+            error('Wrong model for initial crack');
     end
     S_phase = addcl(S_phase,BU,'T');
     S_phase = addcl(S_phase,BL,'T');
@@ -246,10 +255,11 @@ if setProblem
     PL = POINT([-ls,-h]);
     PR = POINT([ls,-h]);
     
-    if pluginCrack
-        S = final(S,'duplicate');
-    else
-        S = final(S);
+    switch lower(initialCrack)
+        case 'geometriccrack'
+            S = final(S,'duplicate');
+        otherwise
+            S = final(S);
     end
     
     ud = 0;
