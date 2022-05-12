@@ -38,7 +38,7 @@ ang = 30; % clockwise material orientation angle around z-axis for anisotopic ma
 loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
-pluginCrack = true;
+initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
 % Random model parameters
 % Ntotal = 1e4; % total number of samples
@@ -93,14 +93,11 @@ randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase field parameter
 
 switch lower(symmetry)
     case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
-        filename = ['phasefieldStoLinElas' symmetry 'SingleEdgeCrack' loading PFmodel PFsolver];
+        filename = ['phasefieldStoLinElas' symmetry 'SingleEdgeCrack' loading PFmodel PFsolver initialCrack];
     case 'anisotropic' % anisotropic material
-        filename = ['phasefieldStoLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel PFsolver];
+        filename = ['phasefieldStoLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel PFsolver initialCrack];
     otherwise
         error('Wrong material symmetry class');
-end
-if pluginCrack
-    filename = [filename 'PluginCrack'];
 end
 filename = [filename '_' num2str(Dim) 'D_' num2str(Ntotal) 'samples_from_' num2str(Nstart) '_to_' num2str(Nstart+N-1)];
 if any(randPF.aGc) && any(randPF.bGc)
@@ -177,11 +174,16 @@ if setProblem
             clC = 2e-5;
         end
     end
-    if pluginCrack
-        S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate',lower(loading),lower(symmetry));
-    else
-        c = 1e-5; % crack width
-        S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,lower(loading),lower(symmetry));
+    switch lower(initialCrack)
+        case 'geometriccrack'
+            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate',lower(loading),lower(symmetry));
+        case 'geometricnotch'
+            c = 1e-5; % crack width
+            S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,lower(loading),lower(symmetry));
+        case 'initialphasefield'
+            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,lower(initialCrack),lower(loading),lower(symmetry));
+        otherwise
+            error('Wrong model for initial crack');
     end
     S = S_phase;
     
@@ -220,10 +222,16 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    if pluginCrack
-        S_phase = final(S_phase,'duplicate');
-    else
-        S_phase = final(S_phase);
+    switch lower(initialCrack)
+        case 'geometriccrack'
+            S_phase = final(S_phase,'duplicate');
+        case 'geometricnotch'
+            S_phase = final(S_phase);
+        case 'initialphasefield'
+            S_phase = final(S_phase);
+            S_phase = addcl(S_phase,C,'T',1);
+        otherwise
+            error('Wrong model for initial crack');
     end
     
     %% Stiffness matrices and sollicitation vectors
@@ -357,10 +365,11 @@ if setProblem
         BBack = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
     end
     
-    if pluginCrack
-        S = final(S,'duplicate');
-    else
-        S = final(S);
+    switch lower(initialCrack)
+        case 'geometriccrack'
+            S = final(S,'duplicate');
+        otherwise
+            S = final(S);
     end
     
     ud = 0;
@@ -649,8 +658,8 @@ fprintf('%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,
 fprintf('\n');
 
 gc_xiunif = linspace(min(gc_xi),max(gc_xi),1e3);
-gc_funif = unifpdf(gc_xiunif,aGc,bGc);
-gc_ciunif = unifinv(probs,aGc,bGc);
+gc_funif = myunifpdf(gc_xiunif,aGc,bGc);
+gc_ciunif = unifinv(probs,min(aGc),max(bGc));
 
 [gc_meanunif,gc_varunif] = unifstat(aGc,bGc);
 gc_stdunif = sqrt(gc_varunif);
@@ -729,6 +738,26 @@ if displaySolution
     ylabel('Force [kN]','Interpreter',interpreter)
     mysaveas(pathname,'forces_displacement',formats);
     mymatlab2tikz(pathname,'forces_displacement.tex');
+
+    color = distinguishable_colors(N);
+    for i=1:N
+        if mod(i,100)==0
+            close all
+        end
+        figure('Name',['Force-displacement #' num2str(i)])
+        clf
+        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
+        hold on
+        scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',color(i,:),'Linewidth',linewidth)
+        hold off
+        grid on
+        box on
+        set(gca,'FontSize',fontsize)
+        xlabel('Displacement [mm]','Interpreter',interpreter)
+        ylabel('Force [kN]','Interpreter',interpreter)
+        mysaveas(pathname,['force_displacement_' num2str(i)],{'epsc','png'});
+        % mymatlab2tikz(pathname,['force_displacement_' num2str(i) '.tex']);
+    end
     
     %% Display pdf of critical force
     figure('Name','Probability Density Estimate: Critical force')
