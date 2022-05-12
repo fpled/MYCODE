@@ -437,12 +437,14 @@ if setProblem
                         nt2 = 550; % up to 15 µm
                         % dt3 = 1e-7;
                         % nt3 = 50; % up to 20 µm
-                        t0 = linspace(dt0,nt0*dt0,nt0);
-                        t1 = linspace(dt1,nt1*dt1,nt1);
-                        t2 = linspace(dt2,nt2*dt2,nt2);
+                        t0 = linspace(dt0, nt0*dt0, nt0);
+                        t1 = linspace(dt1, nt1*dt1, nt1);
+                        t2 = linspace(dt2, nt2*dt2, nt2);
+                        % t3 = linspace(dt3,nt3*dt3, nt3);
                         t = tInit + t0;
                         t = [t, t(end) + t1];
                         t = [t, t(end) + t2];
+                        % t = [t, t(end) +t3];
                         if test
                             dt = 5e-8;
                             % nt = 300;

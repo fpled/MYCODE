@@ -98,7 +98,7 @@ fprintf('\nStandard Shinozuka method\n');
 rng('default');
 srng = rng; % get current random number generator settings
 X = rand(2,order,nV);
-Phi = X(1,:,:)*(2*pi); % random phase shifts Phi uniformly distributed on [0,2*pi]
+Phi = X(1,:,:)*2*pi; % random phase shifts Phi uniformly distributed on [0,2*pi]
 Psi = X(2,:,:); % random variables Psi uniformly distributed on [0,1]
 Z = sqrt(-log(Psi)); % random amplitudes Z with values in [0,+Inf[
 clear X Psi
@@ -166,7 +166,7 @@ fprintf('\nRandomized Shinozuka method\n');
 
 rng(srng) % set same random number generator settings as for standard Shinozuka method
 X = rand(2+Dim,order,nV);
-Phi = X(1,:,:)*(2*pi); % random phase shifts Phi uniformly distributed on [0,2*pi]
+Phi = X(1,:,:)*2*pi; % random phase shifts Phi uniformly distributed on [0,2*pi]
 Psi = X(2,:,:); % random variables Psi uniformly distributed on [0,1]
 Z = sqrt(-log(Psi)); % random amplitudes Z with values in [0,+Inf[
 Tau = (-1+2*X(2+(1:Dim),:,:)); % random wave numbers Tau uniformly distributed on [-1,1]
