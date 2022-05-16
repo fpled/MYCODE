@@ -41,46 +41,71 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
 % Random model parameters
-% Ntotal = 1e4; % total number of samples
-Ntotal = 500;
-% N = 5*numWorkers; % number of samples
-% N = 10*numWorkers; % number of samples
-% N = 1120;
-% N = 960;
-N = 500;
-% N = 480;
-% N = 400;
-Nstart = 1; % index of first sample
-% Nstart = 1120+1; % tension test
-% Nstart = 2240+1;
-% Nstart = 3360+1;
-% Nstart = 4320+1;
-% Nstart = 5280+1;
-% Nstart = 6240+1;
-% Nstart = 7200+1;
-% Nstart = 8160+1;
-% Nstart = 9120+1;
-% Nstart = 9600+1;
-% Nstart = 480+1; % shear test
-% Nstart = 960+1;
-% Nstart = 1440+1;
-% Nstart = 1920+1;
-% Nstart = 2400+1;
-% Nstart = 2880+1;
-% Nstart = 3360+1;
-% Nstart = 3840+1;
-% Nstart = 4320+1;
-% Nstart = 4800+1;
-% Nstart = 5280+1;
-% Nstart = 5760+1;
-% Nstart = 6240+1;
-% Nstart = 6720+1;
-% Nstart = 7200+1;
-% Nstart = 7680+1;
-% Nstart = 8160+1;
-% Nstart = 8640+1;
-% Nstart = 9120+1;
-% Nstart = 9600+1;
+% numsamples = 1e4; % total number of samples
+numsamples = 500;
+switch lower(loading)
+    case 'tension'
+        % sampleindices = 1:1120;
+        % sampleindices = (1120+1):2240;
+        % sampleindices = (2240+1):3360;
+        % sampleindices = (3360+1):4320;
+        % sampleindices = (4320+1):5280;
+        % sampleindices = (5280+1):6240;
+        % sampleindices = (6240+1):7200;
+        % sampleindices = (7200+1):8160;
+        % sampleindices = (8160+1):9120;
+        % sampleindices = (9120+1):9600;
+        % sampleindices = (9600+1):1e4;
+    case 'shear'
+        % sampleindices = 1:480;
+        % sampleindices = (480+1):960;
+        % sampleindices = (960+1):1440;
+        % sampleindices = (1440+1):1920;
+        % sampleindices = (1920+1):2400;
+        % sampleindices = (2400+1):2880;
+        % sampleindices = (2880+1):3360;
+        % sampleindices = (3360+1):3840;
+        % sampleindices = (3840+1):4320;
+        % sampleindices = (4320+1):4800;
+        % sampleindices = (4800+1):5280;
+        % sampleindices = (5280+1):5760;
+        % sampleindices = (5760+1):6240;
+        % sampleindices = (6240+1):6720;
+        % sampleindices = (6720+1):7200;
+        % sampleindices = (7200+1):7680;
+        % sampleindices = (7680+1):8160;
+        % sampleindices = (8160+1):8640;
+        % sampleindices = (8640+1):9120;
+        % sampleindices = (9120+1):9600;
+        % sampleindices = (9600+1):1e4;
+%         sampleindices = [9,13,55,61,101,109,127,198,226,282,304,339,345,353,365,378,408,434,463,479,492,...
+%             512,548,588,636,652,653,660,682,695,710,729,741,765,767,792,832,845,864,879,891,966,968,975,992,...
+%             1002,1008,1019,1102,1107,1115,1135,1152,1178,1187,1214,1217,1232,1363,1366,1391,1405,1409,1438,1473,1485,...
+%             1532,1616,1620,1626,1639,1666,1702,1791,1795,1822,1827,1829,1858,1864,1870,1871,1917,1919,1938,...
+%             2041,2049,2142,2151,2157,2200,2206,2237,2276,2332,2362,2365,2372,2421,2444,2456,2457,2465,2467,2476,2483,2493,...
+%             2513,2519,2585,2595,2596,2627,2645,2657,2669,2678,2688,2697,2717,2737,2747,2752,2763,2824,2880,2892,2949,...
+%             3017,3075,3085,3094,3130,3149,3158,3223,3268,3305,3313,3337,3354,3378,3383,3402,3444,...
+%             3505,3508,3536,3538,3540,3570,3594,3598,3623,3655,3658,3674,3678,3721,3802,3854,3858,3859,3911,3937,3964,...
+%             4014,4049,4138,4149,4165,4194,4211,4221,4281,4299,4311,4329,4333,4387,4391,4399,4406,4424,4453,4482,...
+%             4500,4514,4518,4532,4627,4655,4678,4724,4741,4752,4783,4795,4853,4855,4884,4895,4995,...
+%             5036,5052,5089,5104,5185,5197,5211,5242,5248,5298,5300,5304,5331,5357,5407,5410,5454,5466,5469,5496,5499,...
+%             5507,5543,5551,5564,5609,5621,5640,5648,5657,5669,5688,5691,5718,5739,5757,5815,5817,5864,5874,5875,5900,5912,5931,5959,5992,...
+%             6000,6018,6035,6072,6091,6098,6102,6140,6147,6148,6214,6215,6243,6260,6275,6315,6355,6386,6402,6413,6420,6434,6443,6473,6496,...
+%             6511,6513,6523,6545,6551,6619,6620,6621,6623,6640,6654,6678,6682,6692,6714,6750,6771,6775,6792,6797,6819,6824,6851,6852,6861,6871,6943,6946,6947,6954,6992,...
+%             7000,7042,7045,7068,7084,7090,7097,7111,7115,7142,7158,7170,7177,7292,7349,7372,7391,7392,7397,7399,7415,7419,7429,7435,7453,7499,...
+%             7525,7578,7614,7626,7628,7637,7640,7655,7656,7663,7664,7683,7743,7747,7755,7761,7778,7902,7918,7943,7964,7993,...
+%             8021,8059,8096,8103,8156,8159,8177,8182,8210,8258,8266,8283,8366,8397,8412,8416,...
+%             8581,8589,8595,8623,8698,8747,8788,8789,8808,8824,8827,8861,8865,8866,8881,8895,8903,8926,8939,8942,8974,8995,...
+%             9013,9030,9032,9090,9130,9144,9160,9200,9216,9220,9228,9277,9326,9346,9372,9384,9397,9405,9414,9446,9468,9483,9494,...
+%             9504,9536,9541,9550,9560,9569,9608,9613,9665,9681,9711,9723,9724,9737,9777,9789,9806,9809,9874,9888,9895,9901,9929,9945,9950,9956];
+        
+        % sampleindices = 1:500;
+        sampleindices = [19,33,35,48,77,88,111,126,154,157,175,204,214,218,232,271,298,317,329,343,404,449];
+%         sampleindices = [8,33,34,35,43,58,59,77,111,127,157,161,175,196,214,282,298,317,323,343,404,430,432,434];
+    otherwise
+        error('Wrong loading case');
+end
+N = length(sampleindices);
 randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
 gc = 2.7e3;
 % aGc = 0.6*gc;
@@ -99,7 +124,7 @@ switch lower(symmetry)
     otherwise
         error('Wrong material symmetry class');
 end
-filename = [filename '_' num2str(Dim) 'D_' num2str(Ntotal) 'samples_from_' num2str(Nstart) '_to_' num2str(Nstart+N-1)];
+filename = [filename '_' num2str(Dim) 'D_' num2str(numsamples) 'samples_from_' num2str(sampleindices(1)) '_to_' num2str(sampleindices(end))];
 if any(randPF.aGc) && any(randPF.bGc)
     gcbounds = [randPF.aGc(:),randPF.bGc(:)]';
     filename = [filename '_RandPF_Gc' num2str(gcbounds(:)','_%g') '_Lcorr' num2str(randPF.lcorr,'_%g')];
@@ -572,7 +597,7 @@ if solveProblem
     tTotal = tic;
     
     fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
-    [ft,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,'initsample',Nstart,'numsamples',Ntotal);
+    [ft,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,'numsamples',numsamples,'sampleindices',sampleindices);
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);
     udmax = t(idmax);
@@ -759,8 +784,8 @@ if displaySolution
         % mymatlab2tikz(pathname,['force_displacement_' num2str(i) '.tex']);
     end
     
-    %% Display pdf of critical force
-    figure('Name','Probability Density Estimate: Critical force')
+    %% Display pdf of maximum force
+    figure('Name','Probability Density Estimate: Maximum force')
     clf
     plot(fmax_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f,'-b','LineWidth',linewidth)
     hold on
@@ -772,7 +797,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     xlabel('$f$ [kN]','Interpreter',interpreter)
-    ylabel('$p_{F_c}(f)$','Interpreter',interpreter)
+    ylabel('$p_{F_{\mathrm{max}}}(f)$','Interpreter',interpreter)
     l = legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
         'mean value');
@@ -780,8 +805,8 @@ if displaySolution
     mysaveas(pathname,'pdf_fmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fmax.tex');
     
-    %% Display pdf of critical displacement
-    figure('Name','Probability Density Estimate: Critical displacement')
+    %% Display pdf of maximum displacement
+    figure('Name','Probability Density Estimate: Maximum displacement')
     clf
     plot(udmax_xi*1e3,udmax_f,'-b','LineWidth',linewidth)
     hold on
@@ -793,7 +818,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     xlabel('$u$ [mm]','Interpreter',interpreter)
-    ylabel('$p_{U_c}(u)$','Interpreter',interpreter)
+    ylabel('$p_{U_{D,\mathrm{max}}}(u)$','Interpreter',interpreter)
     l = legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
         'mean value');

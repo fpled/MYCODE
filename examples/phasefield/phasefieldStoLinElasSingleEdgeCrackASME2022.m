@@ -701,8 +701,8 @@ if displaySolution
     mysaveas(pathname,'forces_displacement',formats);
     mymatlab2tikz(pathname,'forces_displacement.tex');
     
-    %% Display pdf of critical force
-    figure('Name','Probability Density Estimate: Critical force')
+    %% Display pdf of maximum force
+    figure('Name','Probability Density Estimate: Maximum force')
     clf
     plot(fmax_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f,'-b','LineWidth',linewidth)
     hold on
@@ -714,7 +714,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     xlabel('$f$ [kN]','Interpreter',interpreter)
-    ylabel('$p_{F_c}(f)$','Interpreter',interpreter)
+    ylabel('$p_{F_{\mathrm{max}}}(f)$','Interpreter',interpreter)
     l = legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
         'mean value');
@@ -722,8 +722,8 @@ if displaySolution
     mysaveas(pathname,'pdf_fmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fmax.tex');
     
-    %% Display pdf of critical displacement
-    figure('Name','Probability Density Estimate: Critical displacement')
+    %% Display pdf of maximum displacement
+    figure('Name','Probability Density Estimate: Maximum displacement')
     clf
     plot(udmax_xi*1e3,udmax_f,'-b','LineWidth',linewidth)
     hold on
@@ -735,7 +735,7 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     xlabel('$u$ [mm]','Interpreter',interpreter)
-    ylabel('$p_{U_c}(u)$','Interpreter',interpreter)
+    ylabel('$p_{U_{D,\mathrm{max}}}(u)$','Interpreter',interpreter)
     l = legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
         'mean value');

@@ -3,8 +3,11 @@ function [ft_sample,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,vara
 % Solve stochastic Phase Field problem.
 
 fun = fcnchk(fun);
-initSample = getcharin('initsample',varargin,1);
-numSamples = getcharin('numsamples',varargin,N);
+numsamples = getcharin('numsamples',varargin,N);
+sampleindices = getcharin('sampleindices',varargin,1:N);
+if length(sampleindices)~=N
+    error('Wrong number of sample indices');
+end
 
 % Initialize samples
 ft_sample = zeros(N,length(T));
@@ -22,8 +25,8 @@ parfor i=1:N
     if ~verLessThan('matlab','9.2') % introduced in R2017a
         send(q,i);
     end
-    sampleIndex = i+initSample-1;
-    si = RandStream.create('mrg32k3a','NumStreams',numSamples,'StreamIndices',sampleIndex);
+    sampleindex = sampleindices(i);
+    si = RandStream.create('mrg32k3a','NumStreams',numsamples,'StreamIndices',sampleindex);
     
     % Generate random phase field parameters
     S_phasei = S_phase;
