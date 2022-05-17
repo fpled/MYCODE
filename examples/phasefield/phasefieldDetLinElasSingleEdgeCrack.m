@@ -506,7 +506,7 @@ if solveProblem
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);
     udmax = t(idmax);
-
+    
     time = toc(tTotal);
     
     save(fullfile(pathname,'solution.mat'),'dt','ut','ft','fmax','udmax','time');

@@ -99,7 +99,7 @@ switch lower(loading)
 %             9013,9030,9032,9090,9130,9144,9160,9200,9216,9220,9228,9277,9326,9346,9372,9384,9397,9405,9414,9446,9468,9483,9494,...
 %             9504,9536,9541,9550,9560,9569,9608,9613,9665,9681,9711,9723,9724,9737,9777,9789,9806,9809,9874,9888,9895,9901,9929,9945,9950,9956];
         
-        % sampleindices = 1:500;
+%         sampleindices = 1:500;
 %         sampleindices = [19,33,35,48,77,88,111,126,154,157,175,204,214,218,232,271,298,317,329,343,404,449];
 %         sampleindices = [8,33,34,35,43,58,59,77,111,127,157,161,175,196,214,282,298,317,323,343,404,430,432,434];
     otherwise
@@ -601,9 +601,9 @@ if solveProblem
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);
     udmax = t(idmax);
-
+    
     time = toc(tTotal);
-
+    
     myparallel('stop');
     
     %% Statistical outputs of solution
@@ -769,7 +769,7 @@ if displaySolution
         if mod(i,100)==0
             close all
         end
-        figure('Name',['Force-displacement #' num2str(i)])
+        figure('Name',['Force-displacement #' num2str(sampleindices(i))])
         clf
         plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
         hold on
@@ -780,8 +780,8 @@ if displaySolution
         set(gca,'FontSize',fontsize)
         xlabel('Displacement [mm]','Interpreter',interpreter)
         ylabel('Force [kN]','Interpreter',interpreter)
-        mysaveas(pathname,['force_displacement_' num2str(i)],{'epsc','png'});
-        % mymatlab2tikz(pathname,['force_displacement_' num2str(i) '.tex']);
+        mysaveas(pathname,['force_displacement_' num2str(sampleindices(i))],{'epsc','png'});
+        % mymatlab2tikz(pathname,['force_displacement_' num2str(sampleindices(i)) '.tex']);
     end
     
     %% Display pdf of maximum force

@@ -114,13 +114,13 @@ parfor i=1:N
             l = sqrt(k./r); % regularization parameter
             aGc = getparam(mat,'aGc'); % lower bound(s) for fracture toughness aGc > 0
             bGc = getparam(mat,'bGc'); % upper bound(s) for fracture toughness bGc > aGc > 0
-            if isvector(aGc) || isvector(bGc)
+            if ~isscalar(aGc) || ~isscalar(bGc)
                 imax = max(length(aGc),length(bGc));
                 iGc = randi(si,imax); % support index for univariate uniform distribution with multiple lower and upper endpoints aGc and bGc
-                if isvector(aGc)
+                if ~isscalar(aGc)
                     aGc = aGc(iGc); % lower bound for fracture toughness aGc > 0
                 end
-                if isvector(bGc)
+                if ~isscalar(bGc)
                     bGc = bGc(iGc); % upper bound for fracture toughness bGc > aGc > 0
                 end
                 mats_phase{m} = setparam(mats_phase{m},'aGc',aGc);

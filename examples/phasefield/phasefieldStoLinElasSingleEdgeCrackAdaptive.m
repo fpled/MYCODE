@@ -577,9 +577,9 @@ if solveProblem
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);
     udmax = t(idmax);
-
+    
     time = toc(tTotal);
-
+    
     myparallel('stop');
     
     %% Statistical outputs of solution
