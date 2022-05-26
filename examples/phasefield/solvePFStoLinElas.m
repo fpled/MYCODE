@@ -219,21 +219,25 @@ parfor i=1:N
 %                 E = (9*C1.*C2)./(3*C1+C2); % [Pa]
 %                 NU = (3*C1-2*C2)./(6*C1+2*C2);
                 delta = getparam(mat,'delta'); % coefficients of variation for Young modulus and Poisson ratio
+                deltaNUsup = min(sqrt((1-2*NU)/(1+2*NU)),(1-2*NU)/2/sqrt(NU*(1-NU)));
                 if length(delta)==1
                     deltaE = delta; % 0 <= deltaE < 1/sqrt(2). coefficient of variation for Young modulus
-                    deltaNU = delta; % coefficient of variation for Poisson ratio
+                    deltaNU = delta; % 0 <= deltaNU < deltaNUsup. coefficient of variation for Poisson ratio
                 else
                     deltaE = delta(1); % 0 <= deltaE < 1/sqrt(2). coefficient of variation for Young modulus
-                    deltaNU = delta(2); % coefficient of variation for Poisson ratio
+                    deltaNU = delta(2); % 0 <= deltaNU < deltaNUsup. coefficient of variation for Poisson ratio
                 end
                 if deltaE<0 || deltaE>=1/sqrt(2)
                     error(['Coefficient of variation delta = %d for Young modulus should be between 0 and %d',deltaE,1/sqrt(2)]);
                 end
+                if deltaNU<0 || deltaNU>=deltaNUsup
+                    error(['Coefficient of variation delta = %d for Poisson ratio should be between 0 and %d',deltaNU,deltaNUsup]);
+                end
                 aE = 1/deltaE^2; % aE > 2
                 bE = E/aE; % 0 < bE = E/aE < E/2 since E > 0 and aE > 2
                 m2NU = 2*NU; % 0 < m2NU < 1
-                a2NU = (1-m2NU)/deltaNU^2-m2NU; % a2NU > 0
-                b2NU = a2NU/m2NU-a2NU; % b2NU > 0
+                a2NU = (1-m2NU)/deltaNU^2-m2NU; % a2NU > 1 since deltaNU < deltaNUsup < sqrt((1-m2NU)/(1+m2NU))
+                b2NU = a2NU/m2NU-a2NU; % b2NU > 1 since deltaNU < deltaNUsup < (1-2*NU)/2/sqrt(NU*(1-NU)) = (1-m2NU)/sqrt(m2NU*(2-m2NU))
                 nU = 2;
                 if deltaE==0 || deltaNU==0
                     nU = 1;
