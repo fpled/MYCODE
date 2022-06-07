@@ -492,7 +492,7 @@ if solveProblem
         case {'historyfieldelem','historyfieldnode'}
             [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
         otherwise
-            [dt,ut,ft] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
+            [dt,ut,ft,~,Psi_ut,Psi_ct] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
     end
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);

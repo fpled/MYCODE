@@ -1,4 +1,4 @@
-function [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+function [dt,ut,ft,Ht,Psi_ut,Psi_ct] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
 % function [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
 % Solve deterministic Phase Field problem.
 
@@ -11,15 +11,19 @@ t = gett(T);
 dt = cell(1,length(T));
 ut = cell(1,length(T));
 ft = zeros(1,length(T));
+
+Psi_ut = zeros(1,length(T));
+Psi_ct = zeros(1,length(T));
+
 if nargout>=4
     Ht = cell(1,length(T));
 end
 
-% d = calc_init_dirichlet(S_phase);
-elem = S.groupelem{1};
-mat = getmaterial(elem);
-d = evalparam(mat,'d',elem,[],[]);
-% plotSolution(S_phase,d);
+d = calc_init_dirichlet(S_phase);
+% elem = S.groupelem{1};
+% mat = getmaterial(elem);
+% d = evalparam(mat,'d',elem,[],[]);
+% % plotSolution(S_phase,d);
 u = calc_init_dirichlet(S);
 if strcmpi(PFsolver,'historyfieldnode')
     H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
@@ -198,6 +202,46 @@ for i=1:length(T)
         f = sum(f);
     end
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % f is the external potential energy
+
+    % Compute the degraded elastic energy
+    psi_u = calc_energyint(S,u); % [1,1,nbElemTot,nbGauss]. Array of degraded elastic energy density at each Gauss point.
+    elem = S.groupelem{1};
+    % mat = getmaterial(elem);
+    node = getnode(S);
+    xnode = getcoord(node,getconnec(elem)');
+    gauss = calc_gauss(elem,'rigi');
+    xgauss = gauss.coord;
+    % x = calc_x(elem,xnode,gauss.coord);
+    [~,detJ] = calc_N(elem,xnode,xgauss);
+    Psi_u = sum(gauss.w*abs(detJ)*psi_u,[3,4]); % [1,1]. Total degraded elastic energy
+
+    % Compute the crack surface energy
+    elem = S_phase.groupelem{1};
+    mat_phase = getmaterial(elem);
+    node = getnode(S_phase);
+    xnode = getcoord(node,getconnec(elem)');
+    gauss = calc_gauss(elem,'mass');
+    xgauss = gauss.coord;
+    [N,detJ] = calc_N(elem,xnode,xgauss);
+    [B,~] = calc_B(elem,xnode,xgauss);
+    de = localize(elem,d);
+    dg = N*de;
+    alphaPhi = (1-dg).^2;
+    gradPhi = B*de;
+    k_phase = evalparam(mat_phase,'k',elem,xnode,xgauss);
+    r_phase = evalparam(mat_phase,'r',elem,xnode,xgauss);
+    gc = sqrt(k_phase.*r_phase);
+    l = sqrt(k_phase./r_phase);
+    psi_c = (alphaPhi.^2 + l.^2.*(gradPhi'*gradPhi)).*gc./l/2; % [1,1,nbElemTot,nbGauss]. Array of crack surface energy density at each Gauss point. /!\ Formula for model AT2 only.
+    Psi_c = sum(gauss.w*abs(detJ)*psi_c,[3,4]); % [1,1]. Total crack surface energy
+
+    Psi_ut(i) = Psi_u;
+    Psi_ct(i) = Psi_c;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
     % Update fields
     dt{i} = d;
     ut{i} = u;
