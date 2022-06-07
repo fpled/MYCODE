@@ -269,7 +269,7 @@ if setProblem
     %     % nD_d = find(d==1);
     %     nF_d = setdiff((1:numel(d))',nD_d); % indices of free nodes
     %     [A_phase,b_phase] = calc_rigi(S_phase,'nofree');
-    %     % b_phase = A_phase(nL_d,nD_d)*d(nD_d);
+    %     % b_phase = A_phase(nF_d,nD_d)*d(nD_d);
     %     b_phase = -b_phase;
     %     % b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
     %     d(nF_d) = A_phase(nF_d,nF_d)\b_phase;
