@@ -28,7 +28,7 @@ else
 end
 textprogressbar('Solving problem: ');
 j = 0;
-parfor i=1:N
+for i=1:N
     if ~verLessThan('matlab','9.2') % introduced in R2017a
         send(q,i);
     end
@@ -231,12 +231,45 @@ parfor i=1:N
                     lcorr = getparam(mat,'lcorr'); % spatial correlation length
                     x = calc_x(elem,xnode,xgauss);
                     x = getcoord(NODE(POINT(x(:,:,:))));
-                    Xi = shinozukaSample(si,x,lcorr,nU); % sample for bivariate Gaussian random field with statistically independent normalized Gaussian components
+                    % [Xi, order] = shinozukaSample(si,x,lcorr,nU); % sample for bivariate Gaussian random field with statistically independent normalized Gaussian components
+
+                    nU = 1000;
+                    [Xi, order] = shinozuka(x,lcorr,nU);
+
                 else % random matrix model
                     Xi = randn(si,1,nU); % sample for bivariate Gaussian random variable with statistically independent normalized Gaussian components
                 end
                 if deltaE && deltaNU
-                    E = gaminv(normcdf(Xi(:,1)),aE,bE); % sample for Young modulus [Pa]
+                    % E = gaminv(normcdf(Xi(:,1)),aE,bE); % sample for Young modulus [Pa]
+
+                    E = gaminv(normcdf(Xi),aE,bE);
+                    [~, idxc] = min(sum((x-5e-4).^2,2));
+                    x(idxc,:)
+                    corrE = corr(E',E(idxc,:)'); % Dim-dimensional autocorrelation function at center point
+
+                    pathname = '~/Documents/Posters';
+                    if ~exist(pathname,'dir')
+                        mkdir(pathname);
+                    end
+
+                    figure
+                    plot(E(:,1),S)
+                    colorbar
+                    axis on
+                    xlabel('$x$ [m]','Interpreter','latex')
+                    ylabel('$y$ [m]','Interpreter','latex')
+                    set(gca,'FontSize',16)
+                    mysaveas(pathname,'Random_E_real',{'fig','epsc'},'openGL');
+
+                    figure
+                    plot(corrE,S)
+                    colorbar
+                    axis on
+                    xlabel('$x$ [m]','Interpreter','latex')
+                    ylabel('$y$ [m]','Interpreter','latex')
+                    set(gca,'FontSize',16)
+                    mysaveas(pathname,['Autocorr_E_order_' num2str(order) '_real_1000'],{'fig','epsc'},'openGL');
+
                     NU = betainv(normcdf(Xi(:,2)),a2NU,b2NU)/2; % sample for Poisson ratio
                 elseif deltaE
                     E = gaminv(normcdf(Xi(:,1)),aE,bE); % sample for Young modulus [Pa]

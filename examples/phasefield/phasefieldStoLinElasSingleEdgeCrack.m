@@ -27,8 +27,8 @@ displaySolution = false;
 makeMovie = false;
 saveParaview = true;
 
-test = true; % coarse mesh
-% test = false; % fine mesh
+% test = true; % coarse mesh
+test = false; % fine mesh
 
 numWorkers = 4;
 % numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
@@ -45,7 +45,7 @@ pluginCrack = true;
 % Random model parameters
 % N = 500; % number of samples
 N = numWorkers;
-randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
+randMat = struct('delta',0.3,'lcorr',1e-5); % random material parameters model
 randPF = struct('gcb',[0,0],'lcorr',Inf); % random phase field parameters model
 
 switch lower(symmetry)
@@ -117,6 +117,7 @@ if setProblem
         % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         clD = 2.5e-5;
+        clD = 2.5e-6;
         clC = 2.5e-6;
         if test
             % clD = 4e-5;
@@ -516,7 +517,7 @@ end
 
 %% Solution
 if solveProblem
-    myparallel('start',numWorkers);
+    % myparallel('start',numWorkers);
     
     %% Solution
     tTotal = tic;
