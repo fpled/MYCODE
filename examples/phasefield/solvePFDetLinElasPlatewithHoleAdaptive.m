@@ -90,7 +90,7 @@ for i=1:length(T)
                 he(rep) = he_old(rep);
                 h{p} = MYDOUBLEND(he);
             end
-            H = FEELEMFIELD(h,'storage',getstorage(H),'type',gettype(H),'ddl',getddl(H));
+            H = setvalue(H,h);
         case 'historyfieldnode'
             h_old = double(H);
             H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
@@ -103,24 +103,39 @@ for i=1:length(T)
     end
     
     % Phase field
+    if strcmpi(PFsolver,'historyfieldnode')
+        R = FENODEFIELD(calc_parammat(S_phase,'r','node'));
+        Qn = FENODEFIELD(calc_parammat(S_phase,'qn','node'));
+    else
+        R = calc_parammat(S_phase,'r');
+        Qn = calc_parammat(S_phase,'qn');
+    end
     mats_phase = MATERIALS(S_phase);
     for m=1:length(mats_phase)
-        mat = mats_phase{m};
-        if isparam(mat,'delta') && any(getparam(mat,'delta')>0) && isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
-            r = getparam(mat,'r');
-        else
-            r = getparam(materials_phase{m},'r');
-        end
         if strcmpi(PFsolver,'historyfieldnode')
-            mats_phase{m} = setparam(mats_phase{m},'r',r+2*H);
+            mats_phase{m} = setparam(mats_phase{m},'r',R+2*H);
         else
-            mats_phase{m} = setparam(mats_phase{m},'r',r+2*H{m});
+            mats_phase{m} = setparam(mats_phase{m},'r',R{m}+2*H{m});
         end
     end
     S_phase = actualisematerials(S_phase,mats_phase);
     
     [A_phase,b_phase] = calc_rigi(S_phase);
-    b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
+    Q = 2*H+Qn;
+    if strcmpi(PFsolver,'historyfieldnode')
+        q = double(Q);
+        q = max(q,0);
+        Q = setvalue(Q,q);
+    elseif strcmpi(PFsolver,'historyfieldelem')
+        q = getvalue(Q);
+        for p=1:getnbgroupelem(S)
+            qe = double(q{p});
+            qe = max(qe,0);
+            q{p} = MYDOUBLEND(qe);
+        end
+        Q = setvalue(Q,q);
+    end
+    b_phase = -b_phase + bodyload(S_phase,[],'QN',Q);
     
     % d_old = d;
     switch lower(PFsolver)
@@ -223,16 +238,16 @@ for i=1:length(T)
         P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
         d = P_phase'*d;
         
+        % P = calcProjection(S,S_old,[],'free',false,'full',true);
+        P = kron(P_phase,eye(Dim));
+        u = P'*u;
+        
         if strcmpi(PFsolver,'historyfieldnode')
             h = P_phase'*h;
             H = setvalue(H,h);
         elseif strcmpi(PFsolver,'historyfieldelem')
             H = calc_energyint(S,u,'positive','intorder','mass');
         end
-        
-        % P = calcProjection(S,S_old,[],'free',false,'full',true);
-        P = kron(P_phase,eye(Dim));
-        u = P'*u;
     end
 end
 

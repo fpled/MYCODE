@@ -46,9 +46,26 @@ parfor i=1:N
 %             xnode = node_phase(elem);
 %             gauss = calc_gauss(elem,'mass');
 %             xgauss = gauss.coord;
+%             PFregularization = getparam(mat,'PFregularization');
 %             k = evalparam(mat,'k',elem,xnode,xgauss);
-%             r = evalparam(mat,'r',elem,xnode,xgauss);
-%             gc = sqrt(k.*r); % mean fracture toughness
+%             switch lower(PFregularization)
+%                 case 'at1'
+%                     c0 = 8/3;
+%                     qn = evalparam(mat,'qn',elem,xnode,xgauss);
+%                     % gc = c0*sqrt(-k.*qn/2); % mean fracture toughness
+%                     % l = sqrt(-k./qn/2); % mean regularization parameter
+%                     r = -2*qn;
+% %                 case 'at2'
+% %                     c0 = 2;
+% %                     r = evalparam(mat,'r',elem,xnode,xgauss);
+% %                     % gc = sqrt(k.*r); % mean fracture toughness
+%                 otherwise
+%                     c0 = 2;
+%                     r = evalparam(mat,'r',elem,xnode,xgauss);
+%                     % gc = sqrt(k.*r); % mean fracture toughness
+% %                     error('Wrong regularization model');
+%             end
+%             gc = c0*sqrt(k.*r)/2; % mean fracture toughness
 %             l = sqrt(k./r); % mean regularization parameter
 %             delta = getparam(mat,'delta'); % coefficients of variation for fracture toughness and regularization parameter
 %             if length(delta)==1
@@ -104,18 +121,44 @@ parfor i=1:N
 %                     l = FEELEMFIELD({l},'storage','gauss','type','scalar','ddl',DDL('l'));
 %                 end
 %             end
-%             k = gc.*l;
-%             r = gc./l;
+%             switch lower(PFregularization)
+%                 case 'at1'
+%                     % c0 = 8/3;
+%                     k = 3/4*gc.*l; % k = 2*(gc.*l)/c0;
+%                     qn = -3/8*gc./l; % qn = -(gc./l)/c0;
+%                     mats_phase{m} = setparam(mats_phase{m},'qn',qn);
+% %                 case 'at2'
+% %                     % c0 = 2;
+% %                     k = gc.*l; % k = 2*(gc.*l)/c0;
+% %                     r = gc./l; % r = 2*(gc./l)/c0;
+% %                     mats_phase{m} = setparam(mats_phase{m},'r',r);
+%                 otherwise
+%                     % c0 = 2;
+%                     k = gc.*l; % k = 2*(gc.*l)/c0;
+%                     r = gc./l; % r = 2*(gc./l)/c0;
+%                     mats_phase{m} = setparam(mats_phase{m},'r',r);
+% %                     error('Wrong regularization model');
+%             end
 %             mats_phase{m} = setparam(mats_phase{m},'k',k);
-%             mats_phase{m} = setparam(mats_phase{m},'r',r);
 %         end
-        if isparam(mat,'aGc') && isparam(mat,'bGc') % random phase field parameters
+        if isparam(mat,'aGc') && isparam(mat,'bGc') && any(getparam(mat,'aGc')>0) && any(getparam(mat,'bGc')>0) % random phase field parameters
             nbelem = getnbelem(elem);
             xnode = node_phase(elem);
             gauss = calc_gauss(elem,'mass');
             xgauss = gauss.coord;
+            PFregularization = getparam(mat,'PFregularization');
             k = evalparam(mat,'k',elem,xnode,xgauss);
-            r = evalparam(mat,'r',elem,xnode,xgauss);
+            switch lower(PFregularization)
+                case 'at1'
+                    qn = evalparam(mat,'qn',elem,xnode,xgauss);
+                    % l = sqrt(-k./qn/2); % regularization parameter
+                    r = -2*qn;
+                % case 'at2'
+                %    r = evalparam(mat,'r',elem,xnode,xgauss); 
+                otherwise
+                    r = evalparam(mat,'r',elem,xnode,xgauss); 
+                    % error('Wrong regularization model');
+            end
             l = sqrt(k./r); % regularization parameter
             aGc = getparam(mat,'aGc'); % lower bound(s) for fracture toughness aGc > 0
             bGc = getparam(mat,'bGc'); % upper bound(s) for fracture toughness bGc > aGc > 0
@@ -152,10 +195,25 @@ parfor i=1:N
                 gc = MYDOUBLEND(gc);
                 gc = FEELEMFIELD({gc},'storage','gauss','type','scalar','ddl',DDL('gc'));
             end
-            k = gc.*l;
-            r = gc./l;
+            switch lower(PFregularization)
+                case 'at1'
+                    % c0 = 8/3;
+                    k = 3/4*gc.*l; % k = 2*(gc.*l)/c0;
+                    qn = -3/8*gc./l; % qn = -(gc./l)/c0;
+                    mats_phase{m} = setparam(mats_phase{m},'qn',qn);
+%                 case 'at2'
+%                     % c0 = 2;
+%                     k = gc.*l; % k = 2*(gc.*l)/c0;
+%                     r = gc./l; % r = 2*(gc./l)/c0;
+%                     mats_phase{m} = setparam(mats_phase{m},'r',r);
+                otherwise
+                    % c0 = 2;
+                    k = gc.*l; % k = 2*(gc.*l)/c0;
+                    r = gc./l; % r = 2*(gc./l)/c0;
+                    mats_phase{m} = setparam(mats_phase{m},'r',r);
+%                     error('Wrong regularization model');
+            end
             mats_phase{m} = setparam(mats_phase{m},'k',k);
-            mats_phase{m} = setparam(mats_phase{m},'r',r);
         end
     end
     S_phasei = actualisematerials(S_phasei,mats_phase);

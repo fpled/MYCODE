@@ -65,12 +65,29 @@ parfor i=1:N
 %                 x = calc_x(elem,xnode,xgauss);
 %                 x = getcoord(NODE(POINT(x(:,:,:))));
 %                 [~,~,Z,Phi,k,c] = shinozukaSample(si,x,lcorr,nU); % sample for bivariate Gaussian random field with statistically independent normalized Gaussian components
-%                 shinozukaPF = @(x) shinzukaFun(x,Z,Phi,k,c);
+%                 shinozukaPF = @(x) shinozukaFun(x,Z,Phi,k,c);
 %                 mats_phase{m} = setparam(mats_phase{m},'shinozuka',shinozukaPF);
 %             else % random vector model
+%                 PFregularization = getparam(mat,'PFregularization');
 %                 k = evalparam(mat,'k',elem,xnode,xgauss);
-%                 r = evalparam(mat,'r',elem,xnode,xgauss);
-%                 gc = sqrt(k.*r); % mean fracture toughness
+%                 switch lower(PFregularization)
+%                     case 'at1'
+%                         c0 = 8/3;
+%                         qn = evalparam(mat,'qn',elem,xnode,xgauss);
+%                         % gc = c0*sqrt(-k.*qn/2); % mean fracture toughness
+%                         % l = sqrt(-k./qn/2); % mean regularization parameter
+%                         r = -2*qn;
+% %                     case 'at2'
+% %                         c0 = 2;
+% %                         r = evalparam(mat,'r',elem,xnode,xgauss);
+% %                         % gc = sqrt(k.*r); % mean fracture toughness
+%                     otherwise
+%                         c0 = 2;
+%                         r = evalparam(mat,'r',elem,xnode,xgauss);
+%                         % gc = sqrt(k.*r); % mean fracture toughness
+% %                         error('Wrong regularization model');
+%                 end
+%                 gc = c0*sqrt(k.*r)/2; % mean fracture toughness
 %                 l = sqrt(k./r); % mean regularization parameter
 %                 aGc = 1/deltaGc^2; % aGc > 2
 %                 bGc = gc/aGc; % 0 < bGc = gc/aGc < gc/2 since gc > 0 and aGc > 2
@@ -89,13 +106,48 @@ parfor i=1:N
 %                 else
 %                     l = gaminv(normcdf(Xi(:,1)),aL,bL); % sample for regularization parameter [m]
 %                 end
-%                 k = gc.*l;
-%                 r = gc./l;
+%                 switch lower(PFregularization)
+%                     case 'at1'
+%                         % c0 = 8/3;
+%                         k = 3/4*gc.*l; % k = 2*(gc.*l)/c0;
+%                         qn = -3/8*gc./l; % qn = -(gc./l)/c0;
+%                         mats_phase{m} = setparam(mats_phase{m},'qn',qn);
+% %                     case 'at2'
+% %                         % c0 = 2;
+% %                         k = gc.*l; % k = 2*(gc.*l)/c0;
+% %                         r = gc./l; % r = 2*(gc./l)/c0;
+% %                         mats_phase{m} = setparam(mats_phase{m},'r',r);
+%                     otherwise
+%                         % c0 = 2;
+%                         k = gc.*l; % k = 2*(gc.*l)/c0;
+%                         r = gc./l; % r = 2*(gc./l)/c0;
+%                         mats_phase{m} = setparam(mats_phase{m},'r',r);
+% %                         error('Wrong regularization model');
+%                 end
 %                 mats_phase{m} = setparam(mats_phase{m},'k',k);
-%                 mats_phase{m} = setparam(mats_phase{m},'r',r);
 %             end
 %         end
-        if isparam(mat,'aGc') && isparam(mat,'bGc') % random phase field parameters
+        if isparam(mat,'aGc') && isparam(mat,'bGc') && any(getparam(mat,'aGc')>0) && any(getparam(mat,'bGc')>0) % random phase field parameters
+            aGc = getparam(mat,'aGc'); % lower bound(s) for fracture toughness aGc > 0
+            bGc = getparam(mat,'bGc'); % upper bound(s) for fracture toughness bGc > aGc > 0
+            if ~isscalar(aGc) || ~isscalar(bGc)
+                imax = max(length(aGc),length(bGc));
+                iGc = randi(si,imax); % support index for univariate uniform distribution with multiple lower and upper endpoints aGc and bGc
+                if ~isscalar(aGc)
+                    aGc = aGc(iGc); % lower bound for fracture toughness aGc > 0
+                end
+                if ~isscalar(bGc)
+                    bGc = bGc(iGc); % upper bound for fracture toughness bGc > aGc > 0
+                end
+                mats_phase{m} = setparam(mats_phase{m},'aGc',aGc);
+                mats_phase{m} = setparam(mats_phase{m},'bGc',bGc);
+            end
+            if aGc<0 || bGc<0
+                error('Lower bound a = %g and upper bound b = %g for fracture toughness must be positive (superior to 0)',aGc,bGc)
+            end
+            if aGc>bGc
+                error('Lower bound a = %g must be inferior to upper bound b = %g for fracture toughness',aGc,bGc)
+            end
             xnode = node_phase(elem);
             gauss = calc_gauss(elem,'mass');
             xgauss = gauss.coord;
@@ -105,38 +157,44 @@ parfor i=1:N
                 x = calc_x(elem,xnode,xgauss);
                 x = getcoord(NODE(POINT(x(:,:,:))));
                 [~,~,Z,Phi,k,c] = shinozukaSample(si,x,lcorr,nU); % sample for univariate Gaussian random field
-                shinozukaPF = @(x) shinzukaFun(x,Z,Phi,k,c);
+                shinozukaPF = @(x) shinozukaFun(x,Z,Phi,k,c);
                 mats_phase{m} = setparam(mats_phase{m},'shinozuka',shinozukaPF);
             else % random variable model
+                PFregularization = getparam(mat,'PFregularization');
                 k = evalparam(mat,'k',elem,xnode,xgauss);
-                r = evalparam(mat,'r',elem,xnode,xgauss);
+                switch lower(PFregularization)
+                    case 'at1'
+                        qn = evalparam(mat,'qn',elem,xnode,xgauss);
+                        % l = sqrt(-k./qn/2); % regularization parameter
+                        r = -2*qn;
+%                     case 'at2'
+%                         r = evalparam(mat,'r',elem,xnode,xgauss);
+                    otherwise
+                        r = evalparam(mat,'r',elem,xnode,xgauss);
+%                         error('Wrong regularization model');
+                end
                 l = sqrt(k./r); % regularization parameter
-                aGc = getparam(mat,'aGc'); % lower bound(s) for fracture toughness aGc > 0
-                bGc = getparam(mat,'bGc'); % upper bound(s) for fracture toughness bGc > aGc > 0
-                if ~isscalar(aGc) || ~isscalar(bGc)
-                    imax = max(length(aGc),length(bGc));
-                    iGc = randi(si,imax); % support index for univariate uniform distribution with multiple lower and upper endpoints aGc and bGc
-                    if ~isscalar(aGc)
-                        aGc = aGc(iGc); % lower bound for fracture toughness aGc > 0
-                    end
-                    if ~isscalar(bGc)
-                        bGc = bGc(iGc); % upper bound for fracture toughness bGc > aGc > 0
-                    end
-                    mats_phase{m} = setparam(mats_phase{m},'aGc',aGc);
-                    mats_phase{m} = setparam(mats_phase{m},'bGc',bGc);
-                end
-                if aGc<0 || bGc<0
-                    error('Lower bound a = %g and upper bound b = %g for fracture toughness must be positive (superior to 0)',aGc,bGc)
-                end
-                if aGc>bGc
-                    error('Lower bound a = %g must be inferior to upper bound b = %g for fracture toughness',aGc,bGc)
-                end
                 Xi = randn(si,1,nU); % sample for univariate Gaussian random variable
                 gc = unifinv(normcdf(Xi),aGc,bGc); % sample for fracture toughness [N/m^2]
-                k = gc.*l;
-                r = gc./l;
+                switch lower(PFregularization)
+                    case 'at1'
+                        % c0 = 8/3;
+                        k = 3/4*gc.*l; % k = 2*(gc.*l)/c0;
+                        qn = -3/8*gc./l; % qn = -(gc./l)/c0;
+                        mats_phase{m} = setparam(mats_phase{m},'qn',qn);
+%                     case 'at2'
+%                         % c0 = 2;
+%                         k = gc.*l; % k = 2*(gc.*l)/c0;
+%                         r = gc./l; % r = 2*(gc./l)/c0;
+%                         mats_phase{m} = setparam(mats_phase{m},'r',r);
+                    otherwise
+                        % c0 = 2;
+                        k = gc.*l; % k = 2*(gc.*l)/c0;
+                        r = gc./l; % r = 2*(gc./l)/c0;
+                        mats_phase{m} = setparam(mats_phase{m},'r',r);
+%                         error('Wrong regularization model');
+                end
                 mats_phase{m} = setparam(mats_phase{m},'k',k);
-                mats_phase{m} = setparam(mats_phase{m},'r',r);
             end
         end
     end

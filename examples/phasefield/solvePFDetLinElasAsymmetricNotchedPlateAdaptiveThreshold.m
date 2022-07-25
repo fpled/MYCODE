@@ -7,7 +7,6 @@ filename = getcharin('filename',varargin,'gmsh_domain_asymmetric_notched_plate')
 pathname = getcharin('pathname',varargin,'.');
 gmshoptions = getcharin('gmshoptions',varargin,'-v 0');
 mmgoptions = getcharin('mmgoptions',varargin,'-nomove -v -1');
-duplicate = ischarin('duplicate',varargin);
 
 Dim = getdim(S);
 
@@ -85,7 +84,7 @@ while ti < tf
                 he(rep) = he_old(rep);
                 h{p} = MYDOUBLEND(he);
             end
-            H = FEELEMFIELD(h,'storage',getstorage(H),'type',gettype(H),'ddl',getddl(H));
+            H = setvalue(H,h);
         case 'historyfieldnode'
             h_old = double(H);
             H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
@@ -102,20 +101,34 @@ while ti < tf
     for m=1:length(mats_phase)
         mat = mats_phase{m};
         if isparam(mat,'delta') && any(getparam(mat,'delta')>0) && isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
-            r = getparam(mat,'r');
+            R = getparam(mat,'r');
         else
-            r = getparam(materials_phase{m},'r');
+            R = getparam(materials_phase{m},'r');
         end
         if strcmpi(PFsolver,'historyfieldnode')
-            mats_phase{m} = setparam(mats_phase{m},'r',r+2*H);
+            mats_phase{m} = setparam(mats_phase{m},'r',R+2*H);
         else
-            mats_phase{m} = setparam(mats_phase{m},'r',r+2*H{m});
+            mats_phase{m} = setparam(mats_phase{m},'r',R+2*H{m});
         end
     end
     S_phase = actualisematerials(S_phase,mats_phase);
     
     [A_phase,b_phase] = calc_rigi(S_phase);
-    b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
+    Q = 2*H+Qn;
+    if strcmpi(PFsolver,'historyfieldnode')
+        q = double(Q);
+        q = max(q,0);
+        Q = setvalue(Q,q);
+    elseif strcmpi(PFsolver,'historyfieldelem')
+        q = getvalue(Q);
+        for p=1:getnbgroupelem(S)
+            qe = double(q{p});
+            qe = max(qe,0);
+            q{p} = MYDOUBLEND(qe);
+        end
+        Q = setvalue(Q,q);
+    end
+    b_phase = -b_phase + bodyload(S_phase,[],'QN',Q);
     
     % d_old = d;
     switch lower(PFsolver)
@@ -190,7 +203,7 @@ while ti < tf
         fprintf('| %4d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',i,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),getnbnode(S),getnbelem(S),norm(d),norm(u));
     end
     
-    if ti<tf
+    if ti < tf
         % Mesh adaptation
         S_phase_old = S_phase;
         S_phase_ref = addcl(S_phase_old,C,'T',1);
@@ -222,16 +235,16 @@ while ti < tf
         P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
         d = P_phase'*d;
         
+        % P = calcProjection(S,S_old,[],'free',false,'full',true);
+        P = kron(P_phase,eye(Dim));
+        u = P'*u;
+        
         if strcmpi(PFsolver,'historyfieldnode')
             h = P_phase'*h;
             H = setvalue(H,h);
         elseif strcmpi(PFsolver,'historyfieldelem')
             H = calc_energyint(S,u,'positive','intorder','mass');
         end
-        
-        % P = calcProjection(S,S_old,[],'free',false,'full',true);
-        P = kron(P_phase,eye(Dim));
-        u = P'*u;
     end
 end
 

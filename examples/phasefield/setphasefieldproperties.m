@@ -14,10 +14,22 @@ for m=1:length(materials)
 %         x = getcoord(NODE(POINT(x(:,:,:))));
 %         shinozukaPF = getparam(mat,'shinozuka');
 %         Xi = shinozukaPF(x); % sample for bivariate Gaussian random field with statistically independent normalized Gaussian components
+%         PFregularization = getparam(mat,'PFregularization');
 %         k = evalparam(mat,'k',elem,xnode,xgauss);
-%         r = evalparam(mat,'r',elem,xnode,xgauss);
-%         gc = sqrt(k.*r); % mean fracture toughness
-%         l = sqrt(k./r); % mean regularization parameter
+%         switch lower(PFregularization)
+%             case 'at1'
+%                 c0 = 8/3;
+%                 qn = evalparam(mat,'qn',elem,xnode,xgauss);
+%                 gc = c0*sqrt(-k.*qn/2); % mean fracture toughness
+%                 l = sqrt(-k./qn/2); % mean regularization parameter
+%             case 'at2'
+%                 % c0 = 2;
+%                 r = evalparam(mat,'r',elem,xnode,xgauss);
+%                 gc = sqrt(k.*r); % mean fracture toughness
+%                 l = sqrt(k./r); % mean regularization parameter
+%             otherwise
+%                 error('Wrong regularization model');
+%         end
 %         delta = getparam(mat,'delta'); % coefficients of variation for fracture toughness and regularization parameter
 %         if length(delta)==1
 %             deltaGc = delta; % 0 <= deltaGc < 1/sqrt(2). coefficient of variation for fracture toughness
@@ -58,12 +70,25 @@ for m=1:length(materials)
 %             l = MYDOUBLEND(l);
 %             l = FEELEMFIELD({l},'storage','gauss','type','scalar','ddl',DDL('l'));
 %         end
-%         k = gc.*l;
-%         r = gc./l;
-%         mat = setparam(mat,'k',k);
-%         mat = setparam(mat,'r',r);
+%         switch lower(PFregularization)
+%             case 'at1'
+%                 % c0 = 8/3;
+%                 k = 3/4*gc.*l; % k = 2*(gc.*l)/c0;
+%                 qn = -3/8*gc./l; % qn = -(gc./l)/c0;
+%                 mat = setparam(mat,'k',k);
+%                 mat = setparam(mat,'qn',qn);
+%             case 'at2'
+%                 % c0 = 2;
+%                 k = gc.*l; % k = 2*(gc.*l)/c0;
+%                 r = gc./l; % r = 2*(gc./l)/c0;
+%                 mat = setparam(mat,'k',k);
+%                 mat = setparam(mat,'r',r);
+%             otherwise
+%                 error('Wrong regularization model');
+%         end
 %     end
-    if isparam(mat,'aGc') && isparam(mat,'bGc') && isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
+    if isparam(mat,'aGc') && isparam(mat,'bGc') && any(getparam(mat,'aGc')>0) && any(getparam(mat,'bGc')>0)...
+            && isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
         elem = getgroupelem(S_phase,m);
         nbelem = getnbelem(elem);
         xnode = node_phase(elem);
@@ -73,23 +98,21 @@ for m=1:length(materials)
         x = getcoord(NODE(POINT(x(:,:,:))));
         shinozukaPF = getparam(mat,'shinozuka');
         Xi = shinozukaPF(x); % sample for univariate Gaussian random field
+        PFregularization = getparam(mat,'PFregularization');
         k = evalparam(mat,'k',elem,xnode,xgauss);
-        r = evalparam(mat,'r',elem,xnode,xgauss);
+        switch lower(PFregularization)
+            case 'at1'
+                qn = evalparam(mat,'qn',elem,xnode,xgauss);
+                % l = sqrt(-k./qn/2); % regularization parameter
+                r = -2*qn;
+            case 'at2'
+                r = evalparam(mat,'r',elem,xnode,xgauss);
+            otherwise
+                error('Wrong regularization model');
+        end
         l = sqrt(k./r); % regularization parameter
         aGc = getparam(mat,'aGc'); % lower bound for fracture toughness aGc > 0
         bGc = getparam(mat,'bGc'); % upper bound for fracture toughness bGc > aGc > 0
-        if isvector(aGc) || isvector(bGc)
-            imax = max(length(aGc),length(bGc));
-            iGc = randi(si,imax); % support index for univariate uniform distribution with multiple lower and upper endpoints aGc and bGc
-            if isvector(aGc)
-                aGc = aGc(iGc); % lower bound for fracture toughness aGc > 0
-            end
-            if isvector(bGc)
-                bGc = bGc(iGc); % upper bound for fracture toughness bGc > aGc > 0
-            end
-            mat = setparam(mat,'aGc',aGc);
-            mat = setparam(mat,'bGc',bGc);
-        end
         if aGc<0 || bGc<0
             error('Lower bound a = %g and upper bound b = %g for fracture toughness must be positive (superior to 0)',aGc,bGc)
         end
@@ -100,10 +123,21 @@ for m=1:length(materials)
         gc = reshape(gc,1,1,nbelem,gauss.nbgauss);
         gc = MYDOUBLEND(gc);
         gc = FEELEMFIELD({gc},'storage','gauss','type','scalar','ddl',DDL('gc'));
-        k = gc.*l;
-        r = gc./l;
+        switch lower(PFregularization)
+            case 'at1'
+                % c0 = 8/3;
+                k = 3/4*gc.*l; % k = 2*(gc.*l)/c0;
+                qn = -3/8*gc./l; % qn = -(gc./l)/c0;
+                mat = setparam(mat,'qn',qn);
+            case 'at2'
+                % c0 = 2;
+                k = gc.*l; % k = 2*(gc.*l)/c0;
+                r = gc./l; % r = 2*(gc./l)/c0;
+                mat = setparam(mat,'r',r);
+            otherwise
+                error('Wrong regularization model');
+        end
         mat = setparam(mat,'k',k);
-        mat = setparam(mat,'r',r);
     end
     S_phase = setmaterial(S_phase,mat,m);
 end

@@ -33,11 +33,13 @@ test = true; % coarse mesh
 
 Dim = 2; % space dimension Dim = 2
 setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
-PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicSpectral', 'AnisotropicHe'
+PFsplit = 'Strain'; % 'Strain' or 'Stress'
+PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
-initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
-filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel PFsolver initialCrack 'Adaptive'];
+filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel PFsplit PFregularization PFsolver initialCrack 'Adaptive'];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -136,11 +138,23 @@ if setProblem
     % Small artificial residual stiffness
     k = 1e-12;
     % k = 0;
-    % Internal energy
-    H = 0;
     
     % Material
-    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H);
+    switch lower(PFregularization)
+        case 'at1'
+            % c0 = 8/3;
+            K = 3/4*gc*l; % K = 2*(gc*l)/c0;
+            R = 0;
+            Qn = -3/8*gc/l; % Qn = -(gc/l)/c0;
+        case 'at2'
+            % c0 = 2;
+            K = gc*l; % K = 2*(gc*l)/c0;
+            R = gc/l; % R = 2*(gc/l)/c0;
+            Qn = 0;
+        otherwise
+            error('Wrong regularization model');
+    end
+    mat_phase = FOUR_ISOT('k',K,'r',R,'qn',Qn,'PFregularization',PFregularization);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
     
@@ -178,6 +192,7 @@ if setProblem
     S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     S = S_phase;
     
+    S_phase = setmaterial(S_phase,mat_phase);
     switch lower(initialCrack)
         case 'geometriccrack'
             S_phase = final(S_phase,'duplicate');
@@ -194,24 +209,24 @@ if setProblem
     S_phase = addcl(S_phase,BR,'T');
     
     %% Stiffness matrices and sollicitation vectors
-    % a_phase = BILINFORM(1,1,gc*l); % uniform values
-    % % a_phase = DIFFUSIONFORM(gc*l);
+    % a_phase = BILINFORM(1,1,K); % uniform values
+    % % a_phase = DIFFUSIONFORM(K);
     % a_phase = setfree(a_phase,0);
     % K_phase = calc_matrix(a_phase,S_phase);
     % b_phase = calc_nonhomogeneous_vector(S_phase,K_phase);
     % b_phase = -b_phase;
     % K_phase = freematrix(S_phase,K_phase);
     
-    % r_phase = BILINFORM(0,0,gc/l+2*H,0); % nodal values
+    % r_phase = BILINFORM(0,0,R,0); % nodal values
     % R_phase = calc_matrix(r_phase,S_phase);
     % A_phase = K_phase + R_phase;
     
-    % l_phase = LINFORM(0,2*H,0); % nodal values
+    % l_phase = LINFORM(0,Qn,0); % nodal values
     % l_phase = setfree(l_phase,1);
     % b_phase = b_phase + calc_vector(l_phase,S_phase);
     
     % [A_phase,b_phase] = calc_rigi(S_phase);
-    % b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
+    % b_phase = -b_phase + bodyload(S_phase,[],'QN',Qn);
     
     %% Linear elastic displacement field problem
     %% Materials
@@ -245,7 +260,7 @@ if setProblem
     
     % Material
     d = calc_init_dirichlet(S_phase);
-    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel);
+    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
     mat = setnumber(mat,1);
     S = setoption(S,option);
     S = setmaterial(S,mat);
@@ -335,6 +350,8 @@ end
 fprintf('\n');
 fprintf('setup    = %d\n',setup);
 fprintf('PF model = %s\n',PFmodel);
+fprintf('PF split = %s\n',PFsplit);
+fprintf('PF regularization = %s\n',PFregularization);
 fprintf('PF solver = %s\n',PFsolver);
 fprintf('nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
 fprintf('nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));

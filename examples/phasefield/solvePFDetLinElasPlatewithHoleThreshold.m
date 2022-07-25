@@ -15,8 +15,12 @@ d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
 if strcmpi(PFsolver,'historyfieldnode')
     H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
+    R = FENODEFIELD(calc_parammat(S_phase,'r','node'));
+    Qn = FENODEFIELD(calc_parammat(S_phase,'qn','node'));
 else
     H = calc_energyint(S,u,'positive','intorder','mass');
+    R = calc_parammat(S_phase,'r');
+    Qn = calc_parammat(S_phase,'qn');
 end
 
 if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode')
@@ -55,12 +59,6 @@ if display_
     fprintf('+------+-----------+-----------+------------+------------+\n');
 end
 
-mats_phase = MATERIALS(S_phase);
-r = cell(length(mats_phase),1);
-for m=1:length(mats_phase)
-    r{m} = getparam(mats_phase{m},'r');
-end
-
 i = 0;
 ti = 0;
 dti = dt0;
@@ -80,7 +78,7 @@ while ti < tf
                 he(rep) = he_old(rep);
                 h{p} = MYDOUBLEND(he);
             end
-            H = FEELEMFIELD(h,'storage',getstorage(H),'type',gettype(H),'ddl',getddl(H));
+            H = setvalue(H,h);
         case 'historyfieldnode'
             h_old = double(H);
             H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
@@ -96,15 +94,29 @@ while ti < tf
     mats_phase = MATERIALS(S_phase);
     for m=1:length(mats_phase)
         if strcmpi(PFsolver,'historyfieldnode')
-            mats_phase{m} = setparam(mats_phase{m},'r',r{m}+2*H);
+            mats_phase{m} = setparam(mats_phase{m},'r',R+2*H);
         else
-            mats_phase{m} = setparam(mats_phase{m},'r',r{m}+2*H{m});
+            mats_phase{m} = setparam(mats_phase{m},'r',R{m}+2*H{m});
         end
     end
     S_phase = actualisematerials(S_phase,mats_phase);
     
     [A_phase,b_phase] = calc_rigi(S_phase);
-    b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
+    Q = 2*H+Qn;
+    if strcmpi(PFsolver,'historyfieldnode')
+        q = double(Q);
+        q = max(q,0);
+        Q = setvalue(Q,q);
+    elseif strcmpi(PFsolver,'historyfieldelem')
+        q = getvalue(Q);
+        for p=1:getnbgroupelem(S)
+            qe = double(q{p});
+            qe = max(qe,0);
+            q{p} = MYDOUBLEND(qe);
+        end
+        Q = setvalue(Q,q);
+    end
+    b_phase = -b_phase + bodyload(S_phase,[],'QN',Q);
     
     % d_old = d;
     switch lower(PFsolver)
