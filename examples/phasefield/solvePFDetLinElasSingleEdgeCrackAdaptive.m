@@ -111,24 +111,25 @@ for i=1:length(T)
         
         % Phase field
         if strcmpi(PFsolver,'historyfieldnode')
-            R = FENODEFIELD(calc_parammat(S_phase,'r','node'));
-            Qn = FENODEFIELD(calc_parammat(S_phase,'qn','node'));
+            r = FENODEFIELD(calc_parammat(S_phase,'r','node'));
+            qn = FENODEFIELD(calc_parammat(S_phase,'qn','node'));
         else
-            R = calc_parammat(S_phase,'r');
-            Qn = calc_parammat(S_phase,'qn');
+            r = calc_parammat(S_phase,'r');
+            qn = calc_parammat(S_phase,'qn');
         end
         mats_phase = MATERIALS(S_phase);
+        R = r+2*H;
         for m=1:length(mats_phase)
             if strcmpi(PFsolver,'historyfieldnode')
-                mats_phase{m} = setparam(mats_phase{m},'r',R+2*H);
+                mats_phase{m} = setparam(mats_phase{m},'r',R);
             else
-                mats_phase{m} = setparam(mats_phase{m},'r',R{m}+2*H{m});
+                mats_phase{m} = setparam(mats_phase{m},'r',R{m});
             end
         end
         S_phase = actualisematerials(S_phase,mats_phase);
         
         [A_phase,b_phase] = calc_rigi(S_phase);
-        Q = 2*H+Qn;
+        Q = 2*H+qn;
         if strcmpi(PFsolver,'historyfieldnode')
             q = double(Q);
             q = max(q,0);

@@ -33,6 +33,7 @@ PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'Boun
 % PFsplits = {'Strain','Stress'};
 % PFregularizations = {'AT1','AT2'};
 % PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
+
 % for iPFmodel=1:length(PFmodels)
 % PFmodel = PFmodels{iPFmodel};
 % for iPFsplit=1:length(PFsplits)
@@ -114,6 +115,7 @@ if setProblem
         end
     end
     S_phase = gmshdomainwithhole(D,C,clD,clC,fullfile(pathname,'gmsh_domain_with_hole'));
+    % S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_domain_with_hole_Matthieu_Noel.msh'),2);
     S = S_phase;
     
     %% Phase field problem
@@ -277,10 +279,10 @@ if setProblem
         % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value)
         dt0 = 8e-8;
         dt1 = 2e-8;
-%         if test
-%             dt0 = 16e-8;
-%             dt1 = 4e-8;
-%         end
+        if test
+            dt0 = 16e-8;
+            dt1 = 4e-8;
+        end
         tf = 25e-6;
         dthreshold = 0.6;
     elseif Dim==3
@@ -289,10 +291,10 @@ if setProblem
         % du = 1e-4 mm during the last stage (as soon as the phase field exceeds the threshold value)
         dt0 = 1e-6;
         dt1 = 1e-7;
-%         if test
-%             dt0 = 2e-6;
-%             dt1 = 2e-7;
-%         end
+        if test
+            dt0 = 2e-6;
+            dt1 = 2e-7;
+        end
         tf = 25e-6;
         dthreshold = 0.9;
     end

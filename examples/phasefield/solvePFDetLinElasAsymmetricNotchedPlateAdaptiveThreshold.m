@@ -97,24 +97,26 @@ while ti < tf
     end
     
     % Phase field
+    if strcmpi(PFsolver,'historyfieldnode')
+        r = FENODEFIELD(calc_parammat(S_phase,'r','node'));
+        qn = FENODEFIELD(calc_parammat(S_phase,'qn','node'));
+    else
+        r = calc_parammat(S_phase,'r');
+        qn = calc_parammat(S_phase,'qn');
+    end
     mats_phase = MATERIALS(S_phase);
+    R = r+2*H;
     for m=1:length(mats_phase)
-        mat = mats_phase{m};
-        if isparam(mat,'delta') && any(getparam(mat,'delta')>0) && isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
-            R = getparam(mat,'r');
-        else
-            R = getparam(materials_phase{m},'r');
-        end
         if strcmpi(PFsolver,'historyfieldnode')
-            mats_phase{m} = setparam(mats_phase{m},'r',R+2*H);
+            mats_phase{m} = setparam(mats_phase{m},'r',R);
         else
-            mats_phase{m} = setparam(mats_phase{m},'r',R+2*H{m});
+            mats_phase{m} = setparam(mats_phase{m},'r',R{m});
         end
     end
     S_phase = actualisematerials(S_phase,mats_phase);
     
     [A_phase,b_phase] = calc_rigi(S_phase);
-    Q = 2*H+Qn;
+    Q = 2*H+qn;
     if strcmpi(PFsolver,'historyfieldnode')
         q = double(Q);
         q = max(q,0);

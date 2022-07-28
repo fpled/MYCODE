@@ -41,6 +41,24 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 coeff_gc = 1.0;
 
+% PFmodels = {'Isotropic','AnisotropicAmor','AnisotropicMiehe', 'AnisotropicSpectral','AnisotropicHe'};
+% PFsplits = {'Strain','Stress'};
+% PFregularizations = {'AT1','AT2'};
+% PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
+% initialCracks = {'GeometricCrack','InitialPhaseField'};
+
+% for iPFmodel=1:length(PFmodels)
+% PFmodel = PFmodels{iPFmodel};
+% for iPFsplit=1:length(PFsplits)
+% PFsplit = PFsplits{iPFsplit};
+% for iPFRegularization=1:length(PFregularizations)
+% PFregularization = PFregularizations{iPFRegularization};
+% for iPFsolver=1:length(PFsolvers) 
+% PFsolver = PFsolvers{iPFsolver};
+% for iinitialCrack=1:length(initialCracks) 
+% initialCrack = initialCracks{iinitialCrack};
+% close all
+
 switch lower(symmetry)
     case 'isotropic' % isotropic material
         filename = ['phasefieldDetLinElas' symmetry 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization PFsolver initialCrack];
@@ -755,3 +773,9 @@ if saveParaview
 end
 
 % myparallel('stop');
+
+% end
+% end
+% end
+% end
+% end
