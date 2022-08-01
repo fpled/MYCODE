@@ -37,6 +37,7 @@ PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMieh
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
+maxIter = 100; % maximum number of iterations at each loading increment
 initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
 filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel PFsplit PFregularization PFsolver initialCrack 'Adaptive'];
@@ -324,10 +325,10 @@ if solveProblem
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
             [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,...
-                'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
+                'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
         otherwise
             [dt,ut,ft,St_phase,St] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,...
-                'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
+                'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     end
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);

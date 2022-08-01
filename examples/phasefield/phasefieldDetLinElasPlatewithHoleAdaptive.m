@@ -28,6 +28,7 @@ PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMieh
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT1'; % 'AT1' or 'AT2'
 PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
+maxIter = 100; % maximum number of iterations at each loading increment
 
 switch lower(symmetry)
     case 'isotropic' % isotropic material
@@ -279,10 +280,10 @@ if setProblem
         % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value)
         dt0 = 8e-8;
         dt1 = 2e-8;
-%         if test
-%             dt0 = 16e-8;
-%             dt1 = 4e-8;
-%         end
+        if test
+            dt0 = 16e-8;
+            dt1 = 4e-8;
+        end
         tf = 25e-6;
         dthreshold = 0.6;
     elseif Dim==3
@@ -291,10 +292,10 @@ if setProblem
         % du = 1e-4 mm during the last stage (as soon as the phase field exceeds the threshold value)
         dt0 = 1e-6;
         dt1 = 1e-7;
-%         if test
-%             dt0 = 2e-6;
-%             dt1 = 2e-7;
-%         end
+        if test
+            dt0 = 2e-6;
+            dt1 = 2e-7;
+        end
         tf = 25e-6;
         dthreshold = 0.9;
     end
@@ -319,10 +320,10 @@ if solveProblem
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
             [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,P0,C,sizemap,...
-                'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
+                'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
         otherwise
             [dt,ut,ft,T,St_phase,St] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,P0,C,sizemap,...
-                'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'display');
+                'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     end
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);
