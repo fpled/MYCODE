@@ -194,6 +194,9 @@ for i=1:length(T)
         f = sum(f);
         
         errConv = norm(d-d_old,'Inf');
+        if displayIter
+            fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
+        end
     end
     
     % Update fields

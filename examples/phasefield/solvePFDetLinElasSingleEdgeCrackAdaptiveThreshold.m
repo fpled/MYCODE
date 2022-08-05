@@ -230,6 +230,9 @@ while ti < tf
             f = sum(f);
             
             errConv = norm(d-d_old,'Inf');
+            if displayIter
+                fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
+            end
         end
     end
     

@@ -216,19 +216,22 @@ while ti < tf
             f = sum(f);
             
             errConv = norm(d-d_old,'Inf');
-        end
-        
-        % Update fields
-        t(i) = ti;
-        dt{i} = d;
-        ut{i} = u;
-        ft(i) = f;
-        if nargout>=4
-            if strcmpi(PFsolver,'historyfieldnode')
-                Ht{i} = double(H);
-            else
-                Ht{i} = reshape(double(mean(H,4)),[getnbelem(S),1]);
+            if displayIter
+                fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
             end
+        end
+    end
+    
+    % Update fields
+    t(i) = ti;
+    dt{i} = d;
+    ut{i} = u;
+    ft(i) = f;
+    if nargout>=4
+        if strcmpi(PFsolver,'historyfieldnode')
+            Ht{i} = double(H);
+        else
+            Ht{i} = reshape(double(mean(H,4)),[getnbelem(S),1]);
         end
     end
     

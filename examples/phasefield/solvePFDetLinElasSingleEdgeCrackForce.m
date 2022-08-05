@@ -206,11 +206,14 @@ for i=1:length(T)
             f = sum(f);
             
             errConv = norm(d-d_old,'Inf');
+            if displayIter
+                fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
+            end
         end
-        
-        % Update fields
-        ft(i) = f;
     end
+    
+    % Update fields
+    ft(i) = f;
     
     if display_
         fprintf('| %4d/%4d | %7d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,length(T),nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),norm(d),norm(u));
