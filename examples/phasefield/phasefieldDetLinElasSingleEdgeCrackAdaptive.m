@@ -44,9 +44,9 @@ coeff_gc = 1.0;
 
 switch lower(symmetry)
     case 'isotropic' % isotropic material
-        filename = ['phasefieldDetLinElas' symmetry 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization PFsolver initialCrack 'Adaptive'];
+        filename = ['phasefieldDetLinElas' symmetry 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization PFsolver initialCrack 'MaxIter' maxIter 'Adaptive'];
     case 'anisotropic' % anisotropic material
-        filename = ['phasefieldDetLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization PFsolver initialCrack 'Adaptive'];
+        filename = ['phasefieldDetLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization PFsolver initialCrack 'MaxIter' maxIter 'Adaptive'];
     otherwise
         error('Wrong material symmetry class');
 end

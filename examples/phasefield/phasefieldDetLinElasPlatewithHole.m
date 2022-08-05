@@ -47,9 +47,9 @@ maxIter = 100; % maximum number of iterations at each loading increment
 
 switch lower(symmetry)
     case 'isotropic' % isotropic material
-        filename = ['phasefieldDetLinElas' symmetry 'PlatewithHole' PFmodel PFsplit PFregularization PFsolver '_' num2str(Dim) 'D'];
+        filename = ['phasefieldDetLinElas' symmetry 'PlatewithHole' PFmodel PFsplit PFregularization PFsolver 'MaxIter' maxIter '_' num2str(Dim) 'D'];
     case 'anisotropic' % anisotropic material
-        filename = ['phasefieldDetLinElas' symmetry num2str(ang) 'deg' 'PlatewithHole' PFmodel PFsplit PFregularization PFsolver '_' num2str(Dim) 'D'];
+        filename = ['phasefieldDetLinElas' symmetry num2str(ang) 'deg' 'PlatewithHole' PFmodel PFsplit PFregularization PFsolver 'MaxIter' maxIter '_' num2str(Dim) 'D'];
     otherwise
         error('Wrong material symmetry class');
 end

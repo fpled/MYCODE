@@ -59,9 +59,9 @@ randPF = struct('aGc',0,'bGc',0,'lcorr',Inf); % random phase field parameters mo
 
 switch lower(symmetry)
     case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
-        filename = ['phasefieldStoLinElas' symmetry 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization PFsolver initialCrack 'Adaptive'];
+        filename = ['phasefieldStoLinElas' symmetry 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization PFsolver initialCrack 'MaxIter' maxIter 'Adaptive'];
     case 'anisotropic' % anisotropic material
-        filename = ['phasefieldStoLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization PFsolver initialCrack 'Adaptive'];
+        filename = ['phasefieldStoLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization PFsolver initialCrack 'MaxIter' maxIter 'Adaptive'];
     otherwise
         error('Wrong material symmetry class');
 end
