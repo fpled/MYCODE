@@ -50,7 +50,7 @@ N = numWorkers;
 randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
 randPF = struct('aGc',0,'bGc',0,'lcorr',Inf); % random phase field parameters model
 
-filename = ['phasefieldStoLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel PFsplit PFregularization PFsolver initialCrack  'MaxIter' maxIter];
+filename = ['phasefieldStoLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel PFsplit PFregularization PFsolver initialCrack  'MaxIter' num2str(maxIter)];
 filename = [filename '_' num2str(N) 'samples'];
 if any(randMat.delta)
     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
