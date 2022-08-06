@@ -118,7 +118,7 @@ for i=1:length(T)
                 q = double(Q);
                 q = max(q,0);
                 Q = setvalue(Q,q);
-            elseif strcmpi(PFsolver,'historyfieldelem')
+            else
                 q = getvalue(Q);
                 for p=1:getnbgroupelem(S)
                     qe = double(q{p});
