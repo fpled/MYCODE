@@ -243,9 +243,13 @@ if setProblem
     if Dim==2
         BU = LIGNE([0.0,h],[L,h]);
         BL = LIGNE([0.0,0.0],[L,0.0]);
+        BRight = LIGNE([L,0.0],[L,h]);
+        BLeft = LIGNE([0.0,0.0],[0.0,h]);
     elseif Dim==3
         BU = PLAN([0.0,h,0.0],[L,h,0.0],[0.0,h,e]);
         BL = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
+        BRight = PLAN([L,0.0,0.0],[L,h,0.0],[L,0.0,e]);
+        BLeft = PLAN([0.0,0.0,0.0],[0.0,h,0.0],[0.0,0.0,e]);
     end
     P0 = getvertices(D);
     P0 = POINT(P0{1});
@@ -308,9 +312,9 @@ if setProblem
     T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','symmetry','ang');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','BLeft','BRight','symmetry','ang');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','symmetry','ang');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','BLeft','BRight','symmetry','ang');
 end
 
 %% Solution
@@ -319,10 +323,10 @@ if solveProblem
     
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,P0,C,sizemap,...
+            [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,C,sizemap,...
                 'maxiter',maxIter,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
         otherwise
-            [dt,ut,ft,T,St_phase,St] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,P0,C,sizemap,...
+            [dt,ut,ft,T,St_phase,St] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,C,sizemap,...
                 'maxiter',maxIter,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     end
     [fmax,idmax] = max(ft,[],2);
