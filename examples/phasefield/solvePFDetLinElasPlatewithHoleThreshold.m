@@ -76,6 +76,7 @@ while ti < tf
     
     nbIter = 0;
     if any(dbr > dbthreshold) && any(dbl > dbthreshold)
+        ti = ti + dti;
         f = 0;
     else
         errConv = Inf;
