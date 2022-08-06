@@ -36,8 +36,11 @@ Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isotropic'; % 'Isotropic', 'MeanIsotropic', 'Anisotropic'. Material symmetry
 ang = 30; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 loading = 'Shear'; % 'Tension' or 'Shear'
-PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicHe'
+PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicSpectral', 'AnisotropicHe'
+PFsplit = 'Strain'; % 'Strain' or 'Stress'
+PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
+maxIter = 100; % maximum number of iterations at each loading increment
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
 % Random model parameters
@@ -99,10 +102,13 @@ switch lower(loading)
 %             9013,9030,9032,9090,9130,9144,9160,9200,9216,9220,9228,9277,9326,9346,9372,9384,9397,9405,9414,9446,9468,9483,9494,...
 %             9504,9536,9541,9550,9560,9569,9608,9613,9665,9681,9711,9723,9724,9737,9777,9789,9806,9809,9874,9888,9895,9901,9929,9945,9950,9956];
         
-%         sampleindices = 1:500;
-        sampleindices = [8,9,29,61,64,96,101,109,150,187,252,255,273,277,285,304,327,338,339,345,415,434,492,494];
+        sampleindices = 1:500;
+%         sampleindices = [8,9,29,61,64,96,101,109,150,187,252,255,273,277,285,304,327,338,339,345,415,434,492,494];
+%         sampleindices = [61,109,252,273,277,285,338,339,434];
+
 %         sampleindices = [8,33,34,35,43,58,59,77,111,127,157,161,175,196,214,282,298,317,323,343,404,430,432,434];
 %         sampleindices = [8,33,58,59,77,127,161,298,323,343,404];
+%         sampleindices = [59,77,127,161,298,323,343,404];
     otherwise
         error('Wrong loading case');
 end
@@ -111,17 +117,17 @@ randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
 gc = 2.7e3;
 % aGc = 0.6*gc;
 % bGc = 1.4*gc;
-aGc = 0.9*gc;
-bGc = 1.1*gc;
-% aGc = [0.7,1.2]*gc;
-% bGc = [0.8,1.3]*gc;
+% aGc = 0.9*gc;
+% bGc = 1.1*gc;
+aGc = [0.7,1.2]*gc;
+bGc = [0.8,1.3]*gc;
 randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase field parameters model
 
 switch lower(symmetry)
     case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
-        filename = ['phasefieldStoLinElas' symmetry 'SingleEdgeCrack' loading PFmodel PFsolver initialCrack];
+        filename = ['phasefieldStoLinElas' symmetry 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization PFsolver initialCrack 'MaxIter' num2str(maxIter)];
     case 'anisotropic' % anisotropic material
-        filename = ['phasefieldStoLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel PFsolver initialCrack];
+        filename = ['phasefieldStoLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization PFsolver initialCrack 'MaxIter' num2str(maxIter)];
     otherwise
         error('Wrong material symmetry class');
 end
@@ -237,13 +243,25 @@ if setProblem
             error('Wrong material symmetry class');
     end
     % Small artificial residual stiffness
-    k = 1e-10;
-    % k = 0;
-    % Internal energy
-    H = 0;
+    % k = 1e-12;
+    k = 0;
     
     % Material
-    mat_phase = FOUR_ISOT('k',gc*l,'r',gc/l+2*H,'aGc',randPF.aGc,'bGc',randPF.bGc,'lcorr',randPF.lcorr);
+    switch lower(PFregularization)
+        case 'at1'
+            % c0 = 8/3;
+            K = 3/4*gc*l; % K = 2*(gc*l)/c0;
+            R = 0;
+            Qn = -3/8*gc/l; % Qn = -(gc/l)/c0;
+        case 'at2'
+            % c0 = 2;
+            K = gc*l; % K = 2*(gc*l)/c0;
+            R = gc/l; % R = 2*(gc/l)/c0;
+            Qn = 0;
+        otherwise
+            error('Wrong regularization model');
+    end
+    mat_phase = FOUR_ISOT('k',K,'r',R,'qn',Qn,'PFregularization',PFregularization,'aGc',randPF.aGc,'bGc',randPF.bGc,'lcorr',randPF.lcorr);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
     
@@ -261,24 +279,24 @@ if setProblem
     end
     
     %% Stiffness matrices and sollicitation vectors
-    % a_phase = BILINFORM(1,1,gc*l); % uniform values
-    % % a_phase = DIFFUSIONFORM(gc*l);
+    % a_phase = BILINFORM(1,1,K); % uniform values
+    % % a_phase = DIFFUSIONFORM(K);
     % a_phase = setfree(a_phase,0);
     % K_phase = calc_matrix(a_phase,S_phase);
     % b_phase = calc_nonhomogeneous_vector(S_phase,K_phase);
     % b_phase = -b_phase;
     % K_phase = freematrix(S_phase,K_phase);
     
-    % r_phase = BILINFORM(0,0,gc/l+2*H,0); % nodal values
+    % r_phase = BILINFORM(0,0,R,0); % nodal values
     % R_phase = calc_matrix(r_phase,S_phase);
     % A_phase = K_phase + R_phase;
     
-    % l_phase = LINFORM(0,2*H,0); % nodal values
+    % l_phase = LINFORM(0,Qn,0); % nodal values
     % l_phase = setfree(l_phase,1);
     % b_phase = b_phase + calc_vector(l_phase,S_phase);
     
     % [A_phase,b_phase] = calc_rigi(S_phase);
-    % b_phase = -b_phase + bodyload(S_phase,[],'QN',2*H);
+    % b_phase = -b_phase + bodyload(S_phase,[],'QN',Qn);
     
     %% Linear elastic displacement field problem
     %% Materials
@@ -364,9 +382,9 @@ if setProblem
     d = calc_init_dirichlet(S_phase);
     switch lower(symmetry)
         case 'isotropic' % almost surely isotropic material
-            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'delta',randMat.delta,'lcorr',randMat.lcorr);
+            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit,'delta',randMat.delta,'lcorr',randMat.lcorr);
         case {'meanisotropic','anisotropic'} % mean isotropic or anisotropic material
-            mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'delta',randMat.delta,'lcorr',randMat.lcorr);
+            mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit,'delta',randMat.delta,'lcorr',randMat.lcorr);
         otherwise
             error('Wrong material symmetry class');
     end
@@ -597,7 +615,7 @@ if solveProblem
     %% Solution
     tTotal = tic;
     
-    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'display');
+    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter);
     [ft,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,'numsamples',numsamples,'sampleindices',sampleindices);
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);
@@ -653,6 +671,8 @@ if strcmpi(symmetry,'anisotropic')
     fprintf('angle    = %g deg\n',ang);
 end
 fprintf('PF model = %s\n',PFmodel);
+fprintf('PF split = %s\n',PFsplit);
+fprintf('PF regularization = %s\n',PFregularization);
 fprintf('PF solver = %s\n',PFsolver);
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));

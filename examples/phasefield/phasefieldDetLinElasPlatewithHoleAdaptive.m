@@ -320,10 +320,10 @@ if solveProblem
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
             [dt,ut,ft,T,St_phase,St,Ht] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,P0,C,sizemap,...
-                'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+                'maxiter',maxIter,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
         otherwise
             [dt,ut,ft,T,St_phase,St] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,P0,C,sizemap,...
-                'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+                'maxiter',maxIter,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     end
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);

@@ -550,10 +550,10 @@ if solveProblem
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
             [dt,ut,ft,St_phase,St,Ht] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
-                'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+                'maxiter',maxIter,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
         otherwise
             [dt,ut,ft,St_phase,St] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
-                'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+                'maxiter',maxIter,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     end
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);

@@ -49,13 +49,14 @@ initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialP
 % N = 500; % number of samples
 N = numWorkers;
 randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
-randPF = struct('aGc',0,'bGc',0,'lcorr',Inf); % random phase field parameters model
+aGc = 0;
+bGc = 0;
 % gc = 2.7e3;
-% % aGc = 0.6*gc;
-% % bGc = 1.4*gc;
+% aGc = 0.6*gc;
+% bGc = 1.4*gc;
 % aGc = [0.7,1.2]*gc;
 % bGc = [0.8,1.3]*gc;
-% randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',1e-4); % random phase field parameters model
+randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase field parameters model
 
 switch lower(symmetry)
     case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
@@ -593,7 +594,7 @@ if solveProblem
     
     nbSamples = 1;
     fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
-        'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+        'maxiter',maxIter,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     [ft,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'nbsamples',nbSamples);
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);

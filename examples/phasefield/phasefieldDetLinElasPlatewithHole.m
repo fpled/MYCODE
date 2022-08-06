@@ -319,9 +319,9 @@ if solveProblem
     
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,P0);
+            [dt,ut,ft,Ht] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,P0,'maxiter',maxIter);
         otherwise
-            [dt,ut,ft] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,P0);
+            [dt,ut,ft] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,P0,'maxiter',maxIter);
     end
     [fmax,idmax] = max(ft,[],2);
     T = gettimemodel(dt);
