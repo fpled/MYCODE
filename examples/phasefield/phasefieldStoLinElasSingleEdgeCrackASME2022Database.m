@@ -46,9 +46,10 @@ initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialP
 % Random model parameters
 % numsamples = 1e4; % total number of samples
 numsamples = 500;
+sampleindices = 1:500;
 switch lower(loading)
     case 'tension'
-        sampleindices = 1:1120;
+        % sampleindices = 1:1120;
         % sampleindices = (1120+1):2240;
         % sampleindices = (2240+1):3360;
         % sampleindices = (3360+1):4320;
@@ -102,7 +103,7 @@ switch lower(loading)
 %             9013,9030,9032,9090,9130,9144,9160,9200,9216,9220,9228,9277,9326,9346,9372,9384,9397,9405,9414,9446,9468,9483,9494,...
 %             9504,9536,9541,9550,9560,9569,9608,9613,9665,9681,9711,9723,9724,9737,9777,9789,9806,9809,9874,9888,9895,9901,9929,9945,9950,9956];
         
-        sampleindices = 1:500;
+%         sampleindices = 1:500;
 %         sampleindices = [8,9,29,61,64,96,101,109,150,187,252,255,273,277,285,304,327,338,339,345,415,434,492,494];
 %         sampleindices = [61,109,252,273,277,285,338,339,434];
 
