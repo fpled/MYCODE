@@ -38,7 +38,7 @@ PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMieh
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
-maxIter = 100; % maximum number of iterations at each loading increment
+% maxIter = 1; % maximum number of iterations at each loading increment
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 coeff_gc = 1.0;
 
@@ -47,6 +47,7 @@ coeff_gc = 1.0;
 % PFregularizations = {'AT1','AT2'};
 % PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % initialCracks = {'GeometricCrack','InitialPhaseField'};
+maxIters = [1,100];
 
 % for iPFmodel=1:length(PFmodels)
 % PFmodel = PFmodels{iPFmodel};
@@ -59,6 +60,8 @@ coeff_gc = 1.0;
 % for iinitialCrack=1:length(initialCracks) 
 % initialCrack = initialCracks{iinitialCrack};
 % close all
+for imaxIter=1:length(maxIters) 
+maxIter = maxIters(imaxIter);
 
 switch lower(symmetry)
     case 'isotropic' % isotropic material
@@ -780,3 +783,4 @@ end
 % end
 % end
 % end
+end
