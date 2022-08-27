@@ -16,7 +16,7 @@ solveProblem = true;
 displayModel = false;
 displaySolution = false;
 makeMovie = false;
-saveParaview = true;
+saveParaview = false;
 
 test = true; % coarse mesh
 % test = false; % fine mesh

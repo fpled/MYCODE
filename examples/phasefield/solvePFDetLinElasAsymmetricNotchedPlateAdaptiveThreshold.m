@@ -74,6 +74,13 @@ dti = dt0;
 while ti < tf
     i = i+1;
     
+    switch lower(PFsolver)
+        case 'historyfieldelem'
+            h_old = getvalue(H);
+        case 'historyfieldnode'
+            h_old = double(H);
+    end
+    d_old = d;
     errConv = Inf;
     nbIter = 0;
     while (errConv > tolConv) && (nbIter < maxIter)
@@ -82,7 +89,6 @@ while ti < tf
         % Internal energy field
         switch lower(PFsolver)
             case 'historyfieldelem'
-                h_old = getvalue(H);
                 H = calc_energyint(S,u,'positive','intorder','mass');
                 h = getvalue(H);
                 for p=1:getnbgroupelem(S)
@@ -94,7 +100,6 @@ while ti < tf
                 end
                 H = setvalue(H,h);
             case 'historyfieldnode'
-                h_old = double(H);
                 H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
                 h = double(H);
                 rep = find(h <= h_old);
@@ -140,15 +145,14 @@ while ti < tf
         end
         b_phase = -b_phase + bodyload(S_phase,[],'QN',Q);
         
-        d_old = d;
+        d_prev = d;
         switch lower(PFsolver)
             case {'historyfieldelem','historyfieldnode'}
                 d = A_phase\b_phase;
             otherwise
-                d0 = freevector(S_phase,d);
-                lb = d0;
+                lb = freevector(S_phase,d_old);
                 lb(lb==1) = 1-eps;
-                ub = ones(size(d0));
+                ub = ones(size(lb));
                 switch optimFun
                     case 'lsqlin'
                         [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
@@ -191,17 +195,17 @@ while ti < tf
         f = -A(numddl,:)*u;
         f = sum(f);
         
-        errConv = norm(d-d_old,'Inf');
+        errConv = norm(d-d_prev,'Inf');
         if displayIter
             fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
         end
     end
 
     % Update fields
-    t(i) = ti;
     dt{i} = d;
     ut{i} = u;
     ft(i) = f;
+    t(i) = ti;
     if nargout>=5
         St_phase{i} = S_phase;
     end
