@@ -220,9 +220,11 @@ while ti < tf
             f = A(numddl,:)*u;
             f = sum(f);
             
-            errConv = norm(d-d_prev,'Inf');
-            if displayIter
-                fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
+            if nbIter>1
+                errConv = norm(d-d_prev,'Inf');
+                if displayIter
+                    fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
+                end
             end
         end
     end
