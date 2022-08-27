@@ -40,7 +40,7 @@ loading = 'Shear'; % 'Tension' or 'Shear'
 % PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 % maxIter = 100; % maximum number of iterations at each loading increment
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
-% coeff_gc = 1.0;
+coeff_gc = 1.0;
 
 PFmodels = {'Isotropic','AnisotropicAmor','AnisotropicMiehe', 'AnisotropicSpectral','AnisotropicHe'};
 PFsplits = {'Strain','Stress'};
