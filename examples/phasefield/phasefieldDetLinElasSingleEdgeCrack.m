@@ -20,10 +20,10 @@ close all
 % myparallel('start');
 
 %% Input data
-setProblem = false;
-solveProblem = false;
-displayModel = true;
-displaySolution = true;
+setProblem = true;
+solveProblem = true;
+displayModel = false;
+displaySolution = false;
 makeMovie = false;
 saveParaview = false;
 
