@@ -147,9 +147,10 @@ while ti < tf
                 case {'historyfieldelem','historyfieldnode'}
                     d = A_phase\b_phase;
                 otherwise
-                    lb = freevector(S_phase,d_old);
+                    d0 = freevector(S_phase,d_old);
+                    lb = d0;
                     lb(lb==1) = 1-eps;
-                    ub = ones(size(lb));
+                    ub = ones(size(d0));
                     switch optimFun
                         case 'lsqlin'
                             [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
