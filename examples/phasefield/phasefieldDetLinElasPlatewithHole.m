@@ -24,29 +24,29 @@ test = true; % coarse mesh
 Dim = 2; % space dimension Dim = 2
 symmetry = 'Isotropic'; % 'Isotropic' or 'Anisotropic'. Material symmetry
 ang = 30; % clockwise material orientation angle around z-axis for anisotopic material [deg]
-% PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicSpectral', 'AnisotropicHe'
-% PFsplit = 'Strain'; % 'Strain' or 'Stress'
-% PFregularization = 'AT1'; % 'AT1' or 'AT2'
-% PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
-% maxIter = 100; % maximum number of iterations at each loading increment
+PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicSpectral', 'AnisotropicHe'
+PFsplit = 'Strain'; % 'Strain' or 'Stress'
+PFregularization = 'AT1'; % 'AT1' or 'AT2'
+PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
+maxIter = 1; % maximum number of iterations at each loading increment
 
-PFmodels = {'Isotropic','AnisotropicAmor','AnisotropicMiehe', 'AnisotropicSpectral','AnisotropicHe'};
-PFsplits = {'Strain','Stress'};
-PFregularizations = {'AT1','AT2'};
-PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
-maxIters = [1,100];
+% PFmodels = {'Isotropic','AnisotropicAmor','AnisotropicMiehe', 'AnisotropicSpectral','AnisotropicHe'};
+% PFsplits = {'Strain','Stress'};
+% PFregularizations = {'AT1','AT2'};
+% PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
+% maxIters = [1,100];
 
-for iPFmodel=1:length(PFmodels)
-PFmodel = PFmodels{iPFmodel};
-for iPFsplit=1:length(PFsplits)
-PFsplit = PFsplits{iPFsplit};
-for iPFRegularization=1:length(PFregularizations)
-PFregularization = PFregularizations{iPFRegularization};
-for iPFsolver=1:length(PFsolvers) 
-PFsolver = PFsolvers{iPFsolver};
+% for iPFmodel=1:length(PFmodels)
+% PFmodel = PFmodels{iPFmodel};
+% for iPFsplit=1:length(PFsplits)
+% PFsplit = PFsplits{iPFsplit};
+% for iPFRegularization=1:length(PFregularizations)
+% PFregularization = PFregularizations{iPFRegularization};
+% for iPFsolver=1:length(PFsolvers) 
+% PFsolver = PFsolvers{iPFsolver};
 % close all
-for imaxIter=1:length(maxIters) 
-maxIter = maxIters(imaxIter);
+% for imaxIter=1:length(maxIters) 
+% maxIter = maxIters(imaxIter);
 
 switch lower(symmetry)
     case 'isotropic' % isotropic material
@@ -537,7 +537,7 @@ end
 % myparallel('stop');
 
 end
-end
-end
-end
-end
+% end
+% end
+% end
+% end

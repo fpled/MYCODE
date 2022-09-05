@@ -34,37 +34,37 @@ Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isotropic'; % 'Isotropic' or 'Anisotropic'. Material symmetry
 ang = 30; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 loading = 'Shear'; % 'Tension' or 'Shear'
-% PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicSpectral', 'AnisotropicHe'
-% PFsplit = 'Strain'; % 'Strain' or 'Stress'
-% PFregularization = 'AT2'; % 'AT1' or 'AT2'
-% PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
-% maxIter = 100; % maximum number of iterations at each loading increment
+PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicSpectral', 'AnisotropicHe'
+PFsplit = 'Strain'; % 'Strain' or 'Stress'
+PFregularization = 'AT2'; % 'AT1' or 'AT2'
+PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
+maxIter = 1; % maximum number of iterations at each loading increment
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 coeff_gc = 1.0;
 
-PFmodels = {'Isotropic','AnisotropicAmor','AnisotropicMiehe', 'AnisotropicSpectral','AnisotropicHe'};
-PFsplits = {'Strain','Stress'};
-PFregularizations = {'AT1','AT2'};
-PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
+% PFmodels = {'Isotropic','AnisotropicAmor','AnisotropicMiehe', 'AnisotropicSpectral','AnisotropicHe'};
+% PFsplits = {'Strain','Stress'};
+% PFregularizations = {'AT1','AT2'};
+% PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % initialCracks = {'GeometricCrack','InitialPhaseField'};
 % coeffs_gc = [0.6,0.8,1.0,1.2,1.4];
-maxIters = [1,100];
+% maxIters = [1,100];
 
-for iPFmodel=1:length(PFmodels)
-PFmodel = PFmodels{iPFmodel};
-for iPFsplit=1:length(PFsplits)
-PFsplit = PFsplits{iPFsplit};
-for iPFRegularization=1:length(PFregularizations)
-PFregularization = PFregularizations{iPFRegularization};
-for iPFsolver=1:length(PFsolvers) 
-PFsolver = PFsolvers{iPFsolver};
+% for iPFmodel=1:length(PFmodels)
+% PFmodel = PFmodels{iPFmodel};
+% for iPFsplit=1:length(PFsplits)
+% PFsplit = PFsplits{iPFsplit};
+% for iPFRegularization=1:length(PFregularizations)
+% PFregularization = PFregularizations{iPFRegularization};
+% for iPFsolver=1:length(PFsolvers) 
+% PFsolver = PFsolvers{iPFsolver};
 % for iinitialCrack=1:length(initialCracks) 
 % initialCrack = initialCracks{iinitialCrack};
 % close all
 % for icoeff_gc=1:length(coeffs_gc) 
 % coeff_gc = coeffs_gc(icoeff_gc);
-for imaxIter=1:length(maxIters) 
-maxIter = maxIters(imaxIter);
+% for imaxIter=1:length(maxIters) 
+% maxIter = maxIters(imaxIter);
 
 switch lower(symmetry)
     case 'isotropic' % isotropic material
@@ -781,9 +781,9 @@ end
 
 % myparallel('stop');
 
-end
-end
-end
-end
-end
+% end
+% end
+% end
+% end
+% end
 % end

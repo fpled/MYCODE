@@ -28,7 +28,7 @@ PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMieh
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT1'; % 'AT1' or 'AT2'
 PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
-maxIter = 100; % maximum number of iterations at each loading increment
+maxIter = 1; % maximum number of iterations at each loading increment
 
 switch lower(symmetry)
     case 'isotropic' % isotropic material
