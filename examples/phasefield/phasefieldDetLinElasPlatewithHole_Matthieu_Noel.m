@@ -28,8 +28,8 @@ PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMieh
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT1'; % 'AT1' or 'AT2'
 PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
-maxIter = Inf; % maximum number of iterations at each loading increment
-tolConv = 1e-1; % prescribed tolerance for convergence at each loading increment
+maxIter = 1; % maximum number of iterations at each loading increment
+tolConv = 1; % prescribed tolerance for convergence at each loading increment
 
 % PFmodels = {'Isotropic','AnisotropicAmor','AnisotropicMiehe', 'AnisotropicSpectral','AnisotropicHe'};
 % PFsplits = {'Strain','Stress'};
