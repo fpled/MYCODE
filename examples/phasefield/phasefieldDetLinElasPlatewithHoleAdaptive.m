@@ -31,6 +31,24 @@ PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'Boun
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 
+% PFmodels = {'Isotropic','AnisotropicAmor','AnisotropicMiehe', 'AnisotropicSpectral','AnisotropicHe'};
+% PFsplits = {'Strain','Stress'};
+% PFregularizations = {'AT1','AT2'};
+% PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
+% maxIters = [1,100];
+
+% for iPFmodel=1:length(PFmodels)
+% PFmodel = PFmodels{iPFmodel};
+% for iPFsplit=1:length(PFsplits)
+% PFsplit = PFsplits{iPFsplit};
+% for iPFRegularization=1:length(PFregularizations)
+% PFregularization = PFregularizations{iPFRegularization};
+% for iPFsolver=1:length(PFsolvers) 
+% PFsolver = PFsolvers{iPFsolver};
+% close all
+% for imaxIter=1:length(maxIters) 
+% maxIter = maxIters(imaxIter);
+
 filename = ['phasefieldDetLinElas' symmetry];
 if strcmpi(symmetry,'anisotropic') % anisotropic material
     filename = [filename num2str(ang) 'deg'];
@@ -595,3 +613,9 @@ if saveParaview
 end
 
 % myparallel('stop');
+
+% end
+% end
+% end
+% end
+% end
