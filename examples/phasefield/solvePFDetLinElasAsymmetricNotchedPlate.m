@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
-% function [dt,ut,ft,Ht] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
+function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
+% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
 % Solve deterministic Phase Field problem.
 
 display_ = getcharin('display',varargin,true);
@@ -16,6 +16,17 @@ ut = cell(1,length(T));
 ft = zeros(1,length(T));
 if nargout>=4
     Ht = cell(1,length(T));
+end
+if nargout>=5
+    Edt = zeros(1,length(T));
+end
+if nargout>=6
+    Eut = zeros(1,length(T));
+end
+if nargout>=7
+    iteration = zeros(1,length(T));
+    time = zeros(1,length(T));
+    err = zeros(1,length(T));
 end
 
 d = calc_init_dirichlet(S_phase);
@@ -67,7 +78,7 @@ if display_
 end
 
 for i=1:length(T)
-    
+    tIter = tic;
     switch lower(PFsolver)
         case 'historyfieldelem'
             h_old = getvalue(H);
@@ -143,13 +154,13 @@ for i=1:length(T)
                 ub = ones(size(d0));
                 switch optimFun
                     case 'lsqlin'
-                        [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                        d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
                     case 'lsqnonlin'
                         fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-                        [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
+                        d = lsqnonlin(fun,d0,lb,ub,options);
                     case 'fmincon'
                         fun = @(d) funoptimPF(d,A_phase,b_phase);
-                        [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
+                        d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                 end
         end
         d = unfreevector(S_phase,d);
@@ -175,16 +186,35 @@ for i=1:length(T)
         u = freematrix(S,A)\b;
         u = unfreevector(S,u);
         
-        numddl = findddl(S,'UY',PU);
-        f = -A(numddl,:)*u;
-        f = sum(f);
-        
-        if nbIter>1
-            errConv = norm(d-d_prev,'Inf');
-            if displayIter
-                fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
+        errConv = norm(d-d_prev,'Inf');
+        if displayIter
+            fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
+        end
+    end
+    
+    % Force
+    numddl = findddl(S,'UY',PU);
+    f = -A(numddl,:)*u;
+    f = sum(f);
+    
+    % Energies
+    if nargout>=5
+        for m=1:length(mats_phase)
+            if strcmpi(PFsolver,'historyfieldnode')
+                mats_phase{m} = setparam(mats_phase{m},'r',r);
+            else
+                mats_phase{m} = setparam(mats_phase{m},'r',r{m});
             end
         end
+        S_phase = actualisematerials(S_phase,mats_phase);
+        
+        A_phase = calc_rigi(S_phase,'nofree');
+        b_phase = bodyload(S_phase,[],'QN',qn,'nofree');
+        
+        Ed = 1/2*d'*A_phase*d + d'*b_phase;
+    end
+    if nargout>=6
+        Eu = 1/2*u'*A*u;
     end
     
     % Update fields
@@ -197,6 +227,17 @@ for i=1:length(T)
         else
             Ht{i} = reshape(double(mean(H,4)),[getnbelem(S),1]);
         end
+    end
+    if nargout>=5
+        Edt(i) = Ed;
+    end
+    if nargout>=6
+        Eut(i) = Eu;
+    end
+    if nargout>=7
+        iteration(i) = nbIter;
+        time(i) = toc(tIter);
+        err(i) = errConv;
     end
     
     if display_
@@ -216,6 +257,11 @@ if nargout>=4
     else
         Ht = TIMEMATRIX(Ht,T,[getnbelem(S),1]);
     end
+end
+if nargout>=7
+    output.iteration = iteration;
+    output.time = time;
+    output.error = err;
 end
 
 end

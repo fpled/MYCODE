@@ -26,10 +26,10 @@ symmetry = 'Isotropic'; % 'Isotropic' or 'Anisotropic'. Material symmetry
 ang = 30; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicSpectral', 'AnisotropicHe'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
-PFregularization = 'AT1'; % 'AT1' or 'AT2'
+PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
-maxIter = 1; % maximum number of iterations at each loading increment
-tolConv = 1; % prescribed tolerance for convergence at each loading increment
+maxIter = Inf; % maximum number of iterations at each loading increment
+tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 
 % PFmodels = {'Isotropic','AnisotropicAmor','AnisotropicMiehe', 'AnisotropicSpectral','AnisotropicHe'};
 % PFsplits = {'Strain','Stress'};
@@ -49,14 +49,12 @@ tolConv = 1; % prescribed tolerance for convergence at each loading increment
 % for imaxIter=1:length(maxIters) 
 % maxIter = maxIters(imaxIter);
 
-switch lower(symmetry)
-    case 'isotropic' % isotropic material
-        filename = ['phasefieldDetLinElas' symmetry 'PlatewithHole' PFmodel PFsplit PFregularization PFsolver 'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) '_' num2str(Dim) 'D'];
-    case 'anisotropic' % anisotropic material
-        filename = ['phasefieldDetLinElas' symmetry num2str(ang) 'deg' 'PlatewithHole' PFmodel PFsplit PFregularization PFsolver 'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) '_' num2str(Dim) 'D'];
-    otherwise
-        error('Wrong material symmetry class');
+filename = ['phasefieldDetLinElas' symmetry];
+if strcmpi(symmetry,'anisotropic') % anisotropic material
+    filename = [filename num2str(ang) 'deg'];
 end
+filename = [filename 'PlatewithHole' PFmodel PFsplit PFregularization PFsolver...
+    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) '_' num2str(Dim) 'D'];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefield',filename);
@@ -71,7 +69,7 @@ end
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-formats = {'epsc'};
+formats = {'epsc','fig'};
 renderer = 'OpenGL';
 
 %% Problem
@@ -169,18 +167,18 @@ if setProblem
     % a_phase = BILINFORM(1,1,K); % uniform values
     % % a_phase = DIFFUSIONFORM(K);
     % a_phase = setfree(a_phase,0);
-    % K_phase = calc_matrix(a_phase,S_phase);
+    % K_phase = calc_matrix(a_phase,S_phase); % quadorder=0, nbgauss=1
+    % % K_phase = calc_matrix(a_phase,S_phase,[],[],'quadorder',2);
     % b_phase = calc_nonhomogeneous_vector(S_phase,K_phase);
-    % b_phase = -b_phase;
     % K_phase = freematrix(S_phase,K_phase);
     
-    % r_phase = BILINFORM(0,0,R,0); % nodal values
-    % R_phase = calc_matrix(r_phase,S_phase);
+    % r_phase = BILINFORM(0,0,R); % uniform values
+    % R_phase = calc_matrix(r_phase,S_phase); % quadorder=2, nbgauss=3
     % A_phase = K_phase + R_phase;
     
-    % l_phase = LINFORM(0,Qn,0); % nodal values
+    % l_phase = LINFORM(0,Qn); % uniform values
     % l_phase = setfree(l_phase,1);
-    % b_phase = b_phase + calc_vector(l_phase,S_phase);
+    % b_phase = -b_phase + calc_vector(l_phase,S_phase);
     
     % [A_phase,b_phase] = calc_rigi(S_phase);
     % b_phase = -b_phase + bodyload(S_phase,[],'QN',Qn);
@@ -327,9 +325,9 @@ if solveProblem
     
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv);
+            [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv);
         otherwise
-            [dt,ut,ft] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv);
+            [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv);
     end
     [fmax,idmax] = max(ft,[],2);
     T = gettimemodel(dt);
@@ -338,12 +336,12 @@ if solveProblem
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','fmax','udmax','T','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','fmax','udmax','T','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         save(fullfile(pathname,'solution.mat'),'Ht','-append');
     end
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','fmax','udmax','T','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','fmax','udmax','T','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         load(fullfile(pathname,'solution.mat'),'Ht');
     end
@@ -413,7 +411,7 @@ if displaySolution
     [t,~] = gettevol(T);
     
     %% Display force-displacement curve
-    figure('Name','Force-displacement')
+    figure('Name','Force vs displacement')
     clf
     plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
     grid on
@@ -423,6 +421,59 @@ if displaySolution
     ylabel('Force [kN]','Interpreter',interpreter)
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
+    
+    %% Display energy-displacement curves
+    figure('Name','Energies vs displacement')
+    clf
+    plot(t*1e3,Eut,'-b','Linewidth',linewidth)
+    hold on
+    plot(t*1e3,Edt,'-r','Linewidth',linewidth)
+    plot(t*1e3,Eut+Edt,'-k','Linewidth',linewidth)
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Energy [J]','Interpreter',interpreter)
+    l = legend('$\Psi_u$','$\Psi_c$','$\Psi_{\mathrm{tot}}$',...
+        'Location','NorthWest');
+    set(l,'Interpreter','latex')
+    mysaveas(pathname,'energies_displacement',formats);
+    mymatlab2tikz(pathname,'energies_displacement.tex');
+
+    %% Display outputs of iterative resolution
+    figure('Name','Number of iterations vs displacement')
+    clf
+    plot(t*1e3,output.iteration,'-b','Linewidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Number of iterations','Interpreter',interpreter)
+    mysaveas(pathname,'nb_iterations_displacement',formats);
+    mymatlab2tikz(pathname,'nb_iterations_displacement.tex');
+    
+    figure('Name','Computing time vs displacement')
+    clf
+    plot(t*1e3,output.time,'-r','Linewidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Computing time [s]','Interpreter',interpreter)
+    mysaveas(pathname,'cpu_time_displacement',formats);
+    mymatlab2tikz(pathname,'cpu_time_displacement.tex');
+    
+    figure('Name','Error vs displacement')
+    clf
+    plot(t*1e3,output.error,'-k','Linewidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Error','Interpreter',interpreter)
+    mysaveas(pathname,'error_displacement',formats);
+    mymatlab2tikz(pathname,'error_displacement.tex');
     
     %% Display solutions at different instants
     ampl = 0;

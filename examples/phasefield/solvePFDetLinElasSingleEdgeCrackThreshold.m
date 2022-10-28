@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrackThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
-% function [dt,ut,ft,Ht] = solvePFDetLinElasSingleEdgeCrackThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasSingleEdgeCrackThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasSingleEdgeCrackThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
 % Solve deterministic Phase Field problem.
 
 display_ = getcharin('display',varargin,true);
@@ -71,7 +71,7 @@ ti = 0;
 dti = dt0;
 while ti < tf
     i = i+1;
-    
+    tIter = tic;
     nbIter = 0;
     if any(db > dbthreshold)
         ti = ti + dti;
@@ -151,13 +151,13 @@ while ti < tf
                     ub = ones(size(d0));
                     switch optimFun
                         case 'lsqlin'
-                            [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                            d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
                         case 'lsqnonlin'
                             fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-                            [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
+                            d = lsqnonlin(fun,d0,lb,ub,options);
                         case 'fmincon'
                             fun = @(d) funoptimPF(d,A_phase,b_phase);
-                            [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
+                            d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                     end
             end
             if any(d > dthreshold)
@@ -209,23 +209,42 @@ while ti < tf
             u = freematrix(S,A)\b;
             u = unfreevector(S,u);
             
-            switch lower(loading)
-                case 'tension'
-                    numddl = findddl(S,'UY',BU);
-                case 'shear'
-                    numddl = findddl(S,'UX',BU);
-                otherwise
-                    error('Wrong loading case');
+            errConv = norm(d-d_prev,'Inf');
+            if displayIter
+                fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
             end
-            f = A(numddl,:)*u;
-            f = sum(f);
-            
-            if nbIter>1
-                errConv = norm(d-d_prev,'Inf');
-                if displayIter
-                    fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
+        end
+        
+        % Force
+        switch lower(loading)
+            case 'tension'
+                numddl = findddl(S,'UY',BU);
+            case 'shear'
+                numddl = findddl(S,'UX',BU);
+            otherwise
+                error('Wrong loading case');
+        end
+        f = A(numddl,:)*u;
+        f = sum(f);
+        
+        % Energies
+        if nargout>=5
+            for m=1:length(mats_phase)
+                if strcmpi(PFsolver,'historyfieldnode')
+                    mats_phase{m} = setparam(mats_phase{m},'r',r);
+                else
+                    mats_phase{m} = setparam(mats_phase{m},'r',r{m});
                 end
             end
+            S_phase = actualisematerials(S_phase,mats_phase);
+            
+            A_phase = calc_rigi(S_phase,'nofree');
+            b_phase = bodyload(S_phase,[],'QN',qn,'nofree');
+            
+            Ed = 1/2*d'*A_phase*d + d'*b_phase;
+        end
+        if nargout>=6
+            Eu = 1/2*u'*A*u;
         end
     end
     
@@ -240,6 +259,17 @@ while ti < tf
         else
             Ht{i} = reshape(double(mean(H,4)),[getnbelem(S),1]);
         end
+    end
+    if nargout>=5
+        Edt(i) = Ed;
+    end
+    if nargout>=6
+        Eut(i) = Eu;
+    end
+    if nargout>=7
+        iteration(i) = nbIter;
+        time(i) = toc(tIter);
+        err(i) = errConv;
     end
     
     if display_
@@ -260,6 +290,11 @@ if nargout>=4
     else
         Ht = TIMEMATRIX(Ht,T,[getnbelem(S),1]);
     end
+end
+if nargout>=7
+    output.iteration = iteration;
+    output.time = time;
+    output.error = err;
 end
 
 end

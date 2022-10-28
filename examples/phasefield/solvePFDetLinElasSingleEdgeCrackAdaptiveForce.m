@@ -158,13 +158,13 @@ for i=1:length(T)
                     ub = ones(size(d0));
                     switch optimFun
                         case 'lsqlin'
-                            [d,err,~,exitflag,output] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                            d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
                         case 'lsqnonlin'
                             fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-                            [d,err,~,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
+                            d = lsqnonlin(fun,d0,lb,ub,options);
                         case 'fmincon'
                             fun = @(d) funoptimPF(d,A_phase,b_phase);
-                            [d,err,exitflag,output] = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
+                            d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                     end
             end
             d = unfreevector(S_phase,d);
@@ -213,24 +213,23 @@ for i=1:length(T)
             u = freematrix(S,A)\b;
             u = unfreevector(S,u);
             
-            switch lower(loading)
-                case 'tension'
-                    numddl = findddl(S,'UY',BU);
-                case 'shear'
-                    numddl = findddl(S,'UX',BU);
-                otherwise
-                    error('Wrong loading case');
-            end
-            f = A(numddl,:)*u;
-            f = sum(f);
-            
-            if nbIter>1
-                errConv = norm(d-d_prev,'Inf');
-                if displayIter
-                    fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
-                end
+            errConv = norm(d-d_prev,'Inf');
+            if displayIter
+                fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
             end
         end
+        
+        % Force
+        switch lower(loading)
+            case 'tension'
+                numddl = findddl(S,'UY',BU);
+            case 'shear'
+                numddl = findddl(S,'UX',BU);
+            otherwise
+                error('Wrong loading case');
+        end
+        f = A(numddl,:)*u;
+        f = sum(f);
     end
     
     % Update fields

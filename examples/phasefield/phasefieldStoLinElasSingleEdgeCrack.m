@@ -43,6 +43,7 @@ PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = 1; % maximum number of iterations at each loading increment
+tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
 % Random model parameters
@@ -58,15 +59,12 @@ bGc = 0;
 % bGc = [0.8,1.3]*gc;
 randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase field parameters model
 
-switch lower(symmetry)
-    case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
-        filename = ['phasefieldStoLinElas' symmetry 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization PFsolver initialCrack 'MaxIter' num2str(maxIter)];
-    case 'anisotropic' % anisotropic material
-        filename = ['phasefieldStoLinElas' symmetry num2str(ang) 'deg' 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization PFsolver initialCrack 'MaxIter' num2str(maxIter)];
-    otherwise
-        error('Wrong material symmetry class');
+filename = ['phasefieldStoLinElas' symmetry];
+if strcmpi(symmetry,'anisotropic') % anisotropic material
+    filename = [filename num2str(ang) 'deg'];
 end
-filename = [filename '_' num2str(Dim) 'D_' num2str(N) 'samples'];
+filename = [filename 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization PFsolver initialCrack...
+    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) '_' num2str(Dim) 'D_' num2str(N) 'samples'];
 if any(randMat.delta)
     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 end
@@ -220,18 +218,18 @@ if setProblem
     % a_phase = BILINFORM(1,1,K); % uniform values
     % % a_phase = DIFFUSIONFORM(K);
     % a_phase = setfree(a_phase,0);
-    % K_phase = calc_matrix(a_phase,S_phase);
+    % K_phase = calc_matrix(a_phase,S_phase); % quadorder=0, nbgauss=1
+    % % K_phase = calc_matrix(a_phase,S_phase,[],[],'quadorder',2);
     % b_phase = calc_nonhomogeneous_vector(S_phase,K_phase);
-    % b_phase = -b_phase;
     % K_phase = freematrix(S_phase,K_phase);
     
-    % r_phase = BILINFORM(0,0,R,0); % nodal values
-    % R_phase = calc_matrix(r_phase,S_phase);
+    % r_phase = BILINFORM(0,0,R); % uniform values
+    % R_phase = calc_matrix(r_phase,S_phase); % quadorder=2, nbgauss=3
     % A_phase = K_phase + R_phase;
     
-    % l_phase = LINFORM(0,Qn,0); % nodal values
+    % l_phase = LINFORM(0,Qn); % uniform values
     % l_phase = setfree(l_phase,1);
-    % b_phase = b_phase + calc_vector(l_phase,S_phase);
+    % b_phase = -b_phase + calc_vector(l_phase,S_phase);
     
     % [A_phase,b_phase] = calc_rigi(S_phase);
     % b_phase = -b_phase + bodyload(S_phase,[],'QN',Qn);
@@ -554,7 +552,7 @@ if solveProblem
     tTotal = tic;
     
     nbSamples = 1;
-    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter);
+    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv);
     [ft,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);
@@ -681,7 +679,7 @@ if displaySolution
     [t,~] = gettevol(T);
     
     %% Display force-displacement curve
-    figure('Name','Force-displacement')
+    figure('Name','Force vs displacement')
     clf
     plot(t*1e3,ft_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
     hold on
@@ -692,14 +690,14 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Force [kN]','Interpreter',interpreter)
-    l = legend({'mean function',...
-        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval']},...
+    l = legend('mean function',...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
         'Location','NorthWest');
     set(l,'Interpreter','latex')
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
-    figure('Name','Force-displacement')
+    figure('Name','Forces vs displacement')
     clf
     color = distinguishable_colors(N);
     for i=1:N
