@@ -58,9 +58,9 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
 end
 
 if display_
-    fprintf('\n+------+---------+-----------+-----------+------------+------------+\n');
-    fprintf('| Iter | Nb iter |  u [mm]   |  f [kN]   |  norm(d)   |  norm(u)   |\n');
-    fprintf('+------+---------+-----------+-----------+------------+------------+\n');
+    fprintf('\n+------+---------+-----------+-----------+-----------+-----------+-----------+');
+    fprintf('\n| Iter | Nb iter |  u [mm]   |  f [kN]   |  max(d)   |  Ed [J]   |  Eu [J]   |');
+    fprintf('\n+------+---------+-----------+-----------+-----------+-----------+-----------+\n');
 end
 
 numddlbr = findddl(S_phase,'T',BRight);
@@ -203,24 +203,20 @@ while ti < tf
         f = sum(f);
         
         % Energies
-        if nargout>=5
-            for m=1:length(mats_phase)
-                if strcmpi(PFsolver,'historyfieldnode')
-                    mats_phase{m} = setparam(mats_phase{m},'r',r);
-                else
-                    mats_phase{m} = setparam(mats_phase{m},'r',r{m});
-                end
+        for m=1:length(mats_phase)
+            if strcmpi(PFsolver,'historyfieldnode')
+                mats_phase{m} = setparam(mats_phase{m},'r',r);
+            else
+                mats_phase{m} = setparam(mats_phase{m},'r',r{m});
             end
-            S_phase = actualisematerials(S_phase,mats_phase);
-            
-            A_phase = calc_rigi(S_phase,'nofree');
-            b_phase = bodyload(S_phase,[],'QN',qn,'nofree');
-            
-            Ed = 1/2*d'*A_phase*d + d'*b_phase;
         end
-        if nargout>=6
-            Eu = 1/2*u'*A*u;
-        end
+        S_phase = actualisematerials(S_phase,mats_phase);
+        
+        A_phase = calc_rigi(S_phase,'nofree');
+        b_phase = bodyload(S_phase,[],'QN',qn,'nofree');
+        
+        Ed = 1/2*d'*A_phase*d + d'*b_phase;
+        Eu = 1/2*u'*A*u;
     end
     
     % Update fields
@@ -248,12 +244,12 @@ while ti < tf
     end
     
     if display_
-        fprintf('| %4d | %7d | %6.3e | %6.3e | %9.4e | %9.4e |\n',i,nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),norm(d),norm(u));
+        fprintf('| %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e |\n',i,nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),max(d),Ed,Eu);
     end
 end
 
 if display_
-    fprintf('+------+---------+-----------+-----------+------------+------------+\n');
+    fprintf('+------+---------+-----------+-----------+-----------+-----------+-----------+\n');
 end
 
 T = TIMEMODEL(t);

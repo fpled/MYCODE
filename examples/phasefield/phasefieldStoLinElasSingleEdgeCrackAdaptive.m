@@ -35,10 +35,10 @@ numWorkers = 4;
 
 % Deterministic model parameters
 Dim = 2; % space dimension Dim = 2, 3
-symmetry = 'Isotropic'; % 'Isotropic', 'MeanIsotropic', 'Anisotropic'. Material symmetry
+symmetry = 'Isot'; % 'Isot', 'MeanIsot', 'Anisot'. Material symmetry
 ang = 30; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 loading = 'Shear'; % 'Tension' or 'Shear'
-PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicSpectral', 'AnisotropicHe'
+PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'He', 'Zhang', 'Spectral'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
@@ -59,12 +59,13 @@ bGc = 0;
 % bGc = [0.8,1.3]*gc;
 randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase field parameters model
 
-filename = ['phasefieldStoLinElas' symmetry];
-if strcmpi(symmetry,'anisotropic') % anisotropic material
+foldername = ['singleEdgeCrack' loading '_' num2str(Dim) 'D'];
+filename = ['linElas' symmetry];
+if strcmpi(symmetry,'anisot') % anisotropic material
     filename = [filename num2str(ang) 'deg'];
 end
-filename = [filename 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization PFsolver initialCrack...
-    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'Adaptive_' num2str(Dim) 'D_' num2str(N) 'samples'];
+filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...
+    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'Adaptive_' num2str(N) 'samples'];
 % if any(randMat.delta)
 %     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 % end
@@ -74,10 +75,10 @@ filename = [filename 'SingleEdgeCrack' loading PFmodel PFsplit PFregularization 
 % end
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','phasefield',filename);
+    'results','phasefieldSto',foldername,filename);
 if test
     pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-        'results','phasefield_test',filename);
+        'results','phasefieldSto_test',foldername,filename);
 end
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -169,7 +170,7 @@ if setProblem
     %% Phase field problem
     %% Material
     switch lower(symmetry)
-        case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
+        case {'isot','meanisot'} % almost surely or mean isotropic material
             % Critical energy release rate (or fracture toughness)
             gc = 2.7e3; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
             % Regularization parameter (width of the smeared crack)
@@ -181,7 +182,7 @@ if setProblem
             % l = 5e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
             % l = 4e-6; % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
             % eta = 0.052; w0 = 75.94; l = eta/sqrt(w0)*1e-3; % l = 6e-7; % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
-        case 'anisotropic' % anisotropic material
+        case 'anisot' % anisotropic material
             % Critical energy release rate (or fracture toughness)
             gc = 10e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
             % Regularization parameter (width of the smeared crack)
@@ -279,13 +280,13 @@ if setProblem
     option = 'DEFO'; % plane strain [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     % option = 'CONT'; % plane stress [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
     switch lower(symmetry)
-        case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
+        case {'isot','meanisot'} % almost surely or mean isotropic material
             % Lame coefficients
             % lambda = 121.1538e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
             % mu = 80.7692e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
             lambda = 121.15e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
             mu = 80.77e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
-            if strcmpi(symmetry,'isotropic')
+            if strcmpi(symmetry,'isot')
                 % Young modulus and Poisson ratio
                 if Dim==2
                     switch lower(option)
@@ -303,7 +304,7 @@ if setProblem
                     E = mu*(3*lambda+2*mu)/(lambda+mu);
                     NU = lambda/(lambda+mu)/2;
                 end
-            elseif strcmpi(symmetry,'meanisotropic')
+            elseif strcmpi(symmetry,'meanisot')
                 % Elasticity matrix
                 if Dim==2
                     Cmat = e*...
@@ -320,7 +321,7 @@ if setProblem
                 end
             end
             
-        case 'anisotropic' % anisotropic material
+        case 'anisot' % anisotropic material
             if Dim==2
                 switch lower(option)
                     case 'defo'
@@ -356,9 +357,9 @@ if setProblem
     % Material
     d = calc_init_dirichlet(S_phase);
     switch lower(symmetry)
-        case 'isotropic' % almost surely isotropic material
+        case 'isot' % almost surely isotropic material
             mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit,'delta',randMat.delta,'lcorr',randMat.lcorr);
-        case {'meanisotropic','anisotropic'} % mean isotropic or anisotropic material
+        case {'meanisot','anisot'} % mean isotropic or anisotropic material
             mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit,'delta',randMat.delta,'lcorr',randMat.lcorr);
         otherwise
             error('Wrong material symmetry class');
@@ -423,7 +424,7 @@ if setProblem
     
     %% Time scheme
     switch lower(symmetry)
-        case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
+        case {'isot','meanisot'} % almost surely or mean isotropic material
             if Dim==2
                 switch lower(loading)
                     case 'tension'
@@ -527,7 +528,7 @@ if setProblem
                 t = linspace(dt,nt*dt,nt);
             end
             
-        case 'anisotropic' % anisotropic material
+        case 'anisot' % anisotropic material
             if Dim==2
                 switch lower(loading)
                     case 'tension'
@@ -633,44 +634,47 @@ else
 end
 
 %% Outputs
-fprintf('\n');
-fprintf('dim      = %d\n',Dim);
-fprintf('loading  = %s\n',loading);
-fprintf('mat sym  = %s\n',symmetry);
-if strcmpi(symmetry,'anisotropic')
-    fprintf('angle    = %g deg\n',ang);
+fid = fopen(fullfile(pathname,'results.txt'),'w');
+fprintf(fid,'Single edge crack\n');
+fprintf(fid,'\n');
+fprintf(fid,'dim      = %d\n',Dim);
+fprintf(fid,'loading  = %s\n',loading);
+fprintf(fid,'mat sym  = %s\n',symmetry);
+if strcmpi(symmetry,'anisot')
+    fprintf(fid,'angle    = %g deg\n',ang);
 end
-fprintf('PF model = %s\n',PFmodel);
-fprintf('PF split = %s\n',PFsplit);
-fprintf('PF regularization = %s\n',PFregularization);
-fprintf('PF solver = %s\n',PFsolver);
-fprintf('nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
-fprintf('nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));
-fprintf('nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));
-fprintf('nb time dofs = %g\n',getnbtimedof(T));
-fprintf('nb samples = %g\n',N);
-fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
+fprintf(fid,'PF model = %s\n',PFmodel);
+fprintf(fid,'PF split = %s\n',PFsplit);
+fprintf(fid,'PF regularization = %s\n',PFregularization);
+fprintf(fid,'PF solver = %s\n',PFsolver);
+fprintf(fid,'nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
+fprintf(fid,'nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));
+fprintf(fid,'nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));
+fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
+fprintf(fid,'nb samples = %g\n',N);
+fprintf(fid,'elapsed time = %f s\n',time);
+fprintf(fid,'\n');
 
 if Dim==2
-    fprintf('mean(fmax)    = %g kN/mm\n',fmax_mean*1e-6);
-    fprintf('std(fmax)     = %g kN/mm\n',fmax_std*1e-6);
+    fprintf(fid,'mean(fmax)    = %g kN/mm\n',fmax_mean*1e-6);
+    fprintf(fid,'std(fmax)     = %g kN/mm\n',fmax_std*1e-6);
 elseif Dim==3
-    fprintf('mean(fmax)    = %g kN\n',fmax_mean*1e-3);
-    fprintf('std(fmax)     = %g kN\n',fmax_std*1e-3);
+    fprintf(fid,'mean(fmax)    = %g kN\n',fmax_mean*1e-3);
+    fprintf(fid,'std(fmax)     = %g kN\n',fmax_std*1e-3);
 end
-fprintf('disp(fmax)    = %g\n',fmax_std/fmax_mean);
+fprintf(fid,'disp(fmax)    = %g\n',fmax_std/fmax_mean);
 if Dim==2
-    fprintf('%d%% ci(fmax)  = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
+    fprintf(fid,'%d%% ci(fmax)  = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
 elseif Dim==3
-    fprintf('%d%% ci(fmax)  = [%g,%g] kN\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-3,fmax_ci(2)*1e-3);
+    fprintf(fid,'%d%% ci(fmax)  = [%g,%g] kN\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-3,fmax_ci(2)*1e-3);
 end
-fprintf('\n');
+fprintf(fid,'\n');
 
-fprintf('mean(udmax)   = %g mm\n',udmax_mean*1e3);
-fprintf('std(udmax)    = %g mm\n',udmax_std*1e3);
-fprintf('disp(udmax)   = %g\n',udmax_std/udmax_mean);
-fprintf('%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
+fprintf(fid,'mean(udmax)   = %g mm\n',udmax_mean*1e3);
+fprintf(fid,'std(udmax)    = %g mm\n',udmax_std*1e3);
+fprintf(fid,'disp(udmax)   = %g\n',udmax_std/udmax_mean);
+fprintf(fid,'%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
+fclose(fid);
 
 %% Display
 if displayModel
@@ -806,7 +810,7 @@ if displaySolution
     %% Display samples of solutions at different instants
     ampl = 0;
     switch lower(symmetry)
-        case {'isotropic','meanisotropic'} % almost surely or mean isotropic material
+        case {'isot','meanisot'} % almost surely or mean isotropic material
             switch lower(loading)
                 case 'tension'
                     rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-6)<eps | abs(t-6e-6)<eps | abs(t-6.15e-6)<eps | abs(t-6.25e-6)<eps | abs(t-6.30e-6)<eps | abs(t-6.45e-6)<eps | abs(t-6.5e-6)<eps);
@@ -815,7 +819,7 @@ if displaySolution
                 otherwise
                     error('Wrong loading case');
             end
-        case 'anisotropic' % anisotropic material
+        case 'anisot' % anisotropic material
             switch lower(loading)
                 case 'tension'
                     rep = find(abs(t-9e-6)<eps | abs(t-12e-6)<eps | abs(t-13.5e-6)<eps | abs(t-15e-6)<eps | abs(t-20e-6)<eps);

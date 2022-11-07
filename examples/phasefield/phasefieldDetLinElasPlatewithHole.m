@@ -22,45 +22,46 @@ test = true; % coarse mesh
 % test = false; % fine mesh
 
 Dim = 2; % space dimension Dim = 2
-symmetry = 'Isotropic'; % 'Isotropic' or 'Anisotropic'. Material symmetry
+symmetry = 'Isot'; % 'Isot' or 'Anisot'. Material symmetry
 ang = 30; % clockwise material orientation angle around z-axis for anisotopic material [deg]
-PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicSpectral', 'AnisotropicHe'
+PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'He', 'Zhang', 'Spectral'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
-PFregularization = 'AT1'; % 'AT1' or 'AT2'
+PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 
-% PFmodels = {'Isotropic','AnisotropicAmor','AnisotropicMiehe', 'AnisotropicSpectral','AnisotropicHe'};
+% PFmodels = {'Bourdin','Amor','Miehe','He','Zhang','Spectral'};
 % PFsplits = {'Strain','Stress'};
-% PFregularizations = {'AT1','AT2'};
-% PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
+PFregularizations = {'AT1','AT2'};
+PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % maxIters = [1,100];
 
 % for iPFmodel=1:length(PFmodels)
 % PFmodel = PFmodels{iPFmodel};
 % for iPFsplit=1:length(PFsplits)
 % PFsplit = PFsplits{iPFsplit};
-% for iPFRegularization=1:length(PFregularizations)
-% PFregularization = PFregularizations{iPFRegularization};
-% for iPFsolver=1:length(PFsolvers) 
-% PFsolver = PFsolvers{iPFsolver};
+for iPFRegularization=1:length(PFregularizations)
+PFregularization = PFregularizations{iPFRegularization};
+for iPFsolver=1:length(PFsolvers) 
+PFsolver = PFsolvers{iPFsolver};
 % close all
 % for imaxIter=1:length(maxIters) 
 % maxIter = maxIters(imaxIter);
 
-filename = ['phasefieldDetLinElas' symmetry];
-if strcmpi(symmetry,'anisotropic') % anisotropic material
+foldername = ['platewithHole_' num2str(Dim) 'D'];
+filename = ['linElas' symmetry];
+if strcmpi(symmetry,'anisot') % anisotropic material
     filename = [filename num2str(ang) 'deg'];
 end
-filename = [filename 'PlatewithHole' PFmodel PFsplit PFregularization PFsolver...
-    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) '_' num2str(Dim) 'D'];
+filename = [filename PFmodel PFsplit PFregularization PFsolver...
+    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv)];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','phasefield',filename);
+    'results','phasefieldDet',foldername,filename);
 if test
     pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-        'results','phasefield_test',filename);
+        'results','phasefieldDet_test',foldername,filename);
 end
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -124,12 +125,12 @@ if setProblem
     %% Phase field problem
     %% Material
     switch lower(symmetry)
-        case 'isotropic' % isotropic material
+        case 'isot' % isotropic material
             % Critical energy release rate (or fracture toughness)
             gc = 1.4; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
             % Regularization parameter (width of the smeared crack)
             l = 0.12e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        case 'anisotropic' % anisotropic material
+        case 'anisot' % anisotropic material
             % Critical energy release rate (or fracture toughness)
             gc = 10e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
             % Regularization parameter (width of the smeared crack)
@@ -189,12 +190,12 @@ if setProblem
     option = 'DEFO'; % plane strain [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     % option = 'CONT'; % plane stress [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
     switch lower(symmetry)
-        case 'isotropic' % isotropic material
+        case 'isot' % isotropic material
             % Lame coefficients
             % Young modulus and Poisson ratio
             E = 12e9; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
             NU = 0.3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        case 'anisotropic' % anisotropic material
+        case 'anisot' % anisotropic material
             if Dim==2
                 switch lower(option)
                     case 'defo'
@@ -230,9 +231,9 @@ if setProblem
     % Material
     d = calc_init_dirichlet(S_phase);
     switch lower(symmetry)
-        case 'isotropic' % isotropic material
+        case 'isot' % isotropic material
             mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
-        case 'anisotropic' % anisotropic material
+        case 'anisot' % anisotropic material
             mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
         otherwise
             error('Wrong material symmetry class');
@@ -348,25 +349,28 @@ else
 end
 
 %% Outputs
-fprintf('\n');
-fprintf('dim      = %d\n',Dim);
-fprintf('mat sym  = %s\n',symmetry);
-if strcmpi(symmetry,'anisotropic')
-    fprintf('angle    = %g deg\n',ang);
+fid = fopen(fullfile(pathname,'results.txt'),'w');
+fprintf(fid,'Plate with hole\n');
+fprintf(fid,'\n');
+fprintf(fid,'dim      = %d\n',Dim);
+fprintf(fid,'mat sym  = %s\n',symmetry);
+if strcmpi(symmetry,'anisot')
+    fprintf(fid,'angle    = %g deg\n',ang);
 end
-fprintf('PF model = %s\n',PFmodel);
-fprintf('PF split = %s\n',PFsplit);
-fprintf('PF regularization = %s\n',PFregularization);
-fprintf('PF solver = %s\n',PFsolver);
-fprintf('nb elements = %g\n',getnbelem(S));
-fprintf('nb nodes    = %g\n',getnbnode(S));
-fprintf('nb dofs     = %g\n',getnbddl(S));
-fprintf('nb time dofs = %g\n',getnbtimedof(T));
-fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
+fprintf(fid,'PF model = %s\n',PFmodel);
+fprintf(fid,'PF split = %s\n',PFsplit);
+fprintf(fid,'PF regularization = %s\n',PFregularization);
+fprintf(fid,'PF solver = %s\n',PFsolver);
+fprintf(fid,'nb elements = %g\n',getnbelem(S));
+fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
+fprintf(fid,'elapsed time = %f s\n',time);
+fprintf(fid,'\n');
 
-fprintf('fmax  = %g kN/mm\n',fmax*1e-6);
-fprintf('udmax = %g mm\n',udmax*1e3);
+fprintf(fid,'fmax  = %g kN/mm\n',fmax*1e-6);
+fprintf(fid,'udmax = %g mm\n',udmax*1e3);
+fclose(fid);
 
 %% Display
 if displayModel
@@ -588,8 +592,8 @@ end
 
 % myparallel('stop');
 
-% end
-% end
+end
+end
 % end
 % end
 % end

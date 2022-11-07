@@ -33,7 +33,7 @@ test = true; % coarse mesh
 
 Dim = 2; % space dimension Dim = 2
 setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
-PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicSpectral', 'AnisotropicHe'
+PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'He', 'Zhang', 'Spectral'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
@@ -41,14 +41,15 @@ maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
-filename = ['phasefieldDetLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel PFsplit PFregularization PFsolver initialCrack...
+foldername = ['asymmetricNotchedPlateSetup' num2str(setup)];
+filename = ['linElas' PFmodel PFsplit PFregularization PFsolver initialCrack...
     'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'Adaptive'];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','phasefield',filename);
+    'results','phasefieldDet',foldername,filename);
 if test
     pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-        'results','phasefield_test',filename);
+        'results','phasefieldDet_test',foldername,filename);
 end
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -350,21 +351,24 @@ else
 end
 
 %% Outputs
-fprintf('\n');
-fprintf('setup    = %d\n',setup);
-fprintf('PF model = %s\n',PFmodel);
-fprintf('PF split = %s\n',PFsplit);
-fprintf('PF regularization = %s\n',PFregularization);
-fprintf('PF solver = %s\n',PFsolver);
-fprintf('nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
-fprintf('nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));
-fprintf('nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));
-fprintf('nb time dofs = %g\n',getnbtimedof(T));
-fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
+fid = fopen(fullfile(pathname,'results.txt'),'w');
+fprintf(fid,'Asymmetric notched plate\n');
+fprintf(fid,'\n');
+fprintf(fid,'setup    = %d\n',setup);
+fprintf(fid,'PF model = %s\n',PFmodel);
+fprintf(fid,'PF split = %s\n',PFsplit);
+fprintf(fid,'PF regularization = %s\n',PFregularization);
+fprintf(fid,'PF solver = %s\n',PFsolver);
+fprintf(fid,'nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
+fprintf(fid,'nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));
+fprintf(fid,'nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));
+fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
+fprintf(fid,'elapsed time = %f s\n',time);
+fprintf(fid,'\n');
 
-fprintf('fmax  = %g kN/mm\n',fmax*1e-6);
-fprintf('udmax = %g mm\n',udmax*1e3);
+fprintf(fid,'fmax  = %g kN/mm\n',fmax*1e-6);
+fprintf(fid,'udmax = %g mm\n',udmax*1e3);
+fclose(fid);
 
 %% Display
 if displayModel

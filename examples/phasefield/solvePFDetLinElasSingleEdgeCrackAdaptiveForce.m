@@ -62,10 +62,10 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
 end
 
 if display_
-    fprintf('\n+-----------+---------+-----------+-----------+----------+----------+------------+------------+\n');
-    fprintf('|   Iter    | Nb iter |  u [mm]   |  f [kN]   | Nb nodes | Nb elems |  norm(d)   |  norm(u)   |\n');
-    fprintf('+-----------+---------+-----------+-----------+----------+----------+------------+------------+\n');
-    fprintf('| %4d/%4d | %7d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',0,length(T),0,0,0,getnbnode(S),getnbelem(S),0,0);
+    fprintf('\n+-----------+---------+-----------+-----------+-----------+----------+----------+');
+    fprintf('\n|   Iter    | Nb iter |  u [mm]   |  f [kN]   |  max(d)   | Nb nodes | Nb elems |');
+    fprintf('\n+-----------+---------+-----------+-----------+-----------+----------+----------+');
+    fprintf('\n| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',0,length(T),0,0,0,0,getnbnode(S),getnbelem(S));
 end
 
 numddlb = findddl(S_phase,'T',BRight);
@@ -236,7 +236,7 @@ for i=1:length(T)
     ft(i) = f;
     
     if display_
-        fprintf('| %4d/%4d | %7d | %6.3e | %6.3e | %8d | %8d | %9.4e | %9.4e |\n',i,length(T),nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),getnbnode(S),getnbelem(S),norm(d),norm(u));
+        fprintf('| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',i,length(T),nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),max(d),getnbnode(S),getnbelem(S));
     end
     
     if i<length(T) && ~any(db > dbthreshold)
@@ -300,7 +300,7 @@ for i=1:length(T)
 end
 
 if display_
-    fprintf('+-----------+---------+-----------+-----------+----------+----------+------------+------------+\n');
+    fprintf('+-----------+---------+-----------+-----------+-----------+----------+----------+\n');
 end
 
 end

@@ -37,7 +37,7 @@ numWorkers = 4;
 % Deterministic model parameters
 Dim = 2; % space dimension Dim = 2
 setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
-PFmodel = 'AnisotropicMiehe'; % 'Isotropic', 'AnisotropicAmor', 'AnisotropicMiehe', 'AnisotropicSpectral', 'AnisotropicHe'
+PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'He', 'Zhang', 'Spectral'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
@@ -51,8 +51,9 @@ N = numWorkers;
 randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
 randPF = struct('aGc',0,'bGc',0,'lcorr',Inf); % random phase field parameters model
 
-filename = ['phasefieldStoLinElasAsymmetricNotchedPlateSetup' num2str(setup) PFmodel PFsplit PFregularization PFsolver initialCrack...
-    'MaxIter' num2str(maxIter) 'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'Adaptive'];
+foldername = ['asymmetricNotchedPlateSetup' num2str(setup) 'Adaptive'];
+filename = ['linElas' PFmodel PFsplit PFregularization PFsolver initialCrack...
+    'MaxIter' num2str(maxIter) 'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv)];
 filename = [filename '_' num2str(N) 'samples'];
 if any(randMat.delta)
     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
@@ -63,10 +64,10 @@ if any(randPF.aGc) && any(randPF.bGc)
 end
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','phasefield',filename);
+    'results','phasefieldSto',foldername,filename);
 if test
     pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-        'results','phasefield_test',filename);
+        'results','phasefieldSto_test',foldername,filename);
 end
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -391,30 +392,33 @@ else
 end
 
 %% Outputs
-fprintf('\n');
-fprintf('setup    = %d\n',setup);
-fprintf('PF model = %s\n',PFmodel);
-fprintf('PF split = %s\n',PFsplit);
-fprintf('PF regularization = %s\n',PFregularization);
-fprintf('PF solver = %s\n',PFsolver);
-fprintf('nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
-fprintf('nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));
-fprintf('nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));
-fprintf('nb time dofs = %g\n',getnbtimedof(T));
-fprintf('nb samples = %g\n',N);
-fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
+fid = fopen(fullfile(pathname,'results.txt'),'w');
+fprintf(fid,'Asymmetric notched plate\n');
+fprintf(fid,'\n');
+fprintf(fid,'setup    = %d\n',setup);
+fprintf(fid,'PF model = %s\n',PFmodel);
+fprintf(fid,'PF split = %s\n',PFsplit);
+fprintf(fid,'PF regularization = %s\n',PFregularization);
+fprintf(fid,'PF solver = %s\n',PFsolver);
+fprintf(fid,'nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
+fprintf(fid,'nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));
+fprintf(fid,'nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));
+fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
+fprintf(fid,'nb samples = %g\n',N);
+fprintf(fid,'elapsed time = %f s\n',time);
+fprintf(fid,'\n');
 
-fprintf('mean(fmax)   = %g kN/mm\n',fmax_mean*1e-6);
-fprintf('std(fmax)    = %g kN/mm\n',fmax_std*1e-6);
-fprintf('disp(fmax)   = %g\n',fmax_std/fmax_mean);
-fprintf('%d%% ci(fmax) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
-fprintf('\n');
+fprintf(fid,'mean(fmax)   = %g kN/mm\n',fmax_mean*1e-6);
+fprintf(fid,'std(fmax)    = %g kN/mm\n',fmax_std*1e-6);
+fprintf(fid,'disp(fmax)   = %g\n',fmax_std/fmax_mean);
+fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
+fprintf(fid,'\n');
 
-fprintf('mean(udmax)   = %g mm\n',udmax_mean*1e3);
-fprintf('std(udmax)    = %g mm\n',udmax_std*1e3);
-fprintf('disp(udmax)   = %g\n',udmax_std/udmax_mean);
-fprintf('%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
+fprintf(fid,'mean(udmax)   = %g mm\n',udmax_mean*1e3);
+fprintf(fid,'std(udmax)    = %g mm\n',udmax_std*1e3);
+fprintf(fid,'disp(udmax)   = %g\n',udmax_std/udmax_mean);
+fprintf(fid,'%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
+fclose(fid);
 
 %% Display
 if displayModel
