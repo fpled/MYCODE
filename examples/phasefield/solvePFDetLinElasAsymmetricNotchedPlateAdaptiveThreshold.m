@@ -216,7 +216,7 @@ while ti < tf
     A_phase = calc_rigi(S_phase,'nofree');
     b_phase = bodyload(S_phase,[],'QN',qn,'nofree');
     
-    Ed = 1/2*d'*A_phase*d + d'*b_phase;
+    Ed = 1/2*d'*A_phase*d - d'*b_phase;
     Eu = 1/2*u'*A*u;
     
     % Update fields
