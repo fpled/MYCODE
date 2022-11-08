@@ -50,7 +50,7 @@ initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialP
 N = 500; % number of samples
 % N = numWorkers;
 coeff_gc = 1.0;
-randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
+randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
 aGc = 0;
 bGc = 0;
 % gc = 2.7e3;
@@ -183,8 +183,9 @@ if setProblem
     end
     gc = gc*coeff_gc;
     % Small artificial residual stiffness
+    k = 1e-8;
     % k = 1e-12;
-    k = 0;
+    % k = 0;
     
     % Material
     switch lower(PFregularization)
@@ -802,7 +803,7 @@ if displaySolution
         for i=1:Dim
             plotSolution(S,uj,'displ',i,'ampl',ampl);
             mysaveas(pathname,['displacement_' num2str(i) '_mean_t' num2str(rep(j))],formats,renderer);
-            plotSolution(S,uj_var,'displ_var',i,'ampl',ampl);
+            plotSolution(S,uj_var,'displ',i,'ampl',ampl);
             mysaveas(pathname,['displacement_' num2str(i) '_var_t' num2str(rep(j))],formats,renderer);
         end
         
