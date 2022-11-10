@@ -182,7 +182,7 @@ if setProblem
             % eta = 0.052; w0 = 75.94; l = eta/sqrt(w0)*1e-3; % l = 6e-7; % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
         case 'anisot' % anisotropic material
             % Critical energy release rate (or fracture toughness)
-            gc = 10e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            gc = 1e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
             % Regularization parameter (width of the smeared crack)
             l = 8.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
         otherwise

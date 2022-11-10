@@ -138,7 +138,7 @@ if setProblem
             l = 0.12e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
         case 'anisot' % anisotropic material
             % Critical energy release rate (or fracture toughness)
-            gc = 10e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            gc = 1e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
             % Regularization parameter (width of the smeared crack)
             l = 8.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
         otherwise
