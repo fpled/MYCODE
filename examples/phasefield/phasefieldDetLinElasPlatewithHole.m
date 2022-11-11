@@ -304,14 +304,9 @@ if setProblem
             dt1 = 2e-7;
         end
         tf = 25e-6;
-        dthreshold = 0.9;
+        % dthreshold = 0.9;
+        dthreshold = 0.6;
     end
-    
-%     t0 = linspace(dt0,nt0*dt0,nt0);
-%     t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-%     t = [t0,t1];
-%     
-%     T = TIMEMODEL(t);
     T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
     
     %% Save variables

@@ -34,7 +34,7 @@ numWorkers = maxNumCompThreads;
 % Deterministic model parameters
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isot'; % 'Isot', 'MeanIsot', 'Anisot'. Material symmetry
-ang = 30; % clockwise material orientation angle around z-axis for anisotopic material [deg]
+ang = 45; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'He', 'Zhang', 'Spectral'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
@@ -459,12 +459,6 @@ if setProblem
                         % nt0 = 500;
                         % dt1 = 1e-9;
                         % nt1 = 1300;
-                        % if test
-                        %     dt0 = 1e-7;
-                        %     nt0 = 50;
-                        %     dt1 = 1e-8;
-                        %     nt1 = 400;
-                        % end
                         % t0 = linspace(dt0,nt0*dt0,nt0);
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
@@ -492,6 +486,8 @@ if setProblem
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
                         
+                        % du = 1e-5 mm during the first 400 time steps (up to u = 4e-3 mm)
+                        % du = 1e-6 mm during the last 4000 time steps (up to u = 8e-3 mm)
                         dt0 = 1e-8;
                         nt0 = 400;
                         dt1 = 1e-9;
@@ -532,17 +528,20 @@ if setProblem
                         % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM],
                         % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
                         % du = 1e-5 mm during 1500 time steps (up to u = 15e-3 mm)
-                        dt = 1e-8;
+                        % dt = 1e-8;
                         % nt = 1500;
+                        
+                        % du = 1e-5 mm during 2000 time steps (up to u = 20e-3 mm)
+                        dt = 1e-8;
                         nt = 2000;
                         if test
                             dt = 5e-8;
-                            % nt = 300;
                             nt = 400;
                         end
                         t = linspace(dt,nt*dt,nt);
                 end
             elseif Dim==3
+                % du = 1e-5 mm during 2500 time steps (up to u = 25e-3 mm)
                 dt = 1e-8;
                 nt = 2500;
                 if test
@@ -551,56 +550,44 @@ if setProblem
                 end
                 t = linspace(dt,nt*dt,nt);
             end
+            T = TIMEMODEL(t);
             
         case 'anisot' % anisotropic material
             if Dim==2
                 switch lower(loading)
                     case 'tension'
-                        % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-                        % du = 6e-5 mm during the first 200 time steps (up to u = 12e-3 mm)
-                        % du = 2e-5 mm during the last 600 time steps (up to u = 24e-3 mm)
-                        dt0 = 6e-8;
-                        nt0 = 200;
-                        dt1 = 2e-8;
-                        nt1 = 600;
+                        % du = 2e-5 mm (up to u = 10e-3 mm)
+                        dt = 2e-8;
+                        nt = 500;
                         if test
-                            dt0 = 24e-8;
-                            nt0 = 50;
-                            dt1 = 6e-8;
-                            nt1 = 200;
+                            dt1 = 4e-8;
+                            nt = 250;
                         end
-                        
                     case 'shear'
-                        % du = 1e-4 mm during the first 200 time steps (up to u = 20e-3 mm)
-                        % du = 2e-5 mm during the last 2000 time steps (up to u = 60e-3 mm)
-                        dt0 = 1e-7;
-                        nt0 = 200;
-                        dt1 = 2e-8;
-                        nt1 = 2000;
+                        % du = 2e-5 mm (up to u = 60e-3 mm)
+                        dt = 2e-8;
+                        nt = 3000;
                         if test
-                            dt0 = 4e-7;
-                            nt0 = 50;
-                            dt1 = 2e-7;
-                            nt1 = 200;
+                            dt = 2e-7;
+                            nt = 300;
                         end
                 end
-                t0 = linspace(dt0,nt0*dt0,nt0);
-                t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                t = [t0,t1];
-                
+                t = linspace(dt,nt*dt,nt);
             elseif Dim==3
-                dt = 1e-8;
-                nt = 2500;
+                % du = 2e-5 mm (up to u = 60e-3 mm)
+                dt = 2e-8;
+                nt = 3000;
                 if test
-                    dt = 1e-7;
-                    nt = 250;
+                    dt = 2e-7;
+                    nt = 300;
                 end
                 t = linspace(dt,nt*dt,nt);
             end
+            T = TIMEMODEL(t);
+            
         otherwise
             error('Wrong material symmetry class');
     end
-    T = TIMEMODEL(t);
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
