@@ -501,22 +501,22 @@ if setProblem
                             nt = 250;
                         end
                     case 'shear'
-                        % du = 2e-5 mm (up to u = 60e-3 mm)
+                        % du = 2e-5 mm (up to u = 20e-3 mm)
                         dt = 2e-8;
-                        nt = 3000;
+                        nt = 1000;
                         if test
                             dt = 2e-7;
-                            nt = 300;
+                            nt = 100;
                         end
                 end
                 t = linspace(dt,nt*dt,nt);
             elseif Dim==3
-                % du = 2e-5 mm (up to u = 60e-3 mm)
+                % du = 2e-5 mm (up to u = 20e-3 mm)
                 dt = 2e-8;
-                nt = 3000;
+                nt = 1000;
                 if test
                     dt = 2e-7;
-                    nt = 300;
+                    nt = 100;
                 end
                 t = linspace(dt,nt*dt,nt);
             end
@@ -761,9 +761,9 @@ if displaySolution
         case 'anisot' % anisotropic material
             switch lower(loading)
                 case 'tension'
-                    rep = find(abs(t-9e-6)<eps | abs(t-12e-6)<eps | abs(t-13.5e-6)<eps | abs(t-15e-6)<eps | abs(t-20e-6)<eps);
+                    rep = find(abs(t-5e-6)<eps | abs(t-6e-6)<eps | abs(t-7e-6)<eps | abs(t-8e-6)<eps | abs(t-9e-6)<eps);
                 case 'shear'
-                    rep = find(abs(t-20e-6)<eps | abs(t-30e-6)<eps | abs(t-40e-6)<eps | abs(t-50e-6)<eps);
+                    rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps | abs(t-1.75e-5)<eps);
                 otherwise
                     error('Wrong loading case');
             end

@@ -564,22 +564,22 @@ if setProblem
                             nt = 250;
                         end
                     case 'shear'
-                        % du = 2e-5 mm (up to u = 60e-3 mm)
+                        % du = 2e-5 mm (up to u = 20e-3 mm)
                         dt = 2e-8;
-                        nt = 3000;
+                        nt = 1000;
                         if test
                             dt = 2e-7;
-                            nt = 300;
+                            nt = 100;
                         end
                 end
                 t = linspace(dt,nt*dt,nt);
             elseif Dim==3
-                % du = 2e-5 mm (up to u = 60e-3 mm)
+                % du = 2e-5 mm (up to u = 20e-3 mm)
                 dt = 2e-8;
-                nt = 3000;
+                nt = 1000;
                 if test
                     dt = 2e-7;
-                    nt = 300;
+                    nt = 100;
                 end
                 t = linspace(dt,nt*dt,nt);
             end

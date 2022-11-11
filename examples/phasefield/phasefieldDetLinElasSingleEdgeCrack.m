@@ -492,29 +492,29 @@ if setProblem
                         dthreshold = 0.6;
                     case 'shear'
                         % du = 6e-5 mm during the first stage (until the phase field reaches the threshold value)
-                        % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 60e-3 mm)
+                        % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 20e-3 mm)
                         dt0 = 6e-8;
                         dt1 = 2e-8;
                         if test
                             dt0 = 12e-8;
                             dt1 = 4e-8;
                         end
-                        tf = 60e-6;
+                        tf = 20e-6;
                         dthreshold = 0.6;
                 end
             elseif Dim==3
-                % du = 1e-5 mm (up to u = 60e-3 mm)
+                % du = 1e-5 mm (up to u = 20e-3 mm)
                 dt0 = 1e-8;
                 dt1 = 1e-8;
                 if test
                     dt0 = 1e-7;
                     dt1 = 1e-7;
                 end
-                tf = 60e-6;
+                tf = 20e-6;
                 dthreshold = 0.6;
             end
             T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
-
+            
         otherwise
             error('Wrong material symmetry class');
     end
@@ -708,7 +708,7 @@ if displaySolution
     %% Display solutions at different instants
     ampl = 0;
     switch lower(symmetry)
-        case 'isot'
+        case 'isot' % isotropic material
             switch lower(loading)
                 case 'tension'
                     rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-6)<eps | abs(t-6e-6)<eps | abs(t-6.15e-6)<eps | abs(t-6.25e-6)<eps | abs(t-6.30e-6)<eps | abs(t-6.45e-6)<eps | abs(t-6.5e-6)<eps);
@@ -717,12 +717,12 @@ if displaySolution
                 otherwise
                     error('Wrong loading case');
             end
-        case 'anisot'
+        case 'anisot' % anisotropic material
             switch lower(loading)
                 case 'tension'
-                    rep = find(abs(t-9e-6)<eps | abs(t-12e-6)<eps | abs(t-13.5e-6)<eps | abs(t-15e-6)<eps | abs(t-20e-6)<eps);
+                    rep = find(abs(t-5e-6)<eps | abs(t-6e-6)<eps | abs(t-7e-6)<eps | abs(t-8e-6)<eps | abs(t-9e-6)<eps);
                 case 'shear'
-                    rep = find(abs(t-20e-6)<eps | abs(t-30e-6)<eps | abs(t-40e-6)<eps | abs(t-50e-6)<eps);
+                    rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps | abs(t-1.75e-5)<eps);
                 otherwise
                     error('Wrong loading case');
             end
