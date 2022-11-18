@@ -49,6 +49,8 @@ PFsolver = PFsolvers{iPFsolver};
 % maxIter = maxIters(imaxIter);
 % close all
 
+suffix = '';
+
 foldername = ['platewithHole_' num2str(Dim) 'D'];
 filename = ['linElas' symmetry];
 if strcmpi(symmetry,'anisot') % anisotropic material
@@ -56,6 +58,7 @@ if strcmpi(symmetry,'anisot') % anisotropic material
 end
 filename = [filename PFmodel PFsplit PFregularization PFsolver...
     'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'MeshAdapt'];
+filename = [filename suffix];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefieldDet',foldername,filename);
