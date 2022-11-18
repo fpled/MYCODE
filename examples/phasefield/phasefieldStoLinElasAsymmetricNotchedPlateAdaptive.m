@@ -51,10 +51,9 @@ N = numWorkers;
 randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
 randPF = struct('aGc',0,'bGc',0,'lcorr',Inf); % random phase field parameters model
 
-foldername = ['asymmetricNotchedPlateSetup' num2str(setup) 'Adaptive'];
+foldername = ['asymmetricNotchedPlateSetup' num2str(setup) '_' num2str(Dim) 'D'];
 filename = ['linElas' PFmodel PFsplit PFregularization PFsolver initialCrack...
-    'MaxIter' num2str(maxIter) 'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv)];
-filename = [filename '_' num2str(N) 'samples'];
+    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'MeshAdapt_' num2str(N) 'samples'];
 if any(randMat.delta)
     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 end
@@ -123,8 +122,8 @@ if setProblem
     r = 0.25*unit; % radius of the holes
     
     clD = 0.1*unit; % characteristic length for domain
-    % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     if test
         clD = 0.2*unit;

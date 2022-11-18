@@ -44,6 +44,7 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+FEmesh = 'Optim'; % 'Unif' or 'Optim'
 
 % Random model parameters
 % N = 500; % number of samples
@@ -51,10 +52,9 @@ N = numWorkers;
 randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
 randPF = struct('aGc',0,'bGc',0,'lcorr',Inf); % random phase field parameters model
 
-foldername = ['asymmetricNotchedPlateSetup' num2str(setup)];
+foldername = ['asymmetricNotchedPlateSetup' num2str(setup) '_' num2str(Dim) 'D'];
 filename = ['linElas' PFmodel PFsplit PFregularization PFsolver initialCrack...
-    'MaxIter' num2str(maxIter) 'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv)];
-filename = [filename '_' num2str(N) 'samples'];
+    'MaxIter' num2str(maxIter) 'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'Mesh' FEmesh '_' num2str(N) 'samples'];
 if any(randMat.delta)
     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 end
@@ -117,13 +117,22 @@ if setProblem
     ph = 1.25*unit; % location of the top hole from the top
     r = 0.25*unit; % radius of the holes
     
-    clD = 0.1*unit; % characteristic length for domain
-    % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     if test
-        clD = 0.2*unit;
         cl = 0.025*unit;
+    end
+    switch lower(FEmesh)
+        case 'unif'
+            clD = cl; % characteristic length for domain
+        case 'optim'
+            clD = 0.1*unit; % characteristic length for domain
+            if test
+                clD = 0.2*unit;
+            end
+        otherwise
+            error('Wrong FE mesh')
     end
     clC = cl; % characteristic length for edge crack/notch
     clH = cl; % characteristic length for circular holes

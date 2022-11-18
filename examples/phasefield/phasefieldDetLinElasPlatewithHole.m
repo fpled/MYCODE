@@ -30,6 +30,7 @@ PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
+FEmesh = 'Unif'; % 'Unif' or 'Optim'
 
 % PFmodels = {'Bourdin','Amor','Miehe','He','Zhang','Spectral'};
 % PFsplits = {'Strain','Stress'};
@@ -43,11 +44,11 @@ PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % PFsplit = PFsplits{iPFsplit};
 for iPFRegularization=1:length(PFregularizations)
 PFregularization = PFregularizations{iPFRegularization};
-for iPFsolver=1:length(PFsolvers) 
+for iPFsolver=1:length(PFsolvers)
 PFsolver = PFsolvers{iPFsolver};
-% close all
-% for imaxIter=1:length(maxIters) 
+% for imaxIter=1:length(maxIters)
 % maxIter = maxIters(imaxIter);
+% close all
 
 foldername = ['platewithHole_' num2str(Dim) 'D'];
 filename = ['linElas' symmetry];
@@ -55,7 +56,7 @@ if strcmpi(symmetry,'anisot') % anisotropic material
     filename = [filename num2str(ang) 'deg'];
 end
 filename = [filename PFmodel PFsplit PFregularization PFsolver...
-    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv)];
+    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'Mesh' FEmesh];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefieldDet',foldername,filename);
@@ -99,23 +100,45 @@ if setProblem
     end
     
     if Dim==2
-        % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        clD = 0.06e-3; % characteristic length for domain
-        clC = 0.06e-3; % characteristic length for circular hole
-        % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-        % clD = 0.25e-3; % characteristic length for domain
-        % clC = 0.05e-3; % characteristic length for circular hole
-        if test
-            clD = 0.25e-3;
-            clC = 0.12e-3;
+        switch lower(FEmesh)
+            case 'unif'
+                % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+                cl = 0.06e-3;
+                if test
+                    cl = 0.12e-3;
+                end
+                clD = cl; % characteristic length for domain
+                clC = cl; % characteristic length for circular hole
+            case 'optim'
+                % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+                clD = 0.25e-3; % characteristic length for domain
+                clC = 0.05e-3; % characteristic length for circular hole
+                if test
+                    clD = 0.5e-3;
+                    clC = 0.1e-3;
+                end
+            otherwise
+                error('Wrong FE mesh')
         end
     elseif Dim==3
-        % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-        clD = 0.25e-3; % characteristic length for domain
-        clC = 0.05e-3; % characteristic length for circular hole
-        if test
-            clD = 0.25e-3;
-            clC = 0.12e-3;
+        switch lower(FEmesh)
+            case 'unif'
+                cl = 0.05e-3;
+                if test
+                    cl = 0.1e-3;
+                end
+                clD = cl; % characteristic length for domain
+                clC = cl; % characteristic length for circular hole
+            case 'optim'
+                % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+                clD = 0.25e-3; % characteristic length for domain
+                clC = 0.05e-3; % characteristic length for circular hole
+                if test
+                    clD = 0.5e-3;
+                    clC = 0.1e-3;
+                end
+            otherwise
+                error('Wrong FE mesh')
         end
     end
     S_phase = gmshdomainwithhole(D,C,clD,clC,fullfile(pathname,'gmsh_domain_with_hole'));
@@ -132,9 +155,9 @@ if setProblem
             l = 0.12e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
         case 'anisot' % anisotropic material
             % Critical energy release rate (or fracture toughness)
-            gc = 1e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            gc = 1e3;
             % Regularization parameter (width of the smeared crack)
-            l = 8.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            l = 8.5e-6;
         otherwise
             error('Wrong material symmetry class');
     end

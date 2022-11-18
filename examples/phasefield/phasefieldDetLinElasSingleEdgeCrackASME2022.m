@@ -1,5 +1,5 @@
-%% Phase field fracture model - stochastic linear elasticity problem with single edge crack %%
-%%------------------------------------------------------------------------------------------%%
+%% Phase field fracture model - deterministic linear elasticity problem with single edge crack %%
+%%---------------------------------------------------------------------------------------------%%
 % [Bourdin, Francfort, Marigo, 2000, JMPS] (isotropic phase field model with no split of Bourdin et al.)
 % [Miehe, Welschinger, Hofacker, 2010 IJNME] (anisotropic phase field model of Miehe et al.)
 % [Miehe, Hofacker, Welschinger, 2010, CMAME] (anisotropic phase field model of Miehe et al.)
@@ -17,25 +17,21 @@
 % clc
 clearvars
 close all
-% rng('default');
+% myparallel('start');
 
 %% Input data
-setProblem = true;
-solveProblem = true;
-displayModel = false;
-displaySolution = false;
+setProblem = false;
+solveProblem = false;
+displayModel = true;
+displaySolution = true;
 makeMovie = false;
 saveParaview = false;
 
-test = true; % coarse mesh
-% test = false; % fine mesh
+% test = true; % coarse mesh
+test = false; % fine mesh
 
-numWorkers = 4;
-% numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
-
-% Deterministic model parameters
 Dim = 2; % space dimension Dim = 2, 3
-symmetry = 'Isot'; % 'Isot', 'MeanIsot', 'Anisot'. Material symmetry
+symmetry = 'Isot'; % 'Isot' or 'Anisot'. Material symmetry
 ang = 45; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'He', 'Zhang', 'Spectral'
@@ -44,41 +40,50 @@ PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
-initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+FEmesh = 'Optim'; % 'Unif' or 'Optim'
+coeff_gc = 1.0;
 
-% Random model parameters
-% N = 500; % number of samples
-N = numWorkers;
-randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
-aGc = 0;
-bGc = 0;
-% gc = 2.7e3;
-% aGc = 0.6*gc;
-% bGc = 1.4*gc;
-% aGc = [0.7,1.2]*gc;
-% bGc = [0.8,1.3]*gc;
-randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase field parameters model
+% PFmodels = {'Bourdin','Amor','Miehe','He','Zhang','Spectral'};
+% PFsplits = {'Strain','Stress'};
+% PFregularizations = {'AT1','AT2'};
+% PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
+% initialCracks = {'GeometricCrack','InitialPhaseField'};
+% maxIters = [1,100];
+% coeffs_gc = [0.6,0.8,1.0,1.2,1.4];
+
+% for iPFmodel=1:length(PFmodels)
+% PFmodel = PFmodels{iPFmodel};
+% for iPFsplit=1:length(PFsplits)
+% PFsplit = PFsplits{iPFsplit};
+% for iPFRegularization=1:length(PFregularizations)
+% PFregularization = PFregularizations{iPFRegularization};
+% for iPFsolver=1:length(PFsolvers)
+% PFsolver = PFsolvers{iPFsolver};
+% for iinitialCrack=1:length(initialCracks)
+% initialCrack = initialCracks{iinitialCrack};
+% for imaxIter=1:length(maxIters)
+% maxIter = maxIters(imaxIter);
+% for icoeff_gc=1:length(coeffs_gc)
+% coeff_gc = coeffs_gc(icoeff_gc);
+% close all
+
+suffix = ['_coeffgc' num2str(coeff_gc,'_%g')];
 
 foldername = ['singleEdgeCrack' loading '_' num2str(Dim) 'D'];
 filename = ['linElas' symmetry];
 if strcmpi(symmetry,'anisot') % anisotropic material
     filename = [filename num2str(ang) 'deg'];
 end
-filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...
-    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'MeshAdapt_' num2str(N) 'samples'];
-% if any(randMat.delta)
-%     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
-% end
-% if any(randPF.aGc) && any(randPF.bGc)
-%     gcbounds = [randPF.aGc(:),randPF.bGc(:)]';
-%     filename = [filename '_RandPF_Gc' num2str(gcbounds(:)','_%g') '_Lcorr' num2str(randPF.lcorr,'_%g')];
-% end
+filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...% 'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv)
+    'Mesh' FEmesh];
+filename = [filename suffix];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','phasefieldSto',foldername,filename);
+    'results','phasefieldDet',foldername,filename);
 if test
     pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-        'results','phasefieldSto_test',foldername,filename);
+        'results','phasefieldDet_test',foldername,filename);
 end
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -89,11 +94,6 @@ linewidth = 1;
 interpreter = 'latex';
 formats = {'epsc'};
 renderer = 'OpenGL';
-
-gmshoptions = '-v 0';
-mmgoptions = '-nomove -hausd 0.000001 -hgrad 1.1 -v -1';
-% gmshoptions = '-v 5';
-% mmgoptions = '-nomove -hausd 0.01 -hgrad 1.3 -v 1';
 
 %% Problem
 if setProblem
@@ -128,43 +128,62 @@ if setProblem
         % clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
         % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        clD = 2.5e-5;
-        clC = 2.5e-6;
-        if test
-            clD = 4e-5;
-            clC = 1e-5;
+        switch lower(FEmesh)
+            case 'unif'
+                cl = 5e-6;
+                if test
+                    cl = 1e-5;
+                end
+                clD = cl;
+                clC = cl;
+            case 'optim'
+                clD = 2.5e-5;
+                clC = 2.5e-6;
+                if test
+                    clD = 4e-5;
+                    clC = 1e-5;
+                end
+            otherwise
+                error('Wrong FE mesh')
         end
     elseif Dim==3
-        clD = 4e-5;
-        clC = 5e-6;
-        if test
-            clD = 4e-5;
-            clC = 1e-5;
+        switch lower(FEmesh)
+            case 'unif'
+                cl = 5e-6;
+                % cl = 7.5e-6;
+                if test
+                    cl = 2e-5;
+                end
+                clD = cl;
+                clC = cl;
+            case 'optim'
+                clD = 4e-5;
+                clC = 5e-6;
+                if test
+                    clD = 4e-5;
+                    clC = 1e-5;
+                end
+            otherwise
+                error('Wrong FE mesh')
         end
     end
-%     if ~test
-%         clD = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clD);
-%         clC = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clC);
-%     end
     switch lower(initialCrack)
         case 'geometriccrack'
-            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate');
+            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate',lower(loading),lower(symmetry),lower(PFmodel));
         case 'geometricnotch'
             c = 1e-5; % crack width
-            S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+            S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,lower(loading),lower(symmetry),lower(PFmodel));
         case 'initialphasefield'
-            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,lower(initialCrack));
+            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,lower(initialCrack),lower(loading),lower(symmetry),lower(PFmodel));
         otherwise
             error('Wrong model for initial crack');
     end
-    
-    sizemap = @(d) (clC-clD)*d+clD;
-    % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
+    S = S_phase;
     
     %% Phase field problem
     %% Material
     switch lower(symmetry)
-        case {'isot','meanisot'} % almost surely or mean isotropic material
+        case 'isot' % isotropic material
             % Critical energy release rate (or fracture toughness)
             gc = 2.7e3; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
             % Regularization parameter (width of the smeared crack)
@@ -184,6 +203,7 @@ if setProblem
         otherwise
             error('Wrong material symmetry class');
     end
+    gc = gc*coeff_gc;
     % Small artificial residual stiffness
     % k = 1e-12;
     k = 0;
@@ -203,39 +223,11 @@ if setProblem
         otherwise
             error('Wrong regularization model');
     end
-    mat_phase = FOUR_ISOT('k',K,'r',R,'qn',Qn,'PFregularization',PFregularization,'aGc',randPF.aGc,'bGc',randPF.bGc,'lcorr',randPF.lcorr);
+    mat_phase = FOUR_ISOT('k',K,'r',R,'qn',Qn,'PFregularization',PFregularization);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    switch lower(initialCrack)
-        case 'geometriccrack'
-            if Dim==2
-                C = POINT([a,L/2]);
-            elseif Dim==3
-                C = LIGNE([a,L/2,0.0],[a,L/2,e]);
-            end
-            S_phase = final(S_phase,'duplicate');
-        case 'geometricnotch'
-            if Dim==2
-                C = CIRCLE(a-c/2,L/2,c/2);
-            elseif Dim==3
-                C = QUADRANGLE([a,L/2-c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[a,L/2-c/2,e]);
-            end
-            S_phase = final(S_phase);
-        case 'initialphasefield'
-            S_phase = final(S_phase);
-        otherwise
-            error('Wrong model for initial crack');
-    end
-    S_phase = addcl(S_phase,C,'T',1);
-    
-    d = calc_init_dirichlet(S_phase);
-    cl = sizemap(d);
-    S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-    S = S_phase;
-    
-    S_phase = setmaterial(S_phase,mat_phase);
     switch lower(initialCrack)
         case 'geometriccrack'
             S_phase = final(S_phase,'duplicate');
@@ -274,45 +266,28 @@ if setProblem
     option = 'DEFO'; % plane strain [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     % option = 'CONT'; % plane stress [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
     switch lower(symmetry)
-        case {'isot','meanisot'} % almost surely or mean isotropic material
+        case 'isot' % isotropic material
             % Lame coefficients
             % lambda = 121.1538e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
             % mu = 80.7692e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
             lambda = 121.15e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
             mu = 80.77e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
-            if strcmpi(symmetry,'isot')
-                % Young modulus and Poisson ratio
-                if Dim==2
-                    switch lower(option)
-                        case 'defo'
-                            E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 210e9;
-                            NU = lambda/(lambda+mu)/2; % NU = 0.3;
-                        case 'cont'
-                            E = 4*mu*(lambda+mu)/(lambda+2*mu);
-                            NU = lambda/(lambda+2*mu);
-                    end
-                    % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-                    % E = 210e9; NU = 0.3; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-                    % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
-                elseif Dim==3
-                    E = mu*(3*lambda+2*mu)/(lambda+mu);
-                    NU = lambda/(lambda+mu)/2;
+            % Young modulus and Poisson ratio
+            if Dim==2
+                switch lower(option)
+                    case 'defo'
+                        E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 210e9;
+                        NU = lambda/(lambda+mu)/2; % NU = 0.3;
+                    case 'cont'
+                        E = 4*mu*(lambda+mu)/(lambda+2*mu);
+                        NU = lambda/(lambda+2*mu);
                 end
-            elseif strcmpi(symmetry,'meanisot')
-                % Elasticity matrix
-                if Dim==2
-                    Cmat = e*...
-                        [lambda+2*mu,lambda,0;...
-                        lambda,lambda+2*mu,0;...
-                        0,0,mu];
-                elseif Dim==3
-                    Cmat = [lambda+2*mu,lambda,lambda,0,0,0;...
-                        lambda,lambda+2*mu,lambda,0,0,0;...
-                        lambda,lambda,lambda+2*mu,0,0,0;...
-                        0,0,0,mu,0,0;...
-                        0,0,0,0,mu,0;...
-                        0,0,0,0,0,mu];
-                end
+                % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+                % E = 210e9; NU = 0.3; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+                % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
+            elseif Dim==3
+                E = mu*(3*lambda+2*mu)/(lambda+mu);
+                NU = lambda/(lambda+mu)/2;
             end
             
         case 'anisot' % anisotropic material
@@ -351,10 +326,10 @@ if setProblem
     % Material
     d = calc_init_dirichlet(S_phase);
     switch lower(symmetry)
-        case 'isot' % almost surely isotropic material
-            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit,'delta',randMat.delta,'lcorr',randMat.lcorr);
-        case {'meanisot','anisot'} % mean isotropic or anisotropic material
-            mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit,'delta',randMat.delta,'lcorr',randMat.lcorr);
+        case 'isot' % isotropic material
+            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
+        case 'anisot' % anisotropic material
+            mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
         otherwise
             error('Wrong material symmetry class');
     end
@@ -418,7 +393,7 @@ if setProblem
     
     %% Time scheme
     switch lower(symmetry)
-        case {'isot','meanisot'} % almost surely or mean isotropic material
+        case 'isot' % isotropic material
             if Dim==2
                 switch lower(loading)
                     case 'tension'
@@ -526,92 +501,94 @@ if setProblem
             if Dim==2
                 switch lower(loading)
                     case 'tension'
-                        % du = 2e-5 mm (up to u = 10e-3 mm)
-                        dt = 2e-8;
-                        nt = 500;
+                        % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+                        % du = 6e-5 mm during the first stage (until the phase field reaches the threshold value)
+                        % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 10e-3 mm)
+                        dt0 = 6e-8;
+                        dt1 = 2e-8;
                         if test
+                            dt0 = 12e-8;
                             dt1 = 4e-8;
-                            nt = 250;
                         end
+                        tf = 10e-6;
+                        dthreshold = 0.6;
                     case 'shear'
-                        % du = 2e-5 mm (up to u = 20e-3 mm)
-                        dt = 2e-8;
-                        nt = 1000;
+                        % du = 6e-5 mm during the first stage (until the phase field reaches the threshold value)
+                        % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 20e-3 mm)
+                        dt0 = 6e-8;
+                        dt1 = 2e-8;
                         if test
-                            dt = 2e-7;
-                            nt = 100;
+                            dt0 = 12e-8;
+                            dt1 = 4e-8;
                         end
+                        tf = 20e-6;
+                        dthreshold = 0.6;
                 end
-                t = linspace(dt,nt*dt,nt);
             elseif Dim==3
                 % du = 2e-5 mm (up to u = 20e-3 mm)
-                dt = 2e-8;
-                nt = 1000;
+                dt0 = 2e-8;
+                dt1 = 2e-8;
                 if test
-                    dt = 2e-7;
-                    nt = 100;
+                    dt0 = 2e-7;
+                    dt1 = 2e-7;
                 end
-                t = linspace(dt,nt*dt,nt);
+                tf = 20e-6;
+                dthreshold = 0.6;
             end
-            T = TIMEMODEL(t);
+            T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
             
         otherwise
             error('Wrong material symmetry class');
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
 end
 
 %% Solution
 if solveProblem
-    myparallel('start',numWorkers);
-    
-    %% Solution
     tTotal = tic;
     
-    nbSamples = 1;
-    fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
-        'maxiter',maxIter,'tol',tolConv,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-    [ft,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'nbsamples',nbSamples);
+    switch lower(symmetry)
+        case 'isot' % isotropic material
+            fun = @solvePFDetLinElasSingleEdgeCrack;
+        case 'anisot' % anisotropic material
+            fun = @solvePFDetLinElasSingleEdgeCrackThreshold;
+        otherwise
+            error('Wrong material symmetry class');
+    end
+    switch lower(PFsolver)
+        case {'historyfieldelem','historyfieldnode'}
+            [dt,ut,ft,Ht] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv);
+        otherwise
+            [dt,ut,ft] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv);
+    end
     [fmax,idmax] = max(ft,[],2);
+    if strcmpi(symmetry,'anisot')
+        T = gettimemodel(dt);
+    end
     t = gettevol(T);
     udmax = t(idmax);
     
     time = toc(tTotal);
     
-    myparallel('stop');
-    
-    %% Statistical outputs of solution
-    probs = [0.025 0.975];
-    
-    ft_mean = mean(ft);
-    ft_std = std(ft);
-    ft_ci = quantile(ft,probs);
-    
-    fmax_mean = mean(fmax);
-    fmax_std = std(fmax);
-    fmax_ci = quantile(fmax,probs);
-    
-    udmax_mean = mean(udmax);
-    udmax_std = std(udmax);
-    udmax_ci = quantile(udmax,probs);
-    
-    npts = 100;
-    [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'npoints',npts);
-    [udmax_f,udmax_xi,udmax_bw] = ksdensity(udmax,'npoints',npts);
-    
-    save(fullfile(pathname,'solution.mat'),'N','ft','dt','ut','St_phase','St',...
-        'ft_mean','ft_std','ft_ci','probs','time',...
-        'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
-        'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','fmax','udmax','time');
+    if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+        save(fullfile(pathname,'solution.mat'),'Ht','-append');
+    end
+    if strcmpi(symmetry,'anisot')
+        save(fullfile(pathname,'solution.mat'),'T','-append');
+    end
 else
-    load(fullfile(pathname,'solution.mat'),'N','ft','dt','ut','St_phase','St',...
-        'ft_mean','ft_std','ft_ci','probs','time',...
-        'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
-        'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','fmax','udmax','time');
+    if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+        load(fullfile(pathname,'solution.mat'),'Ht');
+    end
+    if strcmpi(symmetry,'anisot')
+        load(fullfile(pathname,'solution.mat'),'T');
+    end
 end
 
 %% Outputs
@@ -628,33 +605,19 @@ fprintf(fid,'PF model = %s\n',PFmodel);
 fprintf(fid,'PF split = %s\n',PFsplit);
 fprintf(fid,'PF regularization = %s\n',PFregularization);
 fprintf(fid,'PF solver = %s\n',PFsolver);
-fprintf(fid,'nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
-fprintf(fid,'nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));
-fprintf(fid,'nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));
+fprintf(fid,'nb elements = %g\n',getnbelem(S));
+fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
 fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
-fprintf(fid,'nb samples = %g\n',N);
 fprintf(fid,'elapsed time = %f s\n',time);
 fprintf(fid,'\n');
 
 if Dim==2
-    fprintf(fid,'mean(fmax)    = %g kN/mm\n',fmax_mean*1e-6);
-    fprintf(fid,'std(fmax)     = %g kN/mm\n',fmax_std*1e-6);
+    fprintf(fid,'fmax  = %g kN/mm\n',fmax*1e-6);
 elseif Dim==3
-    fprintf(fid,'mean(fmax)    = %g kN\n',fmax_mean*1e-3);
-    fprintf(fid,'std(fmax)     = %g kN\n',fmax_std*1e-3);
+    fprintf(fid,'fmax  = %g kN\n',fmax*1e-3);
 end
-fprintf(fid,'disp(fmax)    = %g\n',fmax_std/fmax_mean);
-if Dim==2
-    fprintf(fid,'%d%% ci(fmax)  = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
-elseif Dim==3
-    fprintf(fid,'%d%% ci(fmax)  = [%g,%g] kN\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-3,fmax_ci(2)*1e-3);
-end
-fprintf(fid,'\n');
-
-fprintf(fid,'mean(udmax)   = %g mm\n',udmax_mean*1e3);
-fprintf(fid,'std(udmax)    = %g mm\n',udmax_std*1e3);
-fprintf(fid,'disp(udmax)   = %g\n',udmax_std/udmax_mean);
-fprintf(fid,'%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
+fprintf(fid,'udmax = %g mm\n',udmax*1e3);
 fclose(fid);
 
 %% Display
@@ -662,12 +625,7 @@ if displayModel
     [t,rep] = gettevol(T);
     
     %% Display domains, boundary conditions and meshes
-%     figure('Name','Domain')
-%     clf
-%     plot(D,'FaceColor',getfacecolor(1));
-%     plot(C,'FaceColor','w');
-%     axis image
-%     axis off
+%     plotDomain({D,C},'legend',false);
 %     mysaveas(pathname,'domain',formats,renderer);
 %     mymatlab2tikz(pathname,'domain.tex');
     
@@ -683,112 +641,40 @@ if displayModel
     mysaveas(pathname,'boundary_conditions_damage',formats,renderer);
     
     % plotModel(S,'legend',false);
-    % mysaveas(pathname,'mesh_init',formats,renderer);
+    % mysaveas(pathname,'mesh',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
-    mysaveas(pathname,'mesh_init',formats,renderer);
+    mysaveas(pathname,'mesh',formats,renderer);
     
-    % u = ut(:,rep(end));
-    u = ut(:,end);
-    S_final = St(:,end);
-    for k=1:numel(S_final)
-        plotModel(S_final{k},'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
-        mysaveas(pathname,['mesh_final_sample_' num2str(k)],formats,renderer);
-        
-        ampl = getsize(S_final{k})/max(abs(u{k}))/20;
-        plotModelDeflection(S_final{k},u{k},'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
-        mysaveas(pathname,['mesh_deflected_sample_' num2str(k)],formats,renderer);
-        
-        figure('Name','Meshes')
-        clf
-        plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-        plot(S_final{k}+ampl*unfreevector(S_final{k},u{k}),'Color','b','FaceColor','b','FaceAlpha',0.1);
-        mysaveas(pathname,['meshes_deflected_sample_' num2str(k)],formats,renderer);
-    end
+    u = getmatrixatstep(ut,rep(end));
+    ampl = getsize(S)/max(abs(u))/20;
+    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+    mysaveas(pathname,'mesh_deflected',formats,renderer);
+    
+    figure('Name','Meshes')
+    clf
+    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
+    plot(S+ampl*unfreevector(S,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
+    mysaveas(pathname,'meshes_deflected',formats,renderer);
 end
 
-%% Display samples of solutions
+%% Display solutions
 if displaySolution
     [t,~] = gettevol(T);
     
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
-    hold on
-    ciplot(ft_ci(1,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),ft_ci(2,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),t*1e3,'b');
-    alpha(0.2)
+    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Force [kN]','Interpreter',interpreter)
-    l = legend('mean function',...
-        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'Location','NorthWest');
-    set(l,'Interpreter','latex')
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
-    figure('Name','Forces vs displacement')
-    clf
-    color = distinguishable_colors(N);
-    for i=1:N
-        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
-        hold on
-    end
-    hold off
-    grid on
-    box on
-    set(gca,'FontSize',fontsize)
-    xlabel('Displacement [mm]','Interpreter',interpreter)
-    ylabel('Force [kN]','Interpreter',interpreter)
-    mysaveas(pathname,'forces_displacement',formats);
-    mymatlab2tikz(pathname,'forces_displacement.tex');
-    
-    %% Display pdf of maximum force
-    figure('Name','Probability Density Estimate: Maximum force')
-    clf
-    plot(fmax_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f,'-b','LineWidth',linewidth)
-    hold on
-    ind_fmax = find(fmax_xi>=fmax_ci(1) & fmax_xi<fmax_ci(2));
-    area(fmax_xi(ind_fmax)*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f(ind_fmax),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
-    scatter(fmax_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
-    hold off
-    grid on
-    box on
-    set(gca,'FontSize',fontsize)
-    xlabel('$f$ [kN]','Interpreter',interpreter)
-    ylabel('$p_{F_{\mathrm{max}}}(f)$','Interpreter',interpreter)
-    l = legend('pdf',...
-        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value');
-    set(l,'Interpreter',interpreter)
-    mysaveas(pathname,'pdf_fmax',formats,renderer);
-    mymatlab2tikz(pathname,'pdf_fmax.tex');
-    
-    %% Display pdf of maximum displacement
-    figure('Name','Probability Density Estimate: Maximum displacement')
-    clf
-    plot(udmax_xi*1e3,udmax_f,'-b','LineWidth',linewidth)
-    hold on
-    ind_udmax = find(udmax_xi>=udmax_ci(1) & udmax_xi<udmax_ci(2));
-    area(udmax_xi(ind_udmax)*1e3,udmax_f(ind_udmax),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
-    scatter(udmax_mean*1e3,0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
-    hold off
-    grid on
-    box on
-    set(gca,'FontSize',fontsize)
-    xlabel('$u$ [mm]','Interpreter',interpreter)
-    ylabel('$p_{U_{D,\mathrm{max}}}(u)$','Interpreter',interpreter)
-    l = legend('pdf',...
-        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value');
-    set(l,'Interpreter',interpreter)
-    mysaveas(pathname,'pdf_udmax',formats,renderer);
-    mymatlab2tikz(pathname,'pdf_udmax.tex');
-    
-    %% Display samples of solutions at different instants
+    %% Display solutions at different instants
     ampl = 0;
     switch lower(symmetry)
         case 'isot' % isotropic material
@@ -817,87 +703,125 @@ if displaySolution
     % tSnapshots = [tSnapshots,gett1(T)];
     % rep = arrayfun(@(x) find(abs(t-x)<eps),tSnapshots);
     
-    for k=1:size(St,1)
     for j=1:length(rep)
-        dj = dt{k,rep(j)};
-        uj = ut{k,rep(j)};
-        Sj = St{k,rep(j)};
-        Sj_phase = St_phase{k,rep(j)};
+        dj = getmatrixatstep(dt,rep(j));
+        uj = getmatrixatstep(ut,rep(j));
+        if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+            Hj = getmatrixatstep(Ht,rep(j));
+        end
         
-        plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
-        mysaveas(pathname,['mesh_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
-        
-        plotSolution(Sj_phase,dj);
-        mysaveas(pathname,['damage_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        plotSolution(S_phase,dj);
+        mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
         
         for i=1:Dim
-            plotSolution(Sj,uj,'displ',i,'ampl',ampl);
-            mysaveas(pathname,['displacement_' num2str(i) '_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+            plotSolution(S,uj,'displ',i,'ampl',ampl);
+            mysaveas(pathname,['displacement_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         end
         
         % for i=1:(Dim*(Dim+1)/2)
-        %     plotSolution(Sj,uj,'epsilon',i,'ampl',ampl);
-        %     mysaveas(pathname,['epsilon_' num2str(i) '_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        %     plotSolution(S,uj,'epsilon',i,'ampl',ampl);
+        %     mysaveas(pathname,['epsilon_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         %
-        %     plotSolution(Sj,uj,'sigma',i,'ampl',ampl);
-        %     mysaveas(pathname,['sigma_' num2str(i) '_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        %     plotSolution(S,uj,'sigma',i,'ampl',ampl);
+        %     mysaveas(pathname,['sigma_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         % end
         %
-        % plotSolution(Sj,uj,'epsilon','mises','ampl',ampl);
-        % mysaveas(pathname,['epsilon_von_mises_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        % plotSolution(S,uj,'epsilon','mises','ampl',ampl);
+        % mysaveas(pathname,['epsilon_von_mises_t' num2str(rep(j))],formats,renderer);
         %
-        % plotSolution(Sj,uj,'sigma','mises','ampl',ampl);
-        % mysaveas(pathname,['sigma_von_mises_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        % plotSolution(S,uj,'sigma','mises','ampl',ampl);
+        % mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
         %
-        % plotSolution(Sj,uj,'energyint','','ampl',ampl);
-        % mysaveas(pathname,['internal_energy_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
+        % plotSolution(S,uj,'energyint','','ampl',ampl);
+        % mysaveas(pathname,['internal_energy_density_t' num2str(rep(j))],formats,renderer);
+        %
+        % if strcmpi(PFsolver,'historyfieldelem')
+        %     figure('Name','Solution H')
+        %     clf
+        %     plot(Hj,S_phase);
+        %     colorbar
+        %     set(gca,'FontSize',fontsize)
+        %     mysaveas(pathname,['internal_energy_density_history_t' num2str(rep(j))],formats,renderer);
+        % elseif strcmpi(PFsolver,'historyfieldnode')
+        %     plotSolution(S_phase,Hj,'ampl',ampl);
+        %     mysaveas(pathname,['internal_energy_density_history_t' num2str(rep(j))],formats,renderer);
+        % end
     end
-    end
-    
 end
 
-%% Display evolution of samples of solutions
+%% Display evolution of solutions
 if makeMovie
     ampl = 0;
-    % umax = cellfun(@(u) max(abs(u)),ut,'UniformOutput',false);
-    % ampl = getsize(S)/max([umax{:}])/20;
+    % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
     
     options = {'plotiter',true,'plottime',false};
-    framerate = 80;
-    
-    for k=1:size(St,1)
-        evolModel(T,St(k,:),'FrameRate',framerate,'filename',['mesh_sample_' num2str(k)],'pathname',pathname,options{:});
-        
-        evolSolutionCell(T,St_phase(k,:),dt(k,:),'FrameRate',framerate,'filename',['damage_sample_' num2str(k)],'pathname',pathname,options{:});
-        % for i=1:Dim
-        %     evolSolutionCell(T,St(k,:),ut(k,:),'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
-        % end
-        %
-        % for i=1:(Dim*(Dim+1)/2)
-        %     evolSolutionCell(T,St(k,:),ut(k,:),'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
-        %     evolSolutionCell(T,St(k,:),ut(k,:),'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i) '_sample_' num2str(k)],'pathname',pathname,options{:});
-        % end
-        %
-        % evolSolutionCell(T,St(k,:),ut(k,:),'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename',['epsilon_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
-        % evolSolutionCell(T,St(k,:),ut(k,:),'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename',['sigma_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
-        % evolSolutionCell(T,St(k,:),ut(k,:),'energyint','','ampl',ampl,'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
+    % framerate = 80;
+    switch lower(loading)
+        case 'tension'
+            framerate = 400;
+        case 'shear'
+            framerate = 200;
+        otherwise
+            error('Wrong loading case');
     end
+    
+    evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
+    % for i=1:Dim
+    %     evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
+    % end
+    %
+    % for i=1:(Dim*(Dim+1)/2)
+    %     evolSolution(S,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
+    %     evolSolution(S,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
+    % end
+    %
+    % evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
+    % evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
+    % evolSolution(S,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density','pathname',pathname,options{:});
+    % if strcmpi(PFsolver,'historyfieldelem')
+    %     figure('Name','Solution H')
+    %     clf
+    %     T = setevolparam(T,'colorbar',true,'FontSize',fontsize,options{:});
+    %     frame = evol(T,Ht,S_phase,'rescale',true);
+    %     saveMovie(frame,'FrameRate',framerate,'filename','internal_energy_density_history','pathname',pathname);
+    % elseif strcmpi(PFsolver,'historyfieldnode')
+    %     evolSolution(S_phase,Ht,'ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density_history','pathname',pathname,options{:});
+    % end
 end
 
-%% Save samples of solutions
+%% Save solutions
 if saveParaview
     [t,rep] = gettevol(T);
-    for k=1:size(St,1)
-        for i=1:length(T)
-            di = dt{k,rep(i)};
-            ui = ut{k,rep(i)};
-            Si = St{k,rep(i)};
-            % Si_phase = St_phase{k,rep(i)};
-            
-            write_vtk_mesh(Si,{di,ui},[],...
-                {'damage','displacement'},[],...
-                pathname,['solution_sample_' num2str(k)],1,i-1);
+    for i=1:length(T)
+        di = getmatrixatstep(dt,rep(i));
+        ui = getmatrixatstep(ut,rep(i));
+        if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+            Hi = getmatrixatstep(Ht,rep(i));
         end
-        make_pvd_file(pathname,['solution_sample_' num2str(k)],1,length(T));
+        
+        switch lower(PFsolver)
+            case 'historyfieldelem'
+                write_vtk_mesh(S,{di,ui},{Hi},...
+                    {'damage','displacement'},{'internal energy density history'},...
+                    pathname,'solution',1,i-1);
+            case 'historyfieldnode'
+                write_vtk_mesh(S,{di,ui,Hi},[],...
+                    {'damage','displacement','internal energy density history'},[],...
+                    pathname,'solution',1,i-1);
+            otherwise
+                write_vtk_mesh(S,{di,ui},[],...
+                    {'damage','displacement'},[],...
+                    pathname,'solution',1,i-1);
+        end
     end
+    make_pvd_file(pathname,'solution',1,length(T));
 end
+
+% myparallel('stop');
+
+% end
+% end
+% end
+% end
+% end
+% end

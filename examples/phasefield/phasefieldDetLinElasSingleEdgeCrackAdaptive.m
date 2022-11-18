@@ -48,8 +48,8 @@ coeff_gc = 1.0;
 PFregularizations = {'AT1','AT2'};
 PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % initialCracks = {'GeometricCrack','InitialPhaseField'};
-% coeffs_gc = [0.6,0.8,1.0,1.2,1.4];
 % maxIters = [1,100];
+% coeffs_gc = [0.6,0.8,1.0,1.2,1.4];
 
 % for iPFmodel=1:length(PFmodels)
 % PFmodel = PFmodels{iPFmodel};
@@ -57,15 +57,18 @@ PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % PFsplit = PFsplits{iPFsplit};
 for iPFRegularization=1:length(PFregularizations)
 PFregularization = PFregularizations{iPFRegularization};
-for iPFsolver=1:length(PFsolvers) 
+for iPFsolver=1:length(PFsolvers)
 PFsolver = PFsolvers{iPFsolver};
-% for iinitialCrack=1:length(initialCracks) 
+% for iinitialCrack=1:length(initialCracks)
 % initialCrack = initialCracks{iinitialCrack};
-% close all
-% for icoeff_gc=1:length(coeffs_gc) 
-% coeff_gc = coeffs_gc(icoeff_gc);
-% for imaxIter=1:length(maxIters) 
+% for imaxIter=1:length(maxIters)
 % maxIter = maxIters(imaxIter);
+% for icoeff_gc=1:length(coeffs_gc)
+% coeff_gc = coeffs_gc(icoeff_gc);
+% close all
+
+suffix = '';
+% suffix = ['_coeffgc' num2str(coeff_gc,'_%g')];
 
 foldername = ['singleEdgeCrack' loading '_' num2str(Dim) 'D'];
 filename = ['linElas' symmetry];
@@ -73,8 +76,8 @@ if strcmpi(symmetry,'anisot') % anisotropic material
     filename = [filename num2str(ang) 'deg'];
 end
 filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...
-    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'Adaptive'];
-% filename = [filename '_coeffgc' num2str(coeff_gc,'_%g')];
+    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'MeshAdapt'];
+filename = [filename suffix];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefieldDet',foldername,filename);
@@ -135,19 +138,13 @@ if setProblem
         if test
             clD = 4e-5;
             clC = 1e-5;
-            % clD = 1e-5;
-            % clC = 1e-5;
         end
     elseif Dim==3
         clD = 4e-5;
         clC = 5e-6;
-        % clD = 7.5e-6;
-        % clC = 7.5e-6;
         if test
             clD = 4e-5;
             clC = 1e-5;
-            % clD = 2e-5;
-            % clC = 2e-5;
         end
     end
     switch lower(initialCrack)
@@ -538,12 +535,12 @@ if setProblem
                         dthreshold = 0.6;
                 end
             elseif Dim==3
-                % du = 1e-5 mm (up to u = 20e-3 mm)
-                dt0 = 1e-8;
-                dt1 = 1e-8;
+                % du = 2e-5 mm (up to u = 20e-3 mm)
+                dt0 = 2e-8;
+                dt1 = 2e-8;
                 if test
-                    dt0 = 1e-7;
-                    dt1 = 1e-7;
+                    dt0 = 2e-7;
+                    dt1 = 2e-7;
                 end
                 tf = 20e-6;
                 dthreshold = 0.6;
@@ -721,7 +718,7 @@ if displaySolution
     set(l,'Interpreter','latex')
     mysaveas(pathname,'energies_displacement',formats);
     mymatlab2tikz(pathname,'energies_displacement.tex');
-
+    
     %% Display outputs of iterative resolution
     figure('Name','Number of iterations vs displacement')
     clf
@@ -762,25 +759,28 @@ if displaySolution
         case 'isot' % isotropic material
             switch lower(loading)
                 case 'tension'
-                    rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-6)<eps | abs(t-6e-6)<eps | abs(t-6.15e-6)<eps | abs(t-6.25e-6)<eps | abs(t-6.30e-6)<eps | abs(t-6.45e-6)<eps | abs(t-6.5e-6)<eps);
+                    tSnapshots = [5.5 5.75 6 6.15 6.25 6.30 6.45 6.5]*1e-6;
                 case 'shear'
-                    rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps | abs(t-1.75e-5)<eps);
+                    tSnapshots = [1 1.25 1.35 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end
         case 'anisot' % anisotropic material
             switch lower(loading)
                 case 'tension'
-                    rep = find(abs(t-5e-6)<eps | abs(t-6e-6)<eps | abs(t-7e-6)<eps | abs(t-8e-6)<eps | abs(t-9e-6)<eps);
+                    tSnapshots = [5 6 7 8 9]*1e-6;
                 case 'shear'
-                    rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps | abs(t-1.75e-5)<eps);
+                    tSnapshots = [1 1.25 1.35 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end
         otherwise
             error('Wrong material symmetry class');
     end
+    rep = arrayfun(@(x) find(abs(t-x)<eps),tSnapshots);
     rep = [rep,length(T)];
+    % tSnapshots = [tSnapshots,gett1(T)];
+    % rep = arrayfun(@(x) find(abs(t-x)<eps),tSnapshots);
     
     for j=1:length(rep)
         dj = dt{rep(j)};

@@ -43,6 +43,7 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+FEmesh = 'Optim'; % 'Unif' or 'Optim'
 
 % Random model parameters
 % numsamples = 1e4; % total number of samples
@@ -130,8 +131,8 @@ filename = ['linElas' symmetry];
 if strcmpi(symmetry,'anisot') % anisotropic material
     filename = [filename num2str(ang) 'deg'];
 end
-filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...
-    '_' num2str(numsamples) 'samples_from_' num2str(sampleindices(1)) '_to_' num2str(sampleindices(end))];
+filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...% 'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv)
+    'Mesh' FEmesh '_' num2str(numsamples) 'samples_from_' num2str(sampleindices(1)) '_to_' num2str(sampleindices(end))];
 if any(randPF.aGc) && any(randPF.bGc)
     gcbounds = [randPF.aGc(:),randPF.bGc(:)]';
     filename = [filename '_RandPF_Gc' num2str(gcbounds(:)','_%g') '_Lcorr' num2str(randPF.lcorr,'_%g')];
@@ -186,24 +187,43 @@ if setProblem
         % clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
         % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        clD = 2.5e-5;
-        clC = 2.5e-6;
-        if test
-            % clD = 4e-5;
-            % clC = 1e-5;
-            clD = 1e-5;
-            clC = 1e-5;
+        switch lower(FEmesh)
+            case 'unif'
+                cl = 5e-6;
+                if test
+                    cl = 1e-5;
+                end
+                clD = cl;
+                clC = cl;
+            case 'optim'
+                clD = 2.5e-5;
+                clC = 2.5e-6;
+                if test
+                    clD = 4e-5;
+                    clC = 1e-5;
+                end
+            otherwise
+                error('Wrong FE mesh')
         end
     elseif Dim==3
-        clD = 4e-5;
-        clC = 5e-6;
-        % clD = 7.5e-6;
-        % clC = 7.5e-6;
-        if test
-            % clD = 4e-5;
-            % clC = 1e-5;
-            clD = 2e-5;
-            clC = 2e-5;
+        switch lower(FEmesh)
+            case 'unif'
+                cl = 5e-6;
+                % cl = 7.5e-6;
+                if test
+                    cl = 2e-5;
+                end
+                clD = cl;
+                clC = cl;
+            case 'optim'
+                clD = 4e-5;
+                clC = 5e-6;
+                if test
+                    clD = 4e-5;
+                    clC = 1e-5;
+                end
+            otherwise
+                error('Wrong FE mesh')
         end
     end
     switch lower(initialCrack)
@@ -568,8 +588,8 @@ if setProblem
                         dt = 2e-8;
                         nt = 1000;
                         if test
-                            dt = 2e-7;
-                            nt = 100;
+                            dt = 4e-8;
+                            nt = 500;
                         end
                 end
                 t = linspace(dt,nt*dt,nt);

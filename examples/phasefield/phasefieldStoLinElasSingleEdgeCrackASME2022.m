@@ -45,6 +45,7 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+FEmesh = 'Optim'; % 'Unif' or 'Optim'
 
 % Random model parameters
 N = 500; % number of samples
@@ -65,8 +66,8 @@ filename = ['linElas' symmetry];
 if strcmpi(symmetry,'anisot') % anisotropic material
     filename = [filename num2str(ang) 'deg'];
 end
-filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...
-    '_' num2str(N) 'samples'];
+filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...% 'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv)
+    'Mesh' FEmesh '_' num2str(N) 'samples'];
 if any(randMat.delta)
     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 end
@@ -125,24 +126,43 @@ if setProblem
         % clC = 3.9e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
         % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        clD = 2.5e-5;
-        clC = 2.5e-6;
-        if test
-            % clD = 4e-5;
-            % clC = 1e-5;
-            clD = 1e-5;
-            clC = 1e-5;
+        switch lower(FEmesh)
+            case 'unif'
+                cl = 5e-6;
+                if test
+                    cl = 1e-5;
+                end
+                clD = cl;
+                clC = cl;
+            case 'optim'
+                clD = 2.5e-5;
+                clC = 2.5e-6;
+                if test
+                    clD = 4e-5;
+                    clC = 1e-5;
+                end
+            otherwise
+                error('Wrong FE mesh')
         end
     elseif Dim==3
-        clD = 4e-5;
-        clC = 5e-6;
-        % clD = 7.5e-6;
-        % clC = 7.5e-6;
-        if test
-            % clD = 4e-5;
-            % clC = 1e-5;
-            clD = 2e-5;
-            clC = 2e-5;
+        switch lower(FEmesh)
+            case 'unif'
+                cl = 5e-6;
+                % cl = 7.5e-6;
+                if test
+                    cl = 2e-5;
+                end
+                clD = cl;
+                clC = cl;
+            case 'optim'
+                clD = 4e-5;
+                clC = 5e-6;
+                if test
+                    clD = 4e-5;
+                    clC = 1e-5;
+                end
+            otherwise
+                error('Wrong FE mesh')
         end
     end
     switch lower(initialCrack)
@@ -509,8 +529,8 @@ if setProblem
                         dt = 2e-8;
                         nt = 1000;
                         if test
-                            dt = 2e-7;
-                            nt = 100;
+                            dt = 4e-8;
+                            nt = 500;
                         end
                 end
                 t = linspace(dt,nt*dt,nt);
@@ -753,28 +773,31 @@ if displaySolution
     %% Display means, variances and samples of solutions at different instants
     ampl = 0;
     switch lower(symmetry)
-        case {'isot','meanisot'} % almost surely or mean isotropic material
+        case 'isot' % isotropic material
             switch lower(loading)
                 case 'tension'
-                    rep = find(abs(t-5.5e-6)<eps | abs(t-5.75e-6)<eps | abs(t-6e-6)<eps | abs(t-6.15e-6)<eps | abs(t-6.25e-6)<eps | abs(t-6.30e-6)<eps | abs(t-6.45e-6)<eps | abs(t-6.5e-6)<eps);
+                    tSnapshots = [5.5 5.75 6 6.15 6.25 6.30 6.45 6.5]*1e-6;
                 case 'shear'
-                    rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps | abs(t-1.75e-5)<eps);
+                    tSnapshots = [1 1.25 1.35 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end
         case 'anisot' % anisotropic material
             switch lower(loading)
                 case 'tension'
-                    rep = find(abs(t-5e-6)<eps | abs(t-6e-6)<eps | abs(t-7e-6)<eps | abs(t-8e-6)<eps | abs(t-9e-6)<eps);
+                    tSnapshots = [5 6 7 8 9]*1e-6;
                 case 'shear'
-                    rep = find(abs(t-1e-5)<eps | abs(t-1.25e-5)<eps | abs(t-1.35e-5)<eps | abs(t-1.5e-5)<eps | abs(t-1.75e-5)<eps);
+                    tSnapshots = [1 1.25 1.35 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end
         otherwise
             error('Wrong material symmetry class');
     end
+    rep = arrayfun(@(x) find(abs(t-x)<eps),tSnapshots);
     rep = [rep,length(T)];
+    % tSnapshots = [tSnapshots,gett1(T)];
+    % rep = arrayfun(@(x) find(abs(t-x)<eps),tSnapshots);
     
     for j=1:length(rep)
         dj = dt_mean(:,rep(j));

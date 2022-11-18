@@ -41,9 +41,9 @@ maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
-foldername = ['asymmetricNotchedPlateSetup' num2str(setup)];
+foldername = ['asymmetricNotchedPlateSetup' num2str(setup) '_' num2str(Dim) 'D'];
 filename = ['linElas' PFmodel PFsplit PFregularization PFsolver initialCrack...
-    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'Adaptive'];
+    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'MeshAdapt'];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefieldDet',foldername,filename);
@@ -292,6 +292,7 @@ if setProblem
     
     %% Time scheme
     % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % du = 1e-4 mm during 2500 time steps (up to u = 0.25 mm)
     % dt = 1e-4*unit;
     % nt = 2500;
     % t = linspace(dt,nt*dt,nt);
