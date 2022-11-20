@@ -71,7 +71,7 @@ end
 i = 0;
 ti = 0;
 dti = dt0;
-while ti < tf+eps
+while ti < tf-eps
     i = i+1;
     tIter = tic;
     switch lower(PFsolver)
@@ -253,7 +253,7 @@ while ti < tf+eps
         fprintf('| %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',i,nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),max(d),Ed,Eu,getnbnode(S),getnbelem(S));
     end
     
-    if ti < tf+eps
+    if ti < tf-eps
         % Mesh adaptation
         S_phase_old = S_phase;
         S_phase_ref = addcl(S_phase_old,C,'T',1);

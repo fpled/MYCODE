@@ -65,7 +65,7 @@ end
 i = 0;
 ti = 0;
 dti = dt0;
-while ti < tf+eps
+while ti < tf-eps
     i = i+1;
     tIter = tic;
     switch lower(PFsolver)
