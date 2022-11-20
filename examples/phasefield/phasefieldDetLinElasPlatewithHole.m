@@ -502,8 +502,11 @@ if displaySolution
     
     %% Display solutions at different instants
     ampl = 0;
-    rep = find(abs(t-18.5e-6)<eps | abs(t-24.6e-6)<eps);
+    tSnapshots = [18.5 24.6]*1e-6;
+    rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
     rep = [rep,length(T)];
+    % tSnapshots = [tSnapshots,gett1(T)];
+    % rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
     
     for j=1:length(rep)
         dj = getmatrixatstep(dt,rep(j));

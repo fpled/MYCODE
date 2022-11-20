@@ -777,10 +777,10 @@ if displaySolution
         otherwise
             error('Wrong material symmetry class');
     end
-    rep = arrayfun(@(x) find(abs(t-x)<eps),tSnapshots);
+    rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
     rep = [rep,length(T)];
     % tSnapshots = [tSnapshots,gett1(T)];
-    % rep = arrayfun(@(x) find(abs(t-x)<eps),tSnapshots);
+    % rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
     
     for j=1:length(rep)
         dj = dt{rep(j)};

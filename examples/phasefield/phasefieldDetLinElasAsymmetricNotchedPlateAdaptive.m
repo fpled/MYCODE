@@ -487,11 +487,14 @@ if displaySolution
     ampl = 0;
     switch setup
         case {1,4,5}
-            rep = find(abs(t-0.190*unit)<eps | abs(t-0.201*unit)<eps | abs(t-0.203*unit)<eps | abs(t-0.204*unit)<eps | abs(t-0.205*unit)<eps | abs(t-0.207*unit)<eps);
+            tSnapshots = [0.190 0.201 0.203 0.204 0.205 0.207]*unit;
         case {2,3}
-            rep = find(abs(t-0.210*unit)<eps | abs(t-0.215*unit)<eps | abs(t-0.218*unit)<eps | abs(t-0.219*unit)<eps | abs(t-0.220*unit)<eps | abs(t-0.222*unit)<eps);
+            tSnapshots = [0.210 0.215 0.218 0.219 0.220 0.222]*unit;
     end
+    rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
     rep = [rep,length(T)];
+    % tSnapshots = [tSnapshots,gett1(T)];
+    % rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
     
     for j=1:length(rep)
         dj = dt{rep(j)};
