@@ -126,7 +126,14 @@ if setProblem
         % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
         switch lower(FEmesh)
             case 'unif'
-                cl = 5e-6;
+                switch lower(symmetry)
+                    case 'isot' % isotropic material
+                        cl = 5e-6;
+                    case 'anisot' % anisotropic material
+                        cl = 4.25e-6;
+                    otherwise
+                        error('Wrong material symmetry class');
+                end
                 if test
                     cl = 1e-5;
                 end
@@ -145,8 +152,14 @@ if setProblem
     elseif Dim==3
         switch lower(FEmesh)
             case 'unif'
-                cl = 5e-6;
-                % cl = 7.5e-6;
+                switch lower(symmetry)
+                    case 'isot' % isotropic material
+                        cl = 5e-6;
+                    case 'anisot' % anisotropic material
+                        cl = 4.25e-6;
+                    otherwise
+                        error('Wrong material symmetry class');
+                end
                 if test
                     cl = 2e-5;
                 end
