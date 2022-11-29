@@ -44,6 +44,7 @@ initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialP
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
 coeff_gc = 1.0;
 
+% angs = [0:10:90];
 % PFmodels = {'Bourdin','Amor','Miehe','He','Zhang','Spectral'};
 % PFsplits = {'Strain','Stress'};
 PFregularizations = {'AT1','AT2'};
@@ -52,6 +53,8 @@ PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % maxIters = [1,100];
 % coeffs_gc = [0.6,0.8,1.0,1.2,1.4];
 
+% for iang=1:length(angs)
+% ang = angs(iang);
 % for iPFmodel=1:length(PFmodels)
 % PFmodel = PFmodels{iPFmodel};
 % for iPFsplit=1:length(PFsplits)
@@ -69,6 +72,7 @@ PFsolver = PFsolvers{iPFsolver};
 % close all
 
 suffix = '';
+% suffix = ['_mac'];
 % suffix = ['_coeffgc' num2str(coeff_gc,'_%g')];
 
 foldername = ['singleEdgeCrack' loading '_' num2str(Dim) 'D'];
@@ -888,6 +892,7 @@ end
 
 end
 end
+% end
 % end
 % end
 % end

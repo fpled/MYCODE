@@ -43,6 +43,7 @@ tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 coeff_gc = 1.0;
 
+% angs = [0:10:90];
 % PFmodels = {'Bourdin','Amor','Miehe','He','Zhang','Spectral'};
 % PFsplits = {'Strain','Stress'};
 PFregularizations = {'AT1','AT2'};
@@ -51,6 +52,8 @@ PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % maxIters = [1,100];
 % coeffs_gc = [0.6,0.8,1.0,1.2,1.4];
 
+% for iang=1:length(angs)
+% ang = angs(iang);
 % for iPFmodel=1:length(PFmodels)
 % PFmodel = PFmodels{iPFmodel};
 % for iPFsplit=1:length(PFsplits)
@@ -904,6 +907,7 @@ end
 
 end
 end
+% end
 % end
 % end
 % end
