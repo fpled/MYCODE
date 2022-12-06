@@ -213,6 +213,9 @@ while ti < tf-eps
             if displayIter
                 fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
             end
+            if any(db > dbthreshold)
+                break
+            end
         end
         
         % Force
