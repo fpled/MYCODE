@@ -46,9 +46,19 @@ initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialP
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
 
 % Random model parameters
-% numsamples = 1e4; % total number of samples
-numsamples = 500;
-sampleindices = 1:500;
+randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
+gc = 2.7e3;
+aGc = 0.6*gc;
+bGc = 1.4*gc;
+% aGc = 0.9*gc;
+% bGc = 1.1*gc;
+% aGc = [0.7,1.2]*gc;
+% bGc = [0.8,1.3]*gc;
+randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase field parameters model
+
+numsamples = 1e4; % total number of samples
+% numsamples = 500;
+% sampleindices = 1:500;
 switch lower(loading)
     case 'tension'
         % sampleindices = 1:1120;
@@ -104,6 +114,7 @@ switch lower(loading)
 %             8581,8589,8595,8623,8698,8747,8788,8789,8808,8824,8827,8861,8865,8866,8881,8895,8903,8926,8939,8942,8974,8995,...
 %             9013,9030,9032,9090,9130,9144,9160,9200,9216,9220,9228,9277,9326,9346,9372,9384,9397,9405,9414,9446,9468,9483,9494,...
 %             9504,9536,9541,9550,9560,9569,9608,9613,9665,9681,9711,9723,9724,9737,9777,9789,9806,9809,9874,9888,9895,9901,9929,9945,9950,9956];
+        sampleindices = [741,1822,3354,3854,3858,4724,5691,6035,6260,6619,8103,9013,9130];
         
 %         sampleindices = 1:500;
 %         sampleindices = [8,9,29,61,64,96,101,109,150,187,252,255,273,277,285,304,327,338,339,345,415,434,492,494];
@@ -116,15 +127,6 @@ switch lower(loading)
         error('Wrong loading case');
 end
 N = length(sampleindices);
-randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
-gc = 2.7e3;
-% aGc = 0.6*gc;
-% bGc = 1.4*gc;
-% aGc = 0.9*gc;
-% bGc = 1.1*gc;
-aGc = [0.7,1.2]*gc;
-bGc = [0.8,1.3]*gc;
-randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase field parameters model
 
 foldername = ['singleEdgeCrack' loading '_' num2str(Dim) 'D'];
 filename = ['linElas' symmetry];
@@ -808,25 +810,25 @@ if displaySolution
     mysaveas(pathname,'forces_displacement',formats);
     mymatlab2tikz(pathname,'forces_displacement.tex');
 
-    color = distinguishable_colors(N);
-    for i=1:N
-        if mod(i,100)==0
-            close all
-        end
-        figure('Name',['Force-displacement #' num2str(sampleindices(i))])
-        clf
-        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
-        hold on
-        scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',color(i,:),'Linewidth',linewidth)
-        hold off
-        grid on
-        box on
-        set(gca,'FontSize',fontsize)
-        xlabel('Displacement [mm]','Interpreter',interpreter)
-        ylabel('Force [kN]','Interpreter',interpreter)
-        mysaveas(pathname,['force_displacement_' num2str(sampleindices(i))],{'epsc','png'});
-        % mymatlab2tikz(pathname,['force_displacement_' num2str(sampleindices(i)) '.tex']);
-    end
+%     color = distinguishable_colors(N);
+%     for i=1:N
+%         if mod(i,100)==0
+%             close all
+%         end
+%         figure('Name',['Force-displacement #' num2str(sampleindices(i))])
+%         clf
+%         plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
+%         hold on
+%         scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',color(i,:),'Linewidth',linewidth)
+%         hold off
+%         grid on
+%         box on
+%         set(gca,'FontSize',fontsize)
+%         xlabel('Displacement [mm]','Interpreter',interpreter)
+%         ylabel('Force [kN]','Interpreter',interpreter)
+%         mysaveas(pathname,['force_displacement_' num2str(sampleindices(i))],{'epsc','png'});
+%         % mymatlab2tikz(pathname,['force_displacement_' num2str(sampleindices(i)) '.tex']);
+%     end
     
     %% Display pdf of maximum force
     figure('Name','Probability Density Estimate: Maximum force')
