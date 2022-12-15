@@ -6,7 +6,7 @@ display_ = getcharin('display',varargin,true);
 displayIter = getcharin('displayiter',varargin,false);
 tolConv = getcharin('tol',varargin,1e-2);
 maxIter = getcharin('maxiter',varargin,100);
-dbthreshold = getcharin('damageboundarythreshold',varargin,0.99);
+dbthreshold = getcharin('damageboundarythreshold',varargin,0.999);
 
 Dim = getdim(S);
 
@@ -172,6 +172,7 @@ for i=1:length(T)
                             d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                     end
             end
+            dmax = max(d);
             d = unfreevector(S_phase,d);
             dbr = d(numddlbr,:);
             dbl = d(numddlbl,:);
@@ -252,7 +253,7 @@ for i=1:length(T)
     end
     
     if display_
-        fprintf('| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e |\n',i,length(T),nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),max(d),Ed,Eu);
+        fprintf('| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e |\n',i,length(T),nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),dmax,Ed,Eu);
     end
 end
 

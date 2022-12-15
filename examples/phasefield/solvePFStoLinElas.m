@@ -1,5 +1,5 @@
-function [ft_sample,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,varargin)
-% function [ft_sample,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,varargin)
+function [ft_sample,dmaxt_sample,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,varargin)
+% function [ft_sample,dmaxt_sample,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,varargin)
 % Solve stochastic Phase Field problem.
 
 fun = fcnchk(fun);
@@ -10,9 +10,9 @@ sz_u = getnbddl(S);
 
 % Initialize samples
 ft_sample = zeros(N,length(T));
+dmaxt_sample = zeros(N,length(T));
 dt_sample = zeros(nbSamples,sz_d,length(T));
 ut_sample = zeros(nbSamples,sz_u,length(T));
-% fmax_sample = zeros(N,1);
 
 % Initialize statistical means and second-order moments
 dt_mean = zeros(sz_d,length(T));
@@ -371,12 +371,14 @@ parfor i=1:N
     ut_mean = ut_mean + ut_val/N;
     ut_moment2 = ut_moment2 + ut_val.^2/N;
     
+    dmaxt = max(dt_val);
+    
     ft_sample(i,:) = ft;
+    dmaxt_sample(i,:) = dmaxt;
     if i<=nbSamples
-        dt_sample(i,:,:) = getvalue(dt);
-        ut_sample(i,:,:) = getvalue(ut);
+        dt_sample(i,:,:) = dt_val;
+        ut_sample(i,:,:) = ut_val;
     end
-    % fmax_sample(i) = max(ft);
 end
 textprogressbar(' done');
 

@@ -6,7 +6,7 @@ display_ = getcharin('display',varargin,true);
 displayIter = getcharin('displayiter',varargin,false);
 tolConv = getcharin('tol',varargin,1e-2);
 maxIter = getcharin('maxiter',varargin,100);
-dbthreshold = getcharin('damageboundarythreshold',varargin,0.99);
+dbthreshold = getcharin('damageboundarythreshold',varargin,0.999);
 filename = getcharin('filename',varargin,'gmsh_domain_single_edge_crack');
 pathname = getcharin('pathname',varargin,'.');
 gmshoptions = getcharin('gmshoptions',varargin,'-v 0');
@@ -176,6 +176,7 @@ while ti < tf-eps
             if any(d > dthreshold)
                 dti = dt1;
             end
+            dmax = max(d);
             d = unfreevector(S_phase,d);
             numddlb = findddl(S_phase,'T',BRight);
             db = d(numddlb,:);
@@ -292,7 +293,7 @@ while ti < tf-eps
     end
     
     if display_
-        fprintf('| %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',i,nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),max(d),Ed,Eu,getnbnode(S),getnbelem(S));
+        fprintf('| %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',i,nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),dmax,Ed,Eu,getnbnode(S),getnbelem(S));
     end
     
     if ti < tf-eps && ~any(db > dbthreshold)

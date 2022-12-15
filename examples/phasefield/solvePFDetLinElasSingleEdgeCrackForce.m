@@ -1,18 +1,19 @@
-function ft = solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
-% function ft = solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+function [ft,dmaxt] = solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+% function [ft,dmaxt] = solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
 % Solve deterministic Phase Field problem.
 
 display_ = getcharin('display',varargin,true);
 displayIter = getcharin('displayiter',varargin,false);
 tolConv = getcharin('tol',varargin,1e-2);
 maxIter = getcharin('maxiter',varargin,100);
-dbthreshold = getcharin('damageboundarythreshold',varargin,0.99);
+dbthreshold = getcharin('damageboundarythreshold',varargin,0.999);
 
 Dim = getdim(S);
 
 t = gett(T);
 
 ft = zeros(1,length(T));
+dmaxt = zeros(1,length(T));
 
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
@@ -154,6 +155,7 @@ for i=1:length(T)
                             d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                     end
             end
+            dmax = max(d);
             d = unfreevector(S_phase,d);
             db = d(numddlb,:);
             
@@ -223,9 +225,10 @@ for i=1:length(T)
     
     % Update fields
     ft(i) = f;
+    dmaxt(i) = dmax;
     
     if display_
-        fprintf('| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e |\n',i,length(T),nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),max(d));
+        fprintf('| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e |\n',i,length(T),nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),dmax);
     end
 end
 

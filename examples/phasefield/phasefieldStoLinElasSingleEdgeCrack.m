@@ -50,7 +50,7 @@ FEmesh = 'Optim'; % 'Unif' or 'Optim'
 % Random model parameters
 % N = 500; % number of samples
 N = numWorkers;
-randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
+randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
 aGc = 0;
 bGc = 0;
 % gc = 2.7e3;
@@ -574,7 +574,7 @@ if solveProblem
     
     nbSamples = 1;
     fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv);
-    [ft,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
+    [ft,dmaxt,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);
     udmax = t(idmax);

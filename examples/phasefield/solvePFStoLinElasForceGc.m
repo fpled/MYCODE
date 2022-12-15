@@ -1,5 +1,5 @@
-function [ft_sample,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,varargin)
-% function [ft_sample,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,varargin)
+function [ft_sample,dmaxt_sample,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,varargin)
+% function [ft_sample,dmaxt_sample,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,varargin)
 % Solve stochastic Phase Field problem.
 
 fun = fcnchk(fun);
@@ -11,6 +11,7 @@ end
 
 % Initialize samples
 ft_sample = zeros(N,length(T));
+dmaxt_sample = zeros(N,length(T));
 gc_sample = zeros(N,1);
 
 if ~verLessThan('matlab','9.2') % introduced in R2017a
@@ -356,9 +357,10 @@ parfor i=1:N
     Si = actualisematerials(Si,mats);
     
     % Solve deterministic problem
-    ft = fun(S_phasei,Si);
+    [ft,dmaxt] = fun(S_phasei,Si);
     
     ft_sample(i,:) = ft;
+    dmaxt_sample(i,:) = dmaxt;
     gc_sample(i) = gc;
 end
 textprogressbar(' done');

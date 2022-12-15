@@ -49,7 +49,7 @@ initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialP
 % Random model parameters
 % N = 500; % number of samples
 N = numWorkers;
-randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
+randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
 aGc = 0;
 bGc = 0;
 % gc = 2.7e3;
@@ -575,7 +575,7 @@ if solveProblem
     nbSamples = 1;
     fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
         'maxiter',maxIter,'tol',tolConv,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-    [ft,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'nbsamples',nbSamples);
+    [ft,dmaxt,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'nbsamples',nbSamples);
     [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);
     udmax = t(idmax);
