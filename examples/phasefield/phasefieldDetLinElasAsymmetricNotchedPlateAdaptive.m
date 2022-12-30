@@ -108,8 +108,8 @@ if setProblem
     r = 0.25*unit; % radius of the holes
     
     clD = 0.1*unit; % characteristic length for domain
-    % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     if test
         clD = 0.2*unit;
@@ -337,18 +337,22 @@ if solveProblem
             [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,...
                 'maxiter',maxIter,'tol',tolConv,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     end
-    [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);
+    dmaxt = cellfun(@(d) max(d),dt);
+    idc = find(dmaxt>=0.75,1);
+    fc = ft(idc);
+    udc = t(idc);
+    [fmax,idmax] = max(ft,[],2);
     udmax = t(idmax);
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','Edt','Eut','output','fmax','udmax','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         save(fullfile(pathname,'solution.mat'),'Ht','-append');
     end
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','Edt','Eut','output','fmax','udmax','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         load(fullfile(pathname,'solution.mat'),'Ht');
     end
@@ -371,7 +375,9 @@ fprintf(fid,'elapsed time = %f s\n',time);
 fprintf(fid,'\n');
 
 fprintf(fid,'fmax  = %g kN/mm\n',fmax*1e-6);
+fprintf(fid,'fc    = %g kN/mm\n',fc*1e-6);
 fprintf(fid,'udmax = %g mm\n',udmax*1e3);
+fprintf(fid,'udc   = %g mm\n',udc*1e3);
 fclose(fid);
 
 %% Display
@@ -430,6 +436,18 @@ if displaySolution
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
+    %% Display maximum damage-displacement curve
+    figure('Name','Maximum damage vs displacement')
+    clf
+    plot(t*1e3,dmaxt,'-b','Linewidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Maximum damage','Interpreter',interpreter)
+    mysaveas(pathname,'max_damage_displacement',formats);
+    mymatlab2tikz(pathname,'max_damage_displacement.tex');
+    
     %% Display energy-displacement curves
     figure('Name','Energies vs displacement')
     clf
@@ -448,7 +466,7 @@ if displaySolution
     set(l,'Interpreter','latex')
     mysaveas(pathname,'energies_displacement',formats);
     mymatlab2tikz(pathname,'energies_displacement.tex');
-
+    
     %% Display outputs of iterative resolution
     figure('Name','Number of iterations vs displacement')
     clf

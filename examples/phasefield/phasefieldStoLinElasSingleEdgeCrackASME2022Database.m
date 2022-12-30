@@ -48,17 +48,17 @@ FEmesh = 'Optim'; % 'Unif' or 'Optim'
 % Random model parameters
 randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
 gc = 2.7e3;
-aGc = 0.6*gc;
-bGc = 1.4*gc;
+% aGc = 0.6*gc;
+% bGc = 1.4*gc;
 % aGc = 0.9*gc;
 % bGc = 1.1*gc;
-% aGc = [0.7,1.2]*gc;
-% bGc = [0.8,1.3]*gc;
+aGc = [0.7,1.2]*gc;
+bGc = [0.8,1.3]*gc;
 randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase field parameters model
 
-numsamples = 1e4; % total number of samples
-% numsamples = 500;
-% sampleindices = 1:500;
+% numsamples = 1e4; % total number of samples
+numsamples = 500;
+sampleindices = 1:500;
 switch lower(loading)
     case 'tension'
         % sampleindices = 1:1120;
@@ -114,7 +114,7 @@ switch lower(loading)
 %             8581,8589,8595,8623,8698,8747,8788,8789,8808,8824,8827,8861,8865,8866,8881,8895,8903,8926,8939,8942,8974,8995,...
 %             9013,9030,9032,9090,9130,9144,9160,9200,9216,9220,9228,9277,9326,9346,9372,9384,9397,9405,9414,9446,9468,9483,9494,...
 %             9504,9536,9541,9550,9560,9569,9608,9613,9665,9681,9711,9723,9724,9737,9777,9789,9806,9809,9874,9888,9895,9901,9929,9945,9950,9956];
-        sampleindices = [741,1822,3354,3854,3858,4724,5691,6035,6260,6619,8103,9013,9130];
+%         sampleindices = [741,1822,3354,3854,3858,4724,5691,6035,6260,6619,8103,9013,9130];
         
 %         sampleindices = 1:500;
 %         sampleindices = [8,9,29,61,64,96,101,109,150,187,252,255,273,277,285,304,327,338,339,345,415,434,492,494];
@@ -638,9 +638,12 @@ if solveProblem
     tTotal = tic;
     
     fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv);
-    [ft,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,'numsamples',numsamples,'sampleindices',sampleindices);
-    [fmax,idmax] = max(ft,[],2);
+    [ft,dmaxt,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,'numsamples',numsamples,'sampleindices',sampleindices);
     t = gettevol(T);
+    idc = arrayfun(@(i) find(dmaxt(i,:)>=0.75,1),1:N)';
+    fc = arrayfun(@(i) ft(i,idc(i)),1:N)';
+    udc = t(idc);
+    [fmax,idmax] = max(ft,[],2);
     udmax = t(idmax);
     
     time = toc(tTotal);
@@ -661,7 +664,15 @@ if solveProblem
     udmax_mean = mean(udmax);
     udmax_std = std(udmax);
     udmax_ci = quantile(udmax,probs);
-	
+    
+    fc_mean = mean(fc);
+    fc_std = std(fc);
+    fc_ci = quantile(fc,probs);
+    
+    udc_mean = mean(udc);
+    udc_std = std(udc);
+    udc_ci = quantile(udc,probs);
+    
     gc_mean = mean(gc_sample);
     gc_std = std(gc_sample);
     gc_ci = quantile(gc_sample,probs);
@@ -669,18 +680,24 @@ if solveProblem
     npts = 100;
     [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'npoints',npts);
     [udmax_f,udmax_xi,udmax_bw] = ksdensity(udmax,'npoints',npts);
+    [fc_f,fc_xi,fc_bw] = ksdensity(fc,'npoints',npts);
+    [udc_f,udc_xi,udc_bw] = ksdensity(udc,'npoints',npts);
     [gc_f,gc_xi,gc_bw] = ksdensity(gc_sample,'npoints',npts);
     
-    save(fullfile(pathname,'solution.mat'),'N','ft',...
+    save(fullfile(pathname,'solution.mat'),'N','ft','dmaxt',...
         'ft_mean','ft_std','ft_ci','probs','time',...
         'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
         'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw',...
+        'fc','fc_mean','fc_std','fc_ci','fc_f','fc_xi','fc_bw',...
+        'udc','udc_mean','udc_std','udc_ci','udc_f','udc_xi','udc_bw',...
         'gc_sample','gc_mean','gc_std','gc_ci','gc_f','gc_xi','gc_bw');
 else
-    load(fullfile(pathname,'solution.mat'),'N','ft',...
+    load(fullfile(pathname,'solution.mat'),'N','ft','dmaxt',...
         'ft_mean','ft_std','ft_ci','probs','time',...
         'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
         'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw',...
+        'fc','fc_mean','fc_std','fc_ci','fc_f','fc_xi','fc_bw',...
+        'udc','udc_mean','udc_std','udc_ci','udc_f','udc_xi','udc_bw',...
         'gc_sample','gc_mean','gc_std','gc_ci','gc_f','gc_xi','gc_bw');
 end
 
@@ -707,17 +724,32 @@ fprintf(fid,'elapsed time = %f s\n',time);
 fprintf(fid,'\n');
 
 if Dim==2
-    fprintf(fid,'mean(fmax)    = %g kN/mm\n',fmax_mean*1e-6);
-    fprintf(fid,'std(fmax)     = %g kN/mm\n',fmax_std*1e-6);
+    fprintf(fid,'mean(fmax)   = %g kN/mm\n',fmax_mean*1e-6);
+    fprintf(fid,'std(fmax)    = %g kN/mm\n',fmax_std*1e-6);
 elseif Dim==3
-    fprintf(fid,'mean(fmax)    = %g kN\n',fmax_mean*1e-3);
-    fprintf(fid,'std(fmax)     = %g kN\n',fmax_std*1e-3);
+    fprintf(fid,'mean(fmax)   = %g kN\n',fmax_mean*1e-3);
+    fprintf(fid,'std(fmax)    = %g kN\n',fmax_std*1e-3);
 end
-fprintf(fid,'disp(fmax)    = %g\n',fmax_std/fmax_mean);
+fprintf(fid,'disp(fmax)   = %g\n',fmax_std/fmax_mean);
 if Dim==2
-    fprintf(fid,'%d%% ci(fmax)  = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
+    fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
 elseif Dim==3
-    fprintf(fid,'%d%% ci(fmax)  = [%g,%g] kN\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-3,fmax_ci(2)*1e-3);
+    fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-3,fmax_ci(2)*1e-3);
+end
+fprintf(fid,'\n');
+
+if Dim==2
+    fprintf(fid,'mean(fc)   = %g kN/mm\n',fc_mean*1e-6);
+    fprintf(fid,'std(fc)    = %g kN/mm\n',fc_std*1e-6);
+elseif Dim==3
+    fprintf(fid,'mean(fc)   = %g kN\n',fc_mean*1e-3);
+    fprintf(fid,'std(fc)    = %g kN\n',fc_std*1e-3);
+end
+fprintf(fid,'disp(fc)   = %g\n',fc_std/fc_mean);
+if Dim==2
+    fprintf(fid,'%d%% ci(fc) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fc_ci(1)*1e-6,fc_ci(2)*1e-6);
+elseif Dim==3
+    fprintf(fid,'%d%% ci(fc) = [%g,%g] kN\n',(probs(2)-probs(1))*100,fc_ci(1)*1e-3,fc_ci(2)*1e-3);
 end
 fprintf(fid,'\n');
 
@@ -727,11 +759,17 @@ fprintf(fid,'disp(udmax)   = %g\n',udmax_std/udmax_mean);
 fprintf(fid,'%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
 fprintf(fid,'\n');
 
+fprintf(fid,'mean(udc)   = %g mm\n',udc_mean*1e3);
+fprintf(fid,'std(udc)    = %g mm\n',udc_std*1e3);
+fprintf(fid,'disp(udc)   = %g\n',udc_std/udc_mean);
+fprintf(fid,'%d%% ci(udc) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udc_ci(1)*1e3,udc_ci(2)*1e3);
+fprintf(fid,'\n');
+
 gc_xiunif = linspace(min(gc_xi),max(gc_xi),1e3);
 gc_funif = myunifpdf(gc_xiunif,aGc,bGc);
-gc_ciunif = unifinv(probs,min(aGc),max(bGc));
+gc_ciunif = myunifinv(probs,aGc,bGc);
 
-[gc_meanunif,gc_varunif] = unifstat(aGc,bGc);
+[gc_meanunif,gc_varunif] = myunifstat(aGc,bGc);
 gc_stdunif = sqrt(gc_varunif);
 fprintf(fid,'mean(gc)   = %g N/mm (estimate)\n',gc_mean*1e-3);
 fprintf(fid,'           = %g N/mm (exact)\n',gc_meanunif*1e-3);
@@ -799,7 +837,6 @@ if displaySolution
     for i=1:N
         plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
         hold on
-        % scatter(fmax_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','+','MarkerEdgeColor','k','MarkerFaceColor',color(i,:))
     end
     hold off
     grid on
@@ -819,7 +856,7 @@ if displaySolution
 %         clf
 %         plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
 %         hold on
-%         scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',color(i,:),'Linewidth',linewidth)
+%         scatter(udc(i)*1e3,fc(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',color(i,:),'Linewidth',linewidth)
 %         hold off
 %         grid on
 %         box on
@@ -851,6 +888,27 @@ if displaySolution
     mysaveas(pathname,'pdf_fmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fmax.tex');
     
+    %% Display pdf of critical force
+    figure('Name','Probability Density Estimate: Critical force')
+    clf
+    plot(fc_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fc_f,'-b','LineWidth',linewidth)
+    hold on
+    ind_fc = find(fc_xi>=fc_ci(1) & fc_xi<fc_ci(2));
+    area(fc_xi(ind_fc)*((Dim==2)*1e-6+(Dim==3)*1e-3),fc_f(ind_fc),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
+    scatter(fc_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$f$ [kN]','Interpreter',interpreter)
+    ylabel('$p_{F_c}(f)$','Interpreter',interpreter)
+    l = legend('pdf',...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+        'mean value');
+    set(l,'Interpreter',interpreter)
+    mysaveas(pathname,'pdf_fc',formats,renderer);
+    mymatlab2tikz(pathname,'pdf_fc.tex');
+    
     %% Display pdf of maximum displacement
     figure('Name','Probability Density Estimate: Maximum displacement')
     clf
@@ -872,6 +930,27 @@ if displaySolution
     mysaveas(pathname,'pdf_udmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_udmax.tex');
     
+    %% Display pdf of critical displacement
+    figure('Name','Probability Density Estimate: Critical displacement')
+    clf
+    plot(udc_xi*1e3,udc_f,'-b','LineWidth',linewidth)
+    hold on
+    ind_udc = find(udc_xi>=udc_ci(1) & udc_xi<udc_ci(2));
+    area(udc_xi(ind_udc)*1e3,udc_f(ind_udc),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
+    scatter(udc_mean*1e3,0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$u$ [mm]','Interpreter',interpreter)
+    ylabel('$p_{U_{D,c}}(u)$','Interpreter',interpreter)
+    l = legend('pdf',...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+        'mean value');
+    set(l,'Interpreter',interpreter)
+    mysaveas(pathname,'pdf_udc',formats,renderer);
+    mymatlab2tikz(pathname,'pdf_udc.tex');
+
     %% Display pdf of fracture toughness
     figure('Name','Probability Density Estimate: Fracture toughness')
     clf

@@ -309,18 +309,23 @@ if solveProblem
         otherwise
             [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,'maxiter',maxIter,'tol',tolConv);
     end
-    [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);
+    dt_val = getvalue(dt);
+    dmaxt = max(dt_val);
+    idc = find(dmaxt>=0.75,1);
+    fc = ft(idc);
+    udc = t(idc);
+    [fmax,idmax] = max(ft,[],2);
     udmax = t(idmax);
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','fmax','udmax','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         save(fullfile(pathname,'solution.mat'),'Ht','-append');
     end
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','fmax','udmax','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         load(fullfile(pathname,'solution.mat'),'Ht');
     end
@@ -343,7 +348,9 @@ fprintf(fid,'elapsed time = %f s\n',time);
 fprintf(fid,'\n');
 
 fprintf(fid,'fmax  = %g kN/mm\n',fmax*1e-6);
+fprintf(fid,'fc    = %g kN/mm\n',fc*1e-6);
 fprintf(fid,'udmax = %g mm\n',udmax*1e3);
+fprintf(fid,'udc   = %g mm\n',udc*1e3);
 fclose(fid);
 
 %% Display
@@ -395,6 +402,18 @@ if displaySolution
     ylabel('Force [kN]','Interpreter',interpreter)
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
+    
+    %% Display maximum damage-displacement curve
+    figure('Name','Maximum damage vs displacement')
+    clf
+    plot(t*1e3,dmaxt,'-b','Linewidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Maximum damage','Interpreter',interpreter)
+    mysaveas(pathname,'max_damage_displacement',formats);
+    mymatlab2tikz(pathname,'max_damage_displacement.tex');
     
     %% Display energy-displacement curves
     figure('Name','Energies vs displacement')

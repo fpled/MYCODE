@@ -72,7 +72,9 @@ PFsolver = PFsolvers{iPFsolver};
 % close all
 
 suffix = '';
-% suffix = ['_mac'];
+% suffix = '_6e-5_2e-5';
+% suffix = '_mac';
+% suffix = '_k1e-12';
 % suffix = ['_coeffgc' num2str(coeff_gc,'_%g')];
 
 foldername = ['singleEdgeCrack' loading '_' num2str(Dim) 'D'];
@@ -583,16 +585,21 @@ if solveProblem
         otherwise
             [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv);
     end
-    [fmax,idmax] = max(ft,[],2);
     if strcmpi(symmetry,'anisot')
         T = gettimemodel(dt);
     end
     t = gettevol(T);
+    dt_val = getvalue(dt);
+    dmaxt = max(dt_val);
+    idc = find(dmaxt>=0.75,1);
+    fc = ft(idc);
+    udc = t(idc);
+    [fmax,idmax] = max(ft,[],2);
     udmax = t(idmax);
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','fmax','udmax','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         save(fullfile(pathname,'solution.mat'),'Ht','-append');
     end
@@ -600,7 +607,7 @@ if solveProblem
         save(fullfile(pathname,'solution.mat'),'T','-append');
     end
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','fmax','udmax','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         load(fullfile(pathname,'solution.mat'),'Ht');
     end
@@ -632,10 +639,13 @@ fprintf(fid,'\n');
 
 if Dim==2
     fprintf(fid,'fmax  = %g kN/mm\n',fmax*1e-6);
+    fprintf(fid,'fc    = %g kN/mm\n',fc*1e-6);
 elseif Dim==3
     fprintf(fid,'fmax  = %g kN\n',fmax*1e-3);
+    fprintf(fid,'fc    = %g kN\n',fc*1e-3);
 end
 fprintf(fid,'udmax = %g mm\n',udmax*1e3);
+fprintf(fid,'udc   = %g mm\n',udc*1e3);
 fclose(fid);
 
 %% Display
@@ -691,6 +701,18 @@ if displaySolution
     ylabel('Force [kN]','Interpreter',interpreter)
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
+    
+    %% Display maximum damage-displacement curve
+    figure('Name','Maximum damage vs displacement')
+    clf
+    plot(t*1e3,dmaxt,'-b','Linewidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Maximum damage','Interpreter',interpreter)
+    mysaveas(pathname,'max_damage_displacement',formats);
+    mymatlab2tikz(pathname,'max_damage_displacement.tex');
     
     %% Display energy-displacement curves
     figure('Name','Energies vs displacement')

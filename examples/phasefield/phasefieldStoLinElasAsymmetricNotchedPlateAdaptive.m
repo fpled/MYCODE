@@ -48,7 +48,7 @@ initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialP
 % Random model parameters
 % N = 500; % number of samples
 N = numWorkers;
-randMat = struct('delta',0.1,'lcorr',1e-4); % random material parameters model
+randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
 randPF = struct('aGc',0,'bGc',0,'lcorr',Inf); % random phase field parameters model
 
 foldername = ['asymmetricNotchedPlateSetup' num2str(setup) '_' num2str(Dim) 'D'];
@@ -312,6 +312,7 @@ if setProblem
     
     %% Time scheme
     % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % du = 1e-4 mm during 2500 time steps (up to u = 0.25 mm)
     % dt = 1e-4*unit;
     % nt = 2500;
     % t = linspace(dt,nt*dt,nt);
@@ -352,8 +353,11 @@ if solveProblem
     fun = @(S_phase,S,filename) solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,sizemap,...
         'maxiter',maxIter,'tol',tolConv,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     [ft,dmaxt,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_domain_asymmetric_notched_plate','pathname',pathname,'nbsamples',nbSamples);
-    [fmax,idmax] = max(ft,[],2);
     t = gettevol(T);
+    idc = arrayfun(@(i) find(dmaxt(i,:)>=0.75,1),1:N)';
+    fc = arrayfun(@(i) ft(i,idc(i)),1:N)';
+    udc = t(idc);
+    [fmax,idmax] = max(ft,[],2);
     udmax = t(idmax);
     
     time = toc(tTotal);
@@ -375,19 +379,33 @@ if solveProblem
     udmax_std = std(udmax);
     udmax_ci = quantile(udmax,probs);
     
+    fc_mean = mean(fc);
+    fc_std = std(fc);
+    fc_ci = quantile(fc,probs);
+    
+    udc_mean = mean(udc);
+    udc_std = std(udc);
+    udc_ci = quantile(udc,probs);
+    
     npts = 100;
     [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'npoints',npts);
     [udmax_f,udmax_xi,udmax_bw] = ksdensity(udmax,'npoints',npts);
+    [fc_f,fc_xi,fc_bw] = ksdensity(fc,'npoints',npts);
+    [udc_f,udc_xi,udc_bw] = ksdensity(udc,'npoints',npts);
     
-    save(fullfile(pathname,'solution.mat'),'N','ft','dt','ut','St_phase','St',...
+    save(fullfile(pathname,'solution.mat'),'N','ft','dmaxt','dt','ut','St_phase','St',...
         'ft_mean','ft_std','ft_ci','probs','time',...
         'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
-        'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw');
+        'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw',...
+        'fc','fc_mean','fc_std','fc_ci','fc_f','fc_xi','fc_bw',...
+        'udc','udc_mean','udc_std','udc_ci','udc_f','udc_xi','udc_bw');
 else
-    load(fullfile(pathname,'solution.mat'),'N','ft','dt','ut','St_phase','St',...
+    load(fullfile(pathname,'solution.mat'),'N','ft','dmaxt','dt','ut','St_phase','St',...
         'ft_mean','ft_std','ft_ci','probs','time',...
         'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
-        'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw');
+        'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw',...
+        'fc','fc_mean','fc_std','fc_ci','fc_f','fc_xi','fc_bw',...
+        'udc','udc_mean','udc_std','udc_ci','udc_f','udc_xi','udc_bw');
 end
 
 %% Outputs
@@ -413,10 +431,22 @@ fprintf(fid,'disp(fmax)   = %g\n',fmax_std/fmax_mean);
 fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
 fprintf(fid,'\n');
 
+fprintf(fid,'mean(fc)   = %g kN/mm\n',fc_mean*1e-6);
+fprintf(fid,'std(fc)    = %g kN/mm\n',fc_std*1e-6);
+fprintf(fid,'disp(fc)   = %g\n',fc_std/fc_mean);
+fprintf(fid,'%d%% ci(fc) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fc_ci(1)*1e-6,fc_ci(2)*1e-6);
+fprintf(fid,'\n');
+
 fprintf(fid,'mean(udmax)   = %g mm\n',udmax_mean*1e3);
 fprintf(fid,'std(udmax)    = %g mm\n',udmax_std*1e3);
 fprintf(fid,'disp(udmax)   = %g\n',udmax_std/udmax_mean);
 fprintf(fid,'%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
+fprintf(fid,'\n');
+
+fprintf(fid,'mean(udc)   = %g mm\n',udc_mean*1e3);
+fprintf(fid,'std(udc)    = %g mm\n',udc_std*1e3);
+fprintf(fid,'disp(udc)   = %g\n',udc_std/udc_mean);
+fprintf(fid,'%d%% ci(udc) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udc_ci(1)*1e3,udc_ci(2)*1e3);
 fclose(fid);
 
 %% Display
@@ -520,6 +550,27 @@ if displaySolution
     mysaveas(pathname,'pdf_fmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fmax.tex');
     
+    %% Display pdf of critical force
+    figure('Name','Probability Density Estimate: Critical force')
+    clf
+    plot(fc_xi*1e-6,fc_f,'-b','LineWidth',linewidth)
+    hold on
+    ind_fc = find(fc_xi>=fc_ci(1) & fc_xi<fc_ci(2));
+    area(fc_xi(ind_fc)*1e-6,fc_f(ind_fc),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
+    scatter(fc_mean*1e-6,0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$f$ [kN]','Interpreter',interpreter)
+    ylabel('$p_{F_c}(f)$','Interpreter',interpreter)
+    l = legend('pdf',...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+        'mean value');
+    set(l,'Interpreter',interpreter)
+    mysaveas(pathname,'pdf_fc',formats,renderer);
+    mymatlab2tikz(pathname,'pdf_fc.tex');
+    
     %% Display pdf of maximum displacement
     figure('Name','Probability Density Estimate: Maximum displacement')
     clf
@@ -540,6 +591,27 @@ if displaySolution
     set(l,'Interpreter',interpreter)
     mysaveas(pathname,'pdf_udmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_udmax.tex');
+    
+    %% Display pdf of critical displacement
+    figure('Name','Probability Density Estimate: Critical displacement')
+    clf
+    plot(udc_xi*1e3,udc_f,'-b','LineWidth',linewidth)
+    hold on
+    ind_udc = find(udc_xi>=udc_ci(1) & udc_xi<udc_ci(2));
+    area(udc_xi(ind_udc)*1e3,udc_f(ind_udc),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
+    scatter(udc_mean*1e3,0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$u$ [mm]','Interpreter',interpreter)
+    ylabel('$p_{U_{D,c}}(u)$','Interpreter',interpreter)
+    l = legend('pdf',...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+        'mean value');
+    set(l,'Interpreter',interpreter)
+    mysaveas(pathname,'pdf_udc',formats,renderer);
+    mymatlab2tikz(pathname,'pdf_udc.tex');
     
     %% Display samples of solutions at different instants
     ampl = 0;
