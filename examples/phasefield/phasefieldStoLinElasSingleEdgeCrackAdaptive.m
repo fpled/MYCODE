@@ -577,7 +577,7 @@ if solveProblem
         'maxiter',maxIter,'tol',tolConv,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     [ft,dmaxt,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'nbsamples',nbSamples);
     t = gettevol(T);
-    idc = arrayfun(@(i) find(dmaxt(i,:)>=0.75,1),1:N)';
+    idc = arrayfun(@(i) find(dmaxt(i,:)>=min(0.75,max(dmaxt(i,:))),1),1:N)';
     fc = arrayfun(@(i) ft(i,idc(i)),1:N)';
     udc = t(idc);
     [fmax,idmax] = max(ft,[],2);

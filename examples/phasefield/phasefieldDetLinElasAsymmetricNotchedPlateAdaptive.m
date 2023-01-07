@@ -339,7 +339,7 @@ if solveProblem
     end
     t = gettevol(T);
     dmaxt = cellfun(@(d) max(d),dt);
-    idc = find(dmaxt>=0.75,1);
+    idc = find(dmaxt>=min(0.75,max(dmaxt)),1);
     fc = ft(idc);
     udc = t(idc);
     [fmax,idmax] = max(ft,[],2);

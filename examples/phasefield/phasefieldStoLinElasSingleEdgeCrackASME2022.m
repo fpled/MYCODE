@@ -580,7 +580,7 @@ if solveProblem
     fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv);
     [ft,dmaxt,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
     t = gettevol(T);
-    idc = arrayfun(@(i) find(dmaxt(i,:)>=0.75,1),1:N)';
+    idc = arrayfun(@(i) find(dmaxt(i,:)>=min(0.75,max(dmaxt(i,:))),1),1:N)';
     fc = arrayfun(@(i) ft(i,idc(i)),1:N)';
     udc = t(idc);
     [fmax,idmax] = max(ft,[],2);
@@ -769,6 +769,8 @@ if displaySolution
     for i=1:N
         plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
         hold on
+%         scatter(udc(i)*1e3,fc(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','r','Linewidth',linewidth)
+%         scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',color(i,:),'Linewidth',linewidth)
     end
     hold off
     grid on
@@ -778,6 +780,27 @@ if displaySolution
     ylabel('Force [kN]','Interpreter',interpreter)
     mysaveas(pathname,'forces_displacement',formats);
     mymatlab2tikz(pathname,'forces_displacement.tex');
+    
+%     color = distinguishable_colors(N);
+%     for i=1:N
+%         if mod(i,100)==0
+%             close all
+%         end
+%         figure('Name',['Force-displacement #' num2str(i)])
+%         clf
+%         plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
+%         hold on
+%         scatter(udc(i)*1e3,fc(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','r','Linewidth',linewidth)
+%         scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',color(i,:),'Linewidth',linewidth)
+%         hold off
+%         grid on
+%         box on
+%         set(gca,'FontSize',fontsize)
+%         xlabel('Displacement [mm]','Interpreter',interpreter)
+%         ylabel('Force [kN]','Interpreter',interpreter)
+%         % mysaveas(pathname,['force_displacement_' num2str(sampleindices(i))],{'epsc','png'});
+%         % mymatlab2tikz(pathname,['force_displacement_' num2str(sampleindices(i)) '.tex']);
+%     end
     
     %% Display pdf of maximum force
     figure('Name','Probability Density Estimate: Maximum force')

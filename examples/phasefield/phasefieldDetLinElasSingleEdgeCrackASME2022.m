@@ -584,7 +584,7 @@ if solveProblem
     t = gettevol(T);
     dt_val = getvalue(dt);
     dmaxt = max(dt_val);
-    idc = find(dmaxt>=0.75,1);
+    idc = find(dmaxt>=min(0.75,max(dmaxt)),1);
     fc = ft(idc);
     udc = t(idc);
     [fmax,idmax] = max(ft,[],2);

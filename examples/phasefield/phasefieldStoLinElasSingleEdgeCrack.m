@@ -576,7 +576,7 @@ if solveProblem
     fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv);
     [ft,dmaxt,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
     t = gettevol(T);
-    idc = arrayfun(@(i) find(dmaxt(i,:)>=0.75,1),1:N)';
+    idc = arrayfun(@(i) find(dmaxt(i,:)>=min(0.75,max(dmaxt(i,:))),1),1:N)';
     fc = arrayfun(@(i) ft(i,idc(i)),1:N)';
     udc = t(idc);
     [fmax,idmax] = max(ft,[],2);
