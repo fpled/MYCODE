@@ -48,20 +48,20 @@ FEmesh = 'Optim'; % 'Unif' or 'Optim'
 % Random model parameters
 randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
 gc = 2.7e3;
-% aGc = 0.6*gc;
-% bGc = 1.4*gc;
+aGc = 0.6*gc;
+bGc = 1.4*gc;
 % aGc = 0.9*gc;
 % bGc = 1.1*gc;
-aGc = [0.7,1.2]*gc;
-bGc = [0.8,1.3]*gc;
+% aGc = [0.7,1.2]*gc;
+% bGc = [0.8,1.3]*gc;
 randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase field parameters model
 
-% numsamples = 1e4; % total number of samples
-numsamples = 500;
-sampleindices = 1:500;
+numsamples = 1e4; % total number of samples
+% numsamples = 500;
+% sampleindices = 1:500;
 switch lower(loading)
     case 'tension'
-        % sampleindices = 1:1120;
+        sampleindices = 1:1120;
         % sampleindices = (1120+1):2240;
         % sampleindices = (2240+1):3360;
         % sampleindices = (3360+1):4320;
@@ -73,7 +73,7 @@ switch lower(loading)
         % sampleindices = (9120+1):9600;
         % sampleindices = (9600+1):1e4;
     case 'shear'
-        % sampleindices = 1:480;
+        sampleindices = 1:480;
         % sampleindices = (480+1):960;
         % sampleindices = (960+1):1440;
         % sampleindices = (1440+1):1920;
