@@ -353,5 +353,5 @@ hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
 xlabel('$G^L$ [MPa]','Interpreter',interpreter)
-ylabel('$\nu$','Interpreter',interpreter)
+ylabel('$\nu^L$','Interpreter',interpreter)
 mysaveas(pathname,'error_NUL_GL_2D',formats,renderer);
