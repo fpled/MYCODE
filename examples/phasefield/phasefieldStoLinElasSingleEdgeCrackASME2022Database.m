@@ -34,6 +34,7 @@ displaySolution = false;
 test = false; % fine mesh
 
 numWorkers = maxNumCompThreads;
+numWorkers = 92;
 % numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 
 % Deterministic model parameters
@@ -63,6 +64,10 @@ randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase field parameter
 
 numsamples = 1e4; % total number of samples
 sampleindices = 1:1e3;
+% sampleindices = 1e3+(1:1e3);
+% sampleindices = 2e3+(1:1e3);
+% sampleindices = 3e3+(1:1e3);
+% sampleindices = 4e3+(1:1e3);
 % numsamples = 500;
 % sampleindices = 1:500;
 switch lower(loading)
