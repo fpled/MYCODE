@@ -233,10 +233,13 @@ for i=1:length(T)
             [A,b] = calc_rigi(S,'nofree');
             b = -b;
             
+            u_prev = u;
             u = freematrix(S,A)\b;
             u = unfreevector(S,u);
             
-            errConv = norm(d-d_prev,'Inf');
+            errConvd = norm(d-d_prev)/norm(d);
+            errConvu = norm(u-u_prev)/norm(u);
+            errConv  = max(errConvd,errConvu);
             if displayIter
                 fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
             end
