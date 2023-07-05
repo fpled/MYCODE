@@ -3,7 +3,8 @@
 %%----------------------------------------------------------------------%%
 % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS] (experimental tests)
 % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF] (anisotropic phase field model of Miehe et al.)
-% [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase field model of Nguyen et al.)
+% [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase field model of He et al.)
+% [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase field model of He et al.)
 
 % clc
 clearvars
@@ -24,7 +25,7 @@ test = true; % coarse mesh
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isot'; % 'Isot' or 'Anisot'. Material symmetry
 ang = 45; % clockwise material orientation angle around z-axis for anisotopic material [deg]
-PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'He', 'Zhang', 'Spectral'
+PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'HeAmor', 'HeFreddi', 'Zhang'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
@@ -32,7 +33,7 @@ maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 FEmesh = 'Unif'; % 'Unif' or 'Optim'
 
-% PFmodels = {'Bourdin','Amor','Miehe','He','Zhang','Spectral'};
+% PFmodels = {'Bourdin','Amor','Miehe','HeAmor','HeFreddi','Zhang'};
 % PFsplits = {'Strain','Stress'};
 PFregularizations = {'AT1','AT2'};
 PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
