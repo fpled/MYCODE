@@ -100,7 +100,7 @@ if solveProblem
     C_masse = CIRCLE(0.0,0.0,0.0,r_masse);
     Pb = {getvertex(C,1),getvertex(C,2),getvertex(C,3),x_load_fati{4},getvertex(C,4),x_load_fati{3}};
     Pe = x_load_stab;
-    Pi = double(getcoord(getcenter(C)));
+    Pi = double(getcenter(C));
     if ~strcmp(elemtype,'QUA4') && ~strcmp(elemtype,'CUB8') && ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4') && ~strcmp(elemtype,'STOKES')
         S_plate = gmshFCBAtablecirc(C,Q_belt,C_masse,Pb,Pe,[],Pi,cl_plate,cl_belt,cl_plate,cl_plate,cl_plate,cl_plate,cl_plate,fullfile(pathname,['gmsh_plate_circ_' elemtype]),3);
     else
@@ -374,7 +374,7 @@ if solveProblem
     
     %% Test solution
     P = getcenter(C);
-    xP = double(getcoord(P));
+    xP = double(P);
     tP = cart2pol(xP(:,1),xP(:,2),xP(:,3));
     
     ux = eval_sol(S,u,P,'UX');

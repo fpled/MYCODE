@@ -133,7 +133,7 @@ if solveProblem
     r_load = 40e-3;
     r_masse = 100e-3;
     C_masse = CIRCLE(0.0,y3_12+b3/2,z3,r_masse);
-    x_masse = double(getcoord(getcenter(C_masse)));
+    x_masse = double(getcenter(C_masse));
     %
     L1_a = LIGNE([x5a_23,y5a,z5a_12],[x5a_23,y5a,z5a_34]);
     L1_b = LIGNE([x5b_23,y5b,z5b_12],[x5b_23,y5b,z5b_34]);

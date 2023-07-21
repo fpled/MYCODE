@@ -52,7 +52,7 @@ if solveProblem
     Q = QUADRANGLE([0.0,0.0,0.0],[a,0.0,0.0],[a,b,0.0],[0.0,b,0.0]);
     
     P_load = getcenter(Q);
-    x_load = double(getcoord(P_load));
+    x_load = double(P_load);
     
     switch lower(meshtype)
         case 'structured'
@@ -232,7 +232,7 @@ if solveProblem
     
     %% Test solution
     P = getcenter(Q);
-    xP = double(getcoord(P));
+    xP = double(P);
     
     ux = eval_sol(S,u,P,'UX');
     uy = eval_sol(S,u,P,'UY');

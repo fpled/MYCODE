@@ -131,7 +131,7 @@ if solveProblem
     r_load = 40e-3;
     r_masse = 100e-3;
     C_masse = CIRCLE(0.0,y3_12+b3/2,z3,r_masse);
-    x_masse = double(getcoord(getcenter(C_masse)));
+    x_masse = double(getcenter(C_masse));
     if pointwiseLoading
         PbQ3 = {x_hori{4},x_fati{3},x_fati{1},x_hori{1},...
                 x_fati{4},x_hori{3},x_hori{2},x_fati{2}};

@@ -80,7 +80,7 @@ if solveProblem
     C = CIRCLE(0.0,0.0,0.0,r);
     
     P_load = getcenter(C);
-    x_load = double(getcoord(P_load));
+    x_load = double(P_load);
     
     cl = r./nbelems(i);
     switch lower(loading)
@@ -260,7 +260,7 @@ if solveProblem
     
     %% Test solution
     P = getcenter(C);
-    xP = double(getcoord(P));
+    xP = double(P);
     tP = cart2pol(xP(:,1),xP(:,2),xP(:,3));
     
     ux = eval_sol(S,u,P,'UX');
