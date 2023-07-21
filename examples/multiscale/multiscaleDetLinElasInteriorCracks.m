@@ -62,7 +62,7 @@ if setProblem
     B_patch = cell(1,n);
     for k=1:n
         C_patch = getcenter(D_patch{k});
-        c_patch = double(getcoord(C_patch));
+        c_patch = double(C_patch);
         B_patch{k} = LIGNE(c_patch-[a/2,0.0],c_patch+[a/2,0.0]);
     end
     

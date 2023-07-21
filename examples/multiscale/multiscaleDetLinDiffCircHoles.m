@@ -58,7 +58,8 @@ if setProblem
     r = 0.05;
     B_patch = cell(1,n);
     for k=1:n
-        c_patch = double(getcoord(getcenter(D_patch{k})));
+        C_patch = getcenter(D_patch{k});
+        c_patch = double(C_patch);
         B_patch{k} = CIRCLE(c_patch(1),c_patch(2),r);
     end
     

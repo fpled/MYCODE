@@ -48,8 +48,8 @@ if solveProblem
     % Points
     P_load = POINT([-r/2,0.0,0.0]);
     P_beam = getcenter(C);
-    x_load = double(getcoord(P_load));
-    x_beam = double(getcoord(P_beam));
+    x_load = double(P_load);
+    x_beam = double(P_beam);
     
     % Beam
     l = 1; % [m]
@@ -171,7 +171,7 @@ if solveProblem
     
     %% Test solution
     P = getcenter(C);
-    xP = double(getcoord(P));
+    xP = double(P);
     tP = cart2pol(xP(:,1),xP(:,2),xP(:,3));
     
     ux = eval_sol(S,u,P,'UX');

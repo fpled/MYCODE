@@ -62,7 +62,7 @@ if solveProblem
     x_beam = cellfun(@(L) getvertex(L,1),L_beam,'UniformOutput',false);
     P_beam = cellfun(@(x) POINT(x),x_beam,'UniformOutput',false);
     P_load = getcenter(Q);
-    x_load = double(getcoord(P_load));
+    x_load = double(P_load);
     
     % Plate mesh
     switch lower(meshtype)
