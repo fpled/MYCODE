@@ -34,20 +34,21 @@ order = nu^Dim; % Dim-dimensional order (number of terms) of the spectral repres
 %% Domains and meshes
 L = 1e-3; % [m]
 a = L/2;
+b = L/2;
 if Dim==1
     D = DOMAIN(1,0.0,L);
     elemtype = 'SEG2';
 elseif Dim==2
     e = 1;
     D = DOMAIN(2,[0.0,0.0],[L,L]);
-    c = LIGNE([0.0,L/2],[a,L/2]);
+    C = LIGNE([0.0,b],[a,b]);
     % elemtype = 'TRI3';
     elemtype = 'QUA4';
     % elemtype = 'TRI6';
 elseif Dim==3
     e = 0.1e-3;
     D = DOMAIN(3,[0.0,0.0,0.0],[L,L,e]);
-    c = QUADRANGLE([0.0,L/2,0.0],[a,L/2,0.0],[a,L/2,e],[0.0,L/2,e]);
+    C = QUADRANGLE([0.0,b,0.0],[a,b,0.0],[a,b,e],[0.0,b,e]);
     % elemtype = 'TET4';
     elemtype = 'CUB8';
     % elemtype = 'TET10';
@@ -70,6 +71,7 @@ S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
 % S = gmsh(D,C,cl,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'));
 
 S = final(S);
+% S = final(S,'duplicate');
 
 switch storage
     case 'node'
