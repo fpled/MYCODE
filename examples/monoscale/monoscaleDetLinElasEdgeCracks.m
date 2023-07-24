@@ -11,7 +11,7 @@ setProblem = true;
 solveProblem = true;
 displaySolution = true;
 
-loading = 'Pull'; % 'Pull' or 'Shear'
+loading = 'Tension'; % 'Tension' or 'Shear'
 filename = ['linElasEdgeCracks' loading];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','monoscaleDet',filename);
@@ -36,7 +36,7 @@ if setProblem
     option = 'DEFO'; % plane strain
     clD = 0.25;
     clB = 0.05;
-    S = gmshdomainwithedgecrack(D,B,clD,clB,fullfile(pathname,'gmsh_domain_edge_crack'),getindim(D),'duplicate');
+    S = gmshdomainwithedgecrack(D,B,clD,clB,fullfile(pathname,'gmsh_domain_edge_crack'));
     S = setoption(S,option);
     
     %% Materials
@@ -60,8 +60,11 @@ if setProblem
     
     S = final(S,'duplicate');
     switch lower(loading)
-        case 'pull'
+        case 'tension'
             S = addcl(S,POINT([a,0.0]),'UY');
+            % S = addcl(S,POINT([w,0.0]),'U');
+            S = addclperiodic(S,LL,LU,'UX');
+            % S = addclperiodic(S,POINT([0.0,-L/2]),POINT([0.0,L/2]),'UX');
         case 'shear'
             S = addcl(S,LL);
         otherwise
@@ -74,7 +77,7 @@ if setProblem
     
     A = calc_rigi(S);
     switch lower(loading)
-        case 'pull'
+        case 'tension'
             b = surfload(S,LU,'FY',f);
             b = b + surfload(S,LL,'FY',-f);
         case 'shear'

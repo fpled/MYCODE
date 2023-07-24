@@ -13,7 +13,7 @@ iterativeSolver = true;
 displaySolution = true;
 
 n = 4; % number of cracks n = 1, 2, 4
-loading = 'Pull'; % 'Pull' or 'Shear'
+loading = 'Tension'; % 'Tension' or 'Shear'
 filename = ['linElas' num2str(n) 'InteriorCracks' loading];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','multiscaleDet',filename);
@@ -129,7 +129,7 @@ if setProblem
     % Global
     glob.S = final(glob.S);
     switch lower(loading)
-        case 'pull'
+        case 'tension'
             glob.S = addcl(glob.S,POINT([0.0,L/2]),'UY');
             glob.S = addcl(glob.S,POINT([L/2,0.0]),'UX');
             glob.S = addcl(glob.S,POINT([L,L/2]),'UY');
@@ -166,7 +166,7 @@ if setProblem
         glob.A_in{k} = calc_rigi(glob.S,'selgroup',getnumgroupelemwithparam(glob.S,'partition',k));
     end
     switch lower(loading)
-        case 'pull'
+        case 'tension'
             glob.b_out = surfload(keepgroupelem(glob.S,getnumgroupelemwithparam(glob.S,'partition',0)),LU,{'FX','FY'},[0;f]);
             glob.b_out = glob.b_out + surfload(keepgroupelem(glob.S,getnumgroupelemwithparam(glob.S,'partition',0)),LL,{'FX','FY'},[0;-f]);
         case 'shear'
@@ -178,7 +178,7 @@ if setProblem
     % Complementary subdomain
     globOut.A = calc_rigi(globOut.S);
     switch lower(loading)
-        case 'pull'
+        case 'tension'
             globOut.b = surfload(globOut.S,LU,{'FX','FY'},[0;f]);
             globOut.b = globOut.b + surfload(globOut.S,LL,{'FX','FY'},[0;-f]);
         case 'shear'

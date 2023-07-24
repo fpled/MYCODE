@@ -13,7 +13,7 @@ iterativeSolver = true;
 displaySolution = true;
 
 n = 1; % number of cracks n = 1
-loading = 'Pull'; % 'Pull' or 'Shear'
+loading = 'Tension'; % 'Tension' or 'Shear'
 filename = ['linElas' num2str(n) 'EdgeCracks' loading];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','multiscaleDet',filename);
@@ -60,7 +60,7 @@ if setProblem
     cl_patch_D = 0.25;
     cl_patch_B = 0.05;
     for k=1:n
-        patches.patches{k}.S = gmshdomainwithedgecrack(D_patch{k},B_patch{k},cl_patch_D,cl_patch_B,fullfile(pathname,['gmsh_patch_' num2str(k) '_edge_crack']),getindim(D_patch{k}),'duplicate');
+        patches.patches{k}.S = gmshdomainwithedgecrack(D_patch{k},B_patch{k},cl_patch_D,cl_patch_B,fullfile(pathname,['gmsh_patch_' num2str(k) '_edge_crack']));
         patches.patches{k}.S = setoption(patches.patches{k}.S,option);
     end
     
@@ -120,7 +120,7 @@ if setProblem
     % Global
     glob.S = final(glob.S);
     switch lower(loading)
-        case 'pull'
+        case 'tension'
             glob.S = addcl(glob.S,POINT([a,0.0]),'UY');
             glob.S = addcl(glob.S,POINT([w,0.0]),'U');
         case 'shear'
@@ -155,7 +155,7 @@ if setProblem
         glob.A_in{k} = calc_rigi(glob.S,'selgroup',getnumgroupelemwithparam(glob.S,'partition',k));
     end
     switch lower(loading)
-        case 'pull'
+        case 'tension'
             glob.b_out = surfload(keepgroupelem(glob.S,getnumgroupelemwithparam(glob.S,'partition',0)),LU,{'FX','FY'},[0;f]);
             glob.b_out = glob.b_out + surfload(keepgroupelem(glob.S,getnumgroupelemwithparam(glob.S,'partition',0)),LL,{'FX','FY'},[0;-f]);
         case 'shear'
@@ -167,7 +167,7 @@ if setProblem
     % Complementary subdomain
     globOut.A = calc_rigi(globOut.S);
     switch lower(loading)
-        case 'pull'
+        case 'tension'
             globOut.b = surfload(globOut.S,LU,{'FX','FY'},[0;f]);
             globOut.b = globOut.b + surfload(globOut.S,LL,{'FX','FY'},[0;-f]);
         case 'shear'
