@@ -38,7 +38,8 @@ PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = 1; % maximum number of iterations at each loading increment
-tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
+tolConv = 1e-3; % prescribed tolerance for convergence at each loading increment
+critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
 
@@ -46,8 +47,11 @@ suffix = '';
 
 foldername = ['asymmetricNotchedPlateSetup' num2str(setup) '_' num2str(Dim) 'D'];
 filename = ['linElas' PFmodel PFsplit PFregularization PFsolver initialCrack...
-    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'Mesh' FEmesh];
-filename = [filename suffix];
+    'MaxIter' num2str(maxIter)];
+if maxIter>1
+    filename = [filename 'Tol' num2str(tolConv) num2str(critConv)];
+end
+filename = [filename 'Mesh' FEmesh suffix];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefieldDet',foldername,filename);
@@ -124,12 +128,12 @@ if setProblem
     clH = cl; % characteristic length for circular holes
     switch lower(initialCrack)
         case 'geometriccrack'
-            S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),Dim,'duplicate');
+            S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'));
         case 'geometricnotch'
             c = 0.025*unit; % crack width
-            S_phase = gmshasymmetricnotchedplatewithedgesmearedcrack(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'));
+            S_phase = gmshasymmetricnotchedplatewithedgenotch(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'));
         case 'initialphasefield'
-            S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_domain_asymmetric_notched_plate'),Dim,lower(initialCrack));
+            S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'noduplicate');
         otherwise
             error('Wrong model for initial crack');
     end
@@ -169,21 +173,24 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
+    C = LIGNE([-b,-h],[-b,-h+a]);
     R0 = 2*unit;
     BU = CIRCLE(0.0,h,R0);
     BL = CIRCLE(-ls,-h,R0);
     BR = CIRCLE(ls,-h,R0);
+    % LU = LIGNE([-L,h],[L,h]);
     
-    switch lower(initialCrack)
-        case 'geometriccrack'
-            S_phase = final(S_phase,'duplicate');
-        case 'geometricnotch'
-            S_phase = final(S_phase);
-        case 'initialphasefield'
-            S_phase = final(S_phase);
-            S_phase = addcl(S_phase,C,'T',1);
-        otherwise
-            error('Wrong model for initial crack');
+    % findddlboundary = @(S_phase) findddl(S_phase,'T',LU);
+    findddlboundary = @(S_phase) [];
+    
+    if strcmpi(initialCrack,'geometriccrack')
+        S_phase = final(S_phase,'duplicate');
+    else
+        S_phase = final(S_phase);
+    end
+    
+    if strcmpi(initialCrack,'initialphasefield')
+        S_phase = addcl(S_phase,C,'T',1);
     end
     S_phase = addcl(S_phase,BU,'T');
     S_phase = addcl(S_phase,BL,'T');
@@ -251,17 +258,24 @@ if setProblem
     PL = POINT([-ls,-h]);
     PR = POINT([ls,-h]);
     
-    switch lower(initialCrack)
-        case 'geometriccrack'
-            S = final(S,'duplicate');
-        otherwise
-            S = final(S);
+    if strcmpi(initialCrack,'geometriccrack')
+        S = final(S,'duplicate');
+    else
+        S = final(S);
     end
     
+    addbc = @(S,ud) addbcAsymmetricNotchedPlate(S,ud,PU,PL,PR);
+    findddlforce = @(S) findddl(S,'UY',PU);
+    
     ud = 0;
-    S = addcl(S,PU,'UY',ud);
-    S = addcl(S,PL,{'UX','UY'});
-    S = addcl(S,PR,'UY');
+    S = addbc(S,ud);
+    
+    u = calc_init_dirichlet(S);
+    mats = MATERIALS(S);
+    for m=1:length(mats)
+        mats{m} = setparam(mats{m},'u',u);
+    end
+    S = actualisematerials(S,mats);
     
     %% Stiffness matrices and sollicitation vectors
     % [A,b] = calc_rigi(S);
@@ -294,9 +308,9 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','BU','BL','BR','PU','PL','PR');
+    save(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','addbc','findddlforce','findddlboundary');
 else
-    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','C','BU','BL','BR','PU','PL','PR');
+    load(fullfile(pathname,'problem.mat'),'unit','T','S_phase','S','addbc','findddlforce','findddlboundary');
 end
 
 %% Solution
@@ -305,10 +319,20 @@ if solveProblem
     
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,'maxiter',maxIter,'tol',tolConv);
+            [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
         otherwise
-            [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,'maxiter',maxIter,'tol',tolConv);
+            [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
     end
+%     switch lower(PFsolver)
+%         case {'historyfieldelem','historyfieldnode'}
+%             [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,...
+%                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+%         otherwise
+%             [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,...
+%                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+%     end
     t = gettevol(T);
     dt_val = getvalue(dt);
     dmaxt = max(dt_val);

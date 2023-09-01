@@ -48,7 +48,8 @@ PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = 1; % maximum number of iterations at each loading increment
-tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
+tolConv = 1e-3; % prescribed tolerance for convergence at each loading increment
+critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
 % Random model parameters
@@ -64,13 +65,19 @@ bGc = 0;
 % bGc = [0.8,1.3]*gc;
 randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase field parameters model
 
+suffix = '';
+
 foldername = ['singleEdgeCrack' loading '_' num2str(Dim) 'D'];
 filename = ['linElas' symmetry];
 if strcmpi(symmetry,'anisot') % anisotropic material
     filename = [filename num2str(ang) 'deg'];
 end
 filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...
-    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'MeshAdapt_' num2str(N) 'samples'];
+    'MaxIter' num2str(maxIter)];
+if maxIter>1
+    filename = [filename 'Tol' num2str(tolConv) num2str(critConv)];
+end
+filename = [filename 'MeshAdapt_' num2str(N) 'samples'];
 % if any(randMat.delta)
 %     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 % end
@@ -78,6 +85,7 @@ filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...
 %     gcbounds = [randPF.aGc(:),randPF.bGc(:)]';
 %     filename = [filename '_RandPF_Gc' num2str(gcbounds(:)','_%g') '_Lcorr' num2str(randPF.lcorr,'_%g')];
 % end
+filename = [filename suffix];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefieldSto',foldername,filename);
@@ -105,63 +113,59 @@ if setProblem
     %% Domains and meshes
     L = 1e-3;
     a = L/2;
+    b = L/2;
     if Dim==2
         e = 1;
         D = DOMAIN(2,[0.0,0.0],[L,L]);
-        C = LIGNE([0.0,L/2],[a,L/2]);
+        C = LIGNE([0.0,b],[a,b]);
     elseif Dim==3
         e = 0.1e-3;
         D = DOMAIN(3,[0.0,0.0,0.0],[L,L,e]);
-        C = QUADRANGLE([0.0,L/2,0.0],[a,L/2,0.0],[a,L/2,e],[0.0,L/2,e]);
+        C = QUADRANGLE([0.0,b,0.0],[a,b,0.0],[a,b,e],[0.0,b,e]);
     end
     
+    % clD = 6.25e-5; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
+    % clD = 5e-5; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
+    % clD = 3e-5; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+    % clD = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
+    % clD = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    
+    % clC = 5e-6; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
+    % clC = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
+    % clC = 3.906e-6; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
+    % clC = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % clC = 3.75e-6; % (shear test) [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+    % clC = 2.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % clC = 2e-6; % (shear test) [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    % clC = 1e-6; % (tension test) [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+    % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
     if Dim==2
-        % clD = 6.25e-5; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
-        % clD = 5e-5; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
-        % clD = 3e-5; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        % clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        % clD = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
-        % clD = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-        % clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        
-        % clC = 5e-6; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
-        % clC = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
-        % clC = 3.906e-6; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
-        % clC = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-        % clC = 3.75e-6; % (shear test) [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-        % clC = 2.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        % clC = 2e-6; % (shear test) [Miehe, Hofacker, Welschinger, 2010, CMAME]
-        % clC = 1e-6; % (tension test) [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-        % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
         clD = 2.5e-5;
         clC = 2.5e-6;
-        if test
-            clD = 4e-5;
-            clC = 1e-5;
-        end
     elseif Dim==3
         clD = 4e-5;
         clC = 5e-6;
-        if test
-            clD = 4e-5;
-            clC = 1e-5;
-        end
     end
-%     if ~test
+    if test
+        clD = 4e-5;
+        clC = 1e-5;
+%     else
 %         clD = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clD);
 %         clC = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clC);
-%     end
+    end
     switch lower(initialCrack)
         case 'geometriccrack'
-            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate');
+            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
         case 'geometricnotch'
             c = 1e-5; % crack width
-            S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+            S_phase = gmshdomainwithedgenotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
         case 'initialphasefield'
-            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,lower(initialCrack));
+            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate');
         otherwise
             error('Wrong model for initial crack');
     end
@@ -223,37 +227,50 @@ if setProblem
             elseif Dim==3
                 C = LIGNE([a,L/2,0.0],[a,L/2,e]);
             end
-            S_phase = final(S_phase,'duplicate');
         case 'geometricnotch'
             if Dim==2
                 C = CIRCLE(a-c/2,L/2,c/2);
             elseif Dim==3
                 C = QUADRANGLE([a,L/2-c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[a,L/2-c/2,e]);
             end
-            S_phase = final(S_phase);
-        case 'initialphasefield'
-            S_phase = final(S_phase);
-        otherwise
-            error('Wrong model for initial crack');
     end
-    S_phase = addcl(S_phase,C,'T',1);
+    if Dim==2
+        BRight = LIGNE([L,0.0],[L,L]);
+    elseif Dim==3
+        BRight = PLAN([L,0.0,0.0],[L,L,0.0],[L,0.0,e]);
+    end
     
+    addbcdamage = @(S_phase) addbcdamageSingleEdgeCrack(S_phase,C,initialCrack);
+    addbcdamageadapt = @(S_phase) addcl(S_phase,C,'T',1);
+    findddlboundary = @(S_phase) findddl(S_phase,'T',BRight);
+    
+    if strcmpi(initialCrack,'geometriccrack')
+        S_phase = final(S_phase,'duplicate');
+    else
+        S_phase = final(S_phase);
+    end
+    
+    S_phase = addbcdamageadapt(S_phase);
+    
+    % [A_phase,b_phase] = calc_rigi(S_phase);
+    % b_phase = -b_phase;
+    % d = A_phase\b_phase;
+    % d = unfreevector(S_phase,d);
     d = calc_init_dirichlet(S_phase);
     cl = sizemap(d);
     S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     S = S_phase;
     
     S_phase = setmaterial(S_phase,mat_phase);
-    switch lower(initialCrack)
-        case 'geometriccrack'
-            S_phase = final(S_phase,'duplicate');
-        case 'geometricnotch'
-            S_phase = final(S_phase);
-        case 'initialphasefield'
-            S_phase = final(S_phase);
-            S_phase = addcl(S_phase,C,'T',1);
-        otherwise
-            error('Wrong model for initial crack');
+
+    if strcmpi(initialCrack,'geometriccrack')
+        S_phase = final(S_phase,'duplicate');
+    else
+        S_phase = final(S_phase);
+    end
+    
+    if strcmpi(initialCrack,'initialphasefield')
+        S_phase = addcl(S_phase,C,'T',1);
     end
     
     %% Stiffness matrices and sollicitation vectors
@@ -376,51 +393,44 @@ if setProblem
     if Dim==2
         BU = LIGNE([0.0,L],[L,L]);
         BL = LIGNE([0.0,0.0],[L,0.0]);
-        BRight = LIGNE([L,0.0],[L,L]);
+        % BRight = LIGNE([L,0.0],[L,L]);
         BLeft = LIGNE([0.0,0.0],[0.0,L]);
         BFront = [];
         BBack = [];
     elseif Dim==3
         BU = PLAN([0.0,L,0.0],[L,L,0.0],[0.0,L,e]);
         BL = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
-        BRight = PLAN([L,0.0,0.0],[L,L,0.0],[L,0.0,e]);
+        % BRight = PLAN([L,0.0,0.0],[L,L,0.0],[L,0.0,e]);
         BLeft = PLAN([0.0,0.0,0.0],[0.0,L,0.0],[0.0,0.0,e]);
         BFront = PLAN([0.0,0.0,e],[L,0.0,e],[0.0,L,e]);
         BBack = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
     end
     
-    switch lower(initialCrack)
-        case 'geometriccrack'
-            S = final(S,'duplicate');
-        otherwise
-            S = final(S);
-    end
-    
-    ud = 0;
+    addbc = @(S,ud) addbcSingleEdgeCrack(S,ud,BU,BL,BLeft,BRight,BFront,BBack,loading);
     switch lower(loading)
         case 'tension'
-            if Dim==2
-                S = addcl(S,BU,{'UX','UY'},[0;ud]);
-            elseif Dim==3
-                S = addcl(S,BU,{'UX','UY','UZ'},[0;ud;0]);
-            end
-            S = addcl(S,BL,'UY');
+            findddlforce = @(S) findddl(S,'UY',BU);
         case 'shear'
-            if Dim==2
-                S = addcl(S,BU,{'UX','UY'},[ud;0]);
-                S = addcl(S,BLeft,'UY');
-                S = addcl(S,BRight,'UY');
-            elseif Dim==3
-                S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
-                S = addcl(S,BLeft,{'UY','UZ'});
-                S = addcl(S,BRight,{'UY','UZ'});
-                S = addcl(S,BFront,{'UY','UZ'});
-                S = addcl(S,BBack,{'UY','UZ'});
-            end
-            S = addcl(S,BL);
+            findddlforce = @(S) findddl(S,'UX',BU);
         otherwise
             error('Wrong loading case');
     end
+    
+    if strcmpi(initialCrack,'geometriccrack')
+        S = final(S,'duplicate');
+    else
+        S = final(S);
+    end
+    
+    ud = 0;
+    S = addbc(S,ud);
+    
+    u = calc_init_dirichlet(S);
+    mats = MATERIALS(S);
+    for m=1:length(mats)
+        mats{m} = setparam(mats{m},'u',u);
+    end
+    S = actualisematerials(S,mats);
     
     %% Stiffness matrices and sollicitation vectors
     % [A,b] = calc_rigi(S);
@@ -480,9 +490,9 @@ if setProblem
                         % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
                         % du = 2e-4 mm during 32 time steps (up to u = 6.4e-3 mm)
                         % dt = 2e-7;
-                        % nt = 64;
+                        % nt = 32;
                         % t = linspace(dt,nt*dt,nt);
-
+                        
                         % du = 1e-5 mm during the first 400 time steps (up to u = 4e-3 mm)
                         % du = 1e-6 mm during the last 4000 time steps (up to u = 8e-3 mm)
                         dt0 = 1e-8;
@@ -604,9 +614,9 @@ if setProblem
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','addbc','addbcdamage','addbcdamageadapt','findddlforce','findddlboundary');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','addbc','addbcdamage','addbcdamageadapt','findddlforce','findddlboundary');
 end
 
 %% Solution
@@ -617,8 +627,10 @@ if solveProblem
     tTotal = tic;
     
     nbSamples = 1;
-    fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,sizemap,...
-        'maxiter',maxIter,'tol',tolConv,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    fun = @(S_phase,S,filename) solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
+        'maxiter',maxIter,'tol',tolConv,'crit',critConv,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    % fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,...
+    %     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     [ft,dmaxt,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'nbsamples',nbSamples);
     t = gettevol(T);
     idc = arrayfun(@(i) find(dmaxt(i,:)>=min(0.75,max(dmaxt(i,:))),1),1:N)';

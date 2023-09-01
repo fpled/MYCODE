@@ -53,10 +53,10 @@ for m=1:length(materials)
 %             if isparam(mat,'rcorr')
 %                 rho = getparam(mat,'rcorr'); % correlation coefficient between fracture toughness and regularization parameter
 %             end
-%             gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m^2]
+%             gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m]
 %             l = gaminv(normcdf(rho*Xi(:,1) + sqrt(1-rho^2)*Xi(:,2)),aL,bL); % sample for regularization parameter [m]
 %         elseif deltaGc
-%             gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m^2]
+%             gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m]
 %         else
 %             l = gaminv(normcdf(Xi(:,1)),aL,bL); % sample for regularization parameter [m]
 %         end
@@ -119,7 +119,7 @@ for m=1:length(materials)
         if aGc>bGc
             error('Lower bound a = %g must be inferior to upper bound b = %g for fracture toughness',aGc,bGc)
         end
-        gc = unifinv(normcdf(Xi),aGc,bGc); % sample for fracture toughness [N/m^2]
+        gc = unifinv(normcdf(Xi),aGc,bGc); % sample for fracture toughness [N/m]
         gc = reshape(gc,1,1,nbelem,gauss.nbgauss);
         gc = MYDOUBLEND(gc);
         gc = FEELEMFIELD({gc},'storage','gauss','type','scalar','ddl',DDL('gc'));

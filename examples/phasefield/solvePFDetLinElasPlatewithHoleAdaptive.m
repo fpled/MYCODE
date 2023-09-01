@@ -4,13 +4,24 @@ function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHo
 
 display_ = getcharin('display',varargin,true);
 displayIter = getcharin('displayiter',varargin,false);
-tolConv = getcharin('tol',varargin,1e-2);
 maxIter = getcharin('maxiter',varargin,100);
+tolConv = getcharin('tol',varargin,1e-3);
+critConv = getcharin('crit',varargin,'Energy');
 dbthreshold = getcharin('damageboundarythreshold',varargin,0.999);
-filename = getcharin('filename',varargin,'gmsh_domain_with_hole');
+filename = getcharin('filename',varargin,'gmsh_plate_with_hole');
 pathname = getcharin('pathname',varargin,'.');
 gmshoptions = getcharin('gmshoptions',varargin,'-v 0');
 mmgoptions = getcharin('mmgoptions',varargin,'-nomove -v -1');
+
+if verLessThan('matlab','9.1') % compatibility (<R2016b)
+    checkConvSol = ~isempty(strfind(lower(critConv),'solution'));
+    checkConvRes = ~isempty(strfind(lower(critConv),'residual'));
+    checkConvEnergy = ~isempty(strfind(lower(critConv),'energy'));
+else
+    checkConvSol = contains(critConv,'solution','IgnoreCase',true);
+    checkConvRes = contains(critConv,'residual','IgnoreCase',true);
+    checkConvEnergy = contains(critConv,'energy','IgnoreCase',true);
+end
 
 Dim = getdim(S);
 
@@ -49,8 +60,18 @@ d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
 if strcmpi(PFsolver,'historyfieldnode')
     H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
+    qn = FENODEFIELD(calc_parammat(S_phase,'qn','node'));
 else
     H = calc_energyint(S,u,'positive','intorder','mass');
+    qn = calc_parammat(S_phase,'qn');
+end
+if checkConvEnergy
+    Ae_phase = calc_rigi(S_phase,'nofree');
+    be_phase = bodyload(S_phase,[],'QN',qn,'nofree');
+    Ed = 1/2*d'*Ae_phase*d - d'*be_phase;
+    A = calc_rigi(S,'nofree');
+    Eu = 1/2*u'*A*u;
+    E = Ed+Eu;
 end
 
 if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode')
@@ -87,91 +108,53 @@ if display_
     fprintf('\n+-----------+---------+-----------+-----------+-----------+-----------+-----------+----------+----------+');
     fprintf('\n|   Iter    | Nb iter |  u [mm]   |  f [kN]   |  max(d)   |  Ed [J]   |  Eu [J]   | Nb nodes | Nb elems |');
     fprintf('\n+-----------+---------+-----------+-----------+-----------+-----------+-----------+----------+----------+');
-    fprintf('\n| %4d/%4d | %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',0,length(T),0,0,0,0,0,0,getnbnode(S),getnbelem(S));
+    fprintf('\n| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',0,length(T),0,0,0,0,0,0,getnbnode(S),getnbelem(S));
 end
 
 numddlbr = findddl(S_phase,'T',BRight);
 numddlbl = findddl(S_phase,'T',BLeft);
-dbr = d(numddlbr,:);
-dbl = d(numddlbl,:);
+numddlb = union(numddlbr,numddlbl);
+db = d(numddlb,:);
 
 for i=1:length(T)
     tIter = tic;
     nbIter = 0;
-    if any(dbr > dbthreshold) && any(dbl > dbthreshold)
+    if any(db > dbthreshold)
         f = 0;
     else
-        switch lower(PFsolver)
-            case 'historyfieldelem'
-                h_old = getvalue(H);
-            case 'historyfieldnode'
-                h_old = double(H);
+        if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+            H_old = H;
         end
         d_old = d;
+        if strcmpi(PFsolver,'historyfieldnode')
+            r = FENODEFIELD(calc_parammat(S_phase,'r','node'));
+            qn = FENODEFIELD(calc_parammat(S_phase,'qn','node'));
+        else
+            r = calc_parammat(S_phase,'r');
+            qn = calc_parammat(S_phase,'qn');
+        end
+        Ae_phase = calc_rigi(S_phase,'nofree');
+        be_phase = bodyload(S_phase,[],'QN',qn,'nofree');
+        if checkConvRes
+            [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
+        end
         errConv = Inf;
+        errConvs = 0; errConvr = 0; errConve = 0;
         while (errConv > tolConv) && (nbIter < maxIter)
             nbIter = nbIter+1;
-            
-            % Internal energy field
-            switch lower(PFsolver)
-                case 'historyfieldelem'
-                    H = calc_energyint(S,u,'positive','intorder','mass');
-                    h = getvalue(H);
-                    for p=1:getnbgroupelem(S)
-                        he = double(h{p});
-                        he_old = double(h_old{p});
-                        rep = find(he <= he_old);
-                        he(rep) = he_old(rep);
-                        h{p} = MYDOUBLEND(he);
-                    end
-                    H = setvalue(H,h);
-                case 'historyfieldnode'
-                    H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
-                    h = double(H);
-                    rep = find(h <= h_old);
-                    h(rep) = h_old(rep);
-                    H = setvalue(H,h);
-                otherwise
-                    H = calc_energyint(S,u,'positive','intorder','mass');
+            if checkConvSol
+                d_prev = d;
+                u_prev = u;
+            end
+            if checkConvEnergy
+                E_prev = E;
             end
             
             % Phase field
-            if strcmpi(PFsolver,'historyfieldnode')
-                r = FENODEFIELD(calc_parammat(S_phase,'r','node'));
-                qn = FENODEFIELD(calc_parammat(S_phase,'qn','node'));
-            else
-                r = calc_parammat(S_phase,'r');
-                qn = calc_parammat(S_phase,'qn');
+            if ~checkConvRes
+                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
             end
-            mats_phase = MATERIALS(S_phase);
-            R = r+2*H;
-            for m=1:length(mats_phase)
-                if strcmpi(PFsolver,'historyfieldnode')
-                    mats_phase{m} = setparam(mats_phase{m},'r',R);
-                else
-                    mats_phase{m} = setparam(mats_phase{m},'r',R{m});
-                end
-            end
-            S_phase = actualisematerials(S_phase,mats_phase);
             
-            [A_phase,b_phase] = calc_rigi(S_phase);
-            Q = 2*H+qn;
-            if strcmpi(PFsolver,'historyfieldnode')
-                q = double(Q);
-                q = max(q,0);
-                Q = setvalue(Q,q);
-            else
-                q = getvalue(Q);
-                for p=1:getnbgroupelem(S)
-                    qe = double(q{p});
-                    qe = max(qe,0);
-                    q{p} = MYDOUBLEND(qe);
-                end
-                Q = setvalue(Q,q);
-            end
-            b_phase = -b_phase + bodyload(S_phase,[],'QN',Q);
-            
-            d_prev = d;
             switch lower(PFsolver)
                 case {'historyfieldelem','historyfieldnode'}
                     d = A_phase\b_phase;
@@ -195,8 +178,8 @@ for i=1:length(T)
             d = unfreevector(S_phase,d);
             numddlbr = findddl(S_phase,'T',BRight);
             numddlbl = findddl(S_phase,'T',BLeft);
-            dbr = d(numddlbr,:);
-            dbl = d(numddlbl,:);
+            numddlb = union(numddlbr,numddlbl);
+            db = d(numddlb,:);
             
             % Displacement field
             mats = MATERIALS(S);
@@ -216,17 +199,53 @@ for i=1:length(T)
             [A,b] = calc_rigi(S,'nofree');
             b = -b;
             
-            u_prev = u;
             u = freematrix(S,A)\b;
             u = unfreevector(S,u);
             
-            errConvd = norm(d-d_prev)/norm(d);
-            errConvu = norm(u-u_prev)/norm(u);
-            errConv  = max(errConvd,errConvu);
-            if displayIter
-                fprintf('sub-iter #%2.d : error = %.3e\n',nbIter,errConv);
+            % Internal energy field
+            switch lower(PFsolver)
+                case {'historyfieldelem','historyfieldnode'}
+                    H = calc_historyfield(S,u,H_old);
+                otherwise
+                    H = calc_energyint(S,u,'positive','intorder','mass');
             end
-            if any(dbr > dbthreshold) && any(dbl > dbthreshold)
+            
+            % Convergence
+            if checkConvSol
+                errConvd = norm(d-d_prev)/norm(d);
+                errConvu = norm(u-u_prev)/norm(u);
+                errConvs = max(errConvd,errConvu);
+            end
+            if checkConvRes
+                % Phase field residual
+                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
+                r_phase = A_phase*d - b_phase;
+                errConvr = norm(r_phase)/norm(b_phase);
+            end
+            if checkConvEnergy
+                % Energy
+                Ed = 1/2*d'*Ae_phase*d - d'*be_phase;
+                Eu = 1/2*u'*A*u;
+                E = Ed+Eu;
+                errConve = abs(E-E_prev)/abs(E);
+            end
+            if checkConvSol || checkConvRes || checkConvEnergy
+                errConv = max(max(errConvs,errConvr),errConve);
+                if displayIter
+                    fprintf('sub-iter #%2.d : error = %.3e',nbIter,errConv);
+                    if checkConvSol
+                        fprintf(', err_s = %.3e',errConvs);
+                    end
+                    if checkConvRes
+                        fprintf(', err_r = %.3e',errConvr);
+                    end
+                    if checkConvEnergy
+                        fprintf(', err_e = %.3e',errConve);
+                    end
+                    fprintf('\n');
+                end
+            end
+            if any(db > dbthreshold)
                 break
             end
         end
@@ -236,21 +255,11 @@ for i=1:length(T)
         f = -A(numddl,:)*u;
         f = sum(f);
         
-        % Energies
-        for m=1:length(mats_phase)
-            if strcmpi(PFsolver,'historyfieldnode')
-                mats_phase{m} = setparam(mats_phase{m},'r',r);
-            else
-                mats_phase{m} = setparam(mats_phase{m},'r',r{m});
-            end
+        % Energy
+        if ~checkConvEnergy
+            Ed = 1/2*d'*Ae_phase*d - d'*be_phase;
+            Eu = 1/2*u'*A*u;
         end
-        S_phase = actualisematerials(S_phase,mats_phase);
-        
-        A_phase = calc_rigi(S_phase,'nofree');
-        b_phase = bodyload(S_phase,[],'QN',qn,'nofree');
-        
-        Ed = 1/2*d'*A_phase*d - d'*b_phase;
-        Eu = 1/2*u'*A*u;
     end
     
     % Update fields
@@ -283,10 +292,10 @@ for i=1:length(T)
     end
     
     if display_
-        fprintf('| %4d/%4d | %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',i,length(T),nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),dmax,Ed,Eu,getnbnode(S),getnbelem(S));
+        fprintf('| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',i,length(T),nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),dmax,Ed,Eu,getnbnode(S),getnbelem(S));
     end
     
-    if i<length(T) && ~(any(dbr > dbthreshold) && any(dbl > dbthreshold))
+    if i<length(T) && ~any(db > dbthreshold)
         % Mesh adaptation
         S_phase_old = S_phase;
         S_phase_ref = addcl(S_phase_old,C,'T',1);
@@ -319,14 +328,14 @@ for i=1:length(T)
         if strcmpi(PFsolver,'historyfieldnode')
             h = P_phase'*h;
             H = setvalue(H,h);
-        elseif strcmpi(PFsolver,'historyfieldelem')
+        else
             H = calc_energyint(S,u,'positive','intorder','mass');
         end
     end
 end
 
 if display_
-    fprintf('+-----------+---------+-----------+-----------+----------+----------+------------+------------+\n');
+    fprintf('+-----------+---------+-----------+-----------+-----------+-----------+-----------+----------+----------+\n');
 end
 
 if nargout>=9

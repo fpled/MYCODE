@@ -34,7 +34,7 @@ displaySolution = false;
 test = false; % fine mesh
 
 numWorkers = maxNumCompThreads;
-numWorkers = 92;
+numWorkers = 100;
 % numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 
 % Deterministic model parameters
@@ -42,7 +42,7 @@ Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isot'; % 'Isot', 'MeanIsot', 'Anisot'. Material symmetry
 ang = 45; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 loading = 'Shear'; % 'Tension' or 'Shear'
-PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'He', 'Zhang', 'Spectral'
+PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'HeAmor', 'HeFreddi', 'Zhang'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
@@ -68,75 +68,15 @@ sampleindices = 1:1e3;
 % sampleindices = 2e3+(1:1e3);
 % sampleindices = 3e3+(1:1e3);
 % sampleindices = 4e3+(1:1e3);
+% sampleindices = 5e3+(1:1e3);
+% sampleindices = 6e3+(1:1e3);
+% sampleindices = 7e3+(1:1e3);
+% sampleindices = 8e3+(1:1e3);
+% sampleindices = 9e3+(1:1e3);
+
 % numsamples = 500;
 % sampleindices = 1:500;
-switch lower(loading)
-    case 'tension'
-        % sampleindices = 1:1120;
-        % sampleindices = (1120+1):2240;
-        % sampleindices = (2240+1):3360;
-        % sampleindices = (3360+1):4320;
-        % sampleindices = (4320+1):5280;
-        % sampleindices = (5280+1):6240;
-        % sampleindices = (6240+1):7200;
-        % sampleindices = (7200+1):8160;
-        % sampleindices = (8160+1):9120;
-        % sampleindices = (9120+1):9600;
-        % sampleindices = (9600+1):1e4;
-    case 'shear'
-        % sampleindices = 1:480;
-        % sampleindices = (480+1):960;
-        % sampleindices = (960+1):1440;
-        % sampleindices = (1440+1):1920;
-        % sampleindices = (1920+1):2400;
-        % sampleindices = (2400+1):2880;
-        % sampleindices = (2880+1):3360;
-        % sampleindices = (3360+1):3840;
-        % sampleindices = (3840+1):4320;
-        % sampleindices = (4320+1):4800;
-        % sampleindices = (4800+1):5280;
-        % sampleindices = (5280+1):5760;
-        % sampleindices = (5760+1):6240;
-        % sampleindices = (6240+1):6720;
-        % sampleindices = (6720+1):7200;
-        % sampleindices = (7200+1):7680;
-        % sampleindices = (7680+1):8160;
-        % sampleindices = (8160+1):8640;
-        % sampleindices = (8640+1):9120;
-        % sampleindices = (9120+1):9600;
-        % sampleindices = (9600+1):1e4;
-%         sampleindices = [9,13,55,61,101,109,127,198,226,282,304,339,345,353,365,378,408,434,463,479,492,...
-%             512,548,588,636,652,653,660,682,695,710,729,741,765,767,792,832,845,864,879,891,966,968,975,992,...
-%             1002,1008,1019,1102,1107,1115,1135,1152,1178,1187,1214,1217,1232,1363,1366,1391,1405,1409,1438,1473,1485,...
-%             1532,1616,1620,1626,1639,1666,1702,1791,1795,1822,1827,1829,1858,1864,1870,1871,1917,1919,1938,...
-%             2041,2049,2142,2151,2157,2200,2206,2237,2276,2332,2362,2365,2372,2421,2444,2456,2457,2465,2467,2476,2483,2493,...
-%             2513,2519,2585,2595,2596,2627,2645,2657,2669,2678,2688,2697,2717,2737,2747,2752,2763,2824,2880,2892,2949,...
-%             3017,3075,3085,3094,3130,3149,3158,3223,3268,3305,3313,3337,3354,3378,3383,3402,3444,...
-%             3505,3508,3536,3538,3540,3570,3594,3598,3623,3655,3658,3674,3678,3721,3802,3854,3858,3859,3911,3937,3964,...
-%             4014,4049,4138,4149,4165,4194,4211,4221,4281,4299,4311,4329,4333,4387,4391,4399,4406,4424,4453,4482,...
-%             4500,4514,4518,4532,4627,4655,4678,4724,4741,4752,4783,4795,4853,4855,4884,4895,4995];
-%         sampleindices = [5036,5052,5089,5104,5185,5197,5211,5242,5248,5298,5300,5304,5331,5357,5407,5410,5454,5466,5469,5496,5499,...
-%             5507,5543,5551,5564,5609,5621,5640,5648,5657,5669,5688,5691,5718,5739,5757,5815,5817,5864,5874,5875,5900,5912,5931,5959,5992,...
-%             6000,6018,6035,6072,6091,6098,6102,6140,6147,6148,6214,6215,6243,6260,6275,6315,6355,6386,6402,6413,6420,6434,6443,6473,6496,...
-%             6511,6513,6523,6545,6551,6619,6620,6621,6623,6640,6654,6678,6682,6692,6714,6750,6771,6775,6792,6797,6819,6824,6851,6852,6861,6871,6943,6946,6947,6954,6992,...
-%             7000,7042,7045,7068,7084,7090,7097,7111,7115,7142,7158,7170,7177,7292,7349,7372,7391,7392,7397,7399,7415,7419,7429,7435,7453,7499,...
-%             7525,7578,7614,7626,7628,7637,7640,7655,7656,7663,7664,7683,7743,7747,7755,7761,7778,7902,7918,7943,7964,7993,...
-%             8021,8059,8096,8103,8156,8159,8177,8182,8210,8258,8266,8283,8366,8397,8412,8416,...
-%             8581,8589,8595,8623,8698,8747,8788,8789,8808,8824,8827,8861,8865,8866,8881,8895,8903,8926,8939,8942,8974,8995,...
-%             9013,9030,9032,9090,9130,9144,9160,9200,9216,9220,9228,9277,9326,9346,9372,9384,9397,9405,9414,9446,9468,9483,9494,...
-%             9504,9536,9541,9550,9560,9569,9608,9613,9665,9681,9711,9723,9724,9737,9777,9789,9806,9809,9874,9888,9895,9901,9929,9945,9950,9956];
-%         sampleindices = [741,1822,3354,3854,3858,4724,5691,6035,6260,6619,8103,9013,9130];
-        
-%         sampleindices = 1:500;
-%         sampleindices = [8,9,29,61,64,96,101,109,150,187,252,255,273,277,285,304,327,338,339,345,415,434,492,494];
-%         sampleindices = [61,109,252,273,277,285,338,339,434];
 
-%         sampleindices = [8,33,34,35,43,58,59,77,111,127,157,161,175,196,214,282,298,317,323,343,404,430,432,434];
-%         sampleindices = [8,33,58,59,77,127,161,298,323,343,404];
-%         sampleindices = [59,77,127,161,298,323,343,404];
-    otherwise
-        error('Wrong loading case');
-end
 N = length(sampleindices);
 
 foldername = ['singleEdgeCrack' loading '_' num2str(Dim) 'D'];
@@ -172,100 +112,108 @@ if setProblem
     %% Domains and meshes
     L = 1e-3;
     a = L/2;
+    b = L/2;
     if Dim==2
         e = 1;
         D = DOMAIN(2,[0.0,0.0],[L,L]);
-        C = LIGNE([0.0,L/2],[a,L/2]);
+        C = LIGNE([0.0,b],[a,b]);
     elseif Dim==3
         e = 0.1e-3;
         D = DOMAIN(3,[0.0,0.0,0.0],[L,L,e]);
-        C = QUADRANGLE([0.0,L/2,0.0],[a,L/2,0.0],[a,L/2,e],[0.0,L/2,e]);
+        C = QUADRANGLE([0.0,b,0.0],[a,b,0.0],[a,b,e],[0.0,b,e]);
     end
     
-    if Dim==2
-        % clD = 6.25e-5; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
-        % clD = 5e-5; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
-        % clD = 3e-5; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        % clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        % clD = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
-        % clD = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-        % clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        
-        % clC = 5e-6; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
-        % clC = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
-        % clC = 3.906e-6; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
-        % clC = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-        % clC = 3.75e-6; % (shear test) [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-        % clC = 2.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        % clC = 2e-6; % (shear test) [Miehe, Hofacker, Welschinger, 2010, CMAME]
-        % clC = 1e-6; % (tension test) [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-        % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        switch lower(FEmesh)
-            case 'unif'
-                switch lower(symmetry)
-                    case 'isot' % isotropic material
-                        cl = 5e-6;
-                    case 'anisot' % anisotropic material
-                        cl = 4.25e-6;
-                    otherwise
-                        error('Wrong material symmetry class');
-                end
-                if test
+    % clD = 6.25e-5; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
+    % clD = 5e-5; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
+    % clD = 3e-5; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+    % clD = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
+    % clD = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    
+    % clC = 5e-6; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
+    % clC = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
+    % clC = 3.906e-6; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
+    % clC = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % clC = 3.75e-6; % (shear test) [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+    % clC = 2.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % clC = 2e-6; % (shear test) [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    % clC = 1e-6; % (tension test) [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+    % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+    switch lower(FEmesh)
+        case 'unif' % uniform mesh
+            switch lower(symmetry)
+                case 'isot' % isotropic material
+                    cl = 5e-6;
+                case 'anisot' % anisotropic material
+                    cl = 4.25e-6;
+                otherwise
+                    error('Wrong material symmetry class');
+            end
+            if test
+                if Dim==2
                     cl = 1e-5;
-                end
-                clD = cl;
-                clC = cl;
-            case 'optim'
-                clD = 2.5e-5;
-                clC = 2.5e-6;
-                if test
-                    clD = 4e-5;
-                    clC = 1e-5;
-                end
-            otherwise
-                error('Wrong FE mesh')
-        end
-    elseif Dim==3
-        switch lower(FEmesh)
-            case 'unif'
-                switch lower(symmetry)
-                    case 'isot' % isotropic material
-                        cl = 5e-6;
-                    case 'anisot' % anisotropic material
-                        cl = 4.25e-6;
-                    otherwise
-                        error('Wrong material symmetry class');
-                end
-                if test
+                elseif Dim==3
                     cl = 2e-5;
                 end
-                clD = cl;
-                clC = cl;
-            case 'optim'
+            end
+            clD = cl;
+            clC = cl;
+            B = [];
+        case 'optim' % optimized mesh
+            if Dim==2
+                clD = 2.5e-5;
+                clC = 2.5e-6;
+            elseif Dim==3
                 clD = 4e-5;
                 clC = 5e-6;
-                if test
-                    clD = 4e-5;
-                    clC = 1e-5;
-                end
-            otherwise
-                error('Wrong FE mesh')
-        end
-    end
-    switch lower(initialCrack)
-        case 'geometriccrack'
-            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate',lower(loading),lower(symmetry),lower(PFmodel));
-        case 'geometricnotch'
-            c = 1e-5; % crack width
-            S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,lower(loading),lower(symmetry),lower(PFmodel));
-        case 'initialphasefield'
-            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,lower(initialCrack),lower(loading),lower(symmetry),lower(PFmodel));
+            end
+            if test
+                clD = 4e-5;
+                clC = 1e-5;
+            end
+            VIn = clC;
+            VOut = clD;
+            XMin = a; XMax = L;
+            switch lower(loading)
+                case 'tension'
+                    if strcmpi(symmetry,'isot')
+                        YMin = b-L/8; YMax = b+L/8;
+                    else
+                        YMin = 0; YMax = L;
+                    end
+                case 'shear'
+                    if strcmpi(PFmodel,'bourdin')
+                        YMin = 0; YMax = L;
+                    else
+                        YMin = 0; YMax = b;
+                    end
+                otherwise
+                    error('Wrong loading case');
+            end
+            ZMin = 0;
+            ZMax = e;
+            Thickness = a;
+            % Thickness = 0;
+            B = struct('VIn',VIn,'VOut',VOut,'XMin',XMin,'XMax',XMax,'YMin',YMin,'YMax',YMax,'ZMin',ZMin,'ZMax',ZMax,'Thickness',Thickness);
         otherwise
-            error('Wrong model for initial crack');
+            error('Wrong FE mesh')
     end
+%     switch lower(initialCrack)
+%         case 'geometriccrack'
+%             S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
+%         case 'geometricnotch'
+%             c = 1e-5; % crack width
+%             S_phase = gmshdomainwithedgenotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
+%         case 'initialphasefield'
+%             S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate','Box',B);
+%         otherwise
+%             error('Wrong model for initial crack');
+%     end
+    S_phase = gmsh2femobject(Dim,fullfile(pathname,'gmsh_domain_single_edge_crack.msh'),Dim);
     S = S_phase;
     
     %% Phase field problem

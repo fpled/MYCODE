@@ -99,10 +99,10 @@ parfor i=1:N
 %                     if isparam(mat,'rcorr')
 %                         rho = getparam(mat,'rcorr'); % correlation coefficient between fracture toughness and regularization parameter
 %                     end
-%                     gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m^2]
+%                     gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m]
 %                     l = gaminv(normcdf(rho*Xi(:,1) + sqrt(1-rho^2)*Xi(:,2)),aL,bL); % sample for regularization parameter [m]
 %                 elseif deltaGc
-%                     gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m^2]
+%                     gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m]
 %                 else
 %                     l = gaminv(normcdf(Xi(:,1)),aL,bL); % sample for regularization parameter [m]
 %                 end
@@ -175,7 +175,7 @@ parfor i=1:N
                 end
                 l = sqrt(k./r); % regularization parameter
                 Xi = randn(si,1,nU); % sample for univariate Gaussian random variable
-                gc = unifinv(normcdf(Xi),aGc,bGc); % sample for fracture toughness [N/m^2]
+                gc = unifinv(normcdf(Xi),aGc,bGc); % sample for fracture toughness [N/m]
                 switch lower(PFregularization)
                     case 'at1'
                         % c0 = 8/3;

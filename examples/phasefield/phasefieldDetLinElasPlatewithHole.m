@@ -27,25 +27,26 @@ ang = 45; % clockwise material orientation angle around z-axis for anisotopic ma
 PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'HeAmor', 'HeFreddi', 'Zhang'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
-PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
+PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = 1; % maximum number of iterations at each loading increment
-tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
+tolConv = 1e-3; % prescribed tolerance for convergence at each loading increment
+critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 FEmesh = 'Unif'; % 'Unif' or 'Optim'
 
 % PFmodels = {'Bourdin','Amor','Miehe','HeAmor','HeFreddi','Zhang'};
 % PFsplits = {'Strain','Stress'};
-PFregularizations = {'AT1','AT2'};
-PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
+% PFregularizations = {'AT1','AT2'};
+% PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % maxIters = [1,100];
 
 % for iPFmodel=1:length(PFmodels)
 % PFmodel = PFmodels{iPFmodel};
 % for iPFsplit=1:length(PFsplits)
 % PFsplit = PFsplits{iPFsplit};
-for iPFRegularization=1:length(PFregularizations)
-PFregularization = PFregularizations{iPFRegularization};
-for iPFsolver=1:length(PFsolvers)
-PFsolver = PFsolvers{iPFsolver};
+% for iPFRegularization=1:length(PFregularizations)
+% PFregularization = PFregularizations{iPFRegularization};
+% for iPFsolver=1:length(PFsolvers)
+% PFsolver = PFsolvers{iPFsolver};
 % for imaxIter=1:length(maxIters)
 % maxIter = maxIters(imaxIter);
 % close all
@@ -58,8 +59,11 @@ if strcmpi(symmetry,'anisot') % anisotropic material
     filename = [filename num2str(ang) 'deg'];
 end
 filename = [filename PFmodel PFsplit PFregularization PFsolver...
-    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'Mesh' FEmesh];
-filename = [filename suffix];
+    'MaxIter' num2str(maxIter)];
+if maxIter>1
+    filename = [filename 'Tol' num2str(tolConv) num2str(critConv)];
+end
+filename = [filename 'Mesh' FEmesh suffix];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefieldDet',foldername,filename);
@@ -93,7 +97,8 @@ if setProblem
         % r = 2.5e-3; % radius of the hole
         D = DOMAIN(2,[0.0,0.0],[L,h]);
         C = CIRCLE(L/2,h/2,r);
-    elseif Dim==3 % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    elseif Dim==3
+        % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
         L = 100e-3; % length
         h = 65e-3; % height
         e = 40e-3; % thickness
@@ -144,8 +149,7 @@ if setProblem
                 error('Wrong FE mesh')
         end
     end
-    S_phase = gmshdomainwithhole(D,C,clD,clC,fullfile(pathname,'gmsh_domain_with_hole'));
-    % S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_domain_with_hole_Matthieu_Noel.msh'),2);
+    S_phase = gmshdomainwithhole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole'));
     S = S_phase;
     
     %% Phase field problem
@@ -188,6 +192,16 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
+    if Dim==2
+        BRight = LIGNE([L,0.0],[L,h]);
+        BLeft = LIGNE([0.0,0.0],[0.0,h]);
+    elseif Dim==3
+        BRight = PLAN([L,0.0,0.0],[L,h,0.0],[L,0.0,e]);
+        BLeft = PLAN([0.0,0.0,0.0],[0.0,h,0.0],[0.0,0.0,e]);
+    end
+    
+    findddlboundary = @(S_phase) union(findddl(S_phase,'T',BRight),findddl(S_phase,'T',BLeft));
+    
     S_phase = final(S_phase);
     
     %% Stiffness matrices and sollicitation vectors
@@ -272,27 +286,27 @@ if setProblem
     if Dim==2
         BU = LIGNE([0.0,h],[L,h]);
         BL = LIGNE([0.0,0.0],[L,0.0]);
-        BRight = LIGNE([L,0.0],[L,h]);
-        BLeft = LIGNE([0.0,0.0],[0.0,h]);
     elseif Dim==3
         BU = PLAN([0.0,h,0.0],[L,h,0.0],[0.0,h,e]);
         BL = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
-        BRight = PLAN([L,0.0,0.0],[L,h,0.0],[L,0.0,e]);
-        BLeft = PLAN([0.0,0.0,0.0],[0.0,h,0.0],[0.0,0.0,e]);
     end
     P0 = getvertices(D);
     P0 = POINT(P0{1});
     
+    addbc = @(S,ud) addbcPlatewithHole(S,ud,BU,BL,P0);
+    findddlforce = @(S) findddl(S,'UY',BU);
+    
     S = final(S);
     
     ud = 0;
-    if Dim==2
-        S = addcl(S,BU,'UY',ud);
-    elseif Dim==3
-        S = addcl(S,BU,'UY',ud);
+    S = addbc(S,ud);
+    
+    u = calc_init_dirichlet(S);
+    mats = MATERIALS(S);
+    for m=1:length(mats)
+        mats{m} = setparam(mats{m},'u',u);
     end
-    S = addcl(S,BL,'UY');
-    S = addcl(S,P0,'UX');
+    S = actualisematerials(S,mats);
     
     %% Stiffness matrices and sollicitation vectors
     % [A,b] = calc_rigi(S);
@@ -336,9 +350,9 @@ if setProblem
     T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BLeft','BRight','symmetry','ang');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','addbc','findddlforce','findddlboundary');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BLeft','BRight','symmetry','ang');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','addbc','findddlforce','findddlboundary');
 end
 
 %% Solution
@@ -347,10 +361,16 @@ if solveProblem
     
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv);
+            [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasThreshold(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
         otherwise
-            [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv);
+            [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasThreshold(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
     end
+%     switch lower(PFsolver)
+%         case {'historyfieldelem','historyfieldnode'}
+%             [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+%         otherwise
+%             [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+%     end
     T = gettimemodel(dt);
     t = gettevol(T);
     dt_val = getvalue(dt);
@@ -640,8 +660,8 @@ end
 
 % myparallel('stop');
 
-end
-end
+% end
+% end
 % end
 % end
 % end

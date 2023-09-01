@@ -413,7 +413,7 @@ if solveProblem
         else % random phase field parameters (homogeneous XOR heterogeneous)
             % Shape and scale parameters of the gamma distributions followed by phase field parameters
             [aP1,bP1,aP2,bP2] = hyperMatPhaseSingleEdgeCrack(gc,l,deltaP1,deltaP2);
-            gc_k = gc; % fracture toughness sample [N/m^2]
+            gc_k = gc; % fracture toughness sample [N/m]
             l_k = l; % regularization length sample [m]
             if deltaP2==0 % deterministic regularization length but random fracture toughness
                 gc_k = gaminv(normcdf(V(:,1)),aP1,bP1);

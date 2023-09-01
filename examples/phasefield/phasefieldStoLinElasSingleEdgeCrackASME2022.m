@@ -43,7 +43,7 @@ Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isot'; % 'Isot', 'MeanIsot', 'Anisot'. Material symmetry
 ang = 45; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 loading = 'Shear'; % 'Tension' or 'Shear'
-PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'He', 'Zhang', 'Spectral'
+PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'HeAmor', 'HeFreddi', 'Zhang'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
@@ -103,100 +103,108 @@ if setProblem
     %% Domains and meshes
     L = 1e-3;
     a = L/2;
+    b = L/2;
     if Dim==2
         e = 1;
         D = DOMAIN(2,[0.0,0.0],[L,L]);
-        C = LIGNE([0.0,L/2],[a,L/2]);
+        C = LIGNE([0.0,b],[a,b]);
     elseif Dim==3
         e = 0.1e-3;
         D = DOMAIN(3,[0.0,0.0,0.0],[L,L,e]);
-        C = QUADRANGLE([0.0,L/2,0.0],[a,L/2,0.0],[a,L/2,e],[0.0,L/2,e]);
+        C = QUADRANGLE([0.0,b,0.0],[a,b,0.0],[a,b,e],[0.0,b,e]);
     end
     
-    if Dim==2
-        % clD = 6.25e-5; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
-        % clD = 5e-5; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
-        % clD = 3e-5; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        % clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        % clD = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
-        % clD = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-        % clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        
-        % clC = 5e-6; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
-        % clC = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
-        % clC = 3.906e-6; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
-        % clC = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-        % clC = 3.75e-6; % (shear test) [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-        % clC = 2.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        % clC = 2e-6; % (shear test) [Miehe, Hofacker, Welschinger, 2010, CMAME]
-        % clC = 1e-6; % (tension test) [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-        % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        switch lower(FEmesh)
-            case 'unif'
-                switch lower(symmetry)
-                    case 'isot' % isotropic material
-                        cl = 5e-6;
-                    case 'anisot' % anisotropic material
-                        cl = 4.25e-6;
-                    otherwise
-                        error('Wrong material symmetry class');
-                end
-                if test
+    % clD = 6.25e-5; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
+    % clD = 5e-5; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
+    % clD = 3e-5; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+    % clD = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
+    % clD = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    
+    % clC = 5e-6; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
+    % clC = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
+    % clC = 3.906e-6; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
+    % clC = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % clC = 3.75e-6; % (shear test) [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+    % clC = 2.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % clC = 2e-6; % (shear test) [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    % clC = 1e-6; % (tension test) [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+    % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+    switch lower(FEmesh)
+        case 'unif' % uniform mesh
+            switch lower(symmetry)
+                case 'isot' % isotropic material
+                    cl = 5e-6;
+                case 'anisot' % anisotropic material
+                    cl = 4.25e-6;
+                otherwise
+                    error('Wrong material symmetry class');
+            end
+            if test
+                if Dim==2
                     cl = 1e-5;
-                end
-                clD = cl;
-                clC = cl;
-            case 'optim'
-                clD = 2.5e-5;
-                clC = 2.5e-6;
-                if test
-                    clD = 4e-5;
-                    clC = 1e-5;
-                end
-            otherwise
-                error('Wrong FE mesh')
-        end
-    elseif Dim==3
-        switch lower(FEmesh)
-            case 'unif'
-                switch lower(symmetry)
-                    case 'isot' % isotropic material
-                        cl = 5e-6;
-                    case 'anisot' % anisotropic material
-                        cl = 4.25e-6;
-                    otherwise
-                        error('Wrong material symmetry class');
-                end
-                if test
+                elseif Dim==3
                     cl = 2e-5;
                 end
-                clD = cl;
-                clC = cl;
-            case 'optim'
+            end
+            clD = cl;
+            clC = cl;
+            B = [];
+        case 'optim' % optimized mesh
+            if Dim==2
+                clD = 2.5e-5;
+                clC = 2.5e-6;
+            elseif Dim==3
                 clD = 4e-5;
                 clC = 5e-6;
-                if test
-                    clD = 4e-5;
-                    clC = 1e-5;
-                end
-            otherwise
-                error('Wrong FE mesh')
-        end
-    end
-    switch lower(initialCrack)
-        case 'geometriccrack'
-            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate',lower(loading),lower(symmetry),lower(PFmodel));
-        case 'geometricnotch'
-            c = 1e-5; % crack width
-            S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,lower(loading),lower(symmetry),lower(PFmodel));
-        case 'initialphasefield'
-            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,lower(initialCrack),lower(loading),lower(symmetry),lower(PFmodel));
+            end
+            if test
+                clD = 4e-5;
+                clC = 1e-5;
+            end
+            VIn = clC;
+            VOut = clD;
+            XMin = a; XMax = L;
+            switch lower(loading)
+                case 'tension'
+                    if strcmpi(symmetry,'isot')
+                        YMin = b-L/8; YMax = b+L/8;
+                    else
+                        YMin = 0; YMax = L;
+                    end
+                case 'shear'
+                    if strcmpi(PFmodel,'bourdin')
+                        YMin = 0; YMax = L;
+                    else
+                        YMin = 0; YMax = b;
+                    end
+                otherwise
+                    error('Wrong loading case');
+            end
+            ZMin = 0;
+            ZMax = e;
+            Thickness = a;
+            % Thickness = 0;
+            B = struct('VIn',VIn,'VOut',VOut,'XMin',XMin,'XMax',XMax,'YMin',YMin,'YMax',YMax,'ZMin',ZMin,'ZMax',ZMax,'Thickness',Thickness);
         otherwise
-            error('Wrong model for initial crack');
+            error('Wrong FE mesh')
     end
+%     switch lower(initialCrack)
+%         case 'geometriccrack'
+%             S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
+%         case 'geometricnotch'
+%             c = 1e-5; % crack width
+%             S_phase = gmshdomainwithedgenotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
+%         case 'initialphasefield'
+%             S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate','Box',B);
+%         otherwise
+%             error('Wrong model for initial crack');
+%     end
+    S_phase = gmsh2femobject(Dim,fullfile(pathname,'gmsh_domain_single_edge_crack.msh'));
     S = S_phase;
     
     %% Phase field problem

@@ -44,7 +44,8 @@ PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = 1; % maximum number of iterations at each loading increment
-tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
+tolConv = 1e-3; % prescribed tolerance for convergence at each loading increment
+critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
 coeff_gc = 1.0;
@@ -52,8 +53,8 @@ coeff_gc = 1.0;
 % angs = [0:10:90];
 % PFmodels = {'Bourdin','Amor','Miehe','HeAmor','HeFreddi','Zhang'};
 % PFsplits = {'Strain','Stress'};
-PFregularizations = {'AT1','AT2'};
-PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
+% PFregularizations = {'AT1','AT2'};
+% PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % initialCracks = {'GeometricCrack','InitialPhaseField'};
 % maxIters = [1,100];
 % coeffs_gc = [0.6,0.8,1.0,1.2,1.4];
@@ -64,10 +65,10 @@ PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % PFmodel = PFmodels{iPFmodel};
 % for iPFsplit=1:length(PFsplits)
 % PFsplit = PFsplits{iPFsplit};
-for iPFRegularization=1:length(PFregularizations)
-PFregularization = PFregularizations{iPFRegularization};
-for iPFsolver=1:length(PFsolvers)
-PFsolver = PFsolvers{iPFsolver};
+% for iPFRegularization=1:length(PFregularizations)
+% PFregularization = PFregularizations{iPFRegularization};
+% for iPFsolver=1:length(PFsolvers)
+% PFsolver = PFsolvers{iPFsolver};
 % for iinitialCrack=1:length(initialCracks)
 % initialCrack = initialCracks{iinitialCrack};
 % for imaxIter=1:length(maxIters)
@@ -88,8 +89,11 @@ if strcmpi(symmetry,'anisot') % anisotropic material
     filename = [filename num2str(ang) 'deg'];
 end
 filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...
-    'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) 'Mesh' FEmesh];
-filename = [filename suffix];
+    'MaxIter' num2str(maxIter)];
+if maxIter>1
+    filename = [filename 'Tol' num2str(tolConv) num2str(critConv)];
+end
+filename = [filename 'Mesh' FEmesh suffix];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefieldDet',foldername,filename);
@@ -112,97 +116,104 @@ if setProblem
     %% Domains and meshes
     L = 1e-3;
     a = L/2;
+    b = L/2;
     if Dim==2
         e = 1;
         D = DOMAIN(2,[0.0,0.0],[L,L]);
-        C = LIGNE([0.0,L/2],[a,L/2]);
+        C = LIGNE([0.0,b],[a,b]);
     elseif Dim==3
         e = 0.1e-3;
         D = DOMAIN(3,[0.0,0.0,0.0],[L,L,e]);
-        C = QUADRANGLE([0.0,L/2,0.0],[a,L/2,0.0],[a,L/2,e],[0.0,L/2,e]);
+        C = QUADRANGLE([0.0,b,0.0],[a,b,0.0],[a,b,e],[0.0,b,e]);
     end
     
-    if Dim==2
-        % clD = 6.25e-5; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
-        % clD = 5e-5; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
-        % clD = 3e-5; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        % clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        % clD = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
-        % clD = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-        % clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        
-        % clC = 5e-6; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
-        % clC = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
-        % clC = 3.906e-6; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
-        % clC = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-        % clC = 3.75e-6; % (shear test) [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-        % clC = 2.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        % clC = 2e-6; % (shear test) [Miehe, Hofacker, Welschinger, 2010, CMAME]
-        % clC = 1e-6; % (tension test) [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-        % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-        % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-        switch lower(FEmesh)
-            case 'unif'
-                switch lower(symmetry)
-                    case 'isot' % isotropic material
-                        cl = 5e-6;
-                    case 'anisot' % anisotropic material
-                        cl = 4.25e-6;
-                    otherwise
-                        error('Wrong material symmetry class');
-                end
-                if test
+    % clD = 6.25e-5; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
+    % clD = 5e-5; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
+    % clD = 3e-5; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+    % clD = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
+    % clD = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    
+    % clC = 5e-6; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
+    % clC = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
+    % clC = 3.906e-6; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
+    % clC = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % clC = 3.75e-6; % (shear test) [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+    % clC = 2.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % clC = 2e-6; % (shear test) [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    % clC = 1e-6; % (tension test) [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+    % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+    switch lower(FEmesh)
+        case 'unif' % uniform mesh
+            switch lower(symmetry)
+                case 'isot' % isotropic material
+                    cl = 5e-6;
+                case 'anisot' % anisotropic material
+                    cl = 4.25e-6;
+                otherwise
+                    error('Wrong material symmetry class');
+            end
+            if test
+                if Dim==2
                     cl = 1e-5;
-                end
-                clD = cl;
-                clC = cl;
-            case 'optim'
-                clD = 2.5e-5;
-                clC = 2.5e-6;
-                if test
-                    clD = 4e-5;
-                    clC = 1e-5;
-                end
-            otherwise
-                error('Wrong FE mesh')
-        end
-    elseif Dim==3
-        switch lower(FEmesh)
-            case 'unif'
-                switch lower(symmetry)
-                    case 'isot' % isotropic material
-                        cl = 5e-6;
-                    case 'anisot' % anisotropic material
-                        cl = 4.25e-6;
-                    otherwise
-                        error('Wrong material symmetry class');
-                end
-                if test
+                elseif Dim==3
                     cl = 2e-5;
                 end
-                clD = cl;
-                clC = cl;
-            case 'optim'
+            end
+            clD = cl;
+            clC = cl;
+            B = [];
+        case 'optim' % optimized mesh
+            if Dim==2
+                clD = 2.5e-5;
+                clC = 2.5e-6;
+            elseif Dim==3
                 clD = 4e-5;
                 clC = 5e-6;
-                if test
-                    clD = 4e-5;
-                    clC = 1e-5;
-                end
-            otherwise
-                error('Wrong FE mesh')
-        end
+            end
+            if test
+                clD = 4e-5;
+                clC = 1e-5;
+            end
+            VIn = clC;
+            VOut = clD;
+            XMin = a; XMax = L;
+            switch lower(loading)
+                case 'tension'
+                    if strcmpi(symmetry,'isot')
+                        YMin = b-L/8; YMax = b+L/8;
+                    else
+                        YMin = 0; YMax = L;
+                    end
+                case 'shear'
+                    if strcmpi(PFmodel,'bourdin')
+                        YMin = 0; YMax = L;
+                    else
+                        YMin = 0; YMax = b;
+                    end
+                otherwise
+                    error('Wrong loading case');
+            end
+            ZMin = 0;
+            ZMax = e;
+            Thickness = a;
+            % Thickness = 0;
+            B = struct('VIn',VIn,'VOut',VOut,'XMin',XMin,'XMax',XMax,'YMin',YMin,'YMax',YMax,'ZMin',ZMin,'ZMax',ZMax,'Thickness',Thickness);
+        otherwise
+            error('Wrong FE mesh')
     end
     switch lower(initialCrack)
         case 'geometriccrack'
-            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'duplicate',lower(loading),lower(symmetry),lower(PFmodel));
+            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
         case 'geometricnotch'
             c = 1e-5; % crack width
-            S_phase = gmshdomainwithedgesmearedcrack(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,lower(loading),lower(symmetry),lower(PFmodel));
+            S_phase = gmshdomainwithedgenotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
         case 'initialphasefield'
-            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,lower(initialCrack),lower(loading),lower(symmetry),lower(PFmodel));
+            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate','Box',B);
         otherwise
             error('Wrong model for initial crack');
     end
@@ -256,16 +267,22 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    switch lower(initialCrack)
-        case 'geometriccrack'
-            S_phase = final(S_phase,'duplicate');
-        case 'geometricnotch'
-            S_phase = final(S_phase);
-        case 'initialphasefield'
-            S_phase = final(S_phase);
-            S_phase = addcl(S_phase,C,'T',1);
-        otherwise
-            error('Wrong model for initial crack');
+    if Dim==2
+        BRight = LIGNE([L,0.0],[L,L]);
+    elseif Dim==3
+        BRight = PLAN([L,0.0,0.0],[L,L,0.0],[L,0.0,e]);
+    end
+    
+    findddlboundary = @(S_phase) findddl(S_phase,'T',BRight);
+    
+    if strcmpi(initialCrack,'geometriccrack')
+        S_phase = final(S_phase,'duplicate');
+    else
+        S_phase = final(S_phase);
+    end
+    
+    if strcmpi(initialCrack,'initialphasefield')
+        S_phase = addcl(S_phase,C,'T',1);
     end
     
     %% Stiffness matrices and sollicitation vectors
@@ -371,51 +388,44 @@ if setProblem
     if Dim==2
         BU = LIGNE([0.0,L],[L,L]);
         BL = LIGNE([0.0,0.0],[L,0.0]);
-        BRight = LIGNE([L,0.0],[L,L]);
+        % BRight = LIGNE([L,0.0],[L,L]);
         BLeft = LIGNE([0.0,0.0],[0.0,L]);
         BFront = [];
         BBack = [];
     elseif Dim==3
         BU = PLAN([0.0,L,0.0],[L,L,0.0],[0.0,L,e]);
         BL = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
-        BRight = PLAN([L,0.0,0.0],[L,L,0.0],[L,0.0,e]);
+        % BRight = PLAN([L,0.0,0.0],[L,L,0.0],[L,0.0,e]);
         BLeft = PLAN([0.0,0.0,0.0],[0.0,L,0.0],[0.0,0.0,e]);
         BFront = PLAN([0.0,0.0,e],[L,0.0,e],[0.0,L,e]);
         BBack = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
     end
     
-    switch lower(initialCrack)
-        case 'geometriccrack'
-            S = final(S,'duplicate');
-        otherwise
-            S = final(S);
-    end
-    
-    ud = 0;
+    addbc = @(S,ud) addbcSingleEdgeCrack(S,ud,BU,BL,BLeft,BRight,BFront,BBack,loading);
     switch lower(loading)
         case 'tension'
-            if Dim==2
-                S = addcl(S,BU,{'UX','UY'},[0;ud]);
-            elseif Dim==3
-                S = addcl(S,BU,{'UX','UY','UZ'},[0;ud;0]);
-            end
-            S = addcl(S,BL,'UY');
+            findddlforce = @(S) findddl(S,'UY',BU);
         case 'shear'
-            if Dim==2
-                S = addcl(S,BU,{'UX','UY'},[ud;0]);
-                S = addcl(S,BLeft,'UY');
-                S = addcl(S,BRight,'UY');
-            elseif Dim==3
-                S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
-                S = addcl(S,BLeft,{'UY','UZ'});
-                S = addcl(S,BRight,{'UY','UZ'});
-                S = addcl(S,BFront,{'UY','UZ'});
-                S = addcl(S,BBack,{'UY','UZ'});
-            end
-            S = addcl(S,BL);
+            findddlforce = @(S) findddl(S,'UX',BU);
         otherwise
             error('Wrong loading case');
     end
+    
+    if strcmpi(initialCrack,'geometriccrack')
+        S = final(S,'duplicate');
+    else
+        S = final(S);
+    end
+    
+    ud = 0;
+    S = addbc(S,ud);
+    
+    u = calc_init_dirichlet(S);
+    mats = MATERIALS(S);
+    for m=1:length(mats)
+        mats{m} = setparam(mats{m},'u',u);
+    end
+    S = actualisematerials(S,mats);
     
     %% Stiffness matrices and sollicitation vectors
     % [A,b] = calc_rigi(S);
@@ -475,9 +485,9 @@ if setProblem
                         % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
                         % du = 2e-4 mm during 32 time steps (up to u = 6.4e-3 mm)
                         % dt = 2e-7;
-                        % nt = 64;
+                        % nt = 32;
                         % t = linspace(dt,nt*dt,nt);
-
+                        
                         % du = 1e-5 mm during the first 400 time steps (up to u = 4e-3 mm)
                         % du = 1e-6 mm during the last 4000 time steps (up to u = 8e-3 mm)
                         dt0 = 1e-8;
@@ -606,9 +616,9 @@ if setProblem
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','addbc','findddlforce','findddlboundary');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','addbc','findddlforce','findddlboundary');
 end
 
 %% Solution
@@ -617,18 +627,32 @@ if solveProblem
     
     switch lower(symmetry)
         case 'isot' % isotropic material
-            fun = @solvePFDetLinElasSingleEdgeCrack;
+            fun = @solvePFDetLinElas;
         case 'anisot' % anisotropic material
-            fun = @solvePFDetLinElasSingleEdgeCrackThreshold;
+            fun = @solvePFDetLinElasThreshold;
         otherwise
             error('Wrong material symmetry class');
     end
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv);
+            [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
         otherwise
-            [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv);
+            [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
     end
+%     switch lower(symmetry)
+%         case 'isot' % isotropic material
+%             fun = @solvePFDetLinElasSingleEdgeCrack;
+%         case 'anisot' % anisotropic material
+%             fun = @solvePFDetLinElasSingleEdgeCrackThreshold;
+%         otherwise
+%             error('Wrong material symmetry class');
+%     end
+%     switch lower(PFsolver)
+%         case {'historyfieldelem','historyfieldnode'}
+%             [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+%         otherwise
+%             [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+%     end
     if strcmpi(symmetry,'anisot')
         T = gettimemodel(dt);
     end
@@ -956,8 +980,8 @@ end
 
 % myparallel('stop');
 
-end
-end
+% end
+% end
 % end
 % end
 % end
