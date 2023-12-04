@@ -501,7 +501,7 @@ if setProblem
                         % dt = 2e-7;
                         % nt = 64;
                         % t = linspace(dt,nt*dt,nt);
-
+                        
                         % du = 1e-5 mm during the first 400 time steps (up to u = 4e-3 mm)
                         % du = 1e-6 mm during the last 4000 time steps (up to u = 8e-3 mm)
                         dt0 = 1e-8;
@@ -589,17 +589,17 @@ if setProblem
             if Dim==2
                 switch lower(loading)
                     case 'tension'
-                        % du = 2e-5 mm (up to u = 10e-3 mm)
-                        dt = 2e-8;
-                        nt = 500;
+                        % du = 1e-5 mm (up to u = 10e-3 mm)
+                        dt = 1e-8;
+                        nt = 1000;
                         if test
                             dt1 = 4e-8;
                             nt = 250;
                         end
                     case 'shear'
-                        % du = 2e-5 mm (up to u = 20e-3 mm)
-                        dt = 2e-8;
-                        nt = 1000;
+                        % du = 1e-5 mm (up to u = 20e-3 mm)
+                        dt = 1e-8;
+                        nt = 2000;
                         if test
                             dt = 4e-8;
                             nt = 500;
@@ -607,9 +607,9 @@ if setProblem
                 end
                 t = linspace(dt,nt*dt,nt);
             elseif Dim==3
-                % du = 2e-5 mm (up to u = 20e-3 mm)
-                dt = 2e-8;
-                nt = 1000;
+                 % du = 1e-5 mm (up to u = 20e-3 mm)
+                dt = 1e-8;
+                nt = 2000;
                 if test
                     dt = 2e-7;
                     nt = 100;

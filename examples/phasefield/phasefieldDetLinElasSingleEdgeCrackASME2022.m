@@ -533,7 +533,7 @@ if setProblem
                         % dt = 1e-7;
                         % nt = 200;
                         % t = linspace(dt,nt*dt,nt);
-
+                        
                         % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
                         % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM],
                         % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
@@ -569,22 +569,44 @@ if setProblem
                         % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
                         % du = 6e-5 mm during the first stage (until the phase field reaches the threshold value)
                         % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 10e-3 mm)
-                        dt0 = 6e-8;
-                        dt1 = 2e-8;
+                        % dt0 = 6e-8;
+                        % dt1 = 2e-8;
+                        % if test
+                        %     dt0 = 12e-8;
+                        %     dt1 = 4e-8;
+                        % end
+                        % tf = 10e-6;
+                        % dthreshold = 0.6;
+                        
+                        % du = 1e-5 mm during the first stage (until the phase field reaches the threshold value)
+                        % du = 1e-6 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 10e-3 mm)
+                        dt0 = 1e-8;
+                        dt1 = 1e-9;
                         if test
-                            dt0 = 12e-8;
-                            dt1 = 4e-8;
+                            dt0 = 1e-7;
+                            dt1 = 1e-8;
                         end
                         tf = 10e-6;
                         dthreshold = 0.6;
                     case 'shear'
                         % du = 6e-5 mm during the first stage (until the phase field reaches the threshold value)
                         % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 20e-3 mm)
-                        dt0 = 6e-8;
-                        dt1 = 2e-8;
+                        % dt0 = 6e-8;
+                        % dt1 = 2e-8;
+                        % if test
+                        %     dt0 = 12e-8;
+                        %     dt1 = 4e-8;
+                        % end
+                        % tf = 20e-6;
+                        % dthreshold = 0.6;
+                        
+                        % du = 1e-5 mm during the first stage (until the phase field reaches the threshold value)
+                        % du = 1e-5 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 20e-3 mm)
+                        dt0 = 1e-8;
+                        dt1 = 1e-8;
                         if test
-                            dt0 = 12e-8;
-                            dt1 = 4e-8;
+                            dt0 = 1e-7;
+                            dt1 = 1e-7;
                         end
                         tf = 20e-6;
                         dthreshold = 0.6;
