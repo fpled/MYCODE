@@ -48,7 +48,7 @@ PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = 1; % maximum number of iterations at each loading increment
-tolConv = 1e-3; % prescribed tolerance for convergence at each loading increment
+tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
@@ -584,17 +584,17 @@ if setProblem
             if Dim==2
                 switch lower(loading)
                     case 'tension'
-                        % du = 2e-5 mm (up to u = 10e-3 mm)
-                        dt = 2e-8;
-                        nt = 500;
+                        % du = 1e-5 mm (up to u = 10e-3 mm)
+                        dt = 1e-8;
+                        nt = 1000;
                         if test
                             dt1 = 4e-8;
                             nt = 250;
                         end
                     case 'shear'
-                        % du = 2e-5 mm (up to u = 20e-3 mm)
-                        dt = 2e-8;
-                        nt = 1000;
+                        % du = 1e-5 mm (up to u = 20e-3 mm)
+                        dt = 1e-8;
+                        nt = 2000;
                         if test
                             dt = 4e-8;
                             nt = 500;
@@ -602,9 +602,9 @@ if setProblem
                 end
                 t = linspace(dt,nt*dt,nt);
             elseif Dim==3
-                % du = 2e-5 mm (up to u = 20e-3 mm)
-                dt = 2e-8;
-                nt = 1000;
+                % du = 1e-5 mm (up to u = 20e-3 mm)
+                dt = 1e-8;
+                nt = 2000;
                 if test
                     dt = 2e-7;
                     nt = 100;

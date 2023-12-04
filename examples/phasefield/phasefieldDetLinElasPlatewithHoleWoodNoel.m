@@ -41,7 +41,7 @@ PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = Inf; % maximum number of iterations at each loading increment
-tolConv = 1e-3; % prescribed tolerance for convergence at each loading increment
+tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
 
@@ -49,8 +49,6 @@ FEmesh = 'Optim'; % 'Unif' or 'Optim'
 % PFsplits = {'Strain','Stress'};
 % PFregularizations = {'AT1','AT2'};
 % PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
-PFregularizations = {'AT2'};
-PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % maxIters = [1,100];
 
 % for iPFmodel=1:length(PFmodels)

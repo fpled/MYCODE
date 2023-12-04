@@ -44,7 +44,7 @@ PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = 1; % maximum number of iterations at each loading increment
-tolConv = 1e-3; % prescribed tolerance for convergence at each loading increment
+tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
@@ -578,22 +578,44 @@ if setProblem
                         % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
                         % du = 6e-5 mm during the first stage (until the phase field reaches the threshold value)
                         % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 10e-3 mm)
-                        dt0 = 6e-8;
-                        dt1 = 2e-8;
+                        % dt0 = 6e-8;
+                        % dt1 = 2e-8;
+                        % if test
+                        %     dt0 = 12e-8;
+                        %     dt1 = 4e-8;
+                        % end
+                        % tf = 10e-6;
+                        % dthreshold = 0.6;
+                        
+                        % du = 1e-5 mm during the first stage (until the phase field reaches the threshold value)
+                        % du = 1e-6 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 10e-3 mm)
+                        dt0 = 1e-8;
+                        dt1 = 1e-9;
                         if test
-                            dt0 = 12e-8;
-                            dt1 = 4e-8;
+                            dt0 = 1e-7;
+                            dt1 = 1e-8;
                         end
                         tf = 10e-6;
                         dthreshold = 0.6;
                     case 'shear'
                         % du = 6e-5 mm during the first stage (until the phase field reaches the threshold value)
                         % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 20e-3 mm)
-                        dt0 = 6e-8;
-                        dt1 = 2e-8;
+                        % dt0 = 6e-8;
+                        % dt1 = 2e-8;
+                        % if test
+                        %     dt0 = 12e-8;
+                        %     dt1 = 4e-8;
+                        % end
+                        % tf = 20e-6;
+                        % dthreshold = 0.6;
+                        
+                        % du = 1e-5 mm during the first stage (until the phase field reaches the threshold value)
+                        % du = 1e-5 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 20e-3 mm)
+                        dt0 = 1e-8;
+                        dt1 = 1e-8;
                         if test
-                            dt0 = 12e-8;
-                            dt1 = 4e-8;
+                            dt0 = 1e-7;
+                            dt1 = 1e-7;
                         end
                         tf = 20e-6;
                         dthreshold = 0.6;
