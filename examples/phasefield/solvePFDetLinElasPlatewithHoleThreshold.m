@@ -5,7 +5,7 @@ function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(
 display_ = getcharin('display',varargin,true);
 displayIter = getcharin('displayiter',varargin,false);
 maxIter = getcharin('maxiter',varargin,100);
-tolConv = getcharin('tol',varargin,1e-3);
+tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
 dbthreshold = getcharin('damageboundarythreshold',varargin,0.999);
 
