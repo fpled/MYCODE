@@ -573,8 +573,8 @@ if displaySolution
     ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
     %ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
-    mysaveas(pathname,'KjuncScrew',formats);
-    mymatlab2tikz(pathname,'KjuncScrew.tex');
+    mysaveas(pathname,'data_KjuncScrew',formats);
+    mymatlab2tikz(pathname,'data_KjuncScrew.tex');
     
     figure
     clf
@@ -585,6 +585,6 @@ if displaySolution
     ylabel('Stiffness per unit length [N/rad]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
     %ylabel('Rigidit\''e lin\''eique [N/rad]','Interpreter',interpreter);
-    mysaveas(pathname,'KjuncDowel',formats);
-    mymatlab2tikz(pathname,'KjuncDowel.tex');
+    mysaveas(pathname,'data_KjuncDowel',formats);
+    mymatlab2tikz(pathname,'data_KjuncDowel.tex');
 end

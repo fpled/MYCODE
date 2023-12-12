@@ -72,8 +72,8 @@ for k=6
     % set(gca,'ZScale','log')
     xlabel('$G^L$ [MPa]','Interpreter',interpreter)
     ylabel('$E^T$ [MPa]','Interpreter',interpreter)
-    %zlabel('Error','Interpreter',interpreter)
-    zlabel('Erreur','Interpreter',interpreter)
+    zlabel('Error','Interpreter',interpreter)
+    %zlabel('Erreur','Interpreter',interpreter)
     mysaveas(pathname,['error_ET_GL_' numSample '_image_' numImage '_3D'],formats,renderer);
     
     figure
