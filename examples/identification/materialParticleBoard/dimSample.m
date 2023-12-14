@@ -4,7 +4,7 @@ function [b,h,d,Iz] = dimSample(sample)
 % sample = 'B1',...,'B27'
 % outputs :
 % b = width [mm]
-% h = thickness [mm]
+% h = height [mm]
 % d = distance between the support and the region of interest (ROI) [mm]
 % Iz = planar second moment of area (or planar area moment of inertia) [mm^4]
 
