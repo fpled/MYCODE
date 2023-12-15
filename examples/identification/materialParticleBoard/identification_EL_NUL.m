@@ -174,9 +174,9 @@ if displaySolution
 %         set(gca,'FontSize',fontsize)
 %         legend(numSample,'Location','NorthEastOutside');
 %         xlabel('Image number','Interpreter',interpreter);
-%         ylabel('Young''s modulus $E^L$ [MPa]','Interpreter',interpreter);
+%         ylabel('Longitudinal Young''s modulus $E^L$ [MPa]','Interpreter',interpreter);
 %         %xlabel('Num\''ero d''image','Interpreter',interpreter);
-%         %ylabel('Module d''Young $E^L$ [MPa]','Interpreter',interpreter);
+%         %ylabel('Module d''Young longitudinal $E^L$ [MPa]','Interpreter',interpreter);
 %         mysaveas(pathname,['data_EL_' numSample],formats);
 %         mymatlab2tikz(pathname,['data_EL_' numSample '.tex']);
 %         
@@ -187,9 +187,9 @@ if displaySolution
 %         set(gca,'FontSize',fontsize)
 %         legend(numSample,'Location','NorthEastOutside');
 %         xlabel('Image number','Interpreter',interpreter);
-%         ylabel('Poisson''s ratio $\nu^L$','Interpreter',interpreter);
+%         ylabel('Longitudinal Poisson''s ratio $\nu^L$','Interpreter',interpreter);
 %         %xlabel('Num\''ero d''image','Interpreter',interpreter);
-%         %ylabel('Coefficient de Poisson $\nu^L$','Interpreter',interpreter);
+%         %ylabel('Coefficient de Poisson longitudinal $\nu^L$','Interpreter',interpreter);
 %         mysaveas(pathname,['data_NUL_' numSample],formats);
 %         mymatlab2tikz(pathname,['data_NUL_' numSample '.tex']);
 %     end
@@ -200,9 +200,9 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Young''s modulus $E^L$ [MPa]','Interpreter',interpreter);
+    ylabel('Longitudinal Young''s modulus $E^L$ [MPa]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Module d''Young $E^L$ [MPa]','Interpreter',interpreter);
+    %ylabel('Module d''Young longitudinal $E^L$ [MPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_EL',formats);
     mymatlab2tikz(pathname,'data_EL.tex');
     
@@ -212,9 +212,9 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Poisson''s ratio $\nu^L$','Interpreter',interpreter);
+    ylabel('Longitudinal Poisson''s ratio $\nu^L$','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Coefficient de Poisson $\nu^L$','Interpreter',interpreter);
+    %ylabel('Coefficient de Poisson longitudinal $\nu^L$','Interpreter',interpreter);
     mysaveas(pathname,'data_NUL',formats);
     mymatlab2tikz(pathname,'data_NUL.tex');
 end
