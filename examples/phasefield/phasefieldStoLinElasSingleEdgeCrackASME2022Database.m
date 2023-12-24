@@ -213,7 +213,7 @@ if setProblem
 %         otherwise
 %             error('Wrong model for initial crack');
 %     end
-    S_phase = gmsh2femobject(Dim,fullfile(pathname,'gmsh_domain_single_edge_crack.msh'),Dim);
+    S_phase = gmsh2femobject(Dim,fullfile(pathname,'gmsh_domain_single_edge_crack.msh'));
     S = S_phase;
     
     %% Phase field problem
@@ -499,7 +499,7 @@ if setProblem
                         % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
                         % du = 2e-4 mm during 32 time steps (up to u = 6.4e-3 mm)
                         % dt = 2e-7;
-                        % nt = 64;
+                        % nt = 32;
                         % t = linspace(dt,nt*dt,nt);
                         
                         % du = 1e-5 mm during the first 400 time steps (up to u = 4e-3 mm)
@@ -607,7 +607,7 @@ if setProblem
                 end
                 t = linspace(dt,nt*dt,nt);
             elseif Dim==3
-                 % du = 1e-5 mm (up to u = 20e-3 mm)
+                % du = 1e-5 mm (up to u = 20e-3 mm)
                 dt = 1e-8;
                 nt = 2000;
                 if test
@@ -844,7 +844,7 @@ if displaySolution
     ylabel('Force [kN]','Interpreter',interpreter)
     mysaveas(pathname,'forces_displacement',formats);
     mymatlab2tikz(pathname,'forces_displacement.tex');
-
+    
 %     color = distinguishable_colors(N);
 %     for i=1:N
 %         if mod(i,100)==0
