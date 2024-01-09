@@ -6,10 +6,9 @@ clearvars
 close all
 
 %% Input data
-sample = 'B';
 j = 14; % sample number
-k = 8; % image number
-numSample = [sample num2str(j)];
+k = 6; % image number
+numSample = ['B' num2str(j)];
 numImage = num2str(k,'%02d');
 
 [b,h,d,Iz] = dimSample(numSample);
@@ -64,6 +63,24 @@ x = [EL NUL];
 u = unfreevector(S,u_in);
 
 %% Display solutions
+ampl = 0;
+v_exp = calc_init_dirichlet(S);
+figure('Name','Imposed experimental displacement')
+clf
+h = plot(S,'FaceColor','w','LineWidth',0.5);
+hold on
+[hD,legD] = vectorplot(S,'U',v_exp,ampl,'r','LineWidth',1);
+hold off
+set(gca,'FontSize',fontsize)
+hg = hggroup;
+set([h(:),hD],'Parent',hg);
+axis image
+l = legend(hD,'{\boldmath$u$}$^{\mathrm{exp}}$','Location','NorthEastOutside');
+% l = legend(hD,legD,'Location','NorthEastOutside');
+set(l,'Interpreter',interpreter);
+set(gcf,'position',[100,100,500,150])
+mysaveas(pathname,'u_exp_imposed',formats,renderer);
+
 ampl = 0;
 % ampl = getsize(S)/max(max(abs(u)),max(abs(u_exp)))/5;
 

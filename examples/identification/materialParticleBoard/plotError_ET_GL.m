@@ -41,7 +41,7 @@ for k=6
     
     ET = ET_data{j}(k); % [MPa]
     GL = GL_data{j}(k); % [MPa]
-    Phi = Phi_data{j}(k); % [rad]
+    R0 = R0_data{j}(k); % [rad]
     U0 = U0_data{j}(k); % [mm]
     V0 = V0_data{j}(k); % [mm]
     ET_series = linspace(ET*0.5,ET*1.5,1e2); % [MPa]
@@ -52,7 +52,7 @@ for k=6
         ET = ET_series(m);
         for n=1:length(GL_series)
             GL = GL_series(n);
-            x = [ET GL Phi U0 V0];
+            x = [ET GL R0 U0 V0];
             u_ana = solveThreePointBendingAna(x,coord,F(k),Iz,h);
             err(m,n) = norm(u_exp - u_ana);
         end

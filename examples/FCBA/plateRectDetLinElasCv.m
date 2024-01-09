@@ -416,19 +416,19 @@ end
 
 if displayCv
     figure(hcvUz)
-    loglog(Nbelem,err_Uz,'-','Color',getfacecolor(iem+1),'LineWidth',linewidth);
+    loglog(Nbelem,err_Uz,'LineStyle','-','Color',getfacecolor(iem+1),'LineWidth',linewidth);
     hold on
     
     figure(hcvRx)
-    loglog(Nbelem,err_Rx,'-','Color',getfacecolor(iem+1),'LineWidth',linewidth);
+    loglog(Nbelem,err_Rx,'LineStyle','-','Color',getfacecolor(iem+1),'LineWidth',linewidth);
     hold on
     
     figure(hcvRy)
-    loglog(Nbelem,err_Ry,'-','Color',getfacecolor(iem+1),'LineWidth',linewidth);
+    loglog(Nbelem,err_Ry,'LineStyle','-','Color',getfacecolor(iem+1),'LineWidth',linewidth);
     hold on
     
     figure(htime)
-    loglog(Nbelem,time,'-','Color',getfacecolor(iem+1),'LineWidth',linewidth);
+    loglog(Nbelem,time,'LineStyle','-','Color',getfacecolor(iem+1),'LineWidth',linewidth);
     hold on
 end
 

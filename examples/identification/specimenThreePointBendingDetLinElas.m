@@ -33,7 +33,7 @@ renderer = 'OpenGL';
 sample = 'B';
 numSamples = 27;
 % for j=1:numSamples
-for j=8
+for j=14
     
     numSample = [sample num2str(j)];
     F = appliedLoad(numSample);
@@ -41,7 +41,7 @@ for j=8
     
     numImages = length(F);
     % for k=1:numImages
-    for k=8
+    for k=6
         
         numImage = num2str(k,'%02d');
         filenameDIC = [numSample '_00-' num2str(numImage) '-Mesh'];
@@ -137,7 +137,7 @@ for j=8
         end
         
         %% Outputs
-        fprintf('\nSquare specimen\n');
+        fprintf('\Rectangular specimen\n');
         fprintf(['mesh     : ' elemtype ' elements\n']);
         fprintf('nb elements = %g\n',getnbelem(S));
         fprintf('nb nodes    = %g\n',getnbnode(S));
@@ -150,7 +150,7 @@ for j=8
             %% Display domains, boundary conditions and meshes
             % [hD,legD] = plotBoundaryConditions(S,'legend',false);
             % legend(hD,legD,'Location','NorthEastOutside')
-            ampl = 0.5;
+            ampl = 0;
             v_exp = calc_init_dirichlet(S);
             figure('Name','Imposed experimental displacement')
             clf
@@ -162,10 +162,10 @@ for j=8
             hg = hggroup;
             set([h(:),hD],'Parent',hg);
             axis image
-            l = legend(hD,'$u^{\mathrm{exp}}$','Location','NorthEastOutside');
+            l = legend(hD,'{\boldmath$u$}$^{\mathrm{exp}}$','Location','NorthEastOutside');
             % l = legend(hD,legD,'Location','NorthEastOutside');
             set(l,'Interpreter',interpreter);
-            set(gcf,'position',[100,100, 450, 120])
+            set(gcf,'position',[100,100,500,150])
             mysaveas(pathname,'boundary_conditions',formats,renderer);
             
             % plotModel(S,'legend',false);
@@ -174,7 +174,8 @@ for j=8
             plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
             mysaveas(pathname,'mesh',formats,renderer);
             
-            ampl = getsize(S)/max(abs(u))/5;
+            ampl = 5;
+            % ampl = getsize(S)/max(abs(u))/5;
             plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
             mysaveas(pathname,'mesh_deflected',formats,renderer);
             

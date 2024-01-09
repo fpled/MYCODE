@@ -97,7 +97,7 @@ u_exp_in = freevector(S,u_exp);
 
 %% Display experimental solution
 [hD,legD] = plotBoundaryConditions(S_exp,'legend',false);
-ampl = 1;
+ampl = 0.5;
 [hN,legN] = vectorplot(S_exp,'F',b,ampl,'r','LineWidth',1);
 legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
 mysaveas(pathname,'boundary_conditions_exp',formats,renderer);
@@ -209,8 +209,8 @@ set(gca,'FontSize',fontsize)
 hg = hggroup;
 set([h(:),hD],'Parent',hg);
 axis image
-l = legend(hD,'$u^{\mathrm{exp}}$','Location','NorthEastOutside');
-% l = legend(hD,legD);
+l = legend(hD,'{\boldmath$u$}$^{\mathrm{exp}}$','Location','NorthEastOutside');
+% l = legend(hD,legD,'Location','NorthEastOutside');
 set(l,'Interpreter',interpreter);
 mysaveas(pathname,'boundary_conditions',formats,renderer);
 
@@ -263,8 +263,9 @@ set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
 xlabel('$G^L$ [MPa]','Interpreter',interpreter)
 ylabel('$E^L$ [MPa]','Interpreter',interpreter)
-zlabel('$\varepsilon$','Interpreter',interpreter)
-mysaveas(pathname,'error_EL_GL_2D',formats,renderer);
+zlabel('Error','Interpreter',interpreter)
+% zlabel('Erreur','Interpreter',interpreter)
+mysaveas(pathname,'error_EL_GL_3D',formats,renderer);
 
 figure
 contourf(GL_series,EL_series,err,30);
@@ -302,7 +303,8 @@ set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
 xlabel('$\nu^L$','Interpreter',interpreter)
 ylabel('$E^L$ [MPa]','Interpreter',interpreter)
-zlabel('$\varepsilon$','Interpreter',interpreter)
+zlabel('Error','Interpreter',interpreter)
+% zlabel('Erreur','Interpreter',interpreter)
 mysaveas(pathname,'error_EL_NUL_3D',formats,renderer);
 
 figure
@@ -341,7 +343,8 @@ set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
 xlabel('$G^L$ [MPa]','Interpreter',interpreter)
 ylabel('$\nu^L$','Interpreter',interpreter)
-zlabel('$\varepsilon$','Interpreter',interpreter)
+zlabel('Error','Interpreter',interpreter)
+% zlabel('Erreur','Interpreter',interpreter)
 mysaveas(pathname,'error_NUL_GL_3D',formats,renderer);
 
 figure

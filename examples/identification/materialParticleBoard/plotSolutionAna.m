@@ -6,10 +6,9 @@ clearvars
 close all
 
 %% Input data
-sample = 'B';
 j = 14; % sample number
-k = 8; % image number
-numSample = [sample num2str(j)];
+k = 6; % image number
+numSample = ['B' num2str(j)];
 numImage = num2str(k,'%02d'); 
 
 F = appliedLoad(numSample);
@@ -45,7 +44,7 @@ S = addelem(S,elemtype,elem,'option',option);
 
 ET = ET_data{j}(k); % [MPa]
 GL = GL_data{j}(k); % [MPa]
-Phi = Phi_data{j}(k); % [rad]
+R0 = R0_data{j}(k); % [rad]
 U0 = U0_data{j}(k); % [mm]
 V0 = V0_data{j}(k); % [mm]
 mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',[],'ET',ET,'NUL',[],'GL',GL,'DIM3',h);
@@ -53,7 +52,7 @@ mat = setnumber(mat,1);
 S = setmaterial(S,mat);
 S = final(S);
 
-x = [ET GL Phi U0 V0];
+x = [ET GL R0 U0 V0];
 u = solveThreePointBendingAna(x,coord,F(k),Iz,h); % [mm]
 
 %% Display solutions

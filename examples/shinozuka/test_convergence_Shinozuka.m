@@ -380,14 +380,14 @@ if displayAutocorrelation
 
     figure('Name','Autocorrelation function along x axis - standard Shinozuka')
     clf
-    plot(xm,corrAnaX,'-','Color',color(1,:),'LineWidth',linewidth);
+    plot(xm,corrAnaX,'LineStyle','-','Color',color(1,:),'LineWidth',linewidth);
     hold on
     leg = cell(1+length(nu),1);
     leg{1} = 'reference';
     for k=1:length(nu)
         orderk = order(k);
         load(fullfile(pathname,['autocorr_shinozuka_std_order_' num2str(orderk) '.mat']),'corrVX');
-        plot(xm,corrVX(:,end),'--','Color',color(k+1,:),'LineWidth',linewidth);
+        plot(xm,corrVX(:,end),'LineStyle','--','Color',color(k+1,:),'LineWidth',linewidth);
         leg{k+1} = ['order = ' num2str(orderk)];
     end
     hold off
@@ -402,14 +402,14 @@ if displayAutocorrelation
 
     figure('Name','Autocorrelation function along y axis - standard Shinozuka')
     clf
-    plot(ym,corrAnaY,'-','Color',color(1,:),'LineWidth',linewidth);
+    plot(ym,corrAnaY,'LineStyle','-','Color',color(1,:),'LineWidth',linewidth);
     hold on
     leg = cell(1+length(nu),1);
     leg{1} = 'reference';
     for k=1:length(nu)
         orderk = order(k);
         load(fullfile(pathname,['autocorr_shinozuka_std_order_' num2str(orderk) '.mat']),'corrVY');
-        plot(ym,corrVY(:,end),'--','Color',color(k+1,:),'LineWidth',linewidth);
+        plot(ym,corrVY(:,end),'LineStyle','--','Color',color(k+1,:),'LineWidth',linewidth);
         leg{k+1} = ['order = ' num2str(orderk)];
     end
     hold off
@@ -424,14 +424,14 @@ if displayAutocorrelation
 
     figure('Name','Autocorrelation function along x axis - randomized Shinozuka')
     clf
-    plot(xm,corrAnaX,'-','Color',color(1,:),'LineWidth',linewidth);
+    plot(xm,corrAnaX,'LineStyle','-','Color',color(1,:),'LineWidth',linewidth);
     hold on
     leg = cell(1+length(nu),1);
     leg{1} = 'reference';
     for k=1:length(nu)
         orderk = order(k);
         load(fullfile(pathname,['autocorr_shinozuka_rand_order_' num2str(orderk) '.mat']),'corrWX');
-        plot(xm,corrWX(:,end),'--','Color',color(k+1,:),'LineWidth',linewidth);
+        plot(xm,corrWX(:,end),'LineStyle','--','Color',color(k+1,:),'LineWidth',linewidth);
         leg{k+1} = ['order = ' num2str(orderk)];
     end
     hold off
@@ -446,14 +446,14 @@ if displayAutocorrelation
 
     figure('Name','Autocorrelation function along y axis - randomized Shinozuka')
     clf
-    plot(ym,corrAnaY,'-','Color',color(1,:),'LineWidth',linewidth);
+    plot(ym,corrAnaY,'LineStyle','-','Color',color(1,:),'LineWidth',linewidth);
     hold on
     leg = cell(1+length(nu),1);
     leg{1} = 'reference';
     for k=1:length(nu)
         orderk = order(k);
         load(fullfile(pathname,['autocorr_shinozuka_rand_order_' num2str(orderk) '.mat']),'corrWY');
-        plot(ym,corrWY(:,end),'--','Color',color(k+1,:),'LineWidth',linewidth);
+        plot(ym,corrWY(:,end),'LineStyle','--','Color',color(k+1,:),'LineWidth',linewidth);
         leg{k+1} = ['order = ' num2str(orderk)];
     end
     hold off
@@ -471,7 +471,7 @@ if displayAutocorrelation
     clf
     leg = cell(length(nu),1);
     for k=1:length(nu)
-        loglog(N,errCorrV(k,:),'-','Color',color(k,:),'LineWidth',linewidth);
+        loglog(N,errCorrV(k,:),'LineStyle','-','Color',color(k,:),'LineWidth',linewidth);
         hold on
         leg{k} = ['order = ' num2str(order(k))];
     end
@@ -489,7 +489,7 @@ if displayAutocorrelation
     clf
     leg = cell(length(nu),1);
     for k=1:length(nu)
-        loglog(N,errCorrVX(k,:),'-','Color',color(k,:),'LineWidth',linewidth);
+        loglog(N,errCorrVX(k,:),'LineStyle','-','Color',color(k,:),'LineWidth',linewidth);
         hold on
         leg{k} = ['order = ' num2str(order(k))];
     end
@@ -507,7 +507,7 @@ if displayAutocorrelation
     clf
     leg = cell(length(nu),1);
     for k=1:length(nu)
-        loglog(N,errCorrVY(k,:),'-','Color',color(k,:),'LineWidth',linewidth);
+        loglog(N,errCorrVY(k,:),'LineStyle','-','Color',color(k,:),'LineWidth',linewidth);
         hold on
         leg{k} = ['order = ' num2str(order(k))];
     end
@@ -525,7 +525,7 @@ if displayAutocorrelation
     clf
     leg = cell(length(nu),1);
     for k=1:length(nu)
-        loglog(N,errCorrW(k,:),'-','Color',color(k,:),'LineWidth',linewidth);
+        loglog(N,errCorrW(k,:),'LineStyle','-','Color',color(k,:),'LineWidth',linewidth);
         hold on
         leg{k} = ['order = ' num2str(order(k))];
     end
@@ -543,7 +543,7 @@ if displayAutocorrelation
     clf
     leg = cell(length(nu),1);
     for k=1:length(nu)
-        loglog(N,errCorrWX(k,:),'-','Color',color(k,:),'LineWidth',linewidth);
+        loglog(N,errCorrWX(k,:),'LineStyle','-','Color',color(k,:),'LineWidth',linewidth);
         hold on
         leg{k} = ['order = ' num2str(order(k))];
     end
@@ -561,7 +561,7 @@ if displayAutocorrelation
     clf
     leg = cell(length(nu),1);
     for k=1:length(nu)
-        loglog(N,errCorrWY(k,:),'-','Color',color(k,:),'LineWidth',linewidth);
+        loglog(N,errCorrWY(k,:),'LineStyle','-','Color',color(k,:),'LineWidth',linewidth);
         hold on
         leg{k} = ['order = ' num2str(order(k))];
     end

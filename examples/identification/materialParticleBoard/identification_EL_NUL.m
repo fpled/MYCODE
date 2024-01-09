@@ -7,6 +7,7 @@ clearvars
 close all
 
 %% Input data
+solveProblem = true;
 displaySolution = true;
 
 filenameAna = 'data_ET_GL.mat';
@@ -21,8 +22,10 @@ fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
 formats = {'fig','epsc'};
+renderer = 'OpenGL';
 
 %% Identification
+if solveProblem
 % initial guess
 EL0 = 1e2; % longitudinal Young modulus [MPa]
 NUL0 = 1e-2; % longitudinal Poisson ratio
@@ -59,7 +62,6 @@ switch optimFun
         error(['Wrong optimization function' optimFun])
 end
 
-sample = 'B';
 numSamples = 27;
 EL_data = cell(numSamples,1);
 NUL_data = cell(numSamples,1);
@@ -71,8 +73,9 @@ std_EL_data = zeros(numSamples,1);
 std_NUL_data = zeros(numSamples,1);
 
 for j=1:numSamples
+% for j=14
     
-    numSample = [sample num2str(j)];
+    numSample = ['B' num2str(j)];
     F = appliedLoad(numSample);
     [b,h,d,Iz] = dimSample(numSample);
     
@@ -84,6 +87,7 @@ for j=1:numSamples
     err = zeros(numImages,1);
     
     for k=1:numImages
+    % for k=6
         
         numImage = num2str(k,'%02d');
         filenameDIC = [numSample '_00-' numImage '-Mesh'];
@@ -136,7 +140,7 @@ for j=1:numSamples
     %% Outputs
     fprintf('\n')
     disp('+-----------------+')
-    fprintf('| Sample %s%2d      |\n',sample,j)
+    fprintf('| Sample #%2d      |\n',j)
     disp('+-----------------+-----------------+-----------------+')
     disp('| Young''s modulus | Poisson''s ratio |  Error between  |')
     disp('|     EL [MPa]    |       NUL       | U_num and U_exp |')
@@ -155,48 +159,55 @@ for j=1:numSamples
     mean_NUL_data(j) = mean(NUL(initImage:end));
     std_EL_data(j) = std(EL(initImage:end));
     std_NUL_data(j) = std(NUL(initImage:end));
-    
 end
 
 %% Save variables
 save(fullfile(pathname,filenameNum),'EL_data','NUL_data','err_num_data',...
     'mean_EL_data','mean_NUL_data','std_EL_data','std_NUL_data');
+else
+%% Load variables
+load(fullfile(pathname,filenameNum),'EL_data','NUL_data','err_num_data',...
+    'mean_EL_data','mean_NUL_data','std_EL_data','std_NUL_data');
+end
 
 %% Plot data
 if displaySolution
-%     for j=1:numSamples
-%         numSample = ['B' num2str(j)];
-%         
-%         figure
-%         clf
-%         bar(EL_data{j}(initImage:end));
-%         grid on
-%         set(gca,'FontSize',fontsize)
-%         legend(numSample,'Location','NorthEastOutside');
-%         xlabel('Image number','Interpreter',interpreter);
-%         ylabel('Longitudinal Young''s modulus $E^L$ [MPa]','Interpreter',interpreter);
-%         %xlabel('Num\''ero d''image','Interpreter',interpreter);
-%         %ylabel('Module d''Young longitudinal $E^L$ [MPa]','Interpreter',interpreter);
-%         mysaveas(pathname,['data_EL_' numSample],formats);
-%         mymatlab2tikz(pathname,['data_EL_' numSample '.tex']);
-%         
-%         figure
-%         clf
-%         bar(NUL_data{j}(initImage:end));
-%         grid on
-%         set(gca,'FontSize',fontsize)
-%         legend(numSample,'Location','NorthEastOutside');
-%         xlabel('Image number','Interpreter',interpreter);
-%         ylabel('Longitudinal Poisson''s ratio $\nu^L$','Interpreter',interpreter);
-%         %xlabel('Num\''ero d''image','Interpreter',interpreter);
-%         %ylabel('Coefficient de Poisson longitudinal $\nu^L$','Interpreter',interpreter);
-%         mysaveas(pathname,['data_NUL_' numSample],formats);
-%         mymatlab2tikz(pathname,['data_NUL_' numSample '.tex']);
-%     end
+    numSamples = length(EL_data);
+    for j=1:numSamples
+        numSample = ['B' num2str(j)];
+        
+        figure('Name',['Sample ' numSample ': Longitudinal Young''s modulus'])
+        clf
+        bar(EL_data{j});
+        %bar(EL_data{j}(initImage:end));
+        grid on
+        set(gca,'FontSize',fontsize)
+        %legend(numSample,'Location','NorthEastOutside');
+        xlabel('Image number','Interpreter',interpreter);
+        ylabel('Longitudinal Young''s modulus $E^L$ [MPa]','Interpreter',interpreter);
+        %xlabel('Num\''ero d''image','Interpreter',interpreter);
+        %ylabel('Module d''Young longitudinal $E^L$ [MPa]','Interpreter',interpreter);
+        mysaveas(pathname,['data_EL_' numSample],formats);
+        mymatlab2tikz(pathname,['data_EL_' numSample '.tex']);
+        
+        figure('Name',['Sample ' numSample ': Longitudinal Poisson''s ratio'])
+        clf
+        bar(NUL_data{j});
+        %bar(NUL_data{j}(initImage:end));
+        grid on
+        set(gca,'FontSize',fontsize)
+        %legend(numSample,'Location','NorthEastOutside');
+        xlabel('Image number','Interpreter',interpreter);
+        ylabel('Longitudinal Poisson''s ratio $\nu^L$','Interpreter',interpreter);
+        %xlabel('Num\''ero d''image','Interpreter',interpreter);
+        %ylabel('Coefficient de Poisson longitudinal $\nu^L$','Interpreter',interpreter);
+        mysaveas(pathname,['data_NUL_' numSample],formats);
+        mymatlab2tikz(pathname,['data_NUL_' numSample '.tex']);
+    end
     
-    figure
+    figure('Name','Longitudinal Young''s modulus')
     clf
-    bar(mean_EL_data,'LineWidth',linewidth);
+    bar(mean_EL_data);
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
@@ -206,9 +217,9 @@ if displaySolution
     mysaveas(pathname,'data_EL',formats);
     mymatlab2tikz(pathname,'data_EL.tex');
     
-    figure
+    figure('Name','Longitudinal Poisson''s ratio')
     clf
-    bar(mean_NUL_data,'LineWidth',linewidth);
+    bar(mean_NUL_data);
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
