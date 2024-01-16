@@ -5,7 +5,7 @@
 % clc
 clearvars
 close all
-% rng('default');
+rng('default');
 
 %% Input data
 displaySolution = true;
@@ -141,10 +141,15 @@ fprintf('\nnu(C)        = mean(log(det([C]))        = %.4f',i,nuC);
 fprintf('\nnu(C_sample) = mean(log(det([C_sample])) = %.4f',i,nuC_sample);
 fprintf('\nnu(C_data)   = mean(log(det([C_data]))   = %.4f',i,nuC_data);
 
+err_mean_comp = (mC - mC_data)^2./(mC_data)^2;
 err_mean = norm(mC - mC_data)^2/norm(mC_data)^2;
 err_nu = (nuC - nuC_data)^2/(nuC_data)^2;
+err_mean_comp_sample = (mC_sample - mC_data)^2./(mC_data)^2;
 err_mean_sample = norm(mC_sample - mC_data)^2/norm(mC_data)^2;
 err_nu_sample = (nuC_sample - nuC_data)^2/(nuC_data)^2;
+for i=1:2
+    fprintf('\nerror on mean(C%u) = %.4e',i,err_mean_comp);
+end
 fprintf('\nerror on mean(C) = %.4e',err_mean);
 fprintf('\nerror on mean(C_sample) = %.4e',err_mean_sample);
 fprintf('\nerror on mean(log(det([C])) = %.4e',err_nu);
@@ -156,9 +161,9 @@ if displaySolution
     %% Plot data
     figure('Name','Data for E')
     clf
-    bar(1:length(E_data),E_data)
+    bar(E_data)
+    grid on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[0,length(E_data)+1])
     xlabel('Sample number','Interpreter',interpreter);
     ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
@@ -168,9 +173,9 @@ if displaySolution
     
     figure('Name','Data for G')
     clf
-    bar(1:length(G_data),G_data)
+    bar(G_data)
+    grid on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[0,length(G_data)+1])
     xlabel('Sample number','Interpreter',interpreter);
     ylabel('Shear modulus $G$ [GPa]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
@@ -194,10 +199,10 @@ if displaySolution
     clf
     x1 = linspace(x1_min,x1_max,1e2);
     y1 = pdf_C1(x1);
-    plot(x1,y1,'-b');
-    hold on
-    plot(C1_data,pdf_C1(C1_data),'r+');
-    hold off
+    plot(x1,y1,'-b','LineWidth',linewidth);
+    %hold on
+    %plot(C1_data,pdf_C1(C1_data),'k+','LineWidth',linewidth);
+    %hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -212,10 +217,10 @@ if displaySolution
     clf
     x2 = linspace(x2_min,x2_max,1e2);
     y2 = pdf_C2(x2);
-    plot(x2,y2,'-b');
-    hold on
-    plot(C2_data,pdf_C2(C2_data),'r+');
-    hold off
+    plot(x2,y2,'-b','LineWidth',linewidth);
+    %hold on
+    %plot(C2_data,pdf_C2(C2_data),'k+','LineWidth',linewidth);
+    %hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -231,9 +236,9 @@ if displaySolution
     [X1,X2] = meshgrid(x1,x2);
     Z = pdf_C(X1,X2);
     surf(X1,X2,Z);
-    hold on
-    plot3(C1_data,C2_data,pdf_C(C1_data,C2_data),'r+');
-    hold off
+    %hold on
+    %plot3(C1_data,C2_data,pdf_C(C1_data,C2_data),'k+','LineWidth',linewidth);
+    %hold off
     grid on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(x1),max(x1)])
@@ -252,9 +257,9 @@ if displaySolution
     [Xe,Xn] = meshgrid(xe,xn);
     Z = pdf_EN(Xe,Xn);
     surf(Xe,Xn,Z);
-    hold on
-    plot3(E_data,NU_data,pdf_EN(E_data,NU_data),'r+');
-    hold off
+    %hold on
+    %plot3(E_data,NU_data,pdf_EN(E_data,NU_data),'k+','LineWidth',linewidth);
+    %hold off
     grid on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(xe),max(xe)])
@@ -269,10 +274,10 @@ if displaySolution
     figure('name','cumulative distribution function of C1')
     clf
     z1 = cdf_C1(x1);
-    plot(x1,z1,'-b');
-    hold on
-    plot(C1_data,gamcdf(C1_data,a1,b1),'r+');
-    hold off
+    plot(x1,z1,'-r','LineWidth',linewidth);
+    %hold on
+    %plot(C1_data,gamcdf(C1_data,a1,b1),'k+','LineWidth',linewidth);
+    %hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -286,10 +291,10 @@ if displaySolution
     figure('name','cumulative distribution function of C2')
     clf
     z2 = cdf_C2(x2);
-    plot(x2,z2,'-b');
-    hold on
-    plot(C2_data,gamcdf(C2_data,a2,b2),'r+');
-    hold off
+    plot(x2,z2,'-r','LineWidth',linewidth);
+    %hold on
+    %plot(C2_data,gamcdf(C2_data,a2,b2),'k+','LineWidth',linewidth);
+    %hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -304,9 +309,9 @@ if displaySolution
     clf
     Z = cdf_C(X1,X2);
     surf(X1,X2,Z);
-    hold on
-    plot3(C1_data,C2_data,cdf_C(C1_data,C2_data),'r+');
-    hold off
+    %hold on
+    %plot3(C1_data,C2_data,cdf_C(C1_data,C2_data),'k+','LineWidth',linewidth);
+    %hold off
     grid on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(x1),max(x1)])
@@ -328,13 +333,13 @@ if displaySolution
         end
     end
     surf(XE,XN,Z);
-    hold on
-    Z_data = zeros(1,length(E_data));
-    for i=1:length(E_data)
-        Z_data(i) = cdf_EN(E_data(i),NU_data(i));
-    end
-    plot3(E_data,NU_data,Z_data,'r+');
-    hold off
+    %hold on
+    %Z_data = zeros(1,length(E_data));
+    %for i=1:length(E_data)
+    %    Z_data(i) = cdf_EN(E_data(i),NU_data(i));
+    %end
+    %plot3(E_data,NU_data,Z_data,'k+','LineWidth',linewidth);
+    %hold off
     grid on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(xe),max(xe)])
@@ -350,15 +355,15 @@ if displaySolution
     clf
     scatter(C1_sample,C2_sample,'b.')
     hold on
-    scatter(C1_data,C2_data,'r+')
+    scatter(C1_data,C2_data,'r+','LineWidth',linewidth)
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('$C_1$ [GPa]','Interpreter',interpreter);
-    ylabel('$C_2$ [GPa]','Interpreter',interpreter);
-    %legend('samples','data')
-    legend('réalisations','données')
+    xlabel('$c_1$ [GPa]','Interpreter',interpreter);
+    ylabel('$c_2$ [GPa]','Interpreter',interpreter);
+    legend('samples','data')
+    %legend('réalisations','données')
     mysaveas(pathname,'samples_C1_C2',formats);
     mymatlab2tikz(pathname,'samples_C1_C2.tex');
     
@@ -366,15 +371,15 @@ if displaySolution
     clf
     scatter(NU_sample,E_sample,'b.')
     hold on
-    scatter(NU_data,E_data,'r+')
+    scatter(NU_data,E_data,'r+','LineWidth',linewidth)
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('$\nu$','Interpreter',interpreter);
     ylabel('$E$ [GPa]','Interpreter',interpreter);
-    %legend('samples','data')
-    legend('réalisations','données')
+    legend('samples','data')
+    %legend('réalisations','données')
     mysaveas(pathname,'samples_E_N',formats);
     mymatlab2tikz(pathname,'samples_E_N.tex');
     

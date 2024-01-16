@@ -206,12 +206,16 @@ if solveProblem
     % Data
     filenameAna = 'data_ET_GL.mat';
     filenameNum = 'data_EL_NUL.mat';
-    filenameJunc = 'data_Kjunction.mat';
+    % filenameJunc = 'data_KS_KD.mat';
+    filenameS = 'data_KS.mat';
+    filenameD = 'data_KD.mat';
     pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
         'results','identification','materialParticleBoard');
     load(fullfile(pathnameIdentification,filenameAna));
     load(fullfile(pathnameIdentification,filenameNum));
-    load(fullfile(pathnameIdentification,filenameJunc));
+    % load(fullfile(pathnameIdentification,filenameJunc));
+    load(fullfile(pathnameIdentification,filenameS));
+    load(fullfile(pathnameIdentification,filenameD));
     
     % Material symmetry
     materialSym = 'isotTrans';
@@ -313,16 +317,16 @@ if solveProblem
     end
     
     if junction
-        Kdowel_data = mean_Kdowel_data*1e-3; % [kN/rad]
-        Kscrew_data = mean_Kscrew_data*1e-3; % [kN/rad]
-        phat_dowel = gamfit(Kdowel_data);
-        phat_screw = gamfit(Kscrew_data);
-        a_dowel = phat_dowel(1);
-        b_dowel = phat_dowel(2);
-        a_screw = phat_screw(1);
-        b_screw = phat_screw(2);
-        Kdowel_sample = gamrnd(a_dowel,b_dowel,N,1)*1e3; % [N/rad]
-        Kscrew_sample = gamrnd(a_screw,b_screw,N,1)*1e3; % [N/rad]
+        KS_data = mean_KS_data*1e-3; % [kN/rad]
+        KD_data = mean_KD_data*1e-3; % [kN/rad]
+        phatS = gamfit(KS_data);
+        phatD = gamfit(KD_data);
+        aS = phatS(1);
+        bS = phatS(2);
+        aD = phatD(1);
+        bD = phatD(2);
+        KS_sample = gamrnd(aS,bS,N,1)*1e3; % [N/rad]
+        KD_sample = gamrnd(aD,bD,N,1)*1e3; % [N/rad]
     end
     
     %% Materials
@@ -733,8 +737,8 @@ if solveProblem
         Ai = calc_rigi(Si);
         % junction stiffness matrix
         if junction
-            kSi = Kscrew_sample(i); % additonal junction rotational stiffness for junction screw
-            kDi = Kdowel_sample(i); % additonal junction rotational stiffness for junction dowel
+            kSi = KS_sample(i); % additonal junction rotational stiffness for junction screw
+            kDi = KD_sample(i); % additonal junction rotational stiffness for junction dowel
             ADi_add = [kDi -kDi;-kDi kDi];
             ASi_add = [kSi -kSi;-kSi kSi];
             for j=1:size(numddl13,1)

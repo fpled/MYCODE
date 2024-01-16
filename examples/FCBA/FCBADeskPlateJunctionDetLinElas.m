@@ -208,12 +208,16 @@ if solveProblem
     % Data
     filenameAna = 'data_ET_GL.mat';
     filenameNum = 'data_EL_NUL.mat';
-    filenameJunc = 'data_Kjunction.mat';
+    % filenameJunc = 'data_KS_KD.mat';
+    filenameS = 'data_KS.mat';
+    filenameD = 'data_KD.mat';
     pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
         'results','identification','materialParticleBoard');
     load(fullfile(pathnameIdentification,filenameAna));
     load(fullfile(pathnameIdentification,filenameNum));
-    load(fullfile(pathnameIdentification,filenameJunc));
+    % load(fullfile(pathnameIdentification,filenameJunc));
+    load(fullfile(pathnameIdentification,filenameS));
+    load(fullfile(pathnameIdentification,filenameD));
     
     % Material symmetry
     materialSym = 'isotTrans';
@@ -579,8 +583,8 @@ if solveProblem
         numddl25b1 = findddl(S,'RZ',numnode25b{1},'free');
         numddl25b2 = findddl(S,'RZ',numnode25b{2},'free');
         numddl25b = [numddl25b1 numddl25b2];
-        kS = mean(mean_Kscrew_data); % additonal junction rotational stiffness for junction screw
-        kD = mean(mean_Kdowel_data); % additonal junction rotational stiffness for junction dowel
+        kS = mean(mean_KS_data); % additonal junction rotational stiffness for junction screw
+        kD = mean(mean_KD_data); % additonal junction rotational stiffness for junction dowel
         AD_add = [kD -kD;-kD kD];
         AS_add = [kS -kS;-kS kS];
         for i=1:size(numddl13,1)

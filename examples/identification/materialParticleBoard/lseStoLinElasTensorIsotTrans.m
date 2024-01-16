@@ -15,7 +15,7 @@ function [lambda,err,exitflag,output] = lseStoLinElasTensorIsotTrans(C_data,MCMC
 % lambda(6) = la < 1/2
 
 if nargin==1 || isempty(MCMCalg)
-    MCMCalg = 'MH';
+    MCMCalg = 'MH'; % algorithm for Markov-Chain Monte Carlo (MCMC) method = 'MH', 'BUM', 'CUM' or 'SS'
 end
 
 % empirical estimates
@@ -52,16 +52,22 @@ lambda0 = [la1 la2 la3 la4 la5 la];
 % mphiC5 = 2*(psi(a)+log(b5));
 % nuCs = arrayfun(@(x) mean(log(C_sample(1:x,1).*C_sample(1:x,2)-C_sample(1:x,3).^2),1) + mphiC4 + mphiC5,1:N);
 % 
+% filename = ['modelStoLinElasIsotTrans_ElasTensor_' MCMCalg];
+% pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+%     'results','identification',filename);
+% 
 % fontsize = 16;
 % linewidth = 1;
 % interpreter = 'latex';
+% formats = {'fig','epsc'};
 % 
-% figure('Name','Convergence mean')
+% figure('Name','Convergence mean of C1, C2, C3')
 % clf
 % plot(1:N,mC1s,'-b','LineWidth',linewidth)
 % hold on
 % plot(1:N,mC2s,'-r','LineWidth',linewidth)
 % plot(1:N,mC3s,'-g','LineWidth',linewidth)
+% hold off
 % grid on
 % box on
 % set(gca,'FontSize',fontsize)
@@ -71,6 +77,8 @@ lambda0 = [la1 la2 la3 la4 la5 la];
 % %ylabel('Moyenne','Interpreter',interpreter)
 % l = legend('$C_1$','$C_2$','$C_3$');
 % set(l,'Interpreter',interpreter)
+% mysaveas(pathname,'convergence_mean_C1_C2_C3_lambda_init',formats);
+% mymatlab2tikz(pathname,'convergence_mean_C1_C2_C3_lambda_init.tex');
 % 
 % figure('Name','Convergence logarithmic mean of det([C])')
 % clf
@@ -79,9 +87,11 @@ lambda0 = [la1 la2 la3 la4 la5 la];
 % box on
 % set(gca,'FontSize',fontsize)
 % xlabel('Number of samples','Interpreter',interpreter)
-% ylabel('Logarithmic mean of $\det([C])$','Interpreter',interpreter)
+% ylabel('Logarithmic mean of $\det([${\boldmath$C$}$])$','Interpreter',interpreter)
 % %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-% %ylabel('Moyenne du logarithme de $\det([C])$','Interpreter',interpreter)
+% %ylabel('Moyenne du logarithme de $\det([${\boldmath$C$}$])$','Interpreter',interpreter)
+% mysaveas(pathname,'convergence_log_mean_detC_lambda_init',formats);
+% mymatlab2tikz(pathname,'convergence_log_mean_detC_lambda_init.tex');
 
 lb = [0 0 -Inf 0 0 -Inf];
 ub = [Inf Inf Inf Inf Inf 1/2];
@@ -89,8 +99,8 @@ nonlcon = @funconIsotTrans;
 
 % display = 'off';
 % display = 'iter';
-% display = 'iter-detailed';
-display = 'final';
+display = 'iter-detailed';
+% display = 'final';
 % display = 'final-detailed';
 
 tolX = 1e-12; % tolerance on the parameter value
@@ -105,5 +115,47 @@ options  = optimoptions('fmincon','Display',display,'StepTolerance',tolX,'Functi
 
 fun = @(lambda) funoptimlseIsotTrans(lambda,C_data,mC_data,nuC_data,MCMCalg);
 [lambda,err,exitflag,output] = fmincon(fun,lambda0,[],[],[],[],lb,ub,nonlcon,options);
+
+% [f,C_sample] = funoptimlseIsotTrans(lambda,C_data,mC_data,nuC_data,MCMCalg);
+% 
+% N = size(C_sample,1);
+% mC1s = arrayfun(@(x) mean(C_sample(1:x,1),1),1:N);
+% mC2s = arrayfun(@(x) mean(C_sample(1:x,2),1),1:N);
+% mC3s = arrayfun(@(x) mean(C_sample(1:x,3),1),1:N);
+% mphiC4 = 2*(psi(a)+log(b4));
+% mphiC5 = 2*(psi(a)+log(b5));
+% nuCs = arrayfun(@(x) mean(log(C_sample(1:x,1).*C_sample(1:x,2)-C_sample(1:x,3).^2),1) + mphiC4 + mphiC5,1:N);
+% 
+% figure('Name','Convergence mean of C1, C2, C3')
+% clf
+% plot(1:N,mC1s,'-b','LineWidth',linewidth)
+% hold on
+% plot(1:N,mC2s,'-r','LineWidth',linewidth)
+% plot(1:N,mC3s,'-g','LineWidth',linewidth)
+% hold off
+% grid on
+% box on
+% set(gca,'FontSize',fontsize)
+% xlabel('Number of samples','Interpreter',interpreter)
+% ylabel('Mean value','Interpreter',interpreter)
+% %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+% %ylabel('Moyenne','Interpreter',interpreter)
+% l = legend('$C_1$','$C_2$','$C_3$');
+% set(l,'Interpreter',interpreter)
+% mysaveas(pathname,'convergence_mean_C1_C2_C3_lambda_opt',formats);
+% mymatlab2tikz(pathname,'convergence_mean_C1_C2_C3_lambda_opt.tex');
+% 
+% figure('Name','Convergence logarithmic mean of det([C])')
+% clf
+% plot(1:N,nuCs,'-b','LineWidth',linewidth)
+% grid on
+% box on
+% set(gca,'FontSize',fontsize)
+% xlabel('Number of samples','Interpreter',interpreter)
+% ylabel('Logarithmic mean of $\det([${\boldmath$C$}$])$','Interpreter',interpreter)
+% %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+% %ylabel('Moyenne du logarithme de $\det([${\boldmath$C$}$])$','Interpreter',interpreter)
+% mysaveas(pathname,'convergence_log_mean_detC_lambda_opt',formats);
+% mymatlab2tikz(pathname,'convergence_log_mean_detC_lambda_opt.tex');
 
 end

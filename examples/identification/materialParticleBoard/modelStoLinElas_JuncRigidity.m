@@ -4,7 +4,7 @@
 % clc
 clearvars
 close all
-% rng('default');
+rng('default');
 
 %% Input data
 displaySolution = true;
@@ -23,207 +23,209 @@ interpreter = 'latex';
 formats = {'fig','epsc'};
 
 %% Data
-filenameAna = 'data_Kjunction.mat';
+filenameScrew = 'data_KS.mat';
+filenameDowel = 'data_KD.mat';
 pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification','materialParticleBoard');
-load(fullfile(pathnameIdentification,filenameAna));
+load(fullfile(pathnameIdentification,filenameScrew));
+load(fullfile(pathnameIdentification,filenameDowel));
 
-Kdowel_data = mean_Kdowel_data*1e-3; % [kN/rad]
-Kscrew_data = mean_Kscrew_data*1e-3; % [kN/rad]
-% mean_Kdowel = mean(Kdowel_data);
-% std_Kdowel = std(Kdowel_data);
-% mean_Kscrew = mean(Kscrew_data);
-% std_Kscrew = std(Kscrew_data);
-fprintf('\nnb data for Dowel junction = %d',length(Kdowel_data));
-fprintf('\nnb data for Screw junction = %d',length(Kscrew_data));
+KS_data = mean_KS_data*1e-3; % [kN/rad]
+KD_data = mean_KD_data*1e-3; % [kN/rad]
+% mean_KS = mean(KS_data);
+% std_KS = std(KS_data);
+% mean_KD = mean(KD_data);
+% std_KD = std(KD_data);
+fprintf('\nnb data for Dowel junction = %d',length(KD_data));
+fprintf('\nnb data for Screw junction = %d',length(KS_data));
 
 %% Maximum likelihood estimation
-phat_dowel = gamfit(Kdowel_data);
-phat_screw = gamfit(Kscrew_data);
+phatS = gamfit(KS_data);
+phatD = gamfit(KD_data);
 
-a_dowel = phat_dowel(1);
-b_dowel = phat_dowel(2);
-a_screw = phat_screw(1);
-b_screw = phat_screw(2);
-fprintf('\nalpha for dowel = %.4f',a_dowel);
-fprintf('\nbeta for dowel = %.4f',b_dowel);
-fprintf('\nalpha for screw = %.4f',a_screw);
-fprintf('\nbeta for screw = %.4f',b_screw);
+aS = phatS(1);
+bS = phatS(2);
+aD = phatD(1);
+bD = phatD(2);
+fprintf('\nalpha for screw = %.4f',aS);
+fprintf('\nbeta for screw = %.4f',bS);
+fprintf('\nalpha for dowel = %.4f',aD);
+fprintf('\nbeta for dowel = %.4f',bD);
 fprintf('\n');
 
-mKdowel = a_dowel*b_dowel;
-vKdowel = a_dowel*b_dowel^2;
-sKdowel = sqrt(vKdowel);
-dKdowel = sKdowel/mKdowel; 
+mKS = aS*bS;
+vKS = aS*bS^2;
+sKS = sqrt(vKS);
+dKS = sKS/mKS; 
 
-mKscrew = a_screw*b_screw;
-vKscrew = a_screw*b_screw^2;
-sKscrew = sqrt(vKscrew);
-dKscrew = sKscrew/mKscrew; 
+mKD = aD*bD;
+vKD = aD*bD^2;
+sKD = sqrt(vKD);
+dKD = sKD/mKD; 
 
-fprintf('\nmean(Kdowel) = %.4f kN/rad',mKdowel);
-fprintf('\nvar(Kdowel)  = %.4f (kN/rad)^2',vKdowel);
-fprintf('\nstd(Kdowel)  = %.4f kN/rad',sKdowel);
-fprintf('\ndisp(Kdowel) = %.4f',dKdowel);
-fprintf('\nmean(Kscrew) = %.4f kN/rad',mKscrew);
-fprintf('\nvar(Kscrew)  = %.4f (kN/rad)^2',vKscrew);
-fprintf('\nstd(Kscrew)  = %.4f kN/rad',sKscrew);
-fprintf('\ndisp(Kscrew) = %.4f',dKscrew);
+fprintf('\nmean(KS) = %.4f kN/rad',mKS);
+fprintf('\nvar(KS)  = %.4f (kN/rad)^2',vKS);
+fprintf('\nstd(KS)  = %.4f kN/rad',sKS);
+fprintf('\ndisp(KS) = %.4f',dKS);
+
+fprintf('\nmean(KD) = %.4f kN/rad',mKD);
+fprintf('\nvar(KD)  = %.4f (kN/rad)^2',vKD);
+fprintf('\nstd(KD)  = %.4f kN/rad',sKD);
+fprintf('\ndisp(KD) = %.4f',dKD);
 fprintf('\n');
 
 %% Pdf and cdf
-pdf_Kdowel = @(x) gampdf(x,a_dowel,b_dowel);
-cdf_Kdowel = @(x) gamcdf(x,a_dowel,b_dowel);
-pdf_Kscrew = @(x) gampdf(x,a_screw,b_screw);
-cdf_Kscrew = @(x) gamcdf(x,a_screw,b_screw);
+pdf_KS = @(x) gampdf(x,aS,bS);
+cdf_KS = @(x) gamcdf(x,aS,bS);
+pdf_KD = @(x) gampdf(x,aD,bD);
+cdf_KD = @(x) gamcdf(x,aD,bD);
 
 %% Sample generation
 N = 1e4; % number of samples
-k_dowel = gamrnd(a_dowel,b_dowel,N,1); % [kN/rad]
-k_screw = gamrnd(a_screw,b_screw,N,1); % [kN/rad]
+kS = gamrnd(aS,bS,N,1); % [kN/rad]
+kD = gamrnd(aD,bD,N,1); % [kN/rad]
 
 %% Display
 if displaySolution
     %% Plot data
-    figure('Name','Data for dowel stiffness')
+    figure('Name','Data for KS')
     clf
-    bar(1:length(Kdowel_data),Kdowel_data)
+    bar(KS_data)
+    grid on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[0,length(Kdowel_data)+1])
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Stiffness per unit length $k$ [kN/rad]','Interpreter',interpreter);
+    ylabel('Bending  stiffness per unit length $k^S$ [kN/rad]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Rigidit\''e lin\''eique $k$ [kN/rad]','Interpreter',interpreter);
-    mysaveas(pathname,'data_Kdowel',formats);
-    mymatlab2tikz(pathname,'data_Kdowel.tex');
-
-    figure('Name','Data for screw stiffness')
+    %ylabel('Rigidit\''e lin\''eique en flexion $k^S$ [kN/rad]','Interpreter',interpreter);
+    mysaveas(pathname,'data_KS',formats);
+    mymatlab2tikz(pathname,'data_KS.tex');
+    
+    figure('Name','Data for KD')
     clf
-    bar(1:length(Kscrew_data),Kscrew_data)
+    bar(KD_data)
+    grid on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[0,length(Kscrew_data)+1])
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Stiffness per unit length $k$ [kN/rad]','Interpreter',interpreter);
+    ylabel('Bending stiffness per unit length $k^D$ [kN/rad]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Rigidit\''e lin\''eique $k$ [kN/rad]','Interpreter',interpreter);
-    mysaveas(pathname,'data_Kscrew',formats);
-    mymatlab2tikz(pathname,'data_Kscrew.tex');
+    %ylabel('Rigidit\''e lin\''eique en flexion $k^D$ [kN/rad]','Interpreter',interpreter);
+    mysaveas(pathname,'data_KD',formats);
+    mymatlab2tikz(pathname,'data_KD.tex');
     
     %% Plot pdfs and cdfs
-    xmin_dowel = max(0,mKdowel-5*sKdowel);
-    xmax_dowel = mKdowel+5*sKdowel;
-    x_dowel = linspace(xmin_dowel,xmax_dowel,1e3);
+    xminD = max(0,mKD-5*sKD);
+    xmaxD = mKD+5*sKD;
+    xD = linspace(xminD,xmaxD,1e3);
     
-    % Plot pdf of Kdowel
-    figure('Name','Probability density function of Kdowel')
+    xminS = max(0,mKS-5*sKS);
+    xmaxS = mKS+5*sKS;
+    xS = linspace(xminS,xmaxS,1e3);
+    
+    % Plot pdf of KS
+    figure('Name','Probability density function of KS')
     clf
-    hold on
-    plot(x_dowel,pdf_Kdowel(x_dowel),'-b','LineWidth',linewidth);
-    plot(Kdowel_data,pdf_Kdowel(Kdowel_data),'r+');
-    hold off
+    plot(xS,pdf_KS(xS),'-b','LineWidth',linewidth);
+    %hold on
+    %plot(KS_data,pdf_KS(KS_data),'k+','LineWidth',linewidth);
+    %hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[xmin_dowel,xmax_dowel])
+    set(gca,'XLim',[xminS,xmaxS])
     xlabel('$k$ [kN/rad]','Interpreter',interpreter)
-    ylabel('$p_K(k)$','Interpreter',interpreter)
-    mysaveas(pathname,'pdf_Kdowel',formats);
-    mymatlab2tikz(pathname,'pdf_Kdowel.tex',...
+    ylabel('$p_{K^S}(k)$','Interpreter',interpreter)
+    mysaveas(pathname,'pdf_KS',formats);
+    mymatlab2tikz(pathname,'pdf_KS.tex',...
         'extraAxisOptions',{'ylabel style={overlay}'});
     
-    % Plot cdf of Kdowel
-    figure('Name','Cumulative distribution function of Kdowel')
+    % Plot cdf of KS
+    figure('Name','Cumulative distribution function of KS')
     clf
-    hold on
-    plot(x_dowel,cdf_Kdowel(x_dowel),'-b','LineWidth',linewidth);
-    plot(Kdowel_data,cdf_Kdowel(Kdowel_data),'r+');
-    hold off
+    plot(xS,cdf_KS(xS),'-r','LineWidth',linewidth);
+    %hold on
+    %plot(KS_data,cdf_KS(KS_data),'k+','LineWidth',linewidth);
+    %hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[xmin_dowel,xmax_dowel])
+    set(gca,'XLim',[xminS,xmaxS])
     set(gca,'YLim',[0,1])
     xlabel('$k$ [kN/rad]','Interpreter',interpreter)
-    ylabel('$F_K(k)$','Interpreter',interpreter)
-    mysaveas(pathname,'cdf_Kdowel',formats);
-    mymatlab2tikz(pathname,'cdf_Kdowel.tex',...
-        'extraAxisOptions',{'ylabel style={overlay}'});  
-    
-    xmin_screw = max(0,mKscrew-5*sKscrew);
-    xmax_screw = mKscrew+5*sKscrew;
-    x_screw = linspace(xmin_screw,xmax_screw,1e3);
-    
-    % Plot pdf of Kscrew
-    figure('Name','Probability density function of Kscrew')
-    clf
-    hold on
-    plot(x_screw,pdf_Kscrew(x_screw),'-b','LineWidth',linewidth);
-    plot(Kscrew_data,pdf_Kscrew(Kscrew_data),'r+');
-    hold off
-    grid on
-    box on
-    set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[xmin_screw,xmax_screw])
-    xlabel('$k$ [kN/rad]','Interpreter',interpreter)
-    ylabel('$p_K(k)$','Interpreter',interpreter)
-    mysaveas(pathname,'pdf_Kscrew',formats);
-    mymatlab2tikz(pathname,'pdf_Kscrew.tex',...
+    ylabel('$F_{K^S}(k)$','Interpreter',interpreter)
+    mysaveas(pathname,'cdf_KS',formats);
+    mymatlab2tikz(pathname,'cdf_KS.tex',...
         'extraAxisOptions',{'ylabel style={overlay}'});
     
-    % Plot cdf of Kscrew
-    figure('Name','Cumulative distribution function of Kscrew')
+    % Plot pdf of KD
+    figure('Name','Probability density function of KD')
     clf
-    hold on
-    plot(x_screw,cdf_Kscrew(x_screw),'-b','LineWidth',linewidth);
-    plot(Kscrew_data,cdf_Kscrew(Kscrew_data),'r+');
-    hold off
+    plot(xD,pdf_KD(xD),'-b','LineWidth',linewidth);
+    %hold on
+    %plot(KD_data,pdf_KD(KD_data),'k+','LineWidth',linewidth);
+    %hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[xmin_screw,xmax_screw])
+    set(gca,'XLim',[xminD,xmaxD])
+    xlabel('$k$ [kN/rad]','Interpreter',interpreter)
+    ylabel('$p_{K^D}(k)$','Interpreter',interpreter)
+    mysaveas(pathname,'pdf_KD',formats);
+    mymatlab2tikz(pathname,'pdf_KD.tex',...
+        'extraAxisOptions',{'ylabel style={overlay}'});
+    
+    % Plot cdf of KD
+    figure('Name','Cumulative distribution function of KD')
+    clf
+    plot(xD,cdf_KD(xD),'-r','LineWidth',linewidth);
+    %hold on
+    %plot(KD_data,cdf_KD(KD_data),'k+','LineWidth',linewidth);
+    %hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    set(gca,'XLim',[xminD,xmaxD])
     set(gca,'YLim',[0,1])
     xlabel('$k$ [kN/rad]','Interpreter',interpreter)
-    ylabel('$F_K(k)$','Interpreter',interpreter)
-    mysaveas(pathname,'cdf_Kscrew',formats);
-    mymatlab2tikz(pathname,'cdf_Kscrew.tex',...
-        'extraAxisOptions',{'ylabel style={overlay}'});     
+    ylabel('$F_{K^D}(k)$','Interpreter',interpreter)
+    mysaveas(pathname,'cdf_KD',formats);
+    mymatlab2tikz(pathname,'cdf_KD.tex',...
+        'extraAxisOptions',{'ylabel style={overlay}'});
    
     %% Plot samples
-    figure('Name','Samples of Kdowel')
+    figure('Name','Samples of KS')
     clf
-    scatter(1:N,k_dowel,'b.')
+    scatter(1:N,kS,'b.')
     hold on
-    plot([1 N],[mKdowel mKdowel],'-r','LineWidth',linewidth)
+    plot([1 N],[mKS mKS],'-r','LineWidth',linewidth)
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Number of realizations','Interpreter',interpreter)
-    ylabel('Stiffness per unit length $k$ [kN/rad]','Interpreter',interpreter)
-    legend('samples','mean');
+    ylabel('Bending stiffness per unit length $k^S$ [kN/rad]','Interpreter',interpreter)
+    legend('samples','mean value');
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-    %ylabel('Rigidit\''e lin\''eique $k$ [kN/rad]','Interpreter',interpreter)
+    %ylabel('Rigidit\''e lin\''eique en flexion $k^S$ [kN/rad]','Interpreter',interpreter)
     %legend('réalisations','valeur moyenne');
-    mysaveas(pathname,'samples_Kdowel',formats);
-    mymatlab2tikz(pathname,'samples_Kdowel.tex');
+    mysaveas(pathname,'samples_KS',formats);
+    mymatlab2tikz(pathname,'samples_KS.tex');
     
-    figure('Name','Samples of Kscrew')
+    figure('Name','Samples of KD')
     clf
-    scatter(1:N,k_screw,'b.')
+    scatter(1:N,kD,'b.')
     hold on
-    plot([1 N],[mKscrew mKscrew],'-r','LineWidth',linewidth)
+    plot([1 N],[mKD mKD],'-r','LineWidth',linewidth)
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Number of realizations','Interpreter',interpreter)
-    ylabel('Stiffness per unit length $k$ [kN/rad]','Interpreter',interpreter)
-    legend('samples','mean');
+    ylabel('Bending stiffness per unit length $k^D$ [kN/rad]','Interpreter',interpreter)
+    legend('samples','mean value');
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-    %ylabel('Rigidit\''e lin\''eique $k$ [kN/rad]','Interpreter',interpreter)
+    %ylabel('Rigidit\''e lin\''eique en flexion $k^D$ [kN/rad]','Interpreter',interpreter)
     %legend('réalisations','valeur moyenne');
-    mysaveas(pathname,'samples_Kscrew',formats);
-    mymatlab2tikz(pathname,'samples_Kscrew.tex');
-    
+    mysaveas(pathname,'samples_KD',formats);
+    mymatlab2tikz(pathname,'samples_KD.tex');
     
 end

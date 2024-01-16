@@ -4,7 +4,7 @@
 % clc
 clearvars
 close all
-% rng('default');
+rng('default');
 
 %% Input data
 displaySolution = true;
@@ -120,9 +120,9 @@ if displaySolution
     %% Plot data
     figure('Name','Data')
     clf
-    bar(1:length(E_data),E_data)
+    bar(E_data)
+    grid on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[0,length(E_data)+1])
     xlabel('Sample number','Interpreter',interpreter);
     ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
@@ -138,10 +138,10 @@ if displaySolution
     % Plot pdf of E
     figure('Name','Probability density function')
     clf
-    hold on
     plot(x,pdf_E(x),'-b','LineWidth',linewidth);
-    plot(E_data,pdf_E(E_data),'r+');
-    hold off
+    %hold on
+    %plot(E_data,pdf_E(E_data),'k+');
+    %hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -157,10 +157,10 @@ if displaySolution
     % Plot cdf of E
     figure('Name','Cumulative distribution function')
     clf
-    hold on
-    plot(x,cdf_E(x),'-b','LineWidth',linewidth);
-    plot(E_data,cdf_E(E_data),'r+');
-    hold off
+    plot(x,cdf_E(x),'-r','LineWidth',linewidth);
+    %hold on
+    %plot(E_data,cdf_E(E_data),'k+');
+    %hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -186,7 +186,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('Number of samples','Interpreter',interpreter)
     ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter)
-    legend('samples','mean');
+    legend('samples','mean value');
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
     %ylabel('Module d''Young $E$ [GPa]','Interpreter',interpreter)
     %legend('réalisations','valeur moyenne');

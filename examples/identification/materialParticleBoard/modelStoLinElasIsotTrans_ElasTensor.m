@@ -5,7 +5,7 @@
 % clc
 clearvars
 close all
-% rng('default');
+rng('default');
 
 %% Input data
 displaySolution = true;
@@ -148,22 +148,154 @@ fprintf('\n');
 
 %% Display
 if displaySolution
+    %% Plot data
+    figure('Name','Data for ET')
+    clf
+    bar(ET_data);
+    grid on
+    set(gca,'FontSize',fontsize)
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Transverse Young''s modulus $E^T$ [GPa]','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Module d''Young transverse $E^T$ [GPa]','Interpreter',interpreter);
+    mysaveas(pathname,'data_ET',formats);
+    mymatlab2tikz(pathname,'data_ET.tex');
+    
+    figure('Name','Data for EL')
+    clf
+    bar(EL_data*1e3);
+    grid on
+    set(gca,'FontSize',fontsize)
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Longitudinal Young''s modulus $E^L$ [MPa]','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Module d''Young longitudinal $E^L$ [MPa]','Interpreter',interpreter);
+    mysaveas(pathname,'data_EL',formats);
+    mymatlab2tikz(pathname,'data_EL.tex');
+    
+    figure('Name','Data for GL')
+    clf
+    bar(GL_data*1e3);
+    grid on
+    set(gca,'FontSize',fontsize)
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Longitudinal shear modulus $G^L$ [MPa]','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Module de cisaillement longitudinal $G^L$ [MPa]','Interpreter',interpreter);
+    mysaveas(pathname,'data_G','fig');
+    mymatlab2tikz(pathname,'data_G.tex');
+    
+    figure('Name','Data for NUL')
+    clf
+    bar(NUL_data);
+    grid on
+    set(gca,'FontSize',fontsize)
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Longitudinal Poisson''s ratio $\nu^L$','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Coefficient de Poisson longitudinal $\nu^L$','Interpreter',interpreter);
+    mysaveas(pathname,'data_NUL',formats);
+    mymatlab2tikz(pathname,'data_NUL.tex');
+    
+    figure('Name','Data for NUT')
+    clf
+    bar(NUT_data);
+    grid on
+    set(gca,'FontSize',fontsize)
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Transverse Poisson''s ratio $\nu^T$','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Coefficient de Poisson transverse $\nu^T$','Interpreter',interpreter);
+    mysaveas(pathname,'data_NUL',formats);
+    mymatlab2tikz(pathname,'data_NUL.tex');
+
     %% Plot pdfs and cdfs
-    N = 100;
-    x4_min = max(0,mean(C_data(:,4))-10*std(C_data(:,4)));
-    x4_max = mean(C_data(:,4))+10*std(C_data(:,4));
-    x5_min = max(0,mean(C_data(:,5))-10*std(C_data(:,5)));
-    x5_max = mean(C_data(:,5))+10*std(C_data(:,5));
+    N = 1e3;
+    [f1,xi1,bw1] = ksdensity(C_sample(:,1),'npoints',N);
+    [f2,xi2,bw2] = ksdensity(C_sample(:,2),'npoints',N);
+    [f3,xi3,bw3] = ksdensity(C_sample(:,3),'npoints',N);
+    [f4,xi4,bw4] = ksdensity(C_sample(:,4),'npoints',N);
+    [f5,xi5,bw5] = ksdensity(C_sample(:,5),'npoints',N);
+    
+    % Plot pdf estimate of C1
+    figure('Name','Probability density estimate of C1')
+    clf
+    plot(xi1,f1,'-b','LineWidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    set(gca,'XLim',[min(xi1),max(xi1)])
+    xlabel('$c_1$ [GPa]','Interpreter',interpreter)
+    ylabel('$p_{C_1}(c_1)$','Interpreter',interpreter)
+    mysaveas(pathname,'pdf_C1_ksdensity',formats);
+    mymatlab2tikz(pathname,'pdf_C1_ksdensity.tex');
+    
+    % Plot pdf estimate of C2
+    figure('Name','Probability density estimate of C2')
+    clf
+    plot(xi2,f2,'-b','LineWidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    set(gca,'XLim',[min(xi2),max(xi2)])
+    xlabel('$c_2$ [GPa]','Interpreter',interpreter)
+    ylabel('$p_{C_2}(c_2)$','Interpreter',interpreter)
+    mysaveas(pathname,'pdf_C2_ksdensity',formats);
+    mymatlab2tikz(pathname,'pdf_C2_ksdensity.tex');
+    
+    % Plot pdf estimate of C3
+    figure('Name','Probability density estimate of C3')
+    clf
+    plot(xi3,f3,'-b','LineWidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    set(gca,'XLim',[min(xi3),max(xi3)])
+    xlabel('$c_3$ [GPa]','Interpreter',interpreter)
+    ylabel('$p_{C_3}(c_3)$','Interpreter',interpreter)
+    mysaveas(pathname,'pdf_C3_ksdensity',formats);
+    mymatlab2tikz(pathname,'pdf_C3_ksdensity.tex');
+    
+    % Plot pdf estimate of C4
+    figure('Name','Probability density estimate of C4')
+    clf
+    plot(xi4,f4,'-b','LineWidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    set(gca,'XLim',[min(xi4),max(xi4)])
+    xlabel('$c_4$ [GPa]','Interpreter',interpreter)
+    ylabel('$p_{C_4}(c_4)$','Interpreter',interpreter)
+    mysaveas(pathname,'pdf_C4_ksdensity',formats);
+    mymatlab2tikz(pathname,'pdf_C4_ksdensity.tex');
+    
+    % Plot pdf estimate of C5
+    figure('Name','Probability density estimate of C5')
+    clf
+    plot(xi5,f5,'-b','LineWidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    set(gca,'XLim',[min(xi5),max(xi5)])
+    xlabel('$c_5$ [GPa]','Interpreter',interpreter)
+    ylabel('$p_{C_5}(c_5)$','Interpreter',interpreter)
+    mysaveas(pathname,'pdf_C5_ksdensity',formats);
+    mymatlab2tikz(pathname,'pdf_C5_ksdensity.tex');
+    
+    x4_min = max(0,mean(C_data(:,4))-5*std(C_data(:,4)));
+    x4_max = mean(C_data(:,4))+5*std(C_data(:,4));
+    x5_min = max(0,mean(C_data(:,5))-5*std(C_data(:,5)));
+    x5_max = mean(C_data(:,5))+5*std(C_data(:,5));
     
     % Plot pdf of C4
     figure('Name','Probability density function of C4')
     clf
     x4 = linspace(x4_min,x4_max,N);
     y4 = pdf_C4(x4);
-    plot(x4,y4,'-b');
-    hold on
-    plot(C_data(:,4),pdf_C4(C_data(:,4)),'r+');
-    hold off
+    plot(x4,y4,'-b','LineWidth',linewidth);
+    %hold on
+    %plot(C_data(:,4),pdf_C4(C_data(:,4)),'k+','LineWidth',linewidth);
+    %hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -178,10 +310,10 @@ if displaySolution
     clf
     x5 = linspace(x5_min,x5_max,N);
     y5 = pdf_C5(x5);
-    plot(x5,y5,'-b');
-    hold on
-    plot(C_data(:,5),pdf_C5(C_data(:,5)),'r+');
-    hold off
+    plot(x5,y5,'-b','LineWidth',linewidth);
+    %hold on
+    %plot(C_data(:,5),pdf_C5(C_data(:,5)),'k+','LineWidth',linewidth);
+    %hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -195,10 +327,10 @@ if displaySolution
     figure('name','cumulative distribution function of C4')
     clf
     z4 = cdf_C4(x4);
-    plot(x4,z4,'-b');
-    hold on
-    plot(C_data(:,4),cdf_C4(C_data(:,4)),'r+');
-    hold off
+    plot(x4,z4,'-r','LineWidth',linewidth);
+    %hold on
+    %plot(C_data(:,4),cdf_C4(C_data(:,4)),'k+','LineWidth',linewidth);
+    %hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -212,10 +344,10 @@ if displaySolution
     figure('name','cumulative distribution function of C5')
     clf
     z5 = cdf_C5(x5);
-    plot(x5,z5,'-b');
-    hold on
-    plot(C_data(:,5),cdf_C5(C_data(:,5)),'r+');
-    hold off
+    plot(x5,z5,'-r','LineWidth',linewidth);
+    %hold on
+    %plot(C_data(:,5),cdf_C5(C_data(:,5)),'k+','LineWidth',linewidth);
+    %hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -243,16 +375,16 @@ if displaySolution
     clf
     scatter3(C_sample(:,1),C_sample(:,2),C_sample(:,3),'b.')
     hold on
-    scatter3(C_data(:,1),C_data(:,2),C_data(:,3),'r+')
+    scatter3(C_data(:,1),C_data(:,2),C_data(:,3),'r+','LineWidth',linewidth)
     surf(C1,C2,C3,'FaceAlpha',0.5)
     surf(C1,C2,-C3,'FaceAlpha',0.5)
     hold off
     grid on
     box on
     set(gca,'Xdir','reverse','Ydir','reverse','FontSize',fontsize)
-    xlabel('$C_1$ [GPa]','Interpreter',interpreter);
-    ylabel('$C_2$ [GPa]','Interpreter',interpreter);
-    zlabel('$C_3$ [GPa]','Interpreter',interpreter);
+    xlabel('$c_1$ [GPa]','Interpreter',interpreter);
+    ylabel('$c_2$ [GPa]','Interpreter',interpreter);
+    zlabel('$c_3$ [GPa]','Interpreter',interpreter);
     legend('samples','data','support');
     %legend('réalisations','données','support');
     mysaveas(pathname,'samples_C1_C2_C3',formats);
@@ -262,13 +394,13 @@ if displaySolution
     clf
     scatter(C_sample(:,4),C_sample(:,5),'b.')
     hold on
-    scatter(C_data(:,4),C_data(:,5),'r+')
+    scatter(C_data(:,4),C_data(:,5),'r+','LineWidth',linewidth)
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('$C_4$ [GPa]','Interpreter',interpreter);
-    ylabel('$C_5$ [GPa]','Interpreter',interpreter);
+    xlabel('$c_4$ [GPa]','Interpreter',interpreter);
+    ylabel('$c_5$ [GPa]','Interpreter',interpreter);
     legend('samples','data');
     %legend('réalisations','données');
     mysaveas(pathname,'samples_C4_C5',formats);
@@ -276,15 +408,15 @@ if displaySolution
     
     figure('name','Samples of (ET,GL,NUT)')
     clf
-    scatter3(ET_sample,GL_sample,NUT_sample,'b.')
+    scatter3(ET_sample,GL_sample*1e3,NUT_sample,'b.')
     hold on
-    scatter3(ET_data,GL_data,NUT_data,'r+')
+    scatter3(ET_data,GL_data*1e3,NUT_data,'r+','LineWidth',linewidth)
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('$E^T$ [GPa]','Interpreter',interpreter);
-    ylabel('$G^L$ [GPa]','Interpreter',interpreter);
+    ylabel('$G^L$ [MPa]','Interpreter',interpreter);
     zlabel('$\nu^T$','Interpreter',interpreter);
     legend('samples','data');
     %legend('réalisations','données');

@@ -1,5 +1,5 @@
-%% Identification of junction stiffness %%
-%%--------------------------------------%%
+%% Identification of bending stiffness for screw and dowel junctions %%
+%%-------------------------------------------------------------------%%
 % Call after Digital Image Correlation (DIC) RT3
 % Coordinate system
 % CORRELI:    right     down
@@ -14,7 +14,8 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-filename = 'data_Kjunction.mat';
+filenameS = 'data_KS.mat';
+filenameD = 'data_KD.mat';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification','materialParticleBoard');
 if ~exist(pathname,'dir')
@@ -32,11 +33,10 @@ renderer = 'OpenGL';
 %% Identification
 if solveProblem
 numScrewTotal = 16;
-sampleScrewDelete = [9 11 16]; 
-sampleNumScrew = setdiff(1:numScrewTotal,sampleScrewDelete);
+sampleScrewDeleted = [9 11 16]; % 3 samples to be deleted due to manufacturing defects
+sampleNumScrew = setdiff(1:numScrewTotal,sampleScrewDeleted);
 numScrew = length(sampleNumScrew);
 numDowel = 8;
-% 3 samples to be deleted due to manufacturing defects
 
 d = 67.5e-3; % [m]
 b = 113e-3; % [m]
@@ -44,13 +44,14 @@ b = 113e-3; % [m]
 % Bending moment per unit length: ml = F*d/b
 % Bending stiffness per unit length: k = ml/angle
 
-F_screw = cell(numScrew,1);
-ml_screw = cell(numScrew,1);
-angle_screw = cell(numScrew,1);
-k_screw = cell(numScrew,1);
-mean_Kscrew_data = zeros(numScrew,1);
+FS = cell(numScrew,1);
+mlS = cell(numScrew,1);
+angleS = cell(numScrew,1);
+kS = cell(numScrew,1);
+mean_KS_data = zeros(numScrew,1);
 
 for i=1:numScrew
+% for i=6
     
     j = sampleNumScrew(i);
     
@@ -72,6 +73,7 @@ for i=1:numScrew
         filenameDICa = [numSamplea '_00-' numImage '-Mesh'];
         filenameDICb = [numSampleb '_00-' numImage '-Mesh'];
         
+        clear Mesh Job U
         load(fullfile(pathnameDIC,filenameDICa));
         X = real(Mesh.Znode);
         Y = imag(Mesh.Znode);
@@ -116,7 +118,7 @@ for i=1:numScrew
         coordx_b_screw(:) = coordx_b_screw(:) - min_coordx_a_screw;
         coordy_b_screw(:) = coordy_b_screw(:) - min_coordy_a_screw;
         coord_b_screw = [coordx_b_screw coordy_b_screw];
-                  
+        
 %         node_a_screw = NODE(coord_a_screw,1:size(coord_a_screw,1));
 %         node_b_screw = NODE(coord_b_screw,1:size(coord_b_screw,1));
 %         elem_a_screw = TRI_a_screw;
@@ -139,7 +141,7 @@ for i=1:numScrew
 %         plot(coordx_a_screw(numnode_bound_a_screw),coordy_a_screw(numnode_bound_a_screw),'r*')
 %         plot(coordx_b_screw(numnode_bound_b_screw),coordy_b_screw(numnode_bound_b_screw),'k*')
 %         hold off
-
+        
         points_a_screw = find(coordx_a_screw>max(coordx_a_screw)-Mesh.CharLength*scaleFactor/3 &...
             coordy_a_screw>min(coordy_b_screw));
         points_b_screw = find(coordx_b_screw<min(coordx_b_screw)+Mesh.CharLength*scaleFactor/3 &...
@@ -277,21 +279,21 @@ for i=1:numScrew
     
     toc(time)
     
-    F_screw{i} = F; % [N]
-    ml_screw{i} = ml; % [N.m/m]
-    angle_screw{i} = angle; % [deg]
-    k_screw{i} = ml./deg2rad(angle)'; % [N/rad]
-    mean_Kscrew_data(i) = mean( ml(2:end-1)./deg2rad(angle(2:end-1))' ); % [N/rad]
+    FS{i} = F; % [N]
+    mlS{i} = ml; % [N.m/m]
+    angleS{i} = angle; % [deg]
+    kS{i} = ml./deg2rad(angle)'; % [N/rad]
+    mean_KS_data(i) = mean( ml(2:end-1)./deg2rad(angle(2:end-1))' ); % [N/rad]
 end
 
-F_dowel = cell(numDowel,1);
-ml_dowel = cell(numDowel,1);
-angle_dowel = cell(numDowel,1);
-k_dowel = cell(numDowel,1);
-mean_Kdowel_data = zeros(numDowel,1);
+FD = cell(numDowel,1);
+mlD = cell(numDowel,1);
+angleD = cell(numDowel,1);
+kD = cell(numDowel,1);
+mean_KD_data = zeros(numDowel,1);
 
 for j=1:numDowel
-% for j=4
+% for j=2
     
     numSample = ['D' num2str(j)];
     numSamplea = ['D' num2str(j) 'a'];
@@ -516,22 +518,24 @@ for j=1:numDowel
     
     toc(time)
     
-    F_dowel{j} = F; % [N]
-    ml_dowel{j} = ml; % [N.m/m]
-    angle_dowel{j} = angle; % [deg]
-    k_dowel{j} = ml./deg2rad(angle)'; % [N/rad]
-    mean_Kdowel_data(j) = mean(k_dowel{j}); % [N/rad]
+    FD{j} = F; % [N]
+    mlD{j} = ml; % [N.m/m]
+    angleD{j} = angle; % [deg]
+    kD{j} = ml./deg2rad(angle)'; % [N/rad]
+    mean_KD_data(j) = mean(kD{j}); % [N/rad]
 end
 
 %% Save variables
-save(fullfile(pathname,filename),'numScrew','numDowel','sampleNumScrew',...
-    'F_screw','ml_screw','angle_screw','k_screw','mean_Kscrew_data',...
-    'F_dowel','ml_dowel','angle_dowel','k_dowel','mean_Kdowel_data');
+save(fullfile(pathname,filenameS),'numScrew','sampleNumScrew',...
+    'FS','mlS','angleS','kS','mean_KS_data');
+save(fullfile(pathname,filenameD),'numDowel',...
+    'FD','mlD','angleD','kD','mean_KD_data');
 else
 %% Load variables
-load(fullfile(pathname,filename),'numScrew','numDowel','sampleNumScrew',...
-    'F_screw','ml_screw','angle_screw','k_screw','mean_Kscrew_data',...
-    'F_dowel','ml_dowel','angle_dowel','k_dowel','mean_Kdowel_data');
+load(fullfile(pathname,filenameS),'numScrew','sampleNumScrew',...
+    'FS','mlS','angleS','kS','mean_KS_data');
+load(fullfile(pathname,filenameD),'numDowel',...
+    'FD','mlD','angleD','kD','mean_KD_data');
 end
 
 %% Plot data
@@ -544,9 +548,9 @@ if displaySolution
         
         figure('name',['Screw junction ' numSample ': Variation of angle w.r.t. bending moment per unit length'])
         clf
-        plot(ml_screw{i},angle_screw{i},'+b','LineWidth',linewidth)
+        plot(mlS{i},angleS{i},'+b','LineWidth',linewidth)
         hold on
-        plot(ml_screw{i},rad2deg(ml_screw{i}./mean_Kscrew_data(i)),'-r','LineWidth',linewidth)
+        plot(mlS{i},rad2deg(mlS{i}./mean_KS_data(i)),'-r','LineWidth',linewidth)
         hold off
         grid on
         set(gca,'FontSize',fontsize)
@@ -559,13 +563,13 @@ if displaySolution
         
         figure('name',['Screw junction ' numSample ': Bending stiffness per unit length w.r.t. applied load'])
         clf
-        plot(F_screw{i},k_screw{i},'+b','LineWidth',linewidth)
+        plot(FS{i},kS{i}*1e-3,'+b','LineWidth',linewidth)
         grid on
         set(gca,'FontSize',fontsize)
         xlabel('Applied load [N]','Interpreter',interpreter);
-        ylabel('Bending stiffness per unit length [N/rad]','Interpreter',interpreter);
+        ylabel('Bending stiffness per unit length [kN/rad]','Interpreter',interpreter);
         %xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
-        %ylabel('Rigidit\''e lin\''eique en flexion [N/rad]','Interpreter',interpreter);
+        %ylabel('Rigidit\''e lin\''eique en flexion [kN/rad]','Interpreter',interpreter);
         mysaveas(pathname,['data_stiffness_load_' numSample],formats);
         mymatlab2tikz(pathname,['data_stiffness_load_' numSample '.tex']);
     end
@@ -575,9 +579,9 @@ if displaySolution
         
         figure('name',['Dowel junction ' numSample ': Variation of angle w.r.t. bending moment per unit length'])
         clf
-        plot(ml_dowel{j},angle_dowel{j},'+b','LineWidth',linewidth)
+        plot(mlD{j},angleD{j},'+b','LineWidth',linewidth)
         hold on
-        plot(ml_dowel{j},rad2deg(ml_dowel{j}./mean_Kdowel_data(j)),'-r','LineWidth',linewidth)
+        plot(mlD{j},rad2deg(mlD{j}./mean_KD_data(j)),'-r','LineWidth',linewidth)
         hold off
         grid on
         set(gca,'FontSize',fontsize)
@@ -590,13 +594,13 @@ if displaySolution
         
         figure('name',['Dowel junction ' numSample ': Bending stiffness per unit length w.r.t. applied load'])
         clf
-        plot(F_dowel{j},k_dowel{j},'+b','LineWidth',linewidth)
+        plot(FD{j},kD{j}*1e-3,'+b','LineWidth',linewidth)
         grid on
         set(gca,'FontSize',fontsize)
         xlabel('Applied load [N]','Interpreter',interpreter);
-        ylabel('Bending stiffness per unit length [N/rad]','Interpreter',interpreter);
+        ylabel('Bending stiffness per unit length [kN/rad]','Interpreter',interpreter);
         %xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
-        %ylabel('Rigidit\''e lin\''eique en flexion [N/rad]','Interpreter',interpreter);
+        %ylabel('Rigidit\''e lin\''eique en flexion [kN/rad]','Interpreter',interpreter);
         mysaveas(pathname,['data_stiffness_load_' numSample],formats);
         mymatlab2tikz(pathname,['data_stiffness_load_' numSample '.tex']);
     end
@@ -606,9 +610,9 @@ if displaySolution
     leg = cell(numScrew,1);
     h = gobjects(numScrew,1);
     for i=1:numScrew
-        plot(ml_screw{i},angle_screw{i},'+','Color',color(i,:),'LineWidth',linewidth)
+        plot(mlS{i},angleS{i},'+','Color',color(i,:),'LineWidth',linewidth)
         hold on
-        h(i) = plot(ml_screw{i},rad2deg(ml_screw{i}./mean_Kscrew_data(i)),'LineStyle','-','Color',color(i,:),'LineWidth',linewidth);
+        h(i) = plot(mlS{i},rad2deg(mlS{i}./mean_KS_data(i)),'LineStyle','-','Color',color(i,:),'LineWidth',linewidth);
         leg{i} = ['Sample #' num2str(i)];
     end
     grid on
@@ -618,35 +622,35 @@ if displaySolution
     %xlabel('Moment lin\''eique de flexion [N.m/m]','Interpreter',interpreter);
     %ylabel('Variation d''angle [$^{\circ}$]','Interpreter',interpreter);
     legend(h(:),leg{:},'Location','NorthEastOutside')
-    mysaveas(pathname,'data_angle_moment_screw',formats);
-    mymatlab2tikz(pathname,'data_angle_moment_screw.tex');
+    mysaveas(pathname,'data_angle_moment_S',formats);
+    mymatlab2tikz(pathname,'data_angle_moment_S.tex');
     
     figure('name','Screw junctions: Bending stiffness per unit length w.r.t. applied load')
     clf
     leg = cell(numScrew,1);
     for i=1:numScrew
-        plot(F_screw{i},k_screw{i},'+','Color',color(i,:),'LineWidth',linewidth)
+        plot(FS{i},kS{i}*1e-3,'+','Color',color(i,:),'LineWidth',linewidth)
         hold on
         leg{i} = ['Sample #' num2str(i)];
     end
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Applied load [N]','Interpreter',interpreter);
-    ylabel('Bending stiffness per unit length [N/rad]','Interpreter',interpreter);
+    ylabel('Bending stiffness per unit length [kN/rad]','Interpreter',interpreter);
     %xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
-    %ylabel('Rigidit\''e lin\''eique en flexion [N/rad]','Interpreter',interpreter);
+    %ylabel('Rigidit\''e lin\''eique en flexion [kN/rad]','Interpreter',interpreter);
     legend(leg{:},'Location','NorthEastOutside')
-    mysaveas(pathname,'data_stiffness_load_screw',formats);
-    mymatlab2tikz(pathname,'data_stiffness_load_screw.tex');
+    mysaveas(pathname,'data_stiffness_load_S',formats);
+    mymatlab2tikz(pathname,'data_stiffness_load_S.tex');
     
     figure('name','Dowel junctions: Variation of angle w.r.t. bending moment per unit length')
     clf
     leg = cell(numDowel,1);
     h = gobjects(numDowel,1);
     for j=1:numDowel
-        plot(ml_dowel{j},angle_dowel{j},'+','Color',color(j,:),'LineWidth',linewidth)
+        plot(mlD{j},angleD{j},'+','Color',color(j,:),'LineWidth',linewidth)
         hold on
-        h(j) = plot(ml_dowel{j},rad2deg(ml_dowel{j}./mean_Kdowel_data(j)),'LineStyle','-','Color',color(j,:),'LineWidth',linewidth);
+        h(j) = plot(mlD{j},rad2deg(mlD{j}./mean_KD_data(j)),'LineStyle','-','Color',color(j,:),'LineWidth',linewidth);
         leg{j} = ['Sample #' num2str(j)];
     end
     grid on
@@ -656,48 +660,48 @@ if displaySolution
     %xlabel('Moment lin\''eique de flexion [N.m/m]','Interpreter',interpreter);
     %ylabel('Variation d''angle [$^{\circ}$]','Interpreter',interpreter);
     legend(h(:),leg{:},'Location','NorthEastOutside')
-    mysaveas(pathname,'data_angle_moment_dowel',formats);
-    mymatlab2tikz(pathname,'data_angle_moment_dowel.tex');
+    mysaveas(pathname,'data_angle_moment_D',formats);
+    mymatlab2tikz(pathname,'data_angle_moment_D.tex');
     
     figure('name','Dowel junctions: Bending stiffness per unit length w.r.t. applied load')
     clf
     leg = cell(numDowel,1);
     for j=1:numDowel
-        plot(F_dowel{j},k_dowel{j},'+','Color',color(j,:),'LineWidth',linewidth)
+        plot(FD{j},kD{j}*1e-3,'+','Color',color(j,:),'LineWidth',linewidth)
         hold on
         leg{j} = ['Sample #' num2str(j)];
     end
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Applied load [N]','Interpreter',interpreter);
-    ylabel('Bending stiffness per unit length [N/rad]','Interpreter',interpreter);
+    ylabel('Bending stiffness per unit length [kN/rad]','Interpreter',interpreter);
     %xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
-    %ylabel('Rigidit\''e lin\''eique en flexion [N/rad]','Interpreter',interpreter);
+    %ylabel('Rigidit\''e lin\''eique en flexion [kN/rad]','Interpreter',interpreter);
     legend(leg{:},'Location','NorthEastOutside')
-    mysaveas(pathname,'data_stiffness_load_dowel',formats);
-    mymatlab2tikz(pathname,'data_stiffness_load_dowel.tex');
+    mysaveas(pathname,'data_stiffness_load_D',formats);
+    mymatlab2tikz(pathname,'data_stiffness_load_D.tex');
 
     figure('Name','Screw junctions: Bending stiffness per unit length')
     clf
-    bar(mean_Kscrew_data);
+    bar(mean_KS_data*1e-3);
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Bending stiffness per unit length [N/rad]','Interpreter',interpreter);
+    ylabel('Bending stiffness per unit length $k^S$ [kN/rad]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Rigidit\''e lin\''eique en flexion [N/rad]','Interpreter',interpreter);
-    mysaveas(pathname,'data_KjuncScrew',formats);
-    mymatlab2tikz(pathname,'data_KjuncScrew.tex');
+    %ylabel('Rigidit\''e lin\''eique en flexion $k^S$ [kN/rad]','Interpreter',interpreter);
+    mysaveas(pathname,'data_KS',formats);
+    mymatlab2tikz(pathname,'data_KS.tex');
     
     figure('Name','Dowel junctions: Bending stiffness per unit length')
     clf
-    bar(mean_Kdowel_data);
+    bar(mean_KD_data*1e-3);
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Bending stiffness per unit length [N/rad]','Interpreter',interpreter);
+    ylabel('Bending stiffness per unit length $k^D$ [kN/rad]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Rigidit\''e lin\''eique en flexion [N/rad]','Interpreter',interpreter);
-    mysaveas(pathname,'data_KjuncDowel',formats);
-    mymatlab2tikz(pathname,'data_KjuncDowel.tex');
+    %ylabel('Rigidit\''e lin\''eique en flexion $k^D$ [kN/rad]','Interpreter',interpreter);
+    mysaveas(pathname,'data_KD',formats);
+    mymatlab2tikz(pathname,'data_KD.tex');
 end
