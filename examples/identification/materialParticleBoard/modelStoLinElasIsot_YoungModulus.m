@@ -18,7 +18,6 @@ end
 
 fontsize = 16;
 linewidth = 1;
-markersize = 36;
 interpreter = 'latex';
 formats = {'fig','epsc'};
 
@@ -130,6 +129,48 @@ if displaySolution
     mysaveas(pathname,'data_E',formats);
     mymatlab2tikz(pathname,'data_E.tex');
     
+    %% Plot log-likelihood function
+    a_series = linspace(a*0.5,a*1.5,1e2);
+    b_series = linspace(b*0.5,b*1.5,1e2);
+    loglf = zeros(length(a_series),length(b_series));
+    for i=1:length(a_series)
+        aS_i = a_series(i);
+        for j=1:length(b_series)
+            b_j = b_series(j);
+            param_ij = [aS_i,b_j];
+            loglf(i,j) = -gamlike(param_ij,E_data);
+        end
+    end
+    
+    % Plot log-likelihood function loglf for E
+    figure('Name','Surface plot: Log-likelihood function for E')
+    clf
+    surfc(a_series,b_series,loglf,'EdgeColor','none');
+    colorbar
+    hold on
+    scatter3(a,b,-gamlike(param,E_data),'MarkerEdgeColor','k','MarkerFaceColor','r');
+    hold off
+    set(gca,'FontSize',fontsize)
+    xlabel('$\alpha$','Interpreter',interpreter)
+    ylabel('$\beta$ [GPa]','Interpreter',interpreter)
+    zlabel('$\mathcal{L}(\alpha,\beta)$','Interpreter',interpreter)
+    mysaveas(pathname,'loglf_E_3D',formats);
+    % mymatlab2tikz(pathname,'loglf_E_3D.tex');
+    
+    figure('Name','Contour plot: Log-likelihood function for KS')
+    clf
+    contourf(a_series,b_series,loglf,30);
+    colorbar
+    hold on
+    scatter(a,b,'MarkerEdgeColor','k','MarkerFaceColor','r');
+    hold off
+    set(gca,'FontSize',fontsize)
+    xlabel('$\alpha$','Interpreter',interpreter)
+    ylabel('$\beta$ [kN/rad]','Interpreter',interpreter)
+    zlabel('$\mathcal{L}(\alpha,\beta)$','Interpreter',interpreter)
+    mysaveas(pathname,'loglf_E_2D',formats);
+    % mymatlab2tikz(pathname,'loglf_E_2D.tex');
+
     %% Plot pdf and cdf
     xmin = max(0,mE-5*sE);
     xmax = mE+5*sE;
@@ -151,8 +192,7 @@ if displaySolution
     % l = legend('$p_E(e)$','$(e_i,p_E(e_i))_{i=1}^n$');
     % set(l,'Interpreter',interpreter,'Location','NorthWest');
     mysaveas(pathname,'pdf_E',formats);
-    mymatlab2tikz(pathname,'pdf_E.tex',...
-        'extraAxisOptions',{'ylabel style={overlay}'});
+    mymatlab2tikz(pathname,'pdf_E.tex');
     
     % Plot cdf of E
     figure('Name','Cumulative distribution function')
@@ -171,8 +211,7 @@ if displaySolution
     % l = legend('$F_E(e)$','$(e_i,F_E(e_i))_{i=1}^n$');
     % set(l,'Interpreter',interpreter,'Location','NorthWest');
     mysaveas(pathname,'cdf_E',formats);
-    mymatlab2tikz(pathname,'cdf_E.tex',...
-        'extraAxisOptions',{'ylabel style={overlay}'});
+    mymatlab2tikz(pathname,'cdf_E.tex');
     
     %% Plot samples
     figure('Name','Samples')
@@ -191,6 +230,6 @@ if displaySolution
     %ylabel('Module d''Young $E$ [GPa]','Interpreter',interpreter)
     %legend('réalisations','valeur moyenne');
     mysaveas(pathname,'samples_E',formats);
-    mymatlab2tikz(pathname,'samples_E.tex');
+    % mymatlab2tikz(pathname,'samples_E.tex');
     
 end

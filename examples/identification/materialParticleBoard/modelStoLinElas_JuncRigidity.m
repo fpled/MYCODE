@@ -18,7 +18,6 @@ end
 
 fontsize = 16;
 linewidth = 1;
-markersize = 36;
 interpreter = 'latex';
 formats = {'fig','epsc'};
 
@@ -36,17 +35,17 @@ KD_data = mean_KD_data*1e-3; % [kN/rad]
 % std_KS = std(KS_data);
 % mean_KD = mean(KD_data);
 % std_KD = std(KD_data);
-fprintf('\nnb data for Dowel junction = %d',length(KD_data));
 fprintf('\nnb data for Screw junction = %d',length(KS_data));
+fprintf('\nnb data for Dowel junction = %d',length(KD_data));
 
 %% Maximum likelihood estimation
-phatS = gamfit(KS_data);
-phatD = gamfit(KD_data);
+paramS = gamfit(KS_data);
+paramD = gamfit(KD_data);
 
-aS = phatS(1);
-bS = phatS(2);
-aD = phatD(1);
-bD = phatD(2);
+aS = paramS(1);
+bS = paramS(2);
+aD = paramD(1);
+bD = paramD(2);
 fprintf('\nalpha for screw = %.4f',aS);
 fprintf('\nbeta for screw = %.4f',bS);
 fprintf('\nalpha for dowel = %.4f',aD);
@@ -112,6 +111,89 @@ if displaySolution
     mysaveas(pathname,'data_KD',formats);
     mymatlab2tikz(pathname,'data_KD.tex');
     
+    %% Plot log-likelihood functions
+    aS_series = linspace(aS*0.5,aS*1.5,1e2);
+    bS_series = linspace(bS*0.5,bS*1.5,1e2);
+    loglfS = zeros(length(aS_series),length(bS_series));
+    for i=1:length(aS_series)
+        aS_i = aS_series(i);
+        for j=1:length(bS_series)
+            bS_j = bS_series(j);
+            paramS_ij = [aS_i,bS_j];
+            loglfS(i,j) = -gamlike(paramS_ij,KS_data);
+        end
+    end
+    
+    aD_series = linspace(aD*0.5,aD*1.5,1e2);
+    bD_series = linspace(bD*0.5,bD*1.5,1e2);
+    loglfD = zeros(length(aD_series),length(bD_series));
+    for i=1:length(aD_series)
+        aD_i = aD_series(i);
+        for j=1:length(bD_series)
+            bD_j = bD_series(j);
+            paramD_ij = [aD_i,bD_j];
+            loglfD(i,j) = -gamlike(paramD_ij,KD_data);
+        end
+    end
+    
+    % Plot log-likelihood function loglf for KS
+    figure('Name','Surface plot: Log-likelihood function for KS')
+    clf
+    surfc(aS_series,bS_series,loglfS,'EdgeColor','none');
+    colorbar
+    hold on
+    scatter3(aS,bS,-gamlike(paramS,KS_data),'MarkerEdgeColor','k','MarkerFaceColor','r');
+    hold off
+    set(gca,'FontSize',fontsize)
+    xlabel('$\alpha$','Interpreter',interpreter)
+    ylabel('$\beta$ [kN/rad]','Interpreter',interpreter)
+    zlabel('$\mathcal{L}^S(\alpha,\beta)$','Interpreter',interpreter)
+    mysaveas(pathname,'loglf_KS_3D',formats);
+    % mymatlab2tikz(pathname,'loglf_KS_3D.tex');
+    
+    figure('Name','Contour plot: Log-likelihood function for KS')
+    clf
+    contourf(aS_series,bS_series,loglfS,30);
+    colorbar
+    hold on
+    scatter(aS,bS,'MarkerEdgeColor','k','MarkerFaceColor','r');
+    hold off
+    set(gca,'FontSize',fontsize)
+    xlabel('$\alpha$','Interpreter',interpreter)
+    ylabel('$\beta$ [kN/rad]','Interpreter',interpreter)
+    zlabel('$\mathcal{L}^S(\alpha,\beta)$','Interpreter',interpreter)
+    mysaveas(pathname,'loglf_KS_2D',formats);
+    % mymatlab2tikz(pathname,'loglf_KS_2D.tex');
+    
+    % Plot log-likelihood function loglf for KD
+    figure('Name','Surface plot: Log-likelihood function for KD')
+    clf
+    surfc(aD_series,bD_series,loglfD,'EdgeColor','none');
+    colorbar
+    hold on
+    scatter3(aD,bD,-gamlike(paramD,KD_data),'MarkerEdgeColor','k','MarkerFaceColor','r');
+    hold off
+    set(gca,'FontSize',fontsize)
+    xlabel('$\alpha$','Interpreter',interpreter)
+    ylabel('$\beta$ [kN/rad]','Interpreter',interpreter)
+    zlabel('$\mathcal{L}^D(\alpha,\beta)$','Interpreter',interpreter)
+    mysaveas(pathname,'loglf_KD_3D',formats);
+    % mymatlab2tikz(pathname,'loglf_KD_3D.tex');
+    
+    figure('Name','Contour plot: Log-likelihood function for KD')
+    clf
+    contourf(aD_series,bD_series,loglfD,30);
+    colorbar
+    hold on
+    scatter(aD,bD,'MarkerEdgeColor','k','MarkerFaceColor','r');
+    hold off
+    set(gca,'FontSize',fontsize)
+    xlabel('$\alpha$','Interpreter',interpreter)
+    ylabel('$\beta$ [kN/rad]','Interpreter',interpreter)
+    zlabel('$\mathcal{L}^D(\alpha,\beta)$','Interpreter',interpreter)
+    mysaveas(pathname,'loglf_KD_2D',formats);
+    % mymatlab2tikz(pathname,'loglf_KD_2D.tex');
+    
     %% Plot pdfs and cdfs
     xminD = max(0,mKD-5*sKD);
     xmaxD = mKD+5*sKD;
@@ -135,8 +217,7 @@ if displaySolution
     xlabel('$k$ [kN/rad]','Interpreter',interpreter)
     ylabel('$p_{K^S}(k)$','Interpreter',interpreter)
     mysaveas(pathname,'pdf_KS',formats);
-    mymatlab2tikz(pathname,'pdf_KS.tex',...
-        'extraAxisOptions',{'ylabel style={overlay}'});
+    mymatlab2tikz(pathname,'pdf_KS.tex');
     
     % Plot cdf of KS
     figure('Name','Cumulative distribution function of KS')
@@ -153,8 +234,7 @@ if displaySolution
     xlabel('$k$ [kN/rad]','Interpreter',interpreter)
     ylabel('$F_{K^S}(k)$','Interpreter',interpreter)
     mysaveas(pathname,'cdf_KS',formats);
-    mymatlab2tikz(pathname,'cdf_KS.tex',...
-        'extraAxisOptions',{'ylabel style={overlay}'});
+    mymatlab2tikz(pathname,'cdf_KS.tex');
     
     % Plot pdf of KD
     figure('Name','Probability density function of KD')
@@ -170,8 +250,7 @@ if displaySolution
     xlabel('$k$ [kN/rad]','Interpreter',interpreter)
     ylabel('$p_{K^D}(k)$','Interpreter',interpreter)
     mysaveas(pathname,'pdf_KD',formats);
-    mymatlab2tikz(pathname,'pdf_KD.tex',...
-        'extraAxisOptions',{'ylabel style={overlay}'});
+    mymatlab2tikz(pathname,'pdf_KD.tex');
     
     % Plot cdf of KD
     figure('Name','Cumulative distribution function of KD')
@@ -188,10 +267,10 @@ if displaySolution
     xlabel('$k$ [kN/rad]','Interpreter',interpreter)
     ylabel('$F_{K^D}(k)$','Interpreter',interpreter)
     mysaveas(pathname,'cdf_KD',formats);
-    mymatlab2tikz(pathname,'cdf_KD.tex',...
-        'extraAxisOptions',{'ylabel style={overlay}'});
+    mymatlab2tikz(pathname,'cdf_KD.tex');
    
     %% Plot samples
+    % Plot samples of KS
     figure('Name','Samples of KS')
     clf
     scatter(1:N,kS,'b.')
@@ -208,8 +287,9 @@ if displaySolution
     %ylabel('Rigidit\''e lin\''eique en flexion $k^S$ [kN/rad]','Interpreter',interpreter)
     %legend('réalisations','valeur moyenne');
     mysaveas(pathname,'samples_KS',formats);
-    mymatlab2tikz(pathname,'samples_KS.tex');
+    % mymatlab2tikz(pathname,'samples_KS.tex');
     
+    % Plot samples of KD
     figure('Name','Samples of KD')
     clf
     scatter(1:N,kD,'b.')
@@ -226,6 +306,6 @@ if displaySolution
     %ylabel('Rigidit\''e lin\''eique en flexion $k^D$ [kN/rad]','Interpreter',interpreter)
     %legend('réalisations','valeur moyenne');
     mysaveas(pathname,'samples_KD',formats);
-    mymatlab2tikz(pathname,'samples_KD.tex');
+    % mymatlab2tikz(pathname,'samples_KD.tex');
     
 end

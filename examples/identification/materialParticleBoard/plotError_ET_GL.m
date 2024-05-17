@@ -16,7 +16,6 @@ pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
 fontsize = 16;
 interpreter = 'latex';
 formats = {'fig','epsc'};
-renderer = 'OpenGL';
 
 %% Plot error
 sample = 'B';
@@ -44,29 +43,35 @@ for k=6
     R0 = R0_data{j}(k); % [rad]
     U0 = U0_data{j}(k); % [mm]
     V0 = V0_data{j}(k); % [mm]
+    err = err_ana_data{j}(k);
+    
     ET_series = linspace(ET*0.5,ET*1.5,1e2); % [MPa]
     GL_series = linspace(GL*0.5,GL*1.5,1e2); % [MPa]
     
-    err = zeros(length(ET_series),length(GL_series));
+    err_series = zeros(length(ET_series),length(GL_series));
     for m=1:length(ET_series)
-        ET = ET_series(m);
+        ET_m = ET_series(m);
         for n=1:length(GL_series)
-            GL = GL_series(n);
-            x = [ET GL R0 U0 V0];
+            GL_n = GL_series(n);
+            x = [ET_m GL_n R0 U0 V0];
             u_ana = solveThreePointBendingAna(x,coord,F(k),Iz,h);
-            err(m,n) = norm(u_exp - u_ana);
+            err_series(m,n) = norm(u_exp - u_ana);
         end
     end
-    err = err./norm(u_exp);
-    [errmin,I] = min(err);
-    [errmin,c] = min(errmin);
-    r = I(c);
+    err_series = err_series./norm(u_exp);
+    % [err_min,I] = min(err_series);
+    % [err_min,c] = min(err_min);
+    % r = I(c);
+    % GL_min = GL_series(c);
+    % ET_min = ET_series(r);
     
-    figure
-    surfc(GL_series,ET_series,err,'EdgeColor','none');
+    figure('Name','Surface plot: Error with respect to ET and GL')
+    clf
+    surfc(GL_series,ET_series,err_series,'EdgeColor','none');
     colorbar
     hold on
-    scatter3(GL_series(c),ET_series(r),errmin,'MarkerEdgeColor','k','MarkerFaceColor','r');
+    % scatter3(GL_min,ET_min,err_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
+    scatter3(GL,ET,err,'MarkerEdgeColor','k','MarkerFaceColor','r');
     hold off
     set(gca,'FontSize',fontsize)
     % set(gca,'ZScale','log')
@@ -74,19 +79,21 @@ for k=6
     ylabel('$E^T$ [MPa]','Interpreter',interpreter)
     zlabel('Error','Interpreter',interpreter)
     %zlabel('Erreur','Interpreter',interpreter)
-    mysaveas(pathname,['error_ET_GL_' numSample '_image_' numImage '_3D'],formats,renderer);
+    mysaveas(pathname,['error_ET_GL_' numSample '_image_' numImage '_3D'],formats);
     
-    figure
-    contourf(GL_series,ET_series,err,30);
+    figure('Name','Contour plot: Error with respect to ET and GL')
+    clf
+    contourf(GL_series,ET_series,err_series,30);
     colorbar
     hold on
-    scatter(GL_series(c),ET_series(r),'MarkerEdgeColor','k','MarkerFaceColor','r');
+    % scatter(GL_min,ET_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
+    scatter(GL,ET,'MarkerEdgeColor','k','MarkerFaceColor','r');
     hold off
     set(gca,'FontSize',fontsize)
     % set(gca,'ZScale','log')
     xlabel('$G^L$ [MPa]','Interpreter',interpreter)
     ylabel('$E^T$ [MPa]','Interpreter',interpreter)
-    mysaveas(pathname,['error_ET_GL_' numSample '_image_' numImage '_2D'],formats,renderer);
+    mysaveas(pathname,['error_ET_GL_' numSample '_image_' numImage '_2D'],formats);
     
     toc(t)
 end

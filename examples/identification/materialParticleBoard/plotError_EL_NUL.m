@@ -18,7 +18,6 @@ pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
 fontsize = 16;
 interpreter = 'latex';
 formats = {'fig','epsc'};
-renderer = 'OpenGL';
 
 %% Plot error
 sample = 'B';
@@ -54,6 +53,8 @@ for k=6
     GL = GL_data{j}(k); % [MPa]
     EL = EL_data{j}(k); % [MPa]
     NUL = NUL_data{j}(k);
+    err = err_num_data{j}(k);
+
     mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',EL,'ET',ET,'NUL',NUL,'GL',GL,'DIM3',h);
     mat = setnumber(mat,1);
     S = setmaterial(S,mat);
@@ -76,46 +77,52 @@ for k=6
     EL_series=linspace(EL*0.5,EL*1.5,1e2);
     NUL_series=linspace(NUL*0.5,NUL*1.5,1e2);
     
-    err=zeros(length(EL_series),length(NUL_series));
+    err_series = zeros(length(EL_series),length(NUL_series));
     for m=1:length(EL_series)
-        EL = EL_series(m);
+        EL_m = EL_series(m);
         for n=1:length(NUL_series)
-            NUL = NUL_series(n);
-            x = [EL NUL];
+            NUL_n = NUL_series(n);
+            x = [EL_m NUL_n];
             u_num_in = solveThreePointBendingNum(x,S);
-            err(m,n) = norm(u_exp_in - u_num_in);
+            err_series(m,n) = norm(u_exp_in - u_num_in);
         end
     end
-    err = err./norm(u_exp_in);
-    [errmin,I] = min(err);
-    [errmin,c] = min(errmin);
-    r = I(c);
+    err_series = err_series./norm(u_exp_in);
+    % [err_min,I] = min(err_series);
+    % [err_min,c] = min(err_min);
+    % r = I(c);
+    % NUL_min = NUL_series(c);
+    % EL_min = EL_series(r);
     
-    figure
-    surfc(NUL_series,EL_series,err,'EdgeColor','none');
+    figure('Name','Surface plot: Error with respect to EL and NUL')
+    clf
+    surfc(NUL_series,EL_series,err_series,'EdgeColor','none');
     colorbar
     hold on
-    scatter3(NUL_series(c),EL_series(r),errmin,'MarkerEdgeColor','k','MarkerFaceColor','r');
+    % scatter3(NUL_min,EL_min,err_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
+    scatter3(NUL,EL,err,'MarkerEdgeColor','k','MarkerFaceColor','r');
     hold off
     set(gca,'FontSize',fontsize)
     % set(gca,'ZScale','log')
     xlabel('$\nu^L$','Interpreter',interpreter)
     ylabel('$E^L$ [MPa]','Interpreter',interpreter)
     zlabel('Error','Interpreter',interpreter)
-    % zlabel('Erreur','Interpreter',interpreter)
-    mysaveas(pathname,['error_EL_NUL_' numSample '_image_' numImage '_3D'],formats,renderer);
+    %zlabel('Erreur','Interpreter',interpreter)
+    mysaveas(pathname,['error_EL_NUL_' numSample '_image_' numImage '_3D'],formats);
     
-    figure
-    contourf(NUL_series,EL_series,err,30);
+    figure('Name','Contour plot: Error with respect to EL and NUL')
+    clf
+    contourf(NUL_series,EL_series,err_series,30);
     colorbar
     hold on
-    scatter(NUL_series(c),EL_series(r),'MarkerEdgeColor','k','MarkerFaceColor','r');
+    % scatter(NUL_min,EL_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
+    scatter(NUL,EL,'MarkerEdgeColor','k','MarkerFaceColor','r');
     hold off
     set(gca,'FontSize',fontsize)
     % set(gca,'ZScale','log')
     xlabel('$\nu^L$','Interpreter',interpreter)
     ylabel('$E^L$ [MPa]','Interpreter',interpreter)
-    mysaveas(pathname,['error_EL_NUL_' numSample '_image_' numImage '_2D'],formats,renderer);
+    mysaveas(pathname,['error_EL_NUL_' numSample '_image_' numImage '_2D'],formats);
     
     toc(t)
 end

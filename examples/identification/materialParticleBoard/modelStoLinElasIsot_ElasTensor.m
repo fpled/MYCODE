@@ -19,7 +19,6 @@ end
 
 fontsize = 16;
 linewidth = 1;
-markersize = 36;
 interpreter = 'latex';
 formats = {'fig','epsc'};
 
@@ -365,7 +364,7 @@ if displaySolution
     legend('samples','data')
     %legend('réalisations','données')
     mysaveas(pathname,'samples_C1_C2',formats);
-    mymatlab2tikz(pathname,'samples_C1_C2.tex');
+    % mymatlab2tikz(pathname,'samples_C1_C2.tex');
     
     figure('name','Samples of (E,N)')
     clf
@@ -381,6 +380,6 @@ if displaySolution
     legend('samples','data')
     %legend('réalisations','données')
     mysaveas(pathname,'samples_E_N',formats);
-    mymatlab2tikz(pathname,'samples_E_N.tex');
+    % mymatlab2tikz(pathname,'samples_E_N.tex');
     
 end

@@ -26,7 +26,6 @@ fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
 formats = {'fig','epsc'};
-renderer = 'OpenGL';
 
 %% Identification
 if solveProblem
@@ -135,7 +134,7 @@ for j=1:numSamples
 %         set(gca,'FontSize',fontsize)
 %         xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
 %         ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
+%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats);
         
         switch optimFun
             case 'lsqnonlin'

@@ -20,7 +20,6 @@ end
 
 fontsize = 16;
 linewidth = 1;
-markersize = 36;
 interpreter = 'latex';
 formats = {'fig','epsc'};
 
@@ -208,7 +207,7 @@ if displaySolution
     %ylabel('Coefficient de Poisson transverse $\nu^T$','Interpreter',interpreter);
     mysaveas(pathname,'data_NUL',formats);
     mymatlab2tikz(pathname,'data_NUL.tex');
-
+    
     %% Plot pdfs and cdfs
     N = 1e3;
     [f1,xi1,bw1] = ksdensity(C_sample(:,1),'npoints',N);
@@ -388,7 +387,7 @@ if displaySolution
     legend('samples','data','support');
     %legend('réalisations','données','support');
     mysaveas(pathname,'samples_C1_C2_C3',formats);
-    mymatlab2tikz(pathname,'samples_C1_C2_C3.tex');
+    % mymatlab2tikz(pathname,'samples_C1_C2_C3.tex');
     
     figure('name','Samples of (C_4,C_5)')
     clf
@@ -404,7 +403,7 @@ if displaySolution
     legend('samples','data');
     %legend('réalisations','données');
     mysaveas(pathname,'samples_C4_C5',formats);
-    mymatlab2tikz(pathname,'samples_C4_C5.tex');
+    % mymatlab2tikz(pathname,'samples_C4_C5.tex');
     
     figure('name','Samples of (ET,GL,NUT)')
     clf
@@ -421,6 +420,6 @@ if displaySolution
     legend('samples','data');
     %legend('réalisations','données');
     mysaveas(pathname,'samples_ET_GL_NUT',formats);
-    mymatlab2tikz(pathname,'samples_ET_GL_NUT.tex');
+    % mymatlab2tikz(pathname,'samples_ET_GL_NUT.tex');
     
 end

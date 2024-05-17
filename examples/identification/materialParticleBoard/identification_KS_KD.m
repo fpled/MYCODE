@@ -28,7 +28,6 @@ fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
 formats = {'fig','epsc'};
-renderer = 'OpenGL';
 
 %% Identification
 if solveProblem
@@ -209,7 +208,7 @@ for i=1:numScrew
 %         set(gca,'FontSize',fontsize)
 %         xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
 %         ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
+%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats);
         
         L1x = coordx_a_screw(points_a_screw)+Scal*u_exp_a_screw(2*points_a_screw-1);
         L1y = coordy_a_screw(points_a_screw)+Scal*u_exp_a_screw(2*points_a_screw);
@@ -242,7 +241,7 @@ for i=1:numScrew
 %         set(gca,'FontSize',fontsize)
 %         xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
 %         ylabel(['$z$ ',Unitx],'Interpreter',interpreter
-%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
+%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats);
         
         %-----------------------------
         % Reference and deformed mesh
@@ -260,7 +259,7 @@ for i=1:numScrew
 %         set(gca,'FontSize',fontsize)
 %         xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
 %         ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
+%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats);
         
     end
     
@@ -448,7 +447,7 @@ for j=1:numDowel
 %         set(gca,'FontSize',fontsize)
 %         xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
 %         ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
+%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats);
         
         L1x = coordx_a_dowel(points_a_dowel)+Scal*u_exp_a_dowel(2*points_a_dowel-1);
         L1y = coordy_a_dowel(points_a_dowel)+Scal*u_exp_a_dowel(2*points_a_dowel);
@@ -481,7 +480,7 @@ for j=1:numDowel
 %         set(gca,'FontSize',fontsize)
 %         xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
 %         ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
+%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats);
         
         %-----------------------------
         % Reference and deformed mesh
@@ -499,7 +498,7 @@ for j=1:numDowel
 %         set(gca,'FontSize',fontsize)
 %         xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
 %         ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
+%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats);
         
     end
     
