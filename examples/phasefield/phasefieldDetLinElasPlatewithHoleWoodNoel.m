@@ -4,6 +4,7 @@
 % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS] (experimental tests)
 % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF] (anisotropic phase field model of Miehe et al.)
 % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase field model of He et al.)
+% [Luo, Chen, Wang, Li, 2022, CM] (anisotropic phase field model of He et al. woth anisotropic fracture surface energy)
 
 % clc
 clearvars
@@ -199,7 +200,7 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    % option = 'DEFO'; % plane strain [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % option = 'DEFO'; % plane strain [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
     option = 'CONT'; % plane stress [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
     ii = 1;
     switch lower(symmetry)

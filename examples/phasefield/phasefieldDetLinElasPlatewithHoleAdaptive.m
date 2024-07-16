@@ -4,6 +4,7 @@
 % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS] (experimental tests)
 % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF] (anisotropic phase field model of Miehe et al.)
 % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase field model of Nguyen et al.)
+% [Luo, Chen, Wang, Li, 2022, CM] (anisotropic phase field model of He et al. woth anisotropic fracture surface energy)
 
 % clc
 clearvars
@@ -89,7 +90,7 @@ mmgoptions = '-nomove -hausd 0.01 -hgrad 1.1 -v -1';
 if setProblem
     %% Domains and meshes
     if Dim==2
-        % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+        % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
         L = 15e-3; % length
         h = 2*L; % height
         e = 1; % thickness
@@ -115,6 +116,9 @@ if setProblem
         % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
         % clD = 0.06e-3; % characteristic length for domain
         % clC = 0.06e-3; % characteristic length for circular hole
+        % [Luo, Chen, Wang, Li, 2022, CM]
+        % clD = 0.12e-3; % characteristic length for domain
+        % clC = 0.024e-3; % characteristic length for circular hole
         % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
         clD = 0.25e-3; % characteristic length for domain
         clC = 0.05e-3; % characteristic length for circular hole
@@ -141,9 +145,9 @@ if setProblem
     switch lower(symmetry)
         case 'isot' % isotropic material
             % Critical energy release rate (or fracture toughness)
-            gc = 1.4; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            gc = 1.4; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
             % Regularization parameter (width of the smeared crack)
-            l = 0.12e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            l = 0.12e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
         case 'anisot' % anisotropic material
             % Critical energy release rate (or fracture toughness)
             gc = 1e3;
@@ -227,14 +231,14 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    option = 'DEFO'; % plane strain [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    option = 'DEFO'; % plane strain [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
     % option = 'CONT'; % plane stress [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
     switch lower(symmetry)
         case 'isot' % isotropic material
             % Lame coefficients
             % Young modulus and Poisson ratio
-            E = 12e9; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-            NU = 0.3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            E = 12e9; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
+            NU = 0.3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
         case 'anisot' % anisotropic material
             if Dim==2
                 switch lower(option)
