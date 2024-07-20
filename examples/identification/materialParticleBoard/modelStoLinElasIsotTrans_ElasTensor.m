@@ -154,9 +154,9 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Transverse Young''s modulus $E^T$ [GPa]','Interpreter',interpreter);
+    ylabel('Transverse Young''s modulus $E_T$ [GPa]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Module d''Young transverse $E^T$ [GPa]','Interpreter',interpreter);
+    %ylabel('Module d''Young transverse $E_T$ [GPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_ET',formats);
     mymatlab2tikz(pathname,'data_ET.tex');
     
@@ -166,9 +166,9 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Longitudinal Young''s modulus $E^L$ [MPa]','Interpreter',interpreter);
+    ylabel('Longitudinal Young''s modulus $E_L$ [MPa]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Module d''Young longitudinal $E^L$ [MPa]','Interpreter',interpreter);
+    %ylabel('Module d''Young longitudinal $E_L$ [MPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_EL',formats);
     mymatlab2tikz(pathname,'data_EL.tex');
     
@@ -178,9 +178,9 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Longitudinal shear modulus $G^L$ [MPa]','Interpreter',interpreter);
+    ylabel('Longitudinal shear modulus $G_L$ [MPa]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Module de cisaillement longitudinal $G^L$ [MPa]','Interpreter',interpreter);
+    %ylabel('Module de cisaillement longitudinal $G_L$ [MPa]','Interpreter',interpreter);
     mysaveas(pathname,'data_G','fig');
     mymatlab2tikz(pathname,'data_G.tex');
     
@@ -190,9 +190,9 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Longitudinal Poisson''s ratio $\nu^L$','Interpreter',interpreter);
+    ylabel('Longitudinal Poisson''s ratio $\nu_L$','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Coefficient de Poisson longitudinal $\nu^L$','Interpreter',interpreter);
+    %ylabel('Coefficient de Poisson longitudinal $\nu_L$','Interpreter',interpreter);
     mysaveas(pathname,'data_NUL',formats);
     mymatlab2tikz(pathname,'data_NUL.tex');
     
@@ -202,9 +202,9 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Transverse Poisson''s ratio $\nu^T$','Interpreter',interpreter);
+    ylabel('Transverse Poisson''s ratio $\nu_T$','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Coefficient de Poisson transverse $\nu^T$','Interpreter',interpreter);
+    %ylabel('Coefficient de Poisson transverse $\nu_T$','Interpreter',interpreter);
     mysaveas(pathname,'data_NUL',formats);
     mymatlab2tikz(pathname,'data_NUL.tex');
     
@@ -414,9 +414,9 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('$E^T$ [GPa]','Interpreter',interpreter);
-    ylabel('$G^L$ [MPa]','Interpreter',interpreter);
-    zlabel('$\nu^T$','Interpreter',interpreter);
+    xlabel('$E_T$ [GPa]','Interpreter',interpreter);
+    ylabel('$G_L$ [MPa]','Interpreter',interpreter);
+    zlabel('$\nu_T$','Interpreter',interpreter);
     legend('samples','data');
     %legend('réalisations','données');
     mysaveas(pathname,'samples_ET_GL_NUT',formats);

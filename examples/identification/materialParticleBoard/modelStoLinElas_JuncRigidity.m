@@ -93,9 +93,9 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Bending  stiffness per unit length $k^S$ [kN/rad]','Interpreter',interpreter);
+    ylabel('Bending  stiffness per unit length $k_S$ [kN/rad]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Rigidit\''e lin\''eique en flexion $k^S$ [kN/rad]','Interpreter',interpreter);
+    %ylabel('Rigidit\''e lin\''eique en flexion $k_S$ [kN/rad]','Interpreter',interpreter);
     mysaveas(pathname,'data_KS',formats);
     mymatlab2tikz(pathname,'data_KS.tex');
     
@@ -105,9 +105,9 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Bending stiffness per unit length $k^D$ [kN/rad]','Interpreter',interpreter);
+    ylabel('Bending stiffness per unit length $k_D$ [kN/rad]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Rigidit\''e lin\''eique en flexion $k^D$ [kN/rad]','Interpreter',interpreter);
+    %ylabel('Rigidit\''e lin\''eique en flexion $k_D$ [kN/rad]','Interpreter',interpreter);
     mysaveas(pathname,'data_KD',formats);
     mymatlab2tikz(pathname,'data_KD.tex');
     
@@ -147,7 +147,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$\alpha$','Interpreter',interpreter)
     ylabel('$\beta$ [kN/rad]','Interpreter',interpreter)
-    zlabel('$\mathcal{L}^S(\alpha,\beta)$','Interpreter',interpreter)
+    zlabel('$\mathcal{L}_S(\alpha,\beta)$','Interpreter',interpreter)
     mysaveas(pathname,'loglf_KS_3D',formats);
     % mymatlab2tikz(pathname,'loglf_KS_3D.tex');
     
@@ -161,7 +161,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$\alpha$','Interpreter',interpreter)
     ylabel('$\beta$ [kN/rad]','Interpreter',interpreter)
-    zlabel('$\mathcal{L}^S(\alpha,\beta)$','Interpreter',interpreter)
+    zlabel('$\mathcal{L}_S(\alpha,\beta)$','Interpreter',interpreter)
     mysaveas(pathname,'loglf_KS_2D',formats);
     % mymatlab2tikz(pathname,'loglf_KS_2D.tex');
     
@@ -176,7 +176,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$\alpha$','Interpreter',interpreter)
     ylabel('$\beta$ [kN/rad]','Interpreter',interpreter)
-    zlabel('$\mathcal{L}^D(\alpha,\beta)$','Interpreter',interpreter)
+    zlabel('$\mathcal{L}_D(\alpha,\beta)$','Interpreter',interpreter)
     mysaveas(pathname,'loglf_KD_3D',formats);
     % mymatlab2tikz(pathname,'loglf_KD_3D.tex');
     
@@ -190,7 +190,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$\alpha$','Interpreter',interpreter)
     ylabel('$\beta$ [kN/rad]','Interpreter',interpreter)
-    zlabel('$\mathcal{L}^D(\alpha,\beta)$','Interpreter',interpreter)
+    zlabel('$\mathcal{L}_D(\alpha,\beta)$','Interpreter',interpreter)
     mysaveas(pathname,'loglf_KD_2D',formats);
     % mymatlab2tikz(pathname,'loglf_KD_2D.tex');
     
@@ -215,7 +215,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[xminS,xmaxS])
     xlabel('$k$ [kN/rad]','Interpreter',interpreter)
-    ylabel('$p_{K^S}(k)$','Interpreter',interpreter)
+    ylabel('$p_{K_S}(k)$','Interpreter',interpreter)
     mysaveas(pathname,'pdf_KS',formats);
     mymatlab2tikz(pathname,'pdf_KS.tex');
     
@@ -232,7 +232,7 @@ if displaySolution
     set(gca,'XLim',[xminS,xmaxS])
     set(gca,'YLim',[0,1])
     xlabel('$k$ [kN/rad]','Interpreter',interpreter)
-    ylabel('$F_{K^S}(k)$','Interpreter',interpreter)
+    ylabel('$F_{K_S}(k)$','Interpreter',interpreter)
     mysaveas(pathname,'cdf_KS',formats);
     mymatlab2tikz(pathname,'cdf_KS.tex');
     
@@ -248,7 +248,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[xminD,xmaxD])
     xlabel('$k$ [kN/rad]','Interpreter',interpreter)
-    ylabel('$p_{K^D}(k)$','Interpreter',interpreter)
+    ylabel('$p_{K_D}(k)$','Interpreter',interpreter)
     mysaveas(pathname,'pdf_KD',formats);
     mymatlab2tikz(pathname,'pdf_KD.tex');
     
@@ -265,7 +265,7 @@ if displaySolution
     set(gca,'XLim',[xminD,xmaxD])
     set(gca,'YLim',[0,1])
     xlabel('$k$ [kN/rad]','Interpreter',interpreter)
-    ylabel('$F_{K^D}(k)$','Interpreter',interpreter)
+    ylabel('$F_{K_D}(k)$','Interpreter',interpreter)
     mysaveas(pathname,'cdf_KD',formats);
     mymatlab2tikz(pathname,'cdf_KD.tex');
    
@@ -281,10 +281,10 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Number of realizations','Interpreter',interpreter)
-    ylabel('Bending stiffness per unit length $k^S$ [kN/rad]','Interpreter',interpreter)
+    ylabel('Bending stiffness per unit length $k_S$ [kN/rad]','Interpreter',interpreter)
     legend('samples','mean value');
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-    %ylabel('Rigidit\''e lin\''eique en flexion $k^S$ [kN/rad]','Interpreter',interpreter)
+    %ylabel('Rigidit\''e lin\''eique en flexion $k_S$ [kN/rad]','Interpreter',interpreter)
     %legend('réalisations','valeur moyenne');
     mysaveas(pathname,'samples_KS',formats);
     % mymatlab2tikz(pathname,'samples_KS.tex');
@@ -300,10 +300,10 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Number of realizations','Interpreter',interpreter)
-    ylabel('Bending stiffness per unit length $k^D$ [kN/rad]','Interpreter',interpreter)
+    ylabel('Bending stiffness per unit length $k_D$ [kN/rad]','Interpreter',interpreter)
     legend('samples','mean value');
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-    %ylabel('Rigidit\''e lin\''eique en flexion $k^D$ [kN/rad]','Interpreter',interpreter)
+    %ylabel('Rigidit\''e lin\''eique en flexion $k_D$ [kN/rad]','Interpreter',interpreter)
     %legend('réalisations','valeur moyenne');
     mysaveas(pathname,'samples_KD',formats);
     % mymatlab2tikz(pathname,'samples_KD.tex');

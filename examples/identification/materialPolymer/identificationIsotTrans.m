@@ -261,8 +261,8 @@ scatter3(GL_series(c),EL_series(r),errmin,'MarkerEdgeColor','k','MarkerFaceColor
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
-xlabel('$G^L$ [MPa]','Interpreter',interpreter)
-ylabel('$E^L$ [MPa]','Interpreter',interpreter)
+xlabel('$G_L$ [MPa]','Interpreter',interpreter)
+ylabel('$E_L$ [MPa]','Interpreter',interpreter)
 zlabel('Error','Interpreter',interpreter)
 % zlabel('Erreur','Interpreter',interpreter)
 mysaveas(pathname,'error_EL_GL_3D',formats,renderer);
@@ -275,8 +275,8 @@ scatter(GL_series(c),EL_series(r),'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
-xlabel('$G^L$ [MPa]','Interpreter',interpreter)
-ylabel('$E^L$ [MPa]','Interpreter',interpreter)
+xlabel('$G_L$ [MPa]','Interpreter',interpreter)
+ylabel('$E_L$ [MPa]','Interpreter',interpreter)
 mysaveas(pathname,'error_EL_GL_2D',formats,renderer);
 
 % Plot error EL NUL
@@ -301,8 +301,8 @@ scatter3(NUL_series(c),EL_series(r),errmin,'MarkerEdgeColor','k','MarkerFaceColo
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
-xlabel('$\nu^L$','Interpreter',interpreter)
-ylabel('$E^L$ [MPa]','Interpreter',interpreter)
+xlabel('$\nu_L$','Interpreter',interpreter)
+ylabel('$E_L$ [MPa]','Interpreter',interpreter)
 zlabel('Error','Interpreter',interpreter)
 % zlabel('Erreur','Interpreter',interpreter)
 mysaveas(pathname,'error_EL_NUL_3D',formats,renderer);
@@ -315,8 +315,8 @@ scatter(NUL_series(c),EL_series(r),'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
-xlabel('$\nu^L$','Interpreter',interpreter)
-ylabel('$E^L$ [MPa]','Interpreter',interpreter)
+xlabel('$\nu_L$','Interpreter',interpreter)
+ylabel('$E_L$ [MPa]','Interpreter',interpreter)
 mysaveas(pathname,'error_EL_NUL_2D',formats,renderer);
 
 % Plot error NUL GL
@@ -341,8 +341,8 @@ scatter3(GL_series(c),NUL_series(r),errmin,'MarkerEdgeColor','k','MarkerFaceColo
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
-xlabel('$G^L$ [MPa]','Interpreter',interpreter)
-ylabel('$\nu^L$','Interpreter',interpreter)
+xlabel('$G_L$ [MPa]','Interpreter',interpreter)
+ylabel('$\nu_L$','Interpreter',interpreter)
 zlabel('Error','Interpreter',interpreter)
 % zlabel('Erreur','Interpreter',interpreter)
 mysaveas(pathname,'error_NUL_GL_3D',formats,renderer);
@@ -355,6 +355,6 @@ scatter(GL_series(c),NUL_series(r),'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
-xlabel('$G^L$ [MPa]','Interpreter',interpreter)
-ylabel('$\nu^L$','Interpreter',interpreter)
+xlabel('$G_L$ [MPa]','Interpreter',interpreter)
+ylabel('$\nu_L$','Interpreter',interpreter)
 mysaveas(pathname,'error_NUL_GL_2D',formats,renderer);

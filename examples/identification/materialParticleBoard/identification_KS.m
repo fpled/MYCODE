@@ -370,9 +370,9 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Bending stiffness per unit length $k^S$ [kN/rad]','Interpreter',interpreter);
+    ylabel('Bending stiffness per unit length $k_S$ [kN/rad]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Rigidit\''e lin\''eique en flexion $k^S$ [kN/rad]','Interpreter',interpreter);
+    %ylabel('Rigidit\''e lin\''eique en flexion $k_S$ [kN/rad]','Interpreter',interpreter);
     mysaveas(pathname,'data_KS',formats);
     mymatlab2tikz(pathname,'data_KS.tex');
 end
