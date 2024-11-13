@@ -92,6 +92,12 @@ if setProblem
         e = 1; % thickness
         r = 3e-3; % radius of the hole
         % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+        % 2D
+        % L = 20e-3; % length
+        % h = 30e-3; % height
+        % e = 1; % thickness
+        % r = 4e-3; % radius of the hole
+        % 3D
         % L = 100e-3; % length
         % h = 65e-3; % height
         % e = 40e-3; % thickness
@@ -164,6 +170,7 @@ if setProblem
             gc = 1.4; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
             % Regularization parameter (width of the smeared crack)
             l = 0.12e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
+            % l = 0.1e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
         case 'anisot' % anisotropic material
             % Critical energy release rate (or fracture toughness)
             gc = 1e3;
