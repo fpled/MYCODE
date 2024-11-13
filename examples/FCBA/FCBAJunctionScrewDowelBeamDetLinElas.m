@@ -21,8 +21,9 @@ interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
-junction = true; % junction modeling
+junction = false; % junction modeling
 sym = false; % symmetry boundary conditions
+selfweight = false; % self-weight
 
 %% Problem
 if solveProblem
@@ -91,7 +92,7 @@ if solveProblem
     load(fullfile(pathnameIdentification,filenameNum));
     
     % Material symmetry
-    materialSym = 'isot';
+    materialSym = 'isotTrans';
     
     switch lower(materialSym)
         case 'isot'
@@ -119,6 +120,9 @@ if solveProblem
             % Material
             mat_1 = ELAS_BEAM_ISOT_TRANS('EL',ET,'NUT',NUT,'GL',GL,'S',Sec1,'IZ',IZ1,'IY',IY1,'IX',IX1,'RHO',RHO);
             mat_2 = ELAS_BEAM_ISOT_TRANS('EL',ET,'NUT',NUT,'GL',GL,'S',Sec2,'IZ',IZ2,'IY',IY2,'IX',IX2,'RHO',RHO);
+            E = ET;
+            G = GL;
+            NU = NUT;
         otherwise
             error('Wrong material symmetry !')
     end
@@ -135,12 +139,19 @@ if solveProblem
     end
     
     %% Neumann boundary conditions
-    p1 = RHO*g*Sec1; % line load (body load for beams) [N/m]
-    p2 = RHO*g*Sec2; % line load (body load for beams) [N/m]
+    if selfweight
+        p1 = RHO*g*Sec1; % line load (body load for beams) [N/m]
+        p2 = RHO*g*Sec2; % line load (body load for beams) [N/m]
+    else
+        p1 = 0;
+        p2 = 0;
+    end
     
     junction_type = 'S1';
     if sym
         p = 300/2; % pointwise load, half of 300, 400, 500 [N]
+        % p = 400/2;
+        % p = 500/2;
     else
         switch lower(junction_type)
             case 's1'
@@ -156,7 +167,9 @@ if solveProblem
             case 'd2'
                 p = [6 63 110 175];
         end
-        p = p(5); % pointwise load [N]
+        p = 100; % pointwise load [N]
+        % p = 130;
+        % p = 160;
     end
     
     %% Dirichlet boundary conditions
@@ -215,8 +228,8 @@ if solveProblem
             Fx = (3*2*p+4*p2*L2)/2*L2^2*IZ1/(L1*(L1*IZ2+4*L2*IZ1*(1+E*IZ2/(k*L2))) + 12*L2/L1*IZ1/Sec2*(IZ2*(1+E*IZ1/(k*L1))+L2/L1*IZ1));
             % Cz = (2*p+4/3*p2*L2)/2*L2^2*IZ1*(-L1+6*L2/L1^2*IZ1/Sec2)/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2*(1+E*IZ1/(k*L1))+L2/L1*IZ1));
         else
-            Fx = 2*(3*p+2*p2*L2)/2*L2^2*IZ1/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2+L2/L1*IZ1));
-            % Cz = 2*(p+2/3*p2*L2)/2*L2^2*IZ1*(-L1+6*L2/L1^2*IZ1/Sec2)/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2+L2/L1*IZ1));
+            Fx = (3*2*p+4*p2*L2)/2*L2^2*IZ1/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2+L2/L1*IZ1));
+            % Cz = (2*p+4/3*p2*L2)/2*L2^2*IZ1*(-L1+6*L2/L1^2*IZ1/Sec2)/(L1*(L1*IZ2+4*L2*IZ1) + 12*L2/L1*IZ1/Sec2*(IZ2+L2/L1*IZ1));
         end
         Cz = Fx*(-L1/3+2*L2/L1^2*IZ1/Sec2);
     else

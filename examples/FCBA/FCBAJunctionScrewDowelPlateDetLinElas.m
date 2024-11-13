@@ -21,7 +21,8 @@ interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
-junction = true; % junction modeling
+junction = false; % junction modeling
+selfweight = false; % self-weight
 
 %% Problem
 if solveProblem
@@ -102,7 +103,11 @@ if solveProblem
     S = setmaterial(S,mat);
     
     %% Neumann boundary conditions
-    p_plate = RHO*g*h; % surface load (body load for plates) [N/m2]
+    if selfweight
+        p_plate = RHO*g*h; % surface load (body load for plates) [N/m2]
+    else
+        p_plate = 0;
+    end
     
     L_load = LIGNE([L2,0,L1],[L2,b,L1]);
     junction_type = 'S1';
@@ -121,6 +126,9 @@ if solveProblem
         case 'd2'
             p = [6 63 110 175];
     end
+    p = 100; % pointwise load [N]
+    % p = 130;
+    % p = 160;
     p = p(1)/b; % line load (surface load for plates) [N/m]
     
     %% Dirichlet boundary conditions

@@ -1,5 +1,5 @@
-%% Stochastic modeling of junction's rigidity %%
-%%----------------------------------------%%
+%% Stochastic modeling of junction rigidity (bending stiffness) %%
+%%--------------------------------------------------------------%%
 
 % clc
 clearvars
@@ -41,6 +41,9 @@ fprintf('\nnb data for Dowel junction = %d',length(KD_data));
 %% Maximum likelihood estimation
 paramS = gamfit(KS_data);
 paramD = gamfit(KD_data);
+
+% paramS = mle(KS_data,'pdf',@gampdf,'start',[2.5 1],'lowerbound',[2 0]);
+% paramD = mle(KD_data,'pdf',@gampdf,'start',[2.5 1],'lowerbound',[2 0]);
 
 aS = paramS(1);
 bS = paramS(2);
