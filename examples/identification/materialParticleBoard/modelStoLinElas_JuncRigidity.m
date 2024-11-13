@@ -31,10 +31,14 @@ load(fullfile(pathnameIdentification,filenameDowel));
 
 KS_data = mean_KS_data*1e-3; % [kN/rad]
 KD_data = mean_KD_data*1e-3; % [kN/rad]
-% mean_KS = mean(KS_data);
-% std_KS = std(KS_data);
-% mean_KD = mean(KD_data);
-% std_KD = std(KD_data);
+% mKS_data = mean(KS_data);
+% vKS_data = var(KS_data);
+% sKS_data = std(KS_data);
+% dKS_data = sKS_data/mKS_data;
+% mKD_data = mean(KD_data);
+% vKD_data = var(KD_data);
+% sKD_data = std(KD_data);
+% dKD_data = sKD_data/mKD_data;
 fprintf('\nnb data for Screw junction = %d',length(KS_data));
 fprintf('\nnb data for Dowel junction = %d',length(KD_data));
 
