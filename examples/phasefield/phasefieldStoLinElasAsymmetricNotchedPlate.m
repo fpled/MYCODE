@@ -10,7 +10,7 @@
 % [Häusler, Lindhorst, Horst, 2011, IJNME] (XFEM)
 % [Geniaut, Galenne, 2012, IJSS] (XFEM)
 % [Passieux, Rethore, Gravouil, Baietto, 2013, CM] (XFEM)
-% [Ambati, Gerasimov, De Lorenzis, 2015, CM] (hybrid isotropic-anisotropic phase field model of Ambati et al. with Miehe et al. decomposition compared with the isotropic one of Bourdin et al. and the anisotropic ones of Amor et al. and Miehe et al.)
+% [Ambati, Gerasimov, De Lorenzis, 2015, CM] (hybrid isotropic-anisotropic phase field model of Ambati et al. compared with the anisotropic one of Miehe et al.)
 % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (isotropic phase field model with no split of Bourdin et al. compared to experimental data of [Winkler PhD thesis, 2001])
 % [Khisamitov, Meschke, 2018, CMAME] (anisotropic phase field model for interfacial elastic energy)
 % [Wu, Nguyen, 2018, JMPS] (hybrid isotropic-anisotropic phase field model of Wu et al.)
