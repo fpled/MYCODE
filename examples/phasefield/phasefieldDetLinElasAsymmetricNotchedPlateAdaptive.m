@@ -286,14 +286,14 @@ if setProblem
     PL = POINT([-ls,-h]);
     PR = POINT([ls,-h]);
     
+    addbc = @(S,ud) addbcAsymmetricNotchedPlate(S,ud,PU,PL,PR);
+    findddlforce = @(S) findddl(S,'UY',PU);
+    
     if strcmpi(initialCrack,'geometriccrack')
         S = final(S,'duplicate');
     else
         S = final(S);
     end
-    
-    addbc = @(S,ud) addbcAsymmetricNotchedPlate(S,ud,PU,PL,PR);
-    findddlforce = @(S) findddl(S,'UY',PU);
     
     ud = 0;
     S = addbc(S,ud);
