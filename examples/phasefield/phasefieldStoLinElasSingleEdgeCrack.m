@@ -552,7 +552,7 @@ if setProblem
                         % nt1 = 47;
                         % t1 = linspace(t0+dt1,t0+nt1*dt1,nt1);
                         % t = [t0,t1];
-
+                        
                         % [Zhou, Rabczuk, Zhuang, 2018, AES]
                         % du = 1e-4 mm during the first 80 time steps (up to u = 8e-3 mm)
                         % du = 1e-5 mm during the last 1200 time steps (up to u = 20e-3 mm)

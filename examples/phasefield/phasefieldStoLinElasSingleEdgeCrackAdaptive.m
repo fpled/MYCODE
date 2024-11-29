@@ -471,7 +471,7 @@ if setProblem
                         % t0 = linspace(dt0,nt0*dt0,nt0);
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
-
+                        
                         % [Zhou, Rabczuk, Zhuang, 2018, AES]
                         % du = 1e-5 mm during the first 450 time steps (up to u = 4.5e-3 mm)
                         % du = 1e-6 mm during the last 1800 time steps (up to u = 6.3e-3 mm)
@@ -482,7 +482,7 @@ if setProblem
                         % t0 = linspace(dt0,nt0*dt0,nt0);
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
-
+                        
                         % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
                         % du = 1e-4 mm during 63 time steps (up to u = 6.3e-3 mm)
                         % dt = 1e-7;
