@@ -11,7 +11,7 @@
 % [Geniaut, Galenne, 2012, IJSS] (XFEM)
 % [Passieux, Rethore, Gravouil, Baietto, 2013, CM] (XFEM)
 % [Ambati, Gerasimov, De Lorenzis, 2015, CM] (hybrid isotropic-anisotropic phase field model of Ambati et al. compared with the anisotropic one of Miehe et al.)
-% [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (isotropic phase field model with no split of Bourdin et al. compared to experimental data of [Winkler PhD thesis, 2001])
+% [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (isotropic phase field model with no split of Bourdin et al. compared to experimental data of [Winkler, 2001, PhD thesis])
 % [Khisamitov, Meschke, 2018, CMAME] (anisotropic phase field model for interfacial elastic energy)
 % [Wu, Nguyen, 2018, JMPS] (hybrid isotropic-anisotropic phase field model of Wu et al.)
 % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM] (anisotropic phase field model of Wu et al.)
@@ -221,8 +221,7 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    option = 'DEFO'; % plane strain [Guidault, Allix, Champaney, Cornuault, 2008, CMAME],
-    % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Khisamitov, Meschke, 2018, CMAME]
+    option = 'DEFO'; % plane strain [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Khisamitov, Meschke, 2018, CMAME]
     % option = 'CONT'; % plane stress [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % Lame coefficients
     lambda = 12e9;
