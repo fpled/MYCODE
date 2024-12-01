@@ -321,19 +321,15 @@ if solveProblem
     
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
-                'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+            [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
         otherwise
-            [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
-                'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+            [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
     end
 %     switch lower(PFsolver)
 %         case {'historyfieldelem','historyfieldnode'}
-%             [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,...
-%                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+%             [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
 %         otherwise
-%             [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,...
-%                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+%             [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
 %     end
     t = gettevol(T);
     dt_val = getvalue(dt);
