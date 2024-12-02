@@ -193,8 +193,7 @@ if setProblem
                 otherwise
                     error('Wrong loading case');
             end
-            ZMin = 0;
-            ZMax = e;
+            ZMin = 0; ZMax = e;
             Thickness = a;
             % Thickness = 0;
             B = struct('VIn',VIn,'VOut',VOut,'XMin',XMin,'XMax',XMax,'YMin',YMin,'YMax',YMax,'ZMin',ZMin,'ZMax',ZMax,'Thickness',Thickness);
