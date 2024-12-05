@@ -107,6 +107,8 @@ if setProblem
     dh = 2*unit; % distance between the holes
     ph = 1.25*unit; % location of the top hole from the top
     r = 0.25*unit; % radius of the holes
+    e = 1; % thickness
+    % e = 0.5*unit; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     
     cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
     % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
@@ -170,7 +172,7 @@ if setProblem
         otherwise
             error('Wrong regularization model');
     end
-    mat_phase = FOUR_ISOT('k',K,'r',R,'qn',Qn,'PFregularization',PFregularization);
+    mat_phase = FOUR_ISOT('k',K,'r',R,'qn',Qn,'DIM3',e,'PFregularization',PFregularization);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
     
@@ -242,15 +244,12 @@ if setProblem
     % NU = 0.3; % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME]
     % Energetic degradation function
     g = @(d) (1-d).^2;
-    % Thickness
-    DIM3 = 1;
-    % DIM3 = 0.5*unit; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % Density
     RHO = 1;
     
     % Material
     d = calc_init_dirichlet(S_phase);
-    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',DIM3,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
+    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
     mat = setnumber(mat,1);
     S = setoption(S,option);
     S = setmaterial(S,mat);

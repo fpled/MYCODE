@@ -44,11 +44,11 @@ end
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
 if strcmpi(PFsolver,'historyfieldnode')
-    H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
+    H = FENODEFIELD(calc_energyint(S,u,'node','positive','local'));
     r = FENODEFIELD(calc_parammat(S_phase,'r','node'));
     qn = FENODEFIELD(calc_parammat(S_phase,'qn','node'));
 else
-    H = calc_energyint(S,u,'positive','intorder','mass');
+    H = calc_energyint(S,u,'intorder','mass','positive','local');
     r = calc_parammat(S_phase,'r');
     qn = calc_parammat(S_phase,'qn');
 end
@@ -200,7 +200,7 @@ for i=1:length(T)
                 case {'historyfieldelem','historyfieldnode'}
                     H = calc_historyfield(S,u,H_old);
                 otherwise
-                    H = calc_energyint(S,u,'positive','intorder','mass');
+                    H = calc_energyint(S,u,'intorder','mass','positive','local');
             end
             
             % Convergence

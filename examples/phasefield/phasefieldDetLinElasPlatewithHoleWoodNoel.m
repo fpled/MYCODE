@@ -12,17 +12,27 @@ close all
 % myparallel('start');
 
 %% Experimental data
-filenameExpLoads = 'loadsPlatewithHoleWoodNoel';
-filenameExpParams = 'paramsPlatewithHoleWoodNoel';
-pathnameExp = fileparts(mfilename('fullpath'));
-filenameExp = fullfile(pathnameExp,filenameExpParams);
-opts = detectImportOptions(filenameExp);
-opts.SelectedVariableNames = {'El','Et','Gl','vl'};
-T_exp = readtable(filenameExp,opts);
-EL_data = T_exp.El; % [MPa]
-ET_data = T_exp.Et; % [MPa]
-GL_data = T_exp.Gl; % [MPa]
-NUL_data = T_exp.vl;
+filenameElas = '_elastic';
+filenameGc = '_gc';
+pathnameExp = fullfile(getfemobjectoptions('path'),'MYCODE',...
+    'examples','phasefield','dataPlatewithHoleWoodNoel');
+filenameElas = fullfile(pathnameExp,filenameElas);
+filenameGc = fullfile(pathnameExp,filenameGc);
+optsElas = detectImportOptions(filenameElas);
+optsGc = detectImportOptions(filenameGc);
+optsElas.SelectedVariableNames = {'EL','ET','GL','vL'};
+optsGc.SelectedVariableNames = {'f_exp_kN_','f_kN_','Gc_mJ_mm2_','l0_mm_'};
+T_Elas = readtable(filenameElas,optsElas);
+T_Gc = readtable(filenameGc,optsGc);
+EL_data = T_Elas.EL; % [MPa]
+ET_data = T_Elas.ET; % [MPa]
+GL_data = T_Elas.GL; % [MPa]
+NUL_data = T_Elas.vL;
+f_exp_data = T_Gc.f_exp_kN_; % [kN]
+f_data = T_Gc.f_kN_; % [kN]
+gc_data = T_Gc.Gc_mJ_mm2_; % [mJ/mm^2]=[kN/m]
+l_data = T_Gc.l0_mm_; % [mm]
+numSample = 5;
 
 %% Input data
 setProblem = true;
@@ -39,9 +49,9 @@ Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Anisot'; % 'Isot' or 'Anisot'. Material symmetry
 PFmodel = 'HeFreddi'; % 'Bourdin', 'Amor', 'Miehe', 'HeAmor', 'HeFreddi', 'Zhang'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
-PFregularization = 'AT2'; % 'AT1' or 'AT2'
+PFregularization = 'AT1'; % 'AT1' or 'AT2'
 PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
-maxIter = Inf; % maximum number of iterations at each loading increment
+maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
@@ -117,7 +127,7 @@ if setProblem
             clC = cl; % characteristic length for circular hole
             B = [];
         case 'optim'
-            clD = l*3; % characteristic length for domain
+            clD = 3*l/2; % characteristic length for domain
             clC = l/2; % characteristic length for circular hole
             if test
                 clC = l;
@@ -140,7 +150,7 @@ if setProblem
     %% Phase field problem
     %% Material
     % Critical energy release rate (or fracture toughness)
-    gc = 0.06;
+    gc = gc_data(numSample)*1e3; % [J/m^2]=[N/m]
     % Small artificial residual stiffness
     % k = 1e-12;
     k = 0;
@@ -160,7 +170,7 @@ if setProblem
         otherwise
             error('Wrong regularization model');
     end
-    mat_phase = FOUR_ISOT('k',K,'r',R,'qn',Qn,'PFregularization',PFregularization);
+    mat_phase = FOUR_ISOT('k',K,'r',R,'qn',Qn,'DIM3',e,'PFregularization',PFregularization);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
     
@@ -202,22 +212,21 @@ if setProblem
     % Option
     % option = 'DEFO'; % plane strain [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
     option = 'CONT'; % plane stress [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-    ii = 1;
     switch lower(symmetry)
         case 'isot' % isotropic material
             % Lame coefficients
             % Young modulus and Poisson ratio
-            E = EL_data(ii)*1e6; % [Pa]
+            E = EL_data(numSample)*1e6; % [Pa]
             NU = 0.44;
         case 'anisot' % anisotropic material
             % Longitudinal Young modulus
-            EL = EL_data(ii)*1e6; % [Pa]
+            EL = EL_data(numSample)*1e6; % [Pa]
             % Transverse Young modulus
-            ET = ET_data(ii)*1e6; % [Pa]
+            ET = ET_data(numSample)*1e6; % [Pa]
             % Longitudinal shear modulus
-            GL = GL_data(ii)*1e6; % [Pa]
+            GL = GL_data(numSample)*1e6; % [Pa]
             % Longitudinal Poisson ratio
-            NUL = 0.02;
+            NUL = NUL_data(numSample);
             % Transverse Poisson ratio
             NUT = 0.44;
         otherwise
@@ -279,19 +288,19 @@ if setProblem
     
     %% Time scheme
     if Dim==2
-        % du = 8e-3 mm during the first stage (until the phase field reaches the threshold value)
-        % du = 2e-3 mm during the last stage (as soon as the phase field exceeds the threshold value)
-        dt0 = 8e-6;
-        dt1 = 2e-6;
-        tf = 0.5e-3; % tf = 0.5 mm
-        dthreshold = 0.6;
+        % du = 24e-5 mm during the first stage (until the phase field reaches the threshold value)
+        % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value)
+        dt0 = 24e-8;
+        dt1 = 2e-8;
+        tf = 0.31e-3; % tf = 0.31 mm
+        dthreshold = 0.2;
     elseif Dim==3
-        % du = 8e-3 mm during the first stage (until the phase field reaches the threshold value)
-        % du = 2e-3 mm during the last stage (as soon as the phase field exceeds the threshold value)
-        dt0 = 8e-6;
-        dt1 = 2e-6;
-        tf = 0.5e-3; % tf = 0.5 mm
-        dthreshold = 0.6;
+        % du = 24e-5 mm during the first stage (until the phase field reaches the threshold value)
+        % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value)
+        dt0 = 24e-8;
+        dt1 = 2e-8;
+        tf = 0.31e-3; % tf = 0.31 mm
+        dthreshold = 0.2;
     end
     T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
     

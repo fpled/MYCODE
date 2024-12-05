@@ -37,10 +37,10 @@ S = setmaterialproperties(S,materials);
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
 if strcmpi(PFsolver,'historyfieldnode')
-    H = FENODEFIELD(calc_energyint(S,u,'node','positive'));
+    H = FENODEFIELD(calc_energyint(S,u,'node','positive','local'));
     qn = FENODEFIELD(calc_parammat(S_phase,'qn','node'));
 else
-    H = calc_energyint(S,u,'positive','intorder','mass');
+    H = calc_energyint(S,u,'intorder','mass','positive','local');
     qn = calc_parammat(S_phase,'qn');
 end
 if checkConvEnergy
@@ -181,7 +181,7 @@ while ti < tf-eps
             case {'historyfieldelem','historyfieldnode'}
                 H = calc_historyfield(S,u,H_old);
             otherwise
-                H = calc_energyint(S,u,'positive','intorder','mass');
+                H = calc_energyint(S,u,'intorder','mass','positive','local');
         end
         
         % Convergence
@@ -309,7 +309,7 @@ while ti < tf-eps
             h = P_phase'*h;
             H = setvalue(H,h);
         else
-            H = calc_energyint(S,u,'positive','intorder','mass');
+            H = calc_energyint(S,u,'intorder','mass','positive','local');
         end
     end
 end
