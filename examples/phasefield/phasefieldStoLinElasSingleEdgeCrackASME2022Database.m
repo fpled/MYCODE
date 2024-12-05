@@ -203,17 +203,17 @@ if setProblem
         otherwise
             error('Wrong FE mesh')
     end
-%     switch lower(initialCrack)
-%         case 'geometriccrack'
-%             S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
-%         case 'geometricnotch'
-%             c = 1e-5; % crack width
-%             S_phase = gmshdomainwithedgenotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
-%         case 'initialphasefield'
-%             S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate','Box',B);
-%         otherwise
-%             error('Wrong model for initial crack');
-%     end
+    % switch lower(initialCrack)
+    %     case 'geometriccrack'
+    %         S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
+    %     case 'geometricnotch'
+    %         c = 1e-5; % crack width
+    %         S_phase = gmshdomainwithedgenotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
+    %     case 'initialphasefield'
+    %         S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate','Box',B);
+    %     otherwise
+    %         error('Wrong model for initial crack');
+    % end
     S_phase = gmsh2femobject(Dim,fullfile(pathname,'gmsh_domain_single_edge_crack.msh'));
     S = S_phase;
     

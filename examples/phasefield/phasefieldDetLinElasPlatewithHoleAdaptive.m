@@ -3,7 +3,7 @@
 %%----------------------------------------------------------------------%%
 % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS] (experimental tests)
 % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF] (anisotropic phase field model of Miehe et al.)
-% [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase field model of Nguyen et al.)
+% [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase field model of He et al.)
 % [Luo, Chen, Wang, Li, 2022, CM] (anisotropic phase field model of He et al. with anisotropic fracture surface energy)
 
 % clc
@@ -306,7 +306,7 @@ if setProblem
     
     addbc = @(S,ud) addbcPlatewithHole(S,ud,BU,BL,P0);
     findddlforce = @(S) findddl(S,'UY',BU);
-
+    
     S = final(S);
     
     ud = 0;
@@ -378,14 +378,15 @@ if solveProblem
             [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     end
-%     switch lower(PFsolver)
-%         case {'historyfieldelem','historyfieldnode'}
-%             [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,C,sizemap,...
-%                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-%         otherwise
-%             [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,C,sizemap,...
-%                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-%     end
+    % switch lower(PFsolver)
+    %     case {'historyfieldelem','historyfieldnode'}
+    %         [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,C,sizemap,...
+    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    %     otherwise
+    %         [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,C,sizemap,...
+    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    % end
+    
     t = gettevol(T);
     dmaxt = cellfun(@(d) max(d),dt);
     idc = find(dmaxt>=min(0.75,max(dmaxt)),1);

@@ -376,12 +376,13 @@ if solveProblem
         otherwise
             [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasThreshold(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
     end
-%     switch lower(PFsolver)
-%         case {'historyfieldelem','historyfieldnode'}
-%             [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
-%         otherwise
-%             [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
-%     end
+    % switch lower(PFsolver)
+    %     case {'historyfieldelem','historyfieldnode'}
+    %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %     otherwise
+    %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    % end
+    
     T = gettimemodel(dt);
     t = gettevol(T);
     dt_val = getvalue(dt);

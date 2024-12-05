@@ -351,14 +351,15 @@ if solveProblem
             [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_asymmetric_notched_plate','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     end
-%     switch lower(PFsolver)
-%         case {'historyfieldelem','historyfieldnode'}
-%             [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,initialCrack,sizemap,...
-%                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_asymmetric_notched_plate','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-%         otherwise
-%             [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,initialCrack,sizemap,...
-%                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_asymmetric_notched_plate','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-%     end
+    % switch lower(PFsolver)
+    %     case {'historyfieldelem','historyfieldnode'}
+    %         [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,initialCrack,sizemap,...
+    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_asymmetric_notched_plate','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    %     otherwise
+    %         [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,initialCrack,sizemap,...
+    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_asymmetric_notched_plate','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    % end
+    
     t = gettevol(T);
     dmaxt = cellfun(@(d) max(d),dt);
     idc = find(dmaxt>=min(0.75,max(dmaxt)),1);

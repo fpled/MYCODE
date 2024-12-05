@@ -40,7 +40,7 @@ test = true; % coarse mesh
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isot'; % 'Isot' or 'Anisot'. Material symmetry
 ang = 45; % clockwise material orientation angle around z-axis for anisotopic material [deg]
-loading = 'Tension'; % 'Tension' or 'Shear'
+loading = 'Shear'; % 'Tension' or 'Shear'
 PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'HeAmor', 'HeFreddi', 'Zhang'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
@@ -670,29 +670,29 @@ if solveProblem
         otherwise
             error('Wrong material symmetry class');
     end
-%     switch lower(symmetry)
-%         case 'isot' % isotropic material
-%             switch lower(PFsolver)
-%                 case {'historyfieldelem','historyfieldnode'}
-%                     [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,...
-%                         'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-%                 otherwise
-%                     [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,...
-%                         'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-%             end
-%         case 'anisot' % anisotropic material
-%             switch lower(PFsolver)
-%                 case {'historyfieldelem','historyfieldnode'}
-%                     [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasSingleEdgeCrackAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,...
-%                         'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-%                 otherwise
-%                     [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasSingleEdgeCrackAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,...
-%                         'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-%             end
-%         otherwise
-%             error('Wrong material symmetry class');
-%     end
-
+    % switch lower(symmetry)
+    %     case 'isot' % isotropic material
+    %         switch lower(PFsolver)
+    %             case {'historyfieldelem','historyfieldnode'}
+    %                 [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,...
+    %                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    %             otherwise
+    %                 [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,...
+    %                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    %         end
+    %     case 'anisot' % anisotropic material
+    %         switch lower(PFsolver)
+    %             case {'historyfieldelem','historyfieldnode'}
+    %                 [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasSingleEdgeCrackAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,...
+    %                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    %             otherwise
+    %                 [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasSingleEdgeCrackAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,...
+    %                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    %         end
+    %     otherwise
+    %         error('Wrong material symmetry class');
+    % end
+    
     t = gettevol(T);
     dmaxt = cellfun(@(d) max(d),dt);
     idc = find(dmaxt>=min(0.75,max(dmaxt)),1);
@@ -757,14 +757,9 @@ if displayModel
     [t,rep] = gettevol(T);
     
     %% Display domains, boundary conditions and meshes
-%     figure('Name','Domain')
-%     clf
-%     plot(D,'FaceColor',getfacecolor(1));
-%     plot(C,'FaceColor','w');
-%     axis image
-%     axis off
-%     mysaveas(pathname,'domain',formats,renderer);
-%     mymatlab2tikz(pathname,'domain.tex');
+    % plotDomain({D,C},'legend',false);
+    % mysaveas(pathname,'domain',formats,renderer);
+    % mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;

@@ -290,7 +290,7 @@ for i=1:length(T)
     end
     
     if display_
-        fprintf('| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',i,length(T),nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),dmax,Ed,Eu,getnbnode(S),getnbelem(S));
+        fprintf('| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',i,length(T),nbIter,t(i)*1e3,f*1e-3,dmax,Ed,Eu,getnbnode(S),getnbelem(S));
     end
     
     if i<length(T) && ~any(db > dbthreshold)

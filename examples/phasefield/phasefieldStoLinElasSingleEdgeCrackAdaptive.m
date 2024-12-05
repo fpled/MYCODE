@@ -767,14 +767,9 @@ if displayModel
     [t,rep] = gettevol(T);
     
     %% Display domains, boundary conditions and meshes
-%     figure('Name','Domain')
-%     clf
-%     plot(D,'FaceColor',getfacecolor(1));
-%     plot(C,'FaceColor','w');
-%     axis image
-%     axis off
-%     mysaveas(pathname,'domain',formats,renderer);
-%     mymatlab2tikz(pathname,'domain.tex');
+    % plotDomain({D,C},'legend',false);
+    % mysaveas(pathname,'domain',formats,renderer);
+    % mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;

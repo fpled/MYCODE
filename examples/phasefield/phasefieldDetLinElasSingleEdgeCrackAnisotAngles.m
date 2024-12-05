@@ -668,20 +668,21 @@ if solveProblem
         otherwise
             [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
     end
-%     switch lower(symmetry)
-%         case 'isot' % isotropic material
-%             fun = @solvePFDetLinElasSingleEdgeCrack;
-%         case 'anisot' % anisotropic material
-%             fun = @solvePFDetLinElasSingleEdgeCrackThreshold;
-%         otherwise
-%             error('Wrong material symmetry class');
-%     end
-%     switch lower(PFsolver)
-%         case {'historyfieldelem','historyfieldnode'}
-%             [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
-%         otherwise
-%             [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
-%     end
+    % switch lower(symmetry)
+    %     case 'isot' % isotropic material
+    %         fun = @solvePFDetLinElasSingleEdgeCrack;
+    %     case 'anisot' % anisotropic material
+    %         fun = @solvePFDetLinElasSingleEdgeCrackThreshold;
+    %     otherwise
+    %         error('Wrong material symmetry class');
+    % end
+    % switch lower(PFsolver)
+    %     case {'historyfieldelem','historyfieldnode'}
+    %         [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %     otherwise
+    %         [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    % end
+    
     if strcmpi(symmetry,'anisot')
         T = gettimemodel(dt);
     end
@@ -750,9 +751,9 @@ if displayModel
     [t,rep] = gettevol(T);
     
     %% Display domains, boundary conditions and meshes
-%     plotDomain({D,C},'legend',false);
-%     mysaveas(pathname,'domain',formats,renderer);
-%     mymatlab2tikz(pathname,'domain.tex');
+    % plotDomain({D,C},'legend',false);
+    % mysaveas(pathname,'domain',formats,renderer);
+    % mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;
@@ -791,10 +792,10 @@ if displaySolution
     figure('Name','Force vs displacement')
     clf
     plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
-%     hold on
-%     scatter(udmax*1e3,fmax*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','b','Linewidth',linewidth)
-%     scatter(udc*1e3,fc*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','r','Linewidth',linewidth)
-%     hold off
+    % hold on
+    % scatter(udmax*1e3,fmax*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','b','Linewidth',linewidth)
+    % scatter(udc*1e3,fc*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','r','Linewidth',linewidth)
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)

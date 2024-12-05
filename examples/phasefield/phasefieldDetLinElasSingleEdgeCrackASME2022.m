@@ -196,17 +196,17 @@ if setProblem
         otherwise
             error('Wrong FE mesh')
     end
-%     switch lower(initialCrack)
-%         case 'geometriccrack'
-%             S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
-%         case 'geometricnotch'
-%             c = 1e-5; % crack width
-%             S_phase = gmshdomainwithedgenotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
-%         case 'initialphasefield'
-%             S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate','Box',B);
-%         otherwise
-%             error('Wrong model for initial crack');
-%     end
+    % switch lower(initialCrack)
+    %     case 'geometriccrack'
+    %         S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
+    %     case 'geometricnotch'
+    %         c = 1e-5; % crack width
+    %         S_phase = gmshdomainwithedgenotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
+    %     case 'initialphasefield'
+    %         S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate','Box',B);
+    %     otherwise
+    %         error('Wrong model for initial crack');
+    % end
     S_phase = gmsh2femobject(Dim,fullfile(pathname,'gmsh_domain_single_edge_crack.msh'),Dim);
     S = S_phase;
     
@@ -662,6 +662,7 @@ if solveProblem
         otherwise
             [dt,ut,ft] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv);
     end
+    
     if strcmpi(symmetry,'anisot')
         T = gettimemodel(dt);
     end
@@ -730,9 +731,9 @@ if displayModel
     [t,rep] = gettevol(T);
     
     %% Display domains, boundary conditions and meshes
-%     plotDomain({D,C},'legend',false);
-%     mysaveas(pathname,'domain',formats,renderer);
-%     mymatlab2tikz(pathname,'domain.tex');
+    % plotDomain({D,C},'legend',false);
+    % mysaveas(pathname,'domain',formats,renderer);
+    % mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;
@@ -771,10 +772,10 @@ if displaySolution
     figure('Name','Force vs displacement')
     clf
     plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
-%     hold on
-%     scatter(udmax*1e3,fmax*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','b','Linewidth',linewidth)
-%     scatter(udc*1e3,fc*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','r','Linewidth',linewidth)
-%     hold off
+    % hold on
+    % scatter(udmax*1e3,fmax*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','b','Linewidth',linewidth)
+    % scatter(udc*1e3,fc*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','r','Linewidth',linewidth)
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)

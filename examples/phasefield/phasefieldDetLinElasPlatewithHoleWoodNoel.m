@@ -141,10 +141,10 @@ if setProblem
             error('Wrong FE mesh')
     end
     S_phase = gmshdomainwithhole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole_wood_Noel'),Dim,'Box',B);
-%     S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_unif.msh'),2);
-%     S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_unif_test.msh'),2);
-%     S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_optim.msh'),2);
-%     S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_optim_test.msh'),2);
+    % S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_unif.msh'),2);
+    % S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_unif_test.msh'),2);
+    % S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_optim.msh'),2);
+    % S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_optim_test.msh'),2);
     S = S_phase;
     
     %% Phase field problem
@@ -320,12 +320,13 @@ if solveProblem
         otherwise
             [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasThreshold(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
     end
-%     switch lower(PFsolver)
-%         case {'historyfieldelem','historyfieldnode'}
-%             [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
-%         otherwise
-%             [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
-%     end
+    % switch lower(PFsolver)
+    %     case {'historyfieldelem','historyfieldnode'}
+    %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %     otherwise
+    %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    % end
+    
     T = gettimemodel(dt);
     t = gettevol(T);
     dt_val = getvalue(dt);
