@@ -30,7 +30,7 @@
 
 % clc
 clearvars
-% close all
+close all
 % myparallel('start');
 
 %% Input data
@@ -45,15 +45,15 @@ test = true; % coarse mesh
 % test = false; % fine mesh
 
 Dim = 2; % space dimension Dim = 2
-loading = 'Cyclic'; % 'Monotonic' or 'Cyclic'
+loading = 'Monotonic'; % 'Monotonic' or 'Cyclic'
 PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'HeAmor', 'HeFreddi', 'Zhang'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
-PFregularization = 'AT1'; % 'AT1' or 'AT2'
+PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'HistoryFieldElem'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
-FEmesh = 'Unif'; % 'Unif' or 'Optim'
+FEmesh = 'Optim'; % 'Unif' or 'Optim'
 
 suffix = '';
 
