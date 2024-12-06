@@ -100,6 +100,7 @@ if display_
     fprintf('\n+-----------+---------+-----------+-----------+-----------+-----------+-----------+\n');
 end
 
+ismonotonic = ~any(diff(sign(t(t~=0))));
 numddlb = findddlboundary(S_phase);
 db = d(numddlb,:);
 
@@ -225,7 +226,10 @@ for i=1:length(T)
         % Force
         numddl = findddlforce(S);
         f = A(numddl,:)*u;
-        f = abs(sum(f));
+        f = sum(f);
+        if ismonotonic
+            f = abs(f);
+        end
         
         % Energy
         if ~checkConvEnergy

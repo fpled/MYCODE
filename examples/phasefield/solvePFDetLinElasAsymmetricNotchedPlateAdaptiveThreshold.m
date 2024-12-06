@@ -223,8 +223,9 @@ while ti < tf-eps
     
     % Force
     numddl = findddl(S,'UY',PU);
-    f = -A(numddl,:)*u;
+    f = A(numddl,:)*u;
     f = sum(f);
+    f = abs(f);
     
     % Energy
     if ~checkConvEnergy

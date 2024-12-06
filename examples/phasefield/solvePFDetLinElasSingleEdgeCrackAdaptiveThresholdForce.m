@@ -268,6 +268,7 @@ while ti < tf-eps
         end
         f = A(numddl,:)*u;
         f = sum(f);
+        f = abs(f);
     end
     
     % Update fields

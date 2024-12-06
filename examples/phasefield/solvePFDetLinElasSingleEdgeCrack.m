@@ -97,6 +97,7 @@ if display_
     fprintf('\n+-----------+---------+-----------+-----------+-----------+-----------+-----------+\n');
 end
 
+ismonotonic = ~any(diff(sign(t(t~=0))));
 numddlb = findddl(S_phase,'T',BRight);
 db = d(numddlb,:);
 
@@ -254,6 +255,9 @@ for i=1:length(T)
         end
         f = A(numddl,:)*u;
         f = sum(f);
+        if ismonotonic
+            f = abs(f);
+        end
         
         % Energy
         if ~checkConvEnergy

@@ -243,6 +243,7 @@ while ti < tf-eps
         numddl = findddl(S,'UY',BRight);
         f = A(numddl,:)*u;
         f = sum(f);
+        f = abs(f);
         
         % Energy
         if ~checkConvEnergy

@@ -111,6 +111,7 @@ if display_
     fprintf('\n| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',0,length(T),0,0,0,0,0,0,getnbnode(S),getnbelem(S));
 end
 
+ismonotonic = ~any(diff(sign(t(t~=0))));
 numddlbr = findddl(S_phase,'T',BRight);
 numddlbl = findddl(S_phase,'T',BLeft);
 numddlb = union(numddlbr,numddlbl);
@@ -252,8 +253,11 @@ for i=1:length(T)
         
         % Force
         numddl = findddl(S,'UY',BU);
-        f = -A(numddl,:)*u;
+        f = A(numddl,:)*u;
         f = sum(f);
+        if ismonotonic
+            f = abs(f);
+        end
         
         % Energy
         if ~checkConvEnergy

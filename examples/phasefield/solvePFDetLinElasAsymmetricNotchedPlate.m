@@ -96,6 +96,8 @@ if display_
     fprintf('\n+-----------+---------+-----------+-----------+-----------+-----------+-----------+\n');
 end
 
+ismonotonic = ~any(diff(sign(t(t~=0))));
+
 for i=1:length(T)
     tIter = tic;
     nbIter = 0;
@@ -213,8 +215,11 @@ for i=1:length(T)
     
     % Force
     numddl = findddl(S,'UY',PU);
-    f = -A(numddl,:)*u;
+    f = A(numddl,:)*u;
     f = sum(f);
+    if ismonotonic
+        f = abs(f);
+    end
     
     % Energy
     if ~checkConvEnergy
