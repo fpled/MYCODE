@@ -41,106 +41,106 @@ parfor i=1:N
     for m=1:getnbgroupelem(S_phase)
         elem = getgroupelem(S_phase,m);
         mat = getmaterial(elem);
-%         if isparam(mat,'delta') && any(getparam(mat,'delta')>0) % random phase field parameters
-%             nbelem = getnbelem(elem);
-%             xnode = node_phase(elem);
-%             gauss = calc_gauss(elem,'mass');
-%             xgauss = gauss.coord;
-%             PFregularization = getparam(mat,'PFregularization');
-%             k = evalparam(mat,'k',elem,xnode,xgauss);
-%             switch lower(PFregularization)
-%                 case 'at1'
-%                     c0 = 8/3;
-%                     qn = evalparam(mat,'qn',elem,xnode,xgauss);
-%                     % gc = c0*sqrt(-k.*qn/2); % mean fracture toughness
-%                     % l = sqrt(-k./qn/2); % mean regularization parameter
-%                     r = -2*qn;
-% %                 case 'at2'
-% %                     c0 = 2;
-% %                     r = evalparam(mat,'r',elem,xnode,xgauss);
-% %                     % gc = sqrt(k.*r); % mean fracture toughness
-%                 otherwise
-%                     c0 = 2;
-%                     r = evalparam(mat,'r',elem,xnode,xgauss);
-%                     % gc = sqrt(k.*r); % mean fracture toughness
-% %                     error('Wrong regularization model');
-%             end
-%             gc = c0*sqrt(k.*r)/2; % mean fracture toughness
-%             l = sqrt(k./r); % mean regularization parameter
-%             delta = getparam(mat,'delta'); % coefficients of variation for fracture toughness and regularization parameter
-%             if length(delta)==1
-%                 deltaGc = delta; % 0 <= deltaGc < 1/sqrt(2). coefficient of variation for fracture toughness
-%                 deltaL = delta; % 0 <= deltaL < 1/sqrt(2). coefficient of variation for regularization parameter
-%             else
-%                 deltaGc = delta(1); % 0 <= deltaGc < 1/sqrt(2). coefficient of variation for fracture toughness
-%                 deltaL = delta(2); % 0 <= deltaL < 1/sqrt(2). coefficient of variation for regularization parameter
-%             end
-%             if deltaGc<0 || deltaGc>=1/sqrt(2)
-%                 error('Coefficient of variation delta = %g for fracture toughness should be between 0 and %g',deltaGc,1/sqrt(2))
-%             end
-%             if deltaL<0 || deltaL>=1/sqrt(2)
-%                 error('Coefficient of variation delta = %g for regularization parameter should be between 0 and %g',deltaL,1/sqrt(2))
-%             end
-%             aGc = 1/deltaGc^2; % aGc > 2
-%             bGc = gc/aGc; % 0 < bGc = gc/aGc < gc/2 since gc > 0 and aGc > 2
-%             aL = 1/deltaL^2; % aL > 2
-%             bL = l/aL; % 0 < bL = l/aL < l/2 since l > 0 and aL > 2
-%             nU = 2;
-%             if deltaGc==0 || deltaL==0
-%                 nU = 1;
-%             end
-%             if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
-%                 lcorr = getparam(mat,'lcorr'); % spatial correlation length
-%                 x = calc_x(elem,xnode,xgauss);
-%                 x = getcoord(NODE(POINT(x(:,:,:))));
-%                 Xi = shinozukaSample(si,x,lcorr,nU); % sample for bivariate Gaussian random field with statistically independent normalized Gaussian components
-%             else % random vector model
-%                 Xi = randn(si,1,nU); % sample for bivariate Gaussian random variable with statistically independent normalized Gaussian components
-%             end
-%             if deltaGc && deltaL
-%                 rho = 0;
-%                 if isparam(mat,'rcorr')
-%                     rho = getparam(mat,'rcorr'); % correlation coefficient between fracture toughness and regularization parameter
-%                 end
-%                 gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m]
-%                 l = gaminv(normcdf(rho*Xi(:,1) + sqrt(1-rho^2)*Xi(:,2)),aL,bL); % sample for regularization parameter [m]
-%             elseif deltaGc
-%                 gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m]
-%             else
-%                 l = gaminv(normcdf(Xi(:,1)),aL,bL); % sample for regularization parameter [m]
-%             end
-%             if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
-%                 if deltaGc
-%                     gc = reshape(gc,1,1,nbelem,gauss.nbgauss);
-%                     gc = MYDOUBLEND(gc);
-%                     gc = FEELEMFIELD({gc},'storage','gauss','type','scalar','ddl',DDL('gc'));
-%                 end
-%                 if deltaL
-%                     l = reshape(l,1,1,nbelem,gauss.nbgauss);
-%                     l = MYDOUBLEND(l);
-%                     l = FEELEMFIELD({l},'storage','gauss','type','scalar','ddl',DDL('l'));
-%                 end
-%             end
-%             switch lower(PFregularization)
-%                 case 'at1'
-%                     % c0 = 8/3;
-%                     k = 3/4*gc.*l; % k = 2*(gc.*l)/c0;
-%                     qn = -3/8*gc./l; % qn = -(gc./l)/c0;
-%                     mats_phase{m} = setparam(mats_phase{m},'qn',qn);
-% %                 case 'at2'
-% %                     % c0 = 2;
-% %                     k = gc.*l; % k = 2*(gc.*l)/c0;
-% %                     r = gc./l; % r = 2*(gc./l)/c0;
-% %                     mats_phase{m} = setparam(mats_phase{m},'r',r);
-%                 otherwise
-%                     % c0 = 2;
-%                     k = gc.*l; % k = 2*(gc.*l)/c0;
-%                     r = gc./l; % r = 2*(gc./l)/c0;
-%                     mats_phase{m} = setparam(mats_phase{m},'r',r);
-% %                     error('Wrong regularization model');
-%             end
-%             mats_phase{m} = setparam(mats_phase{m},'k',k);
-%         end
+        % if isparam(mat,'delta') && any(getparam(mat,'delta')>0) % random phase field parameters
+        %     nbelem = getnbelem(elem);
+        %     xnode = node_phase(elem);
+        %     gauss = calc_gauss(elem,'mass');
+        %     xgauss = gauss.coord;
+        %     PFregularization = getparam(mat,'PFregularization');
+        %     k = evalparam(mat,'k',elem,xnode,xgauss);
+        %     switch lower(PFregularization)
+        %         case 'at1'
+        %             c0 = 8/3;
+        %             qn = evalparam(mat,'qn',elem,xnode,xgauss);
+        %             % gc = c0*sqrt(-k.*qn/2); % mean fracture toughness
+        %             % l = sqrt(-k./qn/2); % mean regularization parameter
+        %             r = -2*qn;
+        %         % case 'at2'
+        %         %     c0 = 2;
+        %         %     r = evalparam(mat,'r',elem,xnode,xgauss);
+        %         %     % gc = sqrt(k.*r); % mean fracture toughness
+        %         otherwise
+        %             c0 = 2;
+        %             r = evalparam(mat,'r',elem,xnode,xgauss);
+        %             % gc = sqrt(k.*r); % mean fracture toughness
+        %             % error('Wrong regularization model');
+        %     end
+        %     gc = c0*sqrt(k.*r)/2; % mean fracture toughness
+        %     l = sqrt(k./r); % mean regularization parameter
+        %     delta = getparam(mat,'delta'); % coefficients of variation for fracture toughness and regularization parameter
+        %     if length(delta)==1
+        %         deltaGc = delta; % 0 <= deltaGc < 1/sqrt(2). coefficient of variation for fracture toughness
+        %         deltaL = delta; % 0 <= deltaL < 1/sqrt(2). coefficient of variation for regularization parameter
+        %     else
+        %         deltaGc = delta(1); % 0 <= deltaGc < 1/sqrt(2). coefficient of variation for fracture toughness
+        %         deltaL = delta(2); % 0 <= deltaL < 1/sqrt(2). coefficient of variation for regularization parameter
+        %     end
+        %     if deltaGc<0 || deltaGc>=1/sqrt(2)
+        %         error('Coefficient of variation delta = %g for fracture toughness should be between 0 and %g',deltaGc,1/sqrt(2))
+        %     end
+        %     if deltaL<0 || deltaL>=1/sqrt(2)
+        %         error('Coefficient of variation delta = %g for regularization parameter should be between 0 and %g',deltaL,1/sqrt(2))
+        %     end
+        %     aGc = 1/deltaGc^2; % aGc > 2
+        %     bGc = gc/aGc; % 0 < bGc = gc/aGc < gc/2 since gc > 0 and aGc > 2
+        %     aL = 1/deltaL^2; % aL > 2
+        %     bL = l/aL; % 0 < bL = l/aL < l/2 since l > 0 and aL > 2
+        %     nU = 2;
+        %     if deltaGc==0 || deltaL==0
+        %         nU = 1;
+        %     end
+        %     if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
+        %         lcorr = getparam(mat,'lcorr'); % spatial correlation length
+        %         x = calc_x(elem,xnode,xgauss);
+        %         x = getcoord(NODE(POINT(x(:,:,:))));
+        %         Xi = shinozukaSample(si,x,lcorr,nU); % sample for bivariate Gaussian random field with statistically independent normalized Gaussian components
+        %     else % random vector model
+        %         Xi = randn(si,1,nU); % sample for bivariate Gaussian random variable with statistically independent normalized Gaussian components
+        %     end
+        %     if deltaGc && deltaL
+        %         rho = 0;
+        %         if isparam(mat,'rcorr')
+        %             rho = getparam(mat,'rcorr'); % correlation coefficient between fracture toughness and regularization parameter
+        %         end
+        %         gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m]
+        %         l = gaminv(normcdf(rho*Xi(:,1) + sqrt(1-rho^2)*Xi(:,2)),aL,bL); % sample for regularization parameter [m]
+        %     elseif deltaGc
+        %         gc = gaminv(normcdf(Xi(:,1)),aGc,bGc); % sample for fracture toughness [N/m]
+        %     else
+        %         l = gaminv(normcdf(Xi(:,1)),aL,bL); % sample for regularization parameter [m]
+        %     end
+        %     if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
+        %         if deltaGc
+        %             gc = reshape(gc,1,1,nbelem,gauss.nbgauss);
+        %             gc = MYDOUBLEND(gc);
+        %             gc = FEELEMFIELD({gc},'storage','gauss','type','scalar','ddl',DDL('gc'));
+        %         end
+        %         if deltaL
+        %             l = reshape(l,1,1,nbelem,gauss.nbgauss);
+        %             l = MYDOUBLEND(l);
+        %             l = FEELEMFIELD({l},'storage','gauss','type','scalar','ddl',DDL('l'));
+        %         end
+        %     end
+        %     switch lower(PFregularization)
+        %         case 'at1'
+        %             % c0 = 8/3;
+        %             k = 3/4*gc.*l; % k = 2*(gc.*l)/c0;
+        %             qn = -3/8*gc./l; % qn = -(gc./l)/c0;
+        %             mats_phase{m} = setparam(mats_phase{m},'qn',qn);
+        %         % case 'at2'
+        %         %     % c0 = 2;
+        %         %     k = gc.*l; % k = 2*(gc.*l)/c0;
+        %         %     r = gc./l; % r = 2*(gc./l)/c0;
+        %         %     mats_phase{m} = setparam(mats_phase{m},'r',r);
+        %         otherwise
+        %             % c0 = 2;
+        %             k = gc.*l; % k = 2*(gc.*l)/c0;
+        %             r = gc./l; % r = 2*(gc./l)/c0;
+        %             mats_phase{m} = setparam(mats_phase{m},'r',r);
+        %             % error('Wrong regularization model');
+        %     end
+        %     mats_phase{m} = setparam(mats_phase{m},'k',k);
+        % end
         if isparam(mat,'aGc') && isparam(mat,'bGc') && any(getparam(mat,'aGc')>0) && any(getparam(mat,'bGc')>0) % random phase field parameters
             nbelem = getnbelem(elem);
             xnode = node_phase(elem);
@@ -201,17 +201,17 @@ parfor i=1:N
                     k = 3/4*gc.*l; % k = 2*(gc.*l)/c0;
                     qn = -3/8*gc./l; % qn = -(gc./l)/c0;
                     mats_phase{m} = setparam(mats_phase{m},'qn',qn);
-%                 case 'at2'
-%                     % c0 = 2;
-%                     k = gc.*l; % k = 2*(gc.*l)/c0;
-%                     r = gc./l; % r = 2*(gc./l)/c0;
-%                     mats_phase{m} = setparam(mats_phase{m},'r',r);
+                % case 'at2'
+                %     % c0 = 2;
+                %     k = gc.*l; % k = 2*(gc.*l)/c0;
+                %     r = gc./l; % r = 2*(gc./l)/c0;
+                %     mats_phase{m} = setparam(mats_phase{m},'r',r);
                 otherwise
                     % c0 = 2;
                     k = gc.*l; % k = 2*(gc.*l)/c0;
                     r = gc./l; % r = 2*(gc./l)/c0;
                     mats_phase{m} = setparam(mats_phase{m},'r',r);
-%                     error('Wrong regularization model');
+                    % error('Wrong regularization model');
             end
             mats_phase{m} = setparam(mats_phase{m},'k',k);
         end
@@ -233,49 +233,49 @@ parfor i=1:N
             if isa(mat,'ELAS_ISOT') % almost surely isotropic material
                 E = evalparam(mat,'E',elem,xnode,xgauss);
                 NU = evalparam(mat,'NU',elem,xnode,xgauss);
-%                 % la = -24; % la < 1/5. Parameter controlling the level of statistical fluctuations
-%                 % deltaC1 = 1/sqrt(1-la); % coefficient of variation for bulk modulus
-%                 % deltaC2 = 1/sqrt(1-5*la); % coefficient of variation for shear modulus
-%                 deltaC1 = getparam(mat,'delta'); % coefficient of variation for bulk modulus
-%                 if deltaC1<0
-%                     error('Coefficient of variation delta = %g for bulk modulus must be positive (superior to 0)',deltaC1)
-%                 end
-%                 la = 1 - 1/deltaC1^2; % la < 1/5. Parameter controlling the level of statistical fluctuations
-%                 deltaC2 = 1/sqrt(5/deltaC1^2 - 4); % coefficient of variation for shear modulus
-%                 mC1 = E/3/(1-2*NU); % mean bulk modulus
-%                 mC2 = E/(1+NU)/2; % mean shear modulus
-%                 laC1 = (1-la)/mC1; % la1 > 0
-%                 laC2 = (1-5*la)/mC2; % la2 > 0
-%                 aC1 = 1-la; % a1 > 0
-%                 bC1 = 1/laC1; % b1 > 0
-%                 aC2 = 1-5*la; % a2 > 0
-%                 bC2 = 1/laC2; % b2 > 0
-%                 nU = 2;
-%                 if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
-%                     lcorr = getparam(mat,'lcorr'); % spatial correlation length
-%                     x = calc_x(elem,xnode,xgauss);
-%                     x = getcoord(NODE(POINT(x(:,:,:))));
-%                     Xi = shinozukaSample(si,x,lcorr,nU); % sample for bivariate Gaussian random field with statistically independent normalized Gaussian components
-%                 else % random matrix model
-%                     Xi = randn(si,1,nU); % sample for bivariate Gaussian random variable with statistically independent normalized Gaussian components
-%                 end
-%                 rho = 0;
-%                 if isparam(mat,'rcorr')
-%                     rho = getparam(mat,'rcorr'); % correlation coefficient between bulk and shear moduli
-%                 end
-%                 C1 = gaminv(normcdf(Xi(:,1)),aC1,bC1); % sample for bulk modulus [Pa]
-%                 C2 = gaminv(normcdf(rho*Xi(:,1) + sqrt(1-rho^2)*Xi(:,2)),aC2,bC2); % sample for shear modulus [Pa]
-%                 if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
-%                     C1 = reshape(C1,1,1,nbelem,gauss.nbgauss);
-%                     C2 = reshape(C2,1,1,nbelem,gauss.nbgauss);
-%                     C1 = MYDOUBLEND(C1);
-%                     C2 = MYDOUBLEND(C2);
-%                     C1 = FEELEMFIELD({C1},'storage','gauss','type','scalar','ddl',DDL('C1'));
-%                     C2 = FEELEMFIELD({C2},'storage','gauss','type','scalar','ddl',DDL('C2'));
-%                 end
-%                 % lambda = C1 - 2/3*C2; % [Pa]
-%                 E = (9*C1.*C2)./(3*C1+C2); % [Pa]
-%                 NU = (3*C1-2*C2)./(6*C1+2*C2);
+                % % la = -24; % la < 1/5. Parameter controlling the level of statistical fluctuations
+                % % deltaC1 = 1/sqrt(1-la); % coefficient of variation for bulk modulus
+                % % deltaC2 = 1/sqrt(1-5*la); % coefficient of variation for shear modulus
+                % deltaC1 = getparam(mat,'delta'); % coefficient of variation for bulk modulus
+                % if deltaC1<0
+                %     error('Coefficient of variation delta = %g for bulk modulus must be positive (superior to 0)',deltaC1)
+                % end
+                % la = 1 - 1/deltaC1^2; % la < 1/5. Parameter controlling the level of statistical fluctuations
+                % deltaC2 = 1/sqrt(5/deltaC1^2 - 4); % coefficient of variation for shear modulus
+                % mC1 = E/3/(1-2*NU); % mean bulk modulus
+                % mC2 = E/(1+NU)/2; % mean shear modulus
+                % laC1 = (1-la)/mC1; % la1 > 0
+                % laC2 = (1-5*la)/mC2; % la2 > 0
+                % aC1 = 1-la; % a1 > 0
+                % bC1 = 1/laC1; % b1 > 0
+                % aC2 = 1-5*la; % a2 > 0
+                % bC2 = 1/laC2; % b2 > 0
+                % nU = 2;
+                % if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
+                %     lcorr = getparam(mat,'lcorr'); % spatial correlation length
+                %     x = calc_x(elem,xnode,xgauss);
+                %     x = getcoord(NODE(POINT(x(:,:,:))));
+                %     Xi = shinozukaSample(si,x,lcorr,nU); % sample for bivariate Gaussian random field with statistically independent normalized Gaussian components
+                % else % random matrix model
+                %     Xi = randn(si,1,nU); % sample for bivariate Gaussian random variable with statistically independent normalized Gaussian components
+                % end
+                % rho = 0;
+                % if isparam(mat,'rcorr')
+                %     rho = getparam(mat,'rcorr'); % correlation coefficient between bulk and shear moduli
+                % end
+                % C1 = gaminv(normcdf(Xi(:,1)),aC1,bC1); % sample for bulk modulus [Pa]
+                % C2 = gaminv(normcdf(rho*Xi(:,1) + sqrt(1-rho^2)*Xi(:,2)),aC2,bC2); % sample for shear modulus [Pa]
+                % if isparam(mat,'lcorr') && ~all(isinf(getparam(mat,'lcorr'))) % random field model
+                %     C1 = reshape(C1,1,1,nbelem,gauss.nbgauss);
+                %     C2 = reshape(C2,1,1,nbelem,gauss.nbgauss);
+                %     C1 = MYDOUBLEND(C1);
+                %     C2 = MYDOUBLEND(C2);
+                %     C1 = FEELEMFIELD({C1},'storage','gauss','type','scalar','ddl',DDL('C1'));
+                %     C2 = FEELEMFIELD({C2},'storage','gauss','type','scalar','ddl',DDL('C2'));
+                % end
+                % % lambda = C1 - 2/3*C2; % [Pa]
+                % E = (9*C1.*C2)./(3*C1+C2); % [Pa]
+                % NU = (3*C1-2*C2)./(6*C1+2*C2);
                 delta = getparam(mat,'delta'); % coefficients of variation for Young modulus and Poisson ratio
                 deltaNUsup = min(sqrt((1-2*NU)/(1+2*NU)),(1-2*NU)/2/sqrt(NU*(1-NU)));
                 if length(delta)==1

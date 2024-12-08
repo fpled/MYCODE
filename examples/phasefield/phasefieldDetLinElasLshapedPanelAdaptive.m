@@ -91,7 +91,6 @@ if setProblem
     a = 250e-3; % half-length
     b = 30e-3; % distance of applied load from the right edge
     e = 100e-3; % thickness
-    %e = 1;
     
     clD = 4*5e-3; % [Gerasimov, De Lorenzis, 2019, CMAME]
     if Dim==2
@@ -151,20 +150,7 @@ if setProblem
     k = 0;
     
     % Material
-    switch lower(PFregularization)
-        case 'at1'
-            % c0 = 8/3;
-            K = 3/4*gc*l; % K = 2*(gc*l)/c0;
-            R = 0;
-            Qn = -3/8*gc/l; % Qn = -(gc/l)/c0;
-        case 'at2'
-            % c0 = 2;
-            K = gc*l; % K = 2*(gc*l)/c0;
-            R = gc/l; % R = 2*(gc/l)/c0;
-            Qn = 0;
-        otherwise
-            error('Wrong regularization model');
-    end
+    [K,R,Qn] = setphasefieldparam(gc,l,PFregularization);
     mat_phase = FOUR_ISOT('k',K,'r',R,'qn',Qn,'DIM3',e,'PFregularization',PFregularization);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
