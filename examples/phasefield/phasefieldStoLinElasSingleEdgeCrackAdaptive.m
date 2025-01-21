@@ -258,9 +258,7 @@ if setProblem
         S_phase = final(S_phase);
     end
     
-    if strcmpi(initialCrack,'initialphasefield')
-        S_phase = addcl(S_phase,C,'T',1);
-    end
+    S_phase = addbcdamage(S_phase);
     
     %% Stiffness matrices and sollicitation vectors
     % a_phase = BILINFORM(1,1,K); % uniform values

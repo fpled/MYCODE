@@ -69,9 +69,9 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     % displayoptim = 'final';
     % displayoptim = 'final-detailed';
     
-    % tolX = 1e-6; % tolerance on the parameter value
-    % tolFun = 1e-6; % tolerance on the function value
-    % maxFunEvals = Inf; % maximum number of function evaluations
+    tolX = 100*eps; % tolerance on the parameter value
+    tolFun = 100*eps; % tolerance on the function value
+    maxFunEvals = Inf; % maximum number of function evaluations
     
     % optimAlgo = 'interior-point';
     optimAlgo = 'trust-region-reflective';
@@ -79,13 +79,19 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     % optimAlgo = 'active-set';
     % optimAlgo = 'levenberg-marquardt';
     
-    % options  = optimoptions(optimFun,'Display',displayoptim,'StepTolerance',tolX,'FunctionTolerance',tolFun,...
-    %     'OptimalityTolerance',tolFun...%,'MaxFunctionEvaluations',maxFunEvals...%,'Algorithm',optimAlgo...
-    %     ,'SpecifyObjectiveGradient',true...
-    %     );
-    % options  = optimoptions(optimFun,'Display',displayoptim,...
-    %     'SpecifyObjectiveGradient',true);
-    options = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo);
+    switch optimFun
+        case 'lsqlin'
+            options = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo);
+        case 'lsqnonlin'
+            options  = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo,...
+                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+                'SpecifyObjectiveGradient',true);
+        case 'fmincon'
+            options  = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo,...
+                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+                'MaxFunctionEvaluations',maxFunEvals,...
+                'SpecifyObjectiveGradient',true,'HessianFcn','objective');
+    end
 end
 
 if display_

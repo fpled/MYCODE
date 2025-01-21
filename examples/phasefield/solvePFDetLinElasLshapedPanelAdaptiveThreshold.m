@@ -1,5 +1,5 @@
-function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptiveThreshold(S_phase,S,T,PFsolver,BL,BRight,BLeft,sizemap,varargin)
-% function [dt,ut,ft,TnSt_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptiveThhreshold(S_phase,S,T,PFsolver,BL,BRight,BLeft,sizemap,varargin)
+function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptiveThreshold(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,sizemap,varargin)
+% function [dt,ut,ft,TnSt_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptiveThhreshold(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,sizemap,varargin)
 % Solve deterministic Phase Field problem with mpesh adaptation.
 
 display_ = getcharin('display',varargin,true);
@@ -64,9 +64,9 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     % displayoptim = 'final';
     % displayoptim = 'final-detailed';
     
-    % tolX = 1e-6; % tolerance on the parameter value
-    % tolFun = 1e-6; % tolerance on the function value
-    % maxFunEvals = Inf; % maximum number of function evaluations
+    tolX = 100*eps; % tolerance on the parameter value
+    tolFun = 100*eps; % tolerance on the function value
+    maxFunEvals = Inf; % maximum number of function evaluations
     
     % optimAlgo = 'interior-point';
     optimAlgo = 'trust-region-reflective';
@@ -74,13 +74,19 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     % optimAlgo = 'active-set';
     % optimAlgo = 'levenberg-marquardt';
     
-    % options  = optimoptions(optimFun,'Display',displayoptim,'StepTolerance',tolX,'FunctionTolerance',tolFun,...
-    %     'OptimalityTolerance',tolFun...%,'MaxFunctionEvaluations',maxFunEvals...%,'Algorithm',optimAlgo...
-    %     ,'SpecifyObjectiveGradient',true...
-    %     );
-    % options  = optimoptions(optimFun,'Display',displayoptim,...
-    %     'SpecifyObjectiveGradient',true);
-    options = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo);
+    switch optimFun
+        case 'lsqlin'
+            options = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo);
+        case 'lsqnonlin'
+            options  = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo,...
+                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+                'SpecifyObjectiveGradient',true);
+        case 'fmincon'
+            options  = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo,...
+                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+                'MaxFunctionEvaluations',maxFunEvals,...
+                'SpecifyObjectiveGradient',true,'HessianFcn','objective');
+    end
 end
 
 if display_
@@ -297,6 +303,7 @@ while ti < tf-eps
         % Update phase field properties
         S_phase = setphasefieldproperties(S_phase,materials_phase);
         S_phase = final(S_phase);
+        S_phase = addcl(S_phase,BR,'T');
         
         % Update material properties
         S = setmaterialproperties(S,materials);
