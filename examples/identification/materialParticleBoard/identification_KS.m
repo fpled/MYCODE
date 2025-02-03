@@ -307,9 +307,9 @@ if displaySolution
         grid on
         set(gca,'FontSize',fontsize)
         xlabel('Bending moment per unit length [N.m/m]','Interpreter',interpreter);
-        ylabel('Variation of angle [$^{\circ}$]','Interpreter',interpreter);
+        ylabel('Variation of angle [deg]','Interpreter',interpreter);
         %xlabel('Moment lin\''eique de flexion [N.m/m]','Interpreter',interpreter);
-        %ylabel('Variation d''angle [$^{\circ}$]','Interpreter',interpreter);
+        %ylabel('Variation d''angle [deg]','Interpreter',interpreter);
         mysaveas(pathname,['data_angle_moment_' numSample],formats);
         mymatlab2tikz(pathname,['data_angle_moment_' numSample '.tex']);
         
@@ -339,9 +339,9 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Bending moment per unit length [N.m/m]','Interpreter',interpreter);
-    ylabel('Variation of angle [$^{\circ}$]','Interpreter',interpreter);
+    ylabel('Variation of angle [deg]','Interpreter',interpreter);
     %xlabel('Moment lin\''eique de flexion [N.m/m]','Interpreter',interpreter);
-    %ylabel('Variation d''angle [$^{\circ}$]','Interpreter',interpreter);
+    %ylabel('Variation d''angle [deg]','Interpreter',interpreter);
     legend(h(:),leg{:},'Location','NorthEastOutside')
     mysaveas(pathname,'data_angle_moment_S',formats);
     mymatlab2tikz(pathname,'data_angle_moment_S.tex');
