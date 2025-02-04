@@ -58,34 +58,56 @@ u = solveThreePointBendingAna(x,coord,F(k),Iz,h); % [mm]
 %% Display solutions
 ampl = 0;
 % ampl = getsize(S)/max(max(abs(u)),max(abs(u_exp)))/5;
+ddl = [findddl(S,'UX'),findddl(S,'UY')];
 
 for i=1:2
-    plotSolution(S,u,'displ',i,'ampl',ampl);
+    u_i = u(ddl(:,i));
+    u_exp_i = u_exp(ddl(:,i));
+    u_min = min(min(u_i),min(u_exp_i));
+    u_max = max(max(u_i),max(u_exp_i));
+    
+    plotSolution(S,u,'displ',i,'ampl',ampl,'Fontsize',fontsize);
+    set(gca,'CLim',[u_min,u_max])
     set(gcf,'position',[100,100,500,150])
-    mysaveas(pathname,['u_' num2str(i) '_ana'],formats,renderer);
-    plotSolution(S,u_exp,'displ',i,'ampl',ampl);
+    mysaveas(pathname,['u_' num2str(i) '_ana_' numSample '_image_' numImage],formats,renderer);
+    
+    plotSolution(S,u_exp,'displ',i,'ampl',ampl,'Fontsize',fontsize);
+    set(gca,'CLim',[u_min,u_max])
     set(gcf,'position',[100,100,500,150])
-    mysaveas(pathname,['u_' num2str(i) '_exp'],formats,renderer);
+    mysaveas(pathname,['u_' num2str(i) '_exp_' numSample '_image_' numImage],formats,renderer);
+    
+    figure('Name',['Solution u_' num2str(i)])
+    tiledlayout(2,1)
+    nexttile
+    plot_sol(S,u,'displ',i,'ampl',ampl);
+    set(gca,'CLim',[u_min,u_max])
+    nexttile
+    plot_sol(S,u_exp,'displ',i,'ampl',ampl);
+    cb = colorbar;
+    cb.Layout.Tile = 'east';
+    set(gca,'CLim',[u_min,u_max])
+    set(gca,'FontSize',fontsize)
+    mysaveas(pathname,['u_' num2str(i) '_' numSample '_image_' numImage],formats,renderer);
 end
 
 % for i=1:3
 %     plotSolution(S,u,'epsilon',i,'ampl',ampl);
-%     mysaveas(pathname,['eps_' num2str(i) '_ana'],formats,renderer);
+%     mysaveas(pathname,['eps_' num2str(i) '_ana_' numSample '_image_' numImage],formats,renderer);
 %     plotSolution(S,u_exp,'epsilon',i,'ampl',ampl);
-%     mysaveas(pathname,['eps_' num2str(i) '_exp'],formats,renderer);
+%     mysaveas(pathname,['eps_' num2str(i) '_exp_' numSample '_image_' numImage],formats,renderer);
 %     
 %     plotSolution(S,u,'sigma',i,'ampl',ampl);
-%     mysaveas(pathname,['sig_' num2str(i) '_ana'],formats,renderer);
+%     mysaveas(pathname,['sig_' num2str(i) '_ana_' numSample '_image_' numImage],formats,renderer);
 %     plotSolution(S,u_exp,'sigma',i,'ampl',ampl);
-%     mysaveas(pathname,['sig_' num2str(i) '_exp'],formats,renderer);
+%     mysaveas(pathname,['sig_' num2str(i) '_exp_' numSample '_image_' numImage],formats,renderer);
 % end
 % 
 % plotSolution(S,u,'epsilon','mises','ampl',ampl);
-% mysaveas(pathname,'eps_von_mises_ana',formats,renderer);
+% mysaveas(pathname,['eps_von_mises_ana_' numSample '_image_' numImage],formats,renderer);
 % plotSolution(S,u_exp,'epsilon','mises','ampl',ampl);
-% mysaveas(pathname,'eps_von_mises_exp',formats,renderer);
+% mysaveas(pathname,['eps_von_mises_exp_' numSample '_image_' numImage],formats,renderer);
 % 
 % plotSolution(S,u,'sigma','mises','ampl',ampl);
-% mysaveas(pathname,'sig_von_mises_ana',formats,renderer);
+% mysaveas(pathname,['sig_von_mises_ana_' numSample '_image_' numImage],formats,renderer);
 % plotSolution(S,u_exp,'sigma','mises','ampl',ampl);
-% mysaveas(pathname,'sig_von_mises_exp',formats,renderer);
+% mysaveas(pathname,['sig_von_mises_exp_' numSample '_image_' numImage],formats,renderer);
