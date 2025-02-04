@@ -516,7 +516,7 @@ if displaySolution
         h7 = plot(S,'selgroup',getnumgroupelemwithfield(S,'material',mat_4),'EdgeColor','g');
     end
     hold off
-    set(gca,'FontSize',16)
+    set(gca,'FontSize',fontsize)
     if slat
         l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1),h7(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','slat','Location','NorthEastOutside');
     else

@@ -19,6 +19,7 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
+fontsize = 16;
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
@@ -193,7 +194,7 @@ if displaySolution
     h2 = plot(L1,'EdgeColor',getfacecolor(5));
     h3 = plot(L2,'EdgeColor',getfacecolor(6));
     hold off
-    set(gca,'FontSize',16)
+    set(gca,'FontSize',fontsize)
     l = legend([h1(1),h2(1),h3(1)],'$\Omega$','$\Gamma_D$','$\Gamma_N$');
     set(l,'Interpreter','latex')
     axis image
@@ -208,7 +209,7 @@ if displaySolution
     h2 = plot(L1,'EdgeColor',getfacecolor(5));
     h3 = plot(L2,'EdgeColor',getfacecolor(6));
     hold off
-    set(gca,'FontSize',16)
+    set(gca,'FontSize',fontsize)
     % l = legend([h1(1),h2(1),h3(1)],'$\Omega$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$');
     % set(l,'Interpreter','latex')
     mysaveas(pathname,'mesh',formats,renderer);

@@ -433,7 +433,7 @@ plot(t,uyt*1e2,'-b','LineWidth',1);
 hold off
 grid on
 box on
-set(gca,'FontSize',16)
+set(gca,'FontSize',fontsize)
 xlabel('Time [s]')
 ylabel('Vertical displacement [cm]')
 legend('Experimental','Numerical')

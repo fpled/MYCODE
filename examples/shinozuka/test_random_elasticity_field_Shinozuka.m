@@ -12,7 +12,7 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-fontsize = 16;
+fontsize = 12;
 linewidth = 1;
 interpreter = 'latex';
 formats = {'fig','epsc'};
@@ -246,7 +246,7 @@ if displayGaussianField
                     subplot(n,n,(i-1)*n+j);
                     plot_sol(S_scalar,V(:,iU,1));
                     colorbar
-                    set(gca,'FontSize',12)
+                    set(gca,'FontSize',fontsize)
                     title(['$U_{' num2str(iU) '}$'],'FontSize',12,'Interpreter',interpreter)
                 end
             end
@@ -261,7 +261,7 @@ if displayGaussianField
                     subplot(n,n,(i-1)*n+j);
                     plot_sol(S_scalar,W(:,iU,1));
                     colorbar
-                    set(gca,'FontSize',12)
+                    set(gca,'FontSize',fontsize)
                     title(['$U_{' num2str(iU) '}$'],'FontSize',12,'Interpreter',interpreter)
                 end
             end
@@ -294,7 +294,7 @@ if displayGaussianField
                     subplot(n,n,(i-1)*n+j);
                     plot(Ve(iU,1),S_scalar);
                     colorbar
-                    set(gca,'FontSize',12)
+                    set(gca,'FontSize',fontsize)
                     title(['$U_{' num2str(iU) '}$'],'FontSize',12,'Interpreter',interpreter)
                 end
             end
@@ -309,7 +309,7 @@ if displayGaussianField
                     subplot(n,n,(i-1)*n+j);
                     plot(We(iU,1),S_scalar);
                     colorbar
-                    set(gca,'FontSize',12)
+                    set(gca,'FontSize',fontsize)
                     title(['$U_{' num2str(iU) '}$'],'FontSize',12,'Interpreter',interpreter)
                 end
             end
@@ -331,7 +331,7 @@ if displayElasticityField
                     CVij = reshape(CV(i,j,1,:),nx,1);
                     plot_sol(S_scalar,CVij);
                     colorbar
-                    set(gca,'FontSize',12)
+                    set(gca,'FontSize',fontsize)
                     title(['$C_{' num2str(i) num2str(j) '}$'],'FontSize',12,'Interpreter',interpreter)
                 end
             end
@@ -345,7 +345,7 @@ if displayElasticityField
                     CWij = reshape(CW(i,j,1,:),nx,1);
                     plot_sol(S_scalar,CWij);
                     colorbar
-                    set(gca,'FontSize',12)
+                    set(gca,'FontSize',fontsize)
                     title(['$C_{' num2str(i) num2str(j) '}$'],'FontSize',12,'Interpreter',interpreter)
                 end
             end
@@ -379,7 +379,7 @@ if displayElasticityField
                     subplot(n,n,(i-1)*n+j)
                     plot(CVe(i,j),S_scalar);
                     colorbar
-                    set(gca,'FontSize',12)
+                    set(gca,'FontSize',fontsize)
                     title(['$C_{' num2str(i) num2str(j) '}$'],'FontSize',12,'Interpreter',interpreter)
                 end
             end
@@ -392,7 +392,7 @@ if displayElasticityField
                     subplot(n,n,(i-1)*n+j)
                     plot(CWe(i,j),S_scalar);
                     colorbar
-                    set(gca,'FontSize',12)
+                    set(gca,'FontSize',fontsize)
                     title(['$C_{' num2str(i) num2str(j) '}$'],'FontSize',12,'Interpreter',interpreter)
                 end
             end

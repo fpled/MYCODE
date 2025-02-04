@@ -599,7 +599,7 @@ if displaySolution
     h8 = plot(S,'selgroup',numelem3(1),'EdgeColor',([1 0 1]+[1 0 0])/2,'FaceColor',([1 0 1]+[1 0 0])/2,'FaceAlpha',0.1);
     h9 = plot(S,'selgroup',numelem3(2:3),'EdgeColor',([1 0 1]+[0 0 1])/2,'FaceColor',([1 0 1]+[0 0 1])/2,'FaceAlpha',0.1);
     hold off
-    set(gca,'FontSize',16)
+    set(gca,'FontSize',fontsize)
     if slat
         l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1),h7(1),h8(1),h9(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','slat',...
             'junction guard rail support - side rail','junction guard rail support - guard rail','Location','NorthEastOutside');

@@ -18,6 +18,7 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
+fontsize = 16;
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
@@ -153,7 +154,7 @@ if displaySolution
     h4 = plotfacets(pb.S,5,'FaceColor',getfacecolor(4),'EdgeColor','none');
     h5 = plotfacets(pb.S,17,'FaceColor',getfacecolor(5),'EdgeColor','none');
     hold off
-    set(gca,'FontSize',16)
+    set(gca,'FontSize',fontsize)
     l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$','Location','NorthEast');
     set(l,'Interpreter','latex')
     mysaveas(pathname,'domain',formats,renderer);
@@ -163,7 +164,7 @@ if displaySolution
     clf
     plot(phi,Sadv);
     colorbar
-    set(gca,'FontSize',16)
+    set(gca,'FontSize',fontsize)
     hold on
     ampl = 6;
     quiver(v,Sadv,ampl,'k');
@@ -180,7 +181,7 @@ if displaySolution
     h4 = plotfacets(pb.S,5,'FaceColor',getfacecolor(4));
     h5 = plotfacets(pb.S,17,'FaceColor',getfacecolor(5));
     hold off
-    set(gca,'FontSize',16)
+    set(gca,'FontSize',fontsize)
     l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$','Location','NorthEast');
     set(l,'Interpreter','latex')
     mysaveas(pathname,'mesh',formats,renderer);
@@ -237,7 +238,7 @@ if displaySolution
     plot(boutput,'-b','LineWidth',1);
     grid on
     box on
-    set(gca,'FontSize',16)
+    set(gca,'FontSize',fontsize)
     xlabel('Time [s]')
     ylabel('Concentration of pollutant')
     mysaveas(pathname,'quantity_of_interest',formats,renderer);

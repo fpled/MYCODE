@@ -6,7 +6,7 @@ clear frame
 for i=1:100
     Zi = rand*Z;
     surf(X,Y,Zi)
-    set(gca,'zlim',[min(min(Z)),max(max(Z))])
+    set(gca,'ZLim',[min(min(Z)),max(max(Z))])
     frame(i) = getframe(gcf);
 end
 
