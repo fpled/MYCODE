@@ -39,8 +39,9 @@ KD_data = mean_KD_data*1e-3; % [kN/rad]
 % vKD_data = var(KD_data);
 % sKD_data = std(KD_data);
 % dKD_data = sKD_data/mKD_data;
-fprintf('\nnb data for Screw junction = %d',length(KS_data));
-fprintf('\nnb data for Dowel junction = %d',length(KD_data));
+fprintf('\nnb data = %d for screw junction',length(KS_data));
+fprintf('\nnb data = %d for dowel junction',length(KD_data));
+fprintf('\n');
 
 %% Maximum likelihood estimation
 paramS = gamfit(KS_data);
@@ -53,10 +54,11 @@ aS = paramS(1);
 bS = paramS(2);
 aD = paramD(1);
 bD = paramD(2);
-fprintf('\nalpha for screw = %.4f',aS);
-fprintf('\nbeta for screw = %.4f',bS);
-fprintf('\nalpha for dowel = %.4f',aD);
-fprintf('\nbeta for dowel = %.4f',bD);
+fprintf('\nalpha = %.4f for screw junction',aS);
+fprintf('\nbeta = %.4f for screw junction',bS);
+fprintf('\n');
+fprintf('\nalpha = %.4f for screw junction',aD);
+fprintf('\nbeta = %.4f for screw junction',bD);
 fprintf('\n');
 
 mKS = aS*bS;
@@ -73,6 +75,7 @@ fprintf('\nmean(KS) = %.4f kN/rad',mKS);
 fprintf('\nvar(KS)  = %.4f (kN/rad)^2',vKS);
 fprintf('\nstd(KS)  = %.4f kN/rad',sKS);
 fprintf('\ndisp(KS) = %.4f',dKS);
+fprintf('\n');
 
 fprintf('\nmean(KD) = %.4f kN/rad',mKD);
 fprintf('\nvar(KD)  = %.4f (kN/rad)^2',vKD);
@@ -88,8 +91,8 @@ cdf_KD = @(x) gamcdf(x,aD,bD);
 
 %% Sample generation
 N = 1e4; % number of samples
-kS = gamrnd(aS,bS,N,1); % [kN/rad]
-kD = gamrnd(aD,bD,N,1); % [kN/rad]
+KS_sample = gamrnd(aS,bS,N,1); % [kN/rad]
+KD_sample = gamrnd(aD,bD,N,1); % [kN/rad]
 
 %% Display
 if displaySolution
@@ -202,21 +205,21 @@ if displaySolution
     % mymatlab2tikz(pathname,'loglf_KD_2D.tex');
     
     %% Plot pdfs and cdfs
-    xminD = max(0,mKD-5*sKD);
-    xmaxD = mKD+5*sKD;
-    xD = linspace(xminD,xmaxD,1e3);
-    
     xminS = max(0,mKS-5*sKS);
     xmaxS = mKS+5*sKS;
     xS = linspace(xminS,xmaxS,1e3);
+    
+    xminD = max(0,mKD-5*sKD);
+    xmaxD = mKD+5*sKD;
+    xD = linspace(xminD,xmaxD,1e3);
     
     % Plot pdf of KS
     figure('Name','Probability density function of KS')
     clf
     plot(xS,pdf_KS(xS),'-b','LineWidth',linewidth);
-    %hold on
-    %plot(KS_data,pdf_KS(KS_data),'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % plot(KS_data,pdf_KS(KS_data),'k+','LineWidth',linewidth);
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -230,9 +233,9 @@ if displaySolution
     figure('Name','Cumulative distribution function of KS')
     clf
     plot(xS,cdf_KS(xS),'-r','LineWidth',linewidth);
-    %hold on
-    %plot(KS_data,cdf_KS(KS_data),'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % plot(KS_data,cdf_KS(KS_data),'k+','LineWidth',linewidth);
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -247,9 +250,9 @@ if displaySolution
     figure('Name','Probability density function of KD')
     clf
     plot(xD,pdf_KD(xD),'-b','LineWidth',linewidth);
-    %hold on
-    %plot(KD_data,pdf_KD(KD_data),'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % plot(KD_data,pdf_KD(KD_data),'k+','LineWidth',linewidth);
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -263,9 +266,9 @@ if displaySolution
     figure('Name','Cumulative distribution function of KD')
     clf
     plot(xD,cdf_KD(xD),'-r','LineWidth',linewidth);
-    %hold on
-    %plot(KD_data,cdf_KD(KD_data),'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % plot(KD_data,cdf_KD(KD_data),'k+','LineWidth',linewidth);
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -280,7 +283,7 @@ if displaySolution
     % Plot samples of KS
     figure('Name','Samples of KS')
     clf
-    scatter(1:N,kS,'b.')
+    scatter(1:N,KS_sample,'b.')
     hold on
     plot([1 N],[mKS mKS],'-r','LineWidth',linewidth)
     hold off
@@ -288,8 +291,9 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Number of realizations','Interpreter',interpreter)
-    ylabel('Bending stiffness per unit length $k_S$ [kN/rad]','Interpreter',interpreter)
-    legend('samples','mean value');
+    %ylabel('Bending stiffness per unit length $k_S$ [kN/rad]','Interpreter',interpreter)
+    ylabel('$k_S$ [kN/rad]','Interpreter',interpreter)
+    legend('realizations','mean value');
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
     %ylabel('Rigidit\''e lin\''eique en flexion $k_S$ [kN/rad]','Interpreter',interpreter)
     %legend('réalisations','valeur moyenne');
@@ -299,7 +303,7 @@ if displaySolution
     % Plot samples of KD
     figure('Name','Samples of KD')
     clf
-    scatter(1:N,kD,'b.')
+    scatter(1:N,KD_sample,'b.')
     hold on
     plot([1 N],[mKD mKD],'-r','LineWidth',linewidth)
     hold off
@@ -307,12 +311,24 @@ if displaySolution
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Number of realizations','Interpreter',interpreter)
-    ylabel('Bending stiffness per unit length $k_D$ [kN/rad]','Interpreter',interpreter)
-    legend('samples','mean value');
+    %ylabel('Bending stiffness per unit length $k_D$ [kN/rad]','Interpreter',interpreter)
+    ylabel('$k_D$ [kN/rad]','Interpreter',interpreter)
+    legend('realizations','mean value');
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
     %ylabel('Rigidit\''e lin\''eique en flexion $k_D$ [kN/rad]','Interpreter',interpreter)
     %legend('réalisations','valeur moyenne');
     mysaveas(pathname,'samples_KD',formats);
     % mymatlab2tikz(pathname,'samples_KD.tex');
+    
+    figure('name','Samples of (KS,KD)')
+    clf
+    scatter(KS_sample,KD_sample,'b.')
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$k_S$ [kN/rad]','Interpreter',interpreter);
+    ylabel('$k_D$ [kN/rad]','Interpreter',interpreter);
+    mysaveas(pathname,'samples_KS_KD',formats);
+    % mymatlab2tikz(pathname,'samples_KS_KD.tex');
     
 end

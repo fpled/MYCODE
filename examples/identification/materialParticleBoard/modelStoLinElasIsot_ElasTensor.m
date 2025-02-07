@@ -199,9 +199,9 @@ if displaySolution
     x1 = linspace(x1_min,x1_max,1e2);
     y1 = pdf_C1(x1);
     plot(x1,y1,'-b','LineWidth',linewidth);
-    %hold on
-    %plot(C1_data,pdf_C1(C1_data),'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % plot(C1_data,pdf_C1(C1_data),'k+','LineWidth',linewidth);
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -217,9 +217,9 @@ if displaySolution
     x2 = linspace(x2_min,x2_max,1e2);
     y2 = pdf_C2(x2);
     plot(x2,y2,'-b','LineWidth',linewidth);
-    %hold on
-    %plot(C2_data,pdf_C2(C2_data),'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % plot(C2_data,pdf_C2(C2_data),'k+','LineWidth',linewidth);
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -235,9 +235,9 @@ if displaySolution
     [X1,X2] = meshgrid(x1,x2);
     Z = pdf_C(X1,X2);
     surf(X1,X2,Z);
-    %hold on
-    %plot3(C1_data,C2_data,pdf_C(C1_data,C2_data),'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % plot3(C1_data,C2_data,pdf_C(C1_data,C2_data),'k+','LineWidth',linewidth);
+    % hold off
     grid on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(x1),max(x1)])
@@ -256,9 +256,9 @@ if displaySolution
     [Xe,Xn] = meshgrid(xe,xn);
     Z = pdf_EN(Xe,Xn);
     surf(Xe,Xn,Z);
-    %hold on
-    %plot3(E_data,NU_data,pdf_EN(E_data,NU_data),'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % plot3(E_data,NU_data,pdf_EN(E_data,NU_data),'k+','LineWidth',linewidth);
+    % hold off
     grid on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(xe),max(xe)])
@@ -274,9 +274,9 @@ if displaySolution
     clf
     z1 = cdf_C1(x1);
     plot(x1,z1,'-r','LineWidth',linewidth);
-    %hold on
-    %plot(C1_data,gamcdf(C1_data,a1,b1),'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % plot(C1_data,gamcdf(C1_data,a1,b1),'k+','LineWidth',linewidth);
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -291,9 +291,9 @@ if displaySolution
     clf
     z2 = cdf_C2(x2);
     plot(x2,z2,'-r','LineWidth',linewidth);
-    %hold on
-    %plot(C2_data,gamcdf(C2_data,a2,b2),'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % plot(C2_data,gamcdf(C2_data,a2,b2),'k+','LineWidth',linewidth);
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -308,9 +308,9 @@ if displaySolution
     clf
     Z = cdf_C(X1,X2);
     surf(X1,X2,Z);
-    %hold on
-    %plot3(C1_data,C2_data,cdf_C(C1_data,C2_data),'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % plot3(C1_data,C2_data,cdf_C(C1_data,C2_data),'k+','LineWidth',linewidth);
+    % hold off
     grid on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(x1),max(x1)])
@@ -332,13 +332,13 @@ if displaySolution
         end
     end
     surf(XE,XN,Z);
-    %hold on
-    %Z_data = zeros(1,length(E_data));
-    %for i=1:length(E_data)
-    %    Z_data(i) = cdf_EN(E_data(i),NU_data(i));
-    %end
-    %plot3(E_data,NU_data,Z_data,'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % Z_data = zeros(1,length(E_data));
+    % for i=1:length(E_data)
+    %     Z_data(i) = cdf_EN(E_data(i),NU_data(i));
+    % end
+    % plot3(E_data,NU_data,Z_data,'k+','LineWidth',linewidth);
+    % hold off
     grid on
     set(gca,'FontSize',fontsize)
     set(gca,'XLim',[min(xe),max(xe)])
@@ -359,9 +359,9 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('$c_1$ [GPa]','Interpreter',interpreter);
-    ylabel('$c_2$ [GPa]','Interpreter',interpreter);
-    legend('samples','data')
+    xlabel('$c_1$ [GPa]','Interpreter',interpreter)
+    ylabel('$c_2$ [GPa]','Interpreter',interpreter)
+    legend('realizations','data')
     %legend('réalisations','données')
     mysaveas(pathname,'samples_C1_C2',formats);
     % mymatlab2tikz(pathname,'samples_C1_C2.tex');
@@ -375,9 +375,11 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('$\nu$','Interpreter',interpreter);
-    ylabel('$E$ [GPa]','Interpreter',interpreter);
-    legend('samples','data')
+    %xlabel('Poisson''s ratio $\nu$','Interpreter',interpreter)
+    %ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter)
+    xlabel('$\nu$','Interpreter',interpreter)
+    ylabel('$E$ [GPa]','Interpreter',interpreter)
+    legend('realizations','data')
     %legend('réalisations','données')
     mysaveas(pathname,'samples_E_N',formats);
     % mymatlab2tikz(pathname,'samples_E_N.tex');

@@ -180,9 +180,9 @@ if displaySolution
     figure('Name','Probability density function')
     clf
     plot(x,pdf_E(x),'-b','LineWidth',linewidth);
-    %hold on
-    %plot(E_data,pdf_E(E_data),'k+');
-    %hold off
+    % hold on
+    % plot(E_data,pdf_E(E_data),'k+');
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -198,9 +198,9 @@ if displaySolution
     figure('Name','Cumulative distribution function')
     clf
     plot(x,cdf_E(x),'-r','LineWidth',linewidth);
-    %hold on
-    %plot(E_data,cdf_E(E_data),'k+');
-    %hold off
+    % hold on
+    % plot(E_data,cdf_E(E_data),'k+');
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -223,9 +223,10 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('Number of samples','Interpreter',interpreter)
-    ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter)
-    legend('samples','mean value');
+    xlabel('Number of realizations','Interpreter',interpreter)
+    %ylabel('Young''s modulus $E$ [GPa]','Interpreter',interpreter)
+    ylabel('$E$ [GPa]','Interpreter',interpreter)
+    legend('realizations','mean value');
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
     %ylabel('Module d''Young $E$ [GPa]','Interpreter',interpreter)
     %legend('réalisations','valeur moyenne');

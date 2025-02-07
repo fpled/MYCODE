@@ -292,9 +292,9 @@ if displaySolution
     x4 = linspace(x4_min,x4_max,N);
     y4 = pdf_C4(x4);
     plot(x4,y4,'-b','LineWidth',linewidth);
-    %hold on
-    %plot(C_data(:,4),pdf_C4(C_data(:,4)),'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % plot(C_data(:,4),pdf_C4(C_data(:,4)),'k+','LineWidth',linewidth);
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -310,9 +310,9 @@ if displaySolution
     x5 = linspace(x5_min,x5_max,N);
     y5 = pdf_C5(x5);
     plot(x5,y5,'-b','LineWidth',linewidth);
-    %hold on
-    %plot(C_data(:,5),pdf_C5(C_data(:,5)),'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % plot(C_data(:,5),pdf_C5(C_data(:,5)),'k+','LineWidth',linewidth);
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -327,9 +327,9 @@ if displaySolution
     clf
     z4 = cdf_C4(x4);
     plot(x4,z4,'-r','LineWidth',linewidth);
-    %hold on
-    %plot(C_data(:,4),cdf_C4(C_data(:,4)),'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % plot(C_data(:,4),cdf_C4(C_data(:,4)),'k+','LineWidth',linewidth);
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -344,9 +344,9 @@ if displaySolution
     clf
     z5 = cdf_C5(x5);
     plot(x5,z5,'-r','LineWidth',linewidth);
-    %hold on
-    %plot(C_data(:,5),cdf_C5(C_data(:,5)),'k+','LineWidth',linewidth);
-    %hold off
+    % hold on
+    % plot(C_data(:,5),cdf_C5(C_data(:,5)),'k+','LineWidth',linewidth);
+    % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -384,7 +384,7 @@ if displaySolution
     xlabel('$c_1$ [GPa]','Interpreter',interpreter);
     ylabel('$c_2$ [GPa]','Interpreter',interpreter);
     zlabel('$c_3$ [GPa]','Interpreter',interpreter);
-    legend('samples','data','support');
+    legend('realizations','data','support');
     %legend('réalisations','données','support');
     mysaveas(pathname,'samples_C1_C2_C3',formats);
     % mymatlab2tikz(pathname,'samples_C1_C2_C3.tex');
@@ -400,26 +400,42 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$c_4$ [GPa]','Interpreter',interpreter);
     ylabel('$c_5$ [GPa]','Interpreter',interpreter);
-    legend('samples','data');
+    legend('realizations','data');
     %legend('réalisations','données');
     mysaveas(pathname,'samples_C4_C5',formats);
     % mymatlab2tikz(pathname,'samples_C4_C5.tex');
     
-    figure('name','Samples of (ET,GL,NUT)')
+    figure('name','Samples of (ET,GL,EL)')
     clf
-    scatter3(ET_sample,GL_sample*1e3,NUT_sample,'b.')
+    scatter3(ET_sample,GL_sample*1e3,EL_sample*1e3,'b.')
     hold on
-    scatter3(ET_data,GL_data*1e3,NUT_data,'r+','LineWidth',linewidth)
+    scatter3(ET_data,GL_data*1e3,EL_data*1e3,'r+','LineWidth',linewidth)
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('$E_T$ [GPa]','Interpreter',interpreter);
     ylabel('$G_L$ [MPa]','Interpreter',interpreter);
-    zlabel('$\nu_T$','Interpreter',interpreter);
-    legend('samples','data');
+    zlabel('$E_L$ [MPa]','Interpreter',interpreter);
+    legend('realizations','data');
     %legend('réalisations','données');
-    mysaveas(pathname,'samples_ET_GL_NUT',formats);
-    % mymatlab2tikz(pathname,'samples_ET_GL_NUT.tex');
+    mysaveas(pathname,'samples_ET_GL_EL',formats);
+    % mymatlab2tikz(pathname,'samples_ET_GL_EL.tex');
+
+    figure('name','Samples of (NUL,NUT)')
+    clf
+    scatter(NUL_sample,NUT_sample,'b.')
+    hold on
+    scatter(NUL_data,NUT_data,'r+','LineWidth',linewidth)
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$\nu_L$','Interpreter',interpreter);
+    ylabel('$\nu_T$','Interpreter',interpreter);
+    legend('realizations','data');
+    %legend('réalisations','données');
+    mysaveas(pathname,'samples_NUL_NUT',formats);
+    % mymatlab2tikz(pathname,'samples_NUL_NUT.tex');
     
 end
