@@ -17,6 +17,7 @@ if ~exist(pathname,'dir')
 end
 
 fontsize = 16;
+linewidth = 1;
 interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
@@ -209,6 +210,7 @@ if solveProblem
     % U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
     Ux = u(findddl(S,'UX'),:);
     Uy = u(findddl(S,'UY'),:);
+
     % R = u(findddl(S,DDL(DDLVECT('R',S.syscoord,'ROTA'))),:);
     Rz = u(findddl(S,'RZ'),:);
     
@@ -541,7 +543,7 @@ if displaySolution
     
     [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     ampl = 3;
-    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
+    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',linewidth);
     hP = plot(P2,'g+');
     legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     %legend([hD,hN,hP],[legD,legN,'mesure'],'Location','NorthEastOutside')

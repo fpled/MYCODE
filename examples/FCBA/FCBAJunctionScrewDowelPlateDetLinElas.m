@@ -17,6 +17,7 @@ if ~exist(pathname,'dir')
 end
 
 fontsize = 16;
+linewidth = 1;
 interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
@@ -52,7 +53,7 @@ if solveProblem
     
     % Density
     RHO = 707.1384; % [kg/m3]
-    Vol_total = h*(L1+L2)*b;
+    Vol_total = b*(L1+L2)*h;
     Mass_total = Vol_total*RHO; % [kg]
     
     % Data
@@ -358,7 +359,7 @@ if displaySolution
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 3;
-    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
+    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',linewidth);
     hP = plot(P3,'g+');
     legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     %legend([hD,hN,hP],[legD,legN,'mesure'],'Location','NorthEastOutside')

@@ -9,11 +9,11 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-% tests = {'StaticVertUp'}; % test under static vertical upward load
-% tests = {'StaticVertDown'}; % test under static vertical downward load
-% tests = {'StaticHoriIn'}; % test under static horizontal inward load
-tests = {'StaticHoriOut'}; % test under static horizontal outward load
-% tests = {'StaticVertUp','StaticVertDown','StaticHoriIn','StaticHoriOut'};
+% tests = {'StaticHoriIn'}; % strength test under static horizontal inward load
+tests = {'StaticHoriOut'}; % strength test under static horizontal outward load
+% tests = {'StaticVertUp'}; % strength test under static vertical upward load
+% tests = {'StaticVertDown'}; % strength test under static vertical downward load
+% tests = {'StaticHoriIn','StaticHoriOut','StaticVertUp','StaticVertDown'};
 
 junction = false; % junction modeling
 % materialSym = 'isot'; % isotropic material symmetry class
@@ -31,6 +31,7 @@ if ~exist(pathname,'dir')
 end
 
 fontsize = 16;
+linewidth = 1;
 interpreter = 'latex';
 formats = {'fig','epsc','png'};
 renderer = 'OpenGL';
@@ -282,18 +283,18 @@ if solveProblem
     %% Stiffness matrix and sollicitation vector
     A = calc_rigi(S);
     switch lower(test)
-        case 'staticvertup'
-            P_load = POINT(x_load(1,:));
-            f = nodalload(S,P_load,'FZ',p);
-        case 'staticvertdown'
-            P_load = POINT(x_load(1,:));
-            f = nodalload(S,P_load,'FZ',-p);
         case 'statichoriin'
             P_load = POINT(x_load(2,:));
             f = nodalload(S,P_load,'FY',-p);
         case 'statichoriout'
             P_load = POINT(x_load(2,:));
             f = nodalload(S,P_load,'FY',p);
+        case 'staticvertup'
+            P_load = POINT(x_load(1,:));
+            f = nodalload(S,P_load,'FZ',p);
+        case 'staticvertdown'
+            P_load = POINT(x_load(1,:));
+            f = nodalload(S,P_load,'FZ',-p);
     end
     f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_0)),[],'FZ',-p0);
     f = f + bodyload(keepgroupelem(S,getnumgroupelemwithfield(S,'material',mat_1)),[],'FZ',-p1);
@@ -540,7 +541,7 @@ if displaySolution
     
     [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     ampl = 5;
-    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
+    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',linewidth);
     hPNmax = plot(PNmax,'r+');
     hPMxmax = plot(PMxmax,'g+');
     hPMymax = plot(PMymax,'b+');

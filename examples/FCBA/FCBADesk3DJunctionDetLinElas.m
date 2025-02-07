@@ -9,22 +9,26 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-% tests = {'Stability'}; % stability test under vertical load
-% tests = {'StaticHori1'}; % test under static horizontal load 1
-% tests = {'StaticHori2'}; % test under static horizontal load 2
-% tests = {'StaticHori3'}; % test under static horizontal load 3 (lifting)
-% tests = {'StaticHori4'}; % test under static horizontal load 4 (lifting)
-tests = {'StaticVert'}; % test under static vertical load
-% tests = {'Fatigue1'}; % fatigue test under horizontal load 1
-% tests = {'Fatigue2'}; % fatigue test under horizontal load 2
-% tests = {'Fatigue3'}; % fatigue test under horizontal load 3 (lifting)
-% tests = {'Fatigue4'}; % fatigue test under horizontal load 4 (lifting)
+% tests = {'StaticHori1'}; % strength test under static horizontal load 1
+% tests = {'StaticHori2'}; % strength test under static horizontal load 2
+% tests = {'StaticHori3'}; % strength test under static horizontal load 3 (lifting)
+% tests = {'StaticHori4'}; % strength test under static horizontal load 4 (lifting)
+tests = {'StaticVert'}; % strength test under static vertical load
+% tests = {'DurabilityHori1'}; % durability test under horizontal load 1
+% tests = {'DurabilityHori2'}; % durability test under horizontal load 2
+% tests = {'DurabilityHori3'}; % durability test under horizontal load 3 (lifting)
+% tests = {'DurabilityHori4'}; % durability test under horizontal load 4 (lifting)
+% tests = {'StabilityVert'}; % stability test under vertical load
 % tests = {'Impact'}; % vertical impact test
 % tests = {'Drop'}; % drop test
-% tests = {'Stability','StaticVert',...
-%     'StaticHori1','StaticHori2',...
-%     'Fatigue1','Fatigue2'};
+% tests = {'StaticHori1','StaticHori2',...
+%     'StaticVert',...
+%     'DurabilityHori1','DurabilityHori2',...
+%     'StabilityVert'};
 
+fontsize = 16;
+linewidth = 1;
+interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
@@ -98,12 +102,12 @@ if solveProblem
     x_hori = {[x3_23,(y3_12+y3_34)/2,z3],[x3_14,(y3_12+y3_34)/2,z3],...
               [(x3_23+x3_14)/2,y3_34,z3],[(x3_23+x3_14)/2,y3_12,z3]};
     x_vert = double(getcenter(D3))-[0.0,0.0,h/2];
-    x_fati = {[x3_23,y3_12+50e-3,z3-h/2],[x3_14,y3_12+50e-3,z3-h/2],[x3_23-50e-3,y3_12,z3-h/2],[x3_23-50e-3,y3_34,z3-h/2]};
+    x_dura = {[x3_23,y3_12+50e-3,z3-h/2],[x3_14,y3_12+50e-3,z3-h/2],[x3_23-50e-3,y3_12,z3-h/2],[x3_23-50e-3,y3_34,z3-h/2]};
     x_stab = double(POINT([x_hori{4}(1),x_hori{4}(2)+50e-3,x_hori{4}(3)-h/2]));
-    x_meas = [x_hori,x_vert,x_fati,x_stab];
+    x_meas = [x_hori,x_vert,x_dura,x_stab];
     P_hori = cellfun(@(x) POINT(x),x_hori,'UniformOutput',false);
     P_vert = POINT(x_vert);
-    P_fati = cellfun(@(x) POINT(x),x_fati,'UniformOutput',false);
+    P_dura = cellfun(@(x) POINT(x),x_dura,'UniformOutput',false);
     P_stab = POINT(x_stab);
     P_meas = cellfun(@(x) POINT(x),x_meas,'UniformOutput',false);
     
@@ -143,20 +147,20 @@ if solveProblem
     %
     LbD3 = {LIGNE(x_hori{4}+[-r_load,0,-h/2],x_hori{4}+[-r_load,0,h/2]),...
         LIGNE(x_hori{4}+[r_load,0,-h/2],x_hori{4}+[r_load,0,h/2]),...
-        LIGNE(x_fati{3}+[-r_load,0,-h/2],x_fati{3}+[-r_load,0,h/2]),...
-        LIGNE(x_fati{3}+[r_load,0,-h/2],x_fati{3}+[r_load,0,h/2]),...
-        LIGNE(x_fati{1}+[0,-r_load,-h/2],x_fati{1}+[0,-r_load,h/2]),...
-        LIGNE(x_fati{1}+[0,r_load,-h/2],x_fati{1}+[0,r_load,h/2]),...
+        LIGNE(x_dura{3}+[-r_load,0,-h/2],x_dura{3}+[-r_load,0,h/2]),...
+        LIGNE(x_dura{3}+[r_load,0,-h/2],x_dura{3}+[r_load,0,h/2]),...
+        LIGNE(x_dura{1}+[0,-r_load,-h/2],x_dura{1}+[0,-r_load,h/2]),...
+        LIGNE(x_dura{1}+[0,r_load,-h/2],x_dura{1}+[0,r_load,h/2]),...
         LIGNE(x_hori{1}+[0,-r_load,-h/2],x_hori{1}+[0,-r_load,h/2]),...
         LIGNE(x_hori{1}+[0,r_load,-h/2],x_hori{1}+[0,r_load,h/2]),...
-        LIGNE(x_fati{4}+[r_load,0,-h/2],x_fati{4}+[r_load,0,h/2]),...
-        LIGNE(x_fati{4}+[-r_load,0,-h/2],x_fati{4}+[-r_load,0,h/2]),...
+        LIGNE(x_dura{4}+[r_load,0,-h/2],x_dura{4}+[r_load,0,h/2]),...
+        LIGNE(x_dura{4}+[-r_load,0,-h/2],x_dura{4}+[-r_load,0,h/2]),...
         LIGNE(x_hori{3}+[r_load,0,-h/2],x_hori{3}+[r_load,0,h/2]),...
         LIGNE(x_hori{3}+[-r_load,0,-h/2],x_hori{3}+[-r_load,0,h/2]),...
         LIGNE(x_hori{2}+[0,r_load,-h/2],x_hori{2}+[0,r_load,h/2]),...
         LIGNE(x_hori{2}+[0,-r_load,-h/2],x_hori{2}+[0,-r_load,h/2]),...
-        LIGNE(x_fati{2}+[0,r_load,-h/2],x_fati{2}+[0,r_load,h/2]),...
-        LIGNE(x_fati{2}+[0,-r_load,-h/2],x_fati{2}+[0,-r_load,h/2])};
+        LIGNE(x_dura{2}+[0,r_load,-h/2],x_dura{2}+[0,r_load,h/2]),...
+        LIGNE(x_dura{2}+[0,-r_load,-h/2],x_dura{2}+[0,-r_load,h/2])};
     Q3_1 = QUADRANGLE([x1-h/2,y1_14,z1_34-h/2],[x1+h/2,y1_14,z1_34-h/2],[x1+h/2,y1_23,z1_34-h/2],[x1-h/2,y1_23,z1_34-h/2]);
     Q3_2 = QUADRANGLE([x2-h/2,y2_14,z2_34-h/2],[x2+h/2,y2_14,z2_34-h/2],[x2+h/2,y2_23,z2_34-h/2],[x2-h/2,y2_23,z2_34-h/2]);
     if ~strcmp(elemtype,'CUB8')
@@ -238,25 +242,25 @@ if solveProblem
     end
     
     %% Neumann boundary conditions
-    p_plate = RHO*g; % body load  [N/m3]
-    Sec_stab_vert = pi*r_load^2;
-    Sec_hori_fati = 2*r_load*h;
+    p_plate = RHO*g; % body load [N/m3]
+    Sec_hori_dura = 2*r_load*h;
+    Sec_vert_stab = pi*r_load^2;
     switch lower(test)
-        case 'stability'
-            p = 400/Sec_stab_vert; % surface load [N/m2]
         case {'statichori1','statichori2','statichori3','statichori4'}
             masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
             p_masse = masse*g/Sec_masse; % surface load [N/m2]
-            p = 100/Sec_hori_fati; % surface load [N/m2], F1=F2=100, 200 [N], F3=F4=100 [N]
+            p = 100/Sec_hori_dura; % surface load [N/m2], F1=F2=100, 200 [N], F3=F4=100 [N]
             slope = 0;
         case 'staticvert'
-            p = 300/Sec_stab_vert; % surface load [N/m2], 300, 400, 500 [N]
-        case {'fatigue1','fatigue2','fatigue3','fatigue4'}
+            p = 300/Sec_vert_stab; % surface load [N/m2], 300, 400, 500 [N]
+        case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
             masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
             p_masse = masse*g/Sec_masse; % surface load [N/m2]
-            p = 100/Sec_hori_fati; % surface load [N/m2]
+            p = 100/Sec_hori_dura; % surface load [N/m2]
+        case 'stabilityvert'
+            p = 400/Sec_vert_stab; % surface load [N/m2]
         case 'impact'
             H = 180e-3; % [m]
         case 'drop'
@@ -272,9 +276,6 @@ if solveProblem
     [~,numnode2] = intersect(S,S2_displ);
     [~,numnode5b] = intersect(S,S5b_displ);
     switch lower(test)
-        case 'stability'
-            S = addcl(S,union(numnode1,numnode2));
-            S = addcl(S,numnode5b,'UZ');
         case {'statichori1','statichori2'}
             S = addcl(S,numnode2);
             S = addcl(S,union(numnode1,numnode5b),{'UY','UZ'});
@@ -284,7 +285,10 @@ if solveProblem
         case 'staticvert'
             S = addcl(S,union(numnode1,numnode2));
             S = addcl(S,numnode5b,'UZ');
-        case {'fatigue1','fatigue2','fatigue3','fatigue4'}
+        case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
+            S = addcl(S,union(numnode1,numnode2));
+            S = addcl(S,numnode5b,'UZ');
+        case 'stabilityvert'
             S = addcl(S,union(numnode1,numnode2));
             S = addcl(S,numnode5b,'UZ');
         case {'impact','drop'}
@@ -296,9 +300,6 @@ if solveProblem
     A = calc_rigi(S);
     
     switch lower(test)
-        case 'stability'
-            S3_force = getfacet(S3,26);
-            f = surfload(S,S3_force,'FZ',-p);
         case {'statichori1','statichori2','statichori3','statichori4'}
             if strcmpi(test,'statichori1')
                 S3_force = getfacet(S3,9);
@@ -318,22 +319,25 @@ if solveProblem
         case 'staticvert'
             S3_force = getfacet(S3,24);
             f = surfload(S,S3_force,'FZ',-p);
-        case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-            if strcmpi(test,'fatigue1')
+        case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
+            if strcmpi(test,'durabilityhori1')
                 S3_force = getfacet(S3,7);
                 f = surfload(S,S3_force,'FX',-p);
-            elseif strcmpi(test,'fatigue2')
+            elseif strcmpi(test,'durabilityhori2')
                 S3_force = getfacet(S3,19);
                 f = surfload(S,S3_force,'FX',p);
-            elseif strcmpi(test,'fatigue3')
+            elseif strcmpi(test,'durabilityhori3')
                 S3_force = getfacet(S3,4);
                 f = surfload(S,S3_force,'FY',p);
-            elseif strcmpi(test,'fatigue4')
+            elseif strcmpi(test,'durabilityhori4')
                 S3_force = getfacet(S3,12);
                 f = surfload(S,S3_force,'FY',-p);
             end
             S3_masse = union(getfacet(S3,24),getfacet(S3,25));
             f = f + surfload(S,S3_masse,'FZ',-p_masse);
+        case 'stabilityvert'
+            S3_force = getfacet(S3,26);
+            f = surfload(S,S3_force,'FZ',-p);
         case {'impact','drop'}
             error('Not implemented')
     end
@@ -353,10 +357,6 @@ if solveProblem
     
     %% Test solution
     switch lower(test)
-        case 'staticvert'
-            P = P_vert;
-        case 'stability'
-            P = P_stab;
         case 'statichori1'
             P = P_hori{2};
         case 'statichori2'
@@ -365,14 +365,18 @@ if solveProblem
             P = P_hori{4};
         case 'statichori4'
             P = P_hori{3};
-        case 'fatigue1'
-            P = P_fati{2};
-        case 'fatigue2'
-            P = P_fati{1};
-        case 'fatigue3'
-            P = P_fati{4};
-        case 'fatigue4'
-            P = P_fati{3};
+        case 'staticvert'
+            P = P_vert;
+        case 'durabilityhori1'
+            P = P_dura{2};
+        case 'durabilityhori2'
+            P = P_dura{1};
+        case 'durabilityhori3'
+            P = P_dura{4};
+        case 'durabilityhori4'
+            P = P_dura{3};
+        case 'stabilityvert'
+            P = P_stab;
     end
     ux = eval_sol(S,u,P,'UX');
     uy = eval_sol(S,u,P,'UY');
@@ -380,14 +384,14 @@ if solveProblem
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S','elemtype',...
-        'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','Sec_hori_fati',...
+        'a12','b12','a3','b3','a5','b5','h','Sec_hori_dura','Sec_vert_stab',...
         'f','p');
     save(fullfile(pathname,'solution.mat'),'u','time');
     save(fullfile(pathname,'test_solution.mat'),'P',...
         'ux','uy','uz');
 else
     load(fullfile(pathname,'problem.mat'),'S','elemtype',...
-        'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','Sec_hori_fati',...
+        'a12','b12','a3','b3','a5','b5','h','Sec_hori_dura','Sec_vert_stab',...
         'f','p');
     load(fullfile(pathname,'solution.mat'),'u','time');
     load(fullfile(pathname,'test_solution.mat'),'P',...
@@ -408,43 +412,11 @@ fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
 switch lower(test)
-    case 'staticvert'
-        if p==300/Sec_stab_vert
-            uz_exp_start = -0.69*1e-3;
-            uz_exp_end = -[10.10 9.88 9.64 9.88 9.94 9.79 9.92 9.93 9.82 9.95]*1e-3;
-        elseif p==400/Sec_stab_vert
-            uz_exp_start = -0.75*1e-3;
-            uz_exp_end = -[13.45 13.52 13.56 13.64 13.65 13.74 13.75 13.44 13.74 13.53]*1e-3;
-        elseif p==500/Sec_stab_vert
-            uz_exp_start = -0.78*1e-3;
-            uz_exp_end = -[16.66 16.57 16.59 16.78 16.55 16.69 16.75 16.59 16.73 16.76]*1e-3;
-        end
-        uz_exp = mean(uz_exp_end - uz_exp_start);
-        err_uz = norm(uz-uz_exp)/norm(uz_exp);
-        
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('ux     = %g m\n',ux);
-        fprintf('uy     = %g m\n',uy);
-        fprintf('uz     = %g m\n',uz);
-        fprintf('uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
-        fprintf('\n');
-    case 'stability'
-        uz_exp_start = -1.93*1e-3;
-        uz_exp_end = -[18.46 18.44 18.53 18.58 18.59 18.7 18.77 18.73 18.85 18.76]*1e-3;
-        uz_exp = mean(uz_exp_end - uz_exp_start);
-        err_uz = norm(uz-uz_exp)/norm(uz_exp);
-        
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('ux     = %g m\n',ux);
-        fprintf('uy     = %g m\n',uy);
-        fprintf('uz     = %g m\n',uz);
-        fprintf('uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
-        fprintf('\n');
     case 'statichori1'
-        if p==100/Sec_hori_fati
+        if p==100/Sec_hori_dura
             ux_exp_start = -6.88*1e-3;
             ux_exp_end = -[10.5 10.51 10.44 10.8 10.72 10.62 10.67 10.65 10.66 10.87 10.86]*1e-3;
-        elseif p==200/Sec_hori_fati
+        elseif p==200/Sec_hori_dura
             ux_exp_start = -6.16*1e-3;
             ux_exp_end = -[16.78 16.74 16.72 17.13 17 16.8 16.87 16.78 17.04 16.82 16.71 17.17]*1e-3;
         end
@@ -458,10 +430,10 @@ switch lower(test)
         fprintf('uz     = %g m\n',uz);
         fprintf('\n');
     case 'statichori2'
-        if p==100/Sec_hori_fati
+        if p==100/Sec_hori_dura
             ux_exp_start = 2.12*1e-3;
             ux_exp_end = [6.22 6.17 6.26 6.31 6.33 6.24 6.26 6.4 6.26 6.49 6.48 6.42 6.36 6.56 6.37 6.39]*1e-3;
-        elseif p==200/Sec_hori_fati
+        elseif p==200/Sec_hori_dura
             ux_exp_start = 1.91*1e-3;
             ux_exp_end = [12.45 12.68 12.66 12.65 12.71 12.64 12.82 12.73 12.89 12.86 12.79 12.86]*1e-3;
         end
@@ -473,10 +445,10 @@ switch lower(test)
         fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uz     = %g m\n',uz);
-        fprintf('\n'); 
+        fprintf('\n');
     case 'statichori3'
         uy_exp_start = -3.77*1e-3;
-        uy_exp_end = -[4.71 4.73 4.69 4.56 4.47 4.73]*1e-3;   
+        uy_exp_end = -[4.71 4.73 4.69 4.56 4.47 4.73]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
@@ -485,10 +457,10 @@ switch lower(test)
         fprintf('uy     = %g m\n',uy);
         fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
         fprintf('uz     = %g m\n',uz);
-        fprintf('\n'); 
+        fprintf('\n');
     case 'statichori4'
         uy_exp_start = 9.71*1e-3;
-        uy_exp_end = [12.21 12.2 12.2 12.23 12.2 12.19 12.21]*1e-3;   
+        uy_exp_end = [12.21 12.2 12.2 12.23 12.2 12.19 12.21]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
@@ -498,9 +470,29 @@ switch lower(test)
         fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
         fprintf('uz     = %g m\n',uz);
         fprintf('\n');
-    case 'fatigue1'
+    case 'staticvert'
+        if p==300/Sec_vert_stab
+            uz_exp_start = -0.69*1e-3;
+            uz_exp_end = -[10.10 9.88 9.64 9.88 9.94 9.79 9.92 9.93 9.82 9.95]*1e-3;
+        elseif p==400/Sec_vert_stab
+            uz_exp_start = -0.75*1e-3;
+            uz_exp_end = -[13.45 13.52 13.56 13.64 13.65 13.74 13.75 13.44 13.74 13.53]*1e-3;
+        elseif p==500/Sec_vert_stab
+            uz_exp_start = -0.78*1e-3;
+            uz_exp_end = -[16.66 16.57 16.59 16.78 16.55 16.69 16.75 16.59 16.73 16.76]*1e-3;
+        end
+        uz_exp = mean(uz_exp_end - uz_exp_start);
+        err_uz = norm(uz-uz_exp)/norm(uz_exp);
+        
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf('ux     = %g m\n',ux);
+        fprintf('uy     = %g m\n',uy);
+        fprintf('uz     = %g m\n',uz);
+        fprintf('uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
+        fprintf('\n');
+    case 'durabilityhori1'
         ux_exp_start = -4.42*1e-3;
-        ux_exp_end = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;   
+        ux_exp_end = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
@@ -510,9 +502,9 @@ switch lower(test)
         fprintf('uy     = %g m\n',uy);
         fprintf('uz     = %g m\n',uz);
         fprintf('\n');
-    case 'fatigue2'
+    case 'durabilityhori2'
         ux_exp_start = 3.48*1e-3;
-        ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;   
+        ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
@@ -522,9 +514,9 @@ switch lower(test)
         fprintf('uy     = %g m\n',uy);
         fprintf('uz     = %g m\n',uz);
         fprintf('\n');
-    case 'fatigue3'
+    case 'durabilityhori3'
         uy_exp_start = 3.35*1e-3;
-        uy_exp_end = [6.16 5.76 5.97 5.81 5.84 5.61 5.86 5.64 5.62 5.68]*1e-3;   
+        uy_exp_end = [6.16 5.76 5.97 5.81 5.84 5.61 5.86 5.64 5.62 5.68]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
@@ -534,7 +526,7 @@ switch lower(test)
         fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
         fprintf('uz     = %g m\n',uz);
         fprintf('\n');
-    case 'fatigue4'
+    case 'durabilityhori4'
         uy_exp_start = -3.75*1e-3;
         uy_exp_end = -[3.89 3.88 3.89 3.88 3.89]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
@@ -545,6 +537,18 @@ switch lower(test)
         fprintf('uy     = %g m\n',uy);
         fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
         fprintf('uz     = %g m\n',uz);
+        fprintf('\n');
+    case 'stabilityvert'
+        uz_exp_start = -1.93*1e-3;
+        uz_exp_end = -[18.46 18.44 18.53 18.58 18.59 18.7 18.77 18.73 18.85 18.76]*1e-3;
+        uz_exp = mean(uz_exp_end - uz_exp_start);
+        err_uz = norm(uz-uz_exp)/norm(uz_exp);
+        
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf('ux     = %g m\n',ux);
+        fprintf('uy     = %g m\n',uy);
+        fprintf('uz     = %g m\n',uz);
+        fprintf('uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
         fprintf('\n');
 end
 
@@ -557,7 +561,7 @@ if displaySolution
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 8;
-    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
+    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',linewidth);
     hP = plot(P,'g+');
     legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     %legend([hD,hN,hP],[legD,legN,'mesure'],'Location','NorthEastOutside')
@@ -583,15 +587,15 @@ if displaySolution
     % options = {};
     
     switch lower(test)
-        case {'stability','staticvert','impact','drop'}
-            plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
-            mysaveas(pathname,'Uz',formats,renderer);
-        case {'statichori1','statichori2','fatigue1','fatigue2'}
+        case {'statichori1','statichori2','durabilityhori1','durabilityhori2'}
             plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'Ux',formats,renderer);
-        case {'statichori3','statichori4','fatigue3','fatigue4'}
+        case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
             plotSolution(S,u,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'Uy',formats,renderer);
+        case {'staticvert','stabilityvert','impact','drop'}
+            plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
+            mysaveas(pathname,'Uz',formats,renderer);
     end
     
     % plotSolution(S,u,'epsilon','mises','ampl',ampl,options{:});

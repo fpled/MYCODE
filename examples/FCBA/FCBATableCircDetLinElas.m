@@ -9,27 +9,31 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-% tests = {'Stability1'}; % stability test under vertical load 1
-% tests = {'Stability2'}; % stability test under vertical load 2
-% tests = {'Stability3'}; % stability test under vertical load 3
-% tests = {'Stability4'}; % stability test under vertical load 4
-% tests = {'StaticHori1'}; % test under static horizontal load 1
-% tests = {'StaticHori2'}; % test under static horizontal load 2
-% tests = {'StaticHori3'}; % test under static horizontal load 3 (lifting)
-% tests = {'StaticHori4'}; % test under static horizontal load 4 (lifting)
-tests = {'StaticVert'}; % test under static vertical load
-% tests = {'Fatigue1'}; % fatigue test under horizontal load 1
-% tests = {'Fatigue2'}; % fatigue test under horizontal load 2
-% tests = {'Fatigue3'}; % fatigue test under horizontal load 3 (lifting)
-% tests = {'Fatigue4'}; % fatigue test under horizontal load 4 (lifting)
+% tests = {'StaticHori1'}; % strength test under static horizontal load 1
+% tests = {'StaticHori2'}; % strength test under static horizontal load 2
+% tests = {'StaticHori3'}; % strength test under static horizontal load 3 (lifting)
+% tests = {'StaticHori4'}; % strength test under static horizontal load 4 (lifting)
+tests = {'StaticVert'}; % strength  test under static vertical load
+% tests = {'DurabilityHori1'}; % durability test under horizontal load 1
+% tests = {'DurabilityHori2'}; % durability test under horizontal load 2
+% tests = {'DurabilityHori3'}; % durability test under horizontal load 3 (lifting)
+% tests = {'DurabilityHori4'}; % durability test under horizontal load 4 (lifting)
+% tests = {'StabilityVert1'}; % stability test under vertical load 1
+% tests = {'StabilityVert2'}; % stability test under vertical load 2
+% tests = {'StabilityVert3'}; % stability test under vertical load 3
+% tests = {'StabilityVert4'}; % stability test under vertical load 4
 % tests = {'Impact'}; % vertical impact test
 % tests = {'Drop'}; % drop test
-% tests = {'Stability1','Stability2','Stability3','Stability4','StaticVert',...
-%     'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
-%     'Fatigue1','Fatigue2','Fatigue3','Fatigue4'};
+% tests = {'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
+%     'StaticVert',...
+%     'DurabilityHori1','DurabilityHori2','DurabilityHori3','DurabilityHori4',...
+%     'StabilityVert1','StabilityVert2','StabilityVert3','StabilityVert4'};
 
 belt = true; % belt modeling
 
+fontsize = 16;
+linewidth = 1;
+interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
@@ -81,15 +85,15 @@ if solveProblem
     % Points
     x_beam = cellfun(@(L) getvertex(L,1),L_beam,'UniformOutput',false);
     x_load_stab = {[-r+50e-3,0.0,0.0],[0.0,-r+50e-3,0.0],[r-50e-3,0.0,0.0],[0.0,r-50e-3,0.0]}; % stability test under vertical load
-    x_load_hori = {getvertex(C,4),getvertex(C,2),getvertex(C,3),getvertex(C,1)}; % test under static horizontal load
-    x_load_vert = double(getcenter(C)); % test under static vertical load
-    x_load_fati = {getvertex(C,4),getvertex(C,2),[-str2double(num2str(sqrt(r^2-(r-50e-3)^2))),r-50e-3,0.0],[str2double(num2str(sqrt(r^2-(r-50e-3)^2))),r-50e-3,0.0]}; % fatigue test under horizontal load
-    x_load = [x_load_stab,x_load_hori,x_load_vert,x_load_fati];
+    x_load_hori = {getvertex(C,4),getvertex(C,2),getvertex(C,3),getvertex(C,1)}; % strength test under static horizontal load
+    x_load_vert = double(getcenter(C)); % strength test under static vertical load
+    x_load_dura = {getvertex(C,4),getvertex(C,2),[-str2double(num2str(sqrt(r^2-(r-50e-3)^2))),r-50e-3,0.0],[str2double(num2str(sqrt(r^2-(r-50e-3)^2))),r-50e-3,0.0]}; % durability test under horizontal load
+    x_load = [x_load_stab,x_load_hori,x_load_vert,x_load_dura];
     P_beam = cellfun(@(x) POINT(x),x_beam,'UniformOutput',false);
     P_load_stab = cellfun(@(x) POINT(x),x_load_stab,'UniformOutput',false);
     P_load_hori = cellfun(@(x) POINT(x),x_load_hori,'UniformOutput',false);
     P_load_vert = POINT(x_load_vert);
-    P_load_fati = cellfun(@(x) POINT(x),x_load_fati,'UniformOutput',false);
+    P_load_dura = cellfun(@(x) POINT(x),x_load_dura,'UniformOutput',false);
     P_load = cellfun(@(x) POINT(x),x_load,'UniformOutput',false);
     
     % Plate mesh
@@ -98,7 +102,7 @@ if solveProblem
     elemtype = 'DKT';
     r_masse = 150e-3;
     C_masse = CIRCLE(0.0,0.0,0.0,r_masse);
-    Pb = {getvertex(C,1),getvertex(C,2),getvertex(C,3),x_load_fati{4},getvertex(C,4),x_load_fati{3}};
+    Pb = {getvertex(C,1),getvertex(C,2),getvertex(C,3),x_load_dura{4},getvertex(C,4),x_load_dura{3}};
     Pe = x_load_stab;
     Pi = double(getcenter(C));
     if ~strcmp(elemtype,'QUA4') && ~strcmp(elemtype,'CUB8') && ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4') && ~strcmp(elemtype,'STOKES')
@@ -179,8 +183,6 @@ if solveProblem
     p_beam = RHO_beam*g*Sec_beam; % line load (body load for beams) [N/m]
     p_belt = RHO_beam*g*Sec_belt; % line load (body load for beams) [N/m]
     switch lower(test)
-        case {'stability1','stability2','stability3','stability4'}
-            p = 400; % pointwise load, pmin = 668 [N]
         case {'statichori1','statichori2','statichori3','statichori4'}
             masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
@@ -189,11 +191,13 @@ if solveProblem
             slope = 0;
         case 'staticvert'
             p = 1200; % pointwise load [N]
-        case {'fatigue1','fatigue2','fatigue3','fatigue4'}
+        case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
             masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
             p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
             p = 300; % pointwise load [N]
+        case {'stabilityvert1','stabilityvert2','stabilityvert3','stabilityvert4'}
+            p = 400; % pointwise load, pmin = 668 [N]
         case 'impact'
             H = 180e-3; % [m]
         case 'drop'
@@ -207,42 +211,6 @@ if solveProblem
     
     S = final(S);
     switch lower(test)
-        case 'stability1'
-            S = addcl(S,P_support([1;4]));
-            pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-a/2),a/2,r,'RelTol',eps,'AbsTol',eps)...
-                +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2-x),0,a/2,'RelTol',eps,'AbsTol',eps)...
-                +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
-                +p_belt*a*(a+b)+2*p_beam*a*l)/(-x_load_stab{1}(1)-a/2);
-            if p < pmin % no lifting
-                S = addcl(S,P_support([2;3]),'UZ');
-            end
-        case 'stability2'
-            S = addcl(S,P_support([1;2]));
-            pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-b/2),b/2,r,'RelTol',eps,'AbsTol',eps)...
-                +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2-x),0,b/2,'RelTol',eps,'AbsTol',eps)...
-                +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
-                +p_belt*b*(b+a)+2*p_beam*b*l)/(-x_load_stab{2}(2)-b/2);
-            if p < pmin % no lifting
-                S = addcl(S,P_support([3;4]),'UZ');
-            end
-        case 'stability3'
-            S = addcl(S,P_support([2;3]));
-            pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-a/2),a/2,r,'RelTol',eps,'AbsTol',eps)...
-                +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2-x),0,a/2,'RelTol',eps,'AbsTol',eps)...
-                +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
-                +p_belt*a*(a+b)+2*p_beam*a*l)/(x_load_stab{3}(1)-a/2);
-            if p < pmin % no lifting
-                S = addcl(S,P_support([1;4]),'UZ');
-            end
-        case 'stability4'
-            S = addcl(S,P_support([3;4]));
-            pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-b/2),b/2,r,'RelTol',eps,'AbsTol',eps)...
-                +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2-x),0,b/2,'RelTol',eps,'AbsTol',eps)...
-                +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
-                +p_belt*b*(b+a)+2*p_beam*b*l)/(x_load_stab{4}(2)-b/2);
-            if p < pmin % no lifting
-                S = addcl(S,P_support([1;2]),'UZ');
-            end
         case {'statichori1','statichori2'}
             S = addcl(S,P_support([3;4]));
             S = addcl(S,P_support([1;2]),'UZ');
@@ -251,8 +219,44 @@ if solveProblem
             S = addcl(S,P_support([2;3]),'UZ');
         case 'staticvert'
             S = addcl(S,P_support,'U');
-        case {'fatigue1','fatigue2','fatigue3','fatigue4'}
+        case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
             S = addcl(S,P_support);
+        case 'stabilityvert1'
+            S = addcl(S,P_support([1;4]));
+            pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-a/2),a/2,r,'RelTol',eps,'AbsTol',eps)...
+                +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2-x),0,a/2,'RelTol',eps,'AbsTol',eps)...
+                +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
+                +p_belt*a*(a+b)+2*p_beam*a*l)/(-x_load_stab{1}(1)-a/2);
+            if p < pmin % no lifting
+                S = addcl(S,P_support([2;3]),'UZ');
+            end
+        case 'stabilityvert2'
+            S = addcl(S,P_support([1;2]));
+            pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-b/2),b/2,r,'RelTol',eps,'AbsTol',eps)...
+                +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2-x),0,b/2,'RelTol',eps,'AbsTol',eps)...
+                +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
+                +p_belt*b*(b+a)+2*p_beam*b*l)/(-x_load_stab{2}(2)-b/2);
+            if p < pmin % no lifting
+                S = addcl(S,P_support([3;4]),'UZ');
+            end
+        case 'stabilityvert3'
+            S = addcl(S,P_support([2;3]));
+            pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-a/2),a/2,r,'RelTol',eps,'AbsTol',eps)...
+                +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2-x),0,a/2,'RelTol',eps,'AbsTol',eps)...
+                +integral(@(x) 2*sqrt(r^2-x.^2).*(a/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
+                +p_belt*a*(a+b)+2*p_beam*a*l)/(x_load_stab{3}(1)-a/2);
+            if p < pmin % no lifting
+                S = addcl(S,P_support([1;4]),'UZ');
+            end
+        case 'stabilityvert4'
+            S = addcl(S,P_support([3;4]));
+            pmin = (p_plate*(-integral(@(x) 2*sqrt(r^2-x.^2).*(x-b/2),b/2,r,'RelTol',eps,'AbsTol',eps)...
+                +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2-x),0,b/2,'RelTol',eps,'AbsTol',eps)...
+                +integral(@(x) 2*sqrt(r^2-x.^2).*(b/2+x),0,r,'RelTol',eps,'AbsTol',eps))...
+                +p_belt*b*(b+a)+2*p_beam*b*l)/(x_load_stab{4}(2)-b/2);
+            if p < pmin % no lifting
+                S = addcl(S,P_support([1;2]),'UZ');
+            end
         case {'impact','drop'}
             S = addcl(S,P_support);
     end
@@ -261,26 +265,6 @@ if solveProblem
     A = calc_rigi(S);
     
     switch lower(test)
-        case 'stability1'
-            f = nodalload(S,P_load_stab{1},'FZ',-p);
-            if isempty(ispointin(P_load_stab{1},POINT(S.node)))
-                error('Pointwise load must be applied to a node of the mesh')
-            end
-        case 'stability2'
-            f = nodalload(S,P_load_stab{2},'FZ',-p);
-            if isempty(ispointin(P_load_stab{2},POINT(S.node)))
-                error('Pointwise load must be applied to a node of the mesh')
-            end
-        case 'stability3'
-            f = nodalload(S,P_load_stab{3},'FZ',-p);
-            if isempty(ispointin(P_load_stab{3},POINT(S.node)))
-                error('Pointwise load must be applied to a node of the mesh')
-            end
-        case 'stability4'
-            f = nodalload(S,P_load_stab{4},'FZ',-p);
-            if isempty(ispointin(P_load_stab{4},POINT(S.node)))
-                error('Pointwise load must be applied to a node of the mesh')
-            end
         case {'statichori1','statichori2','statichori3','statichori4'}
             if strcmpi(test,'statichori1')
                 f = nodalload(S,P_load_hori{1},{'FY','FZ'},-p*[cosd(slope);sind(slope)]);
@@ -309,29 +293,49 @@ if solveProblem
             if isempty(ispointin(P_load_vert,POINT(S.node)))
                 error('Pointwise load must be applied to a node of the mesh')
             end
-        case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-            if strcmpi(test,'fatigue1')
-                f = nodalload(S,P_load_fati{1},'FY',-p);
-                if isempty(ispointin(P_load_fati{1},POINT(S.node)))
+        case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
+            if strcmpi(test,'durabilityhori1')
+                f = nodalload(S,P_load_dura{1},'FY',-p);
+                if isempty(ispointin(P_load_dura{1},POINT(S.node)))
                     error('Pointwise load must be applied to a node of the mesh')
                 end
-            elseif strcmpi(test,'fatigue2')
-                f = nodalload(S,P_load_fati{2},'FY',p);
-                if isempty(ispointin(P_load_fati{2},POINT(S.node)))
+            elseif strcmpi(test,'durabilityhori2')
+                f = nodalload(S,P_load_dura{2},'FY',p);
+                if isempty(ispointin(P_load_dura{2},POINT(S.node)))
                     error('Pointwise load must be applied to a node of the mesh')
                 end
-            elseif strcmpi(test,'fatigue3')
-                f = nodalload(S,P_load_fati{3},'FX',p);
-                if isempty(ispointin(P_load_fati{3},POINT(S.node)))
+            elseif strcmpi(test,'durabilityhori3')
+                f = nodalload(S,P_load_dura{3},'FX',p);
+                if isempty(ispointin(P_load_dura{3},POINT(S.node)))
                     error('Pointwise load must be applied to a node of the mesh')
                 end
-            elseif strcmpi(test,'fatigue4')
-                f = nodalload(S,P_load_fati{4},'FX',-p);
-                if isempty(ispointin(P_load_fati{4},POINT(S.node)))
+            elseif strcmpi(test,'durabilityhori4')
+                f = nodalload(S,P_load_dura{4},'FX',-p);
+                if isempty(ispointin(P_load_dura{4},POINT(S.node)))
                     error('Pointwise load must be applied to a node of the mesh')
                 end
             end
             f = f + bodyload(keepgroupelem(S,3),[],'FZ',-p_masse);
+        case 'stabilityvert1'
+            f = nodalload(S,P_load_stab{1},'FZ',-p);
+            if isempty(ispointin(P_load_stab{1},POINT(S.node)))
+                error('Pointwise load must be applied to a node of the mesh')
+            end
+        case 'stabilityvert2'
+            f = nodalload(S,P_load_stab{2},'FZ',-p);
+            if isempty(ispointin(P_load_stab{2},POINT(S.node)))
+                error('Pointwise load must be applied to a node of the mesh')
+            end
+        case 'stabilityvert3'
+            f = nodalload(S,P_load_stab{3},'FZ',-p);
+            if isempty(ispointin(P_load_stab{3},POINT(S.node)))
+                error('Pointwise load must be applied to a node of the mesh')
+            end
+        case 'stabilityvert4'
+            f = nodalload(S,P_load_stab{4},'FZ',-p);
+            if isempty(ispointin(P_load_stab{4},POINT(S.node)))
+                error('Pointwise load must be applied to a node of the mesh')
+            end
         case {'impact','drop'}
             error('Not implemented')
     end
@@ -448,7 +452,7 @@ if displaySolution
     
     [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     ampl = 5;
-    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
+    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',linewidth);
     hP = plot(P,'g+');
     legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     %legend([hD,hN,hP],[legD,legN,'mesure'],'Location','NorthEastOutside')
@@ -475,16 +479,16 @@ if displaySolution
     % options = {};
     
     switch lower(test)
-        case {'stability1','stability2','stability3','stability4',...
-                'staticvert','impact','drop'}
-            plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
-            mysaveas(pathname,'Uz',formats,renderer);
-        case {'statichori1','statichori2','fatigue1','fatigue2'}
+        case {'statichori1','statichori2','durabilityhori1','durabilityhori2'}
             plotSolution(S,u,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'Uy',formats,renderer);
-        case {'statichori3','statichori4','fatigue3','fatigue4'}
+        case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
             plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'Ux',formats,renderer);
+        case {'staticvert','stabilityvert1','stabilityvert2','stabilityvert3','stabilityvert4',...
+                'impact','drop'}
+            plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
+            mysaveas(pathname,'Uz',formats,renderer);
     end
     
     % plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});

@@ -9,7 +9,7 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-tests = {'StaticVert'}; % test under static vertical load
+tests = {'StaticVert'}; % strength test under static vertical load
 
 filename = 'FCBADeskBeamJunctionDetLinElas';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -19,6 +19,7 @@ if ~exist(pathname,'dir')
 end
 
 fontsize = 16;
+linewidth = 1;
 interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
@@ -524,7 +525,7 @@ if displaySolution
     
     [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     ampl = 5;
-    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',1);
+    [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',linewidth);
     hP = plot(P2,'g+');
     legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     %legend([hD,hN,hP],[legD,legN,'mesure'],'Location','NorthEastOutside')

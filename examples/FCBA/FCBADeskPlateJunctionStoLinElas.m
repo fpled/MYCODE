@@ -4,7 +4,7 @@
 % clc
 clearvars
 close all
-% rng('default');
+rng('default');
 myparallel('start');
 
 %% Input data
@@ -12,21 +12,22 @@ solveProblem = true;
 displaySolution = true;
 displayCv = true;
 
-% tests = {'Stability'}; % stability test under vertical load
-% tests = {'StaticHori1'}; % test under static horizontal load 1
-% tests = {'StaticHori2'}; % test under static horizontal load 2
-% tests = {'StaticHori3'}; % test under static horizontal load 3 (lifting)
-% tests = {'StaticHori4'}; % test under static horizontal load 4 (lifting)
-tests = {'StaticVert'}; % test under static vertical load
-% tests = {'Fatigue1'}; % fatigue test under horizontal load 1
-% tests = {'Fatigue2'}; % fatigue test under horizontal load 2
-% tests = {'Fatigue3'}; % fatigue test under horizontal load 3 (lifting)
-% tests = {'Fatigue4'}; % fatigue test under horizontal load 4 (lifting)
+% tests = {'StaticHori1'}; % strength test under static horizontal load 1
+% tests = {'StaticHori2'}; % strength test under static horizontal load 2
+% tests = {'StaticHori3'}; % strength test under static horizontal load 3 (lifting)
+% tests = {'StaticHori4'}; % strength test under static horizontal load 4 (lifting)
+tests = {'StaticVert'}; % strength test under static vertical load
+% tests = {'DurabilityHori1'}; % durability test under horizontal load 1
+% tests = {'DurabilityHori2'}; % durability test under horizontal load 2
+% tests = {'DurabilityHori3'}; % durability test under horizontal load 3 (lifting)
+% tests = {'DurabilityHori4'}; % durability test under horizontal load 4 (lifting)
+% tests = {'StabilityVert'}; % stability test under vertical load
 % tests = {'Impact'}; % vertical impact test
 % tests = {'Drop'}; % drop test
-% tests = {'Stability','StaticVert',...
-%     'StaticHori1','StaticHori2',...
-%     'Fatigue1','Fatigue2'};
+% tests = {'StaticHori1','StaticHori2',...
+%     'StaticVert',...
+%     'DurabilityHori1','DurabilityHori2',...
+%     'StabilityVert'};
 
 pointwiseLoading = false; % pointwise loading
 
@@ -114,13 +115,13 @@ if solveProblem
     x_hori = {double(getcenter(L3{2})),double(getcenter(L3{4})),...
               double(getcenter(L3{3})),double(getcenter(L3{1}))};
     x_vert = double(getcenter(Q3));
-    x_fati = {[x3_23,y3_12+50e-3,z3],[x3_14,y3_12+50e-3,z3],...
+    x_dura = {[x3_23,y3_12+50e-3,z3],[x3_14,y3_12+50e-3,z3],...
               [x3_23-50e-3,y3_12,z3],[x3_23-50e-3,y3_34,z3]};
     x_stab = double(getcenter(L3{1}))+[0.0,50e-3,0.0];
-    x_meas = [x_hori,x_vert,x_fati,x_stab];
+    x_meas = [x_hori,x_vert,x_dura,x_stab];
     P_hori = cellfun(@(x) POINT(x),x_hori,'UniformOutput',false);
     P_vert = POINT(x_vert);
-    P_fati = cellfun(@(x) POINT(x),x_fati,'UniformOutput',false);
+    P_dura = cellfun(@(x) POINT(x),x_dura,'UniformOutput',false);
     P_stab = POINT(x_stab);
     P_meas = cellfun(@(x) POINT(x),x_meas,'UniformOutput',false);
     
@@ -160,8 +161,8 @@ if solveProblem
     L3_1 = LIGNE([x1,y1_23,z1_34],[x1,y1_14,z1_34]);
     L3_2 = LIGNE([x2,y2_23,z2_34],[x2,y2_14,z2_34]);
     if pointwiseLoading
-        PbQ3 = {x_hori{4},x_fati{3},x_fati{1},x_hori{1},...
-                x_fati{4},x_hori{3},x_hori{2},x_fati{2}};
+        PbQ3 = {x_hori{4},x_dura{3},x_dura{1},x_hori{1},...
+                x_dura{4},x_hori{3},x_hori{2},x_dura{2}};
         if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
             S3 = gmshFCBAdesk3simplified(Q3,C_masse,L3_1,L3_2,PbQ3,x_stab,x_masse,...
                 cl_3,cl_3,cl_12,cl_12,cl_3,cl_3,cl_3,...
@@ -176,12 +177,12 @@ if solveProblem
         L_hori{2} = LIGNE(x_hori{2}+[0,r_load,0],x_hori{2}+[0,-r_load,0]);
         L_hori{3} = LIGNE(x_hori{3}+[r_load,0,0],x_hori{3}+[-r_load,0,0]);
         L_hori{4} = LIGNE(x_hori{4}+[-r_load,0,0],x_hori{4}+[r_load,0,0]);
-        L_fati{1} = LIGNE(x_fati{1}+[0,-r_load,0],x_fati{1}+[0,r_load,0]);
-        L_fati{2} = LIGNE(x_fati{2}+[0,r_load,0],x_fati{2}+[0,-r_load,0]);
-        L_fati{3} = LIGNE(x_fati{3}+[-r_load,0,0],x_fati{3}+[r_load,0,0]);
-        L_fati{4} = LIGNE(x_fati{4}+[r_load,0,0],x_fati{4}+[-r_load,0,0]);
-        LbQ3 = {L_hori{4},L_fati{3},L_fati{1},L_hori{1},...
-                L_fati{4},L_hori{3},L_hori{2},L_fati{2}};
+        L_dura{1} = LIGNE(x_dura{1}+[0,-r_load,0],x_dura{1}+[0,r_load,0]);
+        L_dura{2} = LIGNE(x_dura{2}+[0,r_load,0],x_dura{2}+[0,-r_load,0]);
+        L_dura{3} = LIGNE(x_dura{3}+[-r_load,0,0],x_dura{3}+[r_load,0,0]);
+        L_dura{4} = LIGNE(x_dura{4}+[r_load,0,0],x_dura{4}+[-r_load,0,0]);
+        LbQ3 = {L_hori{4},L_dura{3},L_dura{1},L_hori{1},...
+                L_dura{4},L_hori{3},L_hori{2},L_dura{2}};
         C_vert = CIRCLE(x_vert(1),x_vert(2),x_vert(3),r_load);
         C_stab = CIRCLE(x_stab(1),x_stab(2),x_stab(3),r_load);
         if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
@@ -373,35 +374,35 @@ if solveProblem
     
     %% Neumann boundary conditions
     p_plate = RHO*g*h; % surface load (body load for plates) [N/m2]
-    Sec_stab_vert = pi*r_load^2;
-    L_hori_fati = 2*r_load;
+    L_hori_dura = 2*r_load;
+    Sec_vert_stab = pi*r_load^2;
     switch lower(test)
-        case 'stability'
-            p = 400; % pointwise load [N]
-            if ~pointwiseLoading
-                p = p/Sec_stab_vert; % surface load (body load for plates) [N/m2]
-            end
         case {'statichori1','statichori2','statichori3','statichori4'}
             masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
             p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
             p = 100; % pointwise load, F1=F2=100, 200 [N], F3=F4=100 [N]
             if ~pointwiseLoading
-                p = p/L_hori_fati; % line load (surface load for plates) [N/m]
+                p = p/L_hori_dura; % line load (surface load for plates) [N/m]
             end
             slope = 0;
         case 'staticvert'
             p = 300; % pointwise load, 300, 400, 500 [N]
             if ~pointwiseLoading
-                p = p/Sec_stab_vert; % surface load (body load for plates) [N/m2]
+                p = p/Sec_vert_stab; % surface load (body load for plates) [N/m2]
             end
-        case {'fatigue1','fatigue2','fatigue3','fatigue4'}
+        case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
             masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
             p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
             p = 100; % pointwise load [N]
             if ~pointwiseLoading
-                p = p/L_hori_fati; % line load (surface load for plates) [N/m]
+                p = p/L_hori_dura; % line load (surface load for plates) [N/m]
+            end
+        case 'stabilityvert'
+            p = 400; % pointwise load [N]
+            if ~pointwiseLoading
+                p = p/Sec_vert_stab; % surface load (body load for plates) [N/m2]
             end
         case 'impact'
             H = 180e-3; % [m]
@@ -423,9 +424,6 @@ if solveProblem
     [~,numnodeL2] = intersect(S,L2);
     [~,numnodeL5b] = intersect(S,L5b);
     switch lower(test)
-        case 'stability'
-            S = addcl(S,union(numnodeL1,numnodeL2));
-            S = addcl(S,numnodeL5b,'UZ');
         case {'statichori1','statichori2'}
             S = addcl(S,numnodeL2);
             S = addcl(S,union(numnodeL1,numnodeL5b),{'UY','UZ'});
@@ -435,7 +433,10 @@ if solveProblem
         case 'staticvert'
             S = addcl(S,union(numnodeL1,numnodeL2));
             S = addcl(S,numnodeL5b,'UZ');
-        case {'fatigue1','fatigue2','fatigue3','fatigue4'}
+        case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
+            S = addcl(S,union(numnodeL1,numnodeL2));
+            S = addcl(S,numnodeL5b,'UZ');
+        case 'stabilityvert'
             S = addcl(S,union(numnodeL1,numnodeL2));
             S = addcl(S,numnodeL5b,'UZ');
         case {'impact','drop'}
@@ -592,15 +593,6 @@ if solveProblem
     
     %% Sollicitation vector
     switch lower(test)
-        case 'stability'
-            if pointwiseLoading
-                f = nodalload(S,P_stab,'FZ',-p);
-                if isempty(ispointin(P_stab,POINT(S.node)))
-                    error('Pointwise load must be applied to a node of the mesh')
-                end
-            else
-                f = bodyload(keepgroupelem(S,6),[],'FZ',-p);
-            end
         case {'statichori1','statichori2','statichori3','statichori4'}
             if strcmpi(test,'statichori1')
                 if pointwiseLoading
@@ -653,48 +645,57 @@ if solveProblem
             else
                 f = bodyload(keepgroupelem(S,4),[],'FZ',-p);
             end
-        case {'fatigue1','fatigue2','fatigue3','fatigue4'}
-            if strcmpi(test,'fatigue1')
+        case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
+            if strcmpi(test,'durabilityhori1')
                 if pointwiseLoading
-                    f = nodalload(S,P_fati{1},'FX',-p);
-                    if isempty(ispointin(P_fati{1},POINT(S.node)))
+                    f = nodalload(S,P_dura{1},'FX',-p);
+                    if isempty(ispointin(P_dura{1},POINT(S.node)))
                         error('Pointwise load must be applied to a node of the mesh')
                     end
                 else
-                    f = surfload(S,L_fati{1},'FX',-p);
+                    f = surfload(S,L_dura{1},'FX',-p);
                 end
-            elseif strcmpi(test,'fatigue2')
+            elseif strcmpi(test,'durabilityhori2')
                 if pointwiseLoading
-                    f = nodalload(S,P_fati{2},'FX',p);
-                    if isempty(ispointin(P_fati{2},POINT(S.node)))
+                    f = nodalload(S,P_dura{2},'FX',p);
+                    if isempty(ispointin(P_dura{2},POINT(S.node)))
                         error('Pointwise load must be applied to a node of the mesh')
                     end
                 else
-                    f = surfload(S,L_fati{2},'FX',p);
+                    f = surfload(S,L_dura{2},'FX',p);
                 end
-            elseif strcmpi(test,'fatigue3')
+            elseif strcmpi(test,'durabilityhori3')
                 if pointwiseLoading
-                    f = nodalload(S,P_fati{3},'FY',p);
-                    if isempty(ispointin(P_fati{3},POINT(S.node)))
+                    f = nodalload(S,P_dura{3},'FY',p);
+                    if isempty(ispointin(P_dura{3},POINT(S.node)))
                         error('Pointwise load must be applied to a node of the mesh')
                     end
                 else
-                    f = surfload(S,L_fati{3},'FY',p);
+                    f = surfload(S,L_dura{3},'FY',p);
                 end
-            elseif strcmpi(test,'fatigue4')
+            elseif strcmpi(test,'durabilityhori4')
                 if pointwiseLoading
-                    f = nodalload(S,P_fati{4},'FY',-p);
-                    if isempty(ispointin(P_fati{4},POINT(S.node)))
+                    f = nodalload(S,P_dura{4},'FY',-p);
+                    if isempty(ispointin(P_dura{4},POINT(S.node)))
                         error('Pointwise load must be applied to a node of the mesh')
                     end
                 else
-                    f = surfload(S,L_fati{4},'FY',-p);
+                    f = surfload(S,L_dura{4},'FY',-p);
                 end
             end
             if pointwiseLoading
                 f = f + bodyload(keepgroupelem(S,4),[],'FZ',-p_masse);
             else
                 f = f + bodyload(keepgroupelem(S,[4,5]),[],'FZ',-p_masse);
+            end
+        case 'stabilityvert'
+            if pointwiseLoading
+                f = nodalload(S,P_stab,'FZ',-p);
+                if isempty(ispointin(P_stab,POINT(S.node)))
+                    error('Pointwise load must be applied to a node of the mesh')
+                end
+            else
+                f = bodyload(keepgroupelem(S,6),[],'FZ',-p);
             end
         case {'impact','drop'}
             error('Not implemented')
@@ -807,10 +808,6 @@ if solveProblem
     
     %% Test solution
     switch lower(test)
-        case 'staticvert'
-            P = P_vert;
-        case 'stability'
-            P = P_stab;
         case 'statichori1'
             P = P_hori{2};
         case 'statichori2'
@@ -819,14 +816,18 @@ if solveProblem
             P = P_hori{4};
         case 'statichori4'
             P = P_hori{3};
-        case 'fatigue1'
-            P = P_fati{2};
-        case 'fatigue2'
-            P = P_fati{1};
-        case 'fatigue3'
-            P = P_fati{4};
-        case 'fatigue4'
-            P = P_fati{3};
+        case 'staticvert'
+            P = P_vert;
+        case 'durabilityhori1'
+            P = P_dura{2};
+        case 'durabilityhori2'
+            P = P_dura{1};
+        case 'durabilityhori3'
+            P = P_dura{4};
+        case 'durabilityhori4'
+            P = P_dura{3};
+        case 'stabilityvert'
+            P = P_stab;
     end
     mean_ux = eval_sol(S,mean_u,P,'UX');
     mean_uy = eval_sol(S,mean_u,P,'UY');
@@ -854,7 +855,7 @@ if solveProblem
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S','elemtype',...
-        'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','L_hori_fati',...
+        'a12','b12','a3','b3','a5','b5','h','L_hori_dura','Sec_vert_stab',...
         'f','p','pointwiseLoading','N');
     save(fullfile(pathname,'solution.mat'),'u','mean_u','std_u','ci_u','probs','time');
     save(fullfile(pathname,'test_solution.mat'),'P',...
@@ -866,7 +867,7 @@ if solveProblem
         'ci_rx','ci_ry','ci_rz');
 else
     load(fullfile(pathname,'problem.mat'),'S','elemtype',...
-        'a12','b12','a3','b3','a5','b5','h','Sec_stab_vert','L_hori_fati',...
+        'a12','b12','a3','b3','a5','b5','h','L_hori_dura','Sec_vert_stab',...
         'f','p','pointwiseLoading','N');
     load(fullfile(pathname,'solution.mat'),'u','mean_u','std_u','ci_u','probs','time');
     load(fullfile(pathname,'test_solution.mat'),'P',...
@@ -893,50 +894,16 @@ fprintf('elapsed time = %f s\n',time);
 fprintf('\n');
 
 switch lower(test)
-    case 'staticvert'
-        if (pointwiseLoading && p==300) || (~pointwiseLoading && p==300/Sec_stab_vert)
-            uz_exp_start = -0.69*1e-3;
-            uz_exp_end = -[10.10 9.88 9.64 9.88 9.94 9.79 9.92 9.93 9.82 9.95]*1e-3;
-        elseif (pointwiseLoading && p==400) || (~pointwiseLoading && p==400/Sec_stab_vert)
-            uz_exp_start = -0.75*1e-3;
-            uz_exp_end = -[13.45 13.52 13.56 13.64 13.65 13.74 13.75 13.44 13.74 13.53]*1e-3;
-        elseif (pointwiseLoading && p==500) || (~pointwiseLoading && p==500/Sec_stab_vert)
-            uz_exp_start = -0.78*1e-3;
-            uz_exp_end = -[16.66 16.57 16.59 16.78 16.55 16.69 16.75 16.59 16.73 16.76]*1e-3;
-        end
-        uz_exp = mean(uz_exp_end - uz_exp_start);
-        err_uz = norm(mean_uz - uz_exp)/norm(uz_exp);
-        ci_u_exp = quantile(uz_exp_end - uz_exp_start,probs);
-        
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
-        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
-        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
-        fprintf('uz_exp   = %g m, error = %.3e\n',uz_exp,err_uz);
-        fprintf('\n');
-    case 'stability'
-        uz_exp_start = -1.93*1e-3;
-        uz_exp_end = -[18.46 18.44 18.53 18.58 18.59 18.7 18.77 18.73 18.85 18.76]*1e-3;
-        uz_exp = mean(uz_exp_end - uz_exp_start);
-        err_uz = norm(mean_uz - uz_exp)/norm(uz_exp);
-        ci_u_exp = quantile(uz_exp_end - uz_exp_start,probs);
-        
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
-        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
-        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
-        fprintf('uz_exp   = %g m, error = %.3e\n',uz_exp,err_uz);
-        fprintf('\n');
     case 'statichori1'
-        if (pointwiseLoading && p==100) || (~pointwiseLoading && p==100/L_hori_fati)
+        if (pointwiseLoading && p==100) || (~pointwiseLoading && p==100/L_hori_dura)
             ux_exp_start = -6.88*1e-3;
             ux_exp_end = -[10.5 10.51 10.44 10.8 10.72 10.62 10.67 10.65 10.66 10.87 10.86]*1e-3;
-        elseif (pointwiseLoading && p==200) || (~pointwiseLoading && p==200/L_hori_fati)
+        elseif (pointwiseLoading && p==200) || (~pointwiseLoading && p==200/L_hori_dura)
             ux_exp_start = -6.16*1e-3;
             ux_exp_end = -[16.78 16.74 16.72 17.13 17 16.8 16.87 16.78 17.04 16.82 16.71 17.17]*1e-3;
         end
         ux_exp = mean(ux_exp_end - ux_exp_start);
-        err_ux = norm(mean_ux - ux_exp)/norm(ux_exp);
+        err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
         ci_u_exp = quantile(ux_exp_end - ux_exp_start,probs);
         
         fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
@@ -946,10 +913,10 @@ switch lower(test)
         fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         fprintf('\n');
     case 'statichori2'
-        if (pointwiseLoading && p==100) || (~pointwiseLoading && p==100/L_hori_fati)
+        if (pointwiseLoading && p==100) || (~pointwiseLoading && p==100/L_hori_dura)
             ux_exp_start = 2.12*1e-3;
             ux_exp_end = [6.22 6.17 6.26 6.31 6.33 6.24 6.26 6.4 6.26 6.49 6.48 6.42 6.36 6.56 6.37 6.39]*1e-3;
-        elseif (pointwiseLoading && p==200) || (~pointwiseLoading && p==200/L_hori_fati)
+        elseif (pointwiseLoading && p==200) || (~pointwiseLoading && p==200/L_hori_dura)
             ux_exp_start = 1.91*1e-3;
             ux_exp_end = [12.45 12.68 12.66 12.65 12.71 12.64 12.82 12.73 12.89 12.86 12.79 12.86]*1e-3;
         end
@@ -963,7 +930,54 @@ switch lower(test)
         fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
         fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         fprintf('\n');
-    case 'fatigue1'
+    case 'statichori3'
+        uy_exp_start = -3.77*1e-3;
+        uy_exp_end = -[4.71 4.73 4.69 4.56 4.47 4.73]*1e-3;
+        uy_exp = mean(uy_exp_end - uy_exp_start);
+        err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
+        ci_u_exp = quantile(uy_exp_end - uy_exp_start,probs);
+        
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('uy_exp   = %g m, error = %.3e\n',uy_exp,err_uy);
+        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
+        fprintf('\n');
+    case 'statichori4'
+        uy_exp_start = 9.71*1e-3;
+        uy_exp_end = [12.21 12.2 12.2 12.23 12.2 12.19 12.21]*1e-3;
+        uy_exp = mean(uy_exp_end - uy_exp_start);
+        err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
+        ci_u_exp = quantile(uy_exp_end - uy_exp_start,probs);
+        
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('uy_exp   = %g m, error = %.3e\n',uy_exp,err_uy);
+        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
+        fprintf('\n');
+    case 'staticvert'
+        if (pointwiseLoading && p==300) || (~pointwiseLoading && p==300/Sec_vert_stab)
+            uz_exp_start = -0.69*1e-3;
+            uz_exp_end = -[10.10 9.88 9.64 9.88 9.94 9.79 9.92 9.93 9.82 9.95]*1e-3;
+        elseif (pointwiseLoading && p==400) || (~pointwiseLoading && p==400/Sec_vert_stab)
+            uz_exp_start = -0.75*1e-3;
+            uz_exp_end = -[13.45 13.52 13.56 13.64 13.65 13.74 13.75 13.44 13.74 13.53]*1e-3;
+        elseif (pointwiseLoading && p==500) || (~pointwiseLoading && p==500/Sec_vert_stab)
+            uz_exp_start = -0.78*1e-3;
+            uz_exp_end = -[16.66 16.57 16.59 16.78 16.55 16.69 16.75 16.59 16.73 16.76]*1e-3;
+        end
+        uz_exp = mean(uz_exp_end - uz_exp_start);
+        err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
+        ci_u_exp = quantile(uz_exp_end - uz_exp_start,probs);
+        
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
+        fprintf('uz_exp   = %g m, error = %.3e\n',uz_exp,err_uz);
+        fprintf('\n');
+    case 'durabilityhori1'
         ux_exp_start = -4.42*1e-3;
         ux_exp_end = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;
         ux_exp = mean(ux_exp_end - ux_exp_start);
@@ -976,7 +990,7 @@ switch lower(test)
         fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
         fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         fprintf('\n');
-    case 'fatigue2'
+    case 'durabilityhori2'
         ux_exp_start = 3.48*1e-3;
         ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;
         ux_exp = mean(ux_exp_end - ux_exp_start);
@@ -988,6 +1002,45 @@ switch lower(test)
         fprintf('ux_exp   = %g m, error = %.3e\n',ux_exp,err_ux);
         fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
         fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
+        fprintf('\n');
+    case 'durabilityhori3'
+        uy_exp_start = 3.35*1e-3;
+        uy_exp_end = [6.16 5.76 5.97 5.81 5.84 5.61 5.86 5.64 5.62 5.68]*1e-3;
+        uy_exp = mean(uy_exp_end - uy_exp_start);
+        err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
+        ci_u_exp = quantile(uy_exp_end - uy_exp_start,probs);
+        
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('uy_exp   = %g m, error = %.3e\n',uy_exp,err_uy);
+        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
+        fprintf('\n');
+    case 'durabilityhori4'
+        uy_exp_start = -3.75*1e-3;
+        uy_exp_end = -[3.89 3.88 3.89 3.88 3.89]*1e-3;
+        uy_exp = mean(uy_exp_end - uy_exp_start);
+        err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
+        ci_u_exp = quantile(uy_exp_end - uy_exp_start,probs);
+        
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('uy_exp   = %g m, error = %.3e\n',uy_exp,err_uy);
+        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
+        fprintf('\n');
+    case 'stabilityvert'
+        uz_exp_start = -1.93*1e-3;
+        uz_exp_end = -[18.46 18.44 18.53 18.58 18.59 18.7 18.77 18.73 18.85 18.76]*1e-3;
+        uz_exp = mean(uz_exp_end - uz_exp_start);
+        err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
+        ci_u_exp = quantile(uz_exp_end - uz_exp_start,probs);
+        
+        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
+        fprintf('uz_exp   = %g m, error = %.3e\n',uz_exp,err_uz);
         fprintf('\n');
 end
 
@@ -1033,24 +1086,24 @@ if displaySolution
     % options = {};
     
     switch lower(test)
-        case {'stability','staticvert','impact','drop'}
-            plotSolution(S,mean_u,'displ',3,'ampl',ampl,options{:});
-            mysaveas(pathname,'mean_Uz',formats,renderer);
-            
-            plotSolution(S,std_u,'displ',3,'ampl',ampl,options{:});
-            mysaveas(pathname,'std_Uz',formats,renderer);
-        case {'statichori1','statichori2','fatigue1','fatigue2'}
+        case {'statichori1','statichori2','durabilityhori1','durabilityhori2'}
             plotSolution(S,mean_u,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Ux',formats,renderer);
             
             plotSolution(S,std_u,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Ux',formats,renderer);
-        case {'statichori3','statichori4','fatigue3','fatigue4'}
+        case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
             plotSolution(S,mean_u,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Uy',formats,renderer);
             
             plotSolution(S,std_u,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Uy',formats,renderer);
+        case {'staticvert','stabilityvert','impact','drop'}
+            plotSolution(S,mean_u,'displ',3,'ampl',ampl,options{:});
+            mysaveas(pathname,'mean_Uz',formats,renderer);
+            
+            plotSolution(S,std_u,'displ',3,'ampl',ampl,options{:});
+            mysaveas(pathname,'std_Uz',formats,renderer);
     end
 end
 
@@ -1058,17 +1111,17 @@ end
 if displayCv
     N = size(u,2);
     switch lower(test)
-        case {'stability','staticvert','impact','drop'}
+        case {'stabilityvert','staticvert','impact','drop'}
             means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UZ'),1:N);
             stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UZ'),1:N);
             lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UZ'),1:N);
             uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UZ'),1:N);
-        case {'statichori1','statichori2','fatigue1','fatigue2'}
+        case {'statichori1','statichori2','durabilityhori1','durabilityhori2'}
             means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UX'),1:N);
             stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UX'),1:N);
             lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UX'),1:N);
             uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UX'),1:N);
-        case {'statichori3','statichori4','fatigue3','fatigue4'}
+        case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
             means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UY'),1:N);
             stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UY'),1:N);
             lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UY'),1:N);
@@ -1085,11 +1138,11 @@ if displayCv
     alpha(0.2)
     plot(1:N,means_u,'-b','LineWidth',linewidth)
     switch lower(test)
-        case {'stability','staticvert'}
+        case {'stabilityvert','staticvert'}
             plot(1:N,repmat(uz_exp,1,N),'-r','LineWidth',linewidth)
-        case {'statichori1','statichori2','fatigue1','fatigue2'}
+        case {'statichori1','statichori2','durabilityhori1','durabilityhori2'}
             plot(1:N,repmat(ux_exp,1,N),'-r','LineWidth',linewidth)
-        case {'statichori3','statichori4','fatigue3','fatigue4'}
+        case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
             plot(1:N,repmat(uy_exp,1,N),'-r','LineWidth',linewidth)
     end
     hold off
@@ -1099,17 +1152,17 @@ if displayCv
     xlabel('Number of samples','Interpreter',interpreter)
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
     switch lower(test)
-        case {'stability','staticvert'}
+        case {'stabilityvert','staticvert'}
             ylabel('Vertical displacement [m]','Interpreter',interpreter)
             %ylabel('D\''eplacement vertical [m]','Interpreter',interpreter)
-        case {'statichori1','statichori2','fatigue1','fatigue2',...
-                'statichori3','statichori4','fatigue3','fatigue4'}
+        case {'statichori1','statichori2','durabilityhori1','durabilityhori2',...
+                'statichori3','statichori4','durabilityhori3','durabilityhori4'}
             ylabel('Horizontal displacement [m]','Interpreter',interpreter)
             %ylabel('D\''eplacement horizontal [m]','Interpreter',interpreter)
     end
     switch lower(test)
-        case {'stability','staticvert','statichori1','statichori2','fatigue1','fatigue2',...
-                'statichori3','statichori4','fatigue3','fatigue4'}
+        case {'stabilityvert','staticvert','statichori1','statichori2','durabilityhori1','durabilityhori2',...
+                'statichori3','statichori4','durabilityhori3','durabilityhori4'}
             legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],...
                 [num2str((probs(2)-probs(1))*100) '% confidence interval'],...
                 'mean value','experimental value'})
