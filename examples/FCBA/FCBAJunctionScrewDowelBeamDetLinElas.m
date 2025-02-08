@@ -542,7 +542,11 @@ if displaySolution
     mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
-    ampl = 3;
+    if selfweight
+        ampl = 3;
+    else
+        ampl = 5e-4;
+    end
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',linewidth);
     hP = plot(P2,'g+');
     legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
