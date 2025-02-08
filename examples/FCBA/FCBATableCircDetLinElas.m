@@ -139,7 +139,7 @@ if solveProblem
     mat_plate = setnumber(mat_plate,1);
     S_plate = setmaterial(S_plate,mat_plate);
     
-    % Beams
+    % Beams and Belt
     % Young modulus
     E_beam = 15e9; % [Pa]
     % Poisson ratio
