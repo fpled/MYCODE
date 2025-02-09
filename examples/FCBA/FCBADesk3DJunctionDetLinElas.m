@@ -253,14 +253,14 @@ if solveProblem
             p = 100/Sec_hori_dura; % surface load [N/m2], F1=F2=100, 200 [N], F3=F4=100 [N]
             slope = 0;
         case 'staticvert'
-            p = 300/Sec_vert_stab; % surface load [N/m2], 300, 400, 500 [N]
+            p = 300/Sec_vert_stab; % surface load [N/m2], F=300, 400, 500 [N]
         case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
             masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
             p_masse = masse*g/Sec_masse; % surface load [N/m2]
-            p = 100/Sec_hori_dura; % surface load [N/m2]
+            p = 100/Sec_hori_dura; % surface load [N/m2], F=100 [N]
         case 'stabilityvert'
-            p = 400/Sec_vert_stab; % surface load [N/m2]
+            p = 400/Sec_vert_stab; % surface load [N/m2], V=400 [N]
         case 'impact'
             H = 180e-3; % [m]
         case 'drop'

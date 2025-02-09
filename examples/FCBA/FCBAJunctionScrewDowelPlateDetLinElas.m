@@ -127,7 +127,7 @@ if solveProblem
         case 'd2'
             p = [6 63 110 175];
     end
-    p = 100; % pointwise load [N]
+    p = 100; % pointwise load, F=100, 130, 160 [N]
     % p = 130;
     % p = 160;
     p = p(1)/b; % line load (surface load for plates) [N/m]

@@ -150,10 +150,13 @@ if solveProblem
     
     junction_type = 'S1';
     if sym
-        p = 300/2; % pointwise load, half of 300, 400, 500 [N]
-        % p = 400/2;
-        % p = 500/2;
+        % half portal frame
+        p = 300; % pointwise load, F=300, 400, 500 [N]
+        % p = 400;
+        % p = 500;
+        p = p/2; % pointwise load, F/2=150, 200, 250 [N]
     else
+        % L-shaped corner junction
         switch lower(junction_type)
             case 's1'
                 p = [24 65 114 163 200 252 291];
@@ -168,7 +171,7 @@ if solveProblem
             case 'd2'
                 p = [6 63 110 175];
         end
-        p = 100; % pointwise load [N]
+        p = 100; % pointwise load, F=100, 130, 160 [N]
         % p = 130;
         % p = 160;
     end

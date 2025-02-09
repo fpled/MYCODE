@@ -387,7 +387,7 @@ if solveProblem
             end
             slope = 0;
         case 'staticvert'
-            p = 300; % pointwise load, 300, 400, 500 [N]
+            p = 300; % pointwise load, F=300, 400, 500 [N]
             if ~pointwiseLoading
                 p = p/Sec_vert_stab; % surface load (body load for plates) [N/m2]
             end
@@ -395,12 +395,12 @@ if solveProblem
             masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
             p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
-            p = 100; % pointwise load [N]
+            p = 100; % pointwise load, F=100 [N]
             if ~pointwiseLoading
                 p = p/L_hori_dura; % line load (surface load for plates) [N/m]
             end
         case 'stabilityvert'
-            p = 400; % pointwise load [N]
+            p = 400; % pointwise load, V=400 [N]
             if ~pointwiseLoading
                 p = p/Sec_vert_stab; % surface load (body load for plates) [N/m2]
             end

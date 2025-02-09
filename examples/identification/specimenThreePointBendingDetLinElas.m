@@ -137,7 +137,7 @@ for j=14
         end
         
         %% Outputs
-        fprintf('\Rectangular specimen\n');
+        fprintf('\nRectangular specimen\n');
         fprintf(['mesh     : ' elemtype ' elements\n']);
         fprintf('nb elements = %g\n',getnbelem(S));
         fprintf('nb nodes    = %g\n',getnbnode(S));

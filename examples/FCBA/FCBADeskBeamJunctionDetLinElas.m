@@ -141,7 +141,7 @@ if solveProblem
     %% Neumann boundary conditions
     p1 = RHO*g*Sec1; % line load (body load for beams) [N/m]
     p2 = RHO*g*Sec2; % line load (body load for beams) [N/m]
-    p = 300; % pointwise load, 300, 400, 500 [N]
+    p = 300; % pointwise load, F=300, 400, 500 [N]
     
     %% Dirichlet boundary conditions
     if junction
