@@ -164,7 +164,7 @@ if solveProblem
     f = f + bodyload(S,[],'FZ',-p_plate);
     
     if junction
-        k = 1e2/length(numnode{1}); % additonal junction rotational stiffness
+        k = 1e2/length(numnode{1}); % additonal bending stiffness at junctions
         numddl1 = findddl(S,'RY',numnode{1},'free');
         numddl2 = findddl(S,'RY',numnode{2},'free');
         numddl = [numddl1 numddl2];

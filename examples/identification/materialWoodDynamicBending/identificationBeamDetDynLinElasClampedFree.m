@@ -70,7 +70,7 @@ E0 = 13; % Young modulus [GPa]
 alpha0 = eps; % mass proportional Rayleigh (viscous) damping coefficient
 beta0 = eps; % stiffness proportional Rayleigh (viscous) damping coefficient
 if junction
-    c0 = 10; % junction rotational stiffness [kN.m/rad]
+    c0 = 10; % junction bending stiffness [kN.m/rad]
     J0 = 15; % moment of inertia [kg.m2/rad]=[N.m.s2/rad]
 end
 

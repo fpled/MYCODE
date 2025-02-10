@@ -738,8 +738,8 @@ if solveProblem
         Ai = calc_rigi(Si);
         % junction stiffness matrix
         if junction
-            kSi = KS_sample(i); % additonal junction rotational stiffness for junction screw
-            kDi = KD_sample(i); % additonal junction rotational stiffness for junction dowel
+            kSi = KS_sample(i); % additonal bending stiffness for screw junction
+            kDi = KD_sample(i); % additonal bending stiffness for dowel junction
             ADi_add = [kDi -kDi;-kDi kDi];
             ASi_add = [kSi -kSi;-kSi kSi];
             for j=1:size(numddl13,1)

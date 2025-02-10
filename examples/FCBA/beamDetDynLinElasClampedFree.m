@@ -76,7 +76,7 @@ if setProblem
     S = setmaterial(S,mat);
     
     if junction
-        c = 10e3; % junction rotational stiffness [N.m/rad]
+        c = 10e3; % junction bending stiffness [N.m/rad]
         J = 15; % moment of inertia [kg.m2/rad]=[N.m.s2/rad]
     end
     

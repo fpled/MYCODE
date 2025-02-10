@@ -6,7 +6,7 @@ E = param(2)*1e9; % Young modulus [Pa]
 alpha = param(3); % stiffness proportional Rayleigh (viscous) damping coefficient
 beta = param(4); % mass proportional Rayleigh (viscous) damping coefficient
 if length(param)==6
-    c = param(5)*1e3; % junction rotational stiffness [N.m/rad]
+    c = param(5)*1e3; % junction bending stiffness [N.m/rad]
     J = param(6); % moment of inertia [kg.m2/rad]=[N.m.s2/rad]
     u0 = funu0(tinit,E,c);
 else

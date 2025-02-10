@@ -587,8 +587,8 @@ if solveProblem
         numddl25b1 = findddl(S,'RZ',numnode25b{1},'free');
         numddl25b2 = findddl(S,'RZ',numnode25b{2},'free');
         numddl25b = [numddl25b1 numddl25b2];
-        kS = mean(mean_KS_data); % additonal junction rotational stiffness for junction screw
-        kD = mean(mean_KD_data); % additonal junction rotational stiffness for junction dowel
+        kS = mean(mean_KS_data); % additonal bending stiffness for screw junction screw
+        kD = mean(mean_KD_data); % additonal bending stiffness for dowel junction
         AD_add = [kD -kD;-kD kD];
         AS_add = [kS -kS;-kS kS];
         for i=1:size(numddl13,1)
