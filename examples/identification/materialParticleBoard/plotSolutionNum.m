@@ -8,6 +8,7 @@ close all
 %% Input data
 j = 14; % sample number
 k = 6; % image number
+% k = 10; % image number
 numSample = ['B' num2str(j)];
 numImage = num2str(k,'%02d');
 
@@ -78,7 +79,6 @@ axis image
 l = legend(hD,'{\boldmath$u$}$^{\mathrm{exp}}$','Location','NorthEastOutside');
 % l = legend(hD,legD,'Location','NorthEastOutside');
 set(l,'Interpreter',interpreter);
-set(gcf,'position',[100,100,500,150])
 mysaveas(pathname,['u_exp_imposed_' numSample '_image_' numImage],formats,renderer);
 
 ampl = 0;
@@ -93,25 +93,36 @@ for i=1:2
     
     plotSolution(S,u,'displ',i,'ampl',ampl,'Fontsize',fontsize);
     set(gca,'CLim',[u_min,u_max])
-    set(gcf,'position',[100,100,500,150])
     mysaveas(pathname,['u_' num2str(i) '_num_' numSample '_image_' numImage],formats,renderer);
     
     plotSolution(S,u_exp,'displ',i,'ampl',ampl,'Fontsize',fontsize);
     set(gca,'CLim',[u_min,u_max])
-    set(gcf,'position',[100,100,500,150])
     mysaveas(pathname,['u_' num2str(i) '_exp_' numSample '_image_' numImage],formats,renderer);
     
     figure('Name',['Solution u_' num2str(i)])
     tiledlayout(2,1)
     nexttile
     plot_sol(S,u,'displ',i,'ampl',ampl);
-    set(gca,'CLim',[u_min,u_max])
-    nexttile
-    plot_sol(S,u_exp,'displ',i,'ampl',ampl);
-    cb = colorbar;
-    cb.Layout.Tile = 'east';
+    if i==1
+        t = '$u^{\mathrm{num}}$';
+    elseif i==2
+        t = '$v^{\mathrm{num}}$';
+    end
+    title(t,'Fontsize',fontsize,'Interpreter',interpreter)
     set(gca,'CLim',[u_min,u_max])
     set(gca,'FontSize',fontsize)
+    nexttile
+    plot_sol(S,u_exp,'displ',i,'ampl',ampl);
+    if i==1
+        t = '$u^{\mathrm{exp}}$';
+    elseif i==2
+        t = '$v^{\mathrm{exp}}$';
+    end
+    title(t,'Fontsize',fontsize,'Interpreter',interpreter)
+    set(gca,'CLim',[u_min,u_max])
+    set(gca,'FontSize',fontsize)
+    cb = colorbar;
+    cb.Layout.Tile = 'east';
     mysaveas(pathname,['u_' num2str(i) '_' numSample '_image_' numImage],formats,renderer);
 end
 

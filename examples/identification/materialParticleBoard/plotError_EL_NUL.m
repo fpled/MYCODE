@@ -30,6 +30,7 @@ F = appliedLoad(numSample);
 numImages = length(F);
 % for k=1:numImages
 for k=6
+% for k=numImages
     
     t = tic;
     

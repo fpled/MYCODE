@@ -26,6 +26,11 @@ fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
 formats = {'fig','epsc'};
+renderer = 'OpenGL';
+
+Scal = 1;
+Unitx = '[mm]';
+UnitU = '[mm]';
 
 %% Identification
 if solveProblem
@@ -57,7 +62,7 @@ for j=1:numDowel
     angle = zeros(numImages,1);
     
     for k=1:numImages
-    % for k=3
+    % for k=[3,numImages]
         
         numImage = num2str(k,'%02d');
         filenameDICa = [numSamplea '_00-' numImage '-Mesh'];
@@ -109,28 +114,28 @@ for j=1:numDowel
         coordy_b(:) = coordy_b(:) - min_coordy_a;
         coord_b = [coordx_b coordy_b];
         
-%         node_a = NODE(coord_a,1:size(coord_a,1));
-%         node_b = NODE(coord_b,1:size(coord_b,1));
-%         elem_a = TRI_a;
-%         elem_b = TRI_b;
-%         elemtype = 'TRI3';
-%         S_a = MODEL('PLAN');
-%         S_b = MODEL('PLAN');
-%         S_a = addnode(S_a,node_a);
-%         S_b = addnode(S_b,node_b);
-%         S_a = addelem(S_a,elemtype,elem_a);
-%         S_b = addelem(S_b,elemtype,elem_b);
-%         S_a = final(S_a);
-%         S_b = final(S_b);
-%         numnode_bound_a = getnumber(getnode(create_boundary(S_a)));
-%         numnode_bound_b = getnumber(getnode(create_boundary(S_b)));
-%         figure
-%         plot(create_boundary(S_a));
-%         hold on
-%         plot(create_boundary(S_b));
-%         plot(coordx_a(numnode_bound_a),coordy_a(numnode_bound_a),'r*')
-%         plot(coordx_b(numnode_bound_b),coordy_b(numnode_bound_b),'k*')
-%         hold off
+        % node_a = NODE(coord_a,1:size(coord_a,1));
+        % node_b = NODE(coord_b,1:size(coord_b,1));
+        % elem_a = TRI_a;
+        % elem_b = TRI_b;
+        % elemtype = 'TRI3';
+        % S_a = MODEL('PLAN');
+        % S_b = MODEL('PLAN');
+        % S_a = addnode(S_a,node_a);
+        % S_b = addnode(S_b,node_b);
+        % S_a = addelem(S_a,elemtype,elem_a);
+        % S_b = addelem(S_b,elemtype,elem_b);
+        % S_a = final(S_a);
+        % S_b = final(S_b);
+        % numnode_bound_a = getnumber(getnode(create_boundary(S_a)));
+        % numnode_bound_b = getnumber(getnode(create_boundary(S_b)));
+        % figure
+        % plot(create_boundary(S_a));
+        % hold on
+        % plot(create_boundary(S_b));
+        % plot(coordx_a(numnode_bound_a),coordy_a(numnode_bound_a),'r*')
+        % plot(coordx_b(numnode_bound_b),coordy_b(numnode_bound_b),'k*')
+        % hold off
         
         points_a = find(coordy_a>max(coordy_a)-Mesh.CharLength*scaleFactor/3);
         points_b = find(coordy_b<min(coordy_b)+Mesh.CharLength*scaleFactor/3 &...
@@ -180,25 +185,22 @@ for j=1:numDowel
         
         angle(k) = abs(delta0-delta);
         
-        %-----------------------------
-        % Reference and deformed mesh
-        %-----------------------------
-        Scal = 1;
-        Unitx = '[mm]';
-        UnitU = '[mm]';
-        
-%         figure('name','best fit line of initial mesh')
-%         triplot(TRI_a,coordx_a,coordy_a,'r');
-%         hold on
-%         triplot(TRI_b,coordx_b,coordy_b,'r');
-%         plot(L1x0,L1y0,'k*',L1x0_sort,val10,'k');
-%         plot(L2x0,L2y0,'k*',L2x0_sort,val20,'k');
-%         hold off
-%         axis equal
-%         set(gca,'FontSize',fontsize)
-%         xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
-%         ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats);
+        %---------------------------------
+        % Best fit line of reference mesh
+        %---------------------------------
+        % figure('name','Best fit line of reference mesh')
+        % triplot(TRI_a,coordx_a,coordy_a,'r');
+        % hold on
+        % triplot(TRI_b,coordx_b,coordy_b,'r');
+        % plot(L1x0,L1y0,'b.',L1x0_sort,val10,'b','LineWidth',linewidth);
+        % plot(L2x0,L2y0,'b.',L2x0_sort,val20,'b','LineWidth',linewidth);
+        % hold off
+        % axis equal
+        % grid on
+        % set(gca,'FontSize',fontsize)
+        % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+        % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+        % mysaveas(pathname,['best_fit_line_mesh_init_' numSample '_image_' numImage],formats,renderer);
         
         L1x = coordx_a(points_a)+Scal*u_exp_a(2*points_a-1);
         L1y = coordy_a(points_a)+Scal*u_exp_a(2*points_a);
@@ -214,49 +216,54 @@ for j=1:numDowel
         fit2 = polyfit(L2x_sort,L2y_sort,1);
         val2 = polyval(fit2,L2x_sort);
         
-%         figure('name','best fit line of deformed mesh')
-%         triplot(TRI_a,coordx_a+Scal*u_exp_a(1:2:end),...
-%             coordy_a+Scal*u_exp_a(2:2:end),'k');
-%         hold on
-%         triplot(TRI_b,coordx_b+Scal*u_exp_b(1:2:end),...
-%             coordy_b+Scal*u_exp_b(2:2:end),'k');
-%         plot(coordx_a(points_a)+Scal*u_exp_a(2*points_a-1),...
-%             coordy_a(points_a)+Scal*u_exp_a(2*points_a),'r*',...
-%             L1x_sort,val1,'r');
-%         plot(coordx_b(points_b)+Scal*u_exp_b(2*points_b-1),...
-%             coordy_b(points_b)+Scal*u_exp_b(2*points_b),'r*',...
-%             L2x_sort,val2,'r');
-%         hold off
-%         axis equal
-%         set(gca,'FontSize',fontsize)
-%         xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
-%         ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats);
+        %--------------------------------
+        % Best fit line of deformed mesh
+        %--------------------------------
+        % figure('name','Best fit line of deformed mesh')
+        % triplot(TRI_a,coordx_a+Scal*u_exp_a(1:2:end),...
+        %     coordy_a+Scal*u_exp_a(2:2:end),'k');
+        % hold on
+        % triplot(TRI_b,coordx_b+Scal*u_exp_b(1:2:end),...
+        %     coordy_b+Scal*u_exp_b(2:2:end),'k');
+        % plot(coordx_a(points_a)+Scal*u_exp_a(2*points_a-1),...
+        %     coordy_a(points_a)+Scal*u_exp_a(2*points_a),'b.',...
+        %     L1x_sort,val1,'b','LineWidth',linewidth);
+        % plot(coordx_b(points_b)+Scal*u_exp_b(2*points_b-1),...
+        %     coordy_b(points_b)+Scal*u_exp_b(2*points_b),'b.',...
+        %     L2x_sort,val2,'b','LineWidth',linewidth);
+        % hold off
+        % axis equal
+        % grid on
+        % set(gca,'FontSize',fontsize)
+        % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+        % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+        % mysaveas(pathname,['best_fit_line_mesh_deformed_' numSample '_image_' numImage],formats,renderer);
         
-        %-----------------------------
-        % Reference and deformed mesh
-        %-----------------------------
-%         figure('name','Reference and deformed mesh')
-%         triplot(TRI_a,coordx_a,coordy_a,'r');
-%         hold on
-%         triplot(TRI_b,coordx_b,coordy_b,'r');
-%         triplot(TRI_a,coordx_a+Scal*u_exp_a(1:2:end),...
-%             coordy_a+Scal*u_exp_a(2:2:end),'k');
-%         triplot(TRI_b,coordx_b+Scal*u_exp_b(1:2:end),...
-%             coordy_b+Scal*u_exp_b(2:2:end),'k');
-%         hold off
-%         axis equal
-%         set(gca,'FontSize',fontsize)
-%         xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
-%         ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats);
+        %-------------------------------
+        % Reference and deformed meshes
+        %-------------------------------
+        % figure('name','Reference and deformed meshes')
+        % triplot(TRI_a,coordx_a,coordy_a,'r');
+        % hold on
+        % triplot(TRI_b,coordx_b,coordy_b,'r');
+        % triplot(TRI_a,coordx_a+Scal*u_exp_a(1:2:end),...
+        %     coordy_a+Scal*u_exp_a(2:2:end),'k');
+        % triplot(TRI_b,coordx_b+Scal*u_exp_b(1:2:end),...
+        %     coordy_b+Scal*u_exp_b(2:2:end),'k');
+        % hold off
+        % axis equal
+        % grid on
+        % set(gca,'FontSize',fontsize)
+        % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+        % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+        % mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
         
     end
     
     %% Outputs
     fprintf('\n')
     disp('+-----------------------+')
-    fprintf('| Sample #%2d            |\n',j)
+    fprintf('| Sample D%2d            |\n',j)
     disp('+-------+---------------+-----------+------------------+')
     disp('| Load  | Moment p.u.l. |   Angle   | Stiffness p.u.l. |')
     disp('| F [N] |  ml [N.m/m]   | theta [°] |    k [N/rad]     |')

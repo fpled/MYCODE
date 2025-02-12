@@ -28,6 +28,10 @@ interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
+Scal = 1;
+Unitx = '[mm]';
+UnitU = '[mm]';
+
 %% Identification
 if solveProblem
 numSamples = 27;
@@ -69,7 +73,7 @@ for j=1:numSamples
     err = zeros(numImages,1);
     
     for k=1:numImages
-    % for k=6
+    % for k=[6,numImages]
         
         numImage = num2str(k,'%02d');
         filenameDIC = [numSample '_00-' numImage '-Mesh'];
@@ -77,23 +81,21 @@ for j=1:numSamples
         
         [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d); % [mm]
         
-        %-----------------------------
-        % Reference and deformed mesh
-        %-----------------------------
-%         Scal = 5;
-%         Unitx = '[mm]';
-%         UnitU = '[mm]';
-% 
-%         figure('name','Reference and deformed mesh')
-%         triplot(Mesh.TRI,coord(:,1),coord(:,2),'r');
-%         hold on
-%         triplot(Mesh.TRI,coord(:,1)+Scal*u_exp(1:2:end),coord(:,2)+Scal*u_exp(2:2:end),'k');
-%         hold off
-%         axis equal
-%         set(gca,'FontSize',fontsize)
-%         xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
-%         ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-%         mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
+        %-------------------------------
+        % Reference and deformed meshes
+        %-------------------------------
+        % figure('name','Reference and deformed meshes')
+        % triplot(Mesh.TRI,coord(:,1),coord(:,2),'r');
+        % hold on
+        % triplot(Mesh.TRI,coord(:,1)+Scal*u_exp(1:2:end),coord(:,2)+Scal*u_exp(2:2:end),'k');
+        % hold off
+        % axis image
+        % grid on
+        % set(gca,'YLim',[-15,10])
+        % set(gca,'FontSize',fontsize)
+        % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+        % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+        % mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
         
         A = zeros(5);
         B = zeros(5,1);

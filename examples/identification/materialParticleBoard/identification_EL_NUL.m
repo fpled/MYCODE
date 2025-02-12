@@ -86,7 +86,7 @@ for j=1:numSamples
     err = zeros(numImages,1);
     
     for k=1:numImages
-    % for k=6
+    % for k=[6,numImages]
         
         numImage = num2str(k,'%02d');
         filenameDIC = [numSample '_00-' numImage '-Mesh'];
