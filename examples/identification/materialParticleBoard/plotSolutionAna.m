@@ -67,11 +67,11 @@ for i=1:2
     u_min = min(min(u_i),min(u_exp_i));
     u_max = max(max(u_i),max(u_exp_i));
     
-    plotSolution(S,u,'displ',i,'ampl',ampl,'Fontsize',fontsize);
+    plotSolution(S,u,'displ',i,'ampl',ampl,'FontSize',fontsize);
     set(gca,'CLim',[u_min,u_max])
     mysaveas(pathname,['u_' num2str(i) '_ana_' numSample '_image_' numImage],formats,renderer);
     
-    plotSolution(S,u_exp,'displ',i,'ampl',ampl,'Fontsize',fontsize);
+    plotSolution(S,u_exp,'displ',i,'ampl',ampl,'FontSize',fontsize);
     set(gca,'CLim',[u_min,u_max])
     mysaveas(pathname,['u_' num2str(i) '_exp_' numSample '_image_' numImage],formats,renderer);
     
@@ -84,7 +84,7 @@ for i=1:2
     elseif i==2
         t = '$v^{\mathrm{ana}}$';
     end
-    title(t,'Fontsize',fontsize,'Interpreter',interpreter)
+    title(t,'FontSize',fontsize,'Interpreter',interpreter)
     set(gca,'CLim',[u_min,u_max])
     set(gca,'FontSize',fontsize)
     nexttile
@@ -94,7 +94,7 @@ for i=1:2
     elseif i==2
         t = '$v^{\mathrm{exp}}$';
     end
-    title(t,'Fontsize',fontsize,'Interpreter',interpreter)
+    title(t,'FontSize',fontsize,'Interpreter',interpreter)
     set(gca,'CLim',[u_min,u_max])
     set(gca,'FontSize',fontsize)
     cb = colorbar;

@@ -365,28 +365,28 @@ if displaySolution
 %     
 %     figure('Name','Solution Epsx')
 %     clf
-%     set(gcf,'color','w')
+%     set(gcf,'Color','w')
 %     % frame = evol(N,et,S,'compo','EPSX','rescale',true);
 %     frame = evol(N,Epsxt,S,'rescale',true);
 %     saveMovie(frame,'filename','Epsx','pathname',pathname);
 %     
 %     figure('Name','Solution Gamz')
 %     clf
-%     set(gcf,'color','w')
+%     set(gcf,'Color','w')
 %     % frame = evol(N,et,S,'compo','GAMZ','rescale',true);
 %     frame = evol(N,Gamzt,S,'rescale',true);
 %     saveMovie(frame,'filename','Gamz','pathname',pathname);
 %     
 %     figure('Name','Solution N')
 %     clf
-%     set(gcf,'color','w')
+%     set(gcf,'Color','w')
 %     % frame = evol(N,st,S,'compo','EFFX','rescale',true);
 %     frame = evol(N,Nt,S,'rescale',true);
 %     saveMovie(frame,'filename','N','pathname',pathname);
 %     
 %     figure('Name','Solution Mz')
 %     clf
-%     set(gcf,'color','w')
+%     set(gcf,'Color','w')
 %     % frame = evol(N,st,S,'compo','MOMZ','rescale',true);
 %     frame = evol(N,Mzt,S,'rescale',true);
 %     saveMovie(frame,'filename','Mz','pathname',pathname);

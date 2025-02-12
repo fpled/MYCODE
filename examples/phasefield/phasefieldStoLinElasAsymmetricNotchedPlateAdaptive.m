@@ -505,7 +505,7 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft_mean*1e-6,'-b','Linewidth',linewidth)
+    plot(t*1e3,ft_mean*1e-6,'-b','LineWidth',linewidth)
     hold on
     ciplot(ft_ci(1,:)*1e-6,ft_ci(2,:)*1e-6,t*1e3,'b');
     alpha(0.2)
@@ -525,7 +525,7 @@ if displaySolution
     clf
     color = distinguishable_colors(N);
     for i=1:N
-        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'Linewidth',linewidth)
+        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'LineWidth',linewidth)
         hold on
     end
     hold off

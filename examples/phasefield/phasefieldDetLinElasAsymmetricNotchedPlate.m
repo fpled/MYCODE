@@ -403,7 +403,7 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft*1e-6,'-b','Linewidth',linewidth)
+    plot(t*1e3,ft*1e-6,'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -415,7 +415,7 @@ if displaySolution
     %% Display maximum damage-displacement curve
     figure('Name','Maximum damage vs displacement')
     clf
-    plot(t*1e3,dmaxt,'-b','Linewidth',linewidth)
+    plot(t*1e3,dmaxt,'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -427,10 +427,10 @@ if displaySolution
     %% Display energy-displacement curves
     figure('Name','Energies vs displacement')
     clf
-    plot(t*1e3,Eut,'-b','Linewidth',linewidth)
+    plot(t*1e3,Eut,'-b','LineWidth',linewidth)
     hold on
-    plot(t*1e3,Edt,'-r','Linewidth',linewidth)
-    plot(t*1e3,Eut+Edt,'-k','Linewidth',linewidth)
+    plot(t*1e3,Edt,'-r','LineWidth',linewidth)
+    plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
     hold off
     grid on
     box on
@@ -446,7 +446,7 @@ if displaySolution
     %% Display outputs of iterative resolution
     figure('Name','Number of iterations vs displacement')
     clf
-    plot(t*1e3,output.iteration,'-b','Linewidth',linewidth)
+    plot(t*1e3,output.iteration,'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -457,7 +457,7 @@ if displaySolution
     
     figure('Name','Computing time vs displacement')
     clf
-    plot(t*1e3,output.time,'-r','Linewidth',linewidth)
+    plot(t*1e3,output.time,'-r','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -468,7 +468,7 @@ if displaySolution
     
     figure('Name','Error vs displacement')
     clf
-    plot(t*1e3,output.error,'-k','Linewidth',linewidth)
+    plot(t*1e3,output.error,'-k','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)

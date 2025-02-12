@@ -130,7 +130,7 @@ delta = solveCyclicCompression(x,N);
 %% Display solution
 % Evolution of experimental displacement
 figure
-plot(time,displ,'-r','Linewidth',linewidth)
+plot(time,displ,'-r','LineWidth',linewidth)
 grid on
 box on
 set(gca,'FontSize',fontsize)
@@ -140,7 +140,7 @@ mysaveas(pathname,'displacement',formats);
 
 % Evolution of force
 figure
-plot(time,force,'-b','Linewidth',linewidth)
+plot(time,force,'-b','LineWidth',linewidth)
 grid on
 box on
 set(gca,'FontSize',fontsize)
@@ -150,9 +150,9 @@ mysaveas(pathname,'force',formats);
 
 % Evolution of experimental mininmal and maximal displacements
 figure
-plot(N,displ_max,'-r','Linewidth',linewidth)
+plot(N,displ_max,'-r','LineWidth',linewidth)
 hold on
-plot(N,displ_min,'-b','Linewidth',linewidth)
+plot(N,displ_min,'-b','LineWidth',linewidth)
 hold off
 grid on
 box on

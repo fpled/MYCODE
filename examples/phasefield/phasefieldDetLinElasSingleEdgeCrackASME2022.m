@@ -758,10 +758,10 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','Linewidth',linewidth)
+    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','LineWidth',linewidth)
     % hold on
-    % scatter(udmax*1e3,fmax*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','b','Linewidth',linewidth)
-    % scatter(udc*1e3,fc*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','r','Linewidth',linewidth)
+    % scatter(udmax*1e3,fmax*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','b','LineWidth',linewidth)
+    % scatter(udc*1e3,fc*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','r','LineWidth',linewidth)
     % hold off
     grid on
     box on
@@ -774,7 +774,7 @@ if displaySolution
     %% Display maximum damage-displacement curve
     figure('Name','Maximum damage vs displacement')
     clf
-    plot(t*1e3,dmaxt,'-b','Linewidth',linewidth)
+    plot(t*1e3,dmaxt,'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)

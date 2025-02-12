@@ -229,9 +229,9 @@ displDebonding = strainDebonding*l; % [m]
 % Force-displacement curves
 figure
 clf
-plot(displ*1e3,force_exp,'-r','Linewidth',linewidth)
+plot(displ*1e3,force_exp,'-r','LineWidth',linewidth)
 hold on
-plot(displ*1e3,force,'-b','Linewidth',linewidth)
+plot(displ*1e3,force,'-b','LineWidth',linewidth)
 hold off
 grid on
 box on
@@ -245,7 +245,7 @@ mysaveas(pathname,'force_displacement',formats);
 % Evolution of displacement
 figure
 clf
-plot(displ*1e3,'-b','Linewidth',linewidth)
+plot(displ*1e3,'-b','LineWidth',linewidth)
 grid on
 box on
 set(gca,'FontSize',fontsize)
@@ -256,9 +256,9 @@ mysaveas(pathname,'displacement',formats);
 % Evolution of force
 figure
 clf
-plot(force_exp,'-r','Linewidth',linewidth)
+plot(force_exp,'-r','LineWidth',linewidth)
 hold on
-plot(force,'-b','Linewidth',linewidth)
+plot(force,'-b','LineWidth',linewidth)
 hold off
 grid on
 box on
@@ -272,9 +272,9 @@ mysaveas(pathname,'force',formats);
 % Evolution of damage
 figure
 clf
-plot(damage(:,1),'-b','Linewidth',linewidth)
+plot(damage(:,1),'-b','LineWidth',linewidth)
 hold on
-plot(damage(:,2),'-r','Linewidth',linewidth)
+plot(damage(:,2),'-r','LineWidth',linewidth)
 hold off
 grid on
 box on
@@ -288,9 +288,9 @@ mysaveas(pathname,'damage',formats);
 % Evolution of debonding displacement
 figure
 clf
-plot(displDebonding(:,1)*1e3,'-b','Linewidth',linewidth)
+plot(displDebonding(:,1)*1e3,'-b','LineWidth',linewidth)
 hold on
-plot(displDebonding(:,2)*1e3,'-r','Linewidth',linewidth)
+plot(displDebonding(:,2)*1e3,'-r','LineWidth',linewidth)
 hold off
 grid on
 box on
@@ -304,9 +304,9 @@ mysaveas(pathname,'displacement_debonding',formats);
 % Evolution of debonding force
 figure
 clf
-plot(forceDebonding(:,1),'-b','Linewidth',linewidth)
+plot(forceDebonding(:,1),'-b','LineWidth',linewidth)
 hold on
-plot(forceDebonding(:,2),'-r','Linewidth',linewidth)
+plot(forceDebonding(:,2),'-r','LineWidth',linewidth)
 hold off
 grid on
 box on
@@ -320,13 +320,13 @@ mysaveas(pathname,'force_debonding',formats);
 % Evolution of dissipated energy
 figure
 clf
-plot(dissipatedEnergy(:,1),'-b','Linewidth',linewidth)
+plot(dissipatedEnergy(:,1),'-b','LineWidth',linewidth)
 hold on
-plot(dissipatedEnergyDamage(:,1),'--b','Linewidth',linewidth)
-plot(dissipatedEnergyDebonding(:,1),'-.b','Linewidth',linewidth)
-plot(dissipatedEnergy(:,2),'-r','Linewidth',linewidth)
-plot(dissipatedEnergyDamage(:,2),'--r','Linewidth',linewidth)
-plot(dissipatedEnergyDebonding(:,2),'-.r','Linewidth',linewidth)
+plot(dissipatedEnergyDamage(:,1),'--b','LineWidth',linewidth)
+plot(dissipatedEnergyDebonding(:,1),'-.b','LineWidth',linewidth)
+plot(dissipatedEnergy(:,2),'-r','LineWidth',linewidth)
+plot(dissipatedEnergyDamage(:,2),'--r','LineWidth',linewidth)
+plot(dissipatedEnergyDebonding(:,2),'-.r','LineWidth',linewidth)
 hold off
 grid on
 box on
