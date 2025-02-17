@@ -84,10 +84,10 @@ for j=1:numSamples
         %-------------------------------
         % Reference and deformed meshes
         %-------------------------------
-        % figure('name','Reference and deformed meshes')
-        % triplot(Mesh.TRI,coord(:,1),coord(:,2),'r');
+        % figure('name',['Sample ' numSample ' - Image ' numImage ': Reference and deformed meshes'])
+        % triplot(Mesh.TRI,coord(:,1),coord(:,2),'k');
         % hold on
-        % triplot(Mesh.TRI,coord(:,1)+Scal*u_exp(1:2:end),coord(:,2)+Scal*u_exp(2:2:end),'k');
+        % triplot(Mesh.TRI,coord(:,1)+Scal*u_exp(1:2:end),coord(:,2)+Scal*u_exp(2:2:end),'r');
         % hold off
         % axis image
         % grid on

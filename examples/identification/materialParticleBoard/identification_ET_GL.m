@@ -126,18 +126,18 @@ for j=1:numSamples
         %-------------------------------
         % Reference and deformed meshes
         %-------------------------------
-        figure('name','Reference and deformed meshes')
-        triplot(Mesh.TRI,coord(:,1),coord(:,2),'r');
-        hold on
-        triplot(Mesh.TRI,coord(:,1)+Scal*u_exp(1:2:end),coord(:,2)+Scal*u_exp(2:2:end),'k');
-        hold off
-        axis image
-        grid on
-        set(gca,'YLim',[-15,10])
-        set(gca,'FontSize',fontsize)
-        xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
-        ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-        mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
+        % figure('name',['Sample ' numSample ' - Image ' numImage ': Reference and deformed meshes'])
+        % triplot(Mesh.TRI,coord(:,1),coord(:,2),'k');
+        % hold on
+        % triplot(Mesh.TRI,coord(:,1)+Scal*u_exp(1:2:end),coord(:,2)+Scal*u_exp(2:2:end),'r');
+        % hold off
+        % axis image
+        % grid on
+        % set(gca,'YLim',[-15,10])
+        % set(gca,'FontSize',fontsize)
+        % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+        % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+        % mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
         
         switch optimFun
             case 'lsqnonlin'

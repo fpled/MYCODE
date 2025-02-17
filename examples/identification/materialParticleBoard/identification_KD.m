@@ -62,7 +62,8 @@ for j=1:numDowel
     angle = zeros(numImages,1);
     
     for k=1:numImages
-    % for k=[3,numImages]
+    % for k=3
+    % for k=numImages
         
         numImage = num2str(k,'%02d');
         filenameDICa = [numSamplea '_00-' numImage '-Mesh'];
@@ -188,10 +189,10 @@ for j=1:numDowel
         %---------------------------------
         % Best fit line of reference mesh
         %---------------------------------
-        % figure('name','Best fit line of reference mesh')
-        % triplot(TRI_a,coordx_a,coordy_a,'r');
+        % figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of reference mesh'])
+        % triplot(TRI_a,coordx_a,coordy_a,'k');
         % hold on
-        % triplot(TRI_b,coordx_b,coordy_b,'r');
+        % triplot(TRI_b,coordx_b,coordy_b,'k');
         % plot(L1x0,L1y0,'b.',L1x0_sort,val10,'b','LineWidth',linewidth);
         % plot(L2x0,L2y0,'b.',L2x0_sort,val20,'b','LineWidth',linewidth);
         % hold off
@@ -219,12 +220,12 @@ for j=1:numDowel
         %--------------------------------
         % Best fit line of deformed mesh
         %--------------------------------
-        % figure('name','Best fit line of deformed mesh')
+        % figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of deformed mesh'])
         % triplot(TRI_a,coordx_a+Scal*u_exp_a(1:2:end),...
-        %     coordy_a+Scal*u_exp_a(2:2:end),'k');
+        %     coordy_a+Scal*u_exp_a(2:2:end),'r');
         % hold on
         % triplot(TRI_b,coordx_b+Scal*u_exp_b(1:2:end),...
-        %     coordy_b+Scal*u_exp_b(2:2:end),'k');
+        %     coordy_b+Scal*u_exp_b(2:2:end),'r');
         % plot(coordx_a(points_a)+Scal*u_exp_a(2*points_a-1),...
         %     coordy_a(points_a)+Scal*u_exp_a(2*points_a),'b.',...
         %     L1x_sort,val1,'b','LineWidth',linewidth);
@@ -242,14 +243,14 @@ for j=1:numDowel
         %-------------------------------
         % Reference and deformed meshes
         %-------------------------------
-        % figure('name','Reference and deformed meshes')
-        % triplot(TRI_a,coordx_a,coordy_a,'r');
+        % figure('name',['Sample ' numSample ' - Image ' numImage ': Reference and deformed meshes'])
+        % triplot(TRI_a,coordx_a,coordy_a,'k');
         % hold on
-        % triplot(TRI_b,coordx_b,coordy_b,'r');
+        % triplot(TRI_b,coordx_b,coordy_b,'k');
         % triplot(TRI_a,coordx_a+Scal*u_exp_a(1:2:end),...
-        %     coordy_a+Scal*u_exp_a(2:2:end),'k');
+        %     coordy_a+Scal*u_exp_a(2:2:end),'r');
         % triplot(TRI_b,coordx_b+Scal*u_exp_b(1:2:end),...
-        %     coordy_b+Scal*u_exp_b(2:2:end),'k');
+        %     coordy_b+Scal*u_exp_b(2:2:end),'r');
         % hold off
         % axis equal
         % grid on

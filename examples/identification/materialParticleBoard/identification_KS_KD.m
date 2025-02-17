@@ -55,7 +55,7 @@ kS = cell(numScrew,1);
 mean_KS_data = zeros(numScrew,1);
 
 for i=1:numScrew
-% for i=6
+% for i=4
     
     j = sampleNumScrew(i);
     
@@ -71,7 +71,8 @@ for i=1:numScrew
     angle = zeros(numImages,1);
     
     for k=1:numImages
-    % for k=[3,numImages]
+    % for k=3
+    % for k=numImages
         
         numImage = num2str(k,'%02d');
         filenameDICa = [numSamplea '_00-' numImage '-Mesh'];
@@ -198,10 +199,10 @@ for i=1:numScrew
         %---------------------------------
         % Best fit line of reference mesh
         %---------------------------------
-        % figure('name','Best fit line of reference mesh')
-        % triplot(TRI_a_screw,coordx_a_screw,coordy_a_screw,'r');
+        % figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of reference mesh'])
+        % triplot(TRI_a_screw,coordx_a_screw,coordy_a_screw,'k');
         % hold on
-        % triplot(TRI_b_screw,coordx_b_screw,coordy_b_screw,'r');
+        % triplot(TRI_b_screw,coordx_b_screw,coordy_b_screw,'k');
         % plot(L1x0,L1y0,'b.',val10,L1y0_sort,'b','LineWidth',linewidth);
         % plot(L2x0,L2y0,'b.',val20,L2y0_sort,'b','LineWidth',linewidth);
         % hold off
@@ -229,12 +230,12 @@ for i=1:numScrew
         %--------------------------------
         % Best fit line of deformed mesh
         %--------------------------------
-        % figure('name','Best fit line of deformed mesh')
+        % figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of deformed mesh'])
         % triplot(TRI_a_screw,coordx_a_screw+Scal*u_exp_a_screw(1:2:end),...
-        %     coordy_a_screw+Scal*u_exp_a_screw(2:2:end),'k');
+        %     coordy_a_screw+Scal*u_exp_a_screw(2:2:end),'r');
         % hold on
         % triplot(TRI_b_screw,coordx_b_screw+Scal*u_exp_b_screw(1:2:end),...
-        %     coordy_b_screw+Scal*u_exp_b_screw(2:2:end),'k');
+        %     coordy_b_screw+Scal*u_exp_b_screw(2:2:end),'r');
         % plot(coordx_a_screw(points_a_screw)+Scal*u_exp_a_screw(2*points_a_screw-1),...
         %     coordy_a_screw(points_a_screw)+Scal*u_exp_a_screw(2*points_a_screw),'b.',...
         %     val1,L1y_sort,'b','LineWidth',linewidth);
@@ -252,14 +253,14 @@ for i=1:numScrew
         %-------------------------------
         % Reference and deformed meshes
         %-------------------------------
-        % figure('name','Reference and deformed meshes')
-        % triplot(TRI_a_screw,coordx_a_screw,coordy_a_screw,'r');
+        % figure('name',['Sample ' numSample ' - Image ' numImage ': Reference and deformed meshes'])
+        % triplot(TRI_a_screw,coordx_a_screw,coordy_a_screw,'k');
         % hold on
-        % triplot(TRI_b_screw,coordx_b_screw,coordy_b_screw,'r');
+        % triplot(TRI_b_screw,coordx_b_screw,coordy_b_screw,'k');
         % triplot(TRI_a_screw,coordx_a_screw+Scal*u_exp_a_screw(1:2:end),...
-        %     coordy_a_screw+Scal*u_exp_a_screw(2:2:end),'k');
+        %     coordy_a_screw+Scal*u_exp_a_screw(2:2:end),'r');
         % triplot(TRI_b_screw,coordx_b_screw+Scal*u_exp_b_screw(1:2:end),...
-        %     coordy_b_screw+Scal*u_exp_b_screw(2:2:end),'k');
+        %     coordy_b_screw+Scal*u_exp_b_screw(2:2:end),'r');
         % hold off
         % axis equal
         % grid on
@@ -313,7 +314,8 @@ for j=1:numDowel
     angle = zeros(numImages,1);
     
     for k=1:numImages
-    % for k=[3,numImages]
+    % for k=3
+    % for k=numImages
         
         numImage = num2str(k,'%02d');
         filenameDICa = [numSamplea '_00-' numImage '-Mesh'];
@@ -439,19 +441,19 @@ for j=1:numDowel
         %---------------------------------
         % Best fit line of reference mesh
         %---------------------------------
-        figure('name','best fit line of reference mesh')
-        triplot(TRI_a_dowel,coordx_a_dowel,coordy_a_dowel,'r');
-        hold on
-        triplot(TRI_b_dowel,coordx_b_dowel,coordy_b_dowel,'r');
-        plot(L1x0,L1y0,'b.',L1x0_sort,val10,'b','LineWidth',linewidth);
-        plot(L2x0,L2y0,'b.',L2x0_sort,val20,'b','LineWidth',linewidth);
-        hold off
-        axis equal
-        grid on
-        set(gca,'FontSize',fontsize)
-        xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
-        ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-        mysaveas(pathname,['best_fit_line_mesh_init_' numSample '_image_' numImage],formats,renderer);
+        % figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of reference mesh'])
+        % triplot(TRI_a_dowel,coordx_a_dowel,coordy_a_dowel,'k');
+        % hold on
+        % triplot(TRI_b_dowel,coordx_b_dowel,coordy_b_dowel,'k');
+        % plot(L1x0,L1y0,'b.',L1x0_sort,val10,'b','LineWidth',linewidth);
+        % plot(L2x0,L2y0,'b.',L2x0_sort,val20,'b','LineWidth',linewidth);
+        % hold off
+        % axis equal
+        % grid on
+        % set(gca,'FontSize',fontsize)
+        % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+        % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+        % mysaveas(pathname,['best_fit_line_mesh_init_' numSample '_image_' numImage],formats,renderer);
         
         L1x = coordx_a_dowel(points_a_dowel)+Scal*u_exp_a_dowel(2*points_a_dowel-1);
         L1y = coordy_a_dowel(points_a_dowel)+Scal*u_exp_a_dowel(2*points_a_dowel);
@@ -470,44 +472,44 @@ for j=1:numDowel
         %--------------------------------
         % Best fit line of deformed mesh
         %--------------------------------
-        figure('name','best fit line of deformed mesh')
-        triplot(TRI_a_dowel,coordx_a_dowel+Scal*u_exp_a_dowel(1:2:end),...
-            coordy_a_dowel+Scal*u_exp_a_dowel(2:2:end),'k');
-        hold on
-        triplot(TRI_b_dowel,coordx_b_dowel+Scal*u_exp_b_dowel(1:2:end),...
-            coordy_b_dowel+Scal*u_exp_b_dowel(2:2:end),'k');
-        plot(coordx_a_dowel(points_a_dowel)+Scal*u_exp_a_dowel(2*points_a_dowel-1),...
-            coordy_a_dowel(points_a_dowel)+Scal*u_exp_a_dowel(2*points_a_dowel),'b.',...
-            L1x_sort,val1,'b','LineWidth',linewidth);
-        plot(coordx_b_dowel(points_b_dowel)+Scal*u_exp_b_dowel(2*points_b_dowel-1),...
-            coordy_b_dowel(points_b_dowel)+Scal*u_exp_b_dowel(2*points_b_dowel),'b.',...
-            L2x_sort,val2,'b','LineWidth',linewidth);
-        hold off
-        axis equal
-        grid on
-        set(gca,'FontSize',fontsize)
-        xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
-        ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-        mysaveas(pathname,['best_fit_line_mesh_deformed_' numSample '_image_' numImage],formats,renderer);
+        % figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of deformed mesh'])
+        % triplot(TRI_a_dowel,coordx_a_dowel+Scal*u_exp_a_dowel(1:2:end),...
+        %     coordy_a_dowel+Scal*u_exp_a_dowel(2:2:end),'r');
+        % hold on
+        % triplot(TRI_b_dowel,coordx_b_dowel+Scal*u_exp_b_dowel(1:2:end),...
+        %     coordy_b_dowel+Scal*u_exp_b_dowel(2:2:end),'r');
+        % plot(coordx_a_dowel(points_a_dowel)+Scal*u_exp_a_dowel(2*points_a_dowel-1),...
+        %     coordy_a_dowel(points_a_dowel)+Scal*u_exp_a_dowel(2*points_a_dowel),'b.',...
+        %     L1x_sort,val1,'b','LineWidth',linewidth);
+        % plot(coordx_b_dowel(points_b_dowel)+Scal*u_exp_b_dowel(2*points_b_dowel-1),...
+        %     coordy_b_dowel(points_b_dowel)+Scal*u_exp_b_dowel(2*points_b_dowel),'b.',...
+        %     L2x_sort,val2,'b','LineWidth',linewidth);
+        % hold off
+        % axis equal
+        % grid on
+        % set(gca,'FontSize',fontsize)
+        % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+        % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+        % mysaveas(pathname,['best_fit_line_mesh_deformed_' numSample '_image_' numImage],formats,renderer);
         
         %-------------------------------
         % Reference and deformed meshes
         %-------------------------------
-        figure('name','Reference and deformed meshes')
-        triplot(TRI_a_dowel,coordx_a_dowel,coordy_a_dowel,'r');
-        hold on
-        triplot(TRI_b_dowel,coordx_b_dowel,coordy_b_dowel,'r');
-        triplot(TRI_a_dowel,coordx_a_dowel+Scal*u_exp_a_dowel(1:2:end),...
-            coordy_a_dowel+Scal*u_exp_a_dowel(2:2:end),'k');
-        triplot(TRI_b_dowel,coordx_b_dowel+Scal*u_exp_b_dowel(1:2:end),...
-            coordy_b_dowel+Scal*u_exp_b_dowel(2:2:end),'k');
-        hold off
-        axis equal
-        grid on
-        set(gca,'FontSize',fontsize)
-        xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
-        ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-        mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
+        % figure('name',['Sample ' numSample ' - Image ' numImage ': Reference and deformed meshes'])
+        % triplot(TRI_a_dowel,coordx_a_dowel,coordy_a_dowel,'k');
+        % hold on
+        % triplot(TRI_b_dowel,coordx_b_dowel,coordy_b_dowel,'k');
+        % triplot(TRI_a_dowel,coordx_a_dowel+Scal*u_exp_a_dowel(1:2:end),...
+        %     coordy_a_dowel+Scal*u_exp_a_dowel(2:2:end),'r');
+        % triplot(TRI_b_dowel,coordx_b_dowel+Scal*u_exp_b_dowel(1:2:end),...
+        %     coordy_b_dowel+Scal*u_exp_b_dowel(2:2:end),'r');
+        % hold off
+        % axis equal
+        % grid on
+        % set(gca,'FontSize',fontsize)
+        % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+        % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+        % mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
         
     end
     
