@@ -159,6 +159,59 @@ for i=1:length(T)
                             d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                     end
             end
+            %%
+            % switch lower(PFsolver)
+            %     case {'historyfieldelem','historyfieldnode'}
+            %         d_new = d_old;
+            %         tolIter = 100*eps;
+            %         maxIter = 1e3;
+            %         % Steepdest descent
+            %         alpha = 2/eigs(A_phase,1); % maximum stable constant learning rate
+            %                                    % that is inversely proportional to the
+            %                                    % maximum curvature of the quadratic function
+            % 
+            %         relres = 1;
+            %         iter = 0;
+            %         while (relres > tolIter) && (iter < maxIter)
+            %             iter = iter+1;
+            %             g = A_phase*d_new-b_phase;
+            %             p = -g;
+            %             % d_new = d_new + alpha*p; % constant learning rate
+            %             % alpha = -g'*p/(p'*A_phase*p); % steepest descent
+            %             d_new = d_new + alpha*p;
+            %             relres = norm(A_phase*d_new-b_phase)/norm(b_phase);
+            %             errIter = norm(d-d_new)/norm(d)
+            %         end
+            %         relres, iter
+            %         % Conjugate gradient
+            %         L = ichol(A_phase);
+            %         [d_new,flag,relres,iter] = cgs(A_phase,b_phase,tolIter,maxIter,L);
+            %         relres, iter
+            %     otherwise
+            %         optimFun = 'lsqnonlin';
+            % 
+            %         % displayoptim = 'off';
+            %         % displayoptim = 'iter';
+            %         displayoptim = 'iter-detailed';
+            %         % displayoptim = 'final';
+            %         % displayoptim = 'final-detailed';
+            % 
+            %         tolX = 100*eps; % tolerance on the parameter value
+            %         tolFun = 100*eps; % tolerance on the function value
+            %         maxFunEvals = Inf; % maximum number of function evaluations
+            % 
+            %         % optimAlgo = 'interior-point';
+            %         optimAlgo = 'trust-region-reflective';
+            %         % optimAlgo = 'sqp';
+            %         % optimAlgo = 'active-set';
+            %         % optimAlgo = 'levenberg-marquardt';
+            %         options  = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo,...
+            %             'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+            %             'SpecifyObjectiveGradient',true);
+            %         fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
+            %         d_new = lsqnonlin(fun,d0,lb,ub,options);
+            % end
+            %%
             dmax = max(d);
             d = unfreevector(S_phase,d);
             db = d(numddlb,:);

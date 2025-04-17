@@ -26,7 +26,7 @@
 % [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM] (hybrid phase field model of Wu and Cervera, 2018, IJSS]
 % [Lampron, Therriault, Levesque, 2021, CMAME] (anisotropic phase field model of Miehe et al.)
 % [Bharali, Larsson, Janicke, 2024, CM] (anisotropic phase field model of Wu et al.)
-% [Hu, Tan,  Xia, Min, Xu, Yao, Sun, Zhang, Quoc Bui, Zhuang, Rabczuk, 2023] (hybrid isotropic-anisotropic phase field model of Ambati et al.)
+% [Hu, Tan, Xia, Min, Xu, Yao, Sun, Zhang, Quoc Bui, Zhuang, Rabczuk, 2023] (hybrid isotropic-anisotropic phase field model of Ambati et al.)
 
 % clc
 clearvars
@@ -36,8 +36,8 @@ close all
 %% Input data
 setProblem = true;
 solveProblem = true;
-displayModel = true;
-displaySolution = true;
+displayModel = false;
+displaySolution = false;
 makeMovie = false;
 saveParaview = false;
 
@@ -103,9 +103,9 @@ if setProblem
         % cl = 1/3*5e-3; % [Gerasimov, De Lorenzis, 2019, CMAME]
         % cl = 1.344e-3; % [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM]
         % cl = 1.25e-3; % [Kakouris, Triantafyllou, 2019, IJNME], [Gerasimov, De Lorenzis, 2019, CMAME]
-        % cl = 1e-3; % [Wu, 2018, CMAME], [Wu, Huang, Nguyen, 2020, CMAME]
+        cl = 1e-3; % [Wu, 2018, CMAME], [Wu, Huang, Nguyen, 2020, CMAME]
         % cl = 0.625e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Kumar, Ravi-Chandar, Lopez-Pamies, 2018, JMPS], [Lampron, Therriault, Levesque, 2021, CMAME]
-        cl = 0.5e-3; % [Wu, 2018, CMAME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM], [Kakouris, Triantafyllou, 2019, IJNME], [Hu et al., 2023]
+        % cl = 0.5e-3; % [Wu, 2018, CMAME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM], [Kakouris, Triantafyllou, 2019, IJNME], [Hu et al., 2023]
         % cl = 0.3125e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
         % cl = 0.25e-3; % [Wu, 2018, CMAME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     elseif Dim==3
@@ -158,11 +158,13 @@ if setProblem
     %% Dirichlet boundary conditions
     if Dim==2
         BLeft = LIGNE([-a,-a],[-a,a]);
+        BR = DOMAIN(2,[a-2*b,0.0],[a,a]);
     elseif Dim==3
-        BLeft = PLAN([-a,-a,0.0],[-a,a,0.0],[-a,0.0,e]);
+        BLeft = PLAN([-a,-a,0.0],[-a,a,0.0],[-a,-a,e]);
+        BR = DOMAIN(3,[a-2*b,0.0,0.0],[a,a,e]);
     end
     
-    addbcdamage = @(S_phase) S_phase;
+    addbcdamage = @(S_phase) addcl(S_phase,BR,'T');
     addbcdamageadapt = @(S_phase) S_phase;
     findddlboundary = @(S_phase) findddl(S_phase,'T',BLeft);
     
@@ -179,6 +181,8 @@ if setProblem
     
     S_phase = setmaterial(S_phase,mat_phase);
     S_phase = final(S_phase);
+    
+    S_phase = addbcdamage(S_phase);
     
     %% Stiffness matrices and sollicitation vectors
     % a_phase = BILINFORM(1,1,K); % uniform values
@@ -242,8 +246,8 @@ if setProblem
         % BRight = POINT([a-b,0.0]);
     elseif Dim==3
         BL = PLAN([-a,-a,0.0],[0.0,-a,0.0],[-a,-a,e]);
-        BRight = PLAN([a-b,0.0,0.0],[a,0.0,0.0],[a-b,0.0,e]);
-        % BRight = POINT([a-b,0.0]);
+        BRight = QUADRANGLE([a-b,0.0,0.0],[a,0.0,0.0],[a,0.0,e],[a-b,0.0,e]);
+        % BRight = LIGNE([a-b,0.0,0.0],[a-b,0.0,e]);
     end
     
     addbc = @(S,ud) addbcLshapedPanel(S,ud,BL,BRight);
@@ -351,10 +355,10 @@ if solveProblem
     end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
-    %         [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,BL,BRight,BLeft,sizemap,...
+    %         [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,sizemap,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_Lshaped_panel','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     %     otherwise
-    %         [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,BL,BRight,BLeft,sizemap,...
+    %         [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,sizemap,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_Lshaped_panel','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     % end
     
@@ -449,7 +453,7 @@ if displaySolution
     %% Display displacement-loading step curve
     figure('Name','Displacement vs loading step')
     clf
-    plot(1:length(t),t*1e3,'-b','Linewidth',linewidth)
+    plot(1:length(t),t*1e3,'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -461,7 +465,7 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft*1e-3,'-b','Linewidth',linewidth)
+    plot(t*1e3,ft*1e-3,'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -473,7 +477,7 @@ if displaySolution
     %% Display maximum damage-displacement curve
     figure('Name','Maximum damage vs displacement')
     clf
-    plot(t*1e3,dmaxt,'-b','Linewidth',linewidth)
+    plot(t*1e3,dmaxt,'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -485,10 +489,10 @@ if displaySolution
     %% Display energy-displacement curves
     figure('Name','Energies vs displacement')
     clf
-    plot(t*1e3,Eut,'-b','Linewidth',linewidth)
+    plot(t*1e3,Eut,'-b','LineWidth',linewidth)
     hold on
-    plot(t*1e3,Edt,'-r','Linewidth',linewidth)
-    plot(t*1e3,Eut+Edt,'-k','Linewidth',linewidth)
+    plot(t*1e3,Edt,'-r','LineWidth',linewidth)
+    plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
     hold off
     grid on
     box on
@@ -504,7 +508,7 @@ if displaySolution
     %% Display outputs of iterative resolution
     figure('Name','Number of iterations vs displacement')
     clf
-    plot(t*1e3,output.iteration,'-b','Linewidth',linewidth)
+    plot(t*1e3,output.iteration,'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -515,7 +519,7 @@ if displaySolution
     
     figure('Name','Computing time vs displacement')
     clf
-    plot(t*1e3,output.time,'-r','Linewidth',linewidth)
+    plot(t*1e3,output.time,'-r','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -526,7 +530,7 @@ if displaySolution
     
     figure('Name','Error vs displacement')
     clf
-    plot(t*1e3,output.error,'-k','Linewidth',linewidth)
+    plot(t*1e3,output.error,'-k','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)

@@ -828,9 +828,9 @@ if displaySolution
     
     figure('Name','Forces vs displacement')
     clf
-    color = distinguishable_colors(N);
+    colors = distinguishable_colors(N);
     for i=1:N
-        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'LineWidth',linewidth)
+        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
         hold on
     end
     hold off
@@ -842,17 +842,17 @@ if displaySolution
     mysaveas(pathname,'forces_displacement',formats);
     mymatlab2tikz(pathname,'forces_displacement.tex');
     
-%     color = distinguishable_colors(N);
+%     colors = distinguishable_colors(N);
 %     for i=1:N
 %         if mod(i,100)==0
 %             close all
 %         end
 %         figure('Name',['Force-displacement #' num2str(sampleindices(i))])
 %         clf
-%         plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',color(i,:),'LineWidth',linewidth)
+%         plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
 %         hold on
 %         scatter(udc(i)*1e3,fc(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','r','LineWidth',linewidth)
-%         scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',color(i,:),'LineWidth',linewidth)
+%         scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
 %         hold off
 %         grid on
 %         box on
