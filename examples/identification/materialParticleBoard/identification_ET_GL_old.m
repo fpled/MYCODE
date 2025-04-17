@@ -11,6 +11,7 @@ close all
 
 %% Input data
 solveProblem = true;
+displayMesh = false;
 displaySolution = true;
 
 filename = 'data_ET_GL.mat';
@@ -34,6 +35,13 @@ UnitU = '[mm]';
 
 %% Identification
 if solveProblem
+% geometric dimensions
+b = 50; % sample width [mm]
+h = 15; % sample thickness [mm]
+Iz = b*h^3/12; % planar second moment of area (or planar area moment of inertia) [mm^4]
+d = 20; % distance between the support and the region of interest (ROI) [mm]
+L = 85; % length of ROI [mm]
+
 numSamples = 27;
 ET_data = cell(numSamples,1);
 GL_data = cell(numSamples,1);
@@ -56,11 +64,9 @@ std_V0_data = zeros(numSamples,1);
 initImage = 3;
 
 for j=1:numSamples
-% for j=14
     
     numSample = ['B' num2str(j)];
-    F = appliedLoad(numSample);
-    [b,h,d,Iz] = dimSample(numSample);
+    F = appliedLoad(numSample); % applied load [N]
     
     t = tic;
     
@@ -73,29 +79,31 @@ for j=1:numSamples
     err = zeros(numImages,1);
     
     for k=1:numImages
-    % for k=[6,numImages]
         
         numImage = num2str(k,'%02d');
         filenameDIC = [numSample '_00-' numImage '-Mesh'];
         load(fullfile(pathnameDIC,filenameDIC));
         
-        [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d); % [mm]
+        [u_exp,coord] = extractCorreliElas(Job,Mesh,U,h,d); % [mm]
         
         %-------------------------------
         % Reference and deformed meshes
         %-------------------------------
-        % figure('name',['Sample ' numSample ' - Image ' numImage ': Reference and deformed meshes'])
-        % triplot(Mesh.TRI,coord(:,1),coord(:,2),'k');
-        % hold on
-        % triplot(Mesh.TRI,coord(:,1)+Scal*u_exp(1:2:end),coord(:,2)+Scal*u_exp(2:2:end),'r');
-        % hold off
-        % axis image
-        % grid on
-        % set(gca,'YLim',[-15,10])
-        % set(gca,'FontSize',fontsize)
-        % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
-        % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-        % mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
+        if displayMesh && (k==6 || k == numImages)
+            figure('name',['Sample ' numSample ' - Image ' numImage ': Reference and deformed meshes'])
+            triplot(Mesh.TRI,coord(:,1),coord(:,2),'k');
+            hold on
+            triplot(Mesh.TRI,coord(:,1)+Scal*u_exp(1:2:end),coord(:,2)+Scal*u_exp(2:2:end),'r');
+            hold off
+            axis image
+            grid on
+            set(gca,'XLim',[d-5,L+5])
+            set(gca,'YLim',[-h,2*h/3])
+            set(gca,'FontSize',fontsize)
+            xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+            ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+            mysaveas(pathname,['meshes_' numSample '_' numImage],formats,renderer);
+        end
         
         A = zeros(5);
         B = zeros(5,1);
@@ -169,6 +177,7 @@ for j=1:numSamples
     std_U0_data(j) = std(U0(initImage:end));
     std_V0_data(j) = std(V0(initImage:end));
 end
+close all
 
 %% Save variables
 save(fullfile(pathname,filename),'ET_data','GL_data',...
@@ -225,9 +234,9 @@ if displaySolution
         set(gca,'FontSize',fontsize)
         %legend(numSample,'Location','NorthEastOutside');
         xlabel('Image number','Interpreter',interpreter);
-        ylabel('Rigid body rotation $\psi_0$ [$^{\circ}$]','Interpreter',interpreter);
+        ylabel('Rigid body rotation $\psi_0$ [deg]','Interpreter',interpreter);
         %xlabel('Num\''ero d''image','Interpreter',interpreter);
-        %ylabel('Rotation de corps rigide $\psi_0$ [$^{\circ}$]','Interpreter',interpreter);
+        %ylabel('Rotation de corps rigide $\psi_0$ [deg]','Interpreter',interpreter);
         mysaveas(pathname,['data_R0_' numSample],formats);
         mymatlab2tikz(pathname,['data_R0_' numSample '.tex']);
         
@@ -259,6 +268,7 @@ if displaySolution
         mysaveas(pathname,['data_V0_' numSample],formats);
         mymatlab2tikz(pathname,['data_V0_' numSample '.tex']);
     end
+    close all
     
     figure('Name','Transverse Young''s modulus')
     clf
@@ -290,9 +300,9 @@ if displaySolution
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Rigid body rotation $\psi_0$ [$^{\circ}$]','Interpreter',interpreter);
+    ylabel('Rigid body rotation $\psi_0$ [deg]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Rotation de corps rigide $\psi_0$ [$^{\circ}$]','Interpreter',interpreter);
+    %ylabel('Rotation de corps rigide $\psi_0$ [deg]','Interpreter',interpreter);
     mysaveas(pathname,'data_R0',formats);
     mymatlab2tikz(pathname,'data_R0.tex');
     

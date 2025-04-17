@@ -61,6 +61,12 @@ switch optimFun
         error(['Wrong optimization function' optimFun])
 end
 
+% geometric dimensions
+b = 50; % sample width [mm]
+h = 15; % sample thickness [mm]
+Iz = b*h^3/12; % planar second moment of area (or planar area moment of inertia) [mm^4]
+d = 20; % distance between the support and the region of interest (ROI) [mm]
+
 numSamples = 27;
 EL_data = cell(numSamples,1);
 NUL_data = cell(numSamples,1);
@@ -72,11 +78,9 @@ std_EL_data = zeros(numSamples,1);
 std_NUL_data = zeros(numSamples,1);
 
 for j=1:numSamples
-% for j=14
     
     numSample = ['B' num2str(j)];
-    F = appliedLoad(numSample);
-    [b,h,d,Iz] = dimSample(numSample);
+    F = appliedLoad(numSample); % applied load [N]
     
     t = tic;
     
@@ -86,13 +90,12 @@ for j=1:numSamples
     err = zeros(numImages,1);
     
     for k=1:numImages
-    % for k=[6,numImages]
         
         numImage = num2str(k,'%02d');
         filenameDIC = [numSample '_00-' numImage '-Mesh'];
         load(fullfile(pathnameDIC,filenameDIC));
         
-        [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d); % [mm]
+        [u_exp,coord] = extractCorreliElas(Job,Mesh,U,h,d); % [mm]
         
         node = NODE(coord,1:size(coord,1));
         elem = Mesh.TRI;
@@ -159,6 +162,7 @@ for j=1:numSamples
     std_EL_data(j) = std(EL(initImage:end));
     std_NUL_data(j) = std(NUL(initImage:end));
 end
+close all
 
 %% Save variables
 save(fullfile(pathname,filenameNum),'EL_data','NUL_data','err_num_data',...
@@ -203,6 +207,7 @@ if displaySolution
         mysaveas(pathname,['data_NUL_' numSample],formats);
         mymatlab2tikz(pathname,['data_NUL_' numSample '.tex']);
     end
+    close all
     
     figure('Name','Longitudinal Young''s modulus')
     clf

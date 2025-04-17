@@ -30,18 +30,23 @@ interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
-sample = 'B';
+% geometric dimensions
+b = 50; % sample width [mm]
+h = 15; % sample thickness [mm]
+Iz = b*h^3/12; % planar second moment of area (or planar area moment of inertia) [mm^4]
+d = 20; % distance between the support and the region of interest (ROI) [mm]
+
 numSamples = 27;
 % for j=1:numSamples
 for j=14
     
-    numSample = [sample num2str(j)];
-    F = appliedLoad(numSample);
-    [b,h,d,Iz] = dimSample(numSample);
+    numSample = ['B' num2str(j)];
+    F = appliedLoad(numSample); % applied load [N]
     
     numImages = length(F);
     % for k=1:numImages
     for k=6
+    % for k=numImages
         
         numImage = num2str(k,'%02d');
         filenameDIC = [numSample '_00-' num2str(numImage) '-Mesh'];
@@ -53,7 +58,7 @@ for j=14
         %% Problem
         if setProblem
             %% Meshes
-            [u_exp,coord] = extractCorreli(Job,Mesh,U,h,d); % [mm]
+            [u_exp,coord] = extractCorreliElas(Job,Mesh,U,h,d); % [mm]
             
             node = NODE(coord,1:size(coord,1));
             elem = Mesh.TRI;

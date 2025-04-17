@@ -39,20 +39,20 @@ dE_data = sE_data/mE_data;
 
 %% Maximum likelihood estimation
 param = gamfit(E_data);
-% param = mle(E_data,'distribution','gam');
-% param = mle(E_data,'pdf',@gampdf,'start',[3 1],'lowerbound',[2 0]);
-% param = mle(E_data,'nloglf',@gamlike,'start',[3 1],'lowerbound',[2 0]);
+% param = mle(E_data,'Distribution','gam');
+% param = mle(E_data,'pdf',@gampdf,'Start',[3 1],'LowerBound',[2 0]);
+% param = mle(E_data,'nloglf',@gamlike,'Start',[3 1],'LowerBound',[2 0]);
 
 custpdf = @(data,a,b) gampdf(data,a,b);
 % custpdf = @(data,a,b) exp(-(a*log(b)+gammaln(a))) * data.^(a-1) .* exp(-data/b);
-% param = mle(E_data,'pdf',custpdf,'start',[3 1],'lowerbound',[2 0]);
+% param = mle(E_data,'pdf',custpdf,'Start',[3 1],'LowerBound',[2 0]);
 
 nloglf = @(param,data,cens,freq) gamlike(param,data);
 % nloglf = @(param,data,cens,freq) length(data)*param(1)*log(param(2))...
 %     +length(data)*gammaln(param(1))...
 %     +(1-param(1))*sum(log(data))...
 %     +1/param(2)*sum(data);
-% param = mle(E_data,'nloglf',nloglf,'start',[3 1],'lowerbound',[2 0]);
+% param = mle(E_data,'nloglf',nloglf,'Start',[3 1],'LowerBound',[2 0]);
 
 a = param(1);
 b = param(2);

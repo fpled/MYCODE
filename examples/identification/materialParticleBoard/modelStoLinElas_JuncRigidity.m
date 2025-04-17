@@ -47,8 +47,8 @@ fprintf('\n');
 paramS = gamfit(KS_data);
 paramD = gamfit(KD_data);
 
-% paramS = mle(KS_data,'pdf',@gampdf,'start',[2.5 1],'lowerbound',[2 0]);
-% paramD = mle(KD_data,'pdf',@gampdf,'start',[2.5 1],'lowerbound',[2 0]);
+% paramS = mle(KS_data,'pdf',@gampdf,'Start',[3 1],'LowerBound',[2 0]);
+% paramD = mle(KD_data,'pdf',@gampdf,'Start',[3 1],'LowerBound',[2 0]);
 
 aS = paramS(1);
 bS = paramS(2);

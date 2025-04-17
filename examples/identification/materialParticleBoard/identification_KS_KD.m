@@ -12,6 +12,7 @@ close all
 
 %% Input data
 solveProblem = true;
+displayMesh = false;
 displaySolution = true;
 
 filenameS = 'data_KS.mat';
@@ -36,26 +37,30 @@ UnitU = '[mm]';
 
 %% Identification
 if solveProblem
-numScrewTotal = 16;
-sampleScrewDeleted = [9 11 16]; % 3 samples to be deleted due to manufacturing defects
-sampleNumScrew = setdiff(1:numScrewTotal,sampleScrewDeleted);
-numScrew = length(sampleNumScrew);
-numDowel = 8;
+% same geometric dimensions for both junction types
+La = 142.5; % length of vertical column [mm]
+Lb = 67.5; % length of horizontal beam [mm]
+b = 113; % sample width [mm]
+h = 15; % sample thickness [mm]
 
-d = 67.5e-3; % [m]
-b = 113e-3; % [m]
-% Same Dimensions for the two assembly junctions
-% Bending moment per unit length: ml = F*d/b
+% Bending moment per unit length: ml = F*Lb/b
 % Bending stiffness per unit length: k = ml/angle
 
-FS = cell(numScrew,1);
-mlS = cell(numScrew,1);
-angleS = cell(numScrew,1);
-kS = cell(numScrew,1);
-mean_KS_data = zeros(numScrew,1);
+%% Screw junctions
+numScrewsTotal = 16;
+% sampleScrewDeleted = [9 11 16]; % 3 samples to be deleted due to manufacturing defects
+sampleScrewDeleted = []; % 3 samples to be deleted due to manufacturing defects
+sampleNumScrew = setdiff(1:numScrewsTotal,sampleScrewDeleted);
+numScrews = length(sampleNumScrew);
 
-for i=1:numScrew
-% for i=4
+FS = cell(numScrews,1);
+mlS = cell(numScrews,1);
+angleS = cell(numScrews,1);
+kS = cell(numScrews,1);
+mean_KS_data = zeros(numScrews,1);
+
+for i=1:numScrews
+% for i=3
     
     j = sampleNumScrew(i);
     
@@ -65,127 +70,111 @@ for i=1:numScrew
     
     time = tic;
     
-    F = appliedLoad(numSample);
-    ml = F*d/b;
+    F = appliedLoad(numSample); % applied load [N]
+    ml = F*Lb/b; % bending moment per unit length [N.m/m]
+    
     numImages = length(F);
     angle = zeros(numImages,1);
     
     for k=1:numImages
-    % for k=3
-    % for k=numImages
+    % for k=[4,numImages]
         
         numImage = num2str(k,'%02d');
         filenameDICa = [numSamplea '_00-' numImage '-Mesh'];
         filenameDICb = [numSampleb '_00-' numImage '-Mesh'];
         
-        clear Mesh Job U
+        % clear Job Param Mesh U
         load(fullfile(pathnameDIC,filenameDICa));
-        X = real(Mesh.Znode);
-        Y = imag(Mesh.Znode);
-        Coordx_a_screw = (X+Job.ROI(1)-1);
-        Coordy_a_screw = (Y+Job.ROI(2)-1);
-        TRI_a_screw = Mesh.TRI;
-        scaleFactor_1a = 45/(max(Coordx_a_screw)-min(Coordx_a_screw));
-        scaleFactor_2a = 15/(max(Coordy_a_screw)-min(Coordy_a_screw));
-        Ux_a_screw = U(1:2:end);
-        Uy_a_screw = U(2:2:end);
+        Job_a = Job;
+        Mesh_a = Mesh;
+        TRI_a = Mesh.TRI;
+        U_a = U;
         
-        clear Mesh Job U
+        % clear Job Param Mesh U
         load(fullfile(pathnameDIC,filenameDICb));
-        X = real(Mesh.Znode);
-        Y = imag(Mesh.Znode);
-        Coordx_b_screw = (X+Job.ROI(1)-1);
-        Coordy_b_screw = (Y+Job.ROI(2)-1);
-        TRI_b_screw = Mesh.TRI;
-        scaleFactor_1b = 15/(max(Coordx_b_screw)-min(Coordx_b_screw));
-        scaleFactor_2b = 30/(max(Coordy_b_screw)-min(Coordy_b_screw));
-        Ux_b_screw = U(1:2:end);
-        Uy_b_screw = U(2:2:end);
+        Job_b = Job;
+        Mesh_b = Mesh;
+        TRI_b = Mesh.TRI;
+        U_b = U;
         
-        scaleFactor = mean([scaleFactor_1a scaleFactor_2a...
-            scaleFactor_1b scaleFactor_2b]);
+        [u_exp_a,u_exp_b,coord_a,coord_b,cl_a,cl_b] = extractCorreliJunctionScrew(Job_a,Job_b,Mesh_a,Mesh_b,U_a,U_b,h); % [mm]
+        coordx_a = coord_a(:,1);
+        coordy_a = coord_a(:,2);
+        coordx_b = coord_b(:,1);
+        coordy_b = coord_b(:,2);
         
-        u_exp_a_screw = [Uy_a_screw -Ux_a_screw]'*scaleFactor;
-        u_exp_a_screw = u_exp_a_screw(:);
-        u_exp_b_screw = [Uy_b_screw -Ux_b_screw]'*scaleFactor;
-        u_exp_b_screw = u_exp_b_screw(:);
+        %---------------------------------
+        % Boundary nodes of reference mesh
+        %---------------------------------
+        if displayMesh && k==1
+            node_a = NODE(coord_a,1:size(coord_a,1));
+            node_b = NODE(coord_b,1:size(coord_b,1));
+            elem_a = TRI_a;
+            elem_b = TRI_b;
+            elemtype = 'TRI3';
+            S_a = MODEL('PLAN');
+            S_b = MODEL('PLAN');
+            S_a = addnode(S_a,node_a);
+            S_b = addnode(S_b,node_b);
+            S_a = addelem(S_a,elemtype,elem_a);
+            S_b = addelem(S_b,elemtype,elem_b);
+            S_a = final(S_a);
+            S_b = final(S_b);
+            numnode_bound_a = getnumber(getnode(create_boundary(S_a)));
+            numnode_bound_b = getnumber(getnode(create_boundary(S_b)));
+            
+            % figure('name',['Sample ' numSample ' - Image ' numImage ': Boundary nodes of reference mesh'])
+            figure('name',['Sample ' numSample ' - Image 00: Boundary nodes of reference mesh'])
+            plot(create_boundary(S_a));
+            hold on
+            plot(create_boundary(S_b));
+            plot(coordx_a(numnode_bound_a),coordy_a(numnode_bound_a),'k.')
+            plot(coordx_b(numnode_bound_b),coordy_b(numnode_bound_b),'b.')
+            hold off
+            axis image
+        end
         
-        coordx_a_screw = Coordy_a_screw*scaleFactor;
-        coordy_a_screw = -Coordx_a_screw*scaleFactor;
-        min_coordx_a_screw = min(coordx_a_screw);
-        min_coordy_a_screw = min(coordy_a_screw);
-        coordx_a_screw(:) = coordx_a_screw(:) - min_coordx_a_screw;
-        coordy_a_screw(:) = coordy_a_screw(:) - min_coordy_a_screw;
-        coord_a_screw = [coordx_a_screw coordy_a_screw];
+        % points_a = find(coordx_a>max(coordx_a)-cl_a/3 &...
+        %     coordy_a>min(coordy_b)); % PhD thesis Zhhou Chen
+        % points_b = find(coordx_b<min(coordx_b)+cl_b/3 &...
+        %     coordy_b>min(coordy_b)); % PhD thesis Zhhou Chen
+        points_a = find(coordx_a>max(coordx_a)-cl_a/3 &...
+            coordy_a>min(coordy_b));
+        points_b = find(coordx_b<min(coordx_b)+cl_b/3);
         
-        coordx_b_screw = Coordy_b_screw*scaleFactor;
-        coordy_b_screw = -Coordx_b_screw*scaleFactor;
-        coordx_b_screw(:) = coordx_b_screw(:) - min_coordx_a_screw;
-        coordy_b_screw(:) = coordy_b_screw(:) - min_coordy_a_screw;
-        coord_b_screw = [coordx_b_screw coordy_b_screw];
-        
-        % node_a_screw = NODE(coord_a_screw,1:size(coord_a_screw,1));
-        % node_b_screw = NODE(coord_b_screw,1:size(coord_b_screw,1));
-        % elem_a_screw = TRI_a_screw;
-        % elem_b_screw = TRI_b_screw;
-        % elemtype = 'TRI3';
-        % S_a_screw = MODEL('PLAN');
-        % S_b_screw = MODEL('PLAN');
-        % S_a_screw = addnode(S_a_screw,node_a_screw);
-        % S_b_screw = addnode(S_b_screw,node_b_screw);
-        % S_a_screw = addelem(S_a_screw,elemtype,elem_a_screw);
-        % S_b_screw = addelem(S_b_screw,elemtype,elem_b_screw);
-        % S_a_screw = final(S_a_screw);
-        % S_b_screw = final(S_b_screw);
-        % numnode_bound_a_screw = getnumber(getnode(create_boundary(S_a_screw)));
-        % numnode_bound_b_screw = getnumber(getnode(create_boundary(S_b_screw)));
-        % figure
-        % plot(create_boundary(S_a_screw));
-        % hold on
-        % plot(create_boundary(S_b_screw));
-        % plot(coordx_a_screw(numnode_bound_a_screw),coordy_a_screw(numnode_bound_a_screw),'r*')
-        % plot(coordx_b_screw(numnode_bound_b_screw),coordy_b_screw(numnode_bound_b_screw),'k*')
-        % hold off
-        
-        points_a_screw = find(coordx_a_screw>max(coordx_a_screw)-Mesh.CharLength*scaleFactor/3 &...
-            coordy_a_screw>min(coordy_b_screw));
-        points_b_screw = find(coordx_b_screw<min(coordx_b_screw)+Mesh.CharLength*scaleFactor/3 &...
-            coordy_b_screw>min(coordy_b_screw));
-        
-        % primary line1 and line2
-        L1x0 = coordx_a_screw(points_a_screw);
-        L1y0 = coordy_a_screw(points_a_screw);
+        % initial line1 and line2
+        L1x0 = coordx_a(points_a);
+        L1y0 = coordy_a(points_a);
         [L1y0_sort,index] = sort(L1y0);
         L1x0_sort = L1x0(index);
         fit10 = polyfit(L1y0_sort,L1x0_sort,1);
         val10 = polyval(fit10,L1y0_sort);
         
-        L2x0 = coordx_b_screw(points_b_screw);
-        L2y0 = coordy_b_screw(points_b_screw);
+        L2x0 = coordx_b(points_b);
+        L2y0 = coordy_b(points_b);
         [L2y0_sort,index] = sort(L2y0);
         L2x0_sort = L2x0(index);
         fit20 = polyfit(L2y0_sort,L2x0_sort,1);
         val20 = polyval(fit20,L2y0_sort);
         
         % deformed line1 and line2
-        L1x = coordx_a_screw(points_a_screw)+u_exp_a_screw(2*points_a_screw-1);
-        L1y = coordy_a_screw(points_a_screw)+u_exp_a_screw(2*points_a_screw);
+        L1x = coordx_a(points_a)+u_exp_a(2*points_a-1);
+        L1y = coordy_a(points_a)+u_exp_a(2*points_a);
         [L1y_sort,index] = sort(L1y);
         L1x_sort = L1x(index);
         fit1 = polyfit(L1y_sort,L1x_sort,1);
         val1 = polyval(fit1,L1y_sort);
         
-        L2x = coordx_b_screw(points_b_screw)+u_exp_b_screw(2*points_b_screw-1);
-        L2y = coordy_b_screw(points_b_screw)+u_exp_b_screw(2*points_b_screw);
+        L2x = coordx_b(points_b)+u_exp_b(2*points_b-1);
+        L2y = coordy_b(points_b)+u_exp_b(2*points_b);
         [L2y_sort,index] = sort(L2y);
         L2x_sort = L2x(index);
         fit2 = polyfit(L2y_sort,L2x_sort,1);
         val2 = polyval(fit2,L2y_sort);
         
         %-----------------------------
-        % primary and deformed angle of junction
+        % initial and deformed angles of junction
         %-----------------------------
-        
         t = [val10(end)-val10(1) L1y0_sort(end)-L1y0_sort(1)];
         s = [val20(end)-val20(1) L2y0_sort(end)-L2y0_sort(1)];
         delta0 = acosd(abs(t*s')/(norm(t)*norm(s)));
@@ -199,29 +188,35 @@ for i=1:numScrew
         %---------------------------------
         % Best fit line of reference mesh
         %---------------------------------
-        % figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of reference mesh'])
-        % triplot(TRI_a_screw,coordx_a_screw,coordy_a_screw,'k');
-        % hold on
-        % triplot(TRI_b_screw,coordx_b_screw,coordy_b_screw,'k');
-        % plot(L1x0,L1y0,'b.',val10,L1y0_sort,'b','LineWidth',linewidth);
-        % plot(L2x0,L2y0,'b.',val20,L2y0_sort,'b','LineWidth',linewidth);
-        % hold off
-        % axis equal
-        % grid on
-        % set(gca,'FontSize',fontsize)
-        % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
-        % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-        % mysaveas(pathname,['best_fit_line_mesh_init_' numSample '_image_' numImage],formats,renderer);
+        if displayMesh && k==1
+            % figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of reference mesh'])
+            figure('name',['Sample ' numSample ' - Image 00: Best fit line of reference mesh'])
+            triplot(TRI_a,coordx_a,coordy_a,'k');
+            hold on
+            triplot(TRI_b,coordx_b,coordy_b,'k');
+            plot(L1x0,L1y0,'b.',val10,L1y0_sort,'b','LineWidth',linewidth);
+            plot(L2x0,L2y0,'b.',val20,L2y0_sort,'b','LineWidth',linewidth);
+            hold off
+            axis image
+            grid on
+            set(gca,'XLim',[min(coordx_a)-h/6,max(coordx_b)+h/6])
+            set(gca,'YLim',[min(coordy_a)-h/6,max(coordy_b)+h/6])
+            set(gca,'FontSize',fontsize)
+            xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+            ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+            % mysaveas(pathname,['best_fit_line_mesh_init_' numSample '_' numImage],formats,renderer);
+            mysaveas(pathname,['best_fit_line_mesh_init_' numSample '_00'],formats,renderer);
+        end
         
-        L1x = coordx_a_screw(points_a_screw)+Scal*u_exp_a_screw(2*points_a_screw-1);
-        L1y = coordy_a_screw(points_a_screw)+Scal*u_exp_a_screw(2*points_a_screw);
+        L1x = coordx_a(points_a)+Scal*u_exp_a(2*points_a-1);
+        L1y = coordy_a(points_a)+Scal*u_exp_a(2*points_a);
         [L1y_sort,index] = sort(L1y);
         L1x_sort = L1x(index);
         fit1 = polyfit(L1y_sort,L1x_sort,1);
         val1 = polyval(fit1,L1y_sort);
         
-        L2x = coordx_b_screw(points_b_screw)+Scal*u_exp_b_screw(2*points_b_screw-1);
-        L2y = coordy_b_screw(points_b_screw)+Scal*u_exp_b_screw(2*points_b_screw);
+        L2x = coordx_b(points_b)+Scal*u_exp_b(2*points_b-1);
+        L2y = coordy_b(points_b)+Scal*u_exp_b(2*points_b);
         [L2y_sort,index] = sort(L2y);
         L2x_sort = L2x(index);
         fit2 = polyfit(L2y_sort,L2x_sort,1);
@@ -230,44 +225,52 @@ for i=1:numScrew
         %--------------------------------
         % Best fit line of deformed mesh
         %--------------------------------
-        % figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of deformed mesh'])
-        % triplot(TRI_a_screw,coordx_a_screw+Scal*u_exp_a_screw(1:2:end),...
-        %     coordy_a_screw+Scal*u_exp_a_screw(2:2:end),'r');
-        % hold on
-        % triplot(TRI_b_screw,coordx_b_screw+Scal*u_exp_b_screw(1:2:end),...
-        %     coordy_b_screw+Scal*u_exp_b_screw(2:2:end),'r');
-        % plot(coordx_a_screw(points_a_screw)+Scal*u_exp_a_screw(2*points_a_screw-1),...
-        %     coordy_a_screw(points_a_screw)+Scal*u_exp_a_screw(2*points_a_screw),'b.',...
-        %     val1,L1y_sort,'b','LineWidth',linewidth);
-        % plot(coordx_b_screw(points_b_screw)+Scal*u_exp_b_screw(2*points_b_screw-1),...
-        %     coordy_b_screw(points_b_screw)+Scal*u_exp_b_screw(2*points_b_screw),'b.',...
-        %     val2,L2y_sort,'b','LineWidth',linewidth);
-        % hold off
-        % axis equal
-        % grid on
-        % set(gca,'FontSize',fontsize)
-        % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
-        % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-        % mysaveas(pathname,['best_fit_line_mesh_deformed_' numSample '_image_' numImage],formats,renderer);
+        if displayMesh
+            figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of deformed mesh'])
+            triplot(TRI_a,coordx_a+Scal*u_exp_a(1:2:end),...
+                coordy_a+Scal*u_exp_a(2:2:end),'r');
+            hold on
+            triplot(TRI_b,coordx_b+Scal*u_exp_b(1:2:end),...
+                coordy_b+Scal*u_exp_b(2:2:end),'r');
+            plot(coordx_a(points_a)+Scal*u_exp_a(2*points_a-1),...
+                coordy_a(points_a)+Scal*u_exp_a(2*points_a),'b.',...
+                val1,L1y_sort,'b','LineWidth',linewidth);
+            plot(coordx_b(points_b)+Scal*u_exp_b(2*points_b-1),...
+                coordy_b(points_b)+Scal*u_exp_b(2*points_b),'b.',...
+                val2,L2y_sort,'b','LineWidth',linewidth);
+            hold off
+            axis image
+            grid on
+            set(gca,'XLim',[min(coordx_a)-h/6,max(coordx_b+Scal*u_exp_b(1:2:end))+h/6])
+            set(gca,'YLim',[min(coordy_a)-h/6,max(coordy_b)+h/6])
+            set(gca,'FontSize',fontsize)
+            xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+            ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+            mysaveas(pathname,['best_fit_line_mesh_deformed_' numSample '_' numImage],formats,renderer);
+        end
         
         %-------------------------------
         % Reference and deformed meshes
         %-------------------------------
-        % figure('name',['Sample ' numSample ' - Image ' numImage ': Reference and deformed meshes'])
-        % triplot(TRI_a_screw,coordx_a_screw,coordy_a_screw,'k');
-        % hold on
-        % triplot(TRI_b_screw,coordx_b_screw,coordy_b_screw,'k');
-        % triplot(TRI_a_screw,coordx_a_screw+Scal*u_exp_a_screw(1:2:end),...
-        %     coordy_a_screw+Scal*u_exp_a_screw(2:2:end),'r');
-        % triplot(TRI_b_screw,coordx_b_screw+Scal*u_exp_b_screw(1:2:end),...
-        %     coordy_b_screw+Scal*u_exp_b_screw(2:2:end),'r');
-        % hold off
-        % axis equal
-        % grid on
-        % set(gca,'FontSize',fontsize)
-        % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
-        % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-        % mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
+        if displayMesh
+            figure('name',['Sample ' numSample ' - Image ' numImage ': Reference and deformed meshes'])
+            triplot(TRI_a,coordx_a,coordy_a,'k');
+            hold on
+            triplot(TRI_b,coordx_b,coordy_b,'k');
+            triplot(TRI_a,coordx_a+Scal*u_exp_a(1:2:end),...
+                coordy_a+Scal*u_exp_a(2:2:end),'r');
+            triplot(TRI_b,coordx_b+Scal*u_exp_b(1:2:end),...
+                coordy_b+Scal*u_exp_b(2:2:end),'r');
+            hold off
+            axis image
+            grid on
+            set(gca,'XLim',[min(coordx_a)-h/6,max(coordx_b+Scal*u_exp_b(1:2:end))+h/6])
+            set(gca,'YLim',[min(coordy_a)-h/6,max(coordy_b)+h/6])
+            set(gca,'FontSize',fontsize)
+            xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+            ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+            mysaveas(pathname,['meshes_' numSample '_' numImage],formats,renderer);
+        end
         
     end
     
@@ -277,10 +280,10 @@ for i=1:numScrew
     fprintf('| Sample S%2d            |\n',j)
     disp('+-------+---------------+-----------+------------------+')
     disp('| Load  | Moment p.u.l. |   Angle   | Stiffness p.u.l. |')
-    disp('| F [N] |  ml [N.m/m]   | theta [°] |    k [N/rad]     |')
+    disp('| F [N] |  ml [N.m/m]   | theta [°] |    k [kN/rad]    |')
     disp('+-------+---------------+-----------+------------------+')
     for k=1:numImages
-        fprintf('|  %3d  | %13.4f | %9.4f | %16.4e |\n',F(k),ml(k),angle(k),ml(k)./deg2rad(angle(k)))
+        fprintf('|  %3d  | %13.4f | %9.4f | %16.4f |\n',F(k),ml(k),angle(k),ml(k)./deg2rad(angle(k))*1e-3)
     end
     disp('+-------+---------------+-----------+------------------+')
     
@@ -293,13 +296,16 @@ for i=1:numScrew
     mean_KS_data(i) = mean( ml(2:end-1)./deg2rad(angle(2:end-1))' ); % [N/rad]
 end
 
-FD = cell(numDowel,1);
-mlD = cell(numDowel,1);
-angleD = cell(numDowel,1);
-kD = cell(numDowel,1);
-mean_KD_data = zeros(numDowel,1);
+%% Dowel junctions
+numDowels = 8;
 
-for j=1:numDowel
+FD = cell(numDowels,1);
+mlD = cell(numDowels,1);
+angleD = cell(numDowels,1);
+kD = cell(numDowels,1);
+mean_KD_data = zeros(numDowels,1);
+
+for j=1:numDowels
 % for j=2
     
     numSample = ['D' num2str(j)];
@@ -308,126 +314,101 @@ for j=1:numDowel
     
     time = tic;
     
-    F = appliedLoad(numSample);
-    ml = F*d/b;
+    F = appliedLoad(numSample); % applied load [N]
+    ml = F*Lb/b; % bending moment per unit length [N.m/m]
+
     numImages = length(F);
     angle = zeros(numImages,1);
     
     for k=1:numImages
-    % for k=3
-    % for k=numImages
+    % for k=[3,numImages]
         
         numImage = num2str(k,'%02d');
         filenameDICa = [numSamplea '_00-' numImage '-Mesh'];
         filenameDICb = [numSampleb '_00-' numImage '-Mesh'];
         
-        clear Mesh Job U
+        % clear Job Param Mesh U
         load(fullfile(pathnameDIC,filenameDICa));
-        X = real(Mesh.Znode);
-        Y = imag(Mesh.Znode);
-        Coordx_a_dowel = (X+Job.ROI(1)-1);
-        Coordy_a_dowel = (Y+Job.ROI(2)-1);
-        TRI_a_dowel = Mesh.TRI;
-        scaleFactor_1a = 30/(max(Coordx_a_dowel)-min(Coordx_a_dowel));
-        scaleFactor_2a = 15/(max(Coordy_a_dowel)-min(Coordy_a_dowel));
-        Ux_a_dowel = U(1:2:end);
-        Uy_a_dowel = U(2:2:end);
+        [u_exp_a,coord_a,cl_a] = extractCorreliJunctionDowela(Job,Mesh,U,h); % [mm]
+        coordx_a = coord_a(:,1);
+        coordy_a = coord_a(:,2);
+        TRI_a = Mesh.TRI;
         
-        clear Mesh Job U
+        % clear Job Param Mesh U
         load(fullfile(pathnameDIC,filenameDICb));
-        X = real(Mesh.Znode);
-        Y = imag(Mesh.Znode);
-        Coordx_b_dowel = (X+Job.ROI(1)-1);
-        Coordy_b_dowel = (Y+Job.ROI(2)-1);
-        TRI_b_dowel = Mesh.TRI;
-        scaleFactor_1b = 15/(max(Coordx_a_dowel)-min(Coordx_a_dowel));
-        scaleFactor_2b = 45/(max(Coordy_a_dowel)-min(Coordy_a_dowel)); 
-        Ux_b_dowel = U(1:2:end);
-        Uy_b_dowel = U(2:2:end);
+        [u_exp_b,coord_b,cl_b] = extractCorreliJunctionDowelb(Job,Mesh,U,h); % [mm]
+        coordx_b = coord_b(:,1);
+        coordy_b = coord_b(:,2);
+        TRI_b = Mesh.TRI;
         
-        scaleFactor = mean([scaleFactor_1a scaleFactor_2a...
-            scaleFactor_1b scaleFactor_2b]);
+        %---------------------------------
+        % Boundary nodes of reference mesh
+        %---------------------------------
+        if displayMesh
+            node_a = NODE(coord_a,1:size(coord_a,1));
+            node_b = NODE(coord_b,1:size(coord_b,1));
+            elem_a = TRI_a;
+            elem_b = TRI_b;
+            elemtype = 'TRI3';
+            S_a = MODEL('PLAN');
+            S_b = MODEL('PLAN');
+            S_a = addnode(S_a,node_a);
+            S_b = addnode(S_b,node_b);
+            S_a = addelem(S_a,elemtype,elem_a);
+            S_b = addelem(S_b,elemtype,elem_b);
+            S_a = final(S_a);
+            S_b = final(S_b);
+            numnode_bound_a = getnumber(getnode(create_boundary(S_a)));
+            numnode_bound_b = getnumber(getnode(create_boundary(S_b)));
+            
+            % figure('name',['Sample ' numSample ' - Image ' numImage ': Boundary nodes of reference mesh'])
+            figure('name',['Sample ' numSample ' - Image 00: Boundary nodes of reference mesh'])
+            plot(create_boundary(S_a));
+            hold on
+            plot(create_boundary(S_b));
+            plot(coordx_a(numnode_bound_a),coordy_a(numnode_bound_a),'k.')
+            plot(coordx_b(numnode_bound_b),coordy_b(numnode_bound_b),'b.')
+            hold off
+            axis image
+        end
         
-        u_exp_a_dowel = [Uy_a_dowel -Ux_a_dowel]'*scaleFactor;
-        u_exp_a_dowel = u_exp_a_dowel(:);
-        u_exp_b_dowel = [Uy_b_dowel -Ux_b_dowel]'*scaleFactor;
-        u_exp_b_dowel = u_exp_b_dowel(:);
+        points_a = find(coordy_a>=max(coordy_a)-cl_a/3);
+        points_b = find(coordy_b<=min(coordy_b)+cl_b/3 &...
+            coordx_b<=max(coordx_a));
         
-        coordx_a_dowel = Coordy_a_dowel*scaleFactor;
-        coordy_a_dowel = -Coordx_a_dowel*scaleFactor;
-        min_coordx_a_dowel = min(coordx_a_dowel);
-        min_coordy_a_dowel = min(coordy_a_dowel);
-        coordx_a_dowel(:) = coordx_a_dowel(:) - min_coordx_a_dowel;
-        coordy_a_dowel(:) = coordy_a_dowel(:) - min_coordy_a_dowel;
-        coord_a_dowel = [coordx_a_dowel coordy_a_dowel];
-        
-        coordx_b_dowel = Coordy_b_dowel*scaleFactor;
-        coordy_b_dowel = -Coordx_b_dowel*scaleFactor;
-        coordx_b_dowel(:) = coordx_b_dowel(:) - min_coordx_a_dowel;
-        coordy_b_dowel(:) = coordy_b_dowel(:) - min_coordy_a_dowel;
-        coord_b_dowel = [coordx_b_dowel coordy_b_dowel];
-        
-%         node_a_dowel = NODE(coord_a_dowel,1:size(coord_a_dowel,1));
-%         node_b_dowel = NODE(coord_b_dowel,1:size(coord_b_dowel,1));
-%         elem_a_dowel = TRI_a_dowel;
-%         elem_b_dowel = TRI_b_dowel;
-%         elemtype = 'TRI3';
-%         S_a_dowel = MODEL('PLAN');
-%         S_b_dowel = MODEL('PLAN');
-%         S_a_dowel = addnode(S_a_dowel,node_a_dowel);
-%         S_b_dowel = addnode(S_b_dowel,node_b_dowel);
-%         S_a_dowel = addelem(S_a_dowel,elemtype,elem_a_dowel);
-%         S_b_dowel = addelem(S_b_dowel,elemtype,elem_b_dowel);
-%         S_a_dowel = final(S_a_dowel);
-%         S_b_dowel = final(S_b_dowel);
-%         numnode_bound_a_dowel = getnumber(getnode(create_boundary(S_a_dowel)));
-%         numnode_bound_b_dowel = getnumber(getnode(create_boundary(S_b_dowel)));
-%         figure
-%         plot(create_boundary(S_a_dowel));
-%         hold on
-%         plot(create_boundary(S_b_dowel));
-%         plot(coordx_a_dowel(numnode_bound_a_dowel),coordy_a_dowel(numnode_bound_a_dowel),'r*')
-%         plot(coordx_b_dowel(numnode_bound_b_dowel),coordy_b_dowel(numnode_bound_b_dowel),'k*')
-%         hold off
-        
-        points_a_dowel = find(coordy_a_dowel>max(coordy_a_dowel)-Mesh.CharLength*scaleFactor/3);
-        points_b_dowel = find(coordy_b_dowel<min(coordy_b_dowel)+Mesh.CharLength*scaleFactor/3 &...
-            coordx_b_dowel<max(coordx_a_dowel));
-        
-        % primary line1 and line2
-        L1x0 = coordx_a_dowel(points_a_dowel);
-        L1y0 = coordy_a_dowel(points_a_dowel);
+        % initial line1 and line2
+        L1x0 = coordx_a(points_a);
+        L1y0 = coordy_a(points_a);
         [L1x0_sort,index] = sort(L1x0);
         L1y0_sort = L1y0(index);
         fit10 = polyfit(L1x0_sort,L1y0_sort,1);
         val10 = polyval(fit10,L1x0_sort);
         
-        L2x0 = coordx_b_dowel(points_b_dowel);
-        L2y0 = coordy_b_dowel(points_b_dowel);
+        L2x0 = coordx_b(points_b);
+        L2y0 = coordy_b(points_b);
         [L2x0_sort,index] = sort(L2x0);
         L2y0_sort = L2y0(index);
         fit20 = polyfit(L2x0_sort,L2y0_sort,1);
         val20 = polyval(fit20,L2x0_sort);
         
         % deformed line1 and line2
-        L1x = coordx_a_dowel(points_a_dowel)+u_exp_a_dowel(2*points_a_dowel-1);
-        L1y = coordy_a_dowel(points_a_dowel)+u_exp_a_dowel(2*points_a_dowel);
+        L1x = coordx_a(points_a)+u_exp_a(2*points_a-1);
+        L1y = coordy_a(points_a)+u_exp_a(2*points_a);
         [L1x_sort,index] = sort(L1x);
         L1y_sort = L1y(index);
         fit1 = polyfit(L1x_sort,L1y_sort,1);
         val1 = polyval(fit1,L1x_sort);
         
-        L2x = coordx_b_dowel(points_b_dowel)+u_exp_b_dowel(2*points_b_dowel-1);
-        L2y = coordy_b_dowel(points_b_dowel)+u_exp_b_dowel(2*points_b_dowel);
+        L2x = coordx_b(points_b)+u_exp_b(2*points_b-1);
+        L2y = coordy_b(points_b)+u_exp_b(2*points_b);
         [L2x_sort,index] = sort(L2x);
         L2y_sort = L2y(index);
         fit2 = polyfit(L2x_sort,L2y_sort,1);
         val2 = polyval(fit2,L2x_sort);
         
         %-----------------------------
-        % primary and deformed angle of junction
+        % initial and deformed angles of junction
         %-----------------------------
-        
         t = [L1x0_sort(end)-L1x0_sort(1) val10(end)-val10(1)];
         s = [L2x0_sort(end)-L2x0_sort(1) val20(end)-val20(1)];
         delta0 = acosd(abs(t*s')/(norm(t)*norm(s)));
@@ -441,29 +422,35 @@ for j=1:numDowel
         %---------------------------------
         % Best fit line of reference mesh
         %---------------------------------
-        % figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of reference mesh'])
-        % triplot(TRI_a_dowel,coordx_a_dowel,coordy_a_dowel,'k');
-        % hold on
-        % triplot(TRI_b_dowel,coordx_b_dowel,coordy_b_dowel,'k');
-        % plot(L1x0,L1y0,'b.',L1x0_sort,val10,'b','LineWidth',linewidth);
-        % plot(L2x0,L2y0,'b.',L2x0_sort,val20,'b','LineWidth',linewidth);
-        % hold off
-        % axis equal
-        % grid on
-        % set(gca,'FontSize',fontsize)
-        % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
-        % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-        % mysaveas(pathname,['best_fit_line_mesh_init_' numSample '_image_' numImage],formats,renderer);
+        if displayMesh && k==1
+            % figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of reference mesh'])
+            figure('name',['Sample ' numSample ' - Image 00: Best fit line of reference mesh'])
+            triplot(TRI_a,coordx_a,coordy_a,'k');
+            hold on
+            triplot(TRI_b,coordx_b,coordy_b,'k');
+            plot(L1x0,L1y0,'b.',L1x0_sort,val10,'b','LineWidth',linewidth);
+            plot(L2x0,L2y0,'b.',L2x0_sort,val20,'b','LineWidth',linewidth);
+            hold off
+            axis image
+            grid on
+            set(gca,'XLim',[min(coordx_a)-h/6,max(coordx_b)+h/6])
+            set(gca,'YLim',[min(coordy_a)-h/6,max(coordy_b)+h/6])
+            set(gca,'FontSize',fontsize)
+            xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+            ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+            % mysaveas(pathname,['best_fit_line_mesh_init_' numSample '_' numImage],formats,renderer);
+            mysaveas(pathname,['best_fit_line_mesh_init_' numSample '_00'],formats,renderer);
+        end
         
-        L1x = coordx_a_dowel(points_a_dowel)+Scal*u_exp_a_dowel(2*points_a_dowel-1);
-        L1y = coordy_a_dowel(points_a_dowel)+Scal*u_exp_a_dowel(2*points_a_dowel);
+        L1x = coordx_a(points_a)+Scal*u_exp_a(2*points_a-1);
+        L1y = coordy_a(points_a)+Scal*u_exp_a(2*points_a);
         [L1x_sort,index] = sort(L1x);
         L1y_sort = L1y(index);
         fit1 = polyfit(L1x_sort,L1y_sort,1);
         val1 = polyval(fit1,L1x_sort);
         
-        L2x = coordx_b_dowel(points_b_dowel)+Scal*u_exp_b_dowel(2*points_b_dowel-1);
-        L2y = coordy_b_dowel(points_b_dowel)+Scal*u_exp_b_dowel(2*points_b_dowel);
+        L2x = coordx_b(points_b)+Scal*u_exp_b(2*points_b-1);
+        L2y = coordy_b(points_b)+Scal*u_exp_b(2*points_b);
         [L2x_sort,index] = sort(L2x);
         L2y_sort = L2y(index);
         fit2 = polyfit(L2x_sort,L2y_sort,1);
@@ -472,44 +459,52 @@ for j=1:numDowel
         %--------------------------------
         % Best fit line of deformed mesh
         %--------------------------------
-        % figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of deformed mesh'])
-        % triplot(TRI_a_dowel,coordx_a_dowel+Scal*u_exp_a_dowel(1:2:end),...
-        %     coordy_a_dowel+Scal*u_exp_a_dowel(2:2:end),'r');
-        % hold on
-        % triplot(TRI_b_dowel,coordx_b_dowel+Scal*u_exp_b_dowel(1:2:end),...
-        %     coordy_b_dowel+Scal*u_exp_b_dowel(2:2:end),'r');
-        % plot(coordx_a_dowel(points_a_dowel)+Scal*u_exp_a_dowel(2*points_a_dowel-1),...
-        %     coordy_a_dowel(points_a_dowel)+Scal*u_exp_a_dowel(2*points_a_dowel),'b.',...
-        %     L1x_sort,val1,'b','LineWidth',linewidth);
-        % plot(coordx_b_dowel(points_b_dowel)+Scal*u_exp_b_dowel(2*points_b_dowel-1),...
-        %     coordy_b_dowel(points_b_dowel)+Scal*u_exp_b_dowel(2*points_b_dowel),'b.',...
-        %     L2x_sort,val2,'b','LineWidth',linewidth);
-        % hold off
-        % axis equal
-        % grid on
-        % set(gca,'FontSize',fontsize)
-        % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
-        % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-        % mysaveas(pathname,['best_fit_line_mesh_deformed_' numSample '_image_' numImage],formats,renderer);
+        if displayMesh
+            figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of deformed mesh'])
+            triplot(TRI_a,coordx_a+Scal*u_exp_a(1:2:end),...
+                coordy_a+Scal*u_exp_a(2:2:end),'r');
+            hold on
+            triplot(TRI_b,coordx_b+Scal*u_exp_b(1:2:end),...
+                coordy_b+Scal*u_exp_b(2:2:end),'r');
+            plot(coordx_a(points_a)+Scal*u_exp_a(2*points_a-1),...
+                coordy_a(points_a)+Scal*u_exp_a(2*points_a),'b.',...
+                L1x_sort,val1,'b','LineWidth',linewidth);
+            plot(coordx_b(points_b)+Scal*u_exp_b(2*points_b-1),...
+                coordy_b(points_b)+Scal*u_exp_b(2*points_b),'b.',...
+                L2x_sort,val2,'b','LineWidth',linewidth);
+            hold off
+            axis image
+            grid on
+            set(gca,'XLim',[min(coordx_a)-h/6,max(coordx_b+Scal*u_exp_b(1:2:end))+h/6])
+            set(gca,'YLim',[min(coordy_a)-h/6,max(coordy_b)+h/6])
+            set(gca,'FontSize',fontsize)
+            xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+            ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+            mysaveas(pathname,['best_fit_line_mesh_deformed_' numSample '_' numImage],formats,renderer);
+        end
         
         %-------------------------------
         % Reference and deformed meshes
         %-------------------------------
-        % figure('name',['Sample ' numSample ' - Image ' numImage ': Reference and deformed meshes'])
-        % triplot(TRI_a_dowel,coordx_a_dowel,coordy_a_dowel,'k');
-        % hold on
-        % triplot(TRI_b_dowel,coordx_b_dowel,coordy_b_dowel,'k');
-        % triplot(TRI_a_dowel,coordx_a_dowel+Scal*u_exp_a_dowel(1:2:end),...
-        %     coordy_a_dowel+Scal*u_exp_a_dowel(2:2:end),'r');
-        % triplot(TRI_b_dowel,coordx_b_dowel+Scal*u_exp_b_dowel(1:2:end),...
-        %     coordy_b_dowel+Scal*u_exp_b_dowel(2:2:end),'r');
-        % hold off
-        % axis equal
-        % grid on
-        % set(gca,'FontSize',fontsize)
-        % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
-        % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-        % mysaveas(pathname,['meshes_' numSample '_image_' numImage],formats,renderer);
+        if displayMesh
+            figure('name',['Sample ' numSample ' - Image ' numImage ': Reference and deformed meshes'])
+            triplot(TRI_a,coordx_a,coordy_a,'k');
+            hold on
+            triplot(TRI_b,coordx_b,coordy_b,'k');
+            triplot(TRI_a,coordx_a+Scal*u_exp_a(1:2:end),...
+                coordy_a+Scal*u_exp_a(2:2:end),'r');
+            triplot(TRI_b,coordx_b+Scal*u_exp_b(1:2:end),...
+                coordy_b+Scal*u_exp_b(2:2:end),'r');
+            hold off
+            axis image
+            grid on
+            set(gca,'XLim',[min(coordx_a)-h/6,max(coordx_b+Scal*u_exp_b(1:2:end))+h/6])
+            set(gca,'YLim',[min(coordy_a)-h/6,max(coordy_b)+h/6])
+            set(gca,'FontSize',fontsize)
+            xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
+            ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
+            mysaveas(pathname,['meshes_' numSample '_' numImage],formats,renderer);
+        end
         
     end
     
@@ -519,10 +514,10 @@ for j=1:numDowel
     fprintf('| Sample D%2d            |\n',j)
     disp('+-------+---------------+-----------+------------------+')
     disp('| Load  | Moment p.u.l. |   Angle   | Stiffness p.u.l. |')
-    disp('| F [N] |  ml [N.m/m]   | theta [°] |    k [N/rad]     |')
+    disp('| F [N] |  ml [N.m/m]   | theta [°] |    k [kN/rad]    |')
     disp('+-------+---------------+-----------+------------------+')
     for k=1:numImages
-        fprintf('|  %3d  | %13.4f | %9.4f | %16.4e |\n',F(k),ml(k),angle(k),ml(k)./deg2rad(angle(k)))
+        fprintf('|  %3d  | %13.4f | %9.4f | %16.4f |\n',F(k),ml(k),angle(k),ml(k)./deg2rad(angle(k))*1e-3)
     end
     disp('+-------+---------------+-----------+------------------+')
     
@@ -536,23 +531,23 @@ for j=1:numDowel
 end
 
 %% Save variables
-% save(fullfile(pathname,filenameS),'numScrew','sampleNumScrew',...
-%     'FS','mlS','angleS','kS','mean_KS_data');
-% save(fullfile(pathname,filenameD),'numDowel',...
-%     'FD','mlD','angleD','kD','mean_KD_data');
+save(fullfile(pathname,filenameS),'numScrews','sampleNumScrew',...
+    'FS','mlS','angleS','kS','mean_KS_data');
+save(fullfile(pathname,filenameD),'numDowels',...
+    'FD','mlD','angleD','kD','mean_KD_data');
 else
 %% Load variables
-load(fullfile(pathname,filenameS),'numScrew','sampleNumScrew',...
+load(fullfile(pathname,filenameS),'numScrews','sampleNumScrew',...
     'FS','mlS','angleS','kS','mean_KS_data');
-load(fullfile(pathname,filenameD),'numDowel',...
+load(fullfile(pathname,filenameD),'numDowels',...
     'FD','mlD','angleD','kD','mean_KD_data');
 end
 
 %% Plot data
 if displaySolution
-    color = distinguishable_colors(max(numScrew,numDowel));
+    colors = distinguishable_colors(max(numScrews,numDowels));
     
-    for i=1:numScrew
+    for i=1:numScrews
         j = sampleNumScrew(i);
         numSample = ['S' num2str(j)];
         
@@ -584,7 +579,7 @@ if displaySolution
         mymatlab2tikz(pathname,['data_stiffness_load_' numSample '.tex']);
     end
     
-    for j=1:numDowel
+    for j=1:numDowels
         numSample = ['D' num2str(j)];
         
         figure('name',['Dowel junction ' numSample ': Variation of angle w.r.t. bending moment per unit length'])
@@ -617,12 +612,12 @@ if displaySolution
     
     figure('name','Screw junctions: Variation of angle w.r.t. bending moment per unit length')
     clf
-    leg = cell(numScrew,1);
-    h = gobjects(numScrew,1);
-    for i=1:numScrew
-        plot(mlS{i},angleS{i},'+','Color',color(i,:),'LineWidth',linewidth)
+    leg = cell(numScrews,1);
+    h = gobjects(numScrews,1);
+    for i=1:numScrews
+        plot(mlS{i},angleS{i},'+','Color',colors(i,:),'LineWidth',linewidth)
         hold on
-        h(i) = plot(mlS{i},rad2deg(mlS{i}./mean_KS_data(i)),'LineStyle','-','Color',color(i,:),'LineWidth',linewidth);
+        h(i) = plot(mlS{i},rad2deg(mlS{i}./mean_KS_data(i)),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth);
         leg{i} = ['Sample #' num2str(i)];
     end
     grid on
@@ -635,11 +630,31 @@ if displaySolution
     mysaveas(pathname,'data_angle_moment_S',formats);
     mymatlab2tikz(pathname,'data_angle_moment_S.tex');
     
+    figure('name','Dowel junctions: Variation of angle w.r.t. bending moment per unit length')
+    clf
+    leg = cell(numDowels,1);
+    h = gobjects(numDowels,1);
+    for j=1:numDowels
+        plot(mlD{j},angleD{j},'+','Color',colors(j,:),'LineWidth',linewidth)
+        hold on
+        h(j) = plot(mlD{j},rad2deg(mlD{j}./mean_KD_data(j)),'LineStyle','-','Color',colors(j,:),'LineWidth',linewidth);
+        leg{j} = ['Sample #' num2str(j)];
+    end
+    grid on
+    set(gca,'FontSize',fontsize)
+    xlabel('Bending moment per unit length [N.m/m]','Interpreter',interpreter);
+    ylabel('Variation of angle [deg]','Interpreter',interpreter);
+    %xlabel('Moment lin\''eique de flexion [N.m/m]','Interpreter',interpreter);
+    %ylabel('Variation d''angle [deg]','Interpreter',interpreter);
+    legend(h(:),leg{:},'Location','NorthEastOutside')
+    mysaveas(pathname,'data_angle_moment_D',formats);
+    mymatlab2tikz(pathname,'data_angle_moment_D.tex');
+    
     figure('name','Screw junctions: Bending stiffness per unit length w.r.t. applied load')
     clf
-    leg = cell(numScrew,1);
-    for i=1:numScrew
-        plot(FS{i},kS{i}*1e-3,'+','Color',color(i,:),'LineWidth',linewidth)
+    leg = cell(numScrews,1);
+    for i=1:numScrews
+        plot(FS{i},kS{i}*1e-3,'+','Color',colors(i,:),'LineWidth',linewidth)
         hold on
         leg{i} = ['Sample #' num2str(i)];
     end
@@ -653,31 +668,11 @@ if displaySolution
     mysaveas(pathname,'data_stiffness_load_S',formats);
     mymatlab2tikz(pathname,'data_stiffness_load_S.tex');
     
-    figure('name','Dowel junctions: Variation of angle w.r.t. bending moment per unit length')
-    clf
-    leg = cell(numDowel,1);
-    h = gobjects(numDowel,1);
-    for j=1:numDowel
-        plot(mlD{j},angleD{j},'+','Color',color(j,:),'LineWidth',linewidth)
-        hold on
-        h(j) = plot(mlD{j},rad2deg(mlD{j}./mean_KD_data(j)),'LineStyle','-','Color',color(j,:),'LineWidth',linewidth);
-        leg{j} = ['Sample #' num2str(j)];
-    end
-    grid on
-    set(gca,'FontSize',fontsize)
-    xlabel('Bending moment per unit length [N.m/m]','Interpreter',interpreter);
-    ylabel('Variation of angle [deg]','Interpreter',interpreter);
-    %xlabel('Moment lin\''eique de flexion [N.m/m]','Interpreter',interpreter);
-    %ylabel('Variation d''angle [deg]','Interpreter',interpreter);
-    legend(h(:),leg{:},'Location','NorthEastOutside')
-    mysaveas(pathname,'data_angle_moment_D',formats);
-    mymatlab2tikz(pathname,'data_angle_moment_D.tex');
-    
     figure('name','Dowel junctions: Bending stiffness per unit length w.r.t. applied load')
     clf
-    leg = cell(numDowel,1);
-    for j=1:numDowel
-        plot(FD{j},kD{j}*1e-3,'+','Color',color(j,:),'LineWidth',linewidth)
+    leg = cell(numDowels,1);
+    for j=1:numDowels
+        plot(FD{j},kD{j}*1e-3,'+','Color',colors(j,:),'LineWidth',linewidth)
         hold on
         leg{j} = ['Sample #' num2str(j)];
     end
@@ -690,7 +685,7 @@ if displaySolution
     legend(leg{:},'Location','NorthEastOutside')
     mysaveas(pathname,'data_stiffness_load_D',formats);
     mymatlab2tikz(pathname,'data_stiffness_load_D.tex');
-
+    
     figure('Name','Screw junctions: Bending stiffness per unit length')
     clf
     bar(mean_KS_data*1e-3);
