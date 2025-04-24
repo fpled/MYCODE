@@ -130,7 +130,7 @@ if displaySolution
         for j=1:length(bS_series)
             bS_j = bS_series(j);
             paramS_ij = [aS_i,bS_j];
-            loglfS(i,j) = -gamlike(paramS_ij,KS_data);
+            loglfS(j,i) = -gamlike(paramS_ij,KS_data);
         end
     end
     
@@ -142,7 +142,7 @@ if displaySolution
         for j=1:length(bD_series)
             bD_j = bD_series(j);
             paramD_ij = [aD_i,bD_j];
-            loglfD(i,j) = -gamlike(paramD_ij,KD_data);
+            loglfD(j,i) = -gamlike(paramD_ij,KD_data);
         end
     end
     
