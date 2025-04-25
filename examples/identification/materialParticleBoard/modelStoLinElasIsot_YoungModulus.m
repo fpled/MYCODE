@@ -138,7 +138,7 @@ if displaySolution
         for j=1:length(b_series)
             b_j = b_series(j);
             param_ij = [aS_i,b_j];
-            loglf(i,j) = -gamlike(param_ij,E_data);
+            loglf(j,i) = -gamlike(param_ij,E_data);
         end
     end
     
