@@ -116,7 +116,7 @@ for j=1:numSamples
         %zlabel('Erreur','Interpreter',interpreter)
         mysaveas(pathname,['error_EL_NUL_' numSample '_' numImage '_3D'],formats);
         close(gcf)
-
+        
         figure('Name','Contour plot: Error with respect to EL and NUL')
         clf
         contourf(NUL_series,EL_series,err_series,30);
@@ -131,7 +131,7 @@ for j=1:numSamples
         ylabel('$E_L$ [MPa]','Interpreter',interpreter)
         mysaveas(pathname,['error_EL_NUL_' numSample '_' numImage '_2D'],formats);
         close(gcf)
-
+        
         toc(t)
     end
 end

@@ -87,6 +87,7 @@ for j=1:numSamples
         zlabel('Error','Interpreter',interpreter)
         %zlabel('Erreur','Interpreter',interpreter)
         mysaveas(pathname,['error_ET_GL_' numSample '_' numImage '_3D'],formats);
+        close(gcf)
         
         figure('Name','Contour plot: Error with respect to ET and GL')
         clf
@@ -101,6 +102,7 @@ for j=1:numSamples
         xlabel('$G_L$ [MPa]','Interpreter',interpreter)
         ylabel('$E_T$ [MPa]','Interpreter',interpreter)
         mysaveas(pathname,['error_ET_GL_' numSample '_' numImage '_2D'],formats);
+        close(gcf)
         
         toc(t)
     end
