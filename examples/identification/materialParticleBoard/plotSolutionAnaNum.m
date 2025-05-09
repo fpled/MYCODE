@@ -16,7 +16,7 @@ load(fullfile(pathname,filenameNum));
 fontsize = 16;
 interpreter = 'latex';
 formats = {'fig','epsc'};
-renderer = 'OpenGL';
+renderer = 'painters';
 
 %% Compute analytical and numerical solutions
 % geometric dimensions

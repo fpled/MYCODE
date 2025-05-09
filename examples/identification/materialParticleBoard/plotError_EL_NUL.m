@@ -81,7 +81,7 @@ for j=1:numSamples
         % u_exp_in = u_exp_in(:);
         
         EL_series=linspace(EL*0.5,EL*1.5,1e2);
-        NUL_series=linspace(eps,0.025,1e2);
+        NUL_series=linspace(eps,0.02,1e2);
         
         err_series = zeros(length(EL_series),length(NUL_series));
         for m=1:length(EL_series)
@@ -104,12 +104,15 @@ for j=1:numSamples
         clf
         surfc(NUL_series,EL_series,err_series,'EdgeColor','none');
         colorbar
+        %view(-37.5,30) % default view
+        view(-50,30)
         hold on
         % scatter3(NUL_min,EL_min,err_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
         scatter3(NUL,EL,err,'MarkerEdgeColor','k','MarkerFaceColor','r');
         hold off
         set(gca,'FontSize',fontsize)
         % set(gca,'ZScale','log')
+        set(gca,'XLim',[min(NUL_series),max(NUL_series)*1.1])
         xlabel('$\nu_L$','Interpreter',interpreter)
         ylabel('$E_L$ [MPa]','Interpreter',interpreter)
         zlabel('Error','Interpreter',interpreter)

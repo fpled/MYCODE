@@ -26,7 +26,6 @@ fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
 formats = {'fig','epsc'};
-renderer = 'OpenGL';
 
 Scal = 1;
 Unitx = '[mm]';
@@ -207,7 +206,7 @@ for i=1:numScrews
         % set(gca,'FontSize',fontsize)
         % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
         % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-        % mysaveas(pathname,['best_fit_line_mesh_init_' numSample '_' numImage],formats,renderer);
+        % mysaveas(pathname,['best_fit_line_mesh_init_' numSample '_' numImage],formats);
         
         L1x = coordx_a(points_a)+Scal*u_exp_a(2*points_a-1);
         L1y = coordy_a(points_a)+Scal*u_exp_a(2*points_a);
@@ -244,7 +243,7 @@ for i=1:numScrews
         % set(gca,'FontSize',fontsize)
         % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
         % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-        % mysaveas(pathname,['best_fit_line_mesh_deformed_' numSample '_' numImage],formats,renderer);
+        % mysaveas(pathname,['best_fit_line_mesh_deformed_' numSample '_' numImage],formats);
         
         %-------------------------------
         % Reference and deformed meshes
@@ -263,7 +262,7 @@ for i=1:numScrews
         % set(gca,'FontSize',fontsize)
         % xlabel(['$y$ ',Unitx],'Interpreter',interpreter)
         % ylabel(['$z$ ',Unitx],'Interpreter',interpreter)
-        % mysaveas(pathname,['meshes_' numSample '_' numImage],formats,renderer);
+        % mysaveas(pathname,['meshes_' numSample '_' numImage],formats);
         
     end
     
