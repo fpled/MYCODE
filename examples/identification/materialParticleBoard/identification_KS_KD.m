@@ -543,6 +543,19 @@ load(fullfile(pathname,filenameD),'numDowels',...
     'FD','mlD','angleD','kD','mean_KD_data');
 end
 
+%% Statistics
+fprintf('\nScrew junctions: Bending stiffness per unit length kS\n');
+fprintf('mean(kS) = %g kN/rad\n',mean(mean_KS_data));
+fprintf('var(kS)  = %g (kN/rad)^2\n',var(mean_KS_data));
+fprintf('std(kS)  = %g kN/rad\n',std(mean_KS_data));
+fprintf('cv(kS)   = %g\n',std(mean_KS_data)/mean(mean_KS_data));
+
+fprintf('\nDowel junctions: Bending stiffness per unit length kD\n');
+fprintf('mean(kD) = %g kN/rad\n',mean(mean_KD_data));
+fprintf('var(kD)  = %g (kN/rad)^2\n',var(mean_KD_data));
+fprintf('std(kD)  = %g kN/rad\n',std(mean_KD_data));
+fprintf('cv(kD)   = %g\n',std(mean_KD_data)/mean(mean_KD_data));
+
 %% Plot data
 if displaySolution
     colors = distinguishable_colors(max(numScrews,numDowels));

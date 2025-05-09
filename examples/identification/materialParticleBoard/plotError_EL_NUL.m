@@ -4,6 +4,7 @@
 % clc
 clearvars
 close all
+myparallel('start');
 
 %% Input Data
 filenameAna = 'data_ET_GL.mat';
@@ -80,12 +81,12 @@ for j=1:numSamples
         % u_exp_in = u_exp_in(:);
         
         EL_series=linspace(EL*0.5,EL*1.5,1e2);
-        NUL_series=linspace(eps,0.1,1e2);
+        NUL_series=linspace(eps,0.025,1e2);
         
         err_series = zeros(length(EL_series),length(NUL_series));
         for m=1:length(EL_series)
             EL_m = EL_series(m);
-            for n=1:length(NUL_series)
+            parfor n=1:length(NUL_series)
                 NUL_n = NUL_series(n);
                 x = [EL_m NUL_n];
                 u_num_in = solveThreePointBendingNum(x,S);
@@ -114,7 +115,8 @@ for j=1:numSamples
         zlabel('Error','Interpreter',interpreter)
         %zlabel('Erreur','Interpreter',interpreter)
         mysaveas(pathname,['error_EL_NUL_' numSample '_' numImage '_3D'],formats);
-        
+        close(gcf)
+
         figure('Name','Contour plot: Error with respect to EL and NUL')
         clf
         contourf(NUL_series,EL_series,err_series,30);
@@ -128,7 +130,10 @@ for j=1:numSamples
         xlabel('$\nu_L$','Interpreter',interpreter)
         ylabel('$E_L$ [MPa]','Interpreter',interpreter)
         mysaveas(pathname,['error_EL_NUL_' numSample '_' numImage '_2D'],formats);
-        
+        close(gcf)
+
         toc(t)
     end
 end
+
+myparallel('stop');

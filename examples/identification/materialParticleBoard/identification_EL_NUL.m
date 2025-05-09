@@ -173,6 +173,19 @@ load(fullfile(pathname,filenameNum),'EL_data','NUL_data','err_num_data',...
     'mean_EL_data','mean_NUL_data','std_EL_data','std_NUL_data');
 end
 
+%% Statistics
+fprintf('\nLongitudinal Young''s modulus EL\n');
+fprintf('mean(EL) = %g GPa\n',mean(mean_EL_data));
+fprintf('var(EL)  = %g (GPa)^2\n',var(mean_EL_data));
+fprintf('std(EL)  = %g GPa\n',std(mean_EL_data));
+fprintf('cv(EL)   = %g\n',std(mean_EL_data)/mean(mean_EL_data));
+
+fprintf('\nLongitudinal Poisson''s ratio NUL\n');
+fprintf('mean(NUL) = %g MPa\n',mean(mean_NUL_data));
+fprintf('var(NUL)  = %g (MPa)^2\n',var(mean_NUL_data));
+fprintf('std(NUL)  = %g MPa\n',std(mean_NUL_data));
+fprintf('cv(NUL)   = %g\n',std(mean_NUL_data)/mean(mean_NUL_data));
+
 %% Plot data
 if displaySolution
     numSamples = length(EL_data);

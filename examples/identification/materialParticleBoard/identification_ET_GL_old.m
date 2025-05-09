@@ -11,7 +11,7 @@ close all
 
 %% Input data
 solveProblem = true;
-displayMesh = false;
+displayMesh = true;
 displaySolution = true;
 
 filename = 'data_ET_GL.mat';
@@ -89,7 +89,7 @@ for j=1:numSamples
         %-------------------------------
         % Reference and deformed meshes
         %-------------------------------
-        if displayMesh && (k==6 || k == numImages)
+        if displayMesh && (k==6 || k==numImages)
             figure('name',['Sample ' numSample ' - Image ' numImage ': Reference and deformed meshes'])
             triplot(Mesh.TRI,coord(:,1),coord(:,2),'k');
             hold on
@@ -191,6 +191,19 @@ load(fullfile(pathname,filename),'ET_data','GL_data',...
     'mean_ET_data','mean_GL_data','std_ET_data','std_GL_data',...
     'mean_R0_data','mean_U0_data','mean_V0_data','std_R0_data','std_U0_data','std_V0_data');
 end
+
+%% Statistics
+fprintf('\nTransverse Young''s modulus ET\n');
+fprintf('mean(ET) = %g GPa\n',mean(mean_ET_data*1e-3));
+fprintf('var(ET)  = %g (GPa)^2\n',var(mean_ET_data*1e-3));
+fprintf('std(ET)  = %g GPa\n',std(mean_ET_data*1e-3));
+fprintf('cv(ET)   = %g\n',std(mean_ET_data)/mean(mean_ET_data));
+
+fprintf('\nLongitudinal shear modulus GL\n');
+fprintf('mean(GL) = %g MPa\n',mean(mean_GL_data));
+fprintf('var(GL) = %g (MPa)^2\n',var(mean_GL_data));
+fprintf('std(GL)  = %g MPa\n',std(mean_GL_data));
+fprintf('cv(GL)   = %g\n',std(mean_GL_data)/mean(mean_GL_data));
 
 %% Plot data
 if displaySolution

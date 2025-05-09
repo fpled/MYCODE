@@ -285,13 +285,20 @@ for j=2
 end
 
 %% Save variables
-% save(fullfile(pathname,filename),'numDowels',...
-%     'FD','mlD','angleD','kD','mean_KD_data');
+save(fullfile(pathname,filename),'numDowels',...
+    'FD','mlD','angleD','kD','mean_KD_data');
 else
 %% Load variables
 load(fullfile(pathname,filename),'numDowels',...
     'FD','mlD','angleD','kD','mean_KD_data');
 end
+
+%% Statistics
+fprintf('\nDowel junctions: Bending stiffness per unit length kD\n');
+fprintf('mean(kD) = %g kN/rad\n',mean(mean_KD_data));
+fprintf('var(kD)  = %g (kN/rad)^2\n',var(mean_KD_data));
+fprintf('std(kD)  = %g kN/rad\n',std(mean_KD_data));
+fprintf('cv(kD)   = %g\n',std(mean_KD_data)/mean(mean_KD_data));
 
 %% Plot data
 if displaySolution
