@@ -847,7 +847,7 @@ if displaySolution
 %         if mod(i,100)==0
 %             close all
 %         end
-%         figure('Name',['Force-displacement #' num2str(sampleindices(i))])
+%         figure('Name',['Force vs displacement #' num2str(sampleindices(i))])
 %         clf
 %         plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
 %         hold on
@@ -946,7 +946,7 @@ if displaySolution
     set(l,'Interpreter',interpreter)
     mysaveas(pathname,'pdf_udc',formats,renderer);
     mymatlab2tikz(pathname,'pdf_udc.tex');
-
+    
     %% Display pdf of fracture toughness
     figure('Name','Probability Density Estimate: Fracture toughness')
     clf

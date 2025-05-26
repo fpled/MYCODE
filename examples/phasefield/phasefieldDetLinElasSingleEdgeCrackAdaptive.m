@@ -253,7 +253,7 @@ if setProblem
     S = S_phase;
     
     S_phase = setmaterial(S_phase,mat_phase);
-
+    
     if strcmpi(initialCrack,'geometriccrack')
         S_phase = final(S_phase,'duplicate');
     else

@@ -979,7 +979,7 @@ if displaySolution
         % plotSolution(S,uj,'energyint','','ampl',ampl);
         % mysaveas(pathname,['internal_energy_mean_t' num2str(rep(j))],formats,renderer);
     end
-
+    
     for k=1:size(dt_sample,1)
     for j=1:length(rep)
         dj = dt_sample(k,:,rep(j))';
@@ -1052,7 +1052,7 @@ if makeMovie
     % evolSolution(S,uk,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises_mean','pathname',pathname,options{:});
     % evolSolution(S,uk,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises_mean','pathname',pathname,options{:});
     % evolSolution(S,uk,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_mean','pathname',pathname,options{:});
-
+    
     for k=1:size(dt_sample,1)
         dk = TIMEMATRIX(reshape(dt_sample(k,:,:),sz_d),T);
         % uk = TIMEMATRIX(reshape(ut_sample(k,:,:),sz_u),T);
@@ -1087,7 +1087,7 @@ if saveParaview
             pathname,'solution_mean_variance',1,i-1);
     end
     make_pvd_file(pathname,'solution_mean_variance',1,length(T));
-
+    
     for k=1:size(dt_sample,1)
         for i=1:length(T)
             di = dt_sample(k,:,rep(i))';

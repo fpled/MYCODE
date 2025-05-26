@@ -281,7 +281,7 @@ if setProblem
     
     addbc = @(S,ud) addbcLshapedPanel(S,ud,BL,BRight);
     findddlforce = @(S) findddl(S,'UY',BRight);
-
+    
     S = final(S);
     
     ud = 0;
@@ -535,7 +535,7 @@ if displaySolution
     ylabel('Maximum damage','Interpreter',interpreter)
     mysaveas(pathname,'max_damage_displacement',formats);
     mymatlab2tikz(pathname,'max_damage_displacement.tex');
-
+    
     if selfhealing
         %% Display maximum healing-displacement curve
         figure('Name','Maximum healing vs displacement')
@@ -548,7 +548,7 @@ if displaySolution
         ylabel('Maximum healing','Interpreter',interpreter)
         mysaveas(pathname,'max_healing_displacement',formats);
         mymatlab2tikz(pathname,'max_healing_displacement.tex');
-
+        
          %% Display maximum effective damage-displacement curve
         figure('Name','Maximum effective damage vs displacement')
         clf

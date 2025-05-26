@@ -252,7 +252,7 @@ if setProblem
     
     addbc = @(S,ud) addbcLshapedPanel(S,ud,BL,BRight);
     findddlforce = @(S) findddl(S,'UY',BRight);
-
+    
     S = final(S);
     
     ud = 0;
@@ -461,7 +461,7 @@ if displaySolution
     ylabel('Displacement [mm]','Interpreter',interpreter)
     mysaveas(pathname,'displacement_loading_step',formats);
     mymatlab2tikz(pathname,'displacement_loading_step.tex');
-
+    
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
