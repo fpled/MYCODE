@@ -88,7 +88,7 @@ seg = numpoints(seg);
 G = createpoints(G,PL1,clL1,numpoints(1:2));
 G = createpoints(G,PL2,clL2,numpoints(3:4));
 G = createlines(G,seg,numlines);
-G = embedlinesinsurface(G,numlines,1);
+G = embedcurvesinsurface(G,numlines,1);
 
 if ischarin('recombine',varargin)
     G = recombinesurface(G,1);

@@ -55,7 +55,7 @@ numlineloop = numlineloop(end)+1;
 G = createpoints(G,PQ1,clQ1,numpoints);
 G = createcontour(G,[9 2 10:12],numlines,numlineloop);
 G = createplanesurface(G,numlineloop,1);
-G = embedlinesinsurface(G,[2 6],1);
+G = embedcurvesinsurface(G,[2 6],1);
 if ischarin('recombine',varargin)
     G = recombinesurface(G,1);
 end
@@ -67,7 +67,7 @@ numlineloop = numlineloop(end)+1;
 G = createpoints(G,PQ2,clQ2,numpoints);
 G = createcontour(G,[13 1 14:16],numlines,numlineloop);
 G = createplanesurface(G,numlineloop,2);
-G = embedlinesinsurface(G,[4 8],2);
+G = embedcurvesinsurface(G,[4 8],2);
 if ischarin('recombine',varargin)
     G = recombinesurface(G,2);
 end
@@ -108,7 +108,7 @@ GCiQ3eI = gmshfile(GCiQ3eI,clCiQ3eI,numpoints(1),numpoints(2:end),numlines,numli
 G = G+GCiQ3eI;
 
 G = createplanesurface(G,numlineloop([1 3 4]),3);
-G = embedlinesinsurface(G,[12 17],3);
+G = embedcurvesinsurface(G,[12 17],3);
 if ischarin('recombine',varargin)
     G = recombinesurface(G,3);
 end

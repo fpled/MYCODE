@@ -37,7 +37,7 @@ for j=1:length(L)
 end
 G = createcontour(G,[1:3,numpoints(end),4],1:5,1);
 G = createplanesurface(G,1,1);
-G = embedlinesinsurface(G,numlines,1);
+G = embedcurvesinsurface(G,numlines,1);
 
 if ischarin('recombine',varargin)
     G = recombinesurface(G,1);

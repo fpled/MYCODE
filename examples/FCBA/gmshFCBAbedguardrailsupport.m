@@ -22,7 +22,7 @@ G = createplanesurface(G,1,1);
 if ischarin('recombine',varargin)
     G = recombinesurface(G,1);
 end
-G = embedlineinsurface(G,1,1);
+G = embedcurveinsurface(G,1,1);
 
 varargin = delonlycharin('recombine',varargin);
 
