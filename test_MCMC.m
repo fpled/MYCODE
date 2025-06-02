@@ -133,8 +133,7 @@ xlabel('Number of samples','Interpreter',interpreter)
 ylabel('Mean value','Interpreter',interpreter)
 %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
 %ylabel('Moyenne','Interpreter',interpreter)
-l = legend('$C_1$','$C_2$','$C_3$');
-set(l,'Interpreter',interpreter)
+legend('$C_1$','$C_2$','$C_3$','Interpreter',interpreter)
 % mysaveas(pathname,'convergence_mean_C1_C2_C3_lambda_init',formats);
 % mymatlab2tikz(pathname,'convergence_mean_C1_C2_C3_lambda_init.tex');
 

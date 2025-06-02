@@ -6,6 +6,5 @@ grid on
 box on
 set(gca,'FontSize',16)
 xlabel('$m$','Interpreter','latex')
-l = legend('$E^2_{\mathrm{CRE}}$');
-set(l,'Interpreter','latex')
+legend('$E^2_{\mathrm{CRE}}$','Interpreter','latex')
 mymatlab2tikz('.','toto.tex');
