@@ -238,8 +238,7 @@ box on
 set(gca,'FontSize',fontsize)
 xlabel('Deplacement [mm]','Interpreter',interpreter)
 ylabel('Force [MN]','Interpreter',interpreter)
-leg = legend('$F_{\mathrm{exp}}$','$F$','Location','NorthWest');
-set(leg,'Interpreter',interpreter);
+legend('$F_{\mathrm{exp}}$','$F$','Location','NorthWest','Interpreter',interpreter)
 mysaveas(pathname,'force_displacement',formats);
 
 % Evolution of displacement
@@ -265,8 +264,7 @@ box on
 set(gca,'FontSize',fontsize)
 xlabel('Nombre d''iterations','Interpreter',interpreter)
 ylabel('Force [MN]','Interpreter',interpreter)
-leg = legend('$F_{\mathrm{exp}}$','$F$','Location','NorthWest');
-set(leg,'Interpreter',interpreter);
+legend('$F_{\mathrm{exp}}$','$F$','Location','NorthWest','Interpreter',interpreter)
 mysaveas(pathname,'force',formats);
 
 % Evolution of damage
@@ -281,8 +279,7 @@ box on
 set(gca,'FontSize',fontsize)
 xlabel('Nombre d''iterations','Interpreter',interpreter)
 ylabel('Endommagement','Interpreter',interpreter)
-leg = legend('barre 1','barre 2','Location','NorthWest');
-% set(leg,'Interpreter',interpreter);
+legend('barre 1','barre 2','Location','NorthWest')
 mysaveas(pathname,'damage',formats);
 
 % Evolution of debonding displacement
@@ -297,8 +294,7 @@ box on
 set(gca,'FontSize',fontsize)
 xlabel('Nombre d''iterations','Interpreter',interpreter)
 ylabel('Glissement [mm]','Interpreter',interpreter)
-leg = legend('barre 1','barre 2','Location','NorthWest');
-% set(leg,'Interpreter',interpreter);
+legend('barre 1','barre 2','Location','NorthWest')
 mysaveas(pathname,'displacement_debonding',formats);
 
 % Evolution of debonding force
@@ -313,8 +309,7 @@ box on
 set(gca,'FontSize',fontsize)
 xlabel('Nombre d''iterations','Interpreter',interpreter)
 ylabel('Force de glissement [MN]','Interpreter',interpreter)
-leg = legend('barre 1','barre 2','Location','NorthWest');
-% set(leg,'Interpreter',interpreter);
+legend('barre 1','barre 2','Location','NorthWest')
 mysaveas(pathname,'force_debonding',formats);
 
 % Evolution of dissipated energy
@@ -333,7 +328,6 @@ box on
 set(gca,'FontSize',fontsize)
 xlabel('Nombre d''iterations','Interpreter',interpreter)
 ylabel('Energie dissipee [J/m$^3$]','Interpreter',interpreter)
-leg = legend('barre 1 - total','barre 1 - endommagement','barre 1 - glissement',...
-    'barre 2 - total','barre 2 - endommagement','barre 2 - glissement','Location','NorthWest');
-% set(leg,'Interpreter',interpreter);
+legend('barre 1 - total','barre 1 - endommagement','barre 1 - glissement',...
+    'barre 2 - total','barre 2 - endommagement','barre 2 - glissement','Location','NorthWest')
 mysaveas(pathname,'disspated_energy',formats);

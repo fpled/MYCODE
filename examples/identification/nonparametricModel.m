@@ -169,9 +169,9 @@ if displayCv
     % xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
     % ylabel('Erreur relative','Interpreter',interpreter)
     if mod(lambda,1)==0
-        l = legend('Univariate normal and Gamma distributions','Wishart distribution','Multivariate normal distribution','Multivariate standard normal distribution','$1/\sqrt{N}$');
+        legend('Univariate normal and Gamma distributions','Wishart distribution','Multivariate normal distribution','Multivariate standard normal distribution','$1/\sqrt{N}$','Interpreter',interpreter)
     else
-        l = legend('Univariate normal and Gamma distributions','$1/\sqrt{N}$');
+        legend('Univariate normal and Gamma distributions','$1/\sqrt{N}$','Interpreter',interpreter)
     end
     set(l,'Interpreter',interpreter);
     mysaveas(pathname,'convergence_empirical_mean','fig');

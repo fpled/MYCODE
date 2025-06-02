@@ -209,9 +209,8 @@ set(gca,'FontSize',fontsize)
 hg = hggroup;
 set([h(:),hD],'Parent',hg);
 axis image
-l = legend(hD,'{\boldmath$u$}$^{\mathrm{exp}}$','Location','NorthEastOutside');
-% l = legend(hD,legD,'Location','NorthEastOutside');
-set(l,'Interpreter',interpreter);
+legend(hD,'{\boldmath$u$}$^{\mathrm{exp}}$','Location','NorthEastOutside','Interpreter',interpreter)
+% legend(hD,legD,'Location','NorthEastOutside','Interpreter',interpreter)
 mysaveas(pathname,'boundary_conditions',formats,renderer);
 
 plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);

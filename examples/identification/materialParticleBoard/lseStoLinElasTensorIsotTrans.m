@@ -75,8 +75,7 @@ lambda0 = [la1 la2 la3 la4 la5 la];
 % ylabel('Mean value','Interpreter',interpreter)
 % %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
 % %ylabel('Moyenne','Interpreter',interpreter)
-% l = legend('$C_1$','$C_2$','$C_3$');
-% set(l,'Interpreter',interpreter)
+% legend('$C_1$','$C_2$','$C_3$','Interpreter',interpreter)
 % mysaveas(pathname,'convergence_mean_C1_C2_C3_lambda_init',formats);
 % mymatlab2tikz(pathname,'convergence_mean_C1_C2_C3_lambda_init.tex');
 % 
@@ -140,8 +139,7 @@ fun = @(lambda) funoptimlseIsotTrans(lambda,C_data,mC_data,nuC_data,MCMCalg);
 % ylabel('Mean value','Interpreter',interpreter)
 % %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
 % %ylabel('Moyenne','Interpreter',interpreter)
-% l = legend('$C_1$','$C_2$','$C_3$');
-% set(l,'Interpreter',interpreter)
+% legend('$C_1$','$C_2$','$C_3$','Interpreter',interpreter)
 % mysaveas(pathname,'convergence_mean_C1_C2_C3_lambda_opt',formats);
 % mymatlab2tikz(pathname,'convergence_mean_C1_C2_C3_lambda_opt.tex');
 % 

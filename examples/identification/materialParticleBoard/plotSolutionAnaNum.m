@@ -90,9 +90,8 @@ for j=1:numSamples
         hg = hggroup;
         set([hM(:),hD],'Parent',hg);
         axis image
-        l = legend(hD,'{\boldmath$u$}$^{\mathrm{exp}}$','Location','NorthEastOutside');
-        % l = legend(hD,legD,'Location','NorthEastOutside');
-        set(l,'Interpreter',interpreter);
+        legend(hD,'{\boldmath$u$}$^{\mathrm{exp}}$','Location','NorthEastOutside','Interpreter',interpreter)
+        % legend(hD,legD,'Location','NorthEastOutside','Interpreter',interpreter)
         mysaveas(pathname,['u_exp_imposed_' numSample '_' numImage],formats,renderer);
         
         ampl = 0;
