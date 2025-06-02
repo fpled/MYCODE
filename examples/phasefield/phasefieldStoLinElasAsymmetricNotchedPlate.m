@@ -518,7 +518,8 @@ if displaySolution
     ylabel('$p_{F_{\mathrm{max}}}(f)$','Interpreter',interpreter)
     legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value','Interpreter',interpreter)
+        'mean value',...
+        'Direction','normal','Interpreter',interpreter)
     mysaveas(pathname,'pdf_fmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fmax.tex');
     
@@ -538,7 +539,8 @@ if displaySolution
     ylabel('$p_{F_c}(f)$','Interpreter',interpreter)
     legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value','Interpreter',interpreter)
+        'mean value',...
+        'Direction','normal','Interpreter',interpreter)
     mysaveas(pathname,'pdf_fc',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fc.tex');
     
@@ -558,7 +560,8 @@ if displaySolution
     ylabel('$p_{U_{D,\mathrm{max}}}(u)$','Interpreter',interpreter)
     legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value','Interpreter',interpreter)
+        'mean value',...
+        'Direction','normal','Interpreter',interpreter)
     mysaveas(pathname,'pdf_udmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_udmax.tex');
     
@@ -578,7 +581,8 @@ if displaySolution
     ylabel('$p_{U_{D,c}}(u)$','Interpreter',interpreter)
     legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value','Interpreter',interpreter)
+        'mean value',...
+        'Direction','normal','Interpreter',interpreter)
     mysaveas(pathname,'pdf_udc',formats,renderer);
     mymatlab2tikz(pathname,'pdf_udc.tex');
     
