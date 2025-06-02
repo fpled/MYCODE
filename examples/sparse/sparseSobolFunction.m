@@ -7,7 +7,7 @@
 % clc
 clearvars
 close all
-% rng('default');
+rng('default');
 
 %% Input data
 filename = 'sobolFunction';
@@ -59,7 +59,7 @@ fprintf('order = [ %s ]\n',num2str(max(f.basis.indices.array)))
 % disp(f.basis.indices.array)
 fprintf('nb samples = %d\n',size(y,1))
 fprintf('optimal nb samples = %d (according to empirical rule without regularization)\n',(ndims(f.basis)-1)*cardinal(f.basis))
-fprintf('CV error = %d\n',err)
+fprintf('CV error = %e\n',err)
 fprintf('elapsed time = %f s\n',time)
 
 %% Test

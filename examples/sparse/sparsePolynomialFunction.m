@@ -5,7 +5,7 @@
 % clc
 clearvars
 close all
-% rng('default');
+rng('default');
 
 %% Input data
 filename = 'polynomialFunction';
@@ -38,7 +38,7 @@ bases = FunctionalBases(bases);
 
 s = AdaptiveSparseTensorAlgorithm();
 s.tol = 1e-12;
-s.tolStagnation = 5e-2;
+s.tolStagnation = 1e-1;
 s.display = true;
 s.displayIterations = true;
 
@@ -57,7 +57,7 @@ fprintf('order = [ %s ]\n',num2str(max(f.basis.indices.array)))
 % fprintf('multi-index set = \n')
 % disp(f.basis.indices.array)
 fprintf('nb samples = %d\n',size(y,1))
-fprintf('CV error = %d\n',err)
+fprintf('CV error = %e\n',err)
 fprintf('elapsed time = %f s\n',time)
 
 %% Test

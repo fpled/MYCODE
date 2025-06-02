@@ -4,7 +4,7 @@
 % clc
 clearvars
 close all
-% rng('default');
+rng('default');
 
 %% Input data
 filename = 'geometricBrownian';
@@ -16,11 +16,17 @@ end
 
 %% Vector-valued geometric brownian
 d = 10; % parametric dimension
+c = -1;
+s = 0.5;
+T = 1;
 m = 101; % output size
+n = m-1;
 
-fun = @(x) geometricBrownianKL(x,-1,0.5,1,m-1);
-v = NormalRandomVariable(0,1);
-rv = RandomVector(v,d);
+% fun = @(x) geometricBrownian(x,c,s,T,n);
+% v = NormalRandomVariable(0,1);
+% rv = RandomVector(v,d);
+
+[fun,rv] = multivariateFunctionsBenchmarks('geometricbrownian',d,c,s,T,n);
 
 fun = UserDefinedFunction(fun,d,m);
 fun.evaluationAtMultiplePoints = true;
@@ -38,6 +44,7 @@ s.displayIterations = true;
 
 ls = LinearModelLearningSquareLoss();
 ls.errorEstimation = true;
+ls.sharedCoefficients = false;
 
 t = tic;
 [f,err,~,y] = s.leastSquares(fun,bases,ls,rv);
@@ -51,7 +58,7 @@ fprintf('order = [ %s ]\n',num2str(max(f.basis.indices.array)))
 % fprintf('multi-index set = \n')
 % disp(f.basis.indices.array)
 fprintf('nb samples = %d\n',size(y,1))
-fprintf('CV error = %d\n',norm(err))
+fprintf('CV error = %e\n',norm(err))
 fprintf('elapsed time = %f s\n',time)
 
 %% Test
@@ -61,9 +68,9 @@ fprintf('mean squared error = %d\n',errL2)
 
 %% Display random evaluations
 x = random(rv,1);
-plotGeometricBrownianKL(fun(x),f(x));
-mysaveas(pathname,'geometric_brownian_kl.fig','fig');
-mymatlab2tikz(pathname,'geometric_brownian_kl.tex');
+plotGeometricBrownian(fun(x),f(x));
+mysaveas(pathname,'geometric_brownian','fig');
+mymatlab2tikz(pathname,'geometric_brownian.tex');
 
 %% Display multi-index set
 dim = [1 3 5];
