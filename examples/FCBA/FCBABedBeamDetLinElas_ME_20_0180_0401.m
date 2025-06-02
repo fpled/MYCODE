@@ -555,11 +555,12 @@ if displaySolution
     hold off
     set(gca,'FontSize',fontsize)
     if slat
-        l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1),h7(1),h8(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','slat','long slat','Location','NorthEastOutside');
+        legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1),h7(1),h8(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','slat','long slat',...
+            'Location','NorthEastOutside')
     else
-        l = legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support','Location','NorthEastOutside');
+        legend([h1(1),h2(1),h3(1),h4(1),h5(1),h6(1)],'leg','bottom rail','side rail','end rail','guard rail','guard rail support',...
+            'Location','NorthEastOutside')
     end
-    %set(l,'Interpreter','latex')
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
