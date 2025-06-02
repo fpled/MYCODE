@@ -663,9 +663,8 @@ if displaySolution
         set(gca,'FontSize',fontsize)
         xlabel('Displacement [mm]','Interpreter',interpreter)
         ylabel('Force [kN]','Interpreter',interpreter)
-        leg = legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-            'mean value'},'Location','NorthWest');
-        set(leg,'Interpreter','latex')
+        legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+            'mean value'},'Location','NorthWest','Interpreter','latex')
         mysaveas(figPathname,['force_displacement' solFileAppend],formats);
         % mymatlab2tikz(figPathname,['force_displacement' solFileAppend '.tex']);
     
@@ -683,10 +682,9 @@ if displaySolution
         set(gca,'FontSize',fontsize)
         xlabel('$f$ [kN]','Interpreter',interpreter)
         ylabel('$p_{F_c}(f)$','Interpreter',interpreter)
-        leg = legend('pdf',...
+        legend('pdf',...
             ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-            'mean value');
-        set(leg,'Interpreter',interpreter)
+            'mean value''Interpreter',interpreter)
         mysaveas(figPathname,['pdf_fmax' solFileAppend],formats,renderer);
         % mymatlab2tikz(figPathname,['pdf_fmax' solFileAppend '.tex']);
     

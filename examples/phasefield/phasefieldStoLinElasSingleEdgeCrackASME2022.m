@@ -804,10 +804,9 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Force [kN]','Interpreter',interpreter)
-    l = legend('mean function',...
+    legend('mean function',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'Location','NorthWest');
-    set(l,'Interpreter','latex')
+        'Location','NorthWest','Interpreter',interpreter)
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
@@ -817,8 +816,8 @@ if displaySolution
     for i=1:N
         plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
         hold on
-%         scatter(udc(i)*1e3,fc(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','r','LineWidth',linewidth)
-%         scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
+%         scatter(udc(i)*1e3,fc(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
+%         scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','x','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
     end
     hold off
     grid on
@@ -827,28 +826,28 @@ if displaySolution
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Force [kN]','Interpreter',interpreter)
     mysaveas(pathname,'forces_displacement',formats);
-    mymatlab2tikz(pathname,'forces_displacement.tex');
+    % mymatlab2tikz(pathname,'forces_displacement.tex');
     
-%     colors = distinguishable_colors(N);
-%     for i=1:N
-%         if mod(i,100)==0
-%             close all
-%         end
-%         figure('Name',['Force-displacement #' num2str(i)])
-%         clf
-%         plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
-%         hold on
-%         scatter(udc(i)*1e3,fc(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','r','LineWidth',linewidth)
-%         scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
-%         hold off
-%         grid on
-%         box on
-%         set(gca,'FontSize',fontsize)
-%         xlabel('Displacement [mm]','Interpreter',interpreter)
-%         ylabel('Force [kN]','Interpreter',interpreter)
-%         % mysaveas(pathname,['force_displacement_' num2str(sampleindices(i))],{'epsc','png'});
-%         % mymatlab2tikz(pathname,['force_displacement_' num2str(sampleindices(i)) '.tex']);
-%     end
+    % colors = distinguishable_colors(N);
+    % for i=1:N
+    %     if mod(i,100)==0
+    %         close all
+    %     end
+    %     figure('Name',['Force-displacement #' num2str(i)])
+    %     clf
+    %     plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+    %     hold on
+    %     scatter(udc(i)*1e3,fc(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
+    %     scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','x','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
+    %     hold off
+    %     grid on
+    %     box on
+    %     set(gca,'FontSize',fontsize)
+    %     xlabel('Displacement [mm]','Interpreter',interpreter)
+    %     ylabel('Force [kN]','Interpreter',interpreter)
+    %     % mysaveas(pathname,['force_displacement_' num2str(sampleindices(i))],{'epsc','png'});
+    %     % mymatlab2tikz(pathname,['force_displacement_' num2str(sampleindices(i)) '.tex']);
+    % end
     
     %% Display pdf of maximum force
     figure('Name','Probability Density Estimate: Maximum force')
@@ -864,10 +863,9 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$f$ [kN]','Interpreter',interpreter)
     ylabel('$p_{F_{\mathrm{max}}}(f)$','Interpreter',interpreter)
-    l = legend('pdf',...
+    legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value');
-    set(l,'Interpreter',interpreter)
+        'mean value','Interpreter',interpreter)
     mysaveas(pathname,'pdf_fmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fmax.tex');
     
@@ -885,10 +883,9 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$f$ [kN]','Interpreter',interpreter)
     ylabel('$p_{F_c}(f)$','Interpreter',interpreter)
-    l = legend('pdf',...
+    legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value');
-    set(l,'Interpreter',interpreter)
+        'mean value','Interpreter',interpreter)
     mysaveas(pathname,'pdf_fc',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fc.tex');
     
@@ -906,10 +903,9 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$u$ [mm]','Interpreter',interpreter)
     ylabel('$p_{U_{D,\mathrm{max}}}(u)$','Interpreter',interpreter)
-    l = legend('pdf',...
+    legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value');
-    set(l,'Interpreter',interpreter)
+        'mean value','Interpreter',interpreter)
     mysaveas(pathname,'pdf_udmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_udmax.tex');
     
@@ -927,10 +923,9 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$u$ [mm]','Interpreter',interpreter)
     ylabel('$p_{U_{D,c}}(u)$','Interpreter',interpreter)
-    l = legend('pdf',...
+    legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value');
-    set(l,'Interpreter',interpreter)
+        'mean value','Interpreter',interpreter)
     mysaveas(pathname,'pdf_udc',formats,renderer);
     mymatlab2tikz(pathname,'pdf_udc.tex');
     

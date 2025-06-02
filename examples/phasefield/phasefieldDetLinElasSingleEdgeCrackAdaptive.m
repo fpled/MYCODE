@@ -822,9 +822,8 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Energy [J]','Interpreter',interpreter)
-    l = legend('$\Psi_u$','$\Psi_c$','$\Psi_{\mathrm{tot}}$',...
-        'Location','NorthWest');
-    set(l,'Interpreter','latex')
+    legend('$\Psi_u$','$\Psi_c$','$\Psi_{\mathrm{tot}}$',...
+        'Location','NorthWest','Interpreter','latex')
     mysaveas(pathname,'energies_displacement',formats);
     mymatlab2tikz(pathname,'energies_displacement.tex');
     

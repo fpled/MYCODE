@@ -808,10 +808,9 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Force [kN]','Interpreter',interpreter)
-    l = legend('mean function',...
+    legend('mean function',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'Location','NorthWest');
-    set(l,'Interpreter','latex')
+        'Location','NorthWest','Interpreter',interpreter)
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
@@ -845,10 +844,9 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$f$ [kN]','Interpreter',interpreter)
     ylabel('$p_{F_{\mathrm{max}}}(f)$','Interpreter',interpreter)
-    l = legend('pdf',...
+    legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value');
-    set(l,'Interpreter',interpreter)
+        'mean value','Interpreter',interpreter)
     mysaveas(pathname,'pdf_fmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fmax.tex');
     
@@ -866,10 +864,9 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$f$ [kN]','Interpreter',interpreter)
     ylabel('$p_{F_c}(f)$','Interpreter',interpreter)
-    l = legend('pdf',...
+    legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value');
-    set(l,'Interpreter',interpreter)
+        'mean value','Interpreter',interpreter)
     mysaveas(pathname,'pdf_fc',formats,renderer);
     mymatlab2tikz(pathname,'pdf_fc.tex');
     
@@ -887,10 +884,9 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$u$ [mm]','Interpreter',interpreter)
     ylabel('$p_{U_{D,\mathrm{max}}}(u)$','Interpreter',interpreter)
-    l = legend('pdf',...
+    legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value');
-    set(l,'Interpreter',interpreter)
+        'mean value')
     mysaveas(pathname,'pdf_udmax',formats,renderer);
     mymatlab2tikz(pathname,'pdf_udmax.tex');
     
@@ -908,10 +904,9 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('$u$ [mm]','Interpreter',interpreter)
     ylabel('$p_{U_{D,c}}(u)$','Interpreter',interpreter)
-    l = legend('pdf',...
+    legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value');
-    set(l,'Interpreter',interpreter)
+        'mean value','Interpreter',interpreter)
     mysaveas(pathname,'pdf_udc',formats,renderer);
     mymatlab2tikz(pathname,'pdf_udc.tex');
     

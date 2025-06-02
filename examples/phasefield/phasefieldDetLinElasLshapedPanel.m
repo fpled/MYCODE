@@ -585,8 +585,7 @@ if displaySolution
     else
         leg = {'$\Psi_u$','$\Psi_c$','$\Psi_{\mathrm{tot}}$'};
     end
-    l = legend(leg{:},'Location','NorthWest');
-    set(l,'Interpreter','latex')
+    legend(leg{:},'Location','NorthWest','Interpreter','latex')
     mysaveas(pathname,'energies_displacement',formats);
     mymatlab2tikz(pathname,'energies_displacement.tex');
     
