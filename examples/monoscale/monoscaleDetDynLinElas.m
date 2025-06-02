@@ -120,8 +120,8 @@ if displaySolution
     h3 = plot(L2,'EdgeColor',getfacecolor(6));
     hold off
     set(gca,'FontSize',fontsize)
-    l = legend([h1(1),h2(1),h3(1)],'$\Omega$','$\Gamma_D$','$\Gamma_N$','Location','NorthEastOutside');
-    set(l,'Interpreter','latex')
+    legend([h1(1),h2(1),h3(1)],'$\Omega$','$\Gamma_D$','$\Gamma_N$',...
+        'Location','NorthEastOutside','Interpreter','latex')
     axis image
     axis off
     mysaveas(pathname,'domain',formats,renderer);
@@ -134,9 +134,9 @@ if displaySolution
     h2 = plot(L1,'EdgeColor',getfacecolor(5));
     h3 = plot(L2,'EdgeColor',getfacecolor(6));
     hold off
-    set(gca,'FontSize',fonsize)
-    % l = legend([h1(1),h2(1),h3(1)],'$\Omega$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$','Location','NorthEastOutside');
-    % set(l,'Interpreter','latex')
+    set(gca,'FontSize',fontsize)
+    legend([h1(1),h2(1),h3(1)],'$\Omega$','$\Gamma_D$','$\Gamma_N$',...
+        'Location','NorthEastOutside','Interpreter','latex')
     mysaveas(pathname,'mesh',formats,renderer);
     
     %% Display evolution of solution

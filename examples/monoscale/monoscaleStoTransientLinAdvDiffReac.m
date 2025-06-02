@@ -283,8 +283,9 @@ if displaySolution
     h5 = plotfacets(pb.S,17,'FaceColor',getfacecolor(5),'EdgeColor','none');
     hold off
     set(gca,'FontSize',fontsize)
-    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$','Location','NorthEast');
-    set(l,'Interpreter','latex')
+    legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$',...
+        'Location','NorthEast','Interpreter','latex')
+    set(l)
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
@@ -310,8 +311,8 @@ if displaySolution
     h5 = plotfacets(pb.S,17,'FaceColor',getfacecolor(5));
     hold off
     set(gca,'FontSize',fontsize)
-    l = legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$','Location','NorthEast');
-    set(l,'Interpreter','latex')
+    legend([h1(1),h2(1),h3(1),h4(1),h5(1)],'$\Omega_1$','$\Omega_2$','$\Omega_3$','$\Gamma_D^1$','$\Gamma_D^2$',...
+        'Location','NorthEast','Interpreter','latex')
     mysaveas(pathname,'mesh',formats,renderer);
     
     %% Display multi-index set for stationary solution
@@ -494,9 +495,8 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('Time [s]')
     ylabel('Concentration of pollutant')
-    l = legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'mean value'});
-    set(l,'Interpreter','latex')
+    legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+        'mean value'},'Interpreter','latex')
     mysaveas(pathname,'quantity_of_interest',formats,renderer);
     mymatlab2tikz(pathname,'quantity_of_interest.tex');
     
