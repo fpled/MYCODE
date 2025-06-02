@@ -621,15 +621,15 @@ if displayModel
     ampl = 0.5;
     v = calc_init_dirichlet(SInit);
     [hN,legN] = vectorplot(SInit,'U',v,ampl,'r','LineWidth',1);
-    %     legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
+    % legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
     mysaveas(figPathname,'boundary_conditions_displacement',formats,renderer);
     
     [hD_phase,legD_phase] = plotBoundaryConditions(S_phaseInit,'legend',false);
-    %     legend([hD_phase,hN_phase],[legD_phase,legN_phase],'Location','NorthEastOutside')
+    % legend([hD_phase,hN_phase],[legD_phase,legN_phase],'Location','NorthEastOutside')
     mysaveas(figPathname,'boundary_conditions_damage',formats,renderer);
     
-    %     plotModel(SInit,'legend',false);
-    %     mysaveas(figPathname,'mesh',formats,renderer);
+    % plotModel(SInit,'legend',false);
+    % mysaveas(figPathname,'mesh',formats,renderer);
     
     plotModel(SInit,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
     mysaveas(figPathname,'mesh',formats,renderer);
@@ -700,38 +700,38 @@ if displaySolution
         set(gcf,'Name','d_variance')
         mysaveas(figPathname,['damage_var' solFileAppend '_t' num2str(idSnap(j))],formats,renderer);
 
-        %         ampl = 0;
-        %         uj = ut_mean(:,idSnap(j));
-        %         uj_var = ut_var(:,idSnap(j));
-        %         for i=1:Dim
-        %             plotSolution(SInit,uj,'displ',i,'ampl',ampl);
-        %             set(gcf,'Name',['u_' num2str(i) '_mean'])
-        %             mysaveas(figPathname,['displacement' num2str(i) '_mean' solFileAppend '_t' num2str(idSnap(j))],formats,renderer);
-        %             plotSolution(SInit,uj_var,'displ_var',i,'ampl',ampl);
-        %             set(gcf,'Name',['u_' num2str(i) '_variance'])
-        %             mysaveas(figPathname,['displacement' num2str(i) '_var'  solFileAppend '_t' num2str(idSnap(j))],formats,renderer);
-        %         end
-        %
-        %         for i=1:(Dim*(Dim+1)/2)
-        %             plotSolution(SInit,uj,'epsilon',i,'ampl',ampl);
-        %             mysaveas(figPathname,['epsilon' num2str(i) '_mean'  solFileAppend '_t' num2str(idSnap(j))],formats,renderer);
-        %
-        %             % Stress and energy cannot be computed since the material
-        %             % properties are not saved
-        %             % plotSolution(SInit,uj,'sigma',i,'ampl',ampl);
-        %             % mysaveas(figPathname,['sigma' num2str(i) '_mean' solFileAppend '_t' num2str(idSnap(j))],formats,renderer);
-        %         end
-        %
-        %         plotSolution(SInit,uj,'epsilon','mises','ampl',ampl);
-        %         mysaveas(figPathname,['epsilonVonMises_mean' solFileAppend '_t' num2str(idSnap(j))],formats,renderer);
-        %
-        %         % Stress and energy cannot be computed since the material
-        %         % properties are not saved
-        %         % plotSolution(SInit,uj,'sigma','mises','ampl',ampl);
-        %         % mysaveas(figPathname,['sigma_von_mises_mean' solFileAppend '_t' num2str(idSnap(j))],formats,renderer);
-        %
-        %         % plotSolution(SInit,uj,'energyint','','ampl',ampl);
-        %         % mysaveas(figPathname,['internal_energy_mean' solFileAppend '_t' num2str(idSnap(j))],formats,renderer);
+        % ampl = 0;
+        % uj = ut_mean(:,idSnap(j));
+        % uj_var = ut_var(:,idSnap(j));
+        % for i=1:Dim
+        %     plotSolution(SInit,uj,'displ',i,'ampl',ampl);
+        %     set(gcf,'Name',['u_' num2str(i) '_mean'])
+        %     mysaveas(figPathname,['displacement' num2str(i) '_mean' solFileAppend '_t' num2str(idSnap(j))],formats,renderer);
+        %     plotSolution(SInit,uj_var,'displ_var',i,'ampl',ampl);
+        %     set(gcf,'Name',['u_' num2str(i) '_variance'])
+        %     mysaveas(figPathname,['displacement' num2str(i) '_var'  solFileAppend '_t' num2str(idSnap(j))],formats,renderer);
+        % end
+        % 
+        % for i=1:(Dim*(Dim+1)/2)
+        %     plotSolution(SInit,uj,'epsilon',i,'ampl',ampl);
+        %     mysaveas(figPathname,['epsilon' num2str(i) '_mean'  solFileAppend '_t' num2str(idSnap(j))],formats,renderer);
+        % 
+        %     % Stress and energy cannot be computed since the material
+        %     % properties are not saved
+        %     % plotSolution(SInit,uj,'sigma',i,'ampl',ampl);
+        %     % mysaveas(figPathname,['sigma' num2str(i) '_mean' solFileAppend '_t' num2str(idSnap(j))],formats,renderer);
+        % end
+        % 
+        % plotSolution(SInit,uj,'epsilon','mises','ampl',ampl);
+        % mysaveas(figPathname,['epsilonVonMises_mean' solFileAppend '_t' num2str(idSnap(j))],formats,renderer);
+        % 
+        % % Stress and energy cannot be computed since the material
+        % % properties are not saved
+        % % plotSolution(SInit,uj,'sigma','mises','ampl',ampl);
+        % % mysaveas(figPathname,['sigma_von_mises_mean' solFileAppend '_t' num2str(idSnap(j))],formats,renderer);
+        % 
+        % % plotSolution(SInit,uj,'energyint','','ampl',ampl);
+        % % mysaveas(figPathname,['internal_energy_mean' solFileAppend '_t' num2str(idSnap(j))],formats,renderer);
     end
     
 end
