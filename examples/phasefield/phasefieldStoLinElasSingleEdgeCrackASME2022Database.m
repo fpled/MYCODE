@@ -53,31 +53,45 @@ tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
 
+dataset = 'full'; % 'full', 'test1', 'test2'
+% dataset = 'test1';
+% dataset = 'test2';
+
 % Random model parameters
 randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
 gc = 2.7e3;
-aGc = 0.6*gc;
-bGc = 1.4*gc;
-% aGc = 0.9*gc;
-% bGc = 1.1*gc;
-% aGc = [0.7,1.2]*gc;
-% bGc = [0.8,1.3]*gc;
+switch lower(dataset)
+    case 'full'
+        aGc = 0.6*gc;
+        bGc = 1.4*gc;
+    case 'test1'
+        aGc = 0.9*gc;
+        bGc = 1.1*gc;
+    case 'test2'
+        aGc = [0.7,1.2]*gc;
+        bGc = [0.8,1.3]*gc;
+    otherwise
+        error('Wrong dataset')
+end
 randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase field parameters model
 
-numsamples = 1e4; % total number of samples
-sampleindices = 1:1e3;
-% sampleindices = 1e3+(1:1e3);
-% sampleindices = 2e3+(1:1e3);
-% sampleindices = 3e3+(1:1e3);
-% sampleindices = 4e3+(1:1e3);
-% sampleindices = 5e3+(1:1e3);
-% sampleindices = 6e3+(1:1e3);
-% sampleindices = 7e3+(1:1e3);
-% sampleindices = 8e3+(1:1e3);
-% sampleindices = 9e3+(1:1e3);
-
-% numsamples = 500;
-% sampleindices = 1:500;
+switch lower(dataset)
+    case 'full'
+        numsamples = 1e4; % total number of samples
+        sampleindices = 1:1e3;
+        % sampleindices = 1e3+(1:1e3);
+        % sampleindices = 2e3+(1:1e3);
+        % sampleindices = 3e3+(1:1e3);
+        % sampleindices = 4e3+(1:1e3);
+        % sampleindices = 5e3+(1:1e3);
+        % sampleindices = 6e3+(1:1e3);
+        % sampleindices = 7e3+(1:1e3);
+        % sampleindices = 8e3+(1:1e3);
+        % sampleindices = 9e3+(1:1e3);
+    case {'test1','test2'}
+        numsamples = 500;
+        sampleindices = 1:500;
+end
 
 N = length(sampleindices);
 
@@ -781,9 +795,9 @@ if displayModel
     [t,rep] = gettevol(T);
     
     %% Display domains, boundary conditions and meshes
-%     plotDomain({D,C},'legend',false);
-%     mysaveas(pathname,'domain',formats,renderer);
-%     mymatlab2tikz(pathname,'domain.tex');
+    % plotDomain({D,C},'legend',false);
+    % mysaveas(pathname,'domain',formats,renderer);
+    % mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;
@@ -837,8 +851,10 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('Displacement [mm]','Interpreter',interpreter)
-    ylabel('Force [kN]','Interpreter',interpreter)
+    xlabel('Displacement [mm]'...,'Interpreter',interpreter...
+        )
+    ylabel('Force [kN]'...,'Interpreter',interpreter...
+        )
     mysaveas(pathname,'forces_displacement',formats);
     mymatlab2tikz(pathname,'forces_displacement.tex');
     
@@ -857,26 +873,28 @@ if displaySolution
     %     grid on
     %     box on
     %     set(gca,'FontSize',fontsize)
-    %     xlabel('Displacement [mm]','Interpreter',interpreter)
-    %     ylabel('Force [kN]','Interpreter',interpreter)
-    %     % mysaveas(pathname,['force_displacement_' num2str(sampleindices(i))],'png');
+    %     xlabel('Displacement [mm]'...,'Interpreter',interpreter
+    %         )
+    %     ylabel('Force [kN]'...,'Interpreter',interpreter
+    %         )
+    %     mysaveas(pathname,['force_displacement_' num2str(sampleindices(i))],'png');
     %     % mymatlab2tikz(pathname,['force_displacement_' num2str(sampleindices(i)) '.tex']);
     % end
     
     %% Display pdf of maximum force
     figure('Name','Probability Density Estimate: Maximum force')
     clf
-    plot(fmax_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f,'-b','LineWidth',linewidth)
+    plot(fmax_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f,'-r','LineWidth',linewidth)
     hold on
     ind_fmax = find(fmax_xi>=fmax_ci(1) & fmax_xi<fmax_ci(2));
-    area(fmax_xi(ind_fmax)*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f(ind_fmax),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
-    scatter(fmax_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
+    area(fmax_xi(ind_fmax)*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f(ind_fmax),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
+    scatter(fmax_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r')
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('$f$ [kN]','Interpreter',interpreter)
-    ylabel('$p_{F_{\mathrm{max}}}(f)$','Interpreter',interpreter)
+    ylabel('$p_{F_m}(f)$','Interpreter',interpreter)
     legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
         'mean value',...
@@ -891,7 +909,7 @@ if displaySolution
     hold on
     ind_fc = find(fc_xi>=fc_ci(1) & fc_xi<fc_ci(2));
     area(fc_xi(ind_fc)*((Dim==2)*1e-6+(Dim==3)*1e-3),fc_f(ind_fc),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
-    scatter(fc_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
+    scatter(fc_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','b')
     hold off
     grid on
     box on
@@ -908,17 +926,17 @@ if displaySolution
     %% Display pdf of maximum displacement
     figure('Name','Probability Density Estimate: Maximum displacement')
     clf
-    plot(udmax_xi*1e3,udmax_f,'-b','LineWidth',linewidth)
+    plot(udmax_xi*1e3,udmax_f,'-r','LineWidth',linewidth)
     hold on
     ind_udmax = find(udmax_xi>=udmax_ci(1) & udmax_xi<udmax_ci(2));
-    area(udmax_xi(ind_udmax)*1e3,udmax_f(ind_udmax),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
-    scatter(udmax_mean*1e3,0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
+    area(udmax_xi(ind_udmax)*1e3,udmax_f(ind_udmax),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
+    scatter(udmax_mean*1e3,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r')
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('$u$ [mm]','Interpreter',interpreter)
-    ylabel('$p_{U_{D,\mathrm{max}}}(u)$','Interpreter',interpreter)
+    ylabel('$p_{U_m}(u)$','Interpreter',interpreter)
     legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
         'mean value',...
@@ -933,13 +951,13 @@ if displaySolution
     hold on
     ind_udc = find(udc_xi>=udc_ci(1) & udc_xi<udc_ci(2));
     area(udc_xi(ind_udc)*1e3,udc_f(ind_udc),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
-    scatter(udc_mean*1e3,0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
+    scatter(udc_mean*1e3,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','b')
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('$u$ [mm]','Interpreter',interpreter)
-    ylabel('$p_{U_{D,c}}(u)$','Interpreter',interpreter)
+    ylabel('$p_{U_c}(u)$','Interpreter',interpreter)
     legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
         'mean value',...
@@ -948,28 +966,53 @@ if displaySolution
     mymatlab2tikz(pathname,'pdf_udc.tex');
     
     %% Display pdf of fracture toughness
-    figure('Name','Probability Density Estimate: Fracture toughness')
+    figure('Name','Probability Density Function and Estimate: Fracture toughness')
     clf
     plot(gc_xiunif*1e-3,gc_funif,'-r','LineWidth',linewidth)
     hold on
     plot(gc_xi*1e-3,gc_f,'-b','LineWidth',linewidth)
-    ind_gcunif = find(gc_xiunif>=gc_ciunif(1) & gc_xiunif<gc_ciunif(2));
-    ind_gc = find(gc_xi>=gc_ci(1) & gc_xi<gc_ci(2));
-    area(gc_xiunif(ind_gcunif)*1e-3,gc_funif(ind_gcunif),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
-    area(gc_xi(ind_gc)*1e-3,gc_f(ind_gc),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
-    scatter(gc_meanunif*1e-3,0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','r')
-    scatter(gc_mean*1e-3,0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
+    % ind_gcunif = find(gc_xiunif>=gc_ciunif(1) & gc_xiunif<gc_ciunif(2));
+    % ind_gc = find(gc_xi>=gc_ci(1) & gc_xi<gc_ci(2));
+    % area(gc_xiunif(ind_gcunif)*1e-3,gc_funif(ind_gcunif),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
+    % area(gc_xi(ind_gc)*1e-3,gc_f(ind_gc),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
+    % scatter(gc_meanunif*1e-3,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r')
+    % scatter(gc_mean*1e-3,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','b')
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('$g$ [N/mm]','Interpreter',interpreter)
     ylabel('$p_{G_c}(g)$','Interpreter',interpreter)
-    legend('exact uniform pdf','estimate pdf',...
-        ['exact $' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        ['estimate $' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-        'exact mean value','estimate mean value',...
-        'Direction','normal','Interpreter',interpreter)
+    % legend('uniform pdf','estimated pdf',...
+    %     ['exact $' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+    %     ['estimated $' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+    %     'exact mean value','estimated mean value',...
+    %     'Direction','normal','Interpreter',interpreter)
+    legend('uniform pdf','estimated pdf','Interpreter',interpreter)
     mysaveas(pathname,'pdf_gc',formats,renderer);
     mymatlab2tikz(pathname,'pdf_gc.tex');
 end
+
+%% Display scatter plot of critical force vs fracture toughness
+figure('Name','Critical force vs fracture toughness')
+clf
+scatter(gc_sample*1e-3,fc*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','.','MarkerEdgeColor','b','MarkerFaceColor','b')
+grid on
+box on
+set(gca,'FontSize',fontsize)
+xlabel('$g_c$ [N/mm]','Interpreter',interpreter)
+ylabel('$f_c$ [kN]','Interpreter',interpreter)
+mysaveas(pathname,'samples_fc_gc',formats,renderer);
+mymatlab2tikz(pathname,'samples_fc_gc.tex');
+
+%% Display scatter plot of fracture toughness vs critical force
+figure('Name','Fracture toughness vs critical force')
+clf
+scatter(fc*((Dim==2)*1e-6+(Dim==3)*1e-3),gc_sample*1e-3,'Marker','.','MarkerEdgeColor','b','MarkerFaceColor','b')
+grid on
+box on
+set(gca,'FontSize',fontsize)
+xlabel('$f_c$ [kN]','Interpreter',interpreter)
+ylabel('$g_c$ [N/mm]','Interpreter',interpreter)
+mysaveas(pathname,'samples_gc_fc',formats,renderer);
+mymatlab2tikz(pathname,'samples_gc_fc.tex');

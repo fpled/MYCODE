@@ -14,7 +14,7 @@ saveParaview = false;
 % test = true; % coarse mesh
 test = false; % fine mesh
 
-numWorkers = 50;
+numWorkers = 100;
 % numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 
 % Deterministic model parameters
@@ -103,9 +103,9 @@ legend('mean function',...
 mysaveas(pathname,'force_displacement',formats);
 mymatlab2tikz(pathname,'force_displacement.tex');
 
+colors = distinguishable_colors(N);
 figure('Name','Forces vs displacement')
 clf
-colors = distinguishable_colors(N);
 for i=1:N
     plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
     hold on
@@ -114,8 +114,10 @@ hold off
 grid on
 box on
 set(gca,'FontSize',fontsize)
-xlabel('Displacement [mm]','Interpreter',interpreter)
-ylabel('Force [kN]','Interpreter',interpreter)
+xlabel('Displacement [mm]'...,'Interpreter',interpreter
+    )
+ylabel('Force [kN]'...,'Interpreter',interpreter
+    )
 mysaveas(pathname,'forces_displacement',formats);
 mymatlab2tikz(pathname,'forces_displacement.tex');
 

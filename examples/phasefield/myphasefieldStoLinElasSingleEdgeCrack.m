@@ -306,9 +306,9 @@ nbGauss = gauss.nbgauss; % number of Gauss points per element
 if solveProblem
     %% Mean parameters
     % Phase field parameters
-    %     [gc,l] = paramMatPhaseSingleEdgeCrack(symmetry,test); % mean phase field parameters
-    %     gc = coeff_gc*gc;
-    %     l = coeff_l*l;
+    % [gc,l] = paramMatPhaseSingleEdgeCrack(symmetry,test); % mean phase field parameters
+    % gc = coeff_gc*gc;
+    % l = coeff_l*l;
     mat_phaseInit = FOUR_ISOT('k',gc*l,'r',gc/l);
     mat_phaseInit = setnumber(mat_phaseInit,1);
     S_phaseInit = setmaterial(S_phaseInit,mat_phaseInit);
@@ -377,23 +377,23 @@ if solveProblem
     ticBytes(parPoolObj);
     parfor kMC = 1:NMC % Monte-Carlo iterations
 
-        %     % Sequential computation
-        %     runSequential = true;
-        %     fprintf(['\nComputing ' num2str(NMC) ' sequential Monte Carlo iterations : '])
-        %     progressbar(['Computing ' num2str(NMC) ' sequential Monte Carlo iterations : '])
-        %     timerMC = tic;
-        %     for kMC = 1:NMC % Monte-Carlo iterations
+        % % Sequential computation
+        % runSequential = true;
+        % fprintf(['\nComputing ' num2str(NMC) ' sequential Monte Carlo iterations : '])
+        % progressbar(['Computing ' num2str(NMC) ' sequential Monte Carlo iterations : '])
+        % timerMC = tic;
+        % for kMC = 1:NMC % Monte-Carlo iterations
 
         S_phase = S_phaseInit;
         S = SInit;
 
-        %         % Recovery of homogeneous mean phase field parameters (necessary as
-        %         % fracture toughness may vary from one computation to another)
-        %         mats_phase = MATERIALS(S_phase);
-        %         k = getparam(mats_phase{1},'k');
-        %         r = getparam(mats_phase{1},'r');
-        %         gc = sqrt(k*r);
-        %         l = sqrt(k/r);
+        % % Recovery of homogeneous mean phase field parameters (necessary as
+        % % fracture toughness may vary from one computation to another)
+        % mats_phase = MATERIALS(S_phase);
+        % k = getparam(mats_phase{1},'k');
+        % r = getparam(mats_phase{1},'r');
+        % gc = sqrt(k*r);
+        % l = sqrt(k/r);
 
         %% Generation of random parameter/property fields
         substream = RandStream.create('mlfg6331_64','NumStreams',NMC,'StreamIndices',kMC);
@@ -401,7 +401,7 @@ if solveProblem
         if lcorr==Inf % all parameters are homogeneous
             V = randn(substream,1,nbGermsTot);
         else % there are heterogeneous parameters
-            %             xgauss = calc_gausscoord(S,'mass'); % gauss points coordinates
+            % xgauss = calc_gausscoord(S,'mass'); % gauss points coordinates
             xgauss = calc_gausscoord(S,'rigi'); % gauss points coordinates
             V = shinozukaSample(substream,xgauss,lcorr,nbGermsTot,'order',nu);
         end
@@ -452,7 +452,7 @@ if solveProblem
             mat = MATERIAL();
             switch lower(symmetry)
                 case 'isotropic'
-                    %                     [E,NU] = paramMatIsot(Dim,lambda,mu,'option',option);
+                    % [E,NU] = paramMatIsot(Dim,lambda,mu,'option',option);
                     % Shape and scale parameters of the independent gamma distributions followed by the bulk and the shear modulus
                     [aC1,bC1,aC2,bC2] = hyperMatIsot(Dim,lambda,mu,deltaC,'option',option);
                     C1_k = gaminv(normcdf(V(:,nbGermsPF + 1)),aC1,bC1); % samples for bulk modulus [Pa]
@@ -615,7 +615,7 @@ end
 if displayModel
     plotDomain({D,C},'legend',false);
     mysaveas(figPathname,'domain',formats,renderer);
-    %     mymatlab2tikz(figPathname,'domain.tex');
+    % mymatlab2tikz(figPathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(SInit,'legend',false);
     ampl = 0.5;
@@ -675,7 +675,7 @@ if displaySolution
         hold on
         ind_fmax = find(fmax_xi>=fmax_ci(1) & fmax_xi<fmax_ci(2));
         area(fmax_xi(ind_fmax)*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f(ind_fmax),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
-        scatter(fmax_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','d','MarkerEdgeColor','k','MarkerFaceColor','b')
+        scatter(fmax_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','b')
         hold off
         grid on
         box on
@@ -685,8 +685,8 @@ if displaySolution
         legend('pdf',...
             ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
             'mean value''Interpreter',interpreter)
-        mysaveas(figPathname,['pdf_fmax' solFileAppend],formats,renderer);
-        % mymatlab2tikz(figPathname,['pdf_fmax' solFileAppend '.tex']);
+        mysaveas(figPathname,['pdf_fc' solFileAppend],formats,renderer);
+        % mymatlab2tikz(figPathname,['pdf_fc' solFileAppend '.tex']);
     
     %% Display means and variances of solutions at different instants
     for j=1:length(idSnap)
@@ -748,26 +748,26 @@ if makeMovie
     evolSolution(S_phaseInit,dk,'FrameRate',framerate,'filename',['damage_mean' solFileAppend],'pathname',figPathname,options{:});
     evolSolution(S_phaseInit,dk_var,'FrameRate',framerate,'filename',['damage_var' solFileAppend],'pathname',figPathname,options{:});
     
-    %     % ampl = getsize(SInit)/max(abs(ut_mean(:)))/20;
-    %     ampl = 0;
-    %     uk = TIMEMATRIX(reshape(ut_mean(:,:),sz_u),T);
-    %     uk_var = TIMEMATRIX(reshape(ut_var(:,:),sz_u),T);
-    %     sz_u = [getnbddl(SInit),getnbtimedof(T)];
-    %     for i=1:Dim
-    %         evolSolution(SInit,uk,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement' num2str(i) '_mean' solFileAppend],'pathname',figPathname,options{:});
-    %         evolSolution(SInit,uk_var,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement' num2str(i) '_var' solFileAppend],'pathname',figPathname,options{:});
-    %     end
-    %
-    %     % Stress and energy cannot be computed since the material
-    %     % properties are not saved
-    %     for i=1:(Dim*(Dim+1)/2)
-    %         evolSolution(SInit,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon' num2str(i) '_mean' solFileAppend],'pathname',figPathname,options{:});
-    %         % evolSolution(SInit,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma' num2str(i) 'mean' solFileAppend],'pathname',figPathname,options{:});
-    %     end
-    %
-    %     evolSolution(SInit,uk,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename',['epsilonVonMises_mean' solFileAppend],'pathname',figPathname,options{:});
-    %     % evolSolution(SInit,uk,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename',['sigmaVonMises_mean' solFileAppend],'pathname',figPathname,options{:});
-    %     % evolSolution(SInit,uk,'energyint','','ampl',ampl,'FrameRate',framerate,'filename',['internal_energy_mean' solFileAppend],'pathname',figPathname,options{:});
+    % % ampl = getsize(SInit)/max(abs(ut_mean(:)))/20;
+    % ampl = 0;
+    % uk = TIMEMATRIX(reshape(ut_mean(:,:),sz_u),T);
+    % uk_var = TIMEMATRIX(reshape(ut_var(:,:),sz_u),T);
+    % sz_u = [getnbddl(SInit),getnbtimedof(T)];
+    % for i=1:Dim
+    %     evolSolution(SInit,uk,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement' num2str(i) '_mean' solFileAppend],'pathname',figPathname,options{:});
+    %     evolSolution(SInit,uk_var,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement' num2str(i) '_var' solFileAppend],'pathname',figPathname,options{:});
+    % end
+    % 
+    % % Stress and energy cannot be computed since the material
+    % % properties are not saved
+    % for i=1:(Dim*(Dim+1)/2)
+    %     evolSolution(SInit,uk,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon' num2str(i) '_mean' solFileAppend],'pathname',figPathname,options{:});
+    %     % evolSolution(SInit,uk,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma' num2str(i) 'mean' solFileAppend],'pathname',figPathname,options{:});
+    % end
+    % 
+    % evolSolution(SInit,uk,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename',['epsilonVonMises_mean' solFileAppend],'pathname',figPathname,options{:});
+    % % evolSolution(SInit,uk,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename',['sigmaVonMises_mean' solFileAppend],'pathname',figPathname,options{:});
+    % % evolSolution(SInit,uk,'energyint','','ampl',ampl,'FrameRate',framerate,'filename',['internal_energy_mean' solFileAppend],'pathname',figPathname,options{:});
 end
 
 %% Save means and variances of solutions
