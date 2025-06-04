@@ -210,11 +210,11 @@ if displaySolution
     
     %% Plot pdfs and cdfs
     N = 1e3;
-    [f1,xi1,bw1] = ksdensity(C_sample(:,1),'npoints',N);
-    [f2,xi2,bw2] = ksdensity(C_sample(:,2),'npoints',N);
-    [f3,xi3,bw3] = ksdensity(C_sample(:,3),'npoints',N);
-    [f4,xi4,bw4] = ksdensity(C_sample(:,4),'npoints',N);
-    [f5,xi5,bw5] = ksdensity(C_sample(:,5),'npoints',N);
+    [f1,xi1,bw1] = ksdensity(C_sample(:,1),'NumPoints',N);
+    [f2,xi2,bw2] = ksdensity(C_sample(:,2),'NumPoints',N);
+    [f3,xi3,bw3] = ksdensity(C_sample(:,3),'NumPoints',N);
+    [f4,xi4,bw4] = ksdensity(C_sample(:,4),'NumPoints',N);
+    [f5,xi5,bw5] = ksdensity(C_sample(:,5),'NumPoints',N);
     
     % Plot pdf estimate of C1
     figure('Name','Probability density estimate of C1')

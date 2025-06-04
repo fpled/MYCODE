@@ -364,11 +364,11 @@ if solveProblem
     udc_std = std(udc);
     udc_ci = quantile(udc,probs);
     
-    npts = 100;
-    [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'npoints',npts);
-    [udmax_f,udmax_xi,udmax_bw] = ksdensity(udmax,'npoints',npts);
-    [fc_f,fc_xi,fc_bw] = ksdensity(fc,'npoints',npts);
-    [udc_f,udc_xi,udc_bw] = ksdensity(udc,'npoints',npts);
+    npts = 1e3;
+    [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'NumPoints',npts);
+    [udmax_f,udmax_xi,udmax_bw] = ksdensity(udmax,'NumPoints',npts);
+    [fc_f,fc_xi,fc_bw] = ksdensity(fc,'NumPoints',npts);
+    [udc_f,udc_xi,udc_bw] = ksdensity(udc,'NumPoints',npts);
     
     save(fullfile(pathname,'solution.mat'),'N','ft','dmaxt','dt_mean','ut_mean',...
         'dt_var','ut_var','dt_sample','ut_sample',...
@@ -507,10 +507,10 @@ if displaySolution
     %% Display pdf of maximum force
     figure('Name','Probability Density Estimate: Maximum force')
     clf
-    plot(fmax_xi*1e-6,fmax_f,'-r','LineWidth',linewidth)
+    plot(fmax_xi*1e-6,fmax_f*1e6,'-r','LineWidth',linewidth)
     hold on
     ind_fmax = find(fmax_xi>=fmax_ci(1) & fmax_xi<fmax_ci(2));
-    area(fmax_xi(ind_fmax)*1e-6,fmax_f(ind_fmax),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
+    area(fmax_xi(ind_fmax)*1e-6,fmax_f(ind_fmax)*1e6,'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
     scatter(fmax_mean*1e-6,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r')
     hold off
     grid on
@@ -528,10 +528,10 @@ if displaySolution
     %% Display pdf of critical force
     figure('Name','Probability Density Estimate: Critical force')
     clf
-    plot(fc_xi*1e-6,fc_f,'-b','LineWidth',linewidth)
+    plot(fc_xi*1e-6,fc_f*1e6,'-b','LineWidth',linewidth)
     hold on
     ind_fc = find(fc_xi>=fc_ci(1) & fc_xi<fc_ci(2));
-    area(fc_xi(ind_fc)*1e-6,fc_f(ind_fc),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
+    area(fc_xi(ind_fc)*1e-6,fc_f(ind_fc)*1e6,'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
     scatter(fc_mean*1e-6,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','b')
     hold off
     grid on
@@ -549,10 +549,10 @@ if displaySolution
     %% Display pdf of maximum displacement
     figure('Name','Probability Density Estimate: Maximum displacement')
     clf
-    plot(udmax_xi*1e3,udmax_f,'-r','LineWidth',linewidth)
+    plot(udmax_xi*1e3,udmax_f*1e-3,'-r','LineWidth',linewidth)
     hold on
     ind_udmax = find(udmax_xi>=udmax_ci(1) & udmax_xi<udmax_ci(2));
-    area(udmax_xi(ind_udmax)*1e3,udmax_f(ind_udmax),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
+    area(udmax_xi(ind_udmax)*1e3,udmax_f(ind_udmax)*1e-3,'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
     scatter(udmax_mean*1e3,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r')
     hold off
     grid on
@@ -570,10 +570,10 @@ if displaySolution
     %% Display pdf of critical displacement
     figure('Name','Probability Density Estimate: Critical displacement')
     clf
-    plot(udc_xi*1e3,udc_f,'-b','LineWidth',linewidth)
+    plot(udc_xi*1e3,udc_f*1e-3,'-b','LineWidth',linewidth)
     hold on
     ind_udc = find(udc_xi>=udc_ci(1) & udc_xi<udc_ci(2));
-    area(udc_xi(ind_udc)*1e3,udc_f(ind_udc),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
+    area(udc_xi(ind_udc)*1e3,udc_f(ind_udc)*1e-3,'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
     scatter(udc_mean*1e3,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','b')
     hold off
     grid on

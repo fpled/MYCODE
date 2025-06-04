@@ -532,8 +532,8 @@ if solveProblem
     fmax_std = std(fmax);
     fmax_ci = quantile(fmax,probs);
 
-    npts = 100;
-    [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'npoints',npts);
+    npts = 1e3;
+    [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'NumPoints',npts);
 
     %% Save solution
     save(fullfile(pathname, [solFileName '.mat']),'timeMC','nbWorkers','NMC',...
@@ -671,10 +671,10 @@ if displaySolution
         %% Display pdf of critical force
         figure('Name','Probability Density Estimate: Critical force')
         clf
-        plot(fmax_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f,'-b','LineWidth',linewidth)
+        plot(fmax_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f*((Dim==2)*1e6+(Dim==3)*1e3),'-b','LineWidth',linewidth)
         hold on
         ind_fmax = find(fmax_xi>=fmax_ci(1) & fmax_xi<fmax_ci(2));
-        area(fmax_xi(ind_fmax)*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f(ind_fmax),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
+        area(fmax_xi(ind_fmax)*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f(ind_fmax)*((Dim==2)*1e6+(Dim==3)*1e3),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
         scatter(fmax_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','b')
         hold off
         grid on
