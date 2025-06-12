@@ -53,9 +53,9 @@ tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
 
-dataset = 'full'; % 'full', 'test1', 'test2'
-% dataset = 'test1';
-% dataset = 'test2';
+% dataset = 'full'; % 'full', 'test1', 'test2'
+% dataset = 'obs1';
+dataset = 'obs2';
 
 % Random model parameters
 randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
@@ -64,10 +64,10 @@ switch lower(dataset)
     case 'full'
         aGc = 0.6*gc;
         bGc = 1.4*gc;
-    case 'test1'
+    case 'obs1'
         aGc = 0.9*gc;
         bGc = 1.1*gc;
-    case 'test2'
+    case 'obs2'
         aGc = [0.7,1.2]*gc;
         bGc = [0.8,1.3]*gc;
     otherwise
@@ -88,7 +88,7 @@ switch lower(dataset)
         % sampleindices = 7e3+(1:1e3);
         % sampleindices = 8e3+(1:1e3);
         % sampleindices = 9e3+(1:1e3);
-    case {'test1','test2'}
+    case {'obs1','obs2'}
         numsamples = 500;
         sampleindices = 1:500;
 end
@@ -687,11 +687,11 @@ if solveProblem
     gc_ci = quantile(gc_sample,probs);
     
     npts = 100;
-    [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'npoints',npts);
-    [udmax_f,udmax_xi,udmax_bw] = ksdensity(udmax,'npoints',npts);
-    [fc_f,fc_xi,fc_bw] = ksdensity(fc,'npoints',npts);
-    [udc_f,udc_xi,udc_bw] = ksdensity(udc,'npoints',npts);
-    [gc_f,gc_xi,gc_bw] = ksdensity(gc_sample,'npoints',npts);
+    [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'NumPoints',npts);
+    [udmax_f,udmax_xi,udmax_bw] = ksdensity(udmax,'NumPoints',npts);
+    [fc_f,fc_xi,fc_bw] = ksdensity(fc,'NumPoints',npts);
+    [udc_f,udc_xi,udc_bw] = ksdensity(udc,'NumPoints',npts);
+    [gc_f,gc_xi,gc_bw] = ksdensity(gc_sample,'NumPoints',npts);
     
     save(fullfile(pathname,'solution.mat'),'N','ft','dmaxt',...
         'ft_mean','ft_std','ft_ci','probs','time',...
@@ -710,85 +710,88 @@ else
         'gc_sample','gc_mean','gc_std','gc_ci','gc_f','gc_xi','gc_bw');
 end
 
+[gc_unif_mean,gc_unif_var] = myunifstat(aGc,bGc);
+gc_unif_std = sqrt(gc_unif_var);
+gc_unif_ci = myunifinv(probs,aGc,bGc);
+gc_ab_xi = [aGc-eps(aGc); aGc+eps(aGc); bGc-eps(bGc); bGc+eps(bGc)];
+gc_unif_xi = [min(gc_xi),gc_ab_xi(:)',max(gc_xi)];
+gc_unif_f = myunifpdf(gc_unif_xi,aGc,bGc);
+
 %% Outputs
-fid = fopen(fullfile(pathname,'results.txt'),'w');
-fprintf(fid,'Single edge crack\n');
-fprintf(fid,'\n');
-fprintf(fid,'dim      = %d\n',Dim);
-fprintf(fid,'loading  = %s\n',loading);
-fprintf(fid,'mat sym  = %s\n',symmetry);
-if strcmpi(symmetry,'anisot')
-    fprintf(fid,'angle    = %g deg\n',ang);
+if solveProblem
+    fid = fopen(fullfile(pathname,'results.txt'),'w');
+    fprintf(fid,'Single edge crack\n');
+    fprintf(fid,'\n');
+    fprintf(fid,'dim      = %d\n',Dim);
+    fprintf(fid,'loading  = %s\n',loading);
+    fprintf(fid,'mat sym  = %s\n',symmetry);
+    if strcmpi(symmetry,'anisot')
+        fprintf(fid,'angle    = %g deg\n',ang);
+    end
+    fprintf(fid,'PF model = %s\n',PFmodel);
+    fprintf(fid,'PF split = %s\n',PFsplit);
+    fprintf(fid,'PF regularization = %s\n',PFregularization);
+    fprintf(fid,'PF solver = %s\n',PFsolver);
+    fprintf(fid,'nb elements = %g\n',getnbelem(S));
+    fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+    fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+    fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
+    fprintf(fid,'nb samples = %g\n',N);
+    fprintf(fid,'elapsed time = %f s\n',time);
+    fprintf(fid,'\n');
+    
+    if Dim==2
+        fprintf(fid,'mean(fmax)   = %g kN/mm\n',fmax_mean*1e-6);
+        fprintf(fid,'std(fmax)    = %g kN/mm\n',fmax_std*1e-6);
+    elseif Dim==3
+        fprintf(fid,'mean(fmax)   = %g kN\n',fmax_mean*1e-3);
+        fprintf(fid,'std(fmax)    = %g kN\n',fmax_std*1e-3);
+    end
+    fprintf(fid,'disp(fmax)   = %g\n',fmax_std/fmax_mean);
+    if Dim==2
+        fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
+    elseif Dim==3
+        fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-3,fmax_ci(2)*1e-3);
+    end
+    fprintf(fid,'\n');
+    
+    if Dim==2
+        fprintf(fid,'mean(fc)   = %g kN/mm\n',fc_mean*1e-6);
+        fprintf(fid,'std(fc)    = %g kN/mm\n',fc_std*1e-6);
+    elseif Dim==3
+        fprintf(fid,'mean(fc)   = %g kN\n',fc_mean*1e-3);
+        fprintf(fid,'std(fc)    = %g kN\n',fc_std*1e-3);
+    end
+    fprintf(fid,'disp(fc)   = %g\n',fc_std/fc_mean);
+    if Dim==2
+        fprintf(fid,'%d%% ci(fc) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fc_ci(1)*1e-6,fc_ci(2)*1e-6);
+    elseif Dim==3
+        fprintf(fid,'%d%% ci(fc) = [%g,%g] kN\n',(probs(2)-probs(1))*100,fc_ci(1)*1e-3,fc_ci(2)*1e-3);
+    end
+    fprintf(fid,'\n');
+    
+    fprintf(fid,'mean(udmax)   = %g mm\n',udmax_mean*1e3);
+    fprintf(fid,'std(udmax)    = %g mm\n',udmax_std*1e3);
+    fprintf(fid,'disp(udmax)   = %g\n',udmax_std/udmax_mean);
+    fprintf(fid,'%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
+    fprintf(fid,'\n');
+    
+    fprintf(fid,'mean(udc)   = %g mm\n',udc_mean*1e3);
+    fprintf(fid,'std(udc)    = %g mm\n',udc_std*1e3);
+    fprintf(fid,'disp(udc)   = %g\n',udc_std/udc_mean);
+    fprintf(fid,'%d%% ci(udc) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udc_ci(1)*1e3,udc_ci(2)*1e3);
+    fprintf(fid,'\n');
+    
+    fprintf(fid,'mean(gc)   = %g N/mm (estimate)\n',gc_mean*1e-3);
+    fprintf(fid,'           = %g N/mm (exact)\n',gc_unif_mean*1e-3);
+    fprintf(fid,'std(gc)    = %g N/mm (estimate)\n',gc_std*1e-3);
+    fprintf(fid,'           = %g N/mm (exact)\n',gc_unif_std*1e-3);
+    fprintf(fid,'disp(gc)   = %g (estimate)\n',gc_std/gc_mean);
+    fprintf(fid,'           = %g (exact)\n',gc_unif_std/gc_unif_mean);
+    fprintf(fid,'%d%% ci(gc) = [%g,%g] N/mm (estimate)\n',(probs(2)-probs(1))*100,gc_ci(1)*1e-3,gc_ci(2)*1e-3);
+    fprintf(fid,'           = [%g,%g] N/mm (exact)\n',gc_unif_ci(1)*1e-3,gc_unif_ci(2)*1e-3);
+    fclose(fid);
 end
-fprintf(fid,'PF model = %s\n',PFmodel);
-fprintf(fid,'PF split = %s\n',PFsplit);
-fprintf(fid,'PF regularization = %s\n',PFregularization);
-fprintf(fid,'PF solver = %s\n',PFsolver);
-fprintf(fid,'nb elements = %g\n',getnbelem(S));
-fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
-fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
-fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
-fprintf(fid,'nb samples = %g\n',N);
-fprintf(fid,'elapsed time = %f s\n',time);
-fprintf(fid,'\n');
-
-if Dim==2
-    fprintf(fid,'mean(fmax)   = %g kN/mm\n',fmax_mean*1e-6);
-    fprintf(fid,'std(fmax)    = %g kN/mm\n',fmax_std*1e-6);
-elseif Dim==3
-    fprintf(fid,'mean(fmax)   = %g kN\n',fmax_mean*1e-3);
-    fprintf(fid,'std(fmax)    = %g kN\n',fmax_std*1e-3);
-end
-fprintf(fid,'disp(fmax)   = %g\n',fmax_std/fmax_mean);
-if Dim==2
-    fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
-elseif Dim==3
-    fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-3,fmax_ci(2)*1e-3);
-end
-fprintf(fid,'\n');
-
-if Dim==2
-    fprintf(fid,'mean(fc)   = %g kN/mm\n',fc_mean*1e-6);
-    fprintf(fid,'std(fc)    = %g kN/mm\n',fc_std*1e-6);
-elseif Dim==3
-    fprintf(fid,'mean(fc)   = %g kN\n',fc_mean*1e-3);
-    fprintf(fid,'std(fc)    = %g kN\n',fc_std*1e-3);
-end
-fprintf(fid,'disp(fc)   = %g\n',fc_std/fc_mean);
-if Dim==2
-    fprintf(fid,'%d%% ci(fc) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fc_ci(1)*1e-6,fc_ci(2)*1e-6);
-elseif Dim==3
-    fprintf(fid,'%d%% ci(fc) = [%g,%g] kN\n',(probs(2)-probs(1))*100,fc_ci(1)*1e-3,fc_ci(2)*1e-3);
-end
-fprintf(fid,'\n');
-
-fprintf(fid,'mean(udmax)   = %g mm\n',udmax_mean*1e3);
-fprintf(fid,'std(udmax)    = %g mm\n',udmax_std*1e3);
-fprintf(fid,'disp(udmax)   = %g\n',udmax_std/udmax_mean);
-fprintf(fid,'%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
-fprintf(fid,'\n');
-
-fprintf(fid,'mean(udc)   = %g mm\n',udc_mean*1e3);
-fprintf(fid,'std(udc)    = %g mm\n',udc_std*1e3);
-fprintf(fid,'disp(udc)   = %g\n',udc_std/udc_mean);
-fprintf(fid,'%d%% ci(udc) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udc_ci(1)*1e3,udc_ci(2)*1e3);
-fprintf(fid,'\n');
-
-gc_xiunif = linspace(min(gc_xi),max(gc_xi),1e3);
-gc_funif = myunifpdf(gc_xiunif,aGc,bGc);
-gc_ciunif = myunifinv(probs,aGc,bGc);
-
-[gc_meanunif,gc_varunif] = myunifstat(aGc,bGc);
-gc_stdunif = sqrt(gc_varunif);
-fprintf(fid,'mean(gc)   = %g N/mm (estimate)\n',gc_mean*1e-3);
-fprintf(fid,'           = %g N/mm (exact)\n',gc_meanunif*1e-3);
-fprintf(fid,'std(gc)    = %g N/mm (estimate)\n',gc_std*1e-3);
-fprintf(fid,'           = %g N/mm (exact)\n',gc_stdunif*1e-3);
-fprintf(fid,'disp(gc)   = %g (estimate)\n',gc_std/gc_mean);
-fprintf(fid,'           = %g (exact)\n',gc_stdunif/gc_meanunif);
-fprintf(fid,'%d%% ci(gc) = [%g,%g] N/mm (estimate)\n',(probs(2)-probs(1))*100,gc_ci(1)*1e-3,gc_ci(2)*1e-3);
-fprintf(fid,'           = [%g,%g] N/mm (exact)\n',gc_ciunif(1)*1e-3,gc_ciunif(2)*1e-3);
-fclose(fid);
 
 %% Display
 if displayModel
@@ -884,10 +887,10 @@ if displaySolution
     %% Display pdf of maximum force
     figure('Name','Probability Density Estimate: Maximum force')
     clf
-    plot(fmax_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f,'-r','LineWidth',linewidth)
+    plot(fmax_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f*((Dim==2)*1e6+(Dim==3)*1e3),'-r','LineWidth',linewidth)
     hold on
     ind_fmax = find(fmax_xi>=fmax_ci(1) & fmax_xi<fmax_ci(2));
-    area(fmax_xi(ind_fmax)*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f(ind_fmax),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
+    area(fmax_xi(ind_fmax)*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f(ind_fmax)*((Dim==2)*1e6+(Dim==3)*1e3),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
     scatter(fmax_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r')
     hold off
     grid on
@@ -905,10 +908,10 @@ if displaySolution
     %% Display pdf of critical force
     figure('Name','Probability Density Estimate: Critical force')
     clf
-    plot(fc_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fc_f,'-b','LineWidth',linewidth)
+    plot(fc_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fc_f*((Dim==2)*1e6+(Dim==3)*1e3),'-b','LineWidth',linewidth)
     hold on
     ind_fc = find(fc_xi>=fc_ci(1) & fc_xi<fc_ci(2));
-    area(fc_xi(ind_fc)*((Dim==2)*1e-6+(Dim==3)*1e-3),fc_f(ind_fc),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
+    area(fc_xi(ind_fc)*((Dim==2)*1e-6+(Dim==3)*1e-3),fc_f(ind_fc)*((Dim==2)*1e6+(Dim==3)*1e3),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
     scatter(fc_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','b')
     hold off
     grid on
@@ -926,10 +929,10 @@ if displaySolution
     %% Display pdf of maximum displacement
     figure('Name','Probability Density Estimate: Maximum displacement')
     clf
-    plot(udmax_xi*1e3,udmax_f,'-r','LineWidth',linewidth)
+    plot(udmax_xi*1e3,udmax_f*1e-3,'-r','LineWidth',linewidth)
     hold on
     ind_udmax = find(udmax_xi>=udmax_ci(1) & udmax_xi<udmax_ci(2));
-    area(udmax_xi(ind_udmax)*1e3,udmax_f(ind_udmax),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
+    area(udmax_xi(ind_udmax)*1e3,udmax_f(ind_udmax)*1e-3,'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
     scatter(udmax_mean*1e3,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r')
     hold off
     grid on
@@ -947,10 +950,10 @@ if displaySolution
     %% Display pdf of critical displacement
     figure('Name','Probability Density Estimate: Critical displacement')
     clf
-    plot(udc_xi*1e3,udc_f,'-b','LineWidth',linewidth)
+    plot(udc_xi*1e3,udc_f*1e-3,'-b','LineWidth',linewidth)
     hold on
     ind_udc = find(udc_xi>=udc_ci(1) & udc_xi<udc_ci(2));
-    area(udc_xi(ind_udc)*1e3,udc_f(ind_udc),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
+    area(udc_xi(ind_udc)*1e3,udc_f(ind_udc)*1e-3,'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
     scatter(udc_mean*1e3,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','b')
     hold off
     grid on
@@ -968,51 +971,40 @@ if displaySolution
     %% Display pdf of fracture toughness
     figure('Name','Probability Density Function and Estimate: Fracture toughness')
     clf
-    plot(gc_xiunif*1e-3,gc_funif,'-r','LineWidth',linewidth)
+    plot(gc_unif_xi*1e-3,gc_unif_f*1e3,'-r','LineWidth',linewidth)
     hold on
-    plot(gc_xi*1e-3,gc_f,'-b','LineWidth',linewidth)
-    % ind_gcunif = find(gc_xiunif>=gc_ciunif(1) & gc_xiunif<gc_ciunif(2));
-    % ind_gc = find(gc_xi>=gc_ci(1) & gc_xi<gc_ci(2));
-    % area(gc_xiunif(ind_gcunif)*1e-3,gc_funif(ind_gcunif),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
-    % area(gc_xi(ind_gc)*1e-3,gc_f(ind_gc),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
-    % scatter(gc_meanunif*1e-3,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r')
-    % scatter(gc_mean*1e-3,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','b')
+    plot(gc_xi*1e-3,gc_f*1e3,'-b','LineWidth',linewidth)
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('$g$ [N/mm]','Interpreter',interpreter)
     ylabel('$p_{G_c}(g)$','Interpreter',interpreter)
-    % legend('uniform pdf','estimated pdf',...
-    %     ['exact $' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-    %     ['estimated $' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-    %     'exact mean value','estimated mean value',...
-    %     'Direction','normal','Interpreter',interpreter)
     legend('uniform pdf','estimated pdf','Interpreter',interpreter)
     mysaveas(pathname,'pdf_gc',formats,renderer);
     mymatlab2tikz(pathname,'pdf_gc.tex');
+    
+    %% Display scatter plot of critical force vs fracture toughness
+    figure('Name','Critical force vs fracture toughness')
+    clf
+    scatter(gc_sample*1e-3,fc*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','.','MarkerEdgeColor','b','MarkerFaceColor','b')
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$g_c$ [N/mm]','Interpreter',interpreter)
+    ylabel('$f_c$ [kN]','Interpreter',interpreter)
+    mysaveas(pathname,'samples_fc_gc',formats,renderer);
+    mymatlab2tikz(pathname,'samples_fc_gc.tex');
+    
+    %% Display scatter plot of fracture toughness vs critical force
+    figure('Name','Fracture toughness vs critical force')
+    clf
+    scatter(fc*((Dim==2)*1e-6+(Dim==3)*1e-3),gc_sample*1e-3,'Marker','.','MarkerEdgeColor','b','MarkerFaceColor','b')
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('$f_c$ [kN]','Interpreter',interpreter)
+    ylabel('$g_c$ [N/mm]','Interpreter',interpreter)
+    mysaveas(pathname,'samples_gc_fc',formats,renderer);
+    mymatlab2tikz(pathname,'samples_gc_fc.tex');
 end
-
-%% Display scatter plot of critical force vs fracture toughness
-figure('Name','Critical force vs fracture toughness')
-clf
-scatter(gc_sample*1e-3,fc*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','.','MarkerEdgeColor','b','MarkerFaceColor','b')
-grid on
-box on
-set(gca,'FontSize',fontsize)
-xlabel('$g_c$ [N/mm]','Interpreter',interpreter)
-ylabel('$f_c$ [kN]','Interpreter',interpreter)
-mysaveas(pathname,'samples_fc_gc',formats,renderer);
-mymatlab2tikz(pathname,'samples_fc_gc.tex');
-
-%% Display scatter plot of fracture toughness vs critical force
-figure('Name','Fracture toughness vs critical force')
-clf
-scatter(fc*((Dim==2)*1e-6+(Dim==3)*1e-3),gc_sample*1e-3,'Marker','.','MarkerEdgeColor','b','MarkerFaceColor','b')
-grid on
-box on
-set(gca,'FontSize',fontsize)
-xlabel('$f_c$ [kN]','Interpreter',interpreter)
-ylabel('$g_c$ [N/mm]','Interpreter',interpreter)
-mysaveas(pathname,'samples_gc_fc',formats,renderer);
-mymatlab2tikz(pathname,'samples_gc_fc.tex');

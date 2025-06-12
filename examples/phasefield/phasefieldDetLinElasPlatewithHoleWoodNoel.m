@@ -32,7 +32,44 @@ f_exp_data = T_Gc.f_exp_kN_; % [kN]
 f_data = T_Gc.f_kN_; % [kN]
 gc_data = T_Gc.Gc_mJ_mm2_; % [mJ/mm^2]=[kN/m]
 l_data = T_Gc.l0_mm_; % [mm]
-numSample = 5;
+
+samplesA = [0,5,7:8,12:16]+1; % samples from crossbeam A
+samplesB = [1:4,6,9:11,17]+1; % samples from crossbeam B
+samplesSet = union(samplesA,samplesB); % set of samples
+samplesRemoved = [2,8,13,17]+1; % removed samples
+samplesKept = setdiff(samplesSet,samplesRemoved); % kept samples
+samplesKeptA = setdiff(samplesA,samplesRemoved); % selected samples from crossbeam A
+samplesKeptB = setdiff(samplesB,samplesRemoved); % selected samples from crossbeam B
+numSample = 4+1; % sample number
+
+%% Statistics of elastic properties: mean value and biased standard deviation
+fprintf('\n');
+fprintf('EL:  mean = %g GPa, std = %g MPa, cv = %g %%\n',mean(EL_data(samplesKept))*1e-3,std(EL_data(samplesKept),1),std(EL_data(samplesKept),1)/mean(EL_data(samplesKept))*1e2);
+fprintf('ET:  mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(ET_data(samplesKept)),std(ET_data(samplesKept),1),std(ET_data(samplesKept),1)/mean(ET_data(samplesKept))*1e2);
+fprintf('GL:  mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(GL_data(samplesKept)),std(GL_data(samplesKept),1),std(GL_data(samplesKept),1)/mean(GL_data(samplesKept))*1e2);
+fprintf('NUL: mean = %g, std = %g, cv = %g %%\n',mean(NUL_data(samplesKept)),std(NUL_data(samplesKept),1),std(NUL_data(samplesKept),1)/mean(NUL_data(samplesKept))*1e2);
+
+fprintf('\n');
+fprintf('Group A\n');
+fprintf('EL  :  mean = %g GPa, std = %g MPa, cv = %g %%\n',mean(EL_data(samplesKeptA))*1e-3,std(EL_data(samplesKeptA),1),std(EL_data(samplesKeptA),1)/mean(EL_data(samplesKeptA))*1e2);
+fprintf('ET  :  mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(ET_data(samplesKeptA)),std(ET_data(samplesKeptA),1),std(ET_data(samplesKeptA),1)/mean(ET_data(samplesKeptA))*1e2);
+fprintf('GL  :  mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(GL_data(samplesKeptA)),std(GL_data(samplesKeptA),1),std(GL_data(samplesKeptA),1)/mean(GL_data(samplesKeptA))*1e2);
+fprintf('NUL : mean = %g, std = %g, cv = %g %%\n',mean(NUL_data(samplesKeptA)),std(NUL_data(samplesKeptA),1),std(NUL_data(samplesKeptA),1)/mean(NUL_data(samplesKeptA))*1e2);
+
+fprintf('\n');
+fprintf('Group B\n');
+fprintf('EL  :  mean = %g GPa, std = %g MPa, cv = %g %%\n',mean(EL_data(samplesKeptB))*1e-3,std(EL_data(samplesKeptB),1),std(EL_data(samplesKeptB),1)/mean(EL_data(samplesKeptB))*1e2);
+fprintf('ET  :  mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(ET_data(samplesKeptB)),std(ET_data(samplesKeptB),1),std(ET_data(samplesKeptB),1)/mean(ET_data(samplesKeptB))*1e2);
+fprintf('GL  :  mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(GL_data(samplesKeptB)),std(GL_data(samplesKeptB),1),std(GL_data(samplesKeptB),1)/mean(GL_data(samplesKeptB))*1e2);
+fprintf('NUL : mean = %g, std = %g, cv = %g %%\n',mean(NUL_data(samplesKeptB)),std(NUL_data(samplesKeptB),1),std(NUL_data(samplesKeptB),1)/mean(NUL_data(samplesKeptB))*1e2);
+
+fprintf('\n');
+fprintf('Sample #%d\n',numSample);
+fprintf('EL  = %g GPa\n',EL_data(numSample)*1e-3);
+fprintf('ET  = %g MPa\n',ET_data(numSample));
+fprintf('GL  = %g MPa\n',GL_data(numSample));
+fprintf('NUL = %g\n',NUL_data(numSample));
+fprintf('\n');
 
 %% Input data
 setProblem = true;
@@ -42,8 +79,8 @@ displaySolution = true;
 makeMovie = false;
 saveParaview = false;
 
-test = true; % coarse mesh
-% test = false; % fine mesh
+% test = true; % coarse mesh
+test = false; % fine mesh
 
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Anisot'; % 'Isot' or 'Anisot'. Material symmetry
@@ -338,27 +375,34 @@ else
 end
 
 %% Outputs
-fid = fopen(fullfile(pathname,'results.txt'),'w');
-fprintf(fid,'Plate with hole\n');
-fprintf(fid,'\n');
-fprintf(fid,'dim      = %d\n',Dim);
-fprintf(fid,'mat sym  = %s\n',symmetry);
-fprintf(fid,'PF model = %s\n',PFmodel);
-fprintf(fid,'PF split = %s\n',PFsplit);
-fprintf(fid,'PF regularization = %s\n',PFregularization);
-fprintf(fid,'PF solver = %s\n',PFsolver);
-fprintf(fid,'nb elements = %g\n',getnbelem(S));
-fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
-fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
-fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
-fprintf(fid,'elapsed time = %f s\n',time);
-fprintf(fid,'\n');
-
-fprintf(fid,'fmax  = %g kN\n',fmax*1e-3);
-fprintf(fid,'fc    = %g kN\n',fc*1e-3);
-fprintf(fid,'udmax = %g mm\n',udmax*1e3);
-fprintf(fid,'udc   = %g mm\n',udc*1e3);
-fclose(fid);
+if solveProblem
+    fid = fopen(fullfile(pathname,'results.txt'),'w');
+    fprintf(fid,'Plate with hole\n');
+    fprintf(fid,'\n');
+    fprintf(fid,'dim      = %d\n',Dim);
+    fprintf(fid,'mat sym  = %s\n',symmetry);
+    fprintf(fid,'PF model = %s\n',PFmodel);
+    fprintf(fid,'PF split = %s\n',PFsplit);
+    fprintf(fid,'PF regularization = %s\n',PFregularization);
+    fprintf(fid,'PF solver = %s\n',PFsolver);
+    fprintf(fid,'nb elements = %g\n',getnbelem(S));
+    fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+    fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+    fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
+    fprintf(fid,'elapsed time = %f s\n',time);
+    fprintf(fid,'\n');
+    
+    if Dim==2
+        fprintf(fid,'fmax  = %g kN/m\n',fmax*1e-3);
+        fprintf(fid,'fc    = %g kN/m\n',fc*1e-3);
+    elseif Dim==3
+        fprintf(fid,'fmax  = %g kN\n',fmax*1e-3);
+        fprintf(fid,'fc    = %g kN\n',fc*1e-3);
+    end
+    fprintf(fid,'udmax = %g mm\n',udmax*1e3);
+    fprintf(fid,'udc   = %g mm\n',udc*1e3);
+    fclose(fid);
+end
 
 %% Display
 if displayModel

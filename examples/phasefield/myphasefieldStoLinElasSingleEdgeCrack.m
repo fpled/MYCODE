@@ -532,7 +532,7 @@ if solveProblem
     fmax_std = std(fmax);
     fmax_ci = quantile(fmax,probs);
 
-    npts = 1e3;
+    npts = 100;
     [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'NumPoints',npts);
 
     %% Save solution

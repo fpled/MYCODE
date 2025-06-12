@@ -396,35 +396,37 @@ else
 end
 
 %% Outputs
-fid = fopen(fullfile(pathname,'results.txt'),'w');
-fprintf(fid,'Plate with hole\n');
-fprintf(fid,'\n');
-fprintf(fid,'dim      = %d\n',Dim);
-fprintf(fid,'mat sym  = %s\n',symmetry);
-if strcmpi(symmetry,'anisot')
-    fprintf(fid,'angle    = %g deg\n',ang);
+if solveProblem
+    fid = fopen(fullfile(pathname,'results.txt'),'w');
+    fprintf(fid,'Plate with hole\n');
+    fprintf(fid,'\n');
+    fprintf(fid,'dim      = %d\n',Dim);
+    fprintf(fid,'mat sym  = %s\n',symmetry);
+    if strcmpi(symmetry,'anisot')
+        fprintf(fid,'angle    = %g deg\n',ang);
+    end
+    fprintf(fid,'PF model = %s\n',PFmodel);
+    fprintf(fid,'PF split = %s\n',PFsplit);
+    fprintf(fid,'PF regularization = %s\n',PFregularization);
+    fprintf(fid,'PF solver = %s\n',PFsolver);
+    fprintf(fid,'nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
+    fprintf(fid,'nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));
+    fprintf(fid,'nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));
+    fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
+    fprintf(fid,'elapsed time = %f s\n',time);
+    fprintf(fid,'\n');
+    
+    if Dim==2
+        fprintf(fid,'fmax  = %g kN/mm\n',fmax*1e-6);
+        fprintf(fid,'fc    = %g kN/mm\n',fc*1e-6);
+    elseif Dim==3
+        fprintf(fid,'fmax  = %g kN\n',fmax*1e-3);
+        fprintf(fid,'fc    = %g kN\n',fc*1e-3);
+    end
+    fprintf(fid,'udmax = %g mm\n',udmax*1e3);
+    fprintf(fid,'udc   = %g mm\n',udc*1e3);
+    fclose(fid);
 end
-fprintf(fid,'PF model = %s\n',PFmodel);
-fprintf(fid,'PF split = %s\n',PFsplit);
-fprintf(fid,'PF regularization = %s\n',PFregularization);
-fprintf(fid,'PF solver = %s\n',PFsolver);
-fprintf(fid,'nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
-fprintf(fid,'nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));
-fprintf(fid,'nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));
-fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
-fprintf(fid,'elapsed time = %f s\n',time);
-fprintf(fid,'\n');
-
-if Dim==2
-    fprintf(fid,'fmax  = %g kN/mm\n',fmax*1e-6);
-    fprintf(fid,'fc    = %g kN/mm\n',fc*1e-6);
-elseif Dim==3
-    fprintf(fid,'fmax  = %g kN\n',fmax*1e-3);
-    fprintf(fid,'fc    = %g kN\n',fc*1e-3);
-end
-fprintf(fid,'udmax = %g mm\n',udmax*1e3);
-fprintf(fid,'udc   = %g mm\n',udc*1e3);
-fclose(fid);
 
 %% Display
 if displayModel

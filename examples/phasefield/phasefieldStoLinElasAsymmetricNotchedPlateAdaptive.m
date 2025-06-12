@@ -395,7 +395,7 @@ if solveProblem
     udc_std = std(udc);
     udc_ci = quantile(udc,probs);
     
-    npts = 1e3;
+    npts = 100;
     [fmax_f,fmax_xi,fmax_bw] = ksdensity(fmax,'NumPoints',npts);
     [udmax_f,udmax_xi,udmax_bw] = ksdensity(udmax,'NumPoints',npts);
     [fc_f,fc_xi,fc_bw] = ksdensity(fc,'NumPoints',npts);
@@ -417,45 +417,47 @@ else
 end
 
 %% Outputs
-fid = fopen(fullfile(pathname,'results.txt'),'w');
-fprintf(fid,'Asymmetric notched plate\n');
-fprintf(fid,'\n');
-fprintf(fid,'setup    = %d\n',setup);
-fprintf(fid,'PF model = %s\n',PFmodel);
-fprintf(fid,'PF split = %s\n',PFsplit);
-fprintf(fid,'PF regularization = %s\n',PFregularization);
-fprintf(fid,'PF solver = %s\n',PFsolver);
-fprintf(fid,'nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
-fprintf(fid,'nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));
-fprintf(fid,'nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));
-fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
-fprintf(fid,'nb samples = %g\n',N);
-fprintf(fid,'elapsed time = %f s\n',time);
-fprintf(fid,'\n');
-
-fprintf(fid,'mean(fmax)   = %g kN/mm\n',fmax_mean*1e-6);
-fprintf(fid,'std(fmax)    = %g kN/mm\n',fmax_std*1e-6);
-fprintf(fid,'disp(fmax)   = %g\n',fmax_std/fmax_mean);
-fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
-fprintf(fid,'\n');
-
-fprintf(fid,'mean(fc)   = %g kN/mm\n',fc_mean*1e-6);
-fprintf(fid,'std(fc)    = %g kN/mm\n',fc_std*1e-6);
-fprintf(fid,'disp(fc)   = %g\n',fc_std/fc_mean);
-fprintf(fid,'%d%% ci(fc) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fc_ci(1)*1e-6,fc_ci(2)*1e-6);
-fprintf(fid,'\n');
-
-fprintf(fid,'mean(udmax)   = %g mm\n',udmax_mean*1e3);
-fprintf(fid,'std(udmax)    = %g mm\n',udmax_std*1e3);
-fprintf(fid,'disp(udmax)   = %g\n',udmax_std/udmax_mean);
-fprintf(fid,'%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
-fprintf(fid,'\n');
-
-fprintf(fid,'mean(udc)   = %g mm\n',udc_mean*1e3);
-fprintf(fid,'std(udc)    = %g mm\n',udc_std*1e3);
-fprintf(fid,'disp(udc)   = %g\n',udc_std/udc_mean);
-fprintf(fid,'%d%% ci(udc) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udc_ci(1)*1e3,udc_ci(2)*1e3);
-fclose(fid);
+if solveProblem
+    fid = fopen(fullfile(pathname,'results.txt'),'w');
+    fprintf(fid,'Asymmetric notched plate\n');
+    fprintf(fid,'\n');
+    fprintf(fid,'setup    = %d\n',setup);
+    fprintf(fid,'PF model = %s\n',PFmodel);
+    fprintf(fid,'PF split = %s\n',PFsplit);
+    fprintf(fid,'PF regularization = %s\n',PFregularization);
+    fprintf(fid,'PF solver = %s\n',PFsolver);
+    fprintf(fid,'nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
+    fprintf(fid,'nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));
+    fprintf(fid,'nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));
+    fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
+    fprintf(fid,'nb samples = %g\n',N);
+    fprintf(fid,'elapsed time = %f s\n',time);
+    fprintf(fid,'\n');
+    
+    fprintf(fid,'mean(fmax)   = %g kN/mm\n',fmax_mean*1e-6);
+    fprintf(fid,'std(fmax)    = %g kN/mm\n',fmax_std*1e-6);
+    fprintf(fid,'disp(fmax)   = %g\n',fmax_std/fmax_mean);
+    fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
+    fprintf(fid,'\n');
+    
+    fprintf(fid,'mean(fc)   = %g kN/mm\n',fc_mean*1e-6);
+    fprintf(fid,'std(fc)    = %g kN/mm\n',fc_std*1e-6);
+    fprintf(fid,'disp(fc)   = %g\n',fc_std/fc_mean);
+    fprintf(fid,'%d%% ci(fc) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fc_ci(1)*1e-6,fc_ci(2)*1e-6);
+    fprintf(fid,'\n');
+    
+    fprintf(fid,'mean(udmax)   = %g mm\n',udmax_mean*1e3);
+    fprintf(fid,'std(udmax)    = %g mm\n',udmax_std*1e3);
+    fprintf(fid,'disp(udmax)   = %g\n',udmax_std/udmax_mean);
+    fprintf(fid,'%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
+    fprintf(fid,'\n');
+    
+    fprintf(fid,'mean(udc)   = %g mm\n',udc_mean*1e3);
+    fprintf(fid,'std(udc)    = %g mm\n',udc_std*1e3);
+    fprintf(fid,'disp(udc)   = %g\n',udc_std/udc_mean);
+    fprintf(fid,'%d%% ci(udc) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udc_ci(1)*1e3,udc_ci(2)*1e3);
+    fclose(fid);
+end
 
 %% Display
 if displayModel
@@ -524,7 +526,7 @@ if displaySolution
     figure('Name','Forces vs displacement')
     clf
     for i=1:N
-        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+        plot(t*1e3,ft(i,:)*1e-6,'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
         hold on
     end
     hold off

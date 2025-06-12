@@ -341,26 +341,28 @@ else
 end
 
 %% Outputs
-fid = fopen(fullfile(pathname,'results.txt'),'w');
-fprintf(fid,'Asymmetric notched plate\n');
-fprintf(fid,'\n');
-fprintf(fid,'setup    = %d\n',setup);
-fprintf(fid,'PF model = %s\n',PFmodel);
-fprintf(fid,'PF split = %s\n',PFsplit);
-fprintf(fid,'PF regularization = %s\n',PFregularization);
-fprintf(fid,'PF solver = %s\n',PFsolver);
-fprintf(fid,'nb elements = %g\n',getnbelem(S));
-fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
-fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
-fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
-fprintf(fid,'elapsed time = %f s\n',time);
-fprintf(fid,'\n');
-
-fprintf(fid,'fmax  = %g kN/mm\n',fmax*1e-6);
-fprintf(fid,'fc    = %g kN/mm\n',fc*1e-6);
-fprintf(fid,'udmax = %g mm\n',udmax*1e3);
-fprintf(fid,'udc   = %g mm\n',udc*1e3);
-fclose(fid);
+if solveProblem
+    fid = fopen(fullfile(pathname,'results.txt'),'w');
+    fprintf(fid,'Asymmetric notched plate\n');
+    fprintf(fid,'\n');
+    fprintf(fid,'setup    = %d\n',setup);
+    fprintf(fid,'PF model = %s\n',PFmodel);
+    fprintf(fid,'PF split = %s\n',PFsplit);
+    fprintf(fid,'PF regularization = %s\n',PFregularization);
+    fprintf(fid,'PF solver = %s\n',PFsolver);
+    fprintf(fid,'nb elements = %g\n',getnbelem(S));
+    fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+    fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+    fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
+    fprintf(fid,'elapsed time = %f s\n',time);
+    fprintf(fid,'\n');
+    
+    fprintf(fid,'fmax  = %g kN/mm\n',fmax*1e-6);
+    fprintf(fid,'fc    = %g kN/mm\n',fc*1e-6);
+    fprintf(fid,'udmax = %g mm\n',udmax*1e3);
+    fprintf(fid,'udc   = %g mm\n',udc*1e3);
+    fclose(fid);
+end
 
 %% Display
 if displayModel
