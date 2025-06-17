@@ -5,13 +5,14 @@
 % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF] (anisotropic phase field model of Miehe et al.)
 % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase field model of He et al.)
 % [Luo, Chen, Wang, Li, 2022, CM] (anisotropic phase field model of He et al. with anisotropic fracture surface energy)
+% [Noel, Pled, Chevalier, Wilquin, EFM, 2025] (anisotropic phase field model of He et al.)
 
 % clc
 clearvars
 close all
 % myparallel('start');
 
-%% Experimental data
+%% Experimental data from [Noel, Pled, Chevalier, Wilquin, EFM, 2025]
 filenameElas = '_elastic';
 filenameGc = '_gc';
 pathnameExp = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -74,8 +75,8 @@ fprintf('\n');
 %% Input data
 setProblem = true;
 solveProblem = true;
-displayModel = true;
-displaySolution = true;
+displayModel = false;
+displaySolution = false;
 makeMovie = false;
 saveParaview = false;
 
@@ -141,6 +142,7 @@ renderer = 'OpenGL';
 %% Problem
 if setProblem
     %% Domains and meshes
+    % [Noel, Pled, Chevalier, Wilquin, EFM, 2025]
     L = 45e-3; % length
     h = 2*L; % height
     e = 20e-3; % thickness
@@ -164,6 +166,7 @@ if setProblem
             clC = cl; % characteristic length for circular hole
             B = [];
         case 'optim'
+            % [Noel, Pled, Chevalier, Wilquin, EFM, 2025]
             clD = 3*l/2; % characteristic length for domain
             clC = l/2; % characteristic length for circular hole
             if test
@@ -235,7 +238,7 @@ if setProblem
     %% Materials
     % Option
     % option = 'DEFO'; % plane strain [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
-    option = 'CONT'; % plane stress [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    option = 'CONT'; % plane stress [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Noel, Pled, Chevalier, Wilquin, EFM, 2025]
     switch lower(symmetry)
         case 'isot' % isotropic material
             % Lame coefficients
@@ -312,6 +315,7 @@ if setProblem
     
     %% Time scheme
     if Dim==2
+        % [Noel, Pled, Chevalier, Wilquin, EFM, 2025]
         % du = 24e-5 mm during the first stage (until the phase field reaches the threshold value)
         % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value)
         dt0 = 24e-8;
