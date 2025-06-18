@@ -44,7 +44,7 @@ elseif strcmp(structure,'plate_hole')
     G = createpoints(G,PD(2:4),cl,4:6);
     G = createcircle(G,1,2:3,1);
     G = createlines(G,[[2 4];[4 5];[5 6];[6 3]],2:5);
-    G = createlineloop(G,[-1 2:5],1);
+    G = createcurveloop(G,[-1 2:5],1);
     G = createplanesurface(G,1,1);
     S = gmsh2femobject(2,G,2);
     S = convertelem(S,elemtype,'elemtype');

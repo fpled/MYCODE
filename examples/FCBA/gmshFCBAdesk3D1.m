@@ -36,14 +36,14 @@ if ischarin('recombine',varargin)
 end
 
 G = createlines(G,[[2 3];[3 7];[7 6]],5:7);
-G = createlineloop(G,[5:7 -2],2);
+G = createcurveloop(G,[5:7 -2],2);
 G = createplanesurface(G,2,2);
 if ischarin('recombine',varargin)
     G = recombinesurface(G,2);
 end
 
 G = createlines(G,[[3 4];[4 8];[8 7]],8:10);
-G = createlineloop(G,[8:10 -6],3);
+G = createcurveloop(G,[8:10 -6],3);
 G = createplanesurface(G,3,3);
 if ischarin('recombine',varargin)
     G = recombinesurface(G,3);
@@ -52,31 +52,31 @@ end
 G = createlines(G,[[4 9];[9 10];[10 11];[11 12];[12 9];[10 1];[5 8]],11:17);
 G = createlines(G,[[13 14];[14 15];[15 16];[16 13]],18:21);
 
-G = createlineloop(G,[1 5 8 11 12 16],5);
+G = createcurveloop(G,[1 5 8 11 12 16],5);
 G = createplanesurface(G,5,5);
 if ischarin('recombine',varargin)
     G = recombinesurface(G,5);
 end
 
-G = createlineloop(G,[3 17 10 7],6);
+G = createcurveloop(G,[3 17 10 7],6);
 G = createplanesurface(G,6,6);
 if ischarin('recombine',varargin)
     G = recombinesurface(G,6);
 end
 
-G = createlineloop(G,12:15,7);
+G = createcurveloop(G,12:15,7);
 G = createplanesurface(G,7,7);
 if ischarin('recombine',varargin)
     G = recombinesurface(G,7);
 end
 
-G = createlineloop(G,18:21,8);
+G = createcurveloop(G,18:21,8);
 G = createplanesurface(G,8,8);
 if ischarin('recombine',varargin)
     G = recombinesurface(G,8);
 end
 
-G = createlineloop(G,[-16 13:15 -11 9 -17 4],4);
+G = createcurveloop(G,[-16 13:15 -11 9 -17 4],4);
 G = createplanesurface(G,[4,8],4);
 if ischarin('recombine',varargin)
     G = recombinesurface(G,4);

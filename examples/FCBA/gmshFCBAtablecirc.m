@@ -78,7 +78,7 @@ numlines = numlines(end)+(1:4);
 GQ = gmshfile(Q,clQ,numpoints,numlines,2);
 G = G+GQ;
 numlineloop = [numlineloop,-numlines];
-G = createlineloop(G,numlineloop,3);
+G = createcurveloop(G,numlineloop,3);
 G = createplanesurface(G,3,1);
 if ~isempty([PiCeQ{:}])
     numpoints = numpoints(end)+(1:length(PiCeQ));
@@ -108,7 +108,7 @@ if ischarin('recombine',varargin)
     G = recombinesurface(G,3);
 end
 numlineloop = [numlineloop,-numlines];
-G = createlineloop(G,numlineloop,5);
+G = createcurveloop(G,numlineloop,5);
 G = createplanesurface(G,5,2);
 if ~isempty([PiQeI{:}])
     numpoints = numpoints(end)+(1:length(PiQeI));
