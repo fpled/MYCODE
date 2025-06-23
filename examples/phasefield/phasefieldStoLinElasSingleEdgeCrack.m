@@ -17,7 +17,7 @@
 % [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME] (anisotropic phase field model of Miehe et al.)
 % [Wu, Nguyen, Zhou, Huang, 2020, CMAME] (anisotropic phase field model of Wu et al.)
 % [Kristensen, Martinez-Paneda, 2020, TAFM] (hybrid isotropic-anisotropic phase field model of Ambati et al. with Amor et al. decomposition)
-% [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase field model of Nguyen et al.)
+% [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase field model of He et al.)
 % [Hu, Guilleminot, Dolbow, 2020, CMAME] (anisotropic phase field model of Hu et al.)
 % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME] (anisotropic phase field model of Miehe et al.)
 
@@ -297,8 +297,8 @@ if setProblem
             % mu = 80.7692e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
             % lambda = 121.154e9; % [Hesch, Weinberg, 2014, IJNME]
             % mu = 80.769e9; % [Hesch, Weinberg, 2014, IJNME]
-            lambda = 121.15e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-            mu = 80.77e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+            lambda = 121.15e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+            mu = 80.77e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
             if strcmpi(symmetry,'isot')
                 % Young modulus and Poisson ratio
                 if Dim==2

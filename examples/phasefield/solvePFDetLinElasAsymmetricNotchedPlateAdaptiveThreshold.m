@@ -13,14 +13,13 @@ gmshoptions = getcharin('gmshoptions',varargin,'-v 0');
 mmgoptions = getcharin('mmgoptions',varargin,'-nomove -v -1');
 
 if verLessThan('matlab','9.1') % compatibility (<R2016b)
-    checkConvSol = ~isempty(strfind(lower(critConv),'solution'));
-    checkConvRes = ~isempty(strfind(lower(critConv),'residual'));
-    checkConvEnergy = ~isempty(strfind(lower(critConv),'energy'));
+    contain = @(str,pat) ~isempty(strfind(lower(str),pat));
 else
-    checkConvSol = contains(critConv,'solution','IgnoreCase',true);
-    checkConvRes = contains(critConv,'residual','IgnoreCase',true);
-    checkConvEnergy = contains(critConv,'energy','IgnoreCase',true);
+    contain = @(str,pat) contains(str,pat,'IgnoreCase',true);
 end
+checkConvSol = contain(critConv,'solution');
+checkConvRes = contain(critConv,'residual');
+checkConvEnergy = contain(critConv,'energy');
 
 Dim = getdim(S);
 
