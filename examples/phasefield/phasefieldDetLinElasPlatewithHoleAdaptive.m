@@ -1,10 +1,10 @@
-%% Phase field fracture model - deterministic linear elasticity problem %%
+%% Phase-field fracture model - deterministic linear elasticity problem %%
 %  Plate with a central circular hole under compression                 %%
 %%----------------------------------------------------------------------%%
 % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS] (experimental tests)
-% [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF] (anisotropic phase field model of Miehe et al.)
-% [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase field model of He et al.)
-% [Luo, Chen, Wang, Li, 2022, CM] (anisotropic phase field model of He et al. with anisotropic fracture surface energy)
+% [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF] (anisotropic phase-field model of Miehe et al.)
+% [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase-field model of He et al.)
+% [Luo, Chen, Wang, Li, 2022, CM] (anisotropic phase-field model of He et al. with anisotropic fracture surface energy)
 
 % clc
 clearvars
@@ -146,7 +146,7 @@ if setProblem
     sizemap = @(d) (clC-clD)*d+clD;
     % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
     
-    %% Phase field problem
+    %% Phase-field problem
     %% Material
     switch lower(symmetry)
         case 'isot' % isotropic material
@@ -313,16 +313,16 @@ if setProblem
     %% Time scheme
     if Dim==2
         % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-        % du = 1e-3 mm during the first stage (until the phase field reaches the threshold value)
-        % du = 1e-4 mm during the last stage (as soon as the phase field exceeds the threshold value)
+        % du = 1e-3 mm during the first stage (until the phase-field reaches the threshold value)
+        % du = 1e-4 mm during the last stage (as soon as the phase-field exceeds the threshold value)
         % dt0 = 1e-6;
         % dt1 = 1e-7;
         % tf = 25e-6;
         % dthreshold = 0.9;
         
         % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        % du = 8e-5 mm during the first stage (until the phase field reaches the threshold value)
-        % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value)
+        % du = 8e-5 mm during the first stage (until the phase-field reaches the threshold value)
+        % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value)
         dt0 = 8e-8;
         dt1 = 2e-8;
         if test
@@ -333,8 +333,8 @@ if setProblem
         dthreshold = 0.6;
     elseif Dim==3
         % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-        % du = 1e-3 mm during the first stage (until the phase field reaches the threshold value)
-        % du = 1e-4 mm during the last stage (as soon as the phase field exceeds the threshold value)
+        % du = 1e-3 mm during the first stage (until the phase-field reaches the threshold value)
+        % du = 1e-4 mm during the last stage (as soon as the phase-field exceeds the threshold value)
         dt0 = 1e-6;
         dt1 = 1e-7;
         if test

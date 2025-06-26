@@ -1,20 +1,23 @@
-%% Phase field fracture model - stochastic linear elasticity problem   %%
+%% Phase-field fracture model - stochastic linear elasticity problem   %%
 %  Asymmetric notched plate with three holes under three-point bending %%
 %%---------------------------------------------------------------------%%
 % [Ingraffea, Grigoriu, 1990] (experimental tests)
 % [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM] (SIF-based method with local remeshing and special FE)
 % [Ventura, Xu, Belytschko, 2002, IJNME] (vector level set method with discontinuous enrichment in meshless method)
 % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME] (MsXFEM)
-% [Miehe, Welschinger, Hofacker, 2010, IJNME] (anisotropic phase field model of Miehe et al.)
-% [Miehe, Hofacker, Welschinger, 2010, CMAME] (anisotropic phase field model of Miehe et al.)
+% [Miehe, Welschinger, Hofacker, 2010, IJNME] (anisotropic phase-field model of Miehe et al.)
+% [Miehe, Hofacker, Welschinger, 2010, CMAME] (anisotropic phase-field model of Miehe et al.)
 % [Häusler, Lindhorst, Horst, 2011, IJNME] (XFEM)
 % [Geniaut, Galenne, 2012, IJSS] (XFEM)
 % [Passieux, Rethore, Gravouil, Baietto, 2013, CM] (XFEM)
-% [Ambati, Gerasimov, De Lorenzis, 2015, CM] (hybrid isotropic-anisotropic phase field model of Ambati et al. compared with the anisotropic one of Miehe et al.)
-% [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (isotropic phase field model with no split of Bourdin et al. compared to experimental data of [Winkler, 2001, PhD thesis])
-% [Khisamitov, Meschke, 2018, CMAME] (anisotropic phase field model for interfacial elastic energy)
-% [Wu, Nguyen, 2018, JMPS] (hybrid isotropic-anisotropic phase field model of Wu et al.)
-% [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM] (anisotropic phase field model of Wu et al.)
+% [Ambati, Gerasimov, De Lorenzis, 2015, CM] (hybrid isotropic-anisotropic phase-field model of Ambati et al. compared with the anisotropic one of Miehe et al.)
+% [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (isotropic phase-field model with no split of Bourdin et al. compared to experimental data of [Winkler, 2001, PhD thesis])
+% [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS] (isotropic phase-field model with no split of Bourdin et al.)
+% [Molnar, Gravouil, 2015, FEAD] (isotropic phase-field model with no split of Bourdin et al.)
+% [Khisamitov, Meschke, 2018, CMAME] (anisotropic phase-field model for interfacial elastic energy)
+% [Wu, Nguyen, 2018, JMPS] (hybrid isotropic-anisotropic phase-field model of Wu et al.)
+% [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM] (anisotropic phase-field model of Wu et al.)
+% [Rahimi, Moutsanidis, 2022, CMAME] (anisotropic phase-field model with Total Lagrangian SPH approximation)
 
 % clc
 clearvars
@@ -51,7 +54,7 @@ initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialP
 % N = 500; % number of samples
 N = numWorkers;
 randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
-randPF = struct('aGc',0,'bGc',0,'lcorr',Inf); % random phase field parameters model
+randPF = struct('aGc',0,'bGc',0,'lcorr',Inf); % random phase-field parameters model
 
 suffix = '';
 
@@ -96,20 +99,20 @@ mmgoptions = '-nomove -hausd 0.01 -hgrad 1.1 -v -1';
 if setProblem
     %% Domains and meshes
     unit = 1e-3; % for mm % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME],
-    % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Khisamitov, Meschke, 2018, CMAME]
+    % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Molnar, Gravouil, 2015, FEAD], [Khisamitov, Meschke, 2018, CMAME]
     % unit = 25.4e-3; % for inch % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM],
-    % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     switch setup
         case 1 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME],
             % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME], [Geniaut, Galenne,2012, IJSS],
-            % [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Khisamitov, Meschke, 2018, CMAME]
+            % [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Molnar, Gravouil, 2015, FEAD], [Khisamitov, Meschke, 2018, CMAME]
             a = 1.5*unit; % crack length
             b = 5*unit; % crack offset from the centerline
         case 2 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME],
             % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME],
-            % [Geniaut, Galenne, 2012, IJSS], [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Ambati, Gerasimov, De Lorenzis, 2015, CM],
-            % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Khisamitov, Meschke, 2018, CMAME],
-            % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+            % [Geniaut, Galenne, 2012, IJSS], [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Molnar, Gravouil, 2015, FEAD], [Ambati, Gerasimov, De Lorenzis, 2015, CM],
+            % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS], [Khisamitov, Meschke, 2018, CMAME],
+            % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM], [Rahimi, Moutsanidis, 2022, CMAME]
             a = 1*unit; % crack length
             b = 6*unit; % crack offset from the centerline
         case 3 % [Ingraffea, Grigoriu, 1990], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
@@ -133,10 +136,12 @@ if setProblem
     % e = 0.5*unit; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     
     clD = 0.1*unit; % characteristic length for domain
-    % clD = 0.01*unit; % [Khisamitov, Meschke, 2018, CMAME]
+    % clD = 0.01*unit; % [Khisamitov, Meschke, 2018, CMAME] (setup 2)
+    % cl = 0.05e-3; % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
+    % cl = 0.02*unit; % [Khisamitov, Meschke, 2018, CMAME] (setup 1)
     cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
-    % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
-    % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Khisamitov, Meschke, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Molnar, Gravouil, 2015, FEAD]
+    % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Khisamitov, Meschke, 2018, CMAME] (setup 2), [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     if test
         clD = 0.2*unit;
         cl = 0.025*unit;
@@ -161,15 +166,17 @@ if setProblem
     sizemap = @(d) (clC-clD)*d+clD;
     % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
     
-    %% Phase field problem
+    %% Phase-field problem
     %% Material
     % Critical energy release rate (or fracture toughness)
     gc = 1e3;
     % gc = 304.321; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % gc = 315; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % Regularization parameter (width of the smeared crack)
+    % l = 0.2e-3; % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
+    % l = 0.15e-3; % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
     % l = 0.05*unit; % [Wu, Nguyen, 2018, JMPS]
-    l = 0.025*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    l = 0.025*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Molnar, Gravouil, 2015, FEAD], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % l = 0.01*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % Small artificial residual stiffness
     % k = 1e-12;
@@ -256,7 +263,7 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    option = 'DEFO'; % plane strain [Guidault, Allix, Champaney, Cornuault, 2008, CMAME],  [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM]
+    option = 'DEFO'; % plane strain [Guidault, Allix, Champaney, Cornuault, 2008, CMAME],  [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Molnar, Gravouil, 2015, FEAD], [Khisamitov, Meschke, 2018, CMAME], [Rahimi, Moutsanidis, 2022, CMAME]
     % option = 'CONT'; % plane stress [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % Lame coefficients
     lambda = 12e9;
@@ -270,6 +277,8 @@ if setProblem
             E = 4*mu*(lambda+mu)/(lambda+2*mu);
             NU = lambda/(lambda+2*mu);
     end
+    % E = 20e9; % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
+    % NU = 0.3; % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
     % E = 3.102e9; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % E = 3.275e9; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % NU = 0.35; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
@@ -279,6 +288,7 @@ if setProblem
     g = @(d) (1-d).^2;
     % Density
     RHO = 1;
+    % RHO = 1190; % [Rahimi, Moutsanidis, 2022, CMAME]
     
     % Material
     d = calc_init_dirichlet(S_phase);
@@ -320,6 +330,15 @@ if setProblem
     % du = 1e-4 mm during 2500 time steps (up to u = 0.25 mm)
     % dt = 1e-4*unit;
     % nt = 2500;
+    % t = linspace(dt,nt*dt,nt);
+    
+    % [Molnar, Gravouil, 2015, FEAD]
+    % du = 1e-3 mm during the first 150 time steps (up to u = 0.15 mm)
+    % du = 1e-4 mm during the last  1000 time steps (up to u = 0.25 mm)
+    % dt0 = 1e-3*unit;
+    % nt0 = 150;
+    % dt1 = 1e-4*unit;
+    % nt1 = 1000;
     % t = linspace(dt,nt*dt,nt);
     
     % [Ambati, Gerasimov, De Lorenzis, 2015, CM]

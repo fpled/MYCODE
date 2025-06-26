@@ -1,25 +1,26 @@
-%% Phase field fracture model - deterministic linear elasticity problem with single edge crack %%
+%% Phase-field fracture model - deterministic linear elasticity problem with single edge crack %%
 %%---------------------------------------------------------------------------------------------%%
-% [Bourdin, Francfort, Marigo, 2000, JMPS] (isotropic phase field model with no split of Bourdin et al.)
-% [Miehe, Welschinger, Hofacker, 2010 IJNME] (anisotropic phase field model of Miehe et al.)
-% [Miehe, Hofacker, Welschinger, 2010, CMAME] (anisotropic phase field model of Miehe et al.)
-% [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME] (anisotropic phase field model of Miehe et al.)
-% [Hesch, Weinberg, 2014, IJNME] (anisotropic phase field model of Miehe et al.)
-% [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM] (anisotropic phase field model of Miehe et al.)
-% [Ambati, Gerasimov, De Lorenzis, 2015, CM] (hybrid isotropic-anisotropic phase field model of Ambati et al. with Miehe et al. decomposition compared with the isotropic one of Bourdin et al. and the anisotropic ones of Amor et al. and Miehe et al.)
-% [Gerasimov, De Lorenzis, 2016, CMAME] (anisotropic phase field model of Miehe et al.)
-% [Liu, Li, Msekh, Zuo, 2016, CMS] (anisotropic phase field model of Miehe et al.)
-% [Zhou, Rabczuk, Zhuang, 2018, AES] (anisotropic phase field model of Miehe et al.)
-% [Wu, Nguyen, 2018, JMPS] (hybrid isotropic-anisotropic phase field model of Wu et al.)
-% [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM] (anisotropic phase field model of Wu et al.)
-% [Gerasimov, De Lorenzis, 2019, CMAME] (anisotropic phase field model of Amor et al. and Miehe et al.)
-% [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US] (anisotropic phase field model of Amor et al.)
-% [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME] (anisotropic phase field model of Miehe et al.)
-% [Wu, Nguyen, Zhou, Huang, 2020, CMAME] (anisotropic phase field model of Wu et al.)
-% [Kristensen, Martinez-Paneda, 2020, TAFM] (hybrid isotropic-anisotropic phase field model of Ambati et al. with Amor et al. decomposition)
-% [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase field model of He et al.)
-% [Hu, Guilleminot, Dolbow, 2020, CMAME] (anisotropic phase field model of Hu et al.)
-% [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME] (anisotropic phase field model of Miehe et al.)
+% [Bourdin, Francfort, Marigo, 2000, JMPS] (isotropic phase-field model with no split of Bourdin et al.)
+% [Miehe, Welschinger, Hofacker, 2010 IJNME] (anisotropic phase-field model of Miehe et al.)
+% [Miehe, Hofacker, Welschinger, 2010, CMAME] (anisotropic phase-field model of Miehe et al.)
+% [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME] (anisotropic phase-field model of Miehe et al.)
+% [Hesch, Weinberg, 2014, IJNME] (anisotropic phase-field model of Miehe et al.)
+% [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM] (anisotropic phase-field model of Miehe et al.)
+% [Ambati, Gerasimov, De Lorenzis, 2015, CM] (hybrid isotropic-anisotropic phase-field model of Ambati et al. with Miehe et al. decomposition compared with the isotropic one of Bourdin et al. and the anisotropic ones of Amor et al. and Miehe et al.)
+% [Molnar, Gravouil, 2015, FEAD] (isotropic phase-field model with no split of Bourdin et al.)
+% [Gerasimov, De Lorenzis, 2016, CMAME] (anisotropic phase-field model of Miehe et al.)
+% [Liu, Li, Msekh, Zuo, 2016, CMS] (anisotropic phase-field model of Miehe et al.)
+% [Zhou, Rabczuk, Zhuang, 2018, AES] (anisotropic phase-field model of Miehe et al.)
+% [Wu, Nguyen, 2018, JMPS] (hybrid isotropic-anisotropic phase-field model of Wu et al.)
+% [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM] (anisotropic phase-field model of Wu et al.)
+% [Gerasimov, De Lorenzis, 2019, CMAME] (anisotropic phase-field model of Amor et al. and Miehe et al.)
+% [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US] (anisotropic phase-field model of Amor et al.)
+% [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME] (anisotropic phase-field model of Miehe et al.)
+% [Wu, Nguyen, Zhou, Huang, 2020, CMAME] (anisotropic phase-field model of Wu et al.)
+% [Kristensen, Martinez-Paneda, 2020, TAFM] (hybrid isotropic-anisotropic phase-field model of Ambati et al. with Amor et al. decomposition)
+% [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase-field model of He et al.)
+% [Hu, Guilleminot, Dolbow, 2020, CMAME] (anisotropic phase-field model of Hu et al.)
+% [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME] (anisotropic phase-field model of Miehe et al.)
 
 % clc
 clearvars
@@ -147,7 +148,7 @@ if setProblem
     % clC = 2e-6; % (shear test) [Miehe, Hofacker, Welschinger, 2010, CMAME]
     % clC = 1e-6; % (tension test) [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
     % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-    % clC = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    % clC = 1e-6; % [Molnar, Gravouil, 2015, FEAD], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
     % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
     switch lower(FEmesh)
         case 'unif' % uniform mesh
@@ -220,7 +221,7 @@ if setProblem
     end
     S = S_phase;
     
-    %% Phase field problem
+    %% Phase-field problem
     %% Material
     switch lower(symmetry)
         case 'isot' % isotropic material
@@ -229,10 +230,10 @@ if setProblem
             % Regularization parameter (width of the smeared crack)
             % l = 3.75e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
             % l = 3e-5; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-            % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Hesch, Weinberg, 2014, IJNME], [Liu, Li, Msekh, Zuo, 2016, CMS], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM], [Hu, Guilleminot, Dolbow, 2020, CMAME]
+            % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Hesch, Weinberg, 2014, IJNME], [Molnar, Gravouil, 2015, FEAD], [Liu, Li, Msekh, Zuo, 2016, CMS], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM], [Hu, Guilleminot, Dolbow, 2020, CMAME]
             l = 1e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Gerasimov, De Lorenzis, 2016, CMAME], [Wu, Nguyen, 2018, JMPS], [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-            % l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Hesch, Weinberg, 2014, IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-            % l = 5e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+            % l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Hesch, Weinberg, 2014, IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Molnar, Gravouil, 2015, FEAD], [Liu, Li, Msekh, Zuo, 2016, CMS], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+            % l = 5e-6; % [Molnar, Gravouil, 2015, FEAD], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
             % l = 4e-6; % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
             % eta = 0.052; w0 = 75.94; l = eta/sqrt(w0)*1e-3; % l = 6e-7; % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
         case 'anisot' % anisotropic material
@@ -296,7 +297,7 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    option = 'DEFO'; % plane strain [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Hesch, Weinberg, 2014, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Zhou, Rabczuk, Zhuang, 2018, AES], [Gerasimov, De Lorenzis, 2019, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+    option = 'DEFO'; % plane strain [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Hesch, Weinberg, 2014, IJNME], [Molnar, Gravouil, 2015, FEAD], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Zhou, Rabczuk, Zhuang, 2018, AES], [Gerasimov, De Lorenzis, 2019, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
     % option = 'CONT'; % plane stress [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
     switch lower(symmetry)
         case 'isot' % isotropic material
@@ -318,7 +319,7 @@ if setProblem
                         NU = lambda/(lambda+2*mu);
                 end
                 % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-                % E = 210e9; NU = 0.3; % [Gerasimov, De Lorenzis, 2016, CMAME], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, 2018, JMPS], [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME], [Kristensen, Martinez-Paneda, 2020, TAFM]
+                % E = 210e9; NU = 0.3; % [Molnar, Gravouil, 2015, FEAD], [Gerasimov, De Lorenzis, 2016, CMAME], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, 2018, JMPS], [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME], [Kristensen, Martinez-Paneda, 2020, TAFM]
                 % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
             elseif Dim==3
                 E = mu*(3*lambda+2*mu)/(lambda+mu);
@@ -425,7 +426,7 @@ if setProblem
             if Dim==2
                 switch lower(loading)
                     case 'tension'
-                        % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM]
+                        % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Molnar, Gravouil, 2015, FEAD], [Ambati, Gerasimov, De Lorenzis, 2015, CM]
                         % du = 1e-5 mm during the first 500 time steps (up to u = 5e-3 mm)
                         % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
                         % dt0 = 1e-8;
@@ -510,6 +511,17 @@ if setProblem
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
                         
+                        % [Molnar, Gravouil, 2015, FEAD]
+                        % du = 1e-5 mm during the first 1000 time steps (up to u = 10e-3 mm)
+                        % du = 1e-6 mm during the last 10 000 time steps (up to u = 20e-3 mm)
+                        % dt0 = 1e-7;
+                        % nt0 = 100;
+                        % dt1 = 1e-9;
+                        % nt1 = 10000;
+                        % t0 = linspace(dt0,nt0*dt0,nt0);
+                        % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                        % t = [t0,t1];
+                        
                         % [Liu, Li, Msekh, Zuo, 2016, CMS]
                         % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
                         % du = 1e-5 mm during the last 1500 time steps (up to u = 20e-3 mm)
@@ -573,8 +585,8 @@ if setProblem
                 switch lower(loading)
                     case 'tension'
                         % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-                        % du = 6e-5 mm during the first stage (until the phase field reaches the threshold value)
-                        % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 10e-3 mm)
+                        % du = 6e-5 mm during the first stage (until the phase-field reaches the threshold value)
+                        % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 10e-3 mm)
                         % dt0 = 6e-8;
                         % dt1 = 2e-8;
                         % if test
@@ -584,8 +596,8 @@ if setProblem
                         % tf = 10e-6;
                         % dthreshold = 0.6;
                         
-                        % du = 1e-5 mm during the first stage (until the phase field reaches the threshold value)
-                        % du = 1e-6 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 10e-3 mm)
+                        % du = 1e-5 mm during the first stage (until the phase-field reaches the threshold value)
+                        % du = 1e-6 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 10e-3 mm)
                         dt0 = 1e-8;
                         dt1 = 1e-9;
                         if test
@@ -595,8 +607,8 @@ if setProblem
                         tf = 10e-6;
                         dthreshold = 0.6;
                     case 'shear'
-                        % du = 6e-5 mm during the first stage (until the phase field reaches the threshold value)
-                        % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 20e-3 mm)
+                        % du = 6e-5 mm during the first stage (until the phase-field reaches the threshold value)
+                        % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 20e-3 mm)
                         % dt0 = 6e-8;
                         % dt1 = 2e-8;
                         % if test
@@ -606,8 +618,8 @@ if setProblem
                         % tf = 20e-6;
                         % dthreshold = 0.6;
                         
-                        % du = 1e-5 mm during the first stage (until the phase field reaches the threshold value)
-                        % du = 1e-5 mm during the last stage (as soon as the phase field exceeds the threshold value, up to u = 20e-3 mm)
+                        % du = 1e-5 mm during the first stage (until the phase-field reaches the threshold value)
+                        % du = 1e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 20e-3 mm)
                         dt0 = 1e-8;
                         dt1 = 1e-8;
                         if test

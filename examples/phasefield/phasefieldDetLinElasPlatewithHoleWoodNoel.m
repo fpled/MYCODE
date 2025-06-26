@@ -1,11 +1,11 @@
-%% Phase field fracture model - deterministic linear elasticity problem %%
+%% Phase-field fracture model - deterministic linear elasticity problem %%
 %  Plate with a central circular hole under compression                 %%
 %%----------------------------------------------------------------------%%
 % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS] (experimental tests)
-% [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF] (anisotropic phase field model of Miehe et al.)
-% [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase field model of He et al.)
-% [Luo, Chen, Wang, Li, 2022, CM] (anisotropic phase field model of He et al. with anisotropic fracture surface energy)
-% [Noel, Pled, Chevalier, Wilquin, EFM, 2025] (anisotropic phase field model of He et al.)
+% [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF] (anisotropic phase-field model of Miehe et al.)
+% [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase-field model of He et al.)
+% [Luo, Chen, Wang, Li, 2022, CM] (anisotropic phase-field model of He et al. with anisotropic fracture surface energy)
+% [Noel, Pled, Chevalier, Wilquin, EFM, 2025] (anisotropic phase-field model of He et al.)
 
 % clc
 clearvars
@@ -187,7 +187,7 @@ if setProblem
     % S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_optim_test.msh'),2);
     S = S_phase;
     
-    %% Phase field problem
+    %% Phase-field problem
     %% Material
     % Critical energy release rate (or fracture toughness)
     gc = gc_data(numSample)*1e3; % [J/m^2]=[N/m]
@@ -316,15 +316,15 @@ if setProblem
     %% Time scheme
     if Dim==2
         % [Noel, Pled, Chevalier, Wilquin, EFM, 2025]
-        % du = 24e-5 mm during the first stage (until the phase field reaches the threshold value)
-        % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value)
+        % du = 24e-5 mm during the first stage (until the phase-field reaches the threshold value)
+        % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value)
         dt0 = 24e-8;
         dt1 = 2e-8;
         tf = 0.31e-3; % tf = 0.31 mm
         dthreshold = 0.2;
     elseif Dim==3
-        % du = 24e-5 mm during the first stage (until the phase field reaches the threshold value)
-        % du = 2e-5 mm during the last stage (as soon as the phase field exceeds the threshold value)
+        % du = 24e-5 mm during the first stage (until the phase-field reaches the threshold value)
+        % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value)
         dt0 = 24e-8;
         dt1 = 2e-8;
         tf = 0.31e-3; % tf = 0.31 mm
