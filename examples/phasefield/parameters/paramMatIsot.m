@@ -33,8 +33,8 @@ if Dim==2
             E = 4*mu.*(lambda+mu)./(lambda+2*mu);
             NU = lambda./(lambda+2*mu);
     end
-    % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-    % E = 210e9; NU = 0.3; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
+    % E = 210e9; NU = 0.3; % [Molnar, Gravouil, 2015, FEAD], [Gerasimov, De Lorenzis, 2016, CMAME], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, 2018, JMPS], [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME], [Kristensen, Martinez-Paneda, 2020, TAFM]
     % kappa = 121030e6; NU=0.227; lambda=3*kappa.*NU./(1+NU); mu = 3*kappa.*(1-2*NU)./(2*(1+NU)); E = 3*kappa.*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
 elseif Dim==3
     E = mu.*(3*lambda+2*mu)./(lambda+mu);

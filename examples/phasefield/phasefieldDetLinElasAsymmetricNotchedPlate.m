@@ -1,8 +1,8 @@
 %% Phase-field fracture model - deterministic linear elasticity problem %%
 %  Asymmetric notched plate with three holes under three-point bending  %%
 %%----------------------------------------------------------------------%%
-% [Ingraffea, Grigoriu, 1990] (experimental tests)
-% [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM] (SIF-based method with local remeshing and special FE)
+% [Ingraffea, Grigoriu, 1990] (experimental tests and LEFM-based FEM)
+% [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM] (LEFM SIF-based method with local remeshing and special FE)
 % [Ventura, Xu, Belytschko, 2002, IJNME] (vector level set method with discontinuous enrichment in meshless method)
 % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME] (MsXFEM)
 % [Miehe, Welschinger, Hofacker, 2010, IJNME] (anisotropic phase-field model of Miehe et al.)
@@ -13,11 +13,17 @@
 % [Ambati, Gerasimov, De Lorenzis, 2015, CM] (hybrid isotropic-anisotropic phase-field model of Ambati et al. compared with the anisotropic one of Miehe et al.)
 % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (isotropic phase-field model with no split of Bourdin et al. compared to experimental data of [Winkler, 2001, PhD thesis])
 % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS] (isotropic phase-field model with no split of Bourdin et al.)
-% [Molnar, Gravouil, 2015, FEAD] (isotropic phase-field model with no split of Bourdin et al.)
+% [Molnar, Gravouil, 2017, FEAD] (isotropic phase-field model with no split of Bourdin et al.)
+% [Cervera, Barbat, Chiumenti, 2017, CM] (LEFM Mixed FEM)
 % [Khisamitov, Meschke, 2018, CMAME] (anisotropic phase-field model for interfacial elastic energy)
+% [Wu, 2018, CMAME] (hybrid isotropic-anisotropic phase-field model of Wu et al.)
 % [Wu, Nguyen, 2018, JMPS] (hybrid isotropic-anisotropic phase-field model of Wu et al.)
-% [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM] (anisotropic phase-field model of Wu et al.)
+% [Mandal, Nguyen, Wu, 2019, EFM] (hybrid AT1, AT2 and PF-CZM)
+% [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM] (anisotropic phase-field model of Wu et al.)
+% [Fu, Yi, Chen, Bui, Hu, Yao, 2020, TAFM] (LEFM, FNM + SASE)
+% [Min, Hu, Yao, Bui, Zhang, 2022, CMAME] (isotropic phase-field model with no split of Bourdin et al.)
 % [Rahimi, Moutsanidis, 2022, CMAME] (anisotropic phase-field model with Total Lagrangian SPH approximation)
+% [Lee, Meng, Ashkpour, Rahmaninezhad, Iqbal, Mishra, Hubler, Sales, Farnam, Najafi, 2024, CBM] (anisotropic phase-field model of Miehe et al. with healing and re-damage)
 
 % clc
 clearvars
@@ -36,7 +42,7 @@ test = true; % coarse mesh
 % test = false; % fine mesh
 
 Dim = 2; % space dimension Dim = 2
-setup = 2; % notch geometry setup = 1, 2, 3, 4, 5
+setup = 1; % notch geometry setup = 1, 2, 3, 4, 5, 6
 PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'HeAmor', 'HeFreddi', 'Zhang'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
@@ -76,32 +82,36 @@ renderer = 'OpenGL';
 %% Problem
 if setProblem
     %% Domains and meshes
-    unit = 1e-3; % for mm % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME],
-    % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Molnar, Gravouil, 2015, FEAD], [Khisamitov, Meschke, 2018, CMAME]
-    % unit = 25.4e-3; % for inch % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM],
-    % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    unit = 1e-3; % in [mm] % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME],
+    % [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Molnar, Gravouil, 2017, FEAD], [Khisamitov, Meschke, 2018, CMAME], [Lee et al., 2024, CBM]
+    % unit = 25.4e-3; % in [inch] % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME],
+    % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS], [Cervera, Barbat, Chiumenti, 2017, CM], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     switch setup
         case 1 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME],
-            % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME], [Geniaut, Galenne,2012, IJSS],
-            % [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Molnar, Gravouil, 2015, FEAD], [Khisamitov, Meschke, 2018, CMAME]
-            a = 1.5*unit; % crack length
-            b = 5*unit; % crack offset from the centerline
-        case 2 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME],
             % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME],
-            % [Geniaut, Galenne, 2012, IJSS], [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Molnar, Gravouil, 2015, FEAD], [Ambati, Gerasimov, De Lorenzis, 2015, CM],
-            % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS], [Khisamitov, Meschke, 2018, CMAME],
-            % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM], [Rahimi, Moutsanidis, 2022, CMAME]
+            % [Geniaut, Galenne, 2012, IJSS], [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Ambati, Gerasimov, De Lorenzis, 2015, CM],
+            % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS], [Molnar, Gravouil, 2017, FEAD], [Cervera, Barbat, Chiumenti, 2017, CM],
+            % [Khisamitov, Meschke, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Fu, Yi, Chen, Bui, Hu, Yao, 2020, TAFM],
+            % [Min, Hu, Yao, Bui, Zhang, 2022, CMAME], [Rahimi, Moutsanidis, 2022, CMAME], [Lee et al., 2024, CBM]
             a = 1*unit; % crack length
             b = 6*unit; % crack offset from the centerline
-        case 3 % [Ingraffea, Grigoriu, 1990], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
+        case 2 % [Ingraffea, Grigoriu, 1990], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
             a = 2.5*unit; % crack length
             b = 6*unit; % crack offset from the centerline
-        case 4 % [Ingraffea, Grigoriu, 1990], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-            a = 1.5*unit; % crack length
-            b = 4.75*unit; % crack offset from the centerline
-        case 5 % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+        case 3 % [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
             a = 1.5*unit; % crack length
             b = 5.15*unit; % crack offset from the centerline
+        case 4 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME],
+            % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME], [Geniaut, Galenne,2012, IJSS],
+            % [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Molnar, Gravouil, 2017, FEAD], [Khisamitov, Meschke, 2018, CMAME]
+            a = 1.5*unit; % crack length
+            b = 5*unit; % crack offset from the centerline
+        case 5 % [Ingraffea, Grigoriu, 1990], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
+            a = 1.5*unit; % crack length
+            b = 4.75*unit; % crack offset from the centerline
+        case 6 % [Ingraffea, Grigoriu, 1990], [Cervera, Barbat, Chiumenti, 2017, CM], [Wu, 2018, CMAME]
+            a = 1.5*unit; % crack length
+            b = 4.5*unit; % crack offset from the centerline
     end
     L = 10*unit; % half-length
     h = 4*unit; % half-height
@@ -111,13 +121,16 @@ if setProblem
     ph = 1.25*unit; % location of the top hole from the top
     r = 0.25*unit; % radius of the holes
     e = 1; % thickness
-    % e = 0.5*unit; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % e = 0.5*unit; % [Cervera, Barbat, Chiumenti, 2017, CM], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     
-    % cl = 0.05e-3; % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
-    % cl = 0.02*unit; % [Khisamitov, Meschke, 2018, CMAME] (setup 1)
+    % cl = 1e-3; % [mm] % [Cervera, Barbat, Chiumenti, 2017, CM]
+    % cl = 0.05e-3; % [mm] % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
+    % cl = 0.02*unit; % [Khisamitov, Meschke, 2018, CMAME] (setup 1), [Rahimi, Moutsanidis, 2022, CMAME]
     cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
-    % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Molnar, Gravouil, 2015, FEAD]
-    % cl = 0.01*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Khisamitov, Meschke, 2018, CMAME] (setup 2), [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Molnar, Gravouil, 2017, FEAD], [Mandal, Nguyen, Wu, 2019, EFM]
+    % cl = 0.005*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Khisamitov, Meschke, 2018, CMAME] (setup 4), [Wu, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
+    % cl = 0.003*nuit; % [Mandal, Nguyen, Wu, 2019, EFM]
+    % cl = 0.0008*unit; % [Lee et al., 2024, CBM]
     if test
         cl = 0.025*unit;
     end
@@ -126,7 +139,8 @@ if setProblem
             clD = cl; % characteristic length for domain
         case 'optim'
             clD = 0.1*unit; % characteristic length for domain
-            % clD = 0.01*unit; % [Khisamitov, Meschke, 2018, CMAME] (setup 2)
+            % clD = 0.01*unit; % [Khisamitov, Meschke, 2018, CMAME] (setup 4)
+            % clD = 2.54e-3; % [mm] % [Cervera, Barbat, Chiumenti, 2017, CM]
             if test
                 clD = 0.2*unit;
             end
@@ -152,13 +166,19 @@ if setProblem
     %% Material
     % Critical energy release rate (or fracture toughness)
     gc = 1e3;
+    % gc = 500; % [Cervera, Barbat, Chiumenti, 2017, CM], [Lee et al., 2024, CBM]
+    % gc = 315; % [Wu, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     % gc = 304.321; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
-    % gc = 315; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % Regularization parameter (width of the smeared crack)
-    % l = 0.2e-3; % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
-    % l = 0.15e-3; % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
-    % l = 0.05*unit; % [Wu, Nguyen, 2018, JMPS]
-    l = 0.025*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Molnar, Gravouil, 2015, FEAD], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    % l = 0.2e-3; % [mm] % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
+    % l = 0.15e-3; % [mm] % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
+    % l = 0.075*unit; % [Mandal, Nguyen, Wu, 2019, EFM]
+    % l = 0.05*unit; % [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM]
+    % l = 0.0375*unit; % [Mandal, Nguyen, Wu, 2019, EFM]
+    % l = 0.03*unit; % [Lee et al., 2024, CBM]
+    l = 0.025*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Molnar, Gravouil, 2017, FEAD], [Wu, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Min, Hu, Yao, Bui, Zhang, 2022, CMAME]
+    % l = 0.02*unit; % [Rahimi, Moutsanidis, 2022, CMAME]
+    % l = 0.0125*unit; % [Mandal, Nguyen, Wu, 2019, EFM]
     % l = 0.01*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % Small artificial residual stiffness
     % k = 1e-12;
@@ -217,8 +237,8 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    option = 'DEFO'; % plane strain [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Molnar, Gravouil, 2015, FEAD], [Khisamitov, Meschke, 2018, CMAME], [Rahimi, Moutsanidis, 2022, CMAME]
-    % option = 'CONT'; % plane stress [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
+    option = 'DEFO'; % plane strain [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Molnar, Gravouil, 2017, FEAD], [Khisamitov, Meschke, 2018, CMAME], [Rahimi, Moutsanidis, 2022, CMAME]
+    % option = 'CONT'; % plane stress [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Cervera, Barbat, Chiumenti, 2017, CM], [Wu, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     % Lame coefficients
     lambda = 12e9;
     mu = 8e9;
@@ -231,13 +251,11 @@ if setProblem
             E = 4*mu*(lambda+mu)/(lambda+2*mu);
             NU = lambda/(lambda+2*mu);
     end
-    % E = 20e9; % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
-    % NU = 0.3; % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
-    % E = 3.102e9; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
-    % E = 3.275e9; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-    % NU = 0.35; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-    % E = 200e9; % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME]
-    % NU = 0.3; % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME]
+    % E = 20e9; NU = 0.3; % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
+    % E = 3.102e9; NU = 0.35; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Cervera, Barbat, Chiumenti, 2017, CM]
+    % E = 3.275e9; NU = 0.35; % [Ingraffea, Grigoriu, 1990], [Wu, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
+    % E = 200e9; NU = 0.3; % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME]
+    % E = 12e9; NU = 0.2; % [Lee et al., 2024, CBM]
     % Energetic degradation function
     g = @(d) (1-d).^2;
     % Density
@@ -280,13 +298,19 @@ if setProblem
     % b = -b;
     
     %% Time scheme
-    % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
-    % du = 1e-4 mm during 2500 time steps (up to u = 0.25 mm)
+    % [Wu, 2018, CMAME]
+    % du = 1e-2 inches during 100 time steps (up to u = 1.0 inches)
+    % dt = 1e-2*unit;
+    % nt = 100;
+    % t = linspace(dt,nt*dt,nt);
+    
+    % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
+    % du = 1e-4 inches during 2500 time steps (up to u = 0.25 inches)
     % dt = 1e-4*unit;
     % nt = 2500;
     % t = linspace(dt,nt*dt,nt);
     
-    % [Molnar, Gravouil, 2015, FEAD]
+    % [Molnar, Gravouil, 2017, FEAD]
     % du = 1e-3 mm during the first 150 time steps (up to u = 0.15 mm)
     % du = 1e-4 mm during the last  1000 time steps (up to u = 0.25 mm)
     % dt0 = 1e-3*unit;
@@ -500,10 +524,10 @@ if displaySolution
     %% Display solutions at different instants
     ampl = 0;
     switch setup
-        case {1,4,5}
-            tSnapshots = [0.190 0.201 0.203 0.204 0.205 0.207]*unit;
-        case {2,3}
+        case {1,2}
             tSnapshots = [0.210 0.215 0.218 0.219 0.220 0.222]*unit;
+        case {3,4,5,6}
+            tSnapshots = [0.190 0.201 0.203 0.204 0.205 0.207]*unit;
     end
     rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
     rep = [rep,length(T)];
