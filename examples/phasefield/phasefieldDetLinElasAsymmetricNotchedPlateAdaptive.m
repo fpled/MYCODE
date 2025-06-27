@@ -409,7 +409,7 @@ if solveProblem
     fprintf(fid,'udmax = %g mm\n',udmax*1e3);
     fprintf(fid,'udc   = %g mm\n',udc*1e3);
     fclose(fid)
-end;
+end
 
 %% Display
 if displayModel

@@ -46,7 +46,7 @@ PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = 1; % maximum number of iterations at each loading increment
-tolConv = 1e-3; % prescribed tolerance for convergence at each loading increment
+tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
@@ -263,7 +263,7 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    option = 'DEFO'; % plane strain [Guidault, Allix, Champaney, Cornuault, 2008, CMAME],  [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Molnar, Gravouil, 2015, FEAD], [Khisamitov, Meschke, 2018, CMAME], [Rahimi, Moutsanidis, 2022, CMAME]
+    option = 'DEFO'; % plane strain [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Molnar, Gravouil, 2015, FEAD], [Khisamitov, Meschke, 2018, CMAME], [Rahimi, Moutsanidis, 2022, CMAME]
     % option = 'CONT'; % plane stress [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2019, AAM]
     % Lame coefficients
     lambda = 12e9;
@@ -374,7 +374,6 @@ if solveProblem
     tTotal = tic;
     
     nbSamples = 1;
-    
     fun = @(S_phase,S,filename) solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
         'maxiter',maxIter,'tol',tolConv,'crit',critConv,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     % fun = @(S_phase,S,filename) solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,initialCrack,sizemap,...
@@ -519,7 +518,7 @@ if displayModel
     end
 end
 
-%% Display samples of solutions
+%% Display statistics of solutions
 if displaySolution
     [t,~] = gettevol(T);
     
@@ -552,9 +551,9 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('Displacement [mm]'...,'Interpreter',interpreter
+    xlabel('Displacement [mm]'...,'Interpreter',interpreter...
         )
-    ylabel('Force [kN]'...,'Interpreter',interpreter
+    ylabel('Force [kN]'...,'Interpreter',interpreter...
         )
     mysaveas(pathname,'forces_displacement',formats);
     mymatlab2tikz(pathname,'forces_displacement.tex');

@@ -453,7 +453,7 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft*1e-3,'-b','LineWidth',linewidth)
+    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)

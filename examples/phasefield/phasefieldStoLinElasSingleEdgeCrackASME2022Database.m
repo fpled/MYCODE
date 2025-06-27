@@ -261,7 +261,7 @@ if setProblem
     
     % Material
     [K,R,Qn] = setphasefieldparam(gc,l,PFregularization);
-    mat_phase = FOUR_ISOT('k',K,'r',R,'qn',Qn,'PFregularization',PFregularization,'aGc',randPF.aGc,'bGc',randPF.bGc,'lcorr',randPF.lcorr);
+    mat_phase = FOUR_ISOT('k',K,'r',R,'qn',Qn,'DIM3',e,'PFregularization',PFregularization,'aGc',randPF.aGc,'bGc',randPF.bGc,'lcorr',randPF.lcorr);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
     
@@ -549,7 +549,7 @@ if setProblem
                         % t0 = linspace(dt0,nt0*dt0,nt0);
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
-
+                        
                         % [Liu, Li, Msekh, Zuo, 2016, CMS]
                         % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
                         % du = 1e-5 mm during the last 1500 time steps (up to u = 20e-3 mm)
@@ -854,9 +854,9 @@ if displaySolution
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
+    colors = distinguishable_colors(N);
     figure('Name','Forces vs displacement')
     clf
-    colors = distinguishable_colors(N);
     for i=1:N
         plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
         hold on
@@ -873,7 +873,6 @@ if displaySolution
     mysaveas(pathname,'forces_displacement',formats);
     mymatlab2tikz(pathname,'forces_displacement.tex');
     
-    % colors = distinguishable_colors(N);
     % for i=1:N
     %     if mod(i,100)==0
     %         close all

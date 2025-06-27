@@ -82,8 +82,6 @@ coeff_gc = 1.0;
 
 suffix = '';
 % suffix = '_6e-5_2e-5';
-% suffix = '_mac';
-% suffix = '_k1e-12';
 % suffix = ['_coeffgc' num2str(coeff_gc,'_%g')];
 
 foldername = ['singleEdgeCrack' loading '_' num2str(Dim) 'D'];

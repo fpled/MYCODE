@@ -46,7 +46,7 @@ PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = 1; % maximum number of iterations at each loading increment
-tolConv = 1e-3; % prescribed tolerance for convergence at each loading increment
+tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
@@ -144,7 +144,7 @@ if setProblem
             clD = cl; % characteristic length for domain
         case 'optim'
             clD = 0.1*unit; % characteristic length for domain
-            % clD = 0.01*unit; % [Khisamitov, Meschke, 2018, CMAME]  (setup 2)
+            % clD = 0.01*unit; % [Khisamitov, Meschke, 2018, CMAME] (setup 2)
             if test
                 clD = 0.2*unit;
             end
@@ -476,7 +476,7 @@ if displayModel
     %     ampl = getsize(S)/max(abs(u(k,:)))/20;
     %     plotModelDeflection(S,u(k,:)','ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     %     mysaveas(pathname,['mesh_deflected_sample_' num2str(k)],formats,renderer);
-    %
+    %     
     %     figure('Name','Meshes')
     %     clf
     %     plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
@@ -518,9 +518,9 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('Displacement [mm]'...,'Interpreter',interpreter
+    xlabel('Displacement [mm]'...,'Interpreter',interpreter...
         )
-    ylabel('Force [kN]'...,'Interpreter',interpreter
+    ylabel('Force [kN]'...,'Interpreter',interpreter...
         )
     mysaveas(pathname,'forces_displacement',formats);
     mymatlab2tikz(pathname,'forces_displacement.tex');

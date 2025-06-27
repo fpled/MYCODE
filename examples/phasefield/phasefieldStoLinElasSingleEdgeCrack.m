@@ -65,6 +65,8 @@ bGc = 0;
 % gc = 2.7e3;
 % aGc = 0.6*gc;
 % bGc = 1.4*gc;
+% aGc = 0.9*gc;
+% bGc = 1.1*gc;
 % aGc = [0.7,1.2]*gc;
 % bGc = [0.8,1.3]*gc;
 randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase-field parameters model
@@ -530,7 +532,7 @@ if setProblem
                         % t0 = linspace(dt0,nt0*dt0,nt0);
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
-
+                        
                         % [Liu, Li, Msekh, Zuo, 2016, CMS]
                         % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
                         % du = 1e-5 mm during the last 1500 time steps (up to u = 20e-3 mm)
@@ -797,7 +799,7 @@ if displayModel
     %     ampl = getsize(S)/max(abs(u(k,:)))/20;
     %     plotModelDeflection(S,u(k,:)','ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     %     mysaveas(pathname,['mesh_deflected_sample_' num2str(k)],formats,renderer);
-    %
+    %     
     %     figure('Name','Meshes')
     %     clf
     %     plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
