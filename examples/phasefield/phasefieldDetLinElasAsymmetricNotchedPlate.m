@@ -4,6 +4,7 @@
 % [Ingraffea, Grigoriu, 1990] (experimental tests and LEFM-based FEM)
 % [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM] (LEFM SIF-based method with local remeshing and special FE)
 % [Ventura, Xu, Belytschko, 2002, IJNME] (vector level set method with discontinuous enrichment in meshless method)
+% [Miehe, Gurses, 2007, IJNME] (FEM + R-adaptive mesh alignment)
 % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME] (MsXFEM)
 % [Miehe, Welschinger, Hofacker, 2010, IJNME] (anisotropic phase-field model of Miehe et al.)
 % [Miehe, Hofacker, Welschinger, 2010, CMAME] (anisotropic phase-field model of Miehe et al.)
@@ -18,6 +19,7 @@
 % [Khisamitov, Meschke, 2018, CMAME] (anisotropic phase-field model for interfacial elastic energy)
 % [Wu, 2018, CMAME] (hybrid isotropic-anisotropic phase-field model of Wu et al.)
 % [Wu, Nguyen, 2018, JMPS] (hybrid isotropic-anisotropic phase-field model of Wu et al.)
+% [Bhowmick, Liu, 2018, EFM] (anisotropic phase-field model of Miehe et al. + CS-FEM)
 % [Mandal, Nguyen, Wu, 2019, EFM] (hybrid AT1, AT2 and PF-CZM)
 % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM] (anisotropic phase-field model of Wu et al.)
 % [Fu, Yi, Chen, Bui, Hu, Yao, 2020, TAFM] (LEFM, FNM + SASE)
@@ -83,12 +85,12 @@ renderer = 'OpenGL';
 if setProblem
     %% Domains and meshes
     unit = 1e-3; % in [mm] % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME],
-    % [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Molnar, Gravouil, 2017, FEAD], [Khisamitov, Meschke, 2018, CMAME], [Lee et al., 2024, CBM]
+    % [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Molnar, Gravouil, 2017, FEAD], [Khisamitov, Meschke, 2018, CMAME], [Bhowmick, Liu, 2018, EFM], [Lee et al., 2024, CBM]
     % unit = 25.4e-3; % in [inch] % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME],
     % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS], [Cervera, Barbat, Chiumenti, 2017, CM], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     switch setup
         case 1 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME],
-            % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME],
+            % [Miehe, Gurses, 2007, IJNME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME],
             % [Geniaut, Galenne, 2012, IJSS], [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Ambati, Gerasimov, De Lorenzis, 2015, CM],
             % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS], [Molnar, Gravouil, 2017, FEAD], [Cervera, Barbat, Chiumenti, 2017, CM],
             % [Khisamitov, Meschke, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Fu, Yi, Chen, Bui, Hu, Yao, 2020, TAFM],
@@ -102,7 +104,7 @@ if setProblem
             a = 1.5*unit; % crack length
             b = 5.15*unit; % crack offset from the centerline
         case 4 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME],
-            % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME], [Geniaut, Galenne,2012, IJSS],
+            % [Miehe, Gurses, 2007, IJNME], [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME], [Geniaut, Galenne,2012, IJSS],
             % [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Molnar, Gravouil, 2017, FEAD], [Khisamitov, Meschke, 2018, CMAME]
             a = 1.5*unit; % crack length
             b = 5*unit; % crack offset from the centerline
@@ -166,13 +168,14 @@ if setProblem
     %% Material
     % Critical energy release rate (or fracture toughness)
     gc = 1e3;
+    % gc = 2.7e3; % [Bhowmick, Liu, 2018, EFM]
     % gc = 500; % [Cervera, Barbat, Chiumenti, 2017, CM], [Lee et al., 2024, CBM]
     % gc = 315; % [Wu, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     % gc = 304.321; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % Regularization parameter (width of the smeared crack)
     % l = 0.2e-3; % [mm] % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
     % l = 0.15e-3; % [mm] % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
-    % l = 0.075*unit; % [Mandal, Nguyen, Wu, 2019, EFM]
+    % l = 0.075*unit; % [Bhowmick, Liu, 2018, EFM], [Mandal, Nguyen, Wu, 2019, EFM]
     % l = 0.05*unit; % [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM]
     % l = 0.0375*unit; % [Mandal, Nguyen, Wu, 2019, EFM]
     % l = 0.03*unit; % [Lee et al., 2024, CBM]
@@ -237,7 +240,7 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    option = 'DEFO'; % plane strain [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Molnar, Gravouil, 2017, FEAD], [Khisamitov, Meschke, 2018, CMAME], [Rahimi, Moutsanidis, 2022, CMAME]
+    option = 'DEFO'; % plane strain [Miehe, Gurses, 2007, IJNME], [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Molnar, Gravouil, 2017, FEAD], [Khisamitov, Meschke, 2018, CMAME], [Bhowmick, Liu, 2018, EFM], [Rahimi, Moutsanidis, 2022, CMAME]
     % option = 'CONT'; % plane stress [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Cervera, Barbat, Chiumenti, 2017, CM], [Wu, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     % Lame coefficients
     lambda = 12e9;
@@ -255,6 +258,7 @@ if setProblem
     % E = 3.102e9; NU = 0.35; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Cervera, Barbat, Chiumenti, 2017, CM]
     % E = 3.275e9; NU = 0.35; % [Ingraffea, Grigoriu, 1990], [Wu, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     % E = 200e9; NU = 0.3; % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME]
+    % E = 210e9; NU = 0.2; % [Bhowmick, Liu, 2018, EFM]
     % E = 12e9; NU = 0.2; % [Lee et al., 2024, CBM]
     % Energetic degradation function
     g = @(d) (1-d).^2;
@@ -310,7 +314,7 @@ if setProblem
     % nt = 2500;
     % t = linspace(dt,nt*dt,nt);
     
-    % [Molnar, Gravouil, 2017, FEAD]
+    % [Molnar, Gravouil, 2017, FEAD], [Bhowmick, Liu, 2018, EFM]
     % du = 1e-3 mm during the first 150 time steps (up to u = 0.15 mm)
     % du = 1e-4 mm during the last  1000 time steps (up to u = 0.25 mm)
     % dt0 = 1e-3*unit;
