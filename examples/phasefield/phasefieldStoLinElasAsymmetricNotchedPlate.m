@@ -162,7 +162,7 @@ if setProblem
             % clD = 0.01*unit; % [Khisamitov, Meschke, 2018, CMAME] (setup 4)
             % clD = 2.54e-3; % [mm] % [Cervera, Barbat, Chiumenti, 2017, CM]
             if test
-                clD = 0.2*unit;
+                clD = 0.25*unit;
             end
         otherwise
             error('Wrong FE mesh')
@@ -171,12 +171,12 @@ if setProblem
     clH = cl; % characteristic length for circular holes
     switch lower(initialCrack)
         case 'geometriccrack'
-            S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'));
+            S_phase = gmshAsymmetricPlateWithSingleEdgeCrackThreeHoles(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'));
         case 'geometricnotch'
-            c = 0.025*unit; % crack width
-            S_phase = gmshasymmetricnotchedplatewithedgenotch(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'));
+            c = 0.05*unit; % crack width
+            S_phase = gmshAsymmetricPlateWithSingleEdgeNotchThreeHoles(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'));
         case 'initialphasefield'
-            S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'noduplicate');
+            S_phase = gmshAsymmetricPlateWithSingleEdgeCrackThreeHoles(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'noduplicate');
         otherwise
             error('Wrong model for initial crack');
     end

@@ -159,7 +159,7 @@ if setProblem
                 error('Wrong FE mesh')
         end
     end
-    S_phase = gmshdomainwithhole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole'));
+    S_phase = gmshDomainWithHole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole'));
     S = S_phase;
     
     %% Phase-field problem

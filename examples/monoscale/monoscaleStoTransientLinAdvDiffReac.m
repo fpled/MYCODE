@@ -32,7 +32,7 @@ if setProblem
     cl2 = 0.04;
     cl0 = 0.02;
     cltip = 0.01;
-    pb.S = gmshcanister(cl1,cl2,cl0,cltip,fullfile(pathname,'gmsh_canister'));
+    pb.S = gmshCanister(cl1,cl2,cl0,cltip,fullfile(pathname,'gmsh_canister'));
     
     %% Random variables
     d = 3; % parametric dimension

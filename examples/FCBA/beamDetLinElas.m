@@ -46,7 +46,7 @@ if solveProblem
     elemtype = 'BEAM';
     cl = L/100;
     
-    S = gmshbeam(P,cl,fullfile(pathname,'gmsh'));
+    S = gmshBeam(P,cl,fullfile(pathname,'gmsh'));
     if Dim==2
         S = convertelem(S,elemtype);
     elseif Dim==3

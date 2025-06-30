@@ -116,9 +116,9 @@ mmgoptions = '-nomove -hausd 0.000001 -hgrad 1.1 -v -1';
 %% Problem
 if setProblem
     %% Domains and meshes
-    L = 1e-3;
-    a = L/2;
-    b = L/2;
+    L = 1e-3; % domain size
+    a = L/2; % crack length
+    b = L/2; % crack vertical position
     if Dim==2
         e = 1;
         D = DOMAIN(2,[0.0,0.0],[L,L]);
@@ -165,12 +165,12 @@ if setProblem
     end
     switch lower(initialCrack)
         case 'geometriccrack'
-            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+            S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
         case 'geometricnotch'
             c = 1e-5; % crack width
-            S_phase = gmshdomainwithedgenotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+            S_phase = gmshDomainWithSingleEdgeNotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_notch'));
         case 'initialphasefield'
-            S_phase = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate');
+            S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate');
         otherwise
             error('Wrong model for initial crack');
     end
@@ -221,9 +221,12 @@ if setProblem
             end
         case 'geometricnotch'
             if Dim==2
-                C = CIRCLE(a-c/2,L/2,c/2);
+                C = CIRCLE(a-c/2,L/2,c/2); % circular notch
+                % C = LIGNE([a,L/2-c/2],[a,L/2+c/2]); % rectangular notch
+                % C = POINT([a,L/2]); % V notch
             elseif Dim==3
-                C = QUADRANGLE([a,L/2-c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[a,L/2-c/2,e]);
+                C = QUADRANGLE([a,L/2-c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[a,L/2-c/2,e]); % rectangular notch
+                % C = LIGNE([a,L/2,0.0],[a,L/2,e]); % V notch
             end
     end
     if Dim==2

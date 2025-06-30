@@ -153,7 +153,7 @@ if setProblem
             error('Wrong FE mesh')
     end
     clC = cl; % characteristic length for crack
-    S_phase = gmshLshapedpanel(a,b,e,clD,clC,fullfile(pathname,'gmsh_Lshaped_panel'),Dim,'Box',B);
+    S_phase = gmshLshapedPanel(a,b,e,clD,clC,fullfile(pathname,'gmsh_Lshaped_panel'),Dim,'Box',B);
     S = S_phase;
     S_healing = S_phase;
     

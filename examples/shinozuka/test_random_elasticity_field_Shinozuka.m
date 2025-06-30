@@ -68,7 +68,7 @@ end
 nbelem = repmat(round(L/cl),1,Dim);
 S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
 % S = build_model(D,'cl',cl,'elemtype',elemtype,'option',option,'filename',fullfile(pathname,'gmsh_domain'));
-% S = gmshdomainwithedgecrack(D,C,cl,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+% S = gmshDomainWithSingleEdgeCrack(D,C,cl,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'));
 % S = gmsh(D,C,cl,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'));
 
 S_scalar = final(S);

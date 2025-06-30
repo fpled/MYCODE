@@ -161,7 +161,7 @@ if solveProblem
     
     % Beams meshes
     cl = b1/2;
-    S_leg = cellfun(@(P,n) gmshbeam(P,cl,fullfile(pathname,['gmsh_leg_' num2str(n)])),P_leg,num2cell(1:length(P_leg)),'UniformOutput',false);
+    S_leg = cellfun(@(P,n) gmshBeam(P,cl,fullfile(pathname,['gmsh_leg_' num2str(n)])),P_leg,num2cell(1:length(P_leg)),'UniformOutput',false);
     S_leg = cellfun(@(S) concatgroupelem(S),S_leg,'UniformOutput',false);
     S_leg = union(S_leg{:});
     S_leg = convertelem(S_leg,'BEAM','param',VECTEUR([1;0;0]));
@@ -179,12 +179,12 @@ if solveProblem
     S_siderail = cell(1,3);
     if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
         S_siderail{1} = gmshFCBAbedsiderail(Q_siderail{1},L_slat1,cl,cl,fullfile(pathname,['gmsh_siderail_1_elemtype_' elemtype]),3);
-        S_siderail{2} = gmshdomainwithinclusion(Q_siderail{2},L_slat2,cl,cl,fullfile(pathname,['gmsh_siderail_2_elemtype_' elemtype]),3);
-        S_siderail{3} = gmshdomainwithinclusion(Q_siderail{3},L_slat3,cl,cl,fullfile(pathname,['gmsh_siderail_3_elemtype_' elemtype]),3);
+        S_siderail{2} = gmshDomainWithInclusion(Q_siderail{2},L_slat2,cl,cl,fullfile(pathname,['gmsh_siderail_2_elemtype_' elemtype]),3);
+        S_siderail{3} = gmshDomainWithInclusion(Q_siderail{3},L_slat3,cl,cl,fullfile(pathname,['gmsh_siderail_3_elemtype_' elemtype]),3);
     else
         S_siderail{1} = gmshFCBAbedsiderail(Q_siderail{1},L_slat1,cl,cl,fullfile(pathname,['gmsh_siderail_1_elemtype_' elemtype]),3,'recombine');
-        S_siderail{2} = gmshdomainwithinclusion(Q_siderail{2},L_slat2,cl,cl,fullfile(pathname,['gmsh_siderail_2_elemtype_' elemtype]),3,'recombine');
-        S_siderail{3} = gmshdomainwithinclusion(Q_siderail{3},L_slat3,cl,cl,fullfile(pathname,['gmsh_siderail_3_elemtype_' elemtype]),3,'recombine');
+        S_siderail{2} = gmshDomainWithInclusion(Q_siderail{2},L_slat2,cl,cl,fullfile(pathname,['gmsh_siderail_2_elemtype_' elemtype]),3,'recombine');
+        S_siderail{3} = gmshDomainWithInclusion(Q_siderail{3},L_slat3,cl,cl,fullfile(pathname,['gmsh_siderail_3_elemtype_' elemtype]),3,'recombine');
     end
     S_siderail = union(S_siderail{:});
     S_siderail = convertelem(S_siderail,elemtype);
