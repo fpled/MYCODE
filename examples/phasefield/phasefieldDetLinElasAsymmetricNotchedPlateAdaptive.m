@@ -81,7 +81,7 @@ formats = {'epsc'};
 renderer = 'OpenGL';
 
 gmshoptions = '-v 0';
-mmgoptions = '-nomove -hausd 0.01 -hgrad 1.1 -v -1';
+mmgoptions = '-nomove -hausd 0.000005 -hgrad 1.1 -v -1';
 % gmshoptions = '-v 5';
 % mmgoptions = '-nomove -hausd 0.01 -hgrad 1.3 -v 1';
 
@@ -141,19 +141,19 @@ if setProblem
     % cl = 0.003*nuit; % [Mandal, Nguyen, Wu, 2019, EFM]
     % cl = 0.0008*unit; % [Lee et al., 2024, CBM]
     if test
-        clD = 0.2*unit;
+        clD = 0.25*unit;
         cl = 0.025*unit;
     end
     clC = cl; % characteristic length for edge crack/notch
     clH = cl; % characteristic length for circular holes
     switch lower(initialCrack)
         case 'geometriccrack'
-            S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'));
+            S_phase = gmshAsymmetricPlateWithSingleEdgeCrackThreeHoles(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'));
         case 'geometricnotch'
-            c = 0.025*unit; % crack width
-            S_phase = gmshasymmetricnotchedplatewithedgenotch(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'));
+            c = 0.05*unit; % crack width
+            S_phase = gmshAsymmetricPlateWithSingleEdgeNotchThreeHoles(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'));
         case 'initialphasefield'
-            S_phase = gmshasymmetricnotchedplatewithedgecrack(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'noduplicate');
+            S_phase = gmshAsymmetricPlateWithSingleEdgeCrackThreeHoles(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'noduplicate');
         otherwise
             error('Wrong model for initial crack');
     end
@@ -195,7 +195,9 @@ if setProblem
         case 'geometriccrack'
             C = POINT([-b,-h+a]);
         case 'geometricnotch'
-            C = LIGNE([-b-c/2,-h+a],[-b+c/2,-h+a]);
+            C = CIRCLE(-b,-h+a-c/2,c/2); % circular notch
+            % C = LIGNE([-b-c/2,-h+a],[-b+c/2,-h+a]); % rectangular notch
+            % C = POINT([-b,-h+a]); % V notch
         case 'initialphasefield'
             C = LIGNE([-b,-h],[-b,-h+a]);
         otherwise
@@ -436,7 +438,7 @@ if solveProblem
     fprintf(fid,'fc    = %g kN/mm\n',fc*1e-6);
     fprintf(fid,'udmax = %g mm\n',udmax*1e3);
     fprintf(fid,'udc   = %g mm\n',udc*1e3);
-    fclose(fid)
+    fclose(fid);
 end
 
 %% Display

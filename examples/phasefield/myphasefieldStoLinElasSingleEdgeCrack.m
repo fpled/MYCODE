@@ -244,9 +244,9 @@ if setProblem
     % Phase field model
     switch upper(elemtype)
         case {'TRI3','TRI6'}
-            S_phaseInit = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pbPathname,'gmsh_domain_single_edge_crack'));
+            S_phaseInit = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pbPathname,'gmsh_domain_single_edge_crack'));
         case 'QUA4'
-            S_phaseInit = gmshdomainwithedgecrack(D,C,clD,clC,fullfile(pbPathname,'gmsh_domain_single_edge_crack'),2,'recombine');
+            S_phaseInit = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pbPathname,'gmsh_domain_single_edge_crack'),2,'recombine');
         case {'TET4','TET10'}
         case 'CUB8'
     end
