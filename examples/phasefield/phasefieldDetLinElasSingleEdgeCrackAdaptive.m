@@ -155,11 +155,11 @@ if setProblem
         clD = 2.5e-5;
         clC = 2.5e-6;
     elseif Dim==3
-        clD = 4e-5;
+        clD = 5e-5;
         clC = 5e-6;
     end
     if test
-        clD = 4e-5;
+        clD = 5e-5;
         clC = 1e-5;
     end
     switch lower(initialCrack)

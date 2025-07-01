@@ -158,11 +158,7 @@ if setProblem
                     error('Wrong material symmetry class');
             end
             if test
-                if Dim==2
-                    cl = 1e-5;
-                elseif Dim==3
-                    cl = 2e-5;
-                end
+                cl = 1e-5;
             end
             clD = cl;
             clC = cl;
@@ -172,11 +168,11 @@ if setProblem
                 clD = 2.5e-5;
                 clC = 2.5e-6;
             elseif Dim==3
-                clD = 4e-5;
+                clD = 5e-5;
                 clC = 5e-6;
             end
             if test
-                clD = 4e-5;
+                clD = 5e-5;
                 clC = 1e-5;
             end
             VIn = clC;

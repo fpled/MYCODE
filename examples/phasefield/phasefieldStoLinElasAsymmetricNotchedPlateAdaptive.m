@@ -43,7 +43,7 @@ saveParaview = false;
 test = true; % coarse mesh
 % test = false; % fine mesh
 
-numWorkers = 4;
+numWorkers = maxNumCompThreads;
 % numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 
 % Deterministic model parameters
@@ -159,7 +159,7 @@ if setProblem
     % cl = 0.003*nuit; % [Mandal, Nguyen, Wu, 2019, EFM]
     % cl = 0.0008*unit; % [Lee et al., 2024, CBM]
     if test
-        clD = 0.25*unit;
+        clD = 0.5*unit;
         cl = 0.025*unit;
     % else
     %     clD = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clD);
@@ -171,7 +171,7 @@ if setProblem
         case 'geometriccrack'
             S_phase = gmshAsymmetricPlateWithSingleEdgeCrackThreeHoles(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'));
         case 'geometricnotch'
-            c = 0.025*unit; % crack width
+            c = 0.05*unit; % crack width
             S_phase = gmshAsymmetricPlateWithSingleEdgeNotchThreeHoles(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'));
         case 'initialphasefield'
             S_phase = gmshAsymmetricPlateWithSingleEdgeCrackThreeHoles(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'noduplicate');

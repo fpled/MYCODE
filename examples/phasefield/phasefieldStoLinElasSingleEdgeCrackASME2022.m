@@ -38,7 +38,7 @@ saveParaview = false;
 % test = true; % coarse mesh
 test = false; % fine mesh
 
-numWorkers = maxNumCompThreads;
+% numWorkers = maxNumCompThreads;
 numWorkers = 100;
 % numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 
@@ -53,6 +53,7 @@ PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
+critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
 
@@ -72,12 +73,14 @@ bGc = 0;
 % bGc = [0.8,1.3]*gc;
 randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase-field parameters model
 
+suffix = ['_coeffgc' num2str(coeff_gc,'_%g')];
+
 foldername = ['singleEdgeCrack' loading '_' num2str(Dim) 'D'];
 filename = ['linElas' symmetry];
 if strcmpi(symmetry,'anisot') % anisotropic material
     filename = [filename num2str(ang) 'deg'];
 end
-filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...% 'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv)
+filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...% 'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) num2str(critConv)
     'Mesh' FEmesh '_' num2str(N) 'samples'];
 if any(randMat.delta)
     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
@@ -86,7 +89,7 @@ if any(randPF.aGc) && any(randPF.bGc)
     gcbounds = [randPF.aGc(:),randPF.bGc(:)]';
     filename = [filename '_RandPF_Gc' num2str(gcbounds(:)','_%g') '_Lcorr' num2str(randPF.lcorr,'_%g')];
 end
-filename = [filename '_coeffgc' num2str(coeff_gc,'_%g')];
+filename = [filename suffix];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefieldSto',foldername,filename);
@@ -151,11 +154,7 @@ if setProblem
                     error('Wrong material symmetry class');
             end
             if test
-                if Dim==2
-                    cl = 1e-5;
-                elseif Dim==3
-                    cl = 2e-5;
-                end
+                cl = 1e-5;
             end
             clD = cl;
             clC = cl;
@@ -165,11 +164,11 @@ if setProblem
                 clD = 2.5e-5;
                 clC = 2.5e-6;
             elseif Dim==3
-                clD = 4e-5;
+                clD = 5e-5;
                 clC = 5e-6;
             end
             if test
-                clD = 4e-5;
+                clD = 5e-5;
                 clC = 1e-5;
             end
             VIn = clC;
@@ -247,16 +246,14 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    switch lower(initialCrack)
-        case 'geometriccrack'
-            S_phase = final(S_phase,'duplicate');
-        case 'geometricnotch'
-            S_phase = final(S_phase);
-        case 'initialphasefield'
-            S_phase = final(S_phase);
-            S_phase = addcl(S_phase,C,'T',1);
-        otherwise
-            error('Wrong model for initial crack');
+    if strcmpi(initialCrack,'geometriccrack')
+        S_phase = final(S_phase,'duplicate');
+    else
+        S_phase = final(S_phase);
+    end
+    
+    if strcmpi(initialCrack,'initialphasefield')
+        S_phase = addcl(S_phase,C,'T',1);
     end
     
     %% Stiffness matrices and sollicitation vectors
@@ -392,38 +389,14 @@ if setProblem
         BBack = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
     end
     
-    switch lower(initialCrack)
-        case 'geometriccrack'
-            S = final(S,'duplicate');
-        otherwise
-            S = final(S);
+    if strcmpi(initialCrack,'geometriccrack')
+        S = final(S,'duplicate');
+    else
+        S = final(S);
     end
     
     ud = 0;
-    switch lower(loading)
-        case 'tension'
-            if Dim==2
-                S = addcl(S,BU,{'UX','UY'},[0;ud]);
-            elseif Dim==3
-                S = addcl(S,BU,{'UX','UY','UZ'},[0;ud;0]);
-            end
-            S = addcl(S,BL,'UY');
-        case 'shear'
-            if Dim==2
-                S = addcl(S,BU,{'UX','UY'},[ud;0]);
-                S = addcl(S,BLeft,'UY');
-                S = addcl(S,BRight,'UY');
-            elseif Dim==3
-                S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
-                S = addcl(S,BLeft,{'UY','UZ'});
-                S = addcl(S,BRight,{'UY','UZ'});
-                S = addcl(S,BFront,{'UY','UZ'});
-                S = addcl(S,BBack,{'UY','UZ'});
-            end
-            S = addcl(S,BL);
-        otherwise
-            error('Wrong loading case');
-    end
+    S = addbcSingleEdgeCrack(S,ud,BU,BL,BLeft,BRight,BFront,BBack,loading);
     
     %% Stiffness matrices and sollicitation vectors
     % [A,b] = calc_rigi(S);
@@ -597,7 +570,7 @@ if setProblem
                         dt = 1e-8;
                         nt = 1000;
                         if test
-                            dt1 = 4e-8;
+                            dt = 4e-8;
                             nt = 250;
                         end
                     case 'shear'
@@ -640,7 +613,7 @@ if solveProblem
     tTotal = tic;
     
     nbSamples = 1;
-    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv);
+    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv);
     [ft,dmaxt,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
     t = gettevol(T);
     idc = arrayfun(@(i) find(dmaxt(i,:)>=min(0.75,max(dmaxt(i,:))),1),1:N)';
@@ -796,7 +769,7 @@ if displayModel
     %     ampl = getsize(S)/max(abs(u(k,:)))/20;
     %     plotModelDeflection(S,u(k,:)','ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
     %     mysaveas(pathname,['mesh_deflected_sample_' num2str(k)],formats,renderer);
-    %
+    %     
     %     figure('Name','Meshes')
     %     clf
     %     plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);

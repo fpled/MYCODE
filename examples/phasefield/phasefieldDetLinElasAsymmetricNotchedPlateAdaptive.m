@@ -141,7 +141,7 @@ if setProblem
     % cl = 0.003*nuit; % [Mandal, Nguyen, Wu, 2019, EFM]
     % cl = 0.0008*unit; % [Lee et al., 2024, CBM]
     if test
-        clD = 0.25*unit;
+        clD = 0.5*unit;
         cl = 0.025*unit;
     end
     clC = cl; % characteristic length for edge crack/notch

@@ -38,7 +38,7 @@ saveParaview = false;
 test = true; % coarse mesh
 % test = false; % fine mesh
 
-numWorkers = 4;
+numWorkers = maxNumCompThreads;
 % numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 
 % Deterministic model parameters
@@ -59,6 +59,7 @@ FEmesh = 'Optim'; % 'Unif' or 'Optim'
 % Random model parameters
 % N = 500; % number of samples
 N = numWorkers;
+coeff_gc = 1.0;
 randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
 aGc = 0;
 bGc = 0;
@@ -72,6 +73,7 @@ bGc = 0;
 randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase-field parameters model
 
 suffix = '';
+% suffix = ['_coeffgc' num2str(coeff_gc,'_%g')];
 
 foldername = ['singleEdgeCrack' loading '_' num2str(Dim) 'D'];
 filename = ['linElas' symmetry];
@@ -156,11 +158,7 @@ if setProblem
                     error('Wrong material symmetry class');
             end
             if test
-                if Dim==2
-                    cl = 1e-5;
-                elseif Dim==3
-                    cl = 2e-5;
-                end
+                cl = 1e-5;
             end
             clD = cl;
             clC = cl;
@@ -170,11 +168,11 @@ if setProblem
                 clD = 2.5e-5;
                 clC = 2.5e-6;
             elseif Dim==3
-                clD = 4e-5;
+                clD = 5e-5;
                 clC = 5e-6;
             end
             if test
-                clD = 4e-5;
+                clD = 5e-5;
                 clC = 1e-5;
             end
             VIn = clC;
@@ -239,6 +237,7 @@ if setProblem
         otherwise
             error('Wrong material symmetry class');
     end
+    gc = gc*coeff_gc;
     % Small artificial residual stiffness
     % k = 1e-12;
     k = 0;
@@ -599,7 +598,7 @@ if setProblem
                         dt = 1e-8;
                         nt = 1000;
                         if test
-                            dt1 = 4e-8;
+                            dt = 4e-8;
                             nt = 250;
                         end
                     case 'shear'

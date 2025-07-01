@@ -48,6 +48,7 @@ PFregularization = 'AT2'; % 'AT1' or 'AT2'
 PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 'BoundConstrainedOptim'
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
+critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
 coeff_gc = 1.0;
@@ -83,7 +84,7 @@ filename = ['linElas' symmetry];
 if strcmpi(symmetry,'anisot') % anisotropic material
     filename = [filename num2str(ang) 'deg'];
 end
-filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...% 'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv)
+filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...% 'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) num2str(critConv)
     'Mesh' FEmesh];
 filename = [filename suffix];
 
@@ -150,11 +151,7 @@ if setProblem
                     error('Wrong material symmetry class');
             end
             if test
-                if Dim==2
-                    cl = 1e-5;
-                elseif Dim==3
-                    cl = 2e-5;
-                end
+                cl = 1e-5;
             end
             clD = cl;
             clC = cl;
@@ -164,11 +161,11 @@ if setProblem
                 clD = 2.5e-5;
                 clC = 2.5e-6;
             elseif Dim==3
-                clD = 4e-5;
+                clD = 5e-5;
                 clC = 5e-6;
             end
             if test
-                clD = 4e-5;
+                clD = 5e-5;
                 clC = 1e-5;
             end
             VIn = clC;
@@ -208,7 +205,7 @@ if setProblem
     %     otherwise
     %         error('Wrong model for initial crack');
     % end
-    S_phase = gmsh2femobject(Dim,fullfile(pathname,'gmsh_domain_single_edge_crack.msh'),Dim);
+    S_phase = gmsh2femobject(Dim,fullfile(pathname,'gmsh_domain_single_edge_crack.msh'));
     S = S_phase;
     
     %% Phase-field problem
@@ -246,16 +243,14 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    switch lower(initialCrack)
-        case 'geometriccrack'
-            S_phase = final(S_phase,'duplicate');
-        case 'geometricnotch'
-            S_phase = final(S_phase);
-        case 'initialphasefield'
-            S_phase = final(S_phase);
-            S_phase = addcl(S_phase,C,'T',1);
-        otherwise
-            error('Wrong model for initial crack');
+    if strcmpi(initialCrack,'geometriccrack')
+        S_phase = final(S_phase,'duplicate');
+    else
+        S_phase = final(S_phase);
+    end
+    
+    if strcmpi(initialCrack,'initialphasefield')
+        S_phase = addcl(S_phase,C,'T',1);
     end
     
     %% Stiffness matrices and sollicitation vectors
@@ -374,38 +369,14 @@ if setProblem
         BBack = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
     end
     
-    switch lower(initialCrack)
-        case 'geometriccrack'
-            S = final(S,'duplicate');
-        otherwise
-            S = final(S);
+    if strcmpi(initialCrack,'geometriccrack')
+        S = final(S,'duplicate');
+    else
+        S = final(S);
     end
     
     ud = 0;
-    switch lower(loading)
-        case 'tension'
-            if Dim==2
-                S = addcl(S,BU,{'UX','UY'},[0;ud]);
-            elseif Dim==3
-                S = addcl(S,BU,{'UX','UY','UZ'},[0;ud;0]);
-            end
-            S = addcl(S,BL,'UY');
-        case 'shear'
-            if Dim==2
-                S = addcl(S,BU,{'UX','UY'},[ud;0]);
-                S = addcl(S,BLeft,'UY');
-                S = addcl(S,BRight,'UY');
-            elseif Dim==3
-                S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
-                S = addcl(S,BLeft,{'UY','UZ'});
-                S = addcl(S,BRight,{'UY','UZ'});
-                S = addcl(S,BFront,{'UY','UZ'});
-                S = addcl(S,BBack,{'UY','UZ'});
-            end
-            S = addcl(S,BL);
-        otherwise
-            error('Wrong loading case');
-    end
+    S = addbcSingleEdgeCrack(S,ud,BU,BL,BLeft,BRight,BFront,BBack,loading);
     
     %% Stiffness matrices and sollicitation vectors
     % [A,b] = calc_rigi(S);
@@ -512,7 +483,7 @@ if setProblem
                         % t0 = linspace(dt0,nt0*dt0,nt0);
                         % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
                         % t = [t0,t1];
-
+                        
                         % [Liu, Li, Msekh, Zuo, 2016, CMS]
                         % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
                         % du = 1e-5 mm during the last 1500 time steps (up to u = 20e-3 mm)

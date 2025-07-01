@@ -38,7 +38,7 @@ saveParaview = false;
 test = true; % coarse mesh
 % test = false; % fine mesh
 
-numWorkers = 4;
+numWorkers = maxNumCompThreads;
 % numWorkers = 1; maxNumCompThreads(1); % mono-thread computation
 
 % Deterministic model parameters
@@ -153,11 +153,11 @@ if setProblem
         clD = 2.5e-5;
         clC = 2.5e-6;
     elseif Dim==3
-        clD = 4e-5;
+        clD = 5e-5;
         clC = 5e-6;
     end
     if test
-        clD = 4e-5;
+        clD = 5e-5;
         clC = 1e-5;
 %     else
 %         clD = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clD);
@@ -597,7 +597,7 @@ if setProblem
                         dt = 1e-8;
                         nt = 1000;
                         if test
-                            dt1 = 4e-8;
+                            dt = 4e-8;
                             nt = 250;
                         end
                     case 'shear'
