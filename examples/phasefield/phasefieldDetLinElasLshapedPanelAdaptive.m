@@ -140,7 +140,7 @@ if setProblem
         cl = 5e-3;
     end
     clC = cl; % characteristic length for crack
-    S_phase = gmshLshapedpanel(a,b,e,clD,clC,fullfile(pathname,'gmsh_Lshaped_panel'));
+    S_phase = gmshLshapedPanel(a,b,e,clD,clC,fullfile(pathname,'gmsh_Lshaped_panel'));
     
     sizemap = @(d) (clC-clD)*d+clD;
     % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
