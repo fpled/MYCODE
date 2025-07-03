@@ -2,6 +2,8 @@
 %  L-shaped concrete notched panel under mixed-mode failure             %%
 %%----------------------------------------------------------------------%%
 % [Winkler, 2001, PhD thesis] (experimental tests)
+% [Winkler, Hofstetter, Niederwanger, 2001, PIMEPartL] (experimental tests)
+% [Winkler, Hofstetter, Lehar, 2004, IJNAMG] (experimental tests)
 % [Mosler, Meschke, 2004, CMAME]
 % [Unger, Eckardt, Konke, 2007, CMAME] (XFEM)
 % [Dumstorff, Meschke, 2007, IJNME] (XFEM)
@@ -38,7 +40,8 @@
 % [Li, Wang, Cao, Liu, 2021, ACE] (anisotropic phase-field model of Lancioni and Royer-Carfagni et al.)
 % [Si, Yu, Li, Natarajan, 2023, CMAME] (hybrid isotropic-anisotropic phase-field model of Ambati et al. with multi-patch adaptive isogeometric phase-field method based on Nitsche's method)
 % [Bharali, Larsson, Janicke, 2024, CM] (anisotropic phase-field model of Wu et al.)
-% [Hu, Tan, Xia, Min, Xu, Yao, Sun, Zhang, Quoc Bui, Zhuang, Rabczuk, 2023] (hybrid isotropic-anisotropic phase-field model of Ambati et al.)
+% [Hu, Tan, Xia, Min, Xu, Yao, Sun, Zhang, Quoc Bui, Zhuang, Rabczuk, 2023, TAFM] (hybrid isotropic-anisotropic phase-field model of Ambati et al.)
+% [Ribeiro Nogueira, Rastiello, Giry, Gatuingt, Callari, 2023, AJCE] (Gradient-Enhanced Eikonal non-local damage model)
 
 % clc
 clearvars
@@ -124,7 +127,7 @@ if setProblem
         cl = 1e-3; % [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Wu, Huang, Nguyen, 2020, CMAME]
         % cl = 0.625e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS], [Lampron, Therriault, Levesque, 2021, CMAME]
         % cl = 0.6e-3; % [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM]
-        % cl = 0.5e-3; % [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM], [Hu et al., 2023]
+        % cl = 0.5e-3; % [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM], [Hu et al., 2023, TAFM]
         % cl = 0.3125e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
         % cl = 0.25e-3; % [Wu, 2018, CMAME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     elseif Dim==3
@@ -144,7 +147,7 @@ if setProblem
             VIn = cl;
             VOut = clD;
             XMin = -a; XMax = 0;
-            YMin = 0; YMax = 50e-3;
+            YMin = 0; YMax = a/5;
             ZMin = 0; ZMax = e;
             Thickness = a;
             % Thickness = 0;
@@ -164,20 +167,20 @@ if setProblem
     % gc = 130; % [Unger, Eckardt, Konke, 2007, CMAME], [Zamani, Gracie, Eslami, 2012, IJNME], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Wu, Huang, Nguyen, 2020, CMAME], [Yang, He, Liu, Deng, Huang, 2020, IJMS], [Li, Wang, Cao, Liu, 2021, ACE], [Bharali, Larsson, Janicke, 2024, CM]
     % gc = 120; % [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM]
     % gc = 95; % [Dumstorff, Meschke, 2007, IJNME], [Meschke, Dumstorff, 2007, CMAME], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Zhang, Vignes, Sloan, Sheng, 2017, CM], [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS], [Patil, Mishra, Singh, 2018, CMAME], [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM], [Kirkesaether Brun, Wick, Inga Berre, Nordbotten, Radu, 2020, CMAME], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Lampron, Therriault, Levesque, 2021, CMAME], [Si, Yu, Li, Natarajan, 2023, CMAME]
-    % gc = 90; % [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Hu et al., 2023]
+    % gc = 90; % [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Hu et al., 2023, TAFM]
     gc = 89; % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Areias, Msekh, Rabczuk, 2016, EFM], [Wick, 2017, SIAM JSC], [Kakouris, Triantafyllou, 2017, IJNME], [Egger et al., 2019, AS], [Mang, Wick, Wollner, 2020, CM], [Jodlbauer, Langer, Wick, 2020, CMAME], [Geelen, 2020, PhD thesis]
-    % gc = 65; % [Jager, Steinmann, Kuhl, 2008, IJNME]
+    % gc = 65; % [Winkler, 2001, PhD thesis], [Winkler, Hofstetter, Niederwanger, 2001, PIMEPartL], [Winkler, Hofstetter, Lehar, 2004, IJNAMG], [Jager, Steinmann, Kuhl, 2008, IJNME]
     % Regularization parameter (width of the smeared crack)
     % l = 126.32e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % l = 29.154e-3; % [Mang, Wick, Wollner, 2020, CM], [Kirkesaether Brun, Wick, Inga Berre, Nordbotten, Radu, 2020, CMAME]
     % l = 20e-3; % [Li, Wang, Cao, Liu, 2021, ACE]
     % l = 17.76e-3; % [Zhang, Vignes, Sloan, Sheng, 2017, CM]
-    % l = 15e-3; % [Hu et al., 2023]
+    % l = 15e-3; % [Hu et al., 2023, TAFM]
     % l = 14.577e-3; % [Kirkesaether Brun, Wick, Inga Berre, Nordbotten, Radu, 2020, CMAME]
     % l = 11e-3; % [Jodlbauer, Langer, Wick, 2020, CMAME]
-    % l = 10e-3; % [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2018, CMAME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Li, Wang, Cao, Liu, 2021, ACE], [Hu et al., 2023], [Bharali, Larsson, Janicke, 2024, CM]
+    % l = 10e-3; % [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2018, CMAME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Li, Wang, Cao, Liu, 2021, ACE], [Hu et al., 2023, TAFM], [Bharali, Larsson, Janicke, 2024, CM]
     % l = 6.72e-3; % [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM]
-    l = 5e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (3D), [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Gerasimov, De Lorenzis, 2019, CMAME], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Wu, Huang, Nguyen, 2020, CMAME], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Hu et al., 2023]
+    l = 5e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (3D), [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Gerasimov, De Lorenzis, 2019, CMAME], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Wu, Huang, Nguyen, 2020, CMAME], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Hu et al., 2023, TAFM]
     % l = 3.644e-3; % [Wick, 2017, SIAM JSC]
     % l = 3.125e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS], [Lampron, Therriault, Levesque, 2021, CMAME]
     % l = 3e-3; % [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM]
@@ -249,17 +252,15 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    % option = 'DEFO'; % plane strain [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS], [Gerasimov, De Lorenzis, 2019, CMAME], [Geelen, 2020, PhD thesis], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM], [Lampron, Therriault, Levesque, 2021, CMAME], [Li, Wang, Cao, Liu, 2021, ACE]
-    option = 'CONT'; % plane stress [Dumstorff, Meschke, 2007, IJNME], [Meschke, Dumstorff, 2007, CMAME], [Zamani, Gracie, Eslami, 2012, IJNME], [Cervera, Barbat, Chiumenti, 2017, CM], [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Huang, Nguyen, 2020, CMAME], [Yang, He, Liu, Deng, Huang, 2020, IJMS], [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM]
+    % option = 'DEFO'; % plane strain [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS], [Gerasimov, De Lorenzis, 2019, CMAME], [Geelen, 2020, PhD thesis], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM], [Lampron, Therriault, Levesque, 2021, CMAME], [Li, Wang, Cao, Liu, 2021, ACE], [Ribeiro Nogueira, Rastiello, Giry, Gatuingt, Callari, 2023, AJCE]
+    option = 'CONT'; % plane stress [Winkler, 2001, PhD thesis], [Winkler, Hofstetter, Niederwanger, 2001, PIMEPartL], [Winkler, Hofstetter, Lehar, 2004, IJNAMG], [Dumstorff, Meschke, 2007, IJNME], [Meschke, Dumstorff, 2007, CMAME], [Zamani, Gracie, Eslami, 2012, IJNME], [Cervera, Barbat, Chiumenti, 2017, CM], [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Huang, Nguyen, 2020, CMAME], [Yang, He, Liu, Deng, Huang, 2020, IJMS], [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM]
     % Lame coefficients
-    % lambda = 6.161e9; % [Jager, Steinmann, Kuhl, 2008, IJNME]
-    % mu = 10.953e9; % [Jager, Steinmann, Kuhl, 2008, IJNME]
-    % lambda = 6.16e9; % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Areias, Msekh, Rabczuk, 2016, EFM], [Wick, 2017, SIAM JSC], [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS], [Geelen, 2020, PhD thesis], [Mang, Wick, Wollner, 2020, CM], [Jodlbauer, Langer, Wick, 2020, CMAME]
-    % mu = 10.95e9; % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Areias, Msekh, Rabczuk, 2016, EFM], [Wick, 2017, SIAM JSC], [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS], [Geelen, 2020, PhD thesis], [Mang, Wick, Wollner, 2020, CM], [Jodlbauer, Langer, Wick, 2020, CMAME]
+    % lambda = 6.161e9; mu = 10.953e9; % [Jager, Steinmann, Kuhl, 2008, IJNME]
+    % lambda = 6.16e9; mu = 10.95e9; % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Areias, Msekh, Rabczuk, 2016, EFM], [Wick, 2017, SIAM JSC], [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS], [Geelen, 2020, PhD thesis], [Mang, Wick, Wollner, 2020, CM], [Jodlbauer, Langer, Wick, 2020, CMAME]
     % Young modulus and Poisson ratio
     % switch lower(option)
     %     case 'defo'
-    %         E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 25.8423e9;
+    %         E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 25.8490e9; E = 25.8423e9;
     %         NU = lambda/(lambda+mu)/2; % NU = 0.18;
     %     case 'cont'
     %         E = 4*mu*(lambda+mu)/(lambda+2*mu);
@@ -268,9 +269,9 @@ if setProblem
     % E = 20e9; % [Unger, Eckardt, Konke, 2007, CMAME], [Zamani, Gracie, Eslami, 2012, IJNME], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Wu, Huang, Nguyen, 2020, CMAME], [Yang, He, Liu, Deng, Huang, 2020, IJMS], [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM], [Li, Wang, Cao, Liu, 2021, ACE], [Bharali, Larsson, Janicke, 2024, CM]
     % E = 25.84e9; % [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM]
     % E = 25.8423e9; % [Areias, Msekh, Rabczuk, 2016, EFM]
-    E = 25.85e9; % [Dumstorff, Meschke, 2007, IJNME], [Meschke, Dumstorff, 2007, CMAME], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Cervera, Barbat, Chiumenti, 2017, CM], [Zhang, Vignes, Sloan, Sheng, 2017, CM], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Patil, Mishra, Singh, 2018, CMAME], [Gerasimov, De Lorenzis, 2019, CMAME], [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM], [Egger et al., 2019, AS], [Kirkesaether Brun, Wick, Inga Berre, Nordbotten, Radu, 2020, CMAME], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Lampron, Therriault, Levesque, 2021, CMAME], [Si, Yu, Li, Natarajan, 2023, CMAME]
-    NU = 0.18; % [Unger, Eckardt, Konke, 2007, CMAME], [Dumstorff, Meschke, 2007, IJNME], [Meschke, Dumstorff, 2007, CMAME], [Zamani, Gracie, Eslami, 2012, IJNME], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Areias, Msekh, Rabczuk, 2016, EFM], [Cervera, Barbat, Chiumenti, 2017, CM], [Zhang, Vignes, Sloan, Sheng, 2017, CM], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Patil, Mishra, Singh, 2018, CMAME], [Gerasimov, De Lorenzis, 2019, CMAME], [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM],
-    % [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Wu, Huang, Nguyen, 2020, CMAME], [Kirkesaether Brun, Wick, Inga Berre, Nordbotten, Radu, 2020, CMAME], [Mang, Wick, Wollner, 2020, CM], [Yang, He, Liu, Deng, Huang, 2020, IJMS], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM], [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM], [Lampron, Therriault, Levesque, 2021, CMAME], [Li, Wang, Cao, Liu, 2021, ACE], [Si, Yu, Li, Natarajan, 2023, CMAME], [Bharali, Larsson, Janicke, 2024, CM]
+    E = 25.85e9; % [Winkler, 2001, PhD thesis], [Winkler, Hofstetter, Niederwanger, 2001, PIMEPartL], [Winkler, Hofstetter, Lehar, 2004, IJNAMG], [Dumstorff, Meschke, 2007, IJNME], [Meschke, Dumstorff, 2007, CMAME], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Cervera, Barbat, Chiumenti, 2017, CM], [Zhang, Vignes, Sloan, Sheng, 2017, CM], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Patil, Mishra, Singh, 2018, CMAME], [Gerasimov, De Lorenzis, 2019, CMAME], [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM], [Egger et al., 2019, AS], [Kirkesaether Brun, Wick, Inga Berre, Nordbotten, Radu, 2020, CMAME], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Lampron, Therriault, Levesque, 2021, CMAME], [Si, Yu, Li, Natarajan, 2023, CMAME], [Ribeiro Nogueira, Rastiello, Giry, Gatuingt, Callari, 2023, AJCE]
+    NU = 0.18; % [Winkler, 2001, PhD thesis], [Winkler, Hofstetter, Niederwanger, 2001, PIMEPartL], [Winkler, Hofstetter, Lehar, 2004, IJNAMG], [Unger, Eckardt, Konke, 2007, CMAME], [Dumstorff, Meschke, 2007, IJNME], [Meschke, Dumstorff, 2007, CMAME], [Zamani, Gracie, Eslami, 2012, IJNME], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Areias, Msekh, Rabczuk, 2016, EFM], [Cervera, Barbat, Chiumenti, 2017, CM], [Zhang, Vignes, Sloan, Sheng, 2017, CM], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Patil, Mishra, Singh, 2018, CMAME], [Gerasimov, De Lorenzis, 2019, CMAME], [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM],
+    % [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Wu, Huang, Nguyen, 2020, CMAME], [Kirkesaether Brun, Wick, Inga Berre, Nordbotten, Radu, 2020, CMAME], [Mang, Wick, Wollner, 2020, CM], [Yang, He, Liu, Deng, Huang, 2020, IJMS], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM], [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM], [Lampron, Therriault, Levesque, 2021, CMAME], [Li, Wang, Cao, Liu, 2021, ACE], [Si, Yu, Li, Natarajan, 2023, CMAME], [Ribeiro Nogueira, Rastiello, Giry, Gatuingt, Callari, 2023, AJCE], [Bharali, Larsson, Janicke, 2024, CM]
     % NU = 0.2; % [Egger et al., 2019, AS]
     % NU = 0.4999; % [Mang, Wick, Wollner, 2020, CM]
     % Energetic degradation function
