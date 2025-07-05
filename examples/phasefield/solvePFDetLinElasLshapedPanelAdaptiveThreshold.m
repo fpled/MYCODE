@@ -1,6 +1,6 @@
 function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptiveThreshold(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,sizemap,varargin)
 % function [dt,ut,ft,TnSt_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptiveThhreshold(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,sizemap,varargin)
-% Solve deterministic Phase Field problem with mpesh adaptation.
+% Solve deterministic phase-field problem with mpesh adaptation.
 
 display_ = getcharin('display',varargin,true);
 displayIter = getcharin('displayiter',varargin,false);

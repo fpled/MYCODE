@@ -1,6 +1,6 @@
 function [ft_sample,dmaxt_sample,dt_sample,ut_sample,St_phase_sample,St_sample] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,varargin)
 % function [ft_sample,dmaxt_sample,dt_sample,ut_sample,St_phase_sample,St_sample] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,varargin)
-% Solve stochastic Phase Field problem with mesh adaptation.
+% Solve stochastic phase-field problem with mesh adaptation.
 
 fun = fcnchk(fun);
 filename = getcharin('filename',varargin,'filename');

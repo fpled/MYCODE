@@ -1,6 +1,6 @@
 function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,varargin)
 % function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,varargin)
-% Solve deterministic Phase Field problem with mesh adaptation.
+% Solve deterministic phase-field problem with mesh adaptation.
 
 addbc = fcnchk(addbc);
 addbcdamage = fcnchk(addbcdamage);

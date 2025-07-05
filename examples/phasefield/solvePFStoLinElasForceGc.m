@@ -1,6 +1,6 @@
 function [ft_sample,dmaxt_sample,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,varargin)
 % function [ft_sample,dmaxt_sample,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,varargin)
-% Solve stochastic Phase Field problem.
+% Solve stochastic phase-field problem.
 
 fun = fcnchk(fun);
 numsamples = getcharin('numsamples',varargin,N);

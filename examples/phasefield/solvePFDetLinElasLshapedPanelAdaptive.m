@@ -1,6 +1,6 @@
 function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,sizemap,varargin)
 % function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,sizemap,varargin)
-% Solve deterministic Phase Field problem with mpesh adaptation.
+% Solve deterministic phase-field problem with mpesh adaptation.
 
 display_ = getcharin('display',varargin,true);
 displayIter = getcharin('displayiter',varargin,false);

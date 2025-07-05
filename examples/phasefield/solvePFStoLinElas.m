@@ -1,6 +1,6 @@
 function [ft_sample,dmaxt_sample,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,varargin)
 % function [ft_sample,dmaxt_sample,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,varargin)
-% Solve stochastic Phase Field problem.
+% Solve stochastic phase-field problem.
 
 fun = fcnchk(fun);
 nbSamples = getcharin('nbsamples',varargin,1);

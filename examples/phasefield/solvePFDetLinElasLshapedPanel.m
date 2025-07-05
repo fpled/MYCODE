@@ -1,6 +1,6 @@
 function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanel(S_phase,S,T,PFsolver,BL,BRight,BLeft,varargin)
 % function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanel(S_phase,S,T,PFsolver,BL,BRight,BLeft,varargin)
-% Solve deterministic Phase Field problem.
+% Solve deterministic phase-field problem.
 
 display_ = getcharin('display',varargin,true);
 displayIter = getcharin('displayiter',varargin,false);

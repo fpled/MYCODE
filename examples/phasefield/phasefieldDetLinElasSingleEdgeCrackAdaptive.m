@@ -160,7 +160,11 @@ if setProblem
     end
     if test
         clD = 5e-5;
-        clC = 1e-5;
+        if Dim==2
+            clC = 1e-5;
+        elseif Dim==3
+            clC = 2e-5;
+        end
     end
     switch lower(initialCrack)
         case 'geometriccrack'

@@ -158,7 +158,11 @@ if setProblem
     end
     if test
         clD = 5e-5;
-        clC = 1e-5;
+        if Dim==2
+            clC = 1e-5;
+        elseif Dim==3
+            clC = 2e-5;
+        end
 %     else
 %         clD = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clD);
 %         clC = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clC);

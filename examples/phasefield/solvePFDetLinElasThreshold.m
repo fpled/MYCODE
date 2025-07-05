@@ -1,6 +1,6 @@
 function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasThreshold(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,varargin)
 % function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasThreshold(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,varargin)
-% Solve deterministic Phase Field problem.
+% Solve deterministic phase-field problem.
 
 addbc = fcnchk(addbc);
 findddlforce = fcnchk(findddlforce);

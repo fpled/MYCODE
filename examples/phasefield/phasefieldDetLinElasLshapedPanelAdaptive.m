@@ -113,7 +113,7 @@ if setProblem
     e = 100e-3; % thickness
     % e = 50e-3; % thickness [Liu, Chen, Yuan, 2024, AAM]
     
-    clD = 4*5e-3; % [Gerasimov, De Lorenzis, 2019, CMAME]
+    clD = 20e-3; % [Gerasimov, De Lorenzis, 2019, CMAME]
     % clD = 10e-3; % [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM]
     if Dim==2
         % cl = 14.577e-3; % [Mang, Wick, Wollner, 2020, CM], [Kirkesaether Brun, Wick, Inga Berre, Nordbotten, Radu, 2020, CMAME]
@@ -143,7 +143,11 @@ if setProblem
         % cl = 8e-3; % [Cervera, Barbat, Chiumenti, 2017, CM]
     end
     if test
-        cl = 5e-3;
+        if Dim==2
+            cl = 5e-3;
+        elseif Dim==3
+            cl = 10e-3;
+        end
     end
     clC = cl; % characteristic length for crack
     S_phase = gmshLshapedPanel(a,b,e,clD,clC,fullfile(pathname,'gmsh_Lshaped_panel'));
@@ -290,12 +294,12 @@ if setProblem
     %% Dirichlet boundary conditions
     if Dim==2
         BL = LIGNE([-a,-a],[0.0,-a]);
-        BRight = LIGNE([a-b,0.0],[a,0.0]);
-        % BRight = POINT([a-b,0.0]);
+        % BRight = LIGNE([a-b,0.0],[a,0.0]);
+        BRight = POINT([a-b,0.0]);
     elseif Dim==3
         BL = PLAN([-a,-a,0.0],[0.0,-a,0.0],[-a,-a,e]);
-        BRight = QUADRANGLE([a-b,0.0,0.0],[a,0.0,0.0],[a,0.0,e],[a-b,0.0,e]);
-        % BRight = LIGNE([a-b,0.0,0.0],[a-b,0.0,e]);
+        % BRight = QUADRANGLE([a-b,0.0,0.0],[a,0.0,0.0],[a,0.0,e],[a-b,0.0,e]);
+        BRight = LIGNE([a-b,0.0,0.0],[a-b,0.0,e]);
     end
     
     addbc = @(S,ud) addbcLshapedPanel(S,ud,BL,BRight);
@@ -385,8 +389,8 @@ if setProblem
             dt = 1e-6;
             nt = 1000;
             if test
-                dt = 5e-6;
-                nt = 200;
+                dt = 1e-5;
+                nt = 100;
             end
             t = linspace(dt,nt*dt,nt);
         case 'cyclic'
@@ -517,13 +521,8 @@ if solveProblem
     fprintf(fid,'elapsed time = %f s\n',time);
     fprintf(fid,'\n');
     
-    if Dim==2
-        fprintf(fid,'fmax  = %g kN/m\n',fmax*1e-3);
-        fprintf(fid,'fc    = %g kN/m\n',fc*1e-3);
-    elseif Dim==3
-        fprintf(fid,'fmax  = %g kN\n',fmax*1e-3);
-        fprintf(fid,'fc    = %g kN\n',fc*1e-3);
-    end
+    fprintf(fid,'fmax  = %g kN\n',fmax*1e-3);
+    fprintf(fid,'fc    = %g kN\n',fc*1e-3);
     fprintf(fid,'udmax = %g mm\n',udmax*1e3);
     fprintf(fid,'udc   = %g mm\n',udc*1e3);
     fclose(fid);
