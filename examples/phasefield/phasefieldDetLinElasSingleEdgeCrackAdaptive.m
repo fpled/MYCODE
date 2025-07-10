@@ -12,6 +12,8 @@
 % [Molnar, Gravouil, 2017, FEAD] (isotropic phase-field model with no split of Bourdin et al.)
 % [Zhou, Rabczuk, Zhuang, 2018, AES] (anisotropic phase-field model of Miehe et al.)
 % [Wu, Nguyen, 2018, JMPS] (PF-CZM, hybrid isotropic-anisotropic phase-field model of Wu et al.)
+% [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM = anisotropic PFM of Miehe et.al + MsFEM)
+% [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM = anisotropic PFM of Miehe et.al + XFEM + MsFEM)
 % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM] (PF-CZM, anisotropic phase-field model of Wu et al.)
 % [Gerasimov, De Lorenzis, 2019, CMAME] (anisotropic phase-field model of Amor et al. and Miehe et al.)
 % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US] (anisotropic phase-field model of Amor et al.)
@@ -58,7 +60,7 @@ coeff_gc = 1.0;
 % PFregularizations = {'AT1','AT2'};
 % PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % initialCracks = {'GeometricCrack','InitialPhaseField'};
-% maxIters = [1,100];
+% maxIters = [1,Inf];
 % coeffs_gc = [0.6,0.8,1.0,1.2,1.4];
 
 % for iang=1:length(angs)
@@ -126,7 +128,8 @@ if setProblem
         D = DOMAIN(2,[0.0,0.0],[L,L]);
         C = LIGNE([0.0,b],[a,b]);
     elseif Dim==3
-        e = 0.1e-3;
+        e = 0.1e-3; % [Liu, Li, Msekh, Zuo, 2016, CMS]
+        % e = 0.05e-3; % [Zhou, Rabczuk, Zhuang, 2018, AES]
         D = DOMAIN(3,[0.0,0.0,0.0],[L,L,e]);
         C = QUADRANGLE([0.0,b,0.0],[a,b,0.0],[a,b,e],[0.0,b,e]);
     end
@@ -135,18 +138,24 @@ if setProblem
     % clD = 5e-5; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
     % clD = 3e-5; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     % clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+    % clD = 1/150*1e-3; clD = 6.667e-6; % (tension test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
+    % clD = 1/250*1e-3; clD = 4e-6; % (shear test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
     % clD = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
     % clD = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     % clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
     % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
     
+    % clC = 7.92e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
+    % clD = 1/150*1e-3; clD = 6.667e-6; % (tension test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
     % clC = 5e-6; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
+    % clD = 1/250*1e-3; clD = 4e-6; % (shear test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
     % clC = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
     % clC = 3.906e-6; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
     % clC = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     % clC = 3.75e-6; % (shear test) [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
     % clC = 2.5e-6; % [Gerasimov, De Lorenzis, 2019, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     % clC = 2e-6; % (shear test) [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    % clC = 1.98e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
     % clC = 1e-6; % (tension test) [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
     % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
     % clC = 1e-6; % [Molnar, Gravouil, 2017, FEAD], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
@@ -160,10 +169,13 @@ if setProblem
     end
     if test
         clD = 5e-5;
-        if Dim==2
-            clC = 1e-5;
-        elseif Dim==3
-            clC = 2e-5;
+        switch lower(loading)
+            case 'tension'
+                clC = 1e-5;
+            case 'shear'
+                clC = 2e-5;
+            otherwise
+                error('Wrong loading case');
         end
     end
     switch lower(initialCrack)
@@ -171,7 +183,7 @@ if setProblem
             S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
         case 'geometricnotch'
             c = 1e-5; % crack width
-            S_phase = gmshDomainWithSingleEdgeNotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_notch'));
+            S_phase = gmshDomainWithSingleEdgeNotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
         case 'initialphasefield'
             S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate');
         otherwise
@@ -186,12 +198,15 @@ if setProblem
     switch lower(symmetry)
         case 'isot' % isotropic material
             % Critical energy release rate (or fracture toughness)
-            gc = 2.7e3; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
+            gc = 2.7e3;
             % Regularization parameter (width of the smeared crack)
             % l = 3.75e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
             % l = 3e-5; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
             % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Hesch, Weinberg, 2014, IJNME], [Liu, Li, Msekh, Zuo, 2016, CMS], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Hu, Guilleminot, Dolbow, 2020, CMAME]
-            l = 1e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Gerasimov, De Lorenzis, 2016, CMAME], [Wu, Nguyen, 2018, JMPS], [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+            % l = 1.33e-5; % (tension test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
+            % l = 1.25e-5; % [Zhou, Rabczuk, Zhuang, 2018, AES]
+            l = 1e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Gerasimov, De Lorenzis, 2016, CMAME], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, 2018, JMPS], [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+            % l = 8e-6; % (shear test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
             % l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Hesch, Weinberg, 2014, IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
             % l = 5e-6; % [Molnar, Gravouil, 2017, FEAD], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
             % l = 4e-6; % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
@@ -219,9 +234,9 @@ if setProblem
     switch lower(initialCrack)
         case 'geometriccrack'
             if Dim==2
-                C = POINT([a,L/2]);
+                C = POINT([a,L/2]); % crack tip
             elseif Dim==3
-                C = LIGNE([a,L/2,0.0],[a,L/2,e]);
+                C = LIGNE([a,L/2,0.0],[a,L/2,e]); % crack tip
             end
         case 'geometricnotch'
             if Dim==2
@@ -229,6 +244,7 @@ if setProblem
                 % C = LIGNE([a,L/2-c/2],[a,L/2+c/2]); % rectangular notch
                 % C = POINT([a,L/2]); % V notch
             elseif Dim==3
+                C = CYLINDER(a-c/2,L/2,0,c/2,e); % circular notch
                 C = QUADRANGLE([a,L/2-c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[a,L/2-c/2,e]); % rectangular notch
                 % C = LIGNE([a,L/2,0.0],[a,L/2,e]); % V notch
             end
@@ -293,17 +309,14 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    option = 'DEFO'; % plane strain [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Hesch, Weinberg, 2014, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Gerasimov, De Lorenzis, 2019, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+    option = 'DEFO'; % plane strain [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Hesch, Weinberg, 2014, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Gerasimov, De Lorenzis, 2019, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
     % option = 'CONT'; % plane stress [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
     switch lower(symmetry)
         case 'isot' % isotropic material
             % Lame coefficients
-            % lambda = 121.1538e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
-            % mu = 80.7692e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
-            % lambda = 121.154e9; % [Hesch, Weinberg, 2014, IJNME]
-            % mu = 80.769e9; % [Hesch, Weinberg, 2014, IJNME]
-            lambda = 121.15e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-            mu = 80.77e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+            % lambda = 121.1538e9; mu = 80.7692e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
+            % lambda = 121.154e9; mu = 80.769e9; % [Hesch, Weinberg, 2014, IJNME]
+            lambda = 121.15e9; mu = 80.77e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
             % Young modulus and Poisson ratio
             if Dim==2
                 switch lower(option)
@@ -419,222 +432,238 @@ if setProblem
     %% Time scheme
     switch lower(symmetry)
         case 'isot' % isotropic material
-            if Dim==2
-                switch lower(loading)
-                    case 'tension'
-                        % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Molnar, Gravouil, 2017, FEAD]
-                        % du = 1e-5 mm during the first 500 time steps (up to u = 5e-3 mm)
-                        % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
-                        % dt0 = 1e-8;
-                        % nt0 = 500;
-                        % dt1 = 1e-9;
-                        % nt1 = 1300;
-                        % t0 = linspace(dt0,nt0*dt0,nt0);
-                        % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                        % t = [t0,t1];
-                        
-                        % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Hesch, Weinberg, 2014, IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-                        % du = 1e-5 mm during 630 time steps (up to u = 6.3e-3 mm)
-                        % dt = 1e-8;
-                        % nt = 630;
-                        % t = linspace(dt,nt*dt,nt);
-                        
-                        % [Liu, Li, Msekh, Zuo, 2016, CMS]
-                        % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
-                        % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
-                        % dt0 = 1e-7;
-                        % nt0 = 50;
-                        % dt1 = 1e-9;
-                        % nt1 = 1300;
-                        % t0 = linspace(dt0,nt0*dt0,nt0);
-                        % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                        % t = [t0,t1];
-                        
-                        % [Zhou, Rabczuk, Zhuang, 2018, AES]
-                        % du = 1e-5 mm during the first 450 time steps (up to u = 4.5e-3 mm)
-                        % du = 1e-6 mm during the last 1800 time steps (up to u = 6.3e-3 mm)
-                        % dt0 = 1e-8;
-                        % nt0 = 450;
-                        % dt1 = 1e-9;
-                        % nt1 = 1800;
-                        % t0 = linspace(dt0,nt0*dt0,nt0);
-                        % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                        % t = [t0,t1];
-                        
-                        % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
-                        % du = 1e-4 mm during 63 time steps (up to u = 6.3e-3 mm)
-                        % dt = 1e-7;
-                        % nt = 63;
-                        % t = linspace(dt,nt*dt,nt);
-                        
-                        % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-                        % du = 2e-4 mm during 32 time steps (up to u = 6.4e-3 mm)
-                        % dt = 2e-7;
-                        % nt = 32;
-                        % t = linspace(dt,nt*dt,nt);
-                        
-                        % du = 1e-5 mm during the first 400 time steps (up to u = 4e-3 mm)
-                        % du = 1e-6 mm during the last 4000 time steps (up to u = 8e-3 mm)
-                        dt0 = 1e-8;
-                        nt0 = 400;
-                        dt1 = 1e-9;
-                        nt1 = 4000;
-                        if test
-                            dt0 = 1e-7;
-                            nt0 = 40;
-                            dt1 = 1e-8;
+            switch lower(loading)
+                case 'tension'
+                    % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Molnar, Gravouil, 2017, FEAD]
+                    % du = 1e-5 mm during the first 500 time steps (up to u = 5e-3 mm)
+                    % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
+                    % dt0 = 1e-8;
+                    % nt0 = 500;
+                    % dt1 = 1e-9;
+                    % nt1 = 1300;
+                    % t0 = linspace(dt0,nt0*dt0,nt0);
+                    % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                    % t = [t0,t1];
+                    
+                    % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Hesch, Weinberg, 2014, IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+                    % du = 1e-5 mm during 630 time steps (up to u = 6.3e-3 mm)
+                    % dt = 1e-8;
+                    % nt = 630;
+                    % t = linspace(dt,nt*dt,nt);
+                    
+                    % [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM)
+                    % du = 1e-5 mm during the first 500 time steps (up to u = 5e-3 mm)
+                    % % du = 1e-5 mm during the last 130 time steps (up to u = 6.3e-3 mm)
+                    % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
+                    % % du = 1e-7 mm during the last 13000 time steps (up to u = 6.3e-3 mm)
+                    % dt0 = 1e-8;
+                    % nt0 = 500;
+                    % dt1 = 1e-9;
+                    % nt1 = 1300;
+                    % t0 = linspace(dt0,nt0*dt0,nt0);
+                    % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                    % t = [t0,t1];
+                    
+                    % 2D and 3D [Liu, Li, Msekh, Zuo, 2016, CMS]
+                    % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
+                    % % du = 1e-5 mm during the last 130 time steps (up to u = 6.3e-3 mm)
+                    % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
+                    % % du = 1e-7 mm during the last 13000 time steps (up to u = 6.3e-3 mm)
+                    % dt0 = 1e-7;
+                    % nt0 = 50;
+                    % dt1 = 1e-9;
+                    % nt1 = 1300;
+                    % t0 = linspace(dt0,nt0*dt0,nt0);
+                    % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                    % t = [t0,t1];
+                    
+                    % 2D [Zhou, Rabczuk, Zhuang, 2018, AES]
+                    % du = 1e-5 mm during the first 450 time steps (up to u = 4.5e-3 mm)
+                    % % du = 2e-6 mm during the last 900 time steps (up to u = 6.3e-3 mm)
+                    % du = 1e-6 mm during the last 1800 time steps (up to u = 6.3e-3 mm)
+                    % % du = 5e-7 mm during the last 3600 time steps (up to u = 6.3e-3 mm)
+                    % dt0 = 1e-8;
+                    % nt0 = 450;
+                    % dt1 = 1e-9;
+                    % nt1 = 1800;
+                    % t0 = linspace(dt0,nt0*dt0,nt0);
+                    % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                    % t = [t0,t1];
+                    
+                    % 3D [Zhou, Rabczuk, Zhuang, 2018, AES]
+                    % du = 1e-5 mm during the first 400 time steps (up to u = 4e-3 mm)
+                    % du = 1e-6 mm during the last 2300 time steps (up to u = 6.3e-3 mm)
+                    % dt0 = 1e-8;
+                    % nt0 = 400;
+                    % dt1 = 1e-9;
+                    % nt1 = 2300;
+                    % t0 = linspace(dt0,nt0*dt0,nt0);
+                    % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                    % t = [t0,t1];
+                    
+                    % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
+                    % du = 1e-4 mm during 63 time steps (up to u = 6.3e-3 mm)
+                    % dt = 1e-7;
+                    % nt = 63;
+                    % t = linspace(dt,nt*dt,nt);
+                    
+                    % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+                    % du = 2e-4 mm during 32 time steps (up to u = 6.4e-3 mm)
+                    % dt = 2e-7;
+                    % nt = 32;
+                    % t = linspace(dt,nt*dt,nt);
+                    
+                    % du = 1e-5 mm during the first 400 time steps (up to u = 4e-3 mm)
+                    % du = 1e-6 mm during the last 4000 time steps (up to u = 8e-3 mm)
+                    dt0 = 1e-8;
+                    nt0 = 400;
+                    dt1 = 1e-9;
+                    nt1 = 4000;
+                    if test
+                        dt0 = 1e-7;
+                        nt0 = 40;
+                        dt1 = 1e-8;
+                        if Dim==2
                             nt1 = 400;
+                        elseif Dim==3
+                            nt1 = 600;
                         end
-                        t0 = linspace(dt0,nt0*dt0,nt0);
-                        t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                        t = [t0,t1];
-                    case 'shear'
-                        % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
-                        % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM],
-                        % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-                        % du = 1e-5 mm during 1500 time steps (up to u = 15e-3 mm)
-                        % dt = 1e-8;
-                        % nt = 1500;
-                        
-                        % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Hesch, Weinberg, 2014, IJNME]
-                        % du = 1e-4 mm during the first 100 time steps (up to u = 10e-3 mm)
-                        % du = 1e-6 mm during the last 10 000 time steps (up to u = 20e-3 mm)
-                        % dt0 = 1e-7;
-                        % nt0 = 100;
-                        % dt1 = 1e-9;
-                        % nt1 = 10000;
-                        % t0 = linspace(dt0,nt0*dt0,nt0);
-                        % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                        % t = [t0,t1];
-                        
-                        % [Liu, Li, Msekh, Zuo, 2016, CMS]
-                        % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
-                        % du = 1e-5 mm during the last 1500 time steps (up to u = 20e-3 mm)
-                        % dt0 = 1e-7;
-                        % nt0 = 50;
-                        % dt1 = 1e-8;
-                        % nt1 = 1500;
-                        % t0 = linspace(dt0,nt0*dt0,nt0);
-                        % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                        % t = [t0,t1];
-                        
-                        % [Gerasimov, De Lorenzis, 2016, CMAME]
-                        % du = 6e-3 mm at the first time step
-                        % du = 3e-4 mm during the last 46 time steps (up to u = 20e-3 mm)
-                        % t0 = 6e-6;
-                        % dt1 = 3e-7;
-                        % nt1 = 47;
-                        % t1 = linspace(t0+dt1,t0+nt1*dt1,nt1);
-                        % t = [t0,t1];
-                        
-                        % [Molnar, Gravouil, 2017, FEAD]
-                        % du = 1e-4 mm during the first 100 time steps (up to u = 10e-3 mm)
-                        % du = 1e-5 mm during the last 1000 time steps (up to u = 20e-3 mm)
-                        % dt0 = 1e-7;
-                        % nt0 = 100;
-                        % dt1 = 1e-8;
-                        % nt1 = 1000;
-                        % t0 = linspace(dt0,nt0*dt0,nt0);
-                        % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                        % t = [t0,t1];
-                        
-                        % [Zhou, Rabczuk, Zhuang, 2018, AES]
-                        % du = 1e-4 mm during the first 80 time steps (up to u = 8e-3 mm)
-                        % du = 1e-5 mm during the last 1200 time steps (up to u = 20e-3 mm)
-                        % dt0 = 1e-7;
-                        % nt0 = 80;
-                        % dt1 = 1e-8;
-                        % nt1 = 1200;
-                        % t0 = linspace(dt0,nt0*dt0,nt0);
-                        % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
-                        % t = [t0,t1];
-                        
-                        % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-                        % du = 1e-4 mm during 200 time steps (up to u = 20e-3 mm)
-                        % dt = 1e-7;
-                        % nt = 200;
-                        % t = linspace(dt,nt*dt,nt);
-                        
-                        % du = 1e-5 mm during 2000 time steps (up to u = 20e-3 mm)
-                        dt = 1e-8;
-                        nt = 2000;
-                        if test
-                            dt = 5e-8;
-                            nt = 400;
-                        end
-                        t = linspace(dt,nt*dt,nt);
-                end
-            elseif Dim==3
-                % du = 1e-5 mm during 2500 time steps (up to u = 25e-3 mm)
-                dt = 1e-8;
-                nt = 2500;
-                if test
-                    dt = 1e-7;
-                    nt = 250;
-                end
-                t = linspace(dt,nt*dt,nt);
+                    end
+                    t0 = linspace(dt0,nt0*dt0,nt0);
+                    t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                    t = [t0,t1];
+                case 'shear'
+                    % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+                    % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM],
+                    % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+                    % du = 1e-5 mm during 1500 time steps (up to u = 15e-3 mm)
+                    % dt = 1e-8;
+                    % nt = 1500;
+                    
+                    % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Hesch, Weinberg, 2014, IJNME]
+                    % du = 1e-4 mm during the first 100 time steps (up to u = 10e-3 mm)
+                    % du = 1e-6 mm during the last 10 000 time steps (up to u = 20e-3 mm)
+                    % dt0 = 1e-7;
+                    % nt0 = 100;
+                    % dt1 = 1e-9;
+                    % nt1 = 10000;
+                    % t0 = linspace(dt0,nt0*dt0,nt0);
+                    % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                    % t = [t0,t1];
+                    
+                    % [Liu, Li, Msekh, Zuo, 2016, CMS]
+                    % du = 1e-4 mm during the first 50 time steps (up to u = 5e-3 mm)
+                    % % du = 1e-4 mm during the last 150 time steps (up to u = 20e-3 mm)
+                    % du = 1e-5 mm during the last 1500 time steps (up to u = 20e-3 mm)
+                    % % du = 1e-6 mm during the last 15000 time steps (up to u = 20e-3 mm)
+                    % dt0 = 1e-7;
+                    % nt0 = 50;
+                    % dt1 = 1e-8;
+                    % nt1 = 1500;
+                    % t0 = linspace(dt0,nt0*dt0,nt0);
+                    % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                    % t = [t0,t1];
+                    
+                    % [Gerasimov, De Lorenzis, 2016, CMAME]
+                    % du = 6e-3 mm at the first time step
+                    % du = 3e-4 mm during the last 46 time steps (up to u = 20e-3 mm)
+                    % t0 = 6e-6;
+                    % dt1 = 3e-7;
+                    % nt1 = 47;
+                    % t1 = linspace(t0+dt1,t0+nt1*dt1,nt1);
+                    % t = [t0,t1];
+                    
+                    % [Molnar, Gravouil, 2017, FEAD]
+                    % du = 1e-4 mm during the first 100 time steps (up to u = 10e-3 mm)
+                    % du = 1e-5 mm during the last 1000 time steps (up to u = 20e-3 mm)
+                    % dt0 = 1e-7;
+                    % nt0 = 100;
+                    % dt1 = 1e-8;
+                    % nt1 = 1000;
+                    % t0 = linspace(dt0,nt0*dt0,nt0);
+                    % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                    % t = [t0,t1];
+                    
+                    % [Zhou, Rabczuk, Zhuang, 2018, AES]
+                    % du = 1e-4 mm during the first 80 time steps (up to u = 8e-3 mm)
+                    % du = 1e-5 mm during the last 1200 time steps (up to u = 20e-3 mm)
+                    % dt0 = 1e-7;
+                    % nt0 = 80;
+                    % dt1 = 1e-8;
+                    % nt1 = 1200;
+                    % t0 = linspace(dt0,nt0*dt0,nt0);
+                    % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+                    % t = [t0,t1];
+                    
+                    % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+                    % du = 1e-4 mm during 200 time steps (up to u = 20e-3 mm)
+                    % dt = 1e-7;
+                    % nt = 200;
+                    % t = linspace(dt,nt*dt,nt);
+                    
+                    % du = 1e-5 mm during 2000 time steps (up to u = 20e-3 mm)
+                    dt = 1e-8;
+                    nt = 2000;
+                    if test
+                        dt = 5e-8;
+                        nt = 400;
+                    end
+                    t = linspace(dt,nt*dt,nt);
             end
             T = TIMEMODEL(t);
             
         case 'anisot' % anisotropic material
-            if Dim==2
-                switch lower(loading)
-                    case 'tension'
-                        % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-                        % du = 6e-5 mm during the first stage (until the phase-field reaches the threshold value)
-                        % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 10e-3 mm)
-                        % dt0 = 6e-8;
-                        % dt1 = 2e-8;
-                        % if test
-                        %     dt0 = 12e-8;
-                        %     dt1 = 4e-8;
-                        % end
-                        % tf = 10e-6;
-                        % dthreshold = 0.6;
-                        
-                        % du = 1e-5 mm during the first stage (until the phase-field reaches the threshold value)
-                        % du = 1e-6 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 10e-3 mm)
-                        dt0 = 1e-8;
-                        dt1 = 1e-9;
-                        if test
-                            dt0 = 1e-7;
-                            dt1 = 1e-8;
-                        end
-                        tf = 10e-6;
-                        dthreshold = 0.6;
-                    case 'shear'
-                        % du = 6e-5 mm during the first stage (until the phase-field reaches the threshold value)
-                        % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 20e-3 mm)
-                        % dt0 = 6e-8;
-                        % dt1 = 2e-8;
-                        % if test
-                        %     dt0 = 12e-8;
-                        %     dt1 = 4e-8;
-                        % end
-                        % tf = 20e-6;
-                        % dthreshold = 0.6;
-                        
-                        % du = 1e-5 mm during the first stage (until the phase-field reaches the threshold value)
-                        % du = 1e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 20e-3 mm)
-                        dt0 = 1e-8;
+            switch lower(loading)
+                case 'tension'
+                    % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+                    % du = 6e-5 mm during the first stage (until the phase-field reaches the threshold value)
+                    % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 10e-3 mm)
+                    % dt0 = 6e-8;
+                    % dt1 = 2e-8;
+                    % if test
+                    %     dt0 = 12e-8;
+                    %     dt1 = 4e-8;
+                    % end
+                    % tf = 10e-6;
+                    % dthreshold = 0.6;
+                    
+                    % du = 1e-5 mm during the first stage (until the phase-field reaches the threshold value)
+                    % du = 1e-6 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 10e-3 mm)
+                    dt0 = 1e-8;
+                    dt1 = 1e-9;
+                    if test
+                        dt0 = 1e-7;
                         dt1 = 1e-8;
-                        if test
+                    end
+                    tf = 10e-6;
+                    dthreshold = 0.6;
+                case 'shear'
+                    % du = 6e-5 mm during the first stage (until the phase-field reaches the threshold value)
+                    % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 20e-3 mm)
+                    % dt0 = 6e-8;
+                    % dt1 = 2e-8;
+                    % if test
+                    %     dt0 = 12e-8;
+                    %     dt1 = 4e-8;
+                    % end
+                    % tf = 20e-6;
+                    % dthreshold = 0.6;
+                    
+                    % du = 1e-5 mm during the first stage (until the phase-field reaches the threshold value)
+                    % du = 1e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 20e-3 mm)
+                    dt0 = 1e-8;
+                    dt1 = 1e-8;
+                    if test
+                        if Dim==2
+                            dt0 = 5e-8;
+                            dt1 = 5e-8;
+                        elseif Dim==3
                             dt0 = 1e-7;
                             dt1 = 1e-7;
                         end
-                        tf = 20e-6;
-                        dthreshold = 0.6;
-                end
-            elseif Dim==3
-                % du = 2e-5 mm (up to u = 20e-3 mm)
-                dt0 = 2e-8;
-                dt1 = 2e-8;
-                if test
-                    dt0 = 2e-7;
-                    dt1 = 2e-7;
-                end
-                tf = 20e-6;
-                dthreshold = 0.6;
+                    end
+                    tf = 20e-6;
+                    dthreshold = 0.6;
             end
             T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
             
@@ -775,30 +804,40 @@ if displayModel
     mysaveas(pathname,'boundary_conditions_displacement',formats,renderer);
     
     [hD_phase,legD_phase] = plotBoundaryConditions(S_phase,'legend',false);
-    % legend([hD_phase,hN_phase],[legD_phase,legN_phase],'Location','NorthEastOutside')
+    % legend(hD_phase,legD_phase,'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions_damage',formats,renderer);
     
     % plotModel(S,'legend',false);
     % mysaveas(pathname,'mesh_init',formats,renderer);
     
-    plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+    if Dim==2
+        facealpha = 0.1;
+        facecolor = 'k';
+        facecolordef = 'b';
+    elseif Dim==3
+        facealpha = 1;
+        facecolor = 'w';
+        facecolordef = 'w';
+    end
+    
+    plotModel(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh_init',formats,renderer);
     
     % u = ut{rep(end)};
     u = ut{end};
     S_final = St{end};
     
-    plotModel(S_final,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+    plotModel(S_final,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh_final',formats,renderer);
     
     ampl = getsize(S_final)/max(abs(u))/20;
-    plotModelDeflection(S_final,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+    plotModelDeflection(S_final,u,'ampl',ampl,'Color','b','FaceColor',facecolordef,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
-    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-    plot(S_final+ampl*unfreevector(S_final,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
+    plot(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha);
+    plot(S_final+ampl*unfreevector(S_final,u),'Color','b','FaceColor',facecolordef,'FaceAlpha',facealpha);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
 end
 
@@ -906,10 +945,10 @@ if displaySolution
         otherwise
             error('Wrong material symmetry class');
     end
-    rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
+    rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     rep = [rep,length(T)];
     % tSnapshots = [tSnapshots,gett1(T)];
-    % rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
+    % rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     
     for j=1:length(rep)
         dj = dt{rep(j)};

@@ -196,10 +196,8 @@ for i=1:length(T)
             S = actualisematerials(S,mats);
             if nbIter==1
                 S = removebc(S);
-                ud = -t(i);
-                S = addcl(S,BU,'UY',ud);
-                S = addcl(S,BL,'UY');
-                S = addcl(S,P0,'UX');
+                ud = t(i);
+                S = addbcPlatewithHole(S,ud,BU,BL,P0);
             end
             
             [A,b] = calc_rigi(S,'nofree');
@@ -322,9 +320,7 @@ for i=1:length(T)
         % Update material properties
         S = setmaterialproperties(S,materials);
         S = final(S);
-        S = addcl(S,BU,'UY',ud);
-        S = addcl(S,BL,'UY');
-        S = addcl(S,P0,'UX');
+        S = addbcPlatewithHole(S,ud,BU,BL,P0);
         
         % Update fields
         P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);

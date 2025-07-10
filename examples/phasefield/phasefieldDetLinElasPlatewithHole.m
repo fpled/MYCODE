@@ -22,7 +22,7 @@ saveParaview = false;
 test = true; % coarse mesh
 % test = false; % fine mesh
 
-Dim = 2; % space dimension Dim = 2, 3
+Dim = 3; % space dimension Dim = 2, 3
 symmetry = 'Isot'; % 'Isot' or 'Anisot'. Material symmetry
 ang = 45; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'HeAmor', 'HeFreddi', 'Zhang'
@@ -38,7 +38,7 @@ FEmesh = 'Unif'; % 'Unif' or 'Optim'
 % PFsplits = {'Strain','Stress'};
 % PFregularizations = {'AT1','AT2'};
 % PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
-% maxIters = [1,100];
+% maxIters = [1,Inf];
 
 % for iPFmodel=1:length(PFmodels)
 % PFmodel = PFmodels{iPFmodel};
@@ -54,7 +54,7 @@ FEmesh = 'Unif'; % 'Unif' or 'Optim'
 
 suffix = '';
 
-foldername = ['platewithHole_' num2str(Dim) 'D'];
+foldername = ['plateWithHole_' num2str(Dim) 'D'];
 filename = ['linElas' symmetry];
 if strcmpi(symmetry,'anisot') % anisotropic material
     filename = [filename num2str(ang) 'deg'];
@@ -91,13 +91,12 @@ if setProblem
         h = 2*L; % height
         e = 1; % thickness
         r = 3e-3; % radius of the hole
-        % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-        % 2D
+        % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
         % L = 20e-3; % length
         % h = 30e-3; % height
         % e = 1; % thickness
         % r = 4e-3; % radius of the hole
-        % 3D
+        % 3D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
         % L = 100e-3; % length
         % h = 65e-3; % height
         % e = 40e-3; % thickness
@@ -105,61 +104,78 @@ if setProblem
         D = DOMAIN(2,[0.0,0.0],[L,h]);
         C = CIRCLE(L/2,h/2,r);
     elseif Dim==3
-        % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+        % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
         L = 100e-3; % length
         h = 65e-3; % height
-        e = 40e-3; % thickness
-        r = 2.5e-3; % radius of the hole
+        e = 40e-3; % thickness [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+        % e = 20e-3; % thickness [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
+        % r = 1.5e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
+        % r = 2e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
+        r = 2.5e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+        % r = 3e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
         D = DOMAIN(3,[0.0,0.0,0.0],[L,h,e]);
-        % C = CYLINDER
+        C = CIRCLE(L/2,h/2,0.0,r);
     end
     
-    if Dim==2
-        switch lower(FEmesh)
-            case 'unif'
-                % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-                cl = 0.06e-3;
-                if test
-                    cl = 0.12e-3;
-                end
-                clD = cl; % characteristic length for domain
-                clC = cl; % characteristic length for circular hole
-            case 'optim'
-                % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-                clD = 0.25e-3; % characteristic length for domain
-                clC = 0.05e-3; % characteristic length for circular hole
-                % [Luo, Chen, Wang, Li, 2022, CM]
-                % clD = 0.12e-3; % characteristic length for domain
-                % clC = 0.024e-3; % characteristic length for circular hole
-                if test
-                    clD = 0.5e-3;
-                    clC = 0.1e-3;
-                end
-            otherwise
-                error('Wrong FE mesh')
-        end
-    elseif Dim==3
-        switch lower(FEmesh)
-            case 'unif'
-                cl = 0.05e-3;
-                if test
-                    cl = 0.1e-3;
-                end
-                clD = cl; % characteristic length for domain
-                clC = cl; % characteristic length for circular hole
-            case 'optim'
-                % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-                clD = 0.25e-3; % characteristic length for domain
-                clC = 0.05e-3; % characteristic length for circular hole
-                if test
-                    clD = 0.5e-3;
-                    clC = 0.1e-3;
-                end
-            otherwise
-                error('Wrong FE mesh')
-        end
+    switch lower(FEmesh)
+        case 'unif' % uniform mesh
+            % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+            % cl = 2e-3;
+            % cl = 1e-3;
+            % cl = 1/15*1e-3;
+            % cl = 0.05e-3;
+            % cl = 1/30*1e-3;
+            % cl = 0.025e-3;
+            % cl = 1/60*1e-3;
+            % cl = 0.0125e-3;
+            % cl = 0.01e-3;
+            % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            cl = 0.06e-3;
+            if test
+                cl = 0.24e-3;
+            end
+            clD = cl; % characteristic length for domain
+            clC = cl; % characteristic length for circular hole
+            B = [];
+        case 'optim' % optimized mesh
+            % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+            % clD = 1e-3; % characteristic length for domain
+            % clC = 0.01e-3; % characteristic length for circular hole
+            % 2D and 3D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+            % clD = 0.25e-3; % characteristic length for domain
+            % clC = 0.05e-3; % characteristic length for circular hole
+            % 2D [Luo, Chen, Wang, Li, 2022, CM]
+            % clD = 0.12e-3; % characteristic length for domain
+            % clC = 0.024e-3; % characteristic length for circular hole
+            
+            clD = 0.24e-3; % characteristic length for domain
+            clC = 0.06e-3; % characteristic length for circular hole
+            if test
+                clD = 0.48e-3;
+                clC = 0.24e-3;
+            end
+            VIn = clC; VOut = clD;
+            switch lower(PFmodel)
+                case {'bourdin','amor','heamor'}
+                    XMin = 0; XMax = L;
+                    YMin = h/2-3/2*r; YMax = h/2+3/2*r;
+                    Thickness = h/2-3/2*r;
+                otherwise
+                    XMin = L/2-3/2*r; XMax = L/2+3/2*r;
+                    YMin = 0; YMax = h;
+                    Thickness = L/2-3/2*r;
+            end
+            % Thickness = 0;
+            if Dim==2
+                B = struct('VIn',VIn,'VOut',VOut,'XMin',XMin,'XMax',XMax,'YMin',YMin,'YMax',YMax,'Thickness',Thickness);
+            elseif Dim==3
+                ZMin = 0; ZMax = e;
+                B = struct('VIn',VIn,'VOut',VOut,'XMin',XMin,'XMax',XMax,'YMin',YMin,'YMax',YMax,'ZMin',ZMin,'ZMax',ZMax,'Thickness',Thickness);
+            end
+        otherwise
+            error('Wrong FE mesh')
     end
-    S_phase = gmshDomainWithHole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole'));
+    S_phase = gmshDomainWithHole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole'),Dim,'Box',B);
     S = S_phase;
     
     %% Phase-field problem
@@ -167,15 +183,20 @@ if setProblem
     switch lower(symmetry)
         case 'isot' % isotropic material
             % Critical energy release rate (or fracture toughness)
-            gc = 1.4; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
+            gc = 1.4; % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
             % Regularization parameter (width of the smeared crack)
+            % l = 0.5e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+            % l = 0.3e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+            % l = 0.2e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
             l = 0.12e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
             % l = 0.1e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+            % l = 0.05e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+            % l = 0.025e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
         case 'anisot' % anisotropic material
             % Critical energy release rate (or fracture toughness)
-            gc = 1e3;
+            gc = 1e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
             % Regularization parameter (width of the smeared crack)
-            l = 8.5e-6;
+            l = 8.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
         otherwise
             error('Wrong material symmetry class');
     end
@@ -225,14 +246,14 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    option = 'DEFO'; % plane strain [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
+    option = 'DEFO'; % plane strain [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
     % option = 'CONT'; % plane stress [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
     switch lower(symmetry)
         case 'isot' % isotropic material
             % Lame coefficients
             % Young modulus and Poisson ratio
-            E = 12e9; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
-            NU = 0.3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
+            E = 12e9; % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
+            NU = 0.3; % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
         case 'anisot' % anisotropic material
             if Dim==2
                 switch lower(option)
@@ -291,7 +312,7 @@ if setProblem
     P0 = getvertices(D);
     P0 = POINT(P0{1});
     
-    addbc = @(S,ud) addbcPlatewithHole(S,ud,BU,BL,P0);
+    addbc = @(S,ud) addbcPlateWithHole(S,ud,BU,BL,P0);
     findddlforce = @(S) findddl(S,'UY',BU);
     
     S = final(S);
@@ -312,6 +333,20 @@ if setProblem
     
     %% Time scheme
     if Dim==2
+        % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+        % % du = 5e-3 mm during 11 time steps (up to u = 0.055 mm)
+        % % du = 1.5e-3 mm during 37 time steps (up to u = 0.0555 mm)
+        % % du = 1e-3 mm during 55 time steps (up to u = 0.055 mm)
+        % % du = 3e-4 mm during 183 time steps (up to u = 0.0549 mm)
+        % du = 1e-4 mm during 550 time steps (up to u = 0.055 mm)
+        % % du = 5e-5 mm during 1100 time steps (up to u = 0.055 mm)
+        % % du = 3e-5 mm during 1833 time steps (up to u = 0.05499 mm)
+        % % du = 2e-5 mm during 2750 time steps (up to u = 0.055 mm)
+        % dt = 1e-7;
+        % nt = 550;
+        % t = linspace(dt,nt*dt,nt);
+        % T = TIMEMODEL(t);
+        
         % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
         % du = 1e-3 mm during the first stage (until the phase-field reaches the threshold value)
         % du = 1e-4 mm during the last stage (as soon as the phase-field exceeds the threshold value)
@@ -365,9 +400,9 @@ if solveProblem
     end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
-    %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
     %     otherwise
-    %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
     % end
     
     T = gettimemodel(dt);
@@ -443,7 +478,7 @@ if displayModel
     mysaveas(pathname,'boundary_conditions_displacement',formats,renderer);
     
     [hD_phase,legD_phase] = plotBoundaryConditions(S_phase,'legend',false);
-    % legend([hD_phase,hN_phase],[legD_phase,legN_phase],'Location','NorthEastOutside')
+    % legend(hD_phase,legD_phase,'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions_damage',formats,renderer);
     
     % plotModel(S,'legend',false);
@@ -546,11 +581,13 @@ if displaySolution
     
     %% Display solutions at different instants
     ampl = 0;
-    tSnapshots = [18.5 24.6]*1e-6;
-    rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
+    % tSnapshots = [18.5 24.6]*1e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % tSnapshots = [17.56 19.00 22.00 25.00]*1e-6; % [Luo, Chen, Wang, Li, 2022, CM]
+    tSnapshots = [18 18.5 19 20 21 22]*1e-6;
+    rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     rep = [rep,length(T)];
     % tSnapshots = [tSnapshots,gett1(T)];
-    % rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
+    % rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     
     for j=1:length(rep)
         dj = getmatrixatstep(dt,rep(j));

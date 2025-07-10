@@ -163,10 +163,8 @@ while ti < tf-eps
             if nbIter==1
                 S = removebc(S);
                 ti = ti + dti;
-                ud = -ti;
-                S = addcl(S,BU,'UY',ud);
-                S = addcl(S,BL,'UY');
-                S = addcl(S,P0,'UX');
+                ud = ti;
+                S = addbcPlatewithHole(S,ud,BU,BL,P0);
             end
             
             [A,b] = calc_rigi(S,'nofree');

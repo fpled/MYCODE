@@ -12,6 +12,8 @@
 % [Molnar, Gravouil, 2017, FEAD] (isotropic phase-field model with no split of Bourdin et al.)
 % [Zhou, Rabczuk, Zhuang, 2018, AES] (anisotropic phase-field model of Miehe et al.)
 % [Wu, Nguyen, 2018, JMPS] (PF-CZM, hybrid isotropic-anisotropic phase-field model of Wu et al.)
+% [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM = anisotropic PFM of Miehe et.al + MsFEM)
+% [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM = anisotropic PFM of Miehe et.al + XFEM + MsFEM)
 % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM] (PF-CZM, anisotropic phase-field model of Wu et al.)
 % [Gerasimov, De Lorenzis, 2019, CMAME] (anisotropic phase-field model of Amor et al. and Miehe et al.)
 % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US] (anisotropic phase-field model of Amor et al.)
@@ -124,7 +126,8 @@ if setProblem
         D = DOMAIN(2,[0.0,0.0],[L,L]);
         C = LIGNE([0.0,b],[a,b]);
     elseif Dim==3
-        e = 0.1e-3;
+        e = 0.1e-3; % [Liu, Li, Msekh, Zuo, 2016, CMS]
+        % e = 0.05e-3; % [Zhou, Rabczuk, Zhuang, 2018, AES]
         D = DOMAIN(3,[0.0,0.0,0.0],[L,L,e]);
         C = QUADRANGLE([0.0,b,0.0],[a,b,0.0],[a,b,e],[0.0,b,e]);
     end
@@ -133,18 +136,24 @@ if setProblem
     % clD = 5e-5; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
     % clD = 3e-5; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     % clD = 2e-5; % [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+    % clD = 1/150*1e-3; clD = 6.667e-6; % (tension test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
+    % clD = 1/250*1e-3; clD = 4e-6; % (shear test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
     % clD = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
     % clD = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     % clD = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
     % clD = 1e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
     
+    % clC = 7.92e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
+    % clD = 1/150*1e-3; clD = 6.667e-6; % (tension test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
     % clC = 5e-6; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
+    % clD = 1/250*1e-3; clD = 4e-6; % (shear test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
     % clC = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
     % clC = 3.906e-6; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
     % clC = 3.9e-6; % [Hesch, Weinberg, 2014, IJNME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     % clC = 3.75e-6; % (shear test) [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
     % clC = 2.5e-6; % [Gerasimov, De Lorenzis, 2019, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     % clC = 2e-6; % (shear test) [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    % clC = 1.98e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
     % clC = 1e-6; % (tension test) [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
     % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
     % clC = 1e-6; % [Molnar, Gravouil, 2017, FEAD], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
@@ -172,7 +181,7 @@ if setProblem
             S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
         case 'geometricnotch'
             c = 1e-5; % crack width
-            S_phase = gmshDomainWithSingleEdgeNotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_notch'));
+            S_phase = gmshDomainWithSingleEdgeNotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
         case 'initialphasefield'
             S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate');
         otherwise
@@ -187,12 +196,15 @@ if setProblem
     switch lower(symmetry)
         case {'isot','meanisot'} % almost surely or mean isotropic material
             % Critical energy release rate (or fracture toughness)
-            gc = 2.7e3; % [Miehe, Hofacker, Welschinger, 2010, CMAME]
+            gc = 2.7e3;
             % Regularization parameter (width of the smeared crack)
             % l = 3.75e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
             % l = 3e-5; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
             % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Hesch, Weinberg, 2014, IJNME], [Liu, Li, Msekh, Zuo, 2016, CMS], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Hu, Guilleminot, Dolbow, 2020, CMAME]
-            l = 1e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Gerasimov, De Lorenzis, 2016, CMAME], [Wu, Nguyen, 2018, JMPS], [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+            % l = 1.33e-5; % (tension test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
+            % l = 1.25e-5; % [Zhou, Rabczuk, Zhuang, 2018, AES]
+            l = 1e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Gerasimov, De Lorenzis, 2016, CMAME], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, 2018, JMPS], [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+            % l = 8e-6; % (shear test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
             % l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Hesch, Weinberg, 2014, IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
             % l = 5e-6; % [Molnar, Gravouil, 2017, FEAD], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
             % l = 4e-6; % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
@@ -293,17 +305,14 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    option = 'DEFO'; % plane strain [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Hesch, Weinberg, 2014, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Gerasimov, De Lorenzis, 2019, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+    option = 'DEFO'; % plane strain [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Hesch, Weinberg, 2014, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Gerasimov, De Lorenzis, 2019, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
     % option = 'CONT'; % plane stress [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
     switch lower(symmetry)
         case {'isot','meanisot'} % almost surely or mean isotropic material
             % Lame coefficients
-            % lambda = 121.1538e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
-            % mu = 80.7692e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
-            % lambda = 121.154e9; % [Hesch, Weinberg, 2014, IJNME]
-            % mu = 80.769e9; % [Hesch, Weinberg, 2014, IJNME]
-            lambda = 121.15e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-            mu = 80.77e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+            % lambda = 121.1538e9; mu = 80.7692e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
+            % lambda = 121.154e9; mu = 80.769e9; % [Hesch, Weinberg, 2014, IJNME]
+            lambda = 121.15e9; mu = 80.77e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
             if strcmpi(symmetry,'isot')
                 % Young modulus and Poisson ratio
                 if Dim==2
@@ -787,30 +796,40 @@ if displayModel
     mysaveas(pathname,'boundary_conditions_displacement',formats,renderer);
     
     [hD_phase,legD_phase] = plotBoundaryConditions(S_phase,'legend',false);
-    % legend([hD_phase,hN_phase],[legD_phase,legN_phase],'Location','NorthEastOutside')
+    % legend(hD_phase,legD_phase,'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions_damage',formats,renderer);
     
     % plotModel(S,'legend',false);
     % mysaveas(pathname,'mesh_init',formats,renderer);
     
-    plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+    if Dim==2
+        facealpha = 0.1;
+        facecolor = 'k';
+        facecolordef = 'b';
+    elseif Dim==3
+        facealpha = 1;
+        facecolor = 'w';
+        facecolordef = 'w';
+    end
+    
+    plotModel(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh_init',formats,renderer);
     
     % u = ut(:,rep(end));
     u = ut(:,end);
     S_final = St(:,end);
     for k=1:numel(S_final)
-        plotModel(S_final{k},'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+        plotModel(S_final{k},'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
         mysaveas(pathname,['mesh_final_sample_' num2str(k)],formats,renderer);
         
         ampl = getsize(S_final{k})/max(abs(u{k}))/20;
-        plotModelDeflection(S_final{k},u{k},'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+        plotModelDeflection(S_final{k},u{k},'ampl',ampl,'Color','b','FaceColor',facecolordef,'FaceAlpha',facealpha,'legend',false);
         mysaveas(pathname,['mesh_deflected_sample_' num2str(k)],formats,renderer);
         
         figure('Name','Meshes')
         clf
-        plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-        plot(S_final{k}+ampl*unfreevector(S_final{k},u{k}),'Color','b','FaceColor','b','FaceAlpha',0.1);
+        plot(S,'Color','k','FaceColor',facecolor,'FaceAlpha',0.1);
+        plot(S_final{k}+ampl*unfreevector(S_final{k},u{k}),'Color','b','FaceColor',facecolordef,'FaceAlpha',facealpha);
         mysaveas(pathname,['meshes_deflected_sample_' num2str(k)],formats,renderer);
     end
 end
@@ -963,10 +982,10 @@ if displaySolution
         otherwise
             error('Wrong material symmetry class');
     end
-    rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
+    rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     rep = [rep,length(T)];
     % tSnapshots = [tSnapshots,gett1(T)];
-    % rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
+    % rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     
     for k=1:size(St,1)
     for j=1:length(rep)

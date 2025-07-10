@@ -20,8 +20,11 @@
 % [Wu, 2018, CMAME] (PF-CZM, hybrid isotropic-anisotropic phase-field model of Wu et al.)
 % [Wu, Nguyen, 2018, JMPS] (PF-CZM, hybrid isotropic-anisotropic phase-field model of Wu et al.)
 % [Bhowmick, Liu, 2018, EFM] (anisotropic phase-field model of Miehe et al. + CS-FEM)
+% [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM = anisotropic PFM of Miehe et.al + MsFEM)
+% [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM = anisotropic PFM of Miehe et.al + XFEM + MsFEM)
 % [Mandal, Nguyen, Wu, 2019, EFM] (hybrid AT1, AT2 and PF-CZM)
 % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM] (PF-CZM, anisotropic phase-field model of Wu et al.)
+% [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME] (anisotropic phase-field model of Miehe et al.)
 % [Fu, Yi, Chen, Bui, Hu, Yao, 2020, TAFM] (LEFM, FNM + SASE)
 % [Min, Hu, Yao, Bui, Zhang, 2022, CMAME] (isotropic phase-field model with no split of Bourdin et al.)
 % [Rahimi, Moutsanidis, 2022, CMAME] (anisotropic phase-field model with Total Lagrangian SPH approximation)
@@ -84,16 +87,17 @@ renderer = 'OpenGL';
 %% Problem
 if setProblem
     %% Domains and meshes
-    unit = 1e-3; % in [mm] % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME],
-    % [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Molnar, Gravouil, 2017, FEAD], [Khisamitov, Meschke, 2018, CMAME], [Bhowmick, Liu, 2018, EFM], [Lee et al., 2024, CBM]
-    % unit = 25.4e-3; % in [inch] % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME],
+    unit = 1e-3; % in [mm] [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Passieux, Rethore, Gravouil, Baietto, 2013, CM],
+    % [Molnar, Gravouil, 2017, FEAD], [Khisamitov, Meschke, 2018, CMAME], [Bhowmick, Liu, 2018, EFM], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Lee et al., 2024, CBM]
+    % unit = 25.4e-3; % in [inch] [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME],
     % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS], [Cervera, Barbat, Chiumenti, 2017, CM], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     switch setup
         case 1 % [Ingraffea, Grigoriu, 1990], [Bittencourt, Wawrzynek, Ingraffea, Sousa, 1996, EFM], [Ventura, Xu, Belytschko, 2002, IJNME],
             % [Miehe, Gurses, 2007, IJNME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Häusler, Lindhorst, Horst, 2011, IJNME],
             % [Geniaut, Galenne, 2012, IJSS], [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Ambati, Gerasimov, De Lorenzis, 2015, CM],
             % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS], [Molnar, Gravouil, 2017, FEAD], [Cervera, Barbat, Chiumenti, 2017, CM],
-            % [Khisamitov, Meschke, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Fu, Yi, Chen, Bui, Hu, Yao, 2020, TAFM],
+            % [Khisamitov, Meschke, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM],
+            % [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Fu, Yi, Chen, Bui, Hu, Yao, 2020, TAFM],
             % [Min, Hu, Yao, Bui, Zhang, 2022, CMAME], [Rahimi, Moutsanidis, 2022, CMAME], [Lee et al., 2024, CBM]
             a = 1*unit; % crack length
             b = 6*unit; % crack offset from the centerline
@@ -114,6 +118,8 @@ if setProblem
         case 6 % [Ingraffea, Grigoriu, 1990], [Cervera, Barbat, Chiumenti, 2017, CM], [Wu, 2018, CMAME]
             a = 1.5*unit; % crack length
             b = 4.5*unit; % crack offset from the centerline
+        otherwise
+            error('Wrong setup');
     end
     L = 10*unit; % half-length
     h = 4*unit; % half-height
@@ -125,36 +131,42 @@ if setProblem
     e = 1; % thickness
     % e = 0.5*unit; % [Cervera, Barbat, Chiumenti, 2017, CM], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     
-    % cl = 1e-3; % [mm] % [Cervera, Barbat, Chiumenti, 2017, CM]
-    % cl = 0.05e-3; % [mm] % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
+    % cl = 1e-3; % [mm] [Cervera, Barbat, Chiumenti, 2017, CM]
+    % cl = 0.135*unit; % [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME]
+    % cl = 0.066*unit; % [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME]
+    % cl = 0.05e-3; % [mm] [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
+    % cl = 0.033*unit; % [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME]
     % cl = 0.02*unit; % [Khisamitov, Meschke, 2018, CMAME] (setup 1), [Rahimi, Moutsanidis, 2022, CMAME]
-    cl = 0.025*unit/2; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
+    cl = 0.0125*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME]
     % cl = 0.01*unit; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Molnar, Gravouil, 2017, FEAD], [Mandal, Nguyen, Wu, 2019, EFM]
     % cl = 0.005*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Khisamitov, Meschke, 2018, CMAME] (setup 4), [Wu, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
-    % cl = 0.003*nuit; % [Mandal, Nguyen, Wu, 2019, EFM]
+    % cl = 0.003*unit; % [Mandal, Nguyen, Wu, 2019, EFM]
     % cl = 0.0008*unit; % [Lee et al., 2024, CBM]
     if test
         cl = 0.025*unit;
     end
     switch lower(FEmesh)
-        case 'unif'
+        case 'unif' % uniform mesh
             clD = cl; % characteristic length for domain
             B = [];
-        case 'optim'
+        case 'optim' % optimized mesh
             clD = 0.1*unit; % characteristic length for domain
             % clD = 0.01*unit; % [Khisamitov, Meschke, 2018, CMAME] (setup 4)
-            % clD = 2.54e-3; % [mm] % [Cervera, Barbat, Chiumenti, 2017, CM]
+            % clD = 2.54e-3; % [mm] [Cervera, Barbat, Chiumenti, 2017, CM]
             if test
                 clD = 0.5*unit;
             end
-            VIn = cl;
-            VOut = clD;
+            VIn = cl; VOut = clD;
             XMin = -b-0.5*unit; XMax = -lh+1*unit;
             YMin = -h; YMax = h;
-            ZMin = 0; ZMax = e;
             Thickness = ls-b-0.5*unit;
             % Thickness = 0;
-            B = struct('VIn',VIn,'VOut',VOut,'XMin',XMin,'XMax',XMax,'YMin',YMin,'YMax',YMax,'ZMin',ZMin,'ZMax',ZMax,'Thickness',Thickness);
+            if Dim==2
+                B = struct('VIn',VIn,'VOut',VOut,'XMin',XMin,'XMax',XMax,'YMin',YMin,'YMax',YMax,'Thickness',Thickness);
+            elseif Dim==3
+                ZMin = 0; ZMax = e;
+                B = struct('VIn',VIn,'VOut',VOut,'XMin',XMin,'XMax',XMax,'YMin',YMin,'YMax',YMax,'ZMin',ZMin,'ZMax',ZMax,'Thickness',Thickness);
+            end
         otherwise
             error('Wrong FE mesh')
     end
@@ -182,10 +194,15 @@ if setProblem
     % gc = 315; % [Wu, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     % gc = 304.321; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
     % Regularization parameter (width of the smeared crack)
-    % l = 0.2e-3; % [mm] % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
-    % l = 0.15e-3; % [mm] % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
+    % l = 0.27*unit; % [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME]
+    % l = 0.2e-3; % [mm] [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
+    % l = 0.15e-3; % [mm] [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
+    % l = 0.132*unit; % [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME]
     % l = 0.075*unit; % [Bhowmick, Liu, 2018, EFM], [Mandal, Nguyen, Wu, 2019, EFM]
+    % l = 0.066*unit; % [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME]
     % l = 0.05*unit; % [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM]
+    % l = 0.043*unit; % [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM)
+    % l = 0.04*unit; % [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
     % l = 0.0375*unit; % [Mandal, Nguyen, Wu, 2019, EFM]
     % l = 0.03*unit; % [Lee et al., 2024, CBM]
     l = 0.025*unit; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Molnar, Gravouil, 2017, FEAD], [Wu, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Min, Hu, Yao, Bui, Zhang, 2022, CMAME]
@@ -203,7 +220,18 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
-    C = LIGNE([-b,-h],[-b,-h+a]);
+    switch lower(initialCrack)
+        case 'geometriccrack'
+            C = POINT([-b,-h+a]); % crack tip
+        case 'geometricnotch'
+            C = CIRCLE(-b,-h+a-c/2,c/2); % circular notch
+            % C = LIGNE([-b-c/2,-h+a],[-b+c/2,-h+a]); % rectangular notch
+            % C = POINT([-b,-h+a]); % V notch
+        case 'initialphasefield'
+            C = LIGNE([-b,-h],[-b,-h+a]); % crack line
+        otherwise
+            error('Wrong model for initial crack');
+    end
     R0 = 2*unit;
     BU = CIRCLE(0.0,h,R0);
     BL = CIRCLE(-ls,-h,R0);
@@ -219,12 +247,7 @@ if setProblem
         S_phase = final(S_phase);
     end
     
-    if strcmpi(initialCrack,'initialphasefield')
-        S_phase = addcl(S_phase,C,'T',1);
-    end
-    S_phase = addcl(S_phase,BU,'T');
-    S_phase = addcl(S_phase,BL,'T');
-    S_phase = addcl(S_phase,BR,'T');
+    S_phase = addbcdamageAsymmetricNotchedPlate(S_phase,C,BU,BL,BR,initialCrack);
     
     %% Stiffness matrices and sollicitation vectors
     % a_phase = BILINFORM(1,1,K); % uniform values
@@ -249,7 +272,7 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    option = 'DEFO'; % plane strain [Miehe, Gurses, 2007, IJNME], [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Molnar, Gravouil, 2017, FEAD], [Khisamitov, Meschke, 2018, CMAME], [Bhowmick, Liu, 2018, EFM], [Rahimi, Moutsanidis, 2022, CMAME]
+    option = 'DEFO'; % plane strain [Miehe, Gurses, 2007, IJNME], [Guidault, Allix, Champaney, Cornuault, 2008, CMAME], [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Molnar, Gravouil, 2017, FEAD], [Khisamitov, Meschke, 2018, CMAME], [Bhowmick, Liu, 2018, EFM], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Rahimi, Moutsanidis, 2022, CMAME]
     % option = 'CONT'; % plane stress [Passieux, Rethore, Gravouil, Baietto, 2013, CM], [Cervera, Barbat, Chiumenti, 2017, CM], [Wu, 2018, CMAME], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     % Lame coefficients
     lambda = 12e9;
@@ -349,6 +372,28 @@ if setProblem
     t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
     t = [t0,t1];
     
+    % [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
+    % du = 1e-3 mm during the first 180 time steps (up to u = 0.18 mm)
+    % du = 1e-4 mm during the last  100 time steps (up to u = 0.19 mm)
+    % dt0 = 1e-3*unit;
+    % nt0 = 180;
+    % dt1 = 1e-4*unit;
+    % nt1 = 100;
+    % t0 = linspace(dt0,nt0*dt0,nt0);
+    % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+    % t = [t0,t1];
+    
+    % [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM)
+    % du = 1e-3 mm during the first 170 time steps (up to u = 0.17 mm)
+    % du = 1e-5 mm during the last 2000 time steps (up to u = 0.19 mm)
+    % dt0 = 1e-3*unit;
+    % nt0 = 170;
+    % dt1 = 1e-5*unit;
+    % nt1 = 2000;
+    % t0 = linspace(dt0,nt0*dt0,nt0);
+    % t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);
+    % t = [t0,t1];
+    
     T = TIMEMODEL(t);
     
     %% Save variables
@@ -433,24 +478,34 @@ if displayModel
     mysaveas(pathname,'boundary_conditions_displacement',formats,renderer);
     
     [hD_phase,legD_phase] = plotBoundaryConditions(S_phase,'legend',false);
-    % legend([hD_phase,hN_phase],[legD_phase,legN_phase],'Location','NorthEastOutside')
+    % legend(hD_phase,legD_phase,'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions_damage',formats,renderer);
     
     % plotModel(S,'legend',false);
     % mysaveas(pathname,'mesh',formats,renderer);
     
-    plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+    if Dim==2
+        facealpha = 0.1;
+        facecolor = 'k';
+        facecolordef = 'b';
+    elseif Dim==3
+        facealpha = 1;
+        facecolor = 'w';
+        facecolordef = 'w';
+    end
+    
+    plotModel(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
     u = getmatrixatstep(ut,rep(end));
     ampl = getsize(S)/max(abs(u))/20;
-    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor',facecolordef,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
-    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-    plot(S+ampl*unfreevector(S,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
+    plot(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha);
+    plot(S+ampl*unfreevector(S,u),'Color','b','FaceColor',facecolordef,'FaceAlpha',facealpha);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
 end
 
@@ -541,11 +596,13 @@ if displaySolution
             tSnapshots = [0.210 0.215 0.218 0.219 0.220 0.222]*unit;
         case {3,4,5,6}
             tSnapshots = [0.190 0.201 0.203 0.204 0.205 0.207]*unit;
+        otherwise
+            error('Wrong setup');
     end
-    rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
+    rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     rep = [rep,length(T)];
     % tSnapshots = [tSnapshots,gett1(T)];
-    % rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
+    % rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     
     for j=1:length(rep)
         dj = getmatrixatstep(dt,rep(j));

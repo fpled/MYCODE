@@ -152,10 +152,8 @@ while ti < tf-eps
         if nbIter==1
             S = removebc(S);
             ti = ti + dti;
-            ud = -ti;
-            S = addcl(S,PU,'UY',ud);
-            S = addcl(S,PL,{'UX','UY'});
-            S = addcl(S,PR,'UY');
+            ud = ti;
+            S = addbcAsymmetricNotchedPlate(S,ud,PU,PL,PR);
         end
         
         [A,b] = calc_rigi(S,'nofree');

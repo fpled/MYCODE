@@ -1,10 +1,6 @@
 %% Phase-field fracture model - deterministic linear elasticity problem %%
 %  Plate with a central circular hole under compression                 %%
 %%----------------------------------------------------------------------%%
-% [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS] (experimental tests)
-% [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF] (anisotropic phase-field model of Miehe et al.)
-% [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase-field model of He et al.)
-% [Luo, Chen, Wang, Li, 2022, CM] (anisotropic phase-field model of He et al. with anisotropic fracture surface energy)
 % [Noel, Pled, Chevalier, Wilquin, EFM, 2025] (anisotropic phase-field model of He et al.)
 
 % clc
@@ -16,7 +12,7 @@ close all
 filenameElas = '_elastic';
 filenameGc = '_gc';
 pathnameExp = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'examples','phasefield','dataPlatewithHoleWoodNoel');
+    'examples','phasefield','dataPlateWithHoleWoodNoel');
 filenameElas = fullfile(pathnameExp,filenameElas);
 filenameGc = fullfile(pathnameExp,filenameGc);
 optsElas = detectImportOptions(filenameElas);
@@ -114,7 +110,7 @@ FEmesh = 'Optim'; % 'Unif' or 'Optim'
 
 suffix = '';
 
-foldername = ['platewithHoleWoodNoel_' num2str(Dim) 'D'];
+foldername = ['plateWithHoleWoodNoel_' num2str(Dim) 'D'];
 filename = ['linElas' symmetry];
 filename = [filename PFmodel PFsplit PFregularization PFsolver...
     'MaxIter' num2str(maxIter)];
@@ -157,7 +153,7 @@ if setProblem
     end
     
     switch lower(FEmesh)
-        case 'unif'
+        case 'unif' % uniform mesh
             cl = l/2;
             if test
                 cl = l;
@@ -165,17 +161,30 @@ if setProblem
             clD = cl; % characteristic length for domain
             clC = cl; % characteristic length for circular hole
             B = [];
-        case 'optim'
+        case 'optim' % optimized mesh
             % [Noel, Pled, Chevalier, Wilquin, EFM, 2025]
             clD = 3*l/2; % characteristic length for domain
             clC = l/2; % characteristic length for circular hole
             if test
                 clC = l;
             end
+            VIn = clC; VOut = clD;
+            switch lower(PFmodel)
+                case {'bourdin','amor','heamor'}
+                    XMin = 0; XMax = L;
+                    YMin = h/2-2*r; YMax = h/2+2*r;
+                    % Thickness = h/2-2*r;
+                otherwise
+                    XMin = L/2-2*r; XMax = L/2+2*r;
+                    YMin = 0; YMax = h;
+                    % Thickness = L/2-2*r;
+            end
+            Thickness = 0;
             if Dim==2
-                B = struct('VOut',clD,'VIn',clC,'XMin',L/2-2*r,'XMax',L/2+2*r,'YMin',0,'YMax',h,'Thickness',0);
+                B = struct('VIn',VIn,'VOut',VOut,'XMin',XMin,'XMax',XMax,'YMin',YMin,'YMax',YMax,'Thickness',Thickness);
             elseif Dim==3
-                B = struct('VOut',clD,'VIn',clC,'XMin',L/2-2*r,'XMax',L/2+2*r,'YMin',0,'YMax',h,'ZMin',0,'ZMax',e,'Thickness',0);
+                ZMin = 0; ZMax = e;
+                B = struct('VIn',VIn,'VOut',VOut,'XMin',XMin,'XMax',XMax,'YMin',YMin,'YMax',YMax,'ZMin',ZMin,'ZMax',ZMax,'Thickness',Thickness);
             end
         otherwise
             error('Wrong FE mesh')
@@ -237,7 +246,7 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    % option = 'DEFO'; % plane strain [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
+    % option = 'DEFO'; % plane strain [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
     option = 'CONT'; % plane stress [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Noel, Pled, Chevalier, Wilquin, EFM, 2025]
     switch lower(symmetry)
         case 'isot' % isotropic material
@@ -294,7 +303,7 @@ if setProblem
     P0 = getvertices(D);
     P0 = POINT(P0{1});
     
-    addbc = @(S,ud) addbcPlatewithHole(S,ud,BU,BL,P0);
+    addbc = @(S,ud) addbcPlateWithHole(S,ud,BU,BL,P0);
     findddlforce = @(S) findddl(S,'UY',BU);
     
     S = final(S);
@@ -350,9 +359,9 @@ if solveProblem
     end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
-    %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
     %     otherwise
-    %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
     % end
     
     T = gettimemodel(dt);
@@ -425,7 +434,7 @@ if displayModel
     mysaveas(pathname,'boundary_conditions_displacement',formats,renderer);
     
     [hD_phase,legD_phase] = plotBoundaryConditions(S_phase,'legend',false);
-    % legend([hD_phase,hN_phase],[legD_phase,legN_phase],'Location','NorthEastOutside')
+    % legend(hD_phase,legD_phase,'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions_damage',formats,renderer);
     
     % plotModel(S,'legend',false);
@@ -529,10 +538,10 @@ if displaySolution
     %% Display solutions at different instants
     ampl = 0;
     tSnapshots = [0.1 0.2 0.3 0.4]*1e-3;
-    rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
+    rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     rep = [rep,length(T)];
     % tSnapshots = [tSnapshots,gett1(T)];
-    % rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
+    % rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     
     for j=1:length(rep)
         dj = getmatrixatstep(dt,rep(j));

@@ -625,7 +625,7 @@ if displayModel
     mysaveas(figPathname,'boundary_conditions_displacement',formats,renderer);
     
     [hD_phase,legD_phase] = plotBoundaryConditions(S_phaseInit,'legend',false);
-    % legend([hD_phase,hN_phase],[legD_phase,legN_phase],'Location','NorthEastOutside')
+    % legend(hD_phase,legD_phase,'Location','NorthEastOutside')
     mysaveas(figPathname,'boundary_conditions_damage',formats,renderer);
     
     % plotModel(SInit,'legend',false);

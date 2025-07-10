@@ -169,10 +169,8 @@ while ti < tf-eps
         if nbIter==1
             S = removebc(S);
             ti = ti + dti;
-            ud = -ti;
-            S = addcl(S,PU,'UY',ud);
-            S = addcl(S,PL,{'UX','UY'});
-            S = addcl(S,PR,'UY');
+            ud = ti;
+            S = addbcAsymmetricNotchedPlate(S,ud,PU,PL,PR);
         end
         
         [A,b] = calc_rigi(S,'nofree');
@@ -299,9 +297,7 @@ while ti < tf-eps
         % Update material properties
         S = setmaterialproperties(S,materials);
         S = final(S);
-        S = addcl(S,PU,'UY',ud);
-        S = addcl(S,PL,{'UX','UY'});
-        S = addcl(S,PR,'UY');
+        S = addbcAsymmetricNotchedPlate(S,ud,PU,PL,PR);
         
         % Update fields
         P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);

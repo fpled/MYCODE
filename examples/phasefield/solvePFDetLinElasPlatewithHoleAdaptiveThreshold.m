@@ -183,10 +183,8 @@ while ti < tf-eps
             if nbIter==1
                 S = removebc(S);
                 ti = ti + dti;
-                ud = -ti;
-                S = addcl(S,BU,'UY',ud);
-                S = addcl(S,BL,'UY');
-                S = addcl(S,P0,'UX');
+                ud = ti;
+                S = addbcPlatewithHole(S,ud,BU,BL,P0);
             end
             
             [A,b] = calc_rigi(S,'nofree');
@@ -308,9 +306,7 @@ while ti < tf-eps
         % Update material properties
         S = setmaterialproperties(S,materials);
         S = final(S);
-        S = addcl(S,BU,'UY',ud);
-        S = addcl(S,BL,'UY');
-        S = addcl(S,P0,'UX');
+        S = addbcPlatewithHole(S,ud,BU,BL,P0);
         
         % Update fields
         P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);

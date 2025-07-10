@@ -170,10 +170,8 @@ for i=1:length(T)
             S = actualisematerials(S,mats);
             if nbIter==1
                 S = removebc(S);
-                ud = -t(i);
-                S = addcl(S,BU,'UY',ud);
-                S = addcl(S,BL,'UY');
-                S = addcl(S,P0,'UX');
+                ud = t(i);
+                S = addbcPlatewithHole(S,ud,BU,BL,P0);
             end
             
             [A,b] = calc_rigi(S,'nofree');

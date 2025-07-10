@@ -184,10 +184,8 @@ for i=1:length(T)
         S = actualisematerials(S,mats);
         if nbIter==1
             S = removebc(S);
-            ud = -t(i);
-            S = addcl(S,PU,'UY',ud);
-            S = addcl(S,PL,{'UX','UY'});
-            S = addcl(S,PR,'UY');
+            ud = t(i);
+            S = addbcAsymmetricNotchedPlate(S,ud,PU,PL,PR);
         end
         
         [A,b] = calc_rigi(S,'nofree');
@@ -315,9 +313,7 @@ for i=1:length(T)
         % Update material properties
         S = setmaterialproperties(S,materials);
         S = final(S);
-        S = addcl(S,PU,'UY',ud);
-        S = addcl(S,PL,{'UX','UY'});
-        S = addcl(S,PR,'UY');
+        S = addbcAsymmetricNotchedPlate(S,ud,PU,PL,PR);
         
         % Update fields
         P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);

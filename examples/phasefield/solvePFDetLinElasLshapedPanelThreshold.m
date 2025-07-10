@@ -162,14 +162,7 @@ while ti < tf-eps
                 S = removebc(S);
                 ti = ti + dti;
                 ud = ti;
-                % [Gerasimov, De Lorenzis, 2019, CMAME]
-                % if Dim==2
-                %     S = addcl(S,BRight,{'UX','UY'},[0;ud]);
-                % elseif Dim==3
-                %     S = addcl(S,BRight,{'UX','UY','UZ'},[0;ud;0]);
-                % end
-                S = addcl(S,BRight,'UY',ud);
-                S = addcl(S,BL);
+                S = addbcLshapedPanel(S,ud,BL,BRight);
             end
             
             [A,b] = calc_rigi(S,'nofree');

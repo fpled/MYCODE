@@ -193,14 +193,7 @@ for i=1:length(T)
             if nbIter==1
                 S = removebc(S);
                 ud = t(i);
-                % [Gerasimov, De Lorenzis, 2019, CMAME]
-                % if Dim==2
-                %     S = addcl(S,BRight,{'UX','UY'},[0;ud]);
-                % elseif Dim==3
-                %     S = addcl(S,BRight,{'UX','UY','UZ'},[0;ud;0]);
-                % end
-                S = addcl(S,BRight,'UY',ud);
-                S = addcl(S,BL);
+                S = addbcLshapedPanel(S,ud,BL,BRight);
             end
             
             [A,b] = calc_rigi(S,'nofree');
@@ -321,14 +314,7 @@ for i=1:length(T)
         % Update material properties
         S = setmaterialproperties(S,materials);
         S = final(S);
-        % [Gerasimov, De Lorenzis, 2019, CMAME]
-        % if Dim==2
-        %     S = addcl(S,BRight,{'UX','UY'},[0;ud]);
-        % elseif Dim==3
-        %     S = addcl(S,BRight,{'UX','UY','UZ'},[0;ud;0]);
-        % end
-        S = addcl(S,BRight,'UY',ud);
-        S = addcl(S,BL);
+        S = addbcLshapedPanel(S,ud,BL,BRight);
         
         % Update fields
         P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
