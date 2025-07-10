@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,varargin)
-% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,varargin)
+function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHole(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,varargin)
+% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHole(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,varargin)
 % Solve deterministic phase-field problem.
 
 display_ = getcharin('display',varargin,true);
@@ -20,10 +20,25 @@ checkConvEnergy = contain(critConv,'energy');
 
 Dim = getdim(S);
 
-dt0 = T.dt0;
-dt1 = T.dt1;
-tf = T.tf;
-dthreshold = T.dthreshold;
+t = gett(T);
+
+dt = cell(1,length(T));
+ut = cell(1,length(T));
+ft = zeros(1,length(T));
+if nargout>=4
+    Ht = cell(1,length(T));
+end
+if nargout>=5
+    Edt = zeros(1,length(T));
+end
+if nargout>=6
+    Eut = zeros(1,length(T));
+end
+if nargout>=7
+    iteration = zeros(1,length(T));
+    time = zeros(1,length(T));
+    err = zeros(1,length(T));
+end
 
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
@@ -82,25 +97,21 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
 end
 
 if display_
-    fprintf('\n+------+---------+-----------+-----------+-----------+-----------+-----------+');
-    fprintf('\n| Iter | Nb iter |  u [mm]   |  f [kN]   |  max(d)   |  Ed [J]   |  Eu [J]   |');
-    fprintf('\n+------+---------+-----------+-----------+-----------+-----------+-----------+\n');
+    fprintf('\n+-----------+---------+-----------+-----------+-----------+-----------+-----------+');
+    fprintf('\n|   Iter    | Nb iter |  u [mm]   |  f [kN]   |  max(d)   |  Ed [J]   |  Eu [J]   |');
+    fprintf('\n+-----------+---------+-----------+-----------+-----------+-----------+-----------+\n');
 end
 
+ismonotonic = ~any(diff(sign(t(t~=0))));
 numddlbr = findddl(S_phase,'T',BRight);
 numddlbl = findddl(S_phase,'T',BLeft);
 numddlb = union(numddlbr,numddlbl);
 db = d(numddlb,:);
 
-i = 0;
-ti = 0;
-dti = dt0;
-while ti < tf-eps
-    i = i+1;
+for i=1:length(T)
     tIter = tic;
     nbIter = 0;
     if any(db > dbthreshold)
-        ti = ti + dti;
         f = 0;
     else
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
@@ -146,9 +157,6 @@ while ti < tf-eps
                             d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                     end
             end
-            if any(d > dthreshold)
-                dti = dt1;
-            end
             dmax = max(d);
             d = unfreevector(S_phase,d);
             db = d(numddlb,:);
@@ -162,8 +170,7 @@ while ti < tf-eps
             S = actualisematerials(S,mats);
             if nbIter==1
                 S = removebc(S);
-                ti = ti + dti;
-                ud = ti;
+                ud = t(i);
                 S = addbcPlatewithHole(S,ud,BU,BL,P0);
             end
             
@@ -225,7 +232,9 @@ while ti < tf-eps
         numddl = findddl(S,'UY',BU);
         f = A(numddl,:)*u;
         f = sum(f);
-        f = abs(f);
+        if ismonotonic
+            f = abs(f);
+        end
         
         % Energy
         if ~checkConvEnergy
@@ -238,7 +247,6 @@ while ti < tf-eps
     dt{i} = d;
     ut{i} = u;
     ft(i) = f;
-    t(i) = ti;
     if nargout>=4
         if strcmpi(PFsolver,'historyfieldnode')
             Ht{i} = double(H);
@@ -259,15 +267,14 @@ while ti < tf-eps
     end
     
     if display_
-        fprintf('| %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e |\n',i,nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),dmax,Ed,Eu);
+        fprintf('| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e |\n',i,length(T),nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),dmax,Ed,Eu);
     end
 end
 
 if display_
-    fprintf('+------+---------+-----------+-----------+-----------+-----------+-----------+\n');
+    fprintf('+-----------+---------+-----------+-----------+-----------+-----------+-----------+\n');
 end
 
-T = TIMEMODEL(t);
 dt = TIMEMATRIX(dt,T,size(d));
 ut = TIMEMATRIX(ut,T,size(u));
 if nargout>=4

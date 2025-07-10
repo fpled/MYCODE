@@ -1,6 +1,6 @@
-function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleAdaptive(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,C,sizemap,varargin)
-% function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasPlatewithHoleAdaptive(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,C,sizemap,varargin)
-% Solve deterministic phase-field problem with mesh adaptation.
+function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,varargin)
+% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,varargin)
+% Solve deterministic phase-field problem.
 
 display_ = getcharin('display',varargin,true);
 displayIter = getcharin('displayiter',varargin,false);
@@ -8,10 +8,6 @@ maxIter = getcharin('maxiter',varargin,100);
 tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
 dbthreshold = getcharin('damageboundarythreshold',varargin,0.999);
-filename = getcharin('filename',varargin,'gmsh_plate_with_hole');
-pathname = getcharin('pathname',varargin,'.');
-gmshoptions = getcharin('gmshoptions',varargin,'-v 0');
-mmgoptions = getcharin('mmgoptions',varargin,'-nomove -v -1');
 
 if verLessThan('matlab','9.1') % compatibility (<R2016b)
     contain = @(str,pat) ~isempty(strfind(lower(str),pat));
@@ -24,49 +20,25 @@ checkConvEnergy = contain(critConv,'energy');
 
 Dim = getdim(S);
 
-t = gett(T);
-
-dt = cell(1,length(T));
-ut = cell(1,length(T));
-ft = zeros(1,length(T));
-if nargout>=4
-    St_phase = cell(1,length(T));
-end
-if nargout>=5
-    St = cell(1,length(T));
-end
-if nargout>=6
-    Ht = cell(1,length(T));
-end
-if nargout>=7
-    Edt = zeros(1,length(T));
-end
-if nargout>=8
-    Eut = zeros(1,length(T));
-end
-if nargout>=9
-    iteration = zeros(1,length(T));
-    time = zeros(1,length(T));
-    err = zeros(1,length(T));
-end
-
-materials_phase = MATERIALS(S_phase);
-materials = MATERIALS(S);
-S_phase = setphasefieldproperties(S_phase,materials_phase);
-S = setmaterialproperties(S,materials);
+dt0 = T.dt0;
+dt1 = T.dt1;
+tf = T.tf;
+dthreshold = T.dthreshold;
 
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
 if strcmpi(PFsolver,'historyfieldnode')
     H = FENODEFIELD(calc_energyint(S,u,'node','positive','local'));
+    r = FENODEFIELD(calc_parammat(S_phase,'r','node'));
     qn = FENODEFIELD(calc_parammat(S_phase,'qn','node'));
 else
     H = calc_energyint(S,u,'intorder','mass','positive','local');
+    r = calc_parammat(S_phase,'r');
     qn = calc_parammat(S_phase,'qn');
 end
+Ae_phase = calc_rigi(S_phase,'nofree');
+be_phase = bodyload(S_phase,[],'QN',qn,'nofree');
 if checkConvEnergy
-    Ae_phase = calc_rigi(S_phase,'nofree');
-    be_phase = bodyload(S_phase,[],'QN',qn,'nofree');
     Ed = 1/2*d'*Ae_phase*d - d'*be_phase;
     A = calc_rigi(S,'nofree');
     Eu = 1/2*u'*A*u;
@@ -110,37 +82,31 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
 end
 
 if display_
-    fprintf('\n+-----------+---------+-----------+-----------+-----------+-----------+-----------+----------+----------+');
-    fprintf('\n|   Iter    | Nb iter |  u [mm]   |  f [kN]   |  max(d)   |  Ed [J]   |  Eu [J]   | Nb nodes | Nb elems |');
-    fprintf('\n+-----------+---------+-----------+-----------+-----------+-----------+-----------+----------+----------+');
-    fprintf('\n| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',0,length(T),0,0,0,0,0,0,getnbnode(S),getnbelem(S));
+    fprintf('\n+------+---------+-----------+-----------+-----------+-----------+-----------+');
+    fprintf('\n| Iter | Nb iter |  u [mm]   |  f [kN]   |  max(d)   |  Ed [J]   |  Eu [J]   |');
+    fprintf('\n+------+---------+-----------+-----------+-----------+-----------+-----------+\n');
 end
 
-ismonotonic = ~any(diff(sign(t(t~=0))));
 numddlbr = findddl(S_phase,'T',BRight);
 numddlbl = findddl(S_phase,'T',BLeft);
 numddlb = union(numddlbr,numddlbl);
 db = d(numddlb,:);
 
-for i=1:length(T)
+i = 0;
+ti = 0;
+dti = dt0;
+while ti < tf-eps
+    i = i+1;
     tIter = tic;
     nbIter = 0;
     if any(db > dbthreshold)
+        ti = ti + dti;
         f = 0;
     else
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
             H_old = H;
         end
         d_old = d;
-        if strcmpi(PFsolver,'historyfieldnode')
-            r = FENODEFIELD(calc_parammat(S_phase,'r','node'));
-            qn = FENODEFIELD(calc_parammat(S_phase,'qn','node'));
-        else
-            r = calc_parammat(S_phase,'r');
-            qn = calc_parammat(S_phase,'qn');
-        end
-        Ae_phase = calc_rigi(S_phase,'nofree');
-        be_phase = bodyload(S_phase,[],'QN',qn,'nofree');
         if checkConvRes
             [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
         end
@@ -180,11 +146,11 @@ for i=1:length(T)
                             d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                     end
             end
+            if any(d > dthreshold)
+                dti = dt1;
+            end
             dmax = max(d);
             d = unfreevector(S_phase,d);
-            numddlbr = findddl(S_phase,'T',BRight);
-            numddlbl = findddl(S_phase,'T',BLeft);
-            numddlb = union(numddlbr,numddlbl);
             db = d(numddlb,:);
             
             % Displacement field
@@ -196,7 +162,8 @@ for i=1:length(T)
             S = actualisematerials(S,mats);
             if nbIter==1
                 S = removebc(S);
-                ud = t(i);
+                ti = ti + dti;
+                ud = ti;
                 S = addbcPlatewithHole(S,ud,BU,BL,P0);
             end
             
@@ -258,9 +225,7 @@ for i=1:length(T)
         numddl = findddl(S,'UY',BU);
         f = A(numddl,:)*u;
         f = sum(f);
-        if ismonotonic
-            f = abs(f);
-        end
+        f = abs(f);
         
         % Energy
         if ~checkConvEnergy
@@ -273,77 +238,46 @@ for i=1:length(T)
     dt{i} = d;
     ut{i} = u;
     ft(i) = f;
+    t(i) = ti;
     if nargout>=4
-        St_phase{i} = S_phase;
-    end
-    if nargout>=5
-        St{i} = S;
-    end
-    if nargout>=6
         if strcmpi(PFsolver,'historyfieldnode')
             Ht{i} = double(H);
         else
             Ht{i} = reshape(double(mean(H,4)),[getnbelem(S),1]);
         end
     end
-    if nargout>=7
+    if nargout>=5
         Edt(i) = Ed;
     end
-    if nargout>=8
+    if nargout>=6
         Eut(i) = Eu;
     end
-    if nargout>=9
+    if nargout>=7
         iteration(i) = nbIter;
         time(i) = toc(tIter);
         err(i) = errConv;
     end
     
     if display_
-        fprintf('| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',i,length(T),nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),dmax,Ed,Eu,getnbnode(S),getnbelem(S));
-    end
-    
-    if i<length(T) && ~any(db > dbthreshold)
-        % Mesh adaptation
-        S_phase_old = S_phase;
-        S_phase_ref = addcl(S_phase_old,C,'T',1);
-        d_ref = freevector(S_phase_ref,d);
-        d_ref = unfreevector(S_phase_ref,d_ref);
-        % S_old = S;
-        cl = sizemap(d_ref);
-        S_phase = adaptmesh(S_phase_ref,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
-        S = S_phase;
-        
-        % Update phase field properties
-        S_phase = setphasefieldproperties(S_phase,materials_phase);
-        S_phase = final(S_phase);
-        
-        % Update material properties
-        S = setmaterialproperties(S,materials);
-        S = final(S);
-        S = addbcPlatewithHole(S,ud,BU,BL,P0);
-        
-        % Update fields
-        P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
-        d = P_phase'*d;
-        
-        % P = calcProjection(S,S_old,[],'free',false,'full',true);
-        P = kron(P_phase,eye(Dim));
-        u = P'*u;
-        
-        if strcmpi(PFsolver,'historyfieldnode')
-            h = P_phase'*h;
-            H = setvalue(H,h);
-        else
-            H = calc_energyint(S,u,'intorder','mass','positive','local');
-        end
+        fprintf('| %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e |\n',i,nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),dmax,Ed,Eu);
     end
 end
 
 if display_
-    fprintf('+-----------+---------+-----------+-----------+-----------+-----------+-----------+----------+----------+\n');
+    fprintf('+------+---------+-----------+-----------+-----------+-----------+-----------+\n');
 end
 
-if nargout>=9
+T = TIMEMODEL(t);
+dt = TIMEMATRIX(dt,T,size(d));
+ut = TIMEMATRIX(ut,T,size(u));
+if nargout>=4
+    if strcmpi(PFsolver,'historyfieldnode')
+        Ht = TIMEMATRIX(Ht,T,size(d));
+    else
+        Ht = TIMEMATRIX(Ht,T,[getnbelem(S),1]);
+    end
+end
+if nargout>=7
     output.iteration = iteration;
     output.time = time;
     output.error = err;
