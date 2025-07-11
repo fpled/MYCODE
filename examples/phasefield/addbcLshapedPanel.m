@@ -1,5 +1,5 @@
-function S = addbcLshapedPanel(S,ud,BL,BRight)
-% function S = addbcLshapedPanel(S,ud,BL,BRright)
+function S = addbcLshapedPanel(S,ud,BL,BRight,BBack)
+% function S = addbcLshapedPanel(S,ud,BL,BRright,BBack)
 % Add boundary conditions on displacement field for L-shaped panel problem.
 
 Dim = getdim(S);
@@ -12,5 +12,7 @@ Dim = getdim(S);
 % end
 S = addcl(S,BRight,'UY',ud);
 S = addcl(S,BL);
+% (3D with symmetry) [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS]
+% S = addcl(S,BBack,'UZ');
 
 end

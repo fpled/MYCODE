@@ -1,5 +1,5 @@
-function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptiveThreshold(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,sizemap,varargin)
-% function [dt,ut,ft,TnSt_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptiveThhreshold(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,sizemap,varargin)
+function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptiveThreshold(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,sizemap,varargin)
+% function [dt,ut,ft,TnSt_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptiveThhreshold(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,sizemap,varargin)
 % Solve deterministic phase-field problem with mpesh adaptation.
 
 display_ = getcharin('display',varargin,true);
@@ -180,7 +180,7 @@ while ti < tf-eps
                 S = removebc(S);
                 ti = ti + dti;
                 ud = ti;
-                S = addbcLshapedPanel(S,ud,BL,BRight);
+                S = addbcLshapedPanel(S,ud,BL,BRight,BBack);
             end
             
             [A,b] = calc_rigi(S,'nofree');
@@ -300,7 +300,7 @@ while ti < tf-eps
         % Update material properties
         S = setmaterialproperties(S,materials);
         S = final(S);
-        S = addbcLshapedPanel(S,ud,BL,BRight);
+        S = addbcLshapedPanel(S,ud,BL,BRight,BBack);
         
         % Update fields
         P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);

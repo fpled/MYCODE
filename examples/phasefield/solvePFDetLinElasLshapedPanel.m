@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanel(S_phase,S,T,PFsolver,BL,BRight,BLeft,varargin)
-% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanel(S_phase,S,T,PFsolver,BL,BRight,BLeft,varargin)
+function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanel(S_phase,S,T,PFsolver,BL,BRight,BLeft,BBack,varargin)
+% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanel(S_phase,S,T,PFsolver,BL,BRight,BLeft,BBack,varargin)
 % Solve deterministic phase-field problem.
 
 display_ = getcharin('display',varargin,true);
@@ -169,7 +169,7 @@ for i=1:length(T)
             if nbIter==1
                 S = removebc(S);
                 ud = t(i);
-                S = addbcLshapedPanel(S,ud,BL,BRight);
+                S = addbcLshapedPanel(S,ud,BL,BRight,BBack);
             end
             
             [A,b] = calc_rigi(S,'nofree');

@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelThreshold(S_phase,S,T,PFsolver,BL,BRight,BLeft,varargin)
-% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelThreshold(S_phase,S,T,PFsolver,BL,BRight,BLeft,varargin)
+function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelThreshold(S_phase,S,T,PFsolver,BL,BRight,BLeft,BBack,varargin)
+% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelThreshold(S_phase,S,T,PFsolver,BL,BRight,BLeft,BBack,varargin)
 % Solve deterministic phase-field problem.
 
 display_ = getcharin('display',varargin,true);
@@ -162,7 +162,7 @@ while ti < tf-eps
                 S = removebc(S);
                 ti = ti + dti;
                 ud = ti;
-                S = addbcLshapedPanel(S,ud,BL,BRight);
+                S = addbcLshapedPanel(S,ud,BL,BRight,BBack);
             end
             
             [A,b] = calc_rigi(S,'nofree');

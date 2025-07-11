@@ -27,6 +27,8 @@ switch lower(loading)
             % S = addcl(S,BBack,'UZ');
         end
         S = addcl(S,BL,'UY');
+        % [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
+        % S = addcl(S,BL);
     case 'shear'
         if Dim==2
             S = addcl(S,BU,{'UX','UY'},[ud;0]);

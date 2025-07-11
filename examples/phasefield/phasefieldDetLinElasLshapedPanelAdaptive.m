@@ -10,6 +10,7 @@
 % [Dumstorff, Meschke, 2007, IJNME] (XFEM)
 % [Meschke, Dumstorff, 2007, CMAME] (XFEM)
 % [Jager, Steinmann, Kuhl, 2008, IJNME] (CZM)
+% [Hofstetter, Meschke, 2011, Springer] (experimental tests)
 % [Zamani, Gracie, Eslami, 2012, IJNME] (XFEM, GFEM)
 % [Ozbolt, Sharma, 2012, EFM] (Microplane model)
 % [Bernard, Moes, Chevaugeon, 2012, CMAME] (TLS)
@@ -19,6 +20,7 @@
 % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (isotropic phase-field model with no split of Bourdin et al. compared to experimental data of [Winkler, 2001, PhD thesis])
 % [Gerasimov, De Lorenzis, 2016, CMAME] (anisotropic phase-field model of Miehe et al.)
 % [Ferte, Massin, Moes, 2016, CMAME] (XFEM-CZM)
+% [Huang, Yang, Liu, Chen, 2016, CM] (FE-SBFE)
 % [Cervera, Barbat, Chiumenti, 2017, CM] (LEFM Mixed FEM)
 % [Zhang, Vignes, Sloan, Sheng, 2017, CM] (anisotropic phase-field model of Miehe et al.)
 % [Wu, 2017, JMPS] (PF-CZM)
@@ -26,6 +28,7 @@
 % [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS] (elastomers undergoing large deformations)
 % [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM = anisotropic PFM of Miehe et.al + XFEM + MsFEM)
 % [Le, Nguyen, Bui, Sheikh, Kotousov, 2018, IJES] (Cohesive-Frictional model)
+% [Labanda, Giusti, Luccioni, 2018, IJDM] (CZM)
 % [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM] (hybrid isotropic-anisotropic phase-field model of Ambati et al.)
 % [Mandal, Nguyen, Wu, 2019, EFM] (hybrid AT1, AT2 and PF-CZM)
 % [Yang, He, Yi, Liu, 2019, IJMS] (PD-CZM)
@@ -42,13 +45,22 @@
 % [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM] (hybrid phase-field model of Wu and Cervera, 2018, IJSS]
 % [Lampron, Therriault, Levesque, 2021, CMAME] (anisotropic phase-field model of Miehe et al.)
 % [Li, Wang, Cao, Liu, 2021, ACE] (anisotropic phase-field model of Lancioni and Royer-Carfagni et al.)
+% [De Maio, Cendon, Greco, Leonetti, Blasi, Planas, 2021, TAFM] (ECM vs DIM = Embedded Crack Model vs Diffuse Interface Model)
 % [Li, Lu, Huang, Yang, 2022, OE] (PD)
 % [Han, Li, Yu, Li, Zhang, 2022, JMPS] (PD-CZM)
+% [Nguyen, Thanh, Vogel, Nguyen-Xuan, Abdel-Wahab, 2022, TAFM] (PF-CZM)
+% [Rodrigues, Manzoli, Bitencourt, 2022, CMAME] (MsCFEM)
 % [Si, Yu, Li, Natarajan, 2023, CMAME] (hybrid isotropic-anisotropic phase-field model of Ambati et al. with multi-patch adaptive isogeometric phase-field method based on Nitsche's method)
-% [Bharali, Larsson, Janicke, 2024, CM] (PF-CZM, anisotropic phase-field model of Wu et al.)
 % [Hu, Tan, Xia, Min, Xu, Yao, Sun, Zhang, Quoc Bui, Zhuang, Rabczuk, 2023, TAFM] (hybrid isotropic-anisotropic phase-field model of Ambati et al.)
+% [Zhang, Huang, Hu, Xu, 2023, EFM] (CSFEM + PF-CZM)
 % [Ribeiro Nogueira, Rastiello, Giry, Gatuingt, Callari, 2023, AJCE] (Gradient-Enhanced Eikonal non-local damage model)
+% [Bharali, Larsson, Janicke, 2024, CM] (PF-CZM, anisotropic phase-field model of Wu et al.)
 % [Liu, Chen, Yuan, 2024, AAM] (PD-FEM)
+% [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME] (CSFEM + PF-CZM)
+% [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM] (PF-CZM)
+% [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS] (hybrid isotropic-anisotropic phase-field model of Ambati et al.)
+% [Tran, Nguyen-Xuan, Zhuang, 2024, FSCE] (Deep Learning)
+% [Prakash, Behera, Rahaman, Roy, 2025, preprint] (anisotropic phase-field model of Amor et al. in finite deformations)
 %% Cyclic loading
 % [Ambati, Gerasimov, De Lorenzis, 2015, CM] (hybrid isotropic-anisotropic phase-field model of Ambati et al. compared with the anisotropic one of Miehe et al.)
 % [Areias, Msekh, Rabczuk, 2016, EFM] (screened Poisson equation in finite strains)
@@ -125,22 +137,25 @@ if setProblem
     b = 30e-3; % distance of applied load from the right edge
     e = 100e-3; % thickness
     % e = 50e-3; % thickness [Liu, Chen, Yuan, 2024, AAM]
+    % e = 50e-3; % (3D with symmetry) [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS]
     
+    % clD = 22.4-3; % [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME]
     clD = 20e-3; % [Gerasimov, De Lorenzis, 2019, CMAME]
     % clD = 10e-3; % [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM]
     if Dim==2
         % cl = 29.1548e-3; % [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME]
         % cl = 22e-3; % [Jodlbauer, Langer, Wick, 2020, CMAME]
         % cl = 14.577e-3; % [Mang, Wick, Wollner, 2020, CM], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME]
-        % cl = 12e-3; % [Cervera, Barbat, Chiumenti, 2017, CM]
+        % cl = 12e-3; % [Cervera, Barbat, Chiumenti, 2017, CM], [De Maio, Cendon, Greco, Leonetti, Blasi, Planas, 2021, TAFM]
         % cl = 11e-3; % [Jodlbauer, Langer, Wick, 2020, CMAME]
         % cl = 10e-3; % [Li, Wang, Cao, Liu, 2021, ACE]
         % cl = 8.33e-3; % [Cervera, Barbat, Chiumenti, 2017, CM]
         % cl = 8e-3; % [Cervera, Barbat, Chiumenti, 2017, CM]
         % cl = 7.289e-3; % [Mang, Wick, Wollner, 2020, CM], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME]
         % cl = 5.5e-3; % [Jodlbauer, Langer, Wick, 2020, CMAME]
-        % cl = 5e-3; % [Kakouris, Triantafyllou, 2017, IJNME], [Tong, Shen, Shao, Chen, 2020, EFM], [Li, Wang, Cao, Liu, 2021, ACE]
+        % cl = 5e-3; % [Huang, Yang, Liu, Chen, 2016, CM], [Kakouris, Triantafyllou, 2017, IJNME], [Tong, Shen, Shao, Chen, 2020, EFM], [Li, Wang, Cao, Liu, 2021, ACE]
         % cl = 4e-3; % [Cervera, Barbat, Chiumenti, 2017, CM]
+        % cl = 3.75e-3; % [Nguyen, Thanh, Vogel, Nguyen-Xuan, Abdel-Wahab, 2022, TAFM]
         % cl = 3.644e-3; % [Mang, Wick, Wollner, 2020, CM]
         % cl = 2.5e-3; % [Ozbolt, Sharma, 2012, EFM], [Kakouris, Triantafyllou, 2017, IJNME], [Gerasimov, De Lorenzis, 2019, CMAME]
         % cl = 2.8e-3; % [Jodlbauer, Langer, Wick, 2020, CMAME]
@@ -149,11 +164,14 @@ if setProblem
         % cl = 1.776e-3; % [Zhang, Vignes, Sloan, Sheng, 2017, CM]
         % cl = 1/3*5e-3; % [Gerasimov, De Lorenzis, 2019, CMAME]
         % cl = 1.4e-3; % [Egger et al., 2019, AS]
+        % cl = 1.35e-3; % [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME]
         % cl = 1.344e-3; % [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM]
         % cl = 1.25e-3; % [Kakouris, Triantafyllou, 2017, IJNME], [Gerasimov, De Lorenzis, 2019, CMAME]
-        cl = 1e-3; % [Du, Jin, Ma, 2014, IJIE], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Wu, Huang, Nguyen, 2020, CMAME], [Li, Lu, Huang, Yang, 2022, OE]
+        cl = 1e-3; % [Du, Jin, Ma, 2014, IJIE], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Wu, Huang, Nguyen, 2020, CMAME], [Li, Lu, Huang, Yang, 2022, OE], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
+        % cl = 0.67e-3; % [Zhang, Huang, Hu, Xu, 2023, EFM]
         % cl = 0.625e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS], [Lampron, Therriault, Levesque, 2021, CMAME]
-        % cl = 0.5e-3; % [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Muixi, Rodriguez-Ferran, Fernandez-Mendez, 2020, IJNME], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM], [Hu et al., 2023, TAFM]
+        % cl = 0.55e-3; % [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME]
+        % cl = 0.5e-3; % [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Muixi, Rodriguez-Ferran, Fernandez-Mendez, 2020, IJNME], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM], [Hu et al., 2023, TAFM], [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS]
         % cl = 0.3125e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
         % cl = 0.25e-3; % [Wu, 2018, CMAME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
         % cl = 0.2e-3; % [Han, Li, Yu, Li, Zhang, 2022, JMPS]
@@ -182,13 +200,13 @@ if setProblem
     %% Material
     % Critical energy release rate (or fracture toughness)
     % gc = 160; % [Cervera, Barbat, Chiumenti, 2017, CM]
-    % gc = 140; % [Ghosh, Chaudhuri, 2013, CMS]
-    % gc = 130; % [Unger, Eckardt, Konke, 2007, CMAME], [Zamani, Gracie, Eslami, 2012, IJNME], [Ferte, Massin, Moes, 2016, CMAME], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Wu, Huang, Nguyen, 2020, CMAME], [Yang, He, Liu, Deng, Huang, 2020, IJMS], [Li, Wang, Cao, Liu, 2021, ACE], [Bharali, Larsson, Janicke, 2024, CM]
-    % gc = 120; % [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM]
-    % gc = 95; % [Dumstorff, Meschke, 2007, IJNME], [Meschke, Dumstorff, 2007, CMAME], [Ozbolt, Sharma, 2012, EFM], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Zhang, Vignes, Sloan, Sheng, 2017, CM], [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS], [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Lampron, Therriault, Levesque, 2021, CMAME], [Si, Yu, Li, Natarajan, 2023, CMAME]
-    % gc = 90; % [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Hu et al., 2023, TAFM]
+    % gc = 140; % [Ghosh, Chaudhuri, 2013, CMS], [Labanda, Giusti, Luccioni, 2018, IJDM]
+    % gc = 130; % [Unger, Eckardt, Konke, 2007, CMAME], [Zamani, Gracie, Eslami, 2012, IJNME], [Ferte, Massin, Moes, 2016, CMAME], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Wu, Huang, Nguyen, 2020, CMAME], [Yang, He, Liu, Deng, Huang, 2020, IJMS], [Li, Wang, Cao, Liu, 2021, ACE], [Nguyen, Thanh, Vogel, Nguyen-Xuan, Abdel-Wahab, 2022, TAFM], [Bharali, Larsson, Janicke, 2024, CM], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
+    % gc = 120; % [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM], [Zhang, Huang, Hu, Xu, 2023, EFM], [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME]
+    % gc = 95; % [Dumstorff, Meschke, 2007, IJNME], [Meschke, Dumstorff, 2007, CMAME], [Ozbolt, Sharma, 2012, EFM], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Zhang, Vignes, Sloan, Sheng, 2017, CM], [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS], [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Lampron, Therriault, Levesque, 2021, CMAME], [De Maio, Cendon, Greco, Leonetti, Blasi, Planas, 2021, TAFM], [Si, Yu, Li, Natarajan, 2023, CMAME]
+    % gc = 90; % [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Hu et al., 2023, TAFM], [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS], [Prakash, Behera, Rahaman, Roy, 2025, preprint]
     gc = 89; % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Areias, Msekh, Rabczuk, 2016, EFM], [Wick, 2017, SIAM JSC], [Kakouris, Triantafyllou, 2017, IJNME], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Egger et al., 2019, AS], [Tian, Tang, Xu, Yang, Li, 2019, IJNME], [Mang, Wick, Wollner, 2020, CM], [Jodlbauer, Langer, Wick, 2020, CMAME], [Geelen, 2020, PhD thesis], [Muixi, Rodriguez-Ferran, Fernandez-Mendez, 2020, IJNME], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM]
-    % gc = 65; % [Winkler, 2001, PhD thesis], [Winkler, Hofstetter, Niederwanger, 2001, PIMEPartL], [Winkler, Hofstetter, Lehar, 2004, IJNAMG], [Jager, Steinmann, Kuhl, 2008, IJNME], [Le, Nguyen, Bui, Sheikh, Kotousov, 2018, IJES], [Tong, Shen, Shao, Chen, 2020, EFM]
+    % gc = 65; % [Winkler, 2001, PhD thesis], [Winkler, Hofstetter, Niederwanger, 2001, PIMEPartL], [Winkler, Hofstetter, Lehar, 2004, IJNAMG], [Jager, Steinmann, Kuhl, 2008, IJNME], [Hofstetter, Meschke, 2011, Springer], [Huang, Yang, Liu, Chen, 2016, CM], [Le, Nguyen, Bui, Sheikh, Kotousov, 2018, IJES], [Tong, Shen, Shao, Chen, 2020, EFM]
     % gc = 15; % [Han, Li, Yu, Li, Zhang, 2022, JMPS]
     % Regularization parameter (width of the smeared crack)
     % l = 126.32e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
@@ -200,16 +218,23 @@ if setProblem
     % l = 17.76e-3; % [Zhang, Vignes, Sloan, Sheng, 2017, CM]
     % l = 15e-3; % [Hu et al., 2023, TAFM]
     % l = 14.577e-3; % [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME]
+    % l = 12.5e-3; % [Zhang, Huang, Hu, Xu, 2023, EFM]
     % l = 11e-3; % [Jodlbauer, Langer, Wick, 2020, CMAME]
-    % l = 10e-3; % [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2018, CMAME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Li, Wang, Cao, Liu, 2021, ACE], [Hu et al., 2023, TAFM], [Bharali, Larsson, Janicke, 2024, CM]
+    % l = 10e-3; % [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2018, CMAME], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Li, Wang, Cao, Liu, 2021, ACE], [Nguyen, Thanh, Vogel, Nguyen-Xuan, Abdel-Wahab, 2022, TAFM], [Hu et al., 2023, TAFM], [Bharali, Larsson, Janicke, 2024, CM], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
+    % l = 8e-3; % [Prakash, Behera, Rahaman, Roy, 2025, preprint]
+    % l = 7.5e-3; % [Nguyen, Thanh, Vogel, Nguyen-Xuan, Abdel-Wahab, 2022, TAFM]
+    % l = 6.75e-3; % [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME]
     % l = 6.72e-3; % [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM]
+    % l = 6.25e-3; % [Zhang, Huang, Hu, Xu, 2023, EFM]
     % l = 5.5e-3; % [Jodlbauer, Langer, Wick, 2020, CMAME]
-    l = 5e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (3D), [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Gerasimov, De Lorenzis, 2019, CMAME], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Wu, Huang, Nguyen, 2020, CMAME], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Hu et al., 2023, TAFM]
+    l = 5e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (3D), [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Gerasimov, De Lorenzis, 2019, CMAME], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Wu, Huang, Nguyen, 2020, CMAME], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Nguyen, Thanh, Vogel, Nguyen-Xuan, Abdel-Wahab, 2022, TAFM], [Hu et al., 2023, TAFM], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
     % l = 3.644e-3; % [Wick, 2017, SIAM JSC]
-    % l = 3.125e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS], [Lampron, Therriault, Levesque, 2021, CMAME]
+    % l = 3.36e-3; % [Zhang, Huang, Hu, Xu, 2023, EFM]
+    % l = 3.125e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS], [Lampron, Therriault, Levesque, 2021, CMAME], [Zhang, Huang, Hu, Xu, 2023, EFM]
     % l = 3e-3; % [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM]
     % l = 2.8e-3; % [Jodlbauer, Langer, Wick, 2020, CMAME]
-    % l = 2.5e-3; % [Kakouris, Triantafyllou, 2017, IJNME], [Mandal, Nguyen, Wu, 2019, EFM], [Egger et al., 2019, AS], [Geelen, 2020, PhD thesis], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM]
+    % l = 2.75e-3; % [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME]
+    % l = 2.5e-3; % [Kakouris, Triantafyllou, 2017, IJNME], [Mandal, Nguyen, Wu, 2019, EFM], [Egger et al., 2019, AS], [Geelen, 2020, PhD thesis], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM], [Nguyen, Thanh, Vogel, Nguyen-Xuan, Abdel-Wahab, 2022, TAFM], [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS]
     % l = 2e-3; % [Zhang, Vignes, Sloan, Sheng, 2017, CM], [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Muixi, Rodriguez-Ferran, Fernandez-Mendez, 2020, IJNME]
     % l = 1.792e-3; % [Si, Yu, Li, Natarajan, 2023, CMAME]
     % l = 1.5625e-3; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME]
@@ -284,8 +309,8 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    % option = 'DEFO'; % plane strain [Bernard, Moes, Chevaugeon, 2012, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Gerasimov, De Lorenzis, 2019, CMAME], [Geelen, 2020, PhD thesis], [Muixi, Rodriguez-Ferran, Fernandez-Mendez, 2020, IJNME], Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM], [Lampron, Therriault, Levesque, 2021, CMAME], [Li, Wang, Cao, Liu, 2021, ACE], [Ribeiro Nogueira, Rastiello, Giry, Gatuingt, Callari, 2023, AJCE]
-    option = 'CONT'; % plane stress [Winkler, 2001, PhD thesis], [Winkler, Hofstetter, Niederwanger, 2001, PIMEPartL], [Winkler, Hofstetter, Lehar, 2004, IJNAMG], [Dumstorff, Meschke, 2007, IJNME], [Meschke, Dumstorff, 2007, CMAME], [Zamani, Gracie, Eslami, 2012, IJNME], [Ozbolt, Sharma, 2012, EFM], [Cervera, Barbat, Chiumenti, 2017, CM], [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM], [Mandal, Nguyen, Wu, 2019, EFM], [Yang, He, Yi, Liu, 2019, IJMS], [Wu, Huang, Nguyen, 2020, CMAME], [Yang, He, Liu, Deng, Huang, 2020, IJMS], [Tong, Shen, Shao, Chen, 2020, EFM], [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM], [Li, Lu, Huang, Yang, 2022, OE], [Han, Li, Yu, Li, Zhang, 2022, JMPS], [Liu, Chen, Yuan, 2024, AAM]
+    % option = 'DEFO'; % plane strain [Bernard, Moes, Chevaugeon, 2012, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Kumar, Franckfort, Lopez-Pamies, 2018, JMPS], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Gerasimov, De Lorenzis, 2019, CMAME], [Geelen, 2020, PhD thesis], [Muixi, Rodriguez-Ferran, Fernandez-Mendez, 2020, IJNME], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM], [Lampron, Therriault, Levesque, 2021, CMAME], [Li, Wang, Cao, Liu, 2021, ACE], [De Maio, Cendon, Greco, Leonetti, Blasi, Planas, 2021, TAFM]
+    option = 'CONT'; % plane stress [Winkler, 2001, PhD thesis], [Winkler, Hofstetter, Niederwanger, 2001, PIMEPartL], [Winkler, Hofstetter, Lehar, 2004, IJNAMG], [Dumstorff, Meschke, 2007, IJNME], [Meschke, Dumstorff, 2007, CMAME], [Zamani, Gracie, Eslami, 2012, IJNME], [Ozbolt, Sharma, 2012, EFM], [Huang, Yang, Liu, Chen, 2016, CM], [Cervera, Barbat, Chiumenti, 2017, CM], [Kakouris, Triantafyllou, 2017, IJNME], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Labanda, Giusti, Luccioni, 2018, IJDM], [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM], [Mandal, Nguyen, Wu, 2019, EFM], [Yang, He, Yi, Liu, 2019, IJMS], [Wu, Huang, Nguyen, 2020, CMAME], [Yang, He, Liu, Deng, Huang, 2020, IJMS], [Tong, Shen, Shao, Chen, 2020, EFM], [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM], [Li, Lu, Huang, Yang, 2022, OE], [Han, Li, Yu, Li, Zhang, 2022, JMPS], [Nguyen, Thanh, Vogel, Nguyen-Xuan, Abdel-Wahab, 2022, TAFM], [Zhang, Huang, Hu, Xu, 2023, EFM], [Liu, Chen, Yuan, 2024, AAM], [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME], [Prakash, Behera, Rahaman, Roy, 2025, preprint]
     % Lame coefficients
     % lambda = 54739.10e9; mu = 10.95e9; % [Mang, Wick, Wollner, 2020, CM]
     % lambda = 5464.05e9; mu = 10.95e9; % [Mang, Wick, Wollner, 2020, CM]
@@ -306,15 +331,19 @@ if setProblem
     %         NU = lambda/(lambda+2*mu);
     % end
     % E = 18e9; % [Zreid, Kaliske, 2014, IJSS]
-    % E = 20e9; % corrected values [Unger, Eckardt, Konke, 2007, CMAME], [Zamani, Gracie, Eslami, 2012, IJNME], [Ghosh, Chaudhuri, 2013, CMS], [Mandal, Nguyen, Wu, 2019, EFM], [Yang, He, Yi, Liu, 2019, IJMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Wu, Huang, Nguyen, 2020, CMAME], [Yang, He, Liu, Deng, Huang, 2020, IJMS], [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM], [Li, Wang, Cao, Liu, 2021, ACE], [Bharali, Larsson, Janicke, 2024, CM]
-    % E = 25e9; % [Ferte, Massin, Moes, 2016, CMAME] (probably wrong, same as [Unger, Eckardt, Konke, 2007, CMAME])
+    % E = 18.5e9; % [Labanda, Giusti, Luccioni, 2018, IJDM]
+    % E = 20e9; % corrected values [Unger, Eckardt, Konke, 2007, CMAME], [Zamani, Gracie, Eslami, 2012, IJNME], [Ghosh, Chaudhuri, 2013, CMS], [Mandal, Nguyen, Wu, 2019, EFM], [Yang, He, Yi, Liu, 2019, IJMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Wu, Huang, Nguyen, 2020, CMAME], [Yang, He, Liu, Deng, Huang, 2020, IJMS], [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM], [Li, Wang, Cao, Liu, 2021, ACE], [Nguyen, Thanh, Vogel, Nguyen-Xuan, Abdel-Wahab, 2022, TAFM], [Rodrigues, Manzoli, Bitencourt, 2022, CMAME], [Zhang, Huang, Hu, Xu, 2023, EFM], [Bharali, Larsson, Janicke, 2024, CM], [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM], [Prakash, Behera, Rahaman, Roy, 2025, preprint]
+    % E = 25e9; % [Ferte, Massin, Moes, 2016, CMAME] (probably wrong, same as [Unger, Eckardt, Konke, 2007, CMAME]), [Huang, Yang, Liu, Chen, 2016, CM]
     % E = 25.8e9; % [Le, Nguyen, Bui, Sheikh, Kotousov, 2018, IJES], [Liu, Chen, Yuan, 2024, AAM]
     % E = 25.84e9; % [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM]
     % E = 25.8423e9; % [Areias, Msekh, Rabczuk, 2016, EFM], [Muixi, Rodriguez-Ferran, Fernandez-Mendez, 2020, IJNME]
-    E = 25.85e9; % original values [Winkler, 2001, PhD thesis], [Winkler, Hofstetter, Niederwanger, 2001, PIMEPartL], [Winkler, Hofstetter, Lehar, 2004, IJNAMG], [Dumstorff, Meschke, 2007, IJNME], [Meschke, Dumstorff, 2007, CMAME], [Ozbolt, Sharma, 2012, EFM], [Zreid, Kaliske, 2014, IJSS], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Cervera, Barbat, Chiumenti, 2017, CM], [Zhang, Vignes, Sloan, Sheng, 2017, CM], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Gerasimov, De Lorenzis, 2019, CMAME], [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM], [Egger et al., 2019, AS], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Tong, Shen, Shao, Chen, 2020, EFM], [Lampron, Therriault, Levesque, 2021, CMAME], [Han, Li, Yu, Li, Zhang, 2022, JMPS], [Si, Yu, Li, Natarajan, 2023, CMAME], [Hu et al., 2023, TAFM], [Ribeiro Nogueira, Rastiello, Giry, Gatuingt, Callari, 2023, AJCE]
+    E = 25.85e9; % original values [Winkler, 2001, PhD thesis], [Winkler, Hofstetter, Niederwanger, 2001, PIMEPartL], [Winkler, Hofstetter, Lehar, 2004, IJNAMG], [Dumstorff, Meschke, 2007, IJNME], [Meschke, Dumstorff, 2007, CMAME], [Hofstetter, Meschke, 2011, Springer], [Ozbolt, Sharma, 2012, EFM], [Zreid, Kaliske, 2014, IJSS], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Cervera, Barbat, Chiumenti, 2017, CM], [Zhang, Vignes, Sloan, Sheng, 2017, CM], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Gerasimov, De Lorenzis, 2019, CMAME], [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM], [Egger et al., 2019, AS], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Tong, Shen, Shao, Chen, 2020, EFM],
+    % [Lampron, Therriault, Levesque, 2021, CMAME], [De Maio, Cendon, Greco, Leonetti, Blasi, Planas, 2021, TAFM], [Han, Li, Yu, Li, Zhang, 2022, JMPS], [Si, Yu, Li, Natarajan, 2023, CMAME], [Hu et al., 2023, TAFM], [Ribeiro Nogueira, Rastiello, Giry, Gatuingt, Callari, 2023, AJCE], [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS], [Tran, Nguyen-Xuan, Zhuang, 2024, FSCE]
     NU = 0.18; % [Winkler, 2001, PhD thesis], [Winkler, Hofstetter, Niederwanger, 2001, PIMEPartL], [Winkler, Hofstetter, Lehar, 2004, IJNAMG], [Unger, Eckardt, Konke, 2007, CMAME], [Dumstorff, Meschke, 2007, IJNME], [Meschke, Dumstorff, 2007, CMAME], [Zamani, Gracie, Eslami, 2012, IJNME], [Ozbolt, Sharma, 2012, EFM], [Zreid, Kaliske, 2014, IJSS], [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Areias, Msekh, Rabczuk, 2016, EFM], [Ferte, Massin, Moes, 2016, CMAME], [Cervera, Barbat, Chiumenti, 2017, CM], [Zhang, Vignes, Sloan, Sheng, 2017, CM], [Wu, 2017, JMPS], [Wu, 2018, CMAME], [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Le, Nguyen, Bui, Sheikh, Kotousov, 2018, IJES], [Gerasimov, De Lorenzis, 2019, CMAME], [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM],
-    % [Mandal, Nguyen, Wu, 2019, EFM], [Yang, He, Yi, Liu, 2019, IJMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Wu, Huang, Nguyen, 2020, CMAME], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Mang, Wick, Wollner, 2020, CM], [Yang, He, Liu, Deng, Huang, 2020, IJMS], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Muixi, Rodriguez-Ferran, Fernandez-Mendez, 2020, IJNME], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM], [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM], [Lampron, Therriault, Levesque, 2021, CMAME], [Li, Wang, Cao, Liu, 2021, ACE], [Si, Yu, Li, Natarajan, 2023, CMAME], [Hu et al., 2023, TAFM], [Ribeiro Nogueira, Rastiello, Giry, Gatuingt, Callari, 2023, AJCE], [Bharali, Larsson, Janicke, 2024, CM]
-    % NU = 0.2; % [Ghosh, Chaudhuri, 2013, CMS], [Egger et al., 2019, AS], [Han, Li, Yu, Li, Zhang, 2022, JMPS]
+    % [Mandal, Nguyen, Wu, 2019, EFM], [Yang, He, Yi, Liu, 2019, IJMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Wu, Huang, Nguyen, 2020, CMAME], [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Mang, Wick, Wollner, 2020, CM], [Yang, He, Liu, Deng, Huang, 2020, IJMS], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Muixi, Rodriguez-Ferran, Fernandez-Mendez, 2020, IJNME], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM], [Huang, Zhang, Li, Yang, Wu, Withers, 2021, EFM], [Lampron, Therriault, Levesque, 2021, CMAME], [Li, Wang, Cao, Liu, 2021, ACE], [De Maio, Cendon, Greco, Leonetti, Blasi, Planas, 2021, TAFM], [Nguyen, Thanh, Vogel, Nguyen-Xuan, Abdel-Wahab, 2022, TAFM], [Rodrigues, Manzoli, Bitencourt, 2022, CMAME],
+    % [Si, Yu, Li, Natarajan, 2023, CMAME], [Hu et al., 2023, TAFM], [Zhang, Huang, Hu, Xu, 2023, EFM], [Ribeiro Nogueira, Rastiello, Giry, Gatuingt, Callari, 2023, AJCE], [Bharali, Larsson, Janicke, 2024, CM], [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM], [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS], [Tran, Nguyen-Xuan, Zhuang, 2024, FSCE]
+    % NU = 0.2; % [Ghosh, Chaudhuri, 2013, CMS], [Huang, Yang, Liu, Chen, 2016, CM], [Egger et al., 2019, AS], [Han, Li, Yu, Li, Zhang, 2022, JMPS], [Prakash, Behera, Rahaman, Roy, 2025, preprint]
+    % NU = 0.22; % [Labanda, Giusti, Luccioni, 2018, IJDM]
     % NU = 0.3; % [Mang, Wick, Wollner, 2020, CM]
     % NU = 0.33; % [Liu, Chen, Yuan, 2024, AAM]
     % NU = 1/3; % [Tong, Shen, Shao, Chen, 2020, EFM], [Li, Lu, Huang, Yang, 2022, OE]
@@ -346,13 +375,15 @@ if setProblem
         BL = LIGNE([-a,-a],[0.0,-a]);
         % BRight = LIGNE([a-b,0.0],[a,0.0]);
         BRight = POINT([a-b,0.0]);
+        BBack = [];
     elseif Dim==3
         BL = PLAN([-a,-a,0.0],[0.0,-a,0.0],[-a,-a,e]);
         % BRight = QUADRANGLE([a-b,0.0,0.0],[a,0.0,0.0],[a,0.0,e],[a-b,0.0,e]);
         BRight = LIGNE([a-b,0.0,0.0],[a-b,0.0,e]);
+        BBack = PLAN([-a,-a,0.0],[-a,a,0.0],[a,a,0.0]);
     end
     
-    addbc = @(S,ud) addbcLshapedPanel(S,ud,BL,BRight);
+    addbc = @(S,ud) addbcLshapedPanel(S,ud,BL,BRight,BBack);
     findddlforce = @(S) findddl(S,'UY',BRight);
     
     S = final(S);
@@ -408,10 +439,22 @@ if setProblem
             % nt = 800;
             % t = linspace(dt,nt*dt,nt);
             
-            % [Muixi, Rodriguez-Ferran, Fernandez-Mendez, 2020, IJNME], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM], [Si, Yu, Li, Natarajan, 2023, CMAME]
+            % [De Maio, Cendon, Greco, Leonetti, Blasi, Planas, 2021, TAFM]
+            % du = 1e-3 mm during 700 time steps (up to u = 0.7 mm)
+            % dt = 1e-6;
+            % nt = 700;
+            % t = linspace(dt,nt*dt,nt);
+            
+            % [Muixi, Rodriguez-Ferran, Fernandez-Mendez, 2020, IJNME], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM], [Nguyen, Thanh, Vogel, Nguyen-Xuan, Abdel-Wahab, 2022, TAFM], [Si, Yu, Li, Natarajan, 2023, CMAME]
             % du = 1e-3 mm during 600 time steps (up to u = 0.6 mm)
             % dt = 1e-6;
             % nt = 600;
+            % t = linspace(dt,nt*dt,nt);
+            
+            % [Nguyen, Thanh, Vogel, Nguyen-Xuan, Abdel-Wahab, 2022, TAFM]
+            % du = 2e-3 mm during 400 time steps (up to u = 1 mm)
+            % dt = 2e-6;
+            % nt = 500;
             % t = linspace(dt,nt*dt,nt);
             
             % [Zhang, Vignes, Sloan, Sheng, 2017, CM], [Li, Wang, Cao, Liu, 2021, ACE]
@@ -424,6 +467,12 @@ if setProblem
             % du = 2e-3 mm during 300 time steps (up to u = 0.6 mm)
             % dt = 2e-6;
             % nt = 300;
+            % t = linspace(dt,nt*dt,nt);
+            
+            % [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS]
+            % du = 4e-3 mm during 200 time steps (up to u = 0.8 mm)
+            % dt = 4e-6;
+            % nt = 200;
             % t = linspace(dt,nt*dt,nt);
             
             % [Yang, He, Yi, Liu, 2019, IJMS]
@@ -543,10 +592,10 @@ if solveProblem
     end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
-    %         [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,sizemap,...
+    %         [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,sizemap,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_Lshaped_panel','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     %     otherwise
-    %         [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,sizemap,...
+    %         [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,sizemap,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_Lshaped_panel','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     % end
     
