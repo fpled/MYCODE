@@ -27,7 +27,7 @@ end
 if ~iscell(LbQ3)
     LbQ3 = {LbQ3};
 end
-if length(clLbQ3)==1
+if isscalar(clLbQ3)
     clLbQ3 = repmat(clLbQ3,1,length(LbQ3));
 end
 

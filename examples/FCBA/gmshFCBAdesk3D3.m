@@ -34,7 +34,7 @@ end
 if ~iscell(LbD)
     LbD = {LbD};
 end
-if length(clLbD)==1
+if isscalar(clLbD)
     clLbD = repmat(clLbD,1,length(LbD));
 end
 

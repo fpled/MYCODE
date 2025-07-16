@@ -169,7 +169,7 @@ if setProblem
     % cl = 0.0008*unit; % [Lee et al., 2024, CBM]
     if test
         clD = 0.5*unit;
-        cl = 0.025*unit;
+        cl = 0.05*unit;
     % else
     %     clD = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,clD);
     %     cl = min(min(min(randMat.lcorr),min(randPF.lcorr))/4,cl);

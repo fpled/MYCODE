@@ -161,7 +161,7 @@ if setProblem
     % cl = 0.003*unit; % [Mandal, Nguyen, Wu, 2019, EFM]
     % cl = 0.0008*unit; % [Lee et al., 2024, CBM]
     if test
-        cl = 0.025*unit;
+        cl = 0.05*unit;
     end
     switch lower(FEmesh)
         case 'unif' % uniform mesh

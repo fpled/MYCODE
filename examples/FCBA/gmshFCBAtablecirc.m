@@ -33,28 +33,28 @@ end
 if ~iscell(PbC)
     PbC = {PbC};
 end
-if length(clPbC)==1
+if isscalar(clPbC)
     clPbC = repmat(clPbC,1,length(PbC));
 end
 
 if ~iscell(PiCeQ)
     PiCeQ = {PiCeQ};
 end
-if length(clPiCeQ)==1
+if isscalar(clPiCeQ)
     clPiCeQ = repmat(clPiCeQ,1,length(PiCeQ));
 end
 
 if ~iscell(PiQeI)
     PiQeI = {PiQeI};
 end
-if length(clPiQeI)==1
+if isscalar(clPiQeI)
     clPiQeI = repmat(clPiQeI,1,length(PiQeI));
 end
 
 if ~iscell(PiI)
     PiI = {PiI};
 end
-if length(clPiI)==1
+if isscalar(clPiI)
     clPiI = repmat(clPiI,1,length(PiI));
 end
 

@@ -34,7 +34,7 @@ end
 if ~iscell(LbQ)
     LbQ = {LbQ};
 end
-if length(clLbQ)==1
+if isscalar(clLbQ)
     clLbQ = repmat(clLbQ,1,length(LbQ));
 end
 

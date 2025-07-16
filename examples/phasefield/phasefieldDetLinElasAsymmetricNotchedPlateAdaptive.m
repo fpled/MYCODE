@@ -151,7 +151,7 @@ if setProblem
     % cl = 0.0008*unit; % [Lee et al., 2024, CBM]
     if test
         clD = 0.5*unit;
-        cl = 0.025*unit;
+        cl = 0.05*unit;
     end
     clC = cl; % characteristic length for edge crack/notch
     clH = cl; % characteristic length for circular holes
