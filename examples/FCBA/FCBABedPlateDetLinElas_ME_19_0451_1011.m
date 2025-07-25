@@ -164,7 +164,7 @@ if solveProblem
     S_leg = cellfun(@(P,n) gmshBeam(P,cl,fullfile(pathname,['gmsh_leg_' num2str(n)])),P_leg,num2cell(1:length(P_leg)),'UniformOutput',false);
     S_leg = cellfun(@(S) concatgroupelem(S),S_leg,'UniformOutput',false);
     S_leg = union(S_leg{:});
-    S_leg = convertelem(S_leg,'BEAM','param',VECTEUR([1;0;0]));
+    S_leg = convertelem(S_leg,'BEAM','param',VECTOR([1;0;0]));
     
     % Plate meshes
     elemtype = 'DKT';

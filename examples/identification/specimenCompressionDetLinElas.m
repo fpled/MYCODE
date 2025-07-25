@@ -90,11 +90,11 @@ if setProblem
     
     %% Dirichlet boundary conditions
     if Dim==2
-        BU = LIGNE([0.0,L],[L,L]);
-        BL = LIGNE([0.0,0.0],[L,0.0]);
+        BU = LINE([0.0,L],[L,L]);
+        BL = LINE([0.0,0.0],[L,0.0]);
     elseif Dim==3
-        BU = PLAN([0.0,0.0,L],[L,0.0,L],[0.0,L,L]);
-        BL = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
+        BU = PLANE([0.0,0.0,L],[L,0.0,L],[0.0,L,L]);
+        BL = PLANE([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
     end
     
     S = final(S);

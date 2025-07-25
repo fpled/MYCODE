@@ -243,10 +243,10 @@ if setProblem
             C = POINT([-b,-h+a]); % crack tip
         case 'geometricnotch'
             C = CIRCLE(-b,-h+a-c/2,c/2); % circular notch
-            % C = LIGNE([-b-c/2,-h+a],[-b+c/2,-h+a]); % rectangular notch
+            % C = LINE([-b-c/2,-h+a],[-b+c/2,-h+a]); % rectangular notch
             % C = POINT([-b,-h+a]); % V notch
         case 'initialphasefield'
-            C = LIGNE([-b,-h],[-b,-h+a]); % crack line
+            C = LINE([-b,-h],[-b,-h+a]); % crack line
         otherwise
             error('Wrong model for initial crack');
     end
@@ -254,7 +254,7 @@ if setProblem
     BU = CIRCLE(0.0,h,R0);
     BL = CIRCLE(-ls,-h,R0);
     BR = CIRCLE(ls,-h,R0);
-    % LU = LIGNE([-L,h],[L,h]);
+    % LU = LINE([-L,h],[L,h]);
     
     % findddlboundary = @(S_phase) findddl(S_phase,'T',LU);
     findddlboundary = @(S_phase) [];

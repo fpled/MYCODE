@@ -28,8 +28,8 @@ c = cos(-theta);
 s = sin(-theta);
 R = [c -s;
     s c];
-n1 = VECTEUR(R(:,1));
-n2 = VECTEUR(R(:,2));
+n1 = VECTOR(R(:,1));
+n2 = VECTOR(R(:,2));
 syscoord = CARTESIAN2D(n1,n2); % reference material coordinate system
 Pmat = calc_Pmat(syscoord);
 norm(P-Pmat)

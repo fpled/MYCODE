@@ -51,10 +51,10 @@ if solveProblem
     P4 = POINT([2*L2,0.0]);
     
     % Lines
-    L_beam{1} = LIGNE(P1,P2);
-    L_beam{2} = LIGNE(P2,P_load);
-    L_beam{3} = LIGNE(P_load,P3);
-    L_beam{4} = LIGNE(P4,P3);
+    L_beam{1} = LINE(P1,P2);
+    L_beam{2} = LINE(P2,P_load);
+    L_beam{3} = LINE(P_load,P3);
+    L_beam{4} = LINE(P4,P3);
     
     % Beams meshes
     cl_beam = h/20;

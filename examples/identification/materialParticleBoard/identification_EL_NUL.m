@@ -102,7 +102,7 @@ for j=1:numSamples
         elemtype = 'TRI3';
         % option = 'DEFO'; % plane strain
         option = 'CONT'; % plane stress
-        S = MODEL('PLAN');
+        S = MODEL('PLANE');
         S = addnode(S,node);
         S = addelem(S,elemtype,elem,'option',option);
         

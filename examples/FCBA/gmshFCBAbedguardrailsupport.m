@@ -1,7 +1,7 @@
 function varargout = gmshFCBAbedguardrailsupport(Q,L,clQ,clL,filename,indim,varargin)
 % function varargout = gmshFCBAbedguardrailsupport(Q,L,clQ,clL,filename,indim,varargin)
 % Q : QUADRANGLE
-% L : LIGNE
+% L : LINE
 % clQ, clL : characteristic lengths
 % filename : file name (optional)
 % indim : space dimension (optional, getindim(Q) by default)
@@ -30,6 +30,6 @@ if nargin>=5 && ischar(filename)
     G = setfile(G,filename);
 end
 
-n=max(nargout,1);
+n = max(nargout,1);
 varargout = cell(1,n);
 [varargout{:}] = gmsh2femobject(indim,G,getdim(Q):-1:getdim(Q)-n+1,varargin{:});

@@ -42,7 +42,7 @@ elseif strcmp(structure,'plate_hole')
     G = createpoint(G,getcenter(C),cl,1);
     G = createpoints(G,PC(3:4),cl,2:3);
     G = createpoints(G,PD(2:4),cl,4:6);
-    G = createcircle(G,1,2:3,1);
+    G = createcirclearc(G,1,2:3,1);
     G = createlines(G,[[2 4];[4 5];[5 6];[6 3]],2:5);
     G = createcurveloop(G,[-1 2:5],1);
     G = createplanesurface(G,1,1);

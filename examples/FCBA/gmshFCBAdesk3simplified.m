@@ -2,7 +2,7 @@ function varargout = gmshFCBAdesk3simplified(Q,I,L1,L2,PbQ,PiQeI,PiI,clQ,clI,clL
 % function varargout = gmshFCBAdesk3simplified(Q,I,L1,L2,PbQ,PiQeI,PiI,clQ,clI,clL1,clL2,clPbQ,clPiQeI,clPiI,filename,indim,varargin)
 % Q : QUADRANGLE
 % I : DOMAIN or CIRCLE or ELLIPSE or QUADRANGLE
-% L1, L2 : LIGNE
+% L1, L2 : LINE
 % PbQ, PiQeI, PiI : POINT
 % clQ, clI, clL1, clL2, clPbQ, clPiQeI, clPiI : characteristic lengths
 % filename : file name (optional)
@@ -98,13 +98,12 @@ G = createpoints(G,PL1,clL1,numpoints(1:2));
 G = createpoints(G,PL2,clL2,numpoints(3:4));
 G = createlines(G,seg,numlines);
 G = embedcurvesinsurface(G,numlines,1);
-
 if ischarin('recombine',varargin)
     G = recombinesurface(G,1);
 end
 
 varargin = delonlycharin('recombine',varargin);
 
-n=max(nargout,1);
+n = max(nargout,1);
 varargout = cell(1,n);
 [varargout{:}] = gmsh2femobject(indim,G,getdim(Q):-1:getdim(Q)-n+1,varargin{:});

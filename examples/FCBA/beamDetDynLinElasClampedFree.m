@@ -41,7 +41,7 @@ if setProblem
     % Points
     P1 = POINT([0.0,0.0]);
     P2 = POINT([L,0.0]);
-    Line = LIGNE(P1,P2);
+    Line = LINE(P1,P2);
     
     elemtype = 'BEAM';
     nbelem = 100;

@@ -255,11 +255,11 @@ if setProblem
     
     %% Dirichlet boundary conditions
     if Dim==2
-        BLeft = LIGNE([-a,-a],[-a,a]);
+        BLeft = LINE([-a,-a],[-a,a]);
         BR = DOMAIN(2,[a-2*b,0.0],[a,a]);
         P = POINT([0.0,0.0]);
     elseif Dim==3
-        BLeft = PLAN([-a,-a,0.0],[-a,a,0.0],[-a,-a,e]);
+        BLeft = PLANE([-a,-a,0.0],[-a,a,0.0],[-a,-a,e]);
         BR = DOMAIN(3,[a-2*b,0.0,0.0],[a,a,e]);
         P = POINT([0.0,0.0,0.0]);
     end
@@ -356,8 +356,8 @@ if setProblem
     g = @(d) (1-d).^2;
     % Density
     RHO = 1;
-    % RHO = 
-    % RHO = 2400; % [Ozbolt, Sharma, 2012, EFM]
+    % RHO = 2200; % [Huang, Yang, Liu, Chen, 2016, CM]
+    % RHO = 2400; % [Ozbolt, Sharma, 2012, EFM], [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS]
     % RHO = 2500; % [Yang, He, Yi, Liu, 2019, IJMS], [Li, Lu, Huang, Yang, 2022, OE]
     % RHO = 66000; % [Hu et al., 2023, TAFM] (AT2 explicit)
     % RHO = 16500; % [Hu et al., 2023, TAFM] (PF-CZM)
@@ -372,15 +372,15 @@ if setProblem
     
     %% Dirichlet boundary conditions
     if Dim==2
-        BL = LIGNE([-a,-a],[0.0,-a]);
-        % BRight = LIGNE([a-b,0.0],[a,0.0]);
+        BL = LINE([-a,-a],[0.0,-a]);
+        % BRight = LINE([a-b,0.0],[a,0.0]);
         BRight = POINT([a-b,0.0]);
         BBack = [];
     elseif Dim==3
-        BL = PLAN([-a,-a,0.0],[0.0,-a,0.0],[-a,-a,e]);
+        BL = PLANE([-a,-a,0.0],[0.0,-a,0.0],[-a,-a,e]);
         % BRight = QUADRANGLE([a-b,0.0,0.0],[a,0.0,0.0],[a,0.0,e],[a-b,0.0,e]);
-        BRight = LIGNE([a-b,0.0,0.0],[a-b,0.0,e]);
-        BBack = PLAN([-a,-a,0.0],[-a,a,0.0],[a,a,0.0]);
+        BRight = LINE([a-b,0.0,0.0],[a-b,0.0,e]);
+        BBack = PLANE([-a,-a,0.0],[-a,a,0.0],[a,a,0.0]);
     end
     
     addbc = @(S,ud) addbcLshapedPanel(S,ud,BL,BRight,BBack);

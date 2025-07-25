@@ -22,7 +22,7 @@ saveParaview = false;
 test = true; % coarse mesh
 % test = false; % fine mesh
 
-Dim = 3; % space dimension Dim = 2, 3
+Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isot'; % 'Isot' or 'Anisot'. Material symmetry
 ang = 45; % clockwise material orientation angle around z-axis for anisotopic material [deg]
 PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'HeAmor', 'HeFreddi', 'Zhang'
@@ -212,11 +212,11 @@ if setProblem
     
     %% Dirichlet boundary conditions
     if Dim==2
-        BRight = LIGNE([L,0.0],[L,h]);
-        BLeft = LIGNE([0.0,0.0],[0.0,h]);
+        BRight = LINE([L,0.0],[L,h]);
+        BLeft = LINE([0.0,0.0],[0.0,h]);
     elseif Dim==3
-        BRight = PLAN([L,0.0,0.0],[L,h,0.0],[L,0.0,e]);
-        BLeft = PLAN([0.0,0.0,0.0],[0.0,h,0.0],[0.0,0.0,e]);
+        BRight = PLANE([L,0.0,0.0],[L,h,0.0],[L,0.0,e]);
+        BLeft = PLANE([0.0,0.0,0.0],[0.0,h,0.0],[0.0,0.0,e]);
     end
     
     findddlboundary = @(S_phase) union(findddl(S_phase,'T',BRight),findddl(S_phase,'T',BLeft));
@@ -303,11 +303,11 @@ if setProblem
     
     %% Dirichlet boundary conditions
     if Dim==2
-        BU = LIGNE([0.0,h],[L,h]);
-        BL = LIGNE([0.0,0.0],[L,0.0]);
+        BU = LINE([0.0,h],[L,h]);
+        BL = LINE([0.0,0.0],[L,0.0]);
     elseif Dim==3
-        BU = PLAN([0.0,h,0.0],[L,h,0.0],[0.0,h,e]);
-        BL = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
+        BU = PLANE([0.0,h,0.0],[L,h,0.0],[0.0,h,e]);
+        BL = PLANE([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
     end
     P0 = getvertices(D);
     P0 = POINT(P0{1});

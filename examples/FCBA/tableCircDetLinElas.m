@@ -53,7 +53,7 @@ if solveProblem
     
     % Beam
     l = 1; % [m]
-    L_beam = LIGNE(P_beam,P_beam+POINT([0.0,0.0,-l]));
+    L_beam = LINE(P_beam,P_beam+POINT([0.0,0.0,-l]));
     
     % Plate mesh
     cl_plate = r/10;

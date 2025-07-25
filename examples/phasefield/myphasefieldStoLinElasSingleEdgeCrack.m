@@ -234,7 +234,7 @@ if setProblem
     switch Dim
         case 2
             D = DOMAIN(2,[0.0,0.0],[L,L]);
-            C = LIGNE([0.0,L/2],[a,L/2]);
+            C = LINE([0.0,L/2],[a,L/2]);
         case 3
             D = DOMAIN(3,[0.0,0.0,0.0],[L,L,e]);
             C = QUADRANGLE([0.0,L/2,0.0],[a,L/2,0.0],[a,L/2,e],[0.0,L/2,e]);
@@ -267,10 +267,10 @@ if setProblem
     S_phaseInit = addcl(S_phaseInit,C,'T',1);
 
     % Displacement field
-    BU = LIGNE([0.0,L],[L,L]);
-    BL = LIGNE([0.0,0.0],[L,0.0]);
-    BRight = LIGNE([L,0.0],[L,L]);
-    BLeft = LIGNE([0.0,0.0],[0.0,L]);
+    BU = LINE([0.0,L],[L,L]);
+    BL = LINE([0.0,0.0],[L,0.0]);
+    BRight = LINE([L,0.0],[L,L]);
+    BLeft = LINE([0.0,0.0],[0.0,L]);
     BFront = [];
     BBack = [];
 

@@ -156,38 +156,38 @@ if solveProblem
     S_leg = cellfun(@(P,n) gmshBeam(P,cl,fullfile(pathname,['gmsh_leg_' num2str(n)])),P_leg,num2cell(1:length(P_leg)),'UniformOutput',false);
     % S_leg = cellfun(@(S) concatgroupelem(S),S_leg,'UniformOutput',false);
     S_leg = union(S_leg{:});
-    S_leg = convertelem(S_leg,elemtype,'param',VECTEUR([1;0;0]));
+    S_leg = convertelem(S_leg,elemtype,'param',VECTOR([1;0;0]));
     
     S_botrail = cellfun(@(P,n) gmshBeam(P,cl,fullfile(pathname,['gmsh_botrail_' num2str(n)])),P_botrail,num2cell(1:length(P_botrail)),'UniformOutput',false);
     S_botrail = union(S_botrail{:});
-    S_botrail = convertelem(S_botrail,elemtype,'param',VECTEUR([0;0;1]));
+    S_botrail = convertelem(S_botrail,elemtype,'param',VECTOR([0;0;1]));
     
     S_siderail = cellfun(@(P,n) gmshBeam(P,cl,fullfile(pathname,['gmsh_siderail_' num2str(n)])),P_siderail,num2cell(1:length(P_siderail)),'UniformOutput',false);
     % S_siderail = cellfun(@(S) concatgroupelem(S),S_siderail,'UniformOutput',false);
     S_siderail = union(S_siderail{:});
-    S_siderail = convertelem(S_siderail,elemtype,'param',VECTEUR([0;0;1]));
+    S_siderail = convertelem(S_siderail,elemtype,'param',VECTOR([0;0;1]));
     
     S_endrail = cellfun(@(P,n) gmshBeam(P,cl,fullfile(pathname,['gmsh_endrail_' num2str(n)])),P_endrail,num2cell(1:length(P_endrail)),'UniformOutput',false);
     S_endrail = union(S_endrail{:});
-    S_endrail = convertelem(S_endrail,elemtype,'param',VECTEUR([0;0;1]));
+    S_endrail = convertelem(S_endrail,elemtype,'param',VECTOR([0;0;1]));
     
     S_botguardrail = cellfun(@(P,n) gmshBeam(P,cl,fullfile(pathname,['gmsh_botguardrail_' num2str(n)])),P_botguardrail,num2cell(1:length(P_botguardrail)),'UniformOutput',false);
     S_topguardrail = cellfun(@(P,n) gmshBeam(P,cl,fullfile(pathname,['gmsh_topguardrail_' num2str(n)])),P_topguardrail,num2cell(1:length(P_topguardrail)),'UniformOutput',false);
     % S_topguardrail = cellfun(@(S) concatgroupelem(S),S_topguardrail,'UniformOutput',false);
     S_guardrail = union(S_botguardrail{:},S_topguardrail{:});
-    S_guardrail = convertelem(S_guardrail,elemtype,'param',VECTEUR([0;0;1]));
+    S_guardrail = convertelem(S_guardrail,elemtype,'param',VECTOR([0;0;1]));
     
     S_guardrailsupport = gmshBeam(P_guardrailsupport,cl,fullfile(pathname,'gmsh_guardrailsupport'));
     % S_guardrailsupport = concatgroupelem(S_guardrailsupport);
-    S_guardrailsupport = convertelem(S_guardrailsupport,elemtype,'param',VECTEUR([1;0;0]));
+    S_guardrailsupport = convertelem(S_guardrailsupport,elemtype,'param',VECTOR([1;0;0]));
     
     if slat
         S_slat = cellfun(@(P,n) gmshBeam(P,cl,fullfile(pathname,['gmsh_slat_' num2str(n)])),P_slat,num2cell(1:length(P_slat)),'UniformOutput',false);
         S_slat = union(S_slat{:});
-        S_slat = convertelem(S_slat,elemtype,'param',VECTEUR([1;0;0]));
+        S_slat = convertelem(S_slat,elemtype,'param',VECTOR([1;0;0]));
         S_longslat = cellfun(@(P,n) gmshBeam(P,cl,fullfile(pathname,['gmsh_longslat_' num2str(n)])),P_longslat,num2cell(1:length(P_longslat)),'UniformOutput',false);
         S_longslat = union(S_longslat{:});
-        S_longslat = convertelem(S_longslat,elemtype,'param',VECTEUR([0;1;0]));
+        S_longslat = convertelem(S_longslat,elemtype,'param',VECTOR([0;1;0]));
     end
     
     %% Materials

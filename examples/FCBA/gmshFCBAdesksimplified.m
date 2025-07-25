@@ -123,7 +123,7 @@ end
 
 varargin = delonlycharin('recombine',varargin);
 
-n=max(nargout,1);
+n = max(nargout,1);
 varargout = cell(1,n);
 dim = max([getdim(Q1),getdim(Q2),getdim(Q3),getdim(Q5a),getdim(Q5b),getdim(I)]);
 [varargout{:}] = gmsh2femobject(indim,G,dim:-1:dim-n+1,varargin{:});

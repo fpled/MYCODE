@@ -55,8 +55,8 @@ if solveProblem
     P_load = POINT([L2,L1]);
     
     % Lines
-    Line1 = LIGNE(P1,P2);
-    Line2 = LIGNE(P2,P_load);
+    Line1 = LINE(P1,P2);
+    Line2 = LINE(P2,P_load);
     
     % Beams meshes
     cl = h/20;

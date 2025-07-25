@@ -2,7 +2,7 @@ function varargout = gmshFCBAdesk(Q1,Q2,Q3,Q5a,Q5b,I,LbQ3,GCiQ3eI,CiI,clQ1,clQ2,
 % function varargout = gmshFCBAdesk(Q1,Q2,Q3,Q5a,Q5b,I,LbQ3,CiQ3eI,CiI,clQ1,clQ2,clQ3,clQ5a,clQ5b,clI,clLbQ3,clCiQ3eI,clCiI,filename,indim,varargin)
 % Q1, Q2, Q3, Q5a, Q5b : QUADRANGLE
 % I : DOMAIN or CIRCLE or ELLIPSE or QUADRANGLE
-% LbQ3 : LIGNE
+% LbQ3 : LINE
 % CiQ3eI, CiI : CIRCLE
 % clQ1, clQ2, clQ3, clQ5a, clQ5b, clI, clLbQ3, clCiQ3eI, clCiI : characteristic lengths
 % filename : file name (optional)
@@ -106,7 +106,6 @@ numpoints = numpoints(end)+(1:5);
 numlines = numlines(end)+(1:4);
 GCiQ3eI = gmshfile(GCiQ3eI,clCiQ3eI,numpoints(1),numpoints(2:end),numlines,numlineloop(4),6,varargin{:});
 G = G+GCiQ3eI;
-
 G = createplanesurface(G,numlineloop([1 3 4]),3);
 G = embedcurvesinsurface(G,[12 17],3);
 if ischarin('recombine',varargin)
@@ -115,7 +114,7 @@ end
 
 varargin = delonlycharin('recombine',varargin);
 
-n=max(nargout,1);
+n = max(nargout,1);
 varargout = cell(1,n);
 dim = max([getdim(Q1),getdim(Q2),getdim(Q3),getdim(Q5a),getdim(Q5b),getdim(I)]);
 [varargout{:}] = gmsh2femobject(indim,G,dim:-1:dim-n+1,varargin{:});

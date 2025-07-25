@@ -74,15 +74,15 @@ if solveProblem
     l = 710e-3+h/2;
     a = 800e-3-h_beam_top;
     b = 800e-3-b_beam_top;
-    L_beam{1} = LIGNE([-a/2,-b/2,0.0],[-a/2,-b/2,-l]);
-    L_beam{2} = LIGNE([a/2,-b/2,0.0],[a/2,-b/2,-l]);
-    L_beam{3} = LIGNE([a/2,b/2,0.0],[a/2,b/2,-l]);
-    L_beam{4} = LIGNE([-a/2,b/2,0.0],[-a/2,b/2,-l]);
+    L_beam{1} = LINE([-a/2,-b/2,0.0],[-a/2,-b/2,-l]);
+    L_beam{2} = LINE([a/2,-b/2,0.0],[a/2,-b/2,-l]);
+    L_beam{3} = LINE([a/2,b/2,0.0],[a/2,b/2,-l]);
+    L_beam{4} = LINE([-a/2,b/2,0.0],[-a/2,b/2,-l]);
     Q_belt = QUADRANGLE([-a/2,-b/2,0.0],[a/2,-b/2,0.0],[a/2,b/2,0.0],[-a/2,b/2,0.0]);
-    % L_belt{1} = LIGNE([-a/2,-b/2,0.0],[a/2,-b/2,0.0]);
-    % L_belt{2} = LIGNE([a/2,-b/2,0.0],[a/2,b/2,0.0]);
-    % L_belt{3} = LIGNE([a/2,b/2,0.0],[-a/2,b/2,0.0]);
-    % L_belt{4} = LIGNE([-a/2,b/2,0.0],[-a/2,-b/2,0.0]);
+    % L_belt{1} = LINE([-a/2,-b/2,0.0],[a/2,-b/2,0.0]);
+    % L_belt{2} = LINE([a/2,-b/2,0.0],[a/2,b/2,0.0]);
+    % L_belt{3} = LINE([a/2,b/2,0.0],[-a/2,b/2,0.0]);
+    % L_belt{4} = LINE([-a/2,b/2,0.0],[-a/2,-b/2,0.0]);
     L_belt = getedges(Q_belt);
     
     % Points

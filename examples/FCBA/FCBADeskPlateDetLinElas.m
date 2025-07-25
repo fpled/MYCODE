@@ -143,14 +143,14 @@ if solveProblem
                 fullfile(pathname,['gmsh_desk_' elemtype]),3,'recombine');
         end
     else
-        L_hori{1} = LIGNE(x_hori{1}+[0,-r_load,0],x_hori{1}+[0,r_load,0]);
-        L_hori{2} = LIGNE(x_hori{2}+[0,r_load,0],x_hori{2}+[0,-r_load,0]);
-        L_hori{3} = LIGNE(x_hori{3}+[r_load,0,0],x_hori{3}+[-r_load,0,0]);
-        L_hori{4} = LIGNE(x_hori{4}+[-r_load,0,0],x_hori{4}+[r_load,0,0]);
-        L_dura{1} = LIGNE(x_dura{1}+[0,-r_load,0],x_dura{1}+[0,r_load,0]);
-        L_dura{2} = LIGNE(x_dura{2}+[0,r_load,0],x_dura{2}+[0,-r_load,0]);
-        L_dura{3} = LIGNE(x_dura{3}+[-r_load,0,0],x_dura{3}+[r_load,0,0]);
-        L_dura{4} = LIGNE(x_dura{4}+[r_load,0,0],x_dura{4}+[-r_load,0,0]);
+        L_hori{1} = LINE(x_hori{1}+[0,-r_load,0],x_hori{1}+[0,r_load,0]);
+        L_hori{2} = LINE(x_hori{2}+[0,r_load,0],x_hori{2}+[0,-r_load,0]);
+        L_hori{3} = LINE(x_hori{3}+[r_load,0,0],x_hori{3}+[-r_load,0,0]);
+        L_hori{4} = LINE(x_hori{4}+[-r_load,0,0],x_hori{4}+[r_load,0,0]);
+        L_dura{1} = LINE(x_dura{1}+[0,-r_load,0],x_dura{1}+[0,r_load,0]);
+        L_dura{2} = LINE(x_dura{2}+[0,r_load,0],x_dura{2}+[0,-r_load,0]);
+        L_dura{3} = LINE(x_dura{3}+[-r_load,0,0],x_dura{3}+[r_load,0,0]);
+        L_dura{4} = LINE(x_dura{4}+[r_load,0,0],x_dura{4}+[-r_load,0,0]);
         LbQ3 = {L_hori{4},L_dura{3},L_dura{1},L_hori{1},...
                 L_dura{4},L_hori{3},L_hori{2},L_dura{2}};
         C_vert = CIRCLE(x_vert(1),x_vert(2),x_vert(3),r_load);

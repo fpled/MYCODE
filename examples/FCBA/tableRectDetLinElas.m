@@ -53,10 +53,10 @@ if solveProblem
     
     % Beams
     l = 1; % [m]
-    L_beam{1} = LIGNE([1/5*a,1/5*b,0.0],[1/5*a,1/5*b,-l]);
-    L_beam{2} = LIGNE([4/5*a,1/5*b,0.0],[4/5*a,1/5*b,-l]);
-    L_beam{3} = LIGNE([4/5*a,4/5*b,0.0],[4/5*a,4/5*b,-l]);
-    L_beam{4} = LIGNE([1/5*a,4/5*b,0.0],[1/5*a,4/5*b,-l]);
+    L_beam{1} = LINE([1/5*a,1/5*b,0.0],[1/5*a,1/5*b,-l]);
+    L_beam{2} = LINE([4/5*a,1/5*b,0.0],[4/5*a,1/5*b,-l]);
+    L_beam{3} = LINE([4/5*a,4/5*b,0.0],[4/5*a,4/5*b,-l]);
+    L_beam{4} = LINE([1/5*a,4/5*b,0.0],[1/5*a,4/5*b,-l]);
     
     % Points
     x_beam = cellfun(@(L) getvertex(L,1),L_beam,'UniformOutput',false);

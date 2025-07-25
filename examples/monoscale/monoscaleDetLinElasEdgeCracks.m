@@ -31,7 +31,7 @@ if setProblem
     D = DOMAIN(2,[0.0,-L/2],[w,L/2]);
     
     P = [a,0.0];
-    B = LIGNE([0.0,0.0],P);
+    B = LINE([0.0,0.0],P);
     
     option = 'DEFO'; % plane strain
     clD = 0.25;
@@ -55,8 +55,8 @@ if setProblem
     S = setmaterial(S,mat);
     
     %% Dirichlet boundary conditions
-    LU = LIGNE([0.0,L/2],[w,L/2]);
-    LL = LIGNE([0.0,-L/2],[w,-L/2]);
+    LU = LINE([0.0,L/2],[w,L/2]);
+    LL = LINE([0.0,-L/2],[w,-L/2]);
     
     S = final(S,'duplicate');
     switch lower(loading)

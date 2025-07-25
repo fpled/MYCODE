@@ -1,7 +1,7 @@
 function varargout = gmshFCBAbedsiderail(Q,L,clQ,clL,filename,indim,varargin)
 % function varargout = gmshFCBAbedsiderail(Q,L,clQ,clL,filename,indim,varargin)
 % Q : QUADRANGLE
-% L : cell of LIGNE
+% L : cell of LINE
 % clQ, clL : characteristic lengths
 % filename : file name (optional)
 % indim : space dimension (optional, getindim(Q) by default)
@@ -38,13 +38,12 @@ end
 G = createcontour(G,[1:3,numpoints(end),4],1:5,1);
 G = createplanesurface(G,1,1);
 G = embedcurvesinsurface(G,numlines,1);
-
 if ischarin('recombine',varargin)
     G = recombinesurface(G,1);
 end
 
 varargin = delonlycharin('recombine',varargin);
 
-n=max(nargout,1);
+n = max(nargout,1);
 varargout = cell(1,n);
 [varargout{:}] = gmsh2femobject(indim,G,getdim(Q):-1:getdim(Q)-n+1,varargin{:});

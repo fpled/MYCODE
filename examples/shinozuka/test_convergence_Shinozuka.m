@@ -51,7 +51,7 @@ if Dim==1
 elseif Dim==2
     e = 1;
     D = DOMAIN(2,[0.0,0.0],[L,L]);
-    C = LIGNE([0.0,b],[a,b]);
+    C = LINE([0.0,b],[a,b]);
     % elemtype = 'TRI3';
     elemtype = 'QUA4';
     % elemtype = 'TRI6';

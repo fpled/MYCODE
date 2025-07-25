@@ -120,6 +120,6 @@ if ischarin('recombine',varargin)
 end
 varargin = delonlycharin('recombine',varargin);
 
-n=max(nargout,1);
+n = max(nargout,1);
 varargout = cell(1,n);
 [varargout{:}] = gmsh2femobject(indim,G,getdim(C):-1:getdim(C)-n+1,varargin{:});

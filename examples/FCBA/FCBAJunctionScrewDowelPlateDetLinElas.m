@@ -110,7 +110,7 @@ if solveProblem
         p_plate = 0;
     end
     
-    L_load = LIGNE([L2,0,L1],[L2,b,L1]);
+    L_load = LINE([L2,0,L1],[L2,b,L1]);
     junction_type = 'S1';
     
     switch lower(junction_type)

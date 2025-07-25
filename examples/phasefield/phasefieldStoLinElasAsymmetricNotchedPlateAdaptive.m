@@ -231,10 +231,10 @@ if setProblem
             C = POINT([-b,-h+a]); % crack tip
         case 'geometricnotch'
             C = CIRCLE(-b,-h+a-c/2,c/2); % circular notch
-            % C = LIGNE([-b-c/2,-h+a],[-b+c/2,-h+a]); % rectangular notch
+            % C = LINE([-b-c/2,-h+a],[-b+c/2,-h+a]); % rectangular notch
             % C = POINT([-b,-h+a]); % V notch
         case 'initialphasefield'
-            C = LIGNE([-b,-h],[-b,-h+a]); % crack line
+            C = LINE([-b,-h],[-b,-h+a]); % crack line
         otherwise
             error('Wrong model for initial crack');
     end
@@ -245,7 +245,7 @@ if setProblem
     H1 = CIRCLE(-lh,h-ph-2*dh,r);
     H2 = CIRCLE(-lh,h-ph-dh,r);
     H3 = CIRCLE(-lh,h-ph,r);
-    % LU = LIGNE([-L,h],[L,h]);
+    % LU = LINE([-L,h],[L,h]);
     
     addbcdamage = @(S_phase) addbcdamageAsymmetricNotchedPlate(S_phase,C,BU,BL,BR,initialCrack);
     addbcdamageadapt = @(S_phase) addbcdamageAsymmetricNotchedPlateAdaptive(S_phase,C,H1,H2,H3);

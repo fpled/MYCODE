@@ -1,7 +1,7 @@
 function varargout = gmshFCBAdesk12(Q,La,Lb,clQ,clLa,clLb,filename,indim,varargin)
 % function varargout = gmshFCBAdesk12(Q,La,Lb,clQ,clLa,clLb,filename,indim,varargin)
 % Q : QUADRANGLE
-% La, Lb : LIGNE
+% La, Lb : LINE
 % clQ, clLa, clLb : characteristic lengths
 % filename : file name (optional)
 % indim : space dimension (optional, getindim(Q) by default)
@@ -35,13 +35,12 @@ G = createplanesurface(G,1,1);
 seg = [5 6;7 8];
 G = createlines(G,seg,6:7);
 G = embedcurvesinsurface(G,6:7,1);
-
 if ischarin('recombine',varargin)
     G = recombinesurface(G,1);
 end
 
 varargin = delonlycharin('recombine',varargin);
 
-n=max(nargout,1);
+n = max(nargout,1);
 varargout = cell(1,n);
 [varargout{:}] = gmsh2femobject(indim,G,getdim(Q):-1:getdim(Q)-n+1,varargin{:});

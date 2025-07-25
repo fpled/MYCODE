@@ -78,8 +78,8 @@ if setProblem
     pb.S = setmaterial(pb.S,mat);
     
     %% Dirichlet boundary conditions
-    L1 = LIGNE(getvertex(D,1),getvertex(D,4));
-    L2 = LIGNE(getvertex(D,2),getvertex(D,3));
+    L1 = LINE(getvertex(D,1),getvertex(D,4));
+    L2 = LINE(getvertex(D,2),getvertex(D,3));
     
     pb.S = final(pb.S);
     pb.S = addcl(pb.S,L1);

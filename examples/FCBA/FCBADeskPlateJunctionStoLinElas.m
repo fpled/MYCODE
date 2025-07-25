@@ -136,8 +136,8 @@ if solveProblem
     C_masse = CIRCLE(0.0,y3_12+b3/2,z3,r_masse);
     x_masse = double(getcenter(C_masse));
     %
-    L1_a = LIGNE([x5a_23,y5a,z5a_12],[x5a_23,y5a,z5a_34]);
-    L1_b = LIGNE([x5b_23,y5b,z5b_12],[x5b_23,y5b,z5b_34]);
+    L1_a = LINE([x5a_23,y5a,z5a_12],[x5a_23,y5a,z5a_34]);
+    L1_b = LINE([x5b_23,y5b,z5b_12],[x5b_23,y5b,z5b_34]);
     if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
         S1 = gmshFCBAdesk12(Q1,L1_a,L1_b,cl_12,cl_5,cl_5,...
             fullfile(pathname,['gmsh_desk_1_' elemtype]),3);
@@ -147,8 +147,8 @@ if solveProblem
     end
     S1 = convertelem(S1,elemtype);
     %
-    L2_a = LIGNE([x5a_14,y5a,z5a_12],[x5a_14,y5a,z5a_34]);
-    L2_b = LIGNE([x5b_14,y5b,z5b_12],[x5b_14,y5b,z5b_34]);
+    L2_a = LINE([x5a_14,y5a,z5a_12],[x5a_14,y5a,z5a_34]);
+    L2_b = LINE([x5b_14,y5b,z5b_12],[x5b_14,y5b,z5b_34]);
     if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
         S2 = gmshFCBAdesk12(Q2,L2_a,L2_b,cl_12,cl_5,cl_5,...
             fullfile(pathname,['gmsh_desk_2_' elemtype]),3);
@@ -158,8 +158,8 @@ if solveProblem
     end
     S2 = convertelem(S2,elemtype);
     %
-    L3_1 = LIGNE([x1,y1_23,z1_34],[x1,y1_14,z1_34]);
-    L3_2 = LIGNE([x2,y2_23,z2_34],[x2,y2_14,z2_34]);
+    L3_1 = LINE([x1,y1_23,z1_34],[x1,y1_14,z1_34]);
+    L3_2 = LINE([x2,y2_23,z2_34],[x2,y2_14,z2_34]);
     if pointwiseLoading
         PbQ3 = {x_hori{4},x_dura{3},x_dura{1},x_hori{1},...
                 x_dura{4},x_hori{3},x_hori{2},x_dura{2}};
@@ -173,14 +173,14 @@ if solveProblem
                 fullfile(pathname,['gmsh_desk_3_' elemtype]),3,'recombine');
         end
     else
-        L_hori{1} = LIGNE(x_hori{1}+[0,-r_load,0],x_hori{1}+[0,r_load,0]);
-        L_hori{2} = LIGNE(x_hori{2}+[0,r_load,0],x_hori{2}+[0,-r_load,0]);
-        L_hori{3} = LIGNE(x_hori{3}+[r_load,0,0],x_hori{3}+[-r_load,0,0]);
-        L_hori{4} = LIGNE(x_hori{4}+[-r_load,0,0],x_hori{4}+[r_load,0,0]);
-        L_dura{1} = LIGNE(x_dura{1}+[0,-r_load,0],x_dura{1}+[0,r_load,0]);
-        L_dura{2} = LIGNE(x_dura{2}+[0,r_load,0],x_dura{2}+[0,-r_load,0]);
-        L_dura{3} = LIGNE(x_dura{3}+[-r_load,0,0],x_dura{3}+[r_load,0,0]);
-        L_dura{4} = LIGNE(x_dura{4}+[r_load,0,0],x_dura{4}+[-r_load,0,0]);
+        L_hori{1} = LINE(x_hori{1}+[0,-r_load,0],x_hori{1}+[0,r_load,0]);
+        L_hori{2} = LINE(x_hori{2}+[0,r_load,0],x_hori{2}+[0,-r_load,0]);
+        L_hori{3} = LINE(x_hori{3}+[r_load,0,0],x_hori{3}+[-r_load,0,0]);
+        L_hori{4} = LINE(x_hori{4}+[-r_load,0,0],x_hori{4}+[r_load,0,0]);
+        L_dura{1} = LINE(x_dura{1}+[0,-r_load,0],x_dura{1}+[0,r_load,0]);
+        L_dura{2} = LINE(x_dura{2}+[0,r_load,0],x_dura{2}+[0,-r_load,0]);
+        L_dura{3} = LINE(x_dura{3}+[-r_load,0,0],x_dura{3}+[r_load,0,0]);
+        L_dura{4} = LINE(x_dura{4}+[r_load,0,0],x_dura{4}+[-r_load,0,0]);
         LbQ3 = {L_hori{4},L_dura{3},L_dura{1},L_hori{1},...
                 L_dura{4},L_hori{3},L_hori{2},L_dura{2}};
         C_vert = CIRCLE(x_vert(1),x_vert(2),x_vert(3),r_load);

@@ -125,7 +125,7 @@ if setProblem
     if Dim==2
         e = 1;
         D = DOMAIN(2,[0.0,0.0],[L,L]);
-        C = LIGNE([0.0,b],[a,b]);
+        C = LINE([0.0,b],[a,b]);
     elseif Dim==3
         e = 0.1e-3; % [Liu, Li, Msekh, Zuo, 2016, CMS]
         % e = 0.05e-3; % [Zhou, Rabczuk, Zhuang, 2018, AES]
@@ -277,9 +277,9 @@ if setProblem
     
     %% Dirichlet boundary conditions
     if Dim==2
-        BRight = LIGNE([L,0.0],[L,L]);
+        BRight = LINE([L,0.0],[L,L]);
     elseif Dim==3
-        BRight = PLAN([L,0.0,0.0],[L,L,0.0],[L,0.0,e]);
+        BRight = PLANE([L,0.0,0.0],[L,L,0.0],[L,0.0,e]);
     end
     
     findddlboundary = @(S_phase) findddl(S_phase,'T',BRight);
@@ -390,19 +390,19 @@ if setProblem
     
     %% Dirichlet boundary conditions
     if Dim==2
-        BU = LIGNE([0.0,L],[L,L]);
-        BL = LIGNE([0.0,0.0],[L,0.0]);
-        % BRight = LIGNE([L,0.0],[L,L]);
-        BLeft = LIGNE([0.0,0.0],[0.0,L]);
+        BU = LINE([0.0,L],[L,L]);
+        BL = LINE([0.0,0.0],[L,0.0]);
+        % BRight = LINE([L,0.0],[L,L]);
+        BLeft = LINE([0.0,0.0],[0.0,L]);
         BFront = [];
         BBack = [];
     elseif Dim==3
-        BU = PLAN([0.0,L,0.0],[L,L,0.0],[0.0,L,e]);
-        BL = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
-        % BRight = PLAN([L,0.0,0.0],[L,L,0.0],[L,0.0,e]);
-        BLeft = PLAN([0.0,0.0,0.0],[0.0,L,0.0],[0.0,0.0,e]);
-        BFront = PLAN([0.0,0.0,e],[L,0.0,e],[0.0,L,e]);
-        BBack = PLAN([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
+        BU = PLANE([0.0,L,0.0],[L,L,0.0],[0.0,L,e]);
+        BL = PLANE([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
+        % BRight = PLANE([L,0.0,0.0],[L,L,0.0],[L,0.0,e]);
+        BLeft = PLANE([0.0,0.0,0.0],[0.0,L,0.0],[0.0,0.0,e]);
+        BFront = PLANE([0.0,0.0,e],[L,0.0,e],[0.0,L,e]);
+        BBack = PLANE([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
     end
     
     addbc = @(S,ud) addbcSingleEdgeCrack(S,ud,BU,BL,BLeft,BRight,BFront,BBack,loading);

@@ -50,7 +50,7 @@ if solveProblem
     if Dim==2
         S = convertelem(S,elemtype);
     elseif Dim==3
-        S = convertelem(S,elemtype,'param',VECTEUR([0;1;0]));
+        S = convertelem(S,elemtype,'param',VECTOR([0;1;0]));
     end
     
     %% Materials
