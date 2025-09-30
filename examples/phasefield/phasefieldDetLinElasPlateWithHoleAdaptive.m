@@ -118,7 +118,8 @@ if setProblem
         r = 2.5e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
         % r = 3e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
         D = DOMAIN(3,[0.0,0.0,0.0],[L,h,e]);
-        % C = CYLINDER
+        C = CIRCLE(L/2,h/2,0.0,r);
+        C = CYLINDER(C,e); % CYLINDER(L/2,h/2,0.0,r,e);
     end
     
     % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
@@ -136,10 +137,19 @@ if setProblem
     clD = 0.24e-3; % characteristic length for domain
     clC = 0.06e-3; % characteristic length for circular hole
     if test
-        clD = 0.48e-3;
-        clC = 0.24e-3;
+        if Dim==2
+            clD = 0.48e-3;
+            clC = 0.24e-3;
+        elseif Dim==3
+            clD = 5e-3;
+            clC = 2e-3;
+        end
     end
-    S_phase = gmshDomainWithHole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole'));
+    if Dim==2
+        S_phase = gmshDomainWithHole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole'));
+    elseif Dim==3
+        S_phase = gmshDomainWithHole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole'),3,'extrude');
+    end
     
     sizemap = @(d) (clC-clD)*d+clD;
     % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
@@ -468,24 +478,34 @@ if displayModel
     % plotModel(S,'legend',false);
     % mysaveas(pathname,'mesh_init',formats,renderer);
     
-    plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+    if Dim==2
+        facealpha = 0.1;
+        facecolor = 'k';
+        facecolordef = 'b';
+    elseif Dim==3
+        facealpha = 1;
+        facecolor = 'w';
+        facecolordef = 'w';
+    end
+    
+    plotModel(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh_init',formats,renderer);
     
     % u = ut{rep(end)};
     u = ut{end};
     S_final = St{end};
     
-    plotModel(S_final,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+    plotModel(S_final,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh_final',formats,renderer);
     
     ampl = getsize(S_final)/max(abs(u))/20;
-    plotModelDeflection(S_final,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+    plotModelDeflection(S_final,u,'ampl',ampl,'Color','b','FaceColor',facecolordef,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
-    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-    plot(S_final+ampl*unfreevector(S_final,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
+    plot(S,'Color','k','FaceColor','k','FaceAlpha',facealpha);
+    plot(S_final+ampl*unfreevector(S_final,u),'Color','b','FaceColor',facecolordef,'FaceAlpha',facealpha);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
 end
 
