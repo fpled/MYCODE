@@ -55,7 +55,7 @@ saveParaview = false;
 test = true; % coarse mesh
 % test = false; % fine mesh
 
-Dim = 2; % space dimension Dim = 2, 3
+Dim = 3; % space dimension Dim = 2, 3
 setup = 1; % notch geometry setup = 1, 2, 3
 PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'HeAmor', 'HeFreddi', 'Zhang'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
@@ -145,7 +145,7 @@ if setProblem
                     clD = 1e-4;
                     clC = 5e-5;
                     if test
-                        clD = 5e-4;
+                        clD = 1e-3;
                         clC = 2.5e-4;
                     end
                 otherwise
@@ -211,8 +211,8 @@ if setProblem
             XMin = a; XMax = w-a;
             switch setup
                 case {1,2}
-                    YMin = h/2-abs(2*e); YMax = h/2+abs(2*e);
-                    Thickness = abs(2*e);
+                    YMin = h/2-abs(3*e); YMax = h/2+abs(3*e);
+                    Thickness = h/2-abs(3*e);
                 case 3
                     YMin = h/4; YMax = 3*h/4;
                     Thickness = h/4;

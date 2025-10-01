@@ -149,7 +149,8 @@ if setProblem
         C = CIRCLE(L/2,h/2,r);
     elseif Dim==3
         D = DOMAIN(3,[0.0,0.0,0.0],[L,h,e]);
-        % C = CYLINDER
+        C = CIRCLE(L/2,h/2,0.0,r);
+        C = CYLINDER(C,e); % CYLINDER(L/2,h/2,0.0,r,e);
     end
     
     switch lower(FEmesh)
@@ -189,11 +190,15 @@ if setProblem
         otherwise
             error('Wrong FE mesh')
     end
-    S_phase = gmshDomainWithHole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole_wood_Noel'),Dim,'Box',B);
-    % S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_unif.msh'),2);
-    % S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_unif_test.msh'),2);
-    % S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_optim.msh'),2);
-    % S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_optim_test.msh'),2);
+    if Dim==2
+        S_phase = gmshDomainWithHole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole_wood_Noel'),Dim,'Box',B);
+        % S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_unif.msh'),2);
+        % S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_unif_test.msh'),2);
+        % S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_optim.msh'),2);
+        % S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_plate_with_hole_wood_Noel_optim_test.msh'),2);
+    elseif Dim==3
+        S_phase = gmshDomainWithHole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole_wood_Noel'),Dim,'Box',B,'extrude');
+    end
     S = S_phase;
     
     %% Phase-field problem
@@ -440,18 +445,28 @@ if displayModel
     % plotModel(S,'legend',false);
     % mysaveas(pathname,'mesh',formats,renderer);
     
-    plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+    if Dim==2
+        facealpha = 0.1;
+        facecolor = 'k';
+        facecolordef = 'b';
+    elseif Dim==3
+        facealpha = 1;
+        facecolor = 'w';
+        facecolordef = 'w';
+    end
+
+    plotModel(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
     u = getmatrixatstep(ut,rep(end));
     ampl = getsize(S)/max(abs(u))/20;
-    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor',facecolordef,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
-    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-    plot(S+ampl*unfreevector(S,u),'Color','b','FaceColor','b','FaceAlpha',0.1);
+    plot(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha);
+    plot(S+ampl*unfreevector(S,u),'Color','b','FaceColor',facecolordef,'FaceAlpha',facealpha);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
 end
 
