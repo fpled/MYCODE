@@ -164,6 +164,7 @@ if setProblem
     % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
     % clC = 1e-6; % [Molnar, Gravouil, 2017, FEAD], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
     % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+    % clC = 5e-7; % [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
     if Dim==2
         clD = 2.5e-5;
         clC = 2.5e-6;
@@ -173,14 +174,16 @@ if setProblem
     end
     if test
         clD = 5e-5;
-        clC = 2e-5;
+        % clC = 2e-5;
+        clC = 1e-5;
     end
     switch lower(initialCrack)
         case 'geometriccrack'
             S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
         case 'geometricnotch'
             c = 1e-5; % crack width
-            S_phase = gmshDomainWithSingleEdgeNotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'));
+            clCtip = min(clC,c/2);
+            S_phase = gmshDomainWithSingleEdgeNotch(D,C,c,clD,clCtip,fullfile(pathname,'gmsh_domain_single_edge_crack'));
         case 'initialphasefield'
             S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate');
         otherwise
@@ -248,7 +251,7 @@ if setProblem
                 % C = POINT([a,L/2]); % V notch
             elseif Dim==3
                 C = CYLINDER(a-c/2,L/2,0,c/2,e); % circular notch
-                C = QUADRANGLE([a,L/2-c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[a,L/2-c/2,e]); % rectangular notch
+                % C = QUADRANGLE([a,L/2-c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[a,L/2-c/2,e]); % rectangular notch
                 % C = LINE([a,L/2,0.0],[a,L/2,e]); % V notch
             end
     end
@@ -798,6 +801,16 @@ if solveProblem
 end
 
 %% Display
+if Dim==2
+    facealpha = 0.1;
+    facecolor = 'k';
+    facecolordef = 'b';
+elseif Dim==3
+    facealpha = 1;
+    facecolor = 'w';
+    facecolordef = 'w';
+end
+
 if displayModel
     [t,rep] = gettevol(T);
     
@@ -819,16 +832,6 @@ if displayModel
     
     % plotModel(S,'legend',false);
     % mysaveas(pathname,'mesh_init',formats,renderer);
-    
-    if Dim==2
-        facealpha = 0.1;
-        facecolor = 'k';
-        facecolordef = 'b';
-    elseif Dim==3
-        facealpha = 1;
-        facecolor = 'w';
-        facecolordef = 'w';
-    end
     
     plotModel(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh_init',formats,renderer);
@@ -969,7 +972,7 @@ if displaySolution
             Hj = Ht{rep(j)};
         end
         
-        plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+        plotModel(Sj,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
         mysaveas(pathname,['mesh_t' num2str(rep(j))],formats,renderer);
         
         plotSolution(Sj_phase,dj);

@@ -532,6 +532,16 @@ if solveProblem
 end
 
 %% Display
+if Dim==2
+    facealpha = 0.1;
+    facecolor = 'k';
+    facecolordef = 'b';
+elseif Dim==3
+    facealpha = 1;
+    facecolor = 'w';
+    facecolordef = 'w';
+end
+
 if displayModel
     [t,rep] = gettevol(T);
     
@@ -549,16 +559,6 @@ if displayModel
     
     % plotModel(S,'legend',false);
     % mysaveas(pathname,'mesh',formats,renderer);
-    
-    if Dim==2
-        facealpha = 0.1;
-        facecolor = 'k';
-        facecolordef = 'b';
-    elseif Dim==3
-        facealpha = 1;
-        facecolor = 'w';
-        facecolordef = 'w';
-    end
     
     plotModel(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);

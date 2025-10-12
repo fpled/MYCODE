@@ -139,7 +139,7 @@ if setProblem
     % e = 50e-3; % thickness [Liu, Chen, Yuan, 2024, AAM]
     % e = 50e-3; % (3D with symmetry) [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS]
     
-    % clD = 22.4-3; % [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME]
+    % clD = 22.4e-3; % [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME]
     clD = 20e-3; % [Gerasimov, De Lorenzis, 2019, CMAME]
     % clD = 10e-3; % [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM]
     if Dim==2
@@ -185,13 +185,13 @@ if setProblem
     end
     if test
         if Dim==2
-            cl = 5e-3;
+            cl = 2.5e-3;
         elseif Dim==3
-            cl = 10e-3;
+            cl = 7.5e-3;
         end
     end
     clC = cl; % characteristic length for crack
-    S_phase = gmshLshapedPanel(a,b,e,clD,clC,fullfile(pathname,'gmsh_Lshaped_panel'));
+    S_phase = gmshLshapedPanel(a,b,e,clD,clC,fullfile(pathname,'gmsh_Lshaped_panel'),Dim);
     
     sizemap = @(d) (clC-clD)*d+clD;
     % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
@@ -257,15 +257,15 @@ if setProblem
     if Dim==2
         BLeft = LINE([-a,-a],[-a,a]);
         BR = DOMAIN(2,[a-2*b,0.0],[a,a]);
-        P = POINT([0.0,0.0]);
+        B0 = POINT([0.0,0.0]);
     elseif Dim==3
         BLeft = PLANE([-a,-a,0.0],[-a,a,0.0],[-a,-a,e]);
         BR = DOMAIN(3,[a-2*b,0.0,0.0],[a,a,e]);
-        P = POINT([0.0,0.0,0.0]);
+        B0 = LINE([0.0,0.0,0.0],[0.0,0.0,e]);
     end
     
     addbcdamage = @(S_phase) addcl(S_phase,BR,'T');
-    addbcdamageadapt = @(S_phase) addcl(S_phase,P,'T',1);
+    addbcdamageadapt = @(S_phase) addcl(S_phase,B0,'T',1);
     findddlboundary = @(S_phase) findddl(S_phase,'T',BLeft);
     
     S_phase = final(S_phase);
@@ -418,7 +418,7 @@ if setProblem
             % t = linspace(dt,nt*dt,nt);
             
             % [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Tong, Shen, Shao, Chen, 2020, EFM]
-            % du = 5e-4 mm during 2000 time steps (up to u = 1.0 mm)
+            % du = 5e-4 mm during 2000 time steps (up to u = 1 mm)
             % dt = 5e-7;
             % nt = 2000;
             % t = linspace(dt,nt*dt,nt);
@@ -592,10 +592,10 @@ if solveProblem
     end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
-    %         [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,sizemap,...
+    %         [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,B0,BR,BL,BRight,BLeft,BBack,sizemap,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_Lshaped_panel','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     %     otherwise
-    %         [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,sizemap,...
+    %         [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,B0,BR,BL,BRight,BLeft,BBack,sizemap,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_Lshaped_panel','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     % end
     
@@ -646,6 +646,16 @@ if solveProblem
 end
 
 %% Display
+if Dim==2
+    facealpha = 0.1;
+    facecolor = 'k';
+    facecolordef = 'b';
+elseif Dim==3
+    facealpha = 1;
+    facecolor = 'w';
+    facecolordef = 'w';
+end
+
 if displayModel
     [t,rep] = gettevol(T);
     
@@ -663,16 +673,6 @@ if displayModel
     
     % plotModel(S,'legend',false);
     % mysaveas(pathname,'mesh_init',formats,renderer);
-    
-    if Dim==2
-        facealpha = 0.1;
-        facecolor = 'k';
-        facecolordef = 'b';
-    elseif Dim==3
-        facealpha = 1;
-        facecolor = 'w';
-        facecolordef = 'w';
-    end
     
     plotModel(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh_init',formats,renderer);
@@ -826,7 +826,7 @@ if displaySolution
             Hj = Ht{rep(j)};
         end
         
-        plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+        plotModel(Sj,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
         mysaveas(pathname,['mesh_t' num2str(rep(j))],formats,renderer);
         
         plotSolution(Sj_phase,dj);

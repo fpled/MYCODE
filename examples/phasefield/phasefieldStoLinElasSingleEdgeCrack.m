@@ -24,6 +24,7 @@
 % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase-field model of He et al.)
 % [Hu, Guilleminot, Dolbow, 2020, CMAME] (anisotropic phase-field model of Hu et al.)
 % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME] (anisotropic phase-field model of Miehe et al.)
+% [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM] (PF-CZM)
 
 % clc
 clearvars
@@ -157,8 +158,9 @@ if setProblem
     % clC = 1.98e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
     % clC = 1e-6; % (tension test) [Miehe, Welschinger, Hofacker, 2010 IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
     % clC = 2e-6; % [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
-    % clC = 1e-6; % [Molnar, Gravouil, 2017, FEAD], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+    % clC = 1e-6; % [Molnar, Gravouil, 2017, FEAD], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
     % clC = 6e-7; % [Miehe, Welschinger, Hofacker, 2010 IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM]
+    % clC = 5e-7; % [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
     switch lower(FEmesh)
         case 'unif' % uniform mesh
             switch lower(symmetry)
@@ -170,7 +172,11 @@ if setProblem
                     error('Wrong material symmetry class');
             end
             if test
-                cl = 2e-5;
+                if Dim==2
+                    cl = 1e-5;
+                elseif Dim==3
+                    cl = 2e-5;
+                end
             end
             clD = cl;
             clC = cl;
@@ -185,7 +191,11 @@ if setProblem
             end
             if test
                 clD = 5e-5;
-                clC = 2e-5;
+                if Dim==2
+                    clC = 1e-5;
+                elseif Dim==3
+                    clC = 2e-5;
+                end
             end
             VIn = clC; VOut = clD;
             XMin = a; XMax = L;
@@ -221,6 +231,7 @@ if setProblem
             S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
         case 'geometricnotch'
             c = 1e-5; % crack width
+            clC = min(clC,c/2);
             S_phase = gmshDomainWithSingleEdgeNotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
         case 'initialphasefield'
             S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate','Box',B);
@@ -243,12 +254,12 @@ if setProblem
             % l = 2.2e-5; % (2D) [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD]
             % l = 1.8e-5; % (3D) [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD]
             % l = 1.6e-5; % (3D) [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD]
-            % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Hesch, Weinberg, 2014, IJNME], [Liu, Li, Msekh, Zuo, 2016, CMS], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Hu, Guilleminot, Dolbow, 2020, CMAME]
+            % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Hesch, Weinberg, 2014, IJNME], [Liu, Li, Msekh, Zuo, 2016, CMS], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Hu, Guilleminot, Dolbow, 2020, CMAME], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
             % l = 1.33e-5; % (tension test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
             % l = 1.25e-5; % [Zhou, Rabczuk, Zhuang, 2018, AES]
-            l = 1e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Gerasimov, De Lorenzis, 2016, CMAME], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, 2018, JMPS], [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
+            l = 1e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Gerasimov, De Lorenzis, 2016, CMAME], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, 2018, JMPS], [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
             % l = 8e-6; % (shear test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
-            % l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Hesch, Weinberg, 2014, IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+            % l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Hesch, Weinberg, 2014, IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
             % l = 5.5e-6; % (2D) [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD]
             % l = 5e-6; % [Molnar, Gravouil, 2017, FEAD], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
             % l = 4e-6; % [Ambati, Gerasimov, De Lorenzis, 2015, CM]
@@ -332,7 +343,7 @@ if setProblem
                             NU = lambda/(lambda+2*mu);
                     end
                     % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
-                    % E = 210e9; NU = 0.3; % [Gerasimov, De Lorenzis, 2016, CMAME], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, 2018, JMPS], [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD], [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME], [Kristensen, Martinez-Paneda, 2020, TAFM]
+                    % E = 210e9; NU = 0.3; % [Gerasimov, De Lorenzis, 2016, CMAME], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, 2018, JMPS], [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD], [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME], [Kristensen, Martinez-Paneda, 2020, TAFM], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
                     % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
                 elseif Dim==3
                     E = mu*(3*lambda+2*mu)/(lambda+mu);
@@ -807,6 +818,16 @@ if solveProblem
 end
 
 %% Display
+if Dim==2
+    facealpha = 0.1;
+    facecolor = 'k';
+    facecolordef = 'b';
+elseif Dim==3
+    facealpha = 1;
+    facecolor = 'w';
+    facecolordef = 'w';
+end
+
 if displayModel
     [t,rep] = gettevol(T);
     
@@ -828,16 +849,6 @@ if displayModel
     
     % plotModel(S,'legend',false);
     % mysaveas(pathname,'mesh',formats,renderer);
-    
-    if Dim==2
-        facealpha = 0.1;
-        facecolor = 'k';
-        facecolordef = 'b';
-    elseif Dim==3
-        facealpha = 1;
-        facecolor = 'w';
-        facecolordef = 'w';
-    end
     
     plotModel(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);

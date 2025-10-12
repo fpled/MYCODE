@@ -478,6 +478,16 @@ if solveProblem
 end
 
 %% Display
+if Dim==2
+    facealpha = 0.1;
+    facecolor = 'k';
+    facecolordef = 'b';
+elseif Dim==3
+    facealpha = 1;
+    facecolor = 'w';
+    facecolordef = 'w';
+end
+
 if displayModel
     [t,rep] = gettevol(T);
     
@@ -495,16 +505,6 @@ if displayModel
     
     % plotModel(S,'legend',false);
     % mysaveas(pathname,'mesh_init',formats,renderer);
-    
-    if Dim==2
-        facealpha = 0.1;
-        facecolor = 'k';
-        facecolordef = 'b';
-    elseif Dim==3
-        facealpha = 1;
-        facecolor = 'w';
-        facecolordef = 'w';
-    end
     
     plotModel(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh_init',formats,renderer);
@@ -631,7 +631,7 @@ if displaySolution
             Hj = Ht{rep(j)};
         end
         
-        plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+        plotModel(Sj,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
         mysaveas(pathname,['mesh_t' num2str(rep(j))],formats,renderer);
         
         plotSolution(Sj_phase,dj);

@@ -137,7 +137,7 @@ if setProblem
     b = 30e-3; % distance of applied load from the right edge
     e = 100e-3; % thickness
     % e = 50e-3; % thickness [Liu, Chen, Yuan, 2024, AAM]
-    % e = 50e-3; % (3D with symmetry) [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS]
+    % e = 50e-3; % 3D with symmetry) [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS]
     
     if Dim==2
         % cl = 29.1548e-3; % [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME]
@@ -182,9 +182,9 @@ if setProblem
     end
     if test
         if Dim==2
-            cl = 5e-3;
+            cl = 2.5e-3;
         elseif Dim==3
-            cl = 10e-3;
+            cl = 7.5e-3;
         end
     end
     switch lower(FEmesh)
@@ -192,7 +192,7 @@ if setProblem
             clD = cl; % characteristic length for domain
             B = [];
         case 'optim' % optimized mesh
-            % clD = 22.4-3; % [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME]
+            % clD = 22.4e-3; % [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME]
             clD = 20e-3; % [Gerasimov, De Lorenzis, 2019, CMAME]
             % clD = 10e-3; % [Muixi, Rodriguez-Ferran, Fernandez-Mendez, 2020, IJNME], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM]
             VIn = cl; VOut = clD;
@@ -443,7 +443,7 @@ if setProblem
             % t = linspace(dt,nt*dt,nt);
             
             % [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Tong, Shen, Shao, Chen, 2020, EFM]
-            % du = 5e-4 mm during 2000 time steps (up to u = 1.0 mm)
+            % du = 5e-4 mm during 2000 time steps (up to u = 1 mm)
             % dt = 5e-7;
             % nt = 2000;
             % t = linspace(dt,nt*dt,nt);
@@ -698,6 +698,16 @@ if solveProblem
 end
 
 %% Display
+if Dim==2
+    facealpha = 0.1;
+    facecolor = 'k';
+    facecolordef = 'b';
+elseif Dim==3
+    facealpha = 1;
+    facecolor = 'w';
+    facecolordef = 'w';
+end
+
 if displayModel
     [t,rep] = gettevol(T);
     
@@ -715,16 +725,6 @@ if displayModel
     
     % plotModel(S,'legend',false);
     % mysaveas(pathname,'mesh',formats,renderer);
-    
-    if Dim==2
-        facealpha = 0.1;
-        facecolor = 'k';
-        facecolordef = 'b';
-    elseif Dim==3
-        facealpha = 1;
-        facecolor = 'w';
-        facecolordef = 'w';
-    end
     
     plotModel(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);

@@ -89,66 +89,75 @@ mmgoptions = '-nomove -hausd 0.01 -hgrad 1.1 -v -1';
 %% Problem
 if setProblem
     %% Domains and meshes
+    % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    % L = 20e-3; % length
+    % h = 30e-3; % height
+    % r = 4e-3; % radius of the hole
+    
+    % 2D and 3D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    % L = 100e-3; % length
+    % h = 65e-3; % height
+    % e = 40e-3; % thickness [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    % % e = 20e-3; % thickness [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
+    % % r = 1.5e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
+    % % r = 2e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
+    % r = 2.5e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    % % r = 3e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
+    
+    % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
+    L = 15e-3; % length
+    h = 2*L; % height
+    r = 3e-3; % radius of the hole
+    
     if Dim==2
-        % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
-        L = 15e-3; % length
-        h = 2*L; % height
         e = 1; % thickness
-        r = 3e-3; % radius of the hole
-        % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-        % L = 20e-3; % length
-        % h = 30e-3; % height
-        % e = 1; % thickness
-        % r = 4e-3; % radius of the hole
-        % 3D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-        % L = 100e-3; % length
-        % h = 65e-3; % height
-        % e = 40e-3; % thickness
-        % r = 2.5e-3; % radius of the hole
         D = DOMAIN(2,[0.0,0.0],[L,h]);
         C = CIRCLE(L/2,h/2,r);
     elseif Dim==3
-        % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-        L = 100e-3; % length
-        h = 65e-3; % height
-        e = 40e-3; % thickness [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-        % e = 20e-3; % thickness [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
-        % r = 1.5e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
-        % r = 2e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
-        r = 2.5e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-        % r = 3e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
+        e = 1e-3; % thickness
         D = DOMAIN(3,[0.0,0.0,0.0],[L,h,e]);
         C = CIRCLE(L/2,h/2,0.0,r);
         C = CYLINDER(C,e); % CYLINDER(L/2,h/2,0.0,r,e);
     end
     
-    % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-    % clD = 0.06e-3; % characteristic length for domain
-    % clC = 0.06e-3; % characteristic length for circular hole
     % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
     % clD = 1e-3; % characteristic length for domain
     % clC = 0.01e-3; % characteristic length for circular hole
+    
     % 2D and 3D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
     % clD = 0.25e-3; % characteristic length for domain
     % clC = 0.05e-3; % characteristic length for circular hole
+    % if test
+    %     clD = 10e-3; % 2D and 3D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    %     clC = 1e-3; % 2D and 3D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    % end
+    
+    % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % clD = 0.06e-3; % characteristic length for domain
+    % clC = 0.06e-3; % characteristic length for circular hole
+    
     % 2D [Luo, Chen, Wang, Li, 2022, CM]
     % clD = 0.12e-3; % characteristic length for domain
     % clC = 0.024e-3; % characteristic length for circular hole
+    
+    % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     clD = 0.24e-3; % characteristic length for domain
     clC = 0.06e-3; % characteristic length for circular hole
     if test
         if Dim==2
             clD = 0.48e-3;
-            clC = 0.24e-3;
+            % clC = 0.24e-3;
+            clC = 0.12e-3;
         elseif Dim==3
-            clD = 5e-3;
-            clC = 2e-3;
+            clD = 0.96e-3;
+            % clC = 0.36e-3;
+            clC = 0.24e-3;
         end
     end
     if Dim==2
         S_phase = gmshDomainWithHole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole'));
     elseif Dim==3
-        S_phase = gmshDomainWithHole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole'),3,'extrude');
+        S_phase = gmshDomainWithHole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole'),Dim,'extrude');
     end
     
     sizemap = @(d) (clC-clD)*d+clD;
@@ -301,10 +310,11 @@ if setProblem
         BU = PLANE([0.0,h,0.0],[L,h,0.0],[0.0,h,e]);
         BL = PLANE([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
     end
-    P0 = getvertices(D);
-    P0 = POINT(P0{1});
+    PD = getvertices(D);
+    P1 = POINT(PD{1});
+    P2 = POINT(PD{2});
     
-    addbc = @(S,ud) addbcPlateWithHole(S,ud,BU,BL,P0);
+    addbc = @(S,ud) addbcPlateWithHole(S,ud,BU,BL,P1,P2);
     findddlforce = @(S) findddl(S,'UY',BU);
     
     S = final(S);
@@ -324,54 +334,45 @@ if setProblem
     % b = -b;
     
     %% Time scheme
-    if Dim==2
-        % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-        % % du = 5e-3 mm during 11 time steps (up to u = 0.055 mm)
-        % % du = 1.5e-3 mm during 37 time steps (up to u = 0.0555 mm)
-        % % du = 1e-3 mm during 55 time steps (up to u = 0.055 mm)
-        % % du = 3e-4 mm during 183 time steps (up to u = 0.0549 mm)
-        % du = 1e-4 mm during 550 time steps (up to u = 0.055 mm)
-        % % du = 5e-5 mm during 1100 time steps (up to u = 0.055 mm)
-        % % du = 3e-5 mm during 1833 time steps (up to u = 0.05499 mm)
-        % % du = 2e-5 mm during 2750 time steps (up to u = 0.055 mm)
-        % dt = 1e-7;
-        % nt = 550;
-        % t = linspace(dt,nt*dt,nt);
-        % T = TIMEMODEL(t);
-        
-        % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-        % du = 1e-3 mm during the first stage (until the phase-field reaches the threshold value)
-        % du = 1e-4 mm during the last stage (as soon as the phase-field exceeds the threshold value)
-        % dt0 = 1e-6;
-        % dt1 = 1e-7;
-        % tf = 25e-6;
-        % dthreshold = 0.9;
-        
-        % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-        % du = 8e-5 mm during the first stage (until the phase-field reaches the threshold value)
-        % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value)
-        dt0 = 8e-8;
-        dt1 = 2e-8;
-        if test
-            dt0 = 16e-8;
-            dt1 = 4e-8;
-        end
-        tf = 25e-6;
-        dthreshold = 0.6;
-    elseif Dim==3
-        % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-        % du = 1e-3 mm during the first stage (until the phase-field reaches the threshold value)
-        % du = 1e-4 mm during the last stage (as soon as the phase-field exceeds the threshold value)
-        dt0 = 1e-6;
-        dt1 = 1e-7;
-        if test
-            dt0 = 2e-6;
-            dt1 = 2e-7;
-        end
-        tf = 25e-6;
-        % dthreshold = 0.9;
-        dthreshold = 0.6;
+    % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    % % du = 5e-3 mm during 11 time steps (up to u = 0.055 mm)
+    % % du = 1.5e-3 mm during 37 time steps (up to u = 0.0555 mm)
+    % % du = 1e-3 mm during 55 time steps (up to u = 0.055 mm)
+    % % du = 2e-4 mm during 275 time steps (up to u = 0.055 mm)
+    % % du = 3e-4 mm during 183 time steps (up to u = 0.0549 mm)
+    % du = 1e-4 mm during 550 time steps (up to u = 0.055 mm)
+    % % du = 5e-5 mm during 1100 time steps (up to u = 0.055 mm)
+    % % du = 3e-5 mm during 1833 time steps (up to u = 0.05499 mm)
+    % % du = 2e-5 mm during 2750 time steps (up to u = 0.055 mm)
+    % dt = 1e-7;
+    % nt = 550;
+    % t = linspace(dt,nt*dt,nt);
+    % T = TIMEMODEL(t);
+    
+    % 2D and 3D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    % du = 1e-3 mm during the first stage (until the phase-field reaches the threshold value)
+    % du = 1e-4 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 0.2 mm)
+    % dt0 = 1e-6;
+    % dt1 = 1e-7;
+    % if test
+    %     dt0 = 2e-6;
+    %     dt1 = 2e-7;
+    % end
+    % tf = 2e-4;
+    % % dthreshold = 0.9;
+    % dthreshold = 0.6;
+    
+    % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % du = 8e-5 mm during the first stage (until the phase-field reaches the threshold value)
+    % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 25e-3 mm)
+    dt0 = 8e-8;
+    dt1 = 2e-8;
+    if test
+        dt0 = 16e-8;
+        dt1 = 4e-8;
     end
+    tf = 25e-6;
+    dthreshold = 0.6;
     T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
     
     %% Save variables
@@ -394,10 +395,10 @@ if solveProblem
     end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
-    %         [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,C,sizemap,...
+    %         [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,C,sizemap,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     %     otherwise
-    %         [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,C,sizemap,...
+    %         [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,C,sizemap,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     % end
     
@@ -456,6 +457,16 @@ if solveProblem
 end
 
 %% Display
+if Dim==2
+    facealpha = 0.1;
+    facecolor = 'k';
+    facecolordef = 'b';
+elseif Dim==3
+    facealpha = 1;
+    facecolor = 'w';
+    facecolordef = 'w';
+end
+
 if displayModel
     [t,rep] = gettevol(T);
     
@@ -478,16 +489,6 @@ if displayModel
     % plotModel(S,'legend',false);
     % mysaveas(pathname,'mesh_init',formats,renderer);
     
-    if Dim==2
-        facealpha = 0.1;
-        facecolor = 'k';
-        facecolordef = 'b';
-    elseif Dim==3
-        facealpha = 1;
-        facecolor = 'w';
-        facecolordef = 'w';
-    end
-    
     plotModel(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh_init',formats,renderer);
     
@@ -504,7 +505,7 @@ if displayModel
     
     figure('Name','Meshes')
     clf
-    plot(S,'Color','k','FaceColor','k','FaceAlpha',facealpha);
+    plot(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha);
     plot(S_final+ampl*unfreevector(S_final,u),'Color','b','FaceColor',facecolordef,'FaceAlpha',facealpha);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
 end
@@ -591,8 +592,15 @@ if displaySolution
     
     %% Display solutions at different instants
     ampl = 0;
-    % tSnapshots = [18.5 24.6]*1e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-    % tSnapshots = [17.56 19.00 22.00 25.00]*1e-6; % [Luo, Chen, Wang, Li, 2022, CM]
+    % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    % tSnapshots = [0.04 0.06 0.08 0.09]*1e-3;
+    
+    % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % tSnapshots = [18.5 24.6]*1e-6;
+    
+    % 2D [Luo, Chen, Wang, Li, 2022, CM]
+    % tSnapshots = [17.56 19.00 22.00 25.00]*1e-6;
+    
     tSnapshots = [18 18.5 19 20 21 22]*1e-6;
     rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     rep = [rep,length(T)];
@@ -608,7 +616,7 @@ if displaySolution
             Hj = Ht{rep(j)};
         end
         
-        plotModel(Sj,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+        plotModel(Sj,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
         mysaveas(pathname,['mesh_t' num2str(rep(j))],formats,renderer);
         
         plotSolution(Sj_phase,dj);

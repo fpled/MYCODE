@@ -305,10 +305,11 @@ if setProblem
         BU = PLANE([0.0,h,0.0],[L,h,0.0],[0.0,h,e]);
         BL = PLANE([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
     end
-    P0 = getvertices(D);
-    P0 = POINT(P0{1});
-    
-    addbc = @(S,ud) addbcPlateWithHole(S,ud,BU,BL,P0);
+    PD = getvertices(D);
+    P1 = POINT(PD{1});
+    P2 = POINT(PD{2});
+
+    addbc = @(S,ud) addbcPlateWithHole(S,ud,BU,BL,P1,P2);
     findddlforce = @(S) findddl(S,'UY',BU);
     
     S = final(S);
@@ -364,9 +365,9 @@ if solveProblem
     end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
-    %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
     %     otherwise
-    %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
     % end
     
     T = gettimemodel(dt);
@@ -423,6 +424,16 @@ if solveProblem
 end
 
 %% Display
+if Dim==2
+    facealpha = 0.1;
+    facecolor = 'k';
+    facecolordef = 'b';
+elseif Dim==3
+    facealpha = 1;
+    facecolor = 'w';
+    facecolordef = 'w';
+end
+
 if displayModel
     [t,rep] = gettevol(T);
     
@@ -445,16 +456,6 @@ if displayModel
     % plotModel(S,'legend',false);
     % mysaveas(pathname,'mesh',formats,renderer);
     
-    if Dim==2
-        facealpha = 0.1;
-        facecolor = 'k';
-        facecolordef = 'b';
-    elseif Dim==3
-        facealpha = 1;
-        facecolor = 'w';
-        facecolordef = 'w';
-    end
-
     plotModel(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
