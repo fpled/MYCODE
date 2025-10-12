@@ -1,5 +1,5 @@
-function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,sizemap,varargin)
-% function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,sizemap,varargin)
+function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,B0,BR,BL,BRight,BLeft,BBack,sizemap,varargin)
+% function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptive(S_phase,S,T,PFsolver,B0,BR,BL,BRight,BLeft,BBack,sizemap,varargin)
 % Solve deterministic phase-field problem with mpesh adaptation.
 
 display_ = getcharin('display',varargin,true);
@@ -301,8 +301,11 @@ for i=1:length(T)
     if i<length(T) && ~any(db > dbthreshold)
         % Mesh adaptation
         S_phase_old = S_phase;
+        S_phase_ref = addcl(S_phase_old,B0,'T',1);
+        d_ref = freevector(S_phase_ref,d);
+        d_ref = unfreevector(S_phase_ref,d_ref);
         % S_old = S;
-        cl = sizemap(d);
+        cl = sizemap(d_ref);
         S_phase = adaptmesh(S_phase_old,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
         S = S_phase;
         

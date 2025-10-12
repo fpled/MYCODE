@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasDoubleEdgeCrackThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
-% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasDoubleEdgeCrackThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasDoubleEdgeCrackThreshold(S_phase,S,T,PFsolver,BU,BL,P0,BRight,BLeft,setup,varargin)
+% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasDoubleEdgeCrackThreshold(S_phase,S,T,PFsolver,BU,BL,P0,BRight,BLeft,setup,varargin)
 % Solve deterministic phase-field problem.
 
 display_ = getcharin('display',varargin,true);
@@ -87,7 +87,9 @@ if display_
     fprintf('\n+------+---------+-----------+-----------+-----------+-----------+-----------+\n');
 end
 
-numddlb = findddl(S_phase,'T',BRight);
+numddlbr = findddl(S_phase,'T',BRight);
+numddlbl = findddl(S_phase,'T',BLeft);
+numddlb = union(numddlbr,numddlbl);
 db = d(numddlb,:);
 
 i = 0;
@@ -162,30 +164,7 @@ while ti < tf-eps
                 S = removebc(S);
                 ti = ti + dti;
                 ud = ti;
-                switch lower(loading)
-                    case 'tension'
-                        if Dim==2
-                            S = addcl(S,BU,{'UX','UY'},[0;ud]);
-                        elseif Dim==3
-                            S = addcl(S,BU,{'UX','UY','UZ'},[0;ud;0]);
-                        end
-                        S = addcl(S,BL,'UY');
-                    case 'shear'
-                        if Dim==2
-                            S = addcl(S,BU,{'UX','UY'},[ud;0]);
-                            S = addcl(S,BLeft,'UY');
-                            S = addcl(S,BRight,'UY');
-                        elseif Dim==3
-                            S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
-                            S = addcl(S,BLeft,{'UY','UZ'});
-                            S = addcl(S,BRight,{'UY','UZ'});
-                            S = addcl(S,BFront,{'UY','UZ'});
-                            S = addcl(S,BBack,{'UY','UZ'});
-                        end
-                        S = addcl(S,BL);
-                    otherwise
-                        error('Wrong loading case');
-                end
+                S = addbcDoubleEdgeCrack(S,ud,BU,BL,P0,setup);
             end
             
             [A,b] = calc_rigi(S,'nofree');
@@ -243,14 +222,7 @@ while ti < tf-eps
         end
         
         % Force
-        switch lower(loading)
-            case 'tension'
-                numddl = findddl(S,'UY',BU);
-            case 'shear'
-                numddl = findddl(S,'UX',BU);
-            otherwise
-                error('Wrong loading case');
-        end
+        numddl = findddl(S,'UY',BU);
         f = A(numddl,:)*u;
         f = sum(f);
         f = abs(f);

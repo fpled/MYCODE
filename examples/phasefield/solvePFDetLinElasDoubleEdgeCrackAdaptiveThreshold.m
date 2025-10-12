@@ -1,5 +1,5 @@
-function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasDoubleEdgeCrackAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,varargin)
-% function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasDoubleEdgeCrackAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,varargin)
+function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasDoubleEdgeCrackAdaptiveThreshold(S_phase,S,T,PFsolver,Ca,Cb,BU,BL,P0,BRight,BLeft,setup,initialCrack,sizemap,varargin)
+% function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasDoubleEdgeCrackAdaptiveThreshold(S_phase,S,T,PFsolver,Ca,Cb,BU,BL,P0,BRight,BLeft,setup,initialCrack,sizemap,varargin)
 % Solve deterministic phase-field problem with mesh adaptation.
 
 display_ = getcharin('display',varargin,true);
@@ -95,7 +95,9 @@ if display_
     fprintf('\n| %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',0,0,0,0,0,0,0,getnbnode(S),getnbelem(S));
 end
 
-numddlb = findddl(S_phase,'T',BRight);
+numddlbr = findddl(S_phase,'T',BRight);
+numddlbl = findddl(S_phase,'T',BLeft);
+numddlb = union(numddlbr,numddlbl);
 db = d(numddlb,:);
 
 i = 0;
@@ -180,30 +182,7 @@ while ti < tf-eps
                 S = removebc(S);
                 ti = ti + dti;
                 ud = ti;
-                switch lower(loading)
-                    case 'tension'
-                        if Dim==2
-                            S = addcl(S,BU,{'UX','UY'},[0;ud]);
-                        elseif Dim==3
-                            S = addcl(S,BU,{'UX','UY','UZ'},[0;ud;0]);
-                        end
-                        S = addcl(S,BL,'UY');
-                    case 'shear'
-                        if Dim==2
-                            S = addcl(S,BU,{'UX','UY'},[ud;0]);
-                            S = addcl(S,BLeft,'UY');
-                            S = addcl(S,BRight,'UY');
-                        elseif Dim==3
-                            S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
-                            S = addcl(S,BLeft,{'UY','UZ'});
-                            S = addcl(S,BRight,{'UY','UZ'});
-                            S = addcl(S,BFront,{'UY','UZ'});
-                            S = addcl(S,BBack,{'UY','UZ'});
-                        end
-                        S = addcl(S,BL);
-                    otherwise
-                        error('Wrong loading case');
-                end
+                S = addbcDoubleEdgeCrack(S,ud,BU,BL,P0,setup);
             end
             
             [A,b] = calc_rigi(S,'nofree');
@@ -261,14 +240,7 @@ while ti < tf-eps
         end
         
         % Force
-        switch lower(loading)
-            case 'tension'
-                numddl = findddl(S,'UY',BU);
-            case 'shear'
-                numddl = findddl(S,'UX',BU);
-            otherwise
-                error('Wrong loading case');
-        end
+        numddl = findddl(S,'UY',BU);
         f = A(numddl,:)*u;
         f = sum(f);
         f = abs(f);
@@ -317,7 +289,7 @@ while ti < tf-eps
     if ti < tf-eps && ~any(db > dbthreshold)
         % Mesh adaptation
         S_phase_old = S_phase;
-        S_phase_ref = addcl(S_phase_old,C,'T',1);
+        S_phase_ref = addbcdamageDoubleEdgeCrackAdaptive(S_phase_old,Ca,Cb);
         d_ref = freevector(S_phase_ref,d);
         d_ref = unfreevector(S_phase_ref,d_ref);
         % S_old = S;
@@ -328,37 +300,12 @@ while ti < tf-eps
         % Update phase field properties
         S_phase = setphasefieldproperties(S_phase,materials_phase);
         S_phase = final(S_phase);
-        if strcmpi(initialCrack,'initialphasefield')
-            S_phase = addcl(S_phase,C,'T',1);
-        end
+        S_phase = addbcdamageDoubleEdgeCrack(S_phase,Ca,Cb,initialCrack);
         
         % Update material properties
         S = setmaterialproperties(S,materials);
         S = final(S);
-        switch lower(loading)
-            case 'tension'
-                if Dim==2
-                    S = addcl(S,BU,{'UX','UY'},[0;ud]);
-                elseif Dim==3
-                    S = addcl(S,BU,{'UX','UY','UZ'},[0;ud;0]);
-                end
-                S = addcl(S,BL,'UY');
-            case 'shear'
-                if Dim==2
-                    S = addcl(S,BU,{'UX','UY'},[ud;0]);
-                    S = addcl(S,BLeft,'UY');
-                    S = addcl(S,BRight,'UY');
-                elseif Dim==3
-                    S = addcl(S,BU,{'UX','UY','UZ'},[ud;0;0]);
-                    S = addcl(S,BLeft,{'UY','UZ'});
-                    S = addcl(S,BRight,{'UY','UZ'});
-                    S = addcl(S,BFront,{'UY','UZ'});
-                    S = addcl(S,BBack,{'UY','UZ'});
-                end
-                S = addcl(S,BL);
-            otherwise
-                error('Wrong loading case');
-        end
+        S = addbcDoubleEdgeCrack(S,ud,BU,BL,P0,setup);
         
         % Update fields
         P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);

@@ -269,9 +269,7 @@ for i=1:length(T)
         % Update phase field properties
         S_phase = setphasefieldproperties(S_phase,materials_phase);
         S_phase = final(S_phase);
-        if strcmpi(initialCrack,'initialphasefield')
-            S_phase = addcl(S_phase,C,'T',1);
-        end
+        S_phase = addbcdamageSingleEdgeCrack(S_phase,C,initialCrack);
         
         % Update material properties
         S = setmaterialproperties(S,materials);

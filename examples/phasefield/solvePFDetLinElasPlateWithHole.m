@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHole(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,varargin)
-% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHole(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,varargin)
+function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHole(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,varargin)
+% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHole(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,varargin)
 % Solve deterministic phase-field problem.
 
 display_ = getcharin('display',varargin,true);
@@ -171,7 +171,7 @@ for i=1:length(T)
             if nbIter==1
                 S = removebc(S);
                 ud = t(i);
-                S = addbcPlatewithHole(S,ud,BU,BL,P0);
+                S = addbcPlateWithHole(S,ud,BU,BL,P1,P2);
             end
             
             [A,b] = calc_rigi(S,'nofree');

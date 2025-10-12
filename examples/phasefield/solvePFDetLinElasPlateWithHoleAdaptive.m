@@ -1,5 +1,5 @@
-function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleAdaptive(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,C,sizemap,varargin)
-% function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleAdaptive(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P0,C,sizemap,varargin)
+function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleAdaptive(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,C,sizemap,varargin)
+% function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleAdaptive(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,C,sizemap,varargin)
 % Solve deterministic phase-field problem with mesh adaptation.
 
 display_ = getcharin('display',varargin,true);
@@ -197,7 +197,7 @@ for i=1:length(T)
             if nbIter==1
                 S = removebc(S);
                 ud = t(i);
-                S = addbcPlatewithHole(S,ud,BU,BL,P0);
+                S = addbcPlateWithHole(S,ud,BU,BL,P1,P2);
             end
             
             [A,b] = calc_rigi(S,'nofree');
@@ -320,7 +320,7 @@ for i=1:length(T)
         % Update material properties
         S = setmaterialproperties(S,materials);
         S = final(S);
-        S = addbcPlatewithHole(S,ud,BU,BL,P0);
+        S = addbcPlateWithHole(S,ud,BU,BL,P1,P2);
         
         % Update fields
         P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);

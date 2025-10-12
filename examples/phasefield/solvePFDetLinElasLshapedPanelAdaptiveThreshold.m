@@ -1,5 +1,5 @@
-function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptiveThreshold(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,sizemap,varargin)
-% function [dt,ut,ft,TnSt_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptiveThhreshold(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,sizemap,varargin)
+function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptiveThreshold(S_phase,S,T,PFsolver,B0,BR,BL,BRight,BLeft,BBack,sizemap,varargin)
+% function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelAdaptiveThreshold(S_phase,S,T,PFsolver,B0,BR,BL,BRight,BLeft,BBack,sizemap,varargin)
 % Solve deterministic phase-field problem with mpesh adaptation.
 
 display_ = getcharin('display',varargin,true);
@@ -89,9 +89,9 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
 end
 
 if display_
-    fprintf('\n+-----------+---------+-----------+-----------+-----------+-----------+-----------+----------+----------+');
+    fprintf('\n+------+---------+-----------+-----------+-----------+-----------+-----------+----------+----------+');
     fprintf('\n| Iter | Nb iter |  u [mm]   |  f [kN]   |  max(d)   |  Ed [J]   |  Eu [J]   | Nb nodes | Nb elems |');
-    fprintf('\n+-----------+---------+-----------+-----------+-----------+-----------+-----------+----------+----------+\n');
+    fprintf('\n+------+---------+-----------+-----------+-----------+-----------+-----------+----------+----------+\n');
     fprintf('\n| %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',0,0,0,0,0,0,0,getnbnode(S),getnbelem(S));
 end
 
@@ -287,8 +287,11 @@ while ti < tf-eps
     if ti < tf-eps && ~any(db > dbthreshold)
         % Mesh adaptation
         S_phase_old = S_phase;
+        S_phase_ref = addcl(S_phase_old,B0,'T',1);
+        d_ref = freevector(S_phase_ref,d);
+        d_ref = unfreevector(S_phase_ref,d_ref);
         % S_old = S;
-        cl = sizemap(d);
+        cl = sizemap(d_ref);
         S_phase = adaptmesh(S_phase_old,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
         S = S_phase;
         
