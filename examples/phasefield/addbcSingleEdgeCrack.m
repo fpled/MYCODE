@@ -19,6 +19,7 @@ switch lower(loading)
             % S = addcl(S,BLeft,{'UX','UZ'});
             % S = addcl(S,BRight,{'UX','UZ'});
             % S = addcl(S,BL,'UZ');
+            
             % [Zhou, Rabczuk, Zhuang, 2018, AES]
             % S = addcl(S,BU,{'UX','UY','UZ'},[0;ud;0]);
             % S = addcl(S,BLeft,'UX');

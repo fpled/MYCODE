@@ -10,9 +10,12 @@ Dim = getdim(S);
 % elseif Dim==3
 %     S = addcl(S,BRight,{'UX','UY','UZ'},[0;ud;0]);
 % end
+
 S = addcl(S,BRight,'UY',ud);
 S = addcl(S,BL);
-% (3D with symmetry) [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS]
-% S = addcl(S,BBack,'UZ');
+% 3D with symmetry [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS]
+% if Dim==3
+%     S = addcl(S,BBack,'UZ');
+% end
 
 end
