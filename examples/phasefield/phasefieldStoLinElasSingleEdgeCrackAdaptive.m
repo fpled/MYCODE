@@ -186,7 +186,7 @@ if setProblem
             clCtip = min(clC,c/2);
             S_phase = gmshDomainWithSingleEdgeNotch(D,C,c,clD,clCtip,fullfile(pathname,'gmsh_domain_single_edge_crack'));
         case 'initialphasefield'
-            S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate');
+            S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate','refinecrack');
         otherwise
             error('Wrong model for initial crack');
     end
@@ -250,7 +250,7 @@ if setProblem
                 % C = LINE([a,L/2-c/2],[a,L/2+c/2]); % rectangular notch
                 % C = POINT([a,L/2]); % V notch
             elseif Dim==3
-                C = CYLINDER(a-c/2,L/2,0,c/2,e); % circular notch
+                C = CYLINDER(a-c/2,L/2,0.0,c/2,e); % circular notch
                 % C = QUADRANGLE([a,L/2-c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[a,L/2-c/2,e]); % rectangular notch
                 % C = LINE([a,L/2,0.0],[a,L/2,e]); % V notch
             end

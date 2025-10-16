@@ -227,7 +227,7 @@ if setProblem
     %         clC = min(clC,c/2);
     %         S_phase = gmshDomainWithSingleEdgeNotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
     %     case 'initialphasefield'
-    %         S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate','Box',B);
+    %         S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate','refinecrack','Box',B);
     %     otherwise
     %         error('Wrong model for initial crack');
     % end

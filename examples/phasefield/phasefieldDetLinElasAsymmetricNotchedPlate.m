@@ -179,7 +179,7 @@ if setProblem
             c = 0.05*unit; % crack width
             S_phase = gmshAsymmetricPlateWithSingleEdgeNotchThreeHoles(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'Box',B);
         case 'initialphasefield'
-            S_phase = gmshAsymmetricPlateWithSingleEdgeCrackThreeHoles(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'noduplicate','Box',B);
+            S_phase = gmshAsymmetricPlateWithSingleEdgeCrackThreeHoles(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'noduplicate','refinecrack','Box',B);
         otherwise
             error('Wrong model for initial crack');
     end
