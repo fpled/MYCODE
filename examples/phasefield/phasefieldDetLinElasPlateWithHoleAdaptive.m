@@ -82,7 +82,8 @@ formats = {'epsc'};
 renderer = 'OpenGL';
 
 gmshoptions = '-v 0';
-mmgoptions = '-nomove -hausd 0.01 -hgrad 1.1 -v -1';
+if Dim==2, hgrad = 1.1; elseif Dim==3, hgrad = 1.2; end
+mmgoptions = ['-nomove -hausd 0.01 -hgrad ' num2str(hgrad) ' -v -1'];
 % gmshoptions = '-v 5';
 % mmgoptions = '-nomove -hausd 0.01 -hgrad 1.3 -v 1';
 
