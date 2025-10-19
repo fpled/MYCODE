@@ -65,11 +65,7 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
-initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
-if setup==3
-    initialCrack = 'GeometricNotch';
-end
-FEmesh = 'Optim'; % 'Unif' or 'Optim'
+initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
 suffix = '';
 
@@ -79,7 +75,7 @@ filename = ['linElas' PFmodel PFsplit PFregularization PFsolver initialCrack...
 if maxIter>1
     filename = [filename 'Tol' num2str(tolConv) num2str(critConv)];
 end
-filename = [filename 'Mesh' FEmesh suffix];
+filename = [filename 'MeshAdapt' suffix];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefieldDet',foldername,filename);
@@ -96,6 +92,20 @@ linewidth = 1;
 interpreter = 'latex';
 formats = {'epsc'};
 renderer = 'OpenGL';
+
+gmshoptions = '-v 0';
+switch setup
+    case 1
+        hausd = 0.00004;
+    case 2
+        hausd = 0.00000075;
+    case 3
+        hausd = 0.01;
+end
+if Dim==2, hgrad = 1.1; elseif Dim==3, hgrad = 1.2; end
+mmgoptions = ['-nomove -hausd ' num2str(hausd) ' -hgrad ' num2str(hgrad) ' -v -1'];
+% gmshoptions = '-v 5';
+% mmgoptions = '-nomove -hausd 0.01 -hgrad 1.3 -v 1';
 
 %% Problem
 if setProblem
@@ -137,61 +147,29 @@ if setProblem
         case 1
             % clC = 1e-4; % [Molnar, Gravouil, 2017, FEAD], [Chen, Vasiukov, Gelebart, Park, 2019, CMAME], [Si, Yu, Li, Natarajan, 2023, CMAME]
             % clC = 5e-5; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-            switch lower(FEmesh)
-                case 'unif' % uniform mesh
-                    cl = 1e-4;
-                    if test
-                        if Dim==2
-                            cl = 1.75e-4;
-                        elseif Dim==3
-                            clC = 4e-4;
-                        end
-                    end
-                    clD = cl;
-                    clC = cl;
-                case 'optim' % optimized mesh
-                    clD = 5e-4;
-                    clC = 1e-4;
-                    if test
-                        clD = 2e-3;
-                        if Dim==2
-                            clC = 1.75e-4;
-                        elseif Dim==3
-                            clC = 4e-4;
-                        end
-                    end
-                otherwise
-                    error('Wrong FE mesh')
+            clD = 5e-4;
+            clC = 1e-4;
+            if test
+                clD = 2e-3;
+                if Dim==2
+                    clC = 1.75e-4;
+                elseif Dim==3
+                    clC = 4e-4;
+                end
             end
         case 2
-            % cl = 3.3e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
-            % cl = 2.5e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
-            switch lower(FEmesh)
-                case 'unif' % uniform mesh
-                    cl = 2.5e-6;
-                    if test
-                        if Dim==2
-                            cl = 5e-6;
-                        elseif Dim==3
-                            cl = 1e-5;
-                        end
-                    end
-                    clD = cl;
-                    clC = cl;
-                case 'optim' % optimized mesh
-                    clD = 2.5e-5;
-                    clC = 2.5e-6;
-                    if test
-                        if Dim==2
-                            clD = 5e-5;
-                            clC = 5e-6;
-                        elseif Dim==3
-                            clD = 8e-5;
-                            clC = 1.75e-5;
-                        end
-                    end
-                otherwise
-                    error('Wrong FE mesh')
+            % clC = 3.3e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
+            % clC = 2.5e-6; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
+            clD = 2.5e-5;
+            clC = 2.5e-6;
+            if test
+                if Dim==2
+                    clD = 5e-5;
+                    clC = 5e-6;
+                elseif Dim==3
+                    clD = 8e-5;
+                    clC = 1.75e-5;
+                end
             end
         case 3
             % clD = 4.3e-3; % [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD]
@@ -202,80 +180,45 @@ if setProblem
             % clC = 0.6e-3; % [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM]
             % clC = 0.5e-3; % [Li, Lu, Huang, Yang, 2022, OE]
             % clC = 0.1e-3; % [Han, Li, Yu, Li, Zhang, 2022, JMPS]
-            switch lower(FEmesh)
-                case 'unif' % uniform mesh
-                    cl = 0.5e-3;
-                    if test
-                        cl = 0.75e-3;
-                    end
-                    clD = cl;
-                    clC = cl;
-                case 'optim' % optimized mesh
-                    clD = 2e-3;
-                    clC = 0.5e-3;
-                    if test
-                        if Dim==2
-                            clD = 3e-3;
-                            clC = 0.75e-3;
-                        elseif Dim==3
-                            clD = 6e-3;
-                            clC = 1.5e-3;
-                            % clC = 1.75e-3;
-                        end
-                    end
-                otherwise
-                    error('Wrong FE mesh')
-            end
-    end
-    switch lower(FEmesh)
-        case 'unif' % uniform mesh
-            B = [];
-        case 'optim' % optimized mesh
-            VIn = clC; VOut = clD;
-            % XMin = a; XMax = w-a;
-            XMin = 0; XMax = w;
-            switch setup
-                case {1,2}
-                    YMin = h/2-abs(3*e); YMax = h/2+abs(3*e);
-                    Thickness = h/2-abs(3*e);
-                case 3
-                    % YMin = h/2-3*h/16; YMax = h/2+3*h/16;
-                    % Thickness = h/2-3*h/16;
-                    YMin = h/2-h/8; YMax = h/2+h/8;
-                    Thickness = h/2-h/8;
-            end
-            % Thickness = 0;
-            if Dim==2
-                B = struct('VIn',VIn,'VOut',VOut,'XMin',XMin,'XMax',XMax,'YMin',YMin,'YMax',YMax,'Thickness',Thickness);
-            elseif Dim==3
-                ZMin = 0; ZMax = DIM3;
-                B = struct('VIn',VIn,'VOut',VOut,'XMin',XMin,'XMax',XMax,'YMin',YMin,'YMax',YMax,'ZMin',ZMin,'ZMax',ZMax,'Thickness',Thickness);
+            clD = 2e-3;
+            clC = 0.5e-3;
+            if test
+                if Dim==2
+                    clD = 3e-3;
+                    clC = 0.75e-3;
+                elseif Dim==3
+                    clD = 6e-3;
+                    clC = 1.5e-3;
+                    % clC = 1.75e-3;
+                end
             end
     end
     switch lower(initialCrack)
         case 'geometriccrack'
-            S_phase = gmshDomainWithDoubleEdgeCrack(D,Ca,Cb,clD,clC,fullfile(pathname,'gmsh_domain_double_edge_crack'),Dim,'Box',B);
+            S_phase = gmshDomainWithDoubleEdgeCrack(D,Ca,Cb,clD,clC,fullfile(pathname,'gmsh_domain_double_edge_crack'));
         case 'geometricnotch'
             switch setup
                 case 1
                     c = 4e-4; % crack width
-                    clC = min(clC,c/2);
-                    S_phase = gmshDomainWithDoubleEdgeNotch(D,Ca,Cb,c,clD,clC,fullfile(pathname,'gmsh_domain_double_edge_crack'),Dim,'Box',B);
+                    clCtip = min(clC,c/2);
+                    S_phase = gmshDomainWithDoubleEdgeNotch(D,Ca,Cb,c,clD,clCtip,fullfile(pathname,'gmsh_domain_double_edge_crack'));
                 case 2
                     % c = 6.6e-6; % crack width
                     c = 1e-5; % crack width
-                    clC = min(clC,c/2);
-                    S_phase = gmshDomainWithDoubleEdgeNotch(D,Ca,Cb,c,clD,clC,fullfile(pathname,'gmsh_domain_double_edge_crack'),Dim,'Box',B);
+                    clCtip = min(clC,c/2);
+                    S_phase = gmshDomainWithDoubleEdgeNotch(D,Ca,Cb,c,clD,clCtip,fullfile(pathname,'gmsh_domain_double_edge_crack'));
                 case 3
                     c = 2e-3; % notch width
-                    S_phase = gmshDomainWithDoubleEdgeNotch(D,Ca,Cb,c,clD,clC,fullfile(pathname,'gmsh_domain_double_edge_crack'),Dim,'Box',B,'rectangular');
+                    S_phase = gmshDomainWithDoubleEdgeNotch(D,Ca,Cb,c,clD,clC,fullfile(pathname,'gmsh_domain_double_edge_crack'),Dim,'rectangular');
             end
         case 'initialphasefield'
-            S_phase = gmshDomainWithDoubleEdgeCrack(D,Ca,Cb,clD,clC,fullfile(pathname,'gmsh_domain_double_edge_crack'),Dim,'noduplicate','refinecrack','Box',B);
+            S_phase = gmshDomainWithDoubleEdgeCrack(D,Ca,Cb,clD,clC,fullfile(pathname,'gmsh_domain_double_edge_crack'),Dim,'noduplicate','refinecrack');
         otherwise
             error('Wrong model for initial crack');
     end
-    S = S_phase;
+    
+    sizemap = @(d) (clC-clD)*d+clD;
+    % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
     
     %% Phase-field problem
     %% Material
@@ -321,14 +264,50 @@ if setProblem
     S_phase = setmaterial(S_phase,mat_phase);
     
     %% Dirichlet boundary conditions
+    switch lower(initialCrack)
+        case 'geometriccrack'
+            if Dim==2
+                Ca = POINT([  a,h/2+e]);   % crack tip
+                Cb = POINT([w-a,h/2-e]); % crack tip
+            elseif Dim==3
+                Ca = LINE([  a,h/2+e,0.0],[  a,h/2+e,DIM3]); % crack tip
+                Cb = LINE([w-a,h/2-e,0.0],[w-a,h/2-e,DIM3]); % crack tip
+            end
+        case 'geometricnotch'
+            if Dim==2
+                switch setup
+                    case {1,2}
+                        Ca = CIRCLE(  a-c/2,h/2+e,c/2); % circular notch
+                        Cb = CIRCLE(w-a+c/2,h/2-e,c/2); % circular notch
+                    case 3
+                        Ca = LINE([  a,h/2+e-c/2],[  a,h/2+e+c/2]); % rectangular notch
+                        Cb = LINE([w-a,h/2-e-c/2],[w-a,h/2-e+c/2]); % rectangular notch
+                end
+                % Ca = POINT([  a,h/2+e]);   % V notch
+                % Cb = POINT([w-a,h/2-e]); % V notch
+            elseif Dim==3
+                switch setup
+                    case {1,2}
+                        Ca = CYLINDER(  a-c/2,h/2+e,0.0,c/2,DIM3); % circular notch
+                        Cb = CYLINDER(w-a+c/2,h/2-e,0.0,c/2,DIM3); % circular notch
+                    case 3
+                        Ca = QUADRANGLE([  a,h/2+e-c/2,0.0],[  a,h/2+e+c/2,0.0],[  a,h/2+e+c/2,DIM3],[  a,h/2+e-c/2,DIM3]); % rectangular notch
+                        Cb = QUADRANGLE([w-a,h/2-e-c/2,0.0],[w-a,h/2-e+c/2,0.0],[w-a,h/2-e+c/2,DIM3],[w-a,h/2-e-c/2,DIM3]); % rectangular notch
+                end
+                % Ca = LINE([  a,h/2+e,0.0],[  a,h/2+e,DIM3]); % V notch
+                % Cb = LINE([w-a,h/2-e,0.0],[w-a,h/2-e,DIM3]); % V notch
+            end
+    end
     if Dim==2
-        BRight = LINE([  w,0.0],[  w,h]);
-        BLeft  = LINE([0.0,0.0],[0.0,h]);
+        BRight = LINE([w,0.0],[w,h]);
+        BLeft = LINE([0.0,0.0],[0.0,h]);
     elseif Dim==3
-        BRight = PLANE([  w,0.0,0.0],[  w,h,0.0],[  w,0.0,DIM3]);
-        BLeft  = PLANE([0.0,0.0,0.0],[0.0,h,0.0],[0.0,0.0,DIM3]);
+        BRight = PLANE([w,0.0,0.0],[w,h,0.0],[w,0.0,DIM3]);
+        BLeft = PLANE([0.0,0.0,0.0],[0.0,h,0.0],[0.0,0.0,DIM3]);
     end
     
+    addbcdamage = @(S_phase) addbcdamageDoubleEdgeCrack(S_phase,Ca,Cb,initialCrack);
+    addbcdamageadapt = @(S_phase) addbcdamageDoubleEdgeCrackAdaptive(S_phase,Ca,Cb);
     findddlboundary = @(S_phase) union(findddl(S_phase,'T',BRight),findddl(S_phase,'T',BLeft));
     
     if strcmpi(initialCrack,'geometriccrack')
@@ -337,7 +316,26 @@ if setProblem
         S_phase = final(S_phase);
     end
     
-    S_phase = addbcdamageDoubleEdgeCrack(S_phase,Ca,Cb,initialCrack);
+    S_phase = addbcdamageadapt(S_phase);
+    
+    % [A_phase,b_phase] = calc_rigi(S_phase);
+    % b_phase = -b_phase;
+    % d = A_phase\b_phase;
+    % d = unfreevector(S_phase,d);
+    d = calc_init_dirichlet(S_phase);
+    cl = sizemap(d);
+    S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_double_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    S = S_phase;
+    
+    S_phase = setmaterial(S_phase,mat_phase);
+    
+    if strcmpi(initialCrack,'geometriccrack')
+        S_phase = final(S_phase,'duplicate');
+    else
+        S_phase = final(S_phase);
+    end
+    
+    S_phase = addbcdamage(S_phase);
     
     %% Stiffness matrices and sollicitation vectors
     % a_phase = BILINFORM(1,1,K); % uniform values
@@ -557,35 +555,34 @@ if setProblem
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','Ca','Cb','addbc','findddlforce','findddlboundary');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','Ca','Cb','addbc','addbcdamage','addbcdamageadapt','findddlforce','findddlboundary');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','Ca','Cb','addbc','findddlforce','findddlboundary');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','Ca','Cb','addbc','addbcdamage','addbcdamageadapt','findddlforce','findddlboundary');
 end
 
 %% Solution
 if solveProblem
     tTotal = tic;
     
-    fun = @solvePFDetLinElas;
-    % fun = @solvePFDetLinElasThreshold;
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+            [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
+                'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_double_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
         otherwise
-            [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+            [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
+                'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_double_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     end
-    % fun = @solvePFDetLinElasDoubleEdgeCrack;
-    % % fun = @solvePFDetLinElasDoubleEdgeCrackThreshold;
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
-    %         [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,P0,BRight,BLeft,setup,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %         [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasDoubleEdgeCrackAdaptive(S_phase,S,T,PFsolver,Ca,Cb,BU,BL,P0,BRight,BLeft,setup,initialCrack,sizemap,...
+    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_double_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     %     otherwise
-    %         [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,P0,BRight,BLeft,setup,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %         [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasDoubleEdgeCrackAdaptive(S_phase,S,T,PFsolver,Ca,Cb,BU,BL,P0,BRight,BLeft,setup,initialCrack,sizemap,...
+    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_double_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
     % end
     
     t = gettevol(T);
-    dt_val = getvalue(dt);
-    dmaxt = max(dt_val);
+    dmaxt = cellfun(@(d) max(d),dt);
     idc = find(dmaxt>=min(0.75,max(dmaxt)),1);
     fc = ft(idc);
     udc = t(idc);
@@ -594,12 +591,12 @@ if solveProblem
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         save(fullfile(pathname,'solution.mat'),'Ht','-append');
     end
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         load(fullfile(pathname,'solution.mat'),'Ht');
     end
@@ -621,9 +618,9 @@ if solveProblem
     fprintf(fid,'PF split = %s\n',PFsplit);
     fprintf(fid,'PF regularization = %s\n',PFregularization);
     fprintf(fid,'PF solver = %s\n',PFsolver);
-    fprintf(fid,'nb elements = %g\n',getnbelem(S));
-    fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
-    fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+    fprintf(fid,'nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
+    fprintf(fid,'nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));
+    fprintf(fid,'nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));
     fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
     fprintf(fid,'elapsed time = %f s\n',time);
     fprintf(fid,'\n');
@@ -650,9 +647,9 @@ if displayModel
     [t,rep] = gettevol(T);
     
     %% Display domains, boundary conditions and meshes
-    plotDomain({D,Ca,Cb},'legend',false);
-    mysaveas(pathname,'domain',formats,renderer);
-    mymatlab2tikz(pathname,'domain.tex');
+    % plotDomain({D,Ca,Cb},'legend',false);
+    % mysaveas(pathname,'domain',formats,renderer);
+    % mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;
@@ -666,20 +663,26 @@ if displayModel
     mysaveas(pathname,'boundary_conditions_damage',formats,renderer);
     
     % plotModel(S,'legend',false);
-    % mysaveas(pathname,'mesh',formats,renderer);
+    % mysaveas(pathname,'mesh_init',formats,renderer);
     
     plotModel(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
-    mysaveas(pathname,'mesh',formats,renderer);
+    mysaveas(pathname,'mesh_init',formats,renderer);
     
-    u = getmatrixatstep(ut,rep(end));
-    ampl = getsize(S)/max(abs(u))/20;
-    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor',facecolordef,'FaceAlpha',facealpha,'legend',false);
+    % u = ut{rep(end)};
+    u = ut{end};
+    S_final = St{end};
+    
+    plotModel(S_final,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
+    mysaveas(pathname,'mesh_final',formats,renderer);
+    
+    ampl = getsize(S_final)/max(abs(u))/20;
+    plotModelDeflection(S_final,u,'ampl',ampl,'Color','b','FaceColor',facecolordef,'FaceAlpha',facealpha,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
     plot(S,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha);
-    plot(S+ampl*unfreevector(S,u),'Color','b','FaceColor',facecolordef,'FaceAlpha',facealpha);
+    plot(S_final+ampl*unfreevector(S_final,u),'Color','b','FaceColor',facecolordef,'FaceAlpha',facealpha);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
 end
 
@@ -797,46 +800,51 @@ if displaySolution
     % rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     
     for j=1:length(rep)
-        dj = getmatrixatstep(dt,rep(j));
-        uj = getmatrixatstep(ut,rep(j));
+        dj = dt{rep(j)};
+        uj = ut{rep(j)};
+        Sj = St{rep(j)};
+        Sj_phase = St_phase{rep(j)};
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
-            Hj = getmatrixatstep(Ht,rep(j));
+            Hj = Ht{rep(j)};
         end
         
-        plotSolution(S_phase,dj);
+        plotModel(Sj,'Color','k','FaceColor',facecolor,'FaceAlpha',facealpha,'legend',false);
+        mysaveas(pathname,['mesh_t' num2str(rep(j))],formats,renderer);
+        
+        plotSolution(Sj_phase,dj);
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
         
         for i=1:Dim
-            plotSolution(S,uj,'displ',i,'ampl',ampl);
+            plotSolution(Sj,uj,'displ',i,'ampl',ampl);
             mysaveas(pathname,['displacement_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         end
         
         % for i=1:(Dim*(Dim+1)/2)
-        %     plotSolution(S,uj,'epsilon',i,'ampl',ampl);
+        %     plotSolution(Sj,uj,'epsilon',i,'ampl',ampl);
         %     mysaveas(pathname,['epsilon_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         %
-        %     plotSolution(S,uj,'sigma',i,'ampl',ampl);
+        %     plotSolution(Sj,uj,'sigma',i,'ampl',ampl);
         %     mysaveas(pathname,['sigma_' num2str(i) '_t' num2str(rep(j))],formats,renderer);
         % end
         %
-        % plotSolution(S,uj,'epsilon','mises','ampl',ampl);
+        % plotSolution(Sj,uj,'epsilon','mises','ampl',ampl);
         % mysaveas(pathname,['epsilon_von_mises_t' num2str(rep(j))],formats,renderer);
         %
-        % plotSolution(S,uj,'sigma','mises','ampl',ampl);
+        % plotSolution(Sj,uj,'sigma','mises','ampl',ampl);
         % mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
         %
-        % plotSolution(S,uj,'energyint','','ampl',ampl);
+        % plotSolution(Sj,uj,'energyint','','ampl',ampl);
         % mysaveas(pathname,['internal_energy_density_t' num2str(rep(j))],formats,renderer);
         %
         % if strcmpi(PFsolver,'historyfieldelem')
         %     figure('Name','Solution H')
         %     clf
-        %     plot(Hj,S_phase);
+        %     plot(Hj,Sj_phase);
         %     colorbar
         %     set(gca,'FontSize',fontsize)
         %     mysaveas(pathname,['internal_energy_density_history_t' num2str(rep(j))],formats,renderer);
         % elseif strcmpi(PFsolver,'historyfieldnode')
-        %     plotSolution(S_phase,Hj,'ampl',ampl);
+        %     plotSolution(Sj_phase,Hj,'ampl',ampl);
         %     mysaveas(pathname,['internal_energy_density_history_t' num2str(rep(j))],formats,renderer);
         % end
     end
@@ -845,32 +853,29 @@ end
 %% Display evolution of solutions
 if makeMovie
     ampl = 0;
-    % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
+    % umax = cellfun(@(u) max(abs(u)),ut,'UniformOutput',false);
+    % ampl = getsize(S)/max([umax{:}])/20;
     
     options = {'plotiter',true,'plottime',false};
     framerate = 80;
     
-    evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
+    evolModel(T,St,'FrameRate',framerate,'filename','mesh','pathname',pathname,options{:});
+    
+    evolSolutionCell(T,St_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
     % for i=1:Dim
-    %     evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
+    %     evolSolutionCell(T,St,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
     % end
     %
     % for i=1:(Dim*(Dim+1)/2)
-    %     evolSolution(S,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
-    %     evolSolution(S,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
+    %     evolSolutionCell(T,St,ut,'epsilon',i,'ampl',ampl,'FrameRate',framerate,'filename',['epsilon_' num2str(i)],'pathname',pathname,options{:});
+    %     evolSolutionCell(T,St,ut,'sigma',i,'ampl',ampl,'FrameRate',framerate,'filename',['sigma_' num2str(i)],'pathname',pathname,options{:});
     % end
     %
-    % evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
-    % evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
-    % evolSolution(S,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density','pathname',pathname,options{:});
-    % if strcmpi(PFsolver,'historyfieldelem')
-    %     figure('Name','Solution H')
-    %     clf
-    %     T = setevolparam(T,'colorbar',true,'FontSize',fontsize,options{:});
-    %     frame = evol(T,Ht,S_phase,'rescale',true);
-    %     saveMovie(frame,'FrameRate',framerate,'filename','internal_energy_density_history','pathname',pathname);
-    % elseif strcmpi(PFsolver,'historyfieldnode')
-    %     evolSolution(S_phase,Ht,'ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density_history','pathname',pathname,options{:});
+    % evolSolutionCell(T,St,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
+    % evolSolutionCell(T,St,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
+    % evolSolutionCell(T,St,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density','pathname',pathname,options{:});
+    % if strcmpi(PFsolver,'historyfieldnode')
+    %     evolSolutionCell(T,St_phase,Ht,'ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density_history','pathname',pathname,options{:});
     % end
 end
 
@@ -878,23 +883,25 @@ end
 if saveParaview
     [t,rep] = gettevol(T);
     for i=1:length(T)
-        di = getmatrixatstep(dt,rep(i));
-        ui = getmatrixatstep(ut,rep(i));
+        di = dt{rep(i)};
+        ui = ut{rep(i)};
+        Si = St{rep(i)};
+        % Si_phase = St_phase{rep(i)};
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
-            Hi = getmatrixatstep(Ht,rep(i));
+            Hi = Ht{rep(i)};
         end
         
         switch lower(PFsolver)
             case 'historyfieldelem'
-                write_vtk_mesh(S,{di,ui},{Hi},...
+                write_vtk_mesh(Si,{di,ui},{Hi},...
                     {'damage','displacement'},{'internal energy density history'},...
                     pathname,'solution',1,i-1);
             case 'historyfieldnode'
-                write_vtk_mesh(S,{di,ui,Hi},[],...
+                write_vtk_mesh(Si,{di,ui,Hi},[],...
                     {'damage','displacement','internal energy density history'},[],...
                     pathname,'solution',1,i-1);
             otherwise
-                write_vtk_mesh(S,{di,ui},[],...
+                write_vtk_mesh(Si,{di,ui},[],...
                     {'damage','displacement'},[],...
                     pathname,'solution',1,i-1);
         end
