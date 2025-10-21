@@ -9,63 +9,199 @@ close all
 % myparallel('start');
 
 %% Experimental data from [Noel, Pled, Chevalier, Wilquin, EFM, 2025]
-filenameElas = '_elastic';
-filenameGc = '_gc';
+% filenameData   = '_data_instron';
+filenameTests  = '_tests';
+filenameAngles = '_angles';
+filenameElas   = '_elastic';
+filenameGc     = '_gc';
+
 pathnameExp = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'examples','phasefield','dataPlateWithHoleWoodNoel');
-filenameElas = fullfile(pathnameExp,filenameElas);
-filenameGc = fullfile(pathnameExp,filenameGc);
-optsElas = detectImportOptions(filenameElas);
-optsGc = detectImportOptions(filenameGc);
-optsElas.SelectedVariableNames = {'EL','ET','GL','vL'};
-optsGc.SelectedVariableNames = {'f_exp_kN_','f_kN_','Gc_mJ_mm2_','l0_mm_'};
-T_Elas = readtable(filenameElas,optsElas);
-T_Gc = readtable(filenameGc,optsGc);
-EL_data = T_Elas.EL; % [MPa]
-ET_data = T_Elas.ET; % [MPa]
-GL_data = T_Elas.GL; % [MPa]
+% filenameData    = fullfile(pathnameExp,filenameData);
+filenameTests   = fullfile(pathnameExp,filenameTests);
+filenameAngles = fullfile(pathnameExp,filenameAngles);
+filenameElas   = fullfile(pathnameExp,filenameElas);
+filenameGc     = fullfile(pathnameExp,filenameGc);
+
+% optsData  = detectImportOptions(filenameData);
+optsTests  = detectImportOptions(filenameTests);
+optsAngles = detectImportOptions(filenameAngles);
+optsElas   = detectImportOptions(filenameElas);
+optsGc     = detectImportOptions(filenameGc);
+
+% optsData.VariableNames           = {'Test','Temps','Deplacements','Forces'};
+optsTests.SelectedVariableNames  = {'Test','Tree_ringAngle_deg_','CrackForce_kN_','CrackImage','CrackThreshold','Forces_kN_','Displacements_mm_','ForcesRedim_kN_','DisplacementsRedim_mm_'};
+optsAngles.SelectedVariableNames = {'Test','Angles'};
+optsElas.SelectedVariableNames   = {'EL','ET','GL','vL'};
+optsGc.SelectedVariableNames     = {'threshold','inc0','inc1','f_exp_kN_','f_kN_','err','Gc_mJ_mm2_','l0_mm_'};
+
+% T_Data   = readtable(filenameData,optsData); T_Data.Test = fillmissing(T_Data.Test, 'previous'); T_Data = rmmissing(T_Data);
+T_Tests  = readtable(filenameTests,optsTests);
+T_Angles = readtable(filenameAngles,optsAngles);
+T_Elas   = readtable(filenameElas,optsElas);
+T_Gc     = readtable(filenameGc,optsGc);
+
+% T_DataGroup = groupcounts(T_Data,'Test');
+% [G,ID] = findgroups(T_Data.Test);
+% % 1x18 cell: each cell is a column vector
+% t_exp_data  = splitapply(@(x){x}, T_Data.Temps, G); % [s]
+% ut_exp_data_brut = splitapply(@(x){x}, T_Data.Deplacements, G); % [mm] (brut)
+% ft_exp_data_brut = splitapply(@(x){x}, T_Data.Forces, G); % [kN] (brut)
+% [fmax_exp_data_brut,idmax_exp_brut] = splitapply(@max, T_Data.Forces, G); % [kN] (brut)
+% udmax_exp_brut = arrayfun(@(i) ut_exp_data_brut{i}(idmax_exp_brut(i)),1:numel(ID)).'; % [mm] (brut)
+
+vars = {'Forces_kN_','Displacements_mm_','ForcesRedim_kN_','DisplacementsRedim_mm_'};
+for k = 1:numel(vars)
+    s = T_Tests.(vars{k});
+    s = erase(erase(s,'['),']');   % remove brackets
+    s = replace(s, newline, ' ');  % remove line breaks
+    T_Tests.(vars{k}) = cellfun(@(t) sscanf(t,'%f'), s, 'UniformOutput', false);
+end
+
+test_data           = T_Tests.Test; % test names
+angle_data          = T_Tests.Tree_ringAngle_deg_; % [deg]
+fc_exp_data         = T_Tests.CrackForce_kN_; % [kN]
+image_data          = T_Tests.CrackImage;
+crackthreshold_data = T_Tests.CrackThreshold;
+ft_exp_data_noredim = T_Tests.Forces_kN_; % [kN] (no redim) (same as ft_exp_data_brut for #2, #13 and #16: ft_exp_data_noredim{i}(1) = 0 for i=1:18, but ft_exp_data_brut{i}(1) = 0 only for i=[2,13,16])
+ut_exp_data_noredim = T_Tests.Displacements_mm_; % [mm] (no redim) (same as ut_exp_data_brut except for #14: ut_exp_data_noredim{14} = ut_exp_data_brut{14} - 1e-4, since ut_exp_data_brut{14}(1) = 1e-4 mm instead of 0 mm)
+ft_exp_data         = T_Tests.ForcesRedim_kN_; % [kN] (redim)
+ut_exp_data         = T_Tests.DisplacementsRedim_mm_; % [mm] (redim)
+
+numTests = numel(test_data); % number of tests
+
+% Redimensionning
+% f1 = 15; f2 = 25; % [kN]
+% idf1_exp = arrayfun(@(i) find(ft_exp_data_noredim{i}>=f1,1),1:numTests).'; % [kN] (no redim)
+% idf2_exp = arrayfun(@(i) find(ft_exp_data_noredim{i}>=f2,1),1:numTests).'; % [kN] (no redim)
+% f1_exp = arrayfun(@(i) ft_exp_data_noredim{i}(idf1_exp(i)),1:numTests).'; % [kN] (no redim)
+% f2_exp = arrayfun(@(i) ft_exp_data_noredim{i}(idf2_exp(i)),1:numTests).'; % [kN] (no redim)
+% u1_exp = arrayfun(@(i) ut_exp_data_noredim{i}(idf1_exp(i)),1:numTests).'; % [mm] (no redim)
+% u2_exp = arrayfun(@(i) ut_exp_data_noredim{i}(idf2_exp(i)),1:numTests).'; % [mm] (no redim)
+% % p_exp  = arrayfun(@(i) polyfit([u1_exp(i),u2_exp(i)],[f1_exp(i),f2_exp(i)],1),1:numTests,'UniformOutput',false).';
+% % p_exp  = arrayfun(@(u1,u2,f1,f2) polyfit([u1,u2],[f1,f2],1),u1_exp,u2_exp,f1_exp,f2_exp,'UniformOutput',false);
+% % a_exp  = cellfun(@(p) p(1),p_exp);
+% % b_exp  = cellfun(@(p) p(2),p_exp);
+% a_exp = (f2_exp-f1_exp)./(u2_exp-u1_exp);
+% b_exp = f1_exp - a_exp .* u1_exp;
+% ft_exp_data_redim  = ft_exp_data_noredim; % [kN] (redim)
+% ut_exp_data_redim  = ut_exp_data_noredim; % [mm] (redim)
+% for i=1:numTests
+%     ft_i = ft_exp_data_redim{i};
+%     ut_i = ut_exp_data_redim{i};
+%     idf1 = idf1_exp(i);
+%     ft_i(1:idf1) = a_exp(i) * ut_exp_data_noredim{i}(1:idf1) + b_exp(i);
+%     idsup0 = find(ft_i>=0,1);
+%     ft_i = ft_i(idsup0:end);
+%     ut_i = ut_i(idsup0:end);
+%     ft_exp_data_redim{i} = ft_i - ft_i(1);
+%     ut_exp_data_redim{i} = ut_i - ut_i(1);
+% end
+% diff_ft_exp_data = cellfun(@(ft_redim,ft) max(abs(ft_redim-ft)./ft),ft_exp_data_redim,ft_exp_data);
+% diff_ut_exp_data = cellfun(@(ut_redim,ut) max(abs(ut_redim-ut)./ut),ut_exp_data_redim,ut_exp_data);
+
+[fmax_exp_data_noredim,idmax_exp_noredim] = cellfun(@max,ft_exp_data_noredim); % [kN] (no redim)
+udmax_exp_data_noredim = arrayfun(@(i) ut_exp_data_noredim{i}(idmax_exp_noredim(i)),1:numTests).'; % [mm] (no redim)
+
+[fmax_exp_data,idmax_exp_data] = cellfun(@max,ft_exp_data); % [kN] (redim)
+udmax_exp_data = arrayfun(@(i) ut_exp_data{i}(idmax_exp_data(i)),1:numTests).'; % [mm] (redim)
+
+% idc_exp_data_noredim = arrayfun(@(i) find(ft_exp_data_noredim{i} == fc_exp_data(i),1),1:numTests,'UniformOutput',false).'; % [kN] (no redim)
+idc_exp_data_noredim = arrayfun(@(i) find(abs(ft_exp_data_noredim{i}-fc_exp_data(i))<=eps(fc_exp_data(i)),1),1:numTests).'; % [kN] (no redim)
+udc_exp_data_noredim = arrayfun(@(i) ut_exp_data_noredim{i}(idc_exp_data_noredim(i)),1:numTests).'; % [mm] (no redim)
+
+idc_exp_data = arrayfun(@(i) find(ft_exp_data{i}>=fc_exp_data(i),1),1:numTests).'; % [kN] (redim)
+% udc_exp_data = arrayfun(@(i) ut_exp_data{i}(idc_exp_data(i)),1:numTests).'; % [mm] (redim)
+udc_exp_data = arrayfun(@(i) interp1(ft_exp_data{i}([idc_exp_data(i)-1,idc_exp_data(i)]),ut_exp_data{i}([idc_exp_data(i)-1,idc_exp_data(i)]),fc_exp_data(i),'linear'),1:numTests).'; % [mm] (redim)
+
+sample_data = T_Angles.Test; % sample numbers from 0 to 17
+% angle_data  = T_Angles.Angles; % [deg] (same as T_Tests.Tree_ringAngle_deg_)
+
+EL_data  = T_Elas.EL; % [MPa]
+ET_data  = T_Elas.ET; % [MPa]
+GL_data  = T_Elas.GL; % [MPa]
 NUL_data = T_Elas.vL;
-f_exp_data = T_Gc.f_exp_kN_; % [kN]
-f_data = T_Gc.f_kN_; % [kN]
-gc_data = T_Gc.Gc_mJ_mm2_; % [mJ/mm^2]=[kN/m]
-l_data = T_Gc.l0_mm_; % [mm]
 
-samplesA = [0,5,7:8,12:16]+1; % samples from crossbeam A
-samplesB = [1:4,6,9:11,17]+1; % samples from crossbeam B
-samplesSet = union(samplesA,samplesB); % set of samples
-samplesRemoved = [2,8,13,17]+1; % removed samples
-samplesKept = setdiff(samplesSet,samplesRemoved); % kept samples
-samplesKeptA = setdiff(samplesA,samplesRemoved); % selected samples from crossbeam A
-samplesKeptB = setdiff(samplesB,samplesRemoved); % selected samples from crossbeam B
-numSample = 4+1; % sample number
+threshold_data = T_Gc.threshold;
+inc0_data      = T_Gc.inc0; % [mm]
+inc1_data      = T_Gc.inc1; % [mm]
+% fc_exp_data    = T_Gc.f_exp_kN_; % [kN] (same as T_Tests.CrackForce_kN_ within tolerance 1e-14)
+fc_data        = T_Gc.f_kN_; % [kN]
+% err_fc_data    = T_Gc.err; % relative error (abs(fc_data-fc_exp_data)./fc_exp_data)
+gc_data        = T_Gc.Gc_mJ_mm2_; % [mJ/mm^2]=[kN/m]
+l_data         = T_Gc.l0_mm_; % [mm]
 
-%% Statistics of elastic properties: mean value and biased standard deviation
-fprintf('\n');
-fprintf('EL:  mean = %g GPa, std = %g MPa, cv = %g %%\n',mean(EL_data(samplesKept))*1e-3,std(EL_data(samplesKept),1),std(EL_data(samplesKept),1)/mean(EL_data(samplesKept))*1e2);
-fprintf('ET:  mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(ET_data(samplesKept)),std(ET_data(samplesKept),1),std(ET_data(samplesKept),1)/mean(ET_data(samplesKept))*1e2);
-fprintf('GL:  mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(GL_data(samplesKept)),std(GL_data(samplesKept),1),std(GL_data(samplesKept),1)/mean(GL_data(samplesKept))*1e2);
-fprintf('NUL: mean = %g, std = %g, cv = %g %%\n',mean(NUL_data(samplesKept)),std(NUL_data(samplesKept),1),std(NUL_data(samplesKept),1)/mean(NUL_data(samplesKept))*1e2);
+samplesA = sample_data(abs(angle_data)<=37.5); % samplesA = [0,5,7:8,12:16]'; % samples from crossbeam A
+samplesB = sample_data(abs(angle_data)>37.5);  % samplesB = [1:4,6,9:11,17]'; % samples from crossbeam B
+samples  = sample_data; % samples = union(samplesA,samplesB); % samples = (0:17)'; % set of all samples
+samplesRemoved = [2,8,13,17]'; % set of removed samples
+samplesKept  = setdiff(samples,samplesRemoved); % samplesKept = [1,3:7,9:16]'; % set of kept samples
+samplesKeptA = setdiff(samplesA,samplesRemoved); % samplesKeptA = [0,5,7,12,14:16]'; % selected samples from crossbeam A
+samplesKeptB = setdiff(samplesB,samplesRemoved); % samplesKeptB = [1,3:4,6,9:11]'; % selected samples from crossbeam B
+numSamples = numel(samples); % number of samples/tests
+numSample = 4; % sample number
 
-fprintf('\n');
-fprintf('Group A\n');
-fprintf('EL  :  mean = %g GPa, std = %g MPa, cv = %g %%\n',mean(EL_data(samplesKeptA))*1e-3,std(EL_data(samplesKeptA),1),std(EL_data(samplesKeptA),1)/mean(EL_data(samplesKeptA))*1e2);
-fprintf('ET  :  mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(ET_data(samplesKeptA)),std(ET_data(samplesKeptA),1),std(ET_data(samplesKeptA),1)/mean(ET_data(samplesKeptA))*1e2);
-fprintf('GL  :  mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(GL_data(samplesKeptA)),std(GL_data(samplesKeptA),1),std(GL_data(samplesKeptA),1)/mean(GL_data(samplesKeptA))*1e2);
-fprintf('NUL : mean = %g, std = %g, cv = %g %%\n',mean(NUL_data(samplesKeptA)),std(NUL_data(samplesKeptA),1),std(NUL_data(samplesKeptA),1)/mean(NUL_data(samplesKeptA))*1e2);
+%% Statistics of elastic and fracture properties: mean value and biased standard deviation
+fprintf(['Samples : all = [' sprintf(' %d ',samples) '], kept = [' sprintf(' %d ',samplesKept) ']\n']);
+fprintf(['Group A : all = [' sprintf(' %d ',samplesA) '], kept = [' sprintf(' %d ',samplesKeptA) ']\n']);
+fprintf(['Group B : all = [' sprintf(' %d ',samplesB) '], kept = [' sprintf(' %d ',samplesKeptB) ']\n']);
 
-fprintf('\n');
-fprintf('Group B\n');
-fprintf('EL  :  mean = %g GPa, std = %g MPa, cv = %g %%\n',mean(EL_data(samplesKeptB))*1e-3,std(EL_data(samplesKeptB),1),std(EL_data(samplesKeptB),1)/mean(EL_data(samplesKeptB))*1e2);
-fprintf('ET  :  mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(ET_data(samplesKeptB)),std(ET_data(samplesKeptB),1),std(ET_data(samplesKeptB),1)/mean(ET_data(samplesKeptB))*1e2);
-fprintf('GL  :  mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(GL_data(samplesKeptB)),std(GL_data(samplesKeptB),1),std(GL_data(samplesKeptB),1)/mean(GL_data(samplesKeptB))*1e2);
-fprintf('NUL : mean = %g, std = %g, cv = %g %%\n',mean(NUL_data(samplesKeptB)),std(NUL_data(samplesKeptB),1),std(NUL_data(samplesKeptB),1)/mean(NUL_data(samplesKeptB))*1e2);
+fprintf('\nLongitudinal Young modulus EL\n')
+fprintf('All     : mean = %g GPa, std = %g MPa, cv = %g %%\n',mean(EL_data(samplesKept+1))*1e-3,std(EL_data(samplesKept+1),1),std(EL_data(samplesKept+1),1)/mean(EL_data(samplesKept+1))*1e2);
+fprintf('Group A : mean = %g GPa, std = %g MPa, cv = %g %%\n',mean(EL_data(samplesKeptA+1))*1e-3,std(EL_data(samplesKeptA+1),1),std(EL_data(samplesKeptA+1),1)/mean(EL_data(samplesKeptA+1))*1e2);
+fprintf('Group B : mean = %g GPa, std = %g MPa, cv = %g %%\n',mean(EL_data(samplesKeptB+1))*1e-3,std(EL_data(samplesKeptB+1),1),std(EL_data(samplesKeptB+1),1)/mean(EL_data(samplesKeptB+1))*1e2);
+
+fprintf('\nTransverse Young modulus ET\n')
+fprintf('All     : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(ET_data(samplesKept+1)),std(ET_data(samplesKept+1),1),std(ET_data(samplesKept+1),1)/mean(ET_data(samplesKept+1))*1e2);
+fprintf('Group A : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(ET_data(samplesKeptA+1)),std(ET_data(samplesKeptA+1),1),std(ET_data(samplesKeptA+1),1)/mean(ET_data(samplesKeptA+1))*1e2);
+fprintf('Group B : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(ET_data(samplesKeptB+1)),std(ET_data(samplesKeptB+1),1),std(ET_data(samplesKeptB+1),1)/mean(ET_data(samplesKeptB+1))*1e2);
+
+fprintf('\nLongitudinal shear modulus GL\n')
+fprintf('All     : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(GL_data(samplesKept+1)),std(GL_data(samplesKept+1),1),std(GL_data(samplesKept+1),1)/mean(GL_data(samplesKept+1))*1e2);
+fprintf('Group A : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(GL_data(samplesKeptA+1)),std(GL_data(samplesKeptA+1),1),std(GL_data(samplesKeptA+1),1)/mean(GL_data(samplesKeptA+1))*1e2);
+fprintf('Group B : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(GL_data(samplesKeptB+1)),std(GL_data(samplesKeptB+1),1),std(GL_data(samplesKeptB+1),1)/mean(GL_data(samplesKeptB+1))*1e2);
+
+fprintf('\nLongitudinal Poisson ratio NUL\n')
+fprintf('All     : mean = %g, std = %g, cv = %g %%\n',mean(NUL_data(samplesKept+1)),std(NUL_data(samplesKept+1),1),std(NUL_data(samplesKept+1),1)/mean(NUL_data(samplesKept+1))*1e2);
+fprintf('Group A : mean = %g, std = %g, cv = %g %%\n',mean(NUL_data(samplesKeptA+1)),std(NUL_data(samplesKeptA+1),1),std(NUL_data(samplesKeptA+1),1)/mean(NUL_data(samplesKeptA+1))*1e2);
+fprintf('Group B : mean = %g, std = %g, cv = %g %%\n',mean(NUL_data(samplesKeptB+1)),std(NUL_data(samplesKeptB+1),1),std(NUL_data(samplesKeptB+1),1)/mean(NUL_data(samplesKeptB+1))*1e2);
+
+fprintf('\nCritical energy release rate Gc\n')
+fprintf('All     : mean = %g N/m, std = %g N/m, cv = %g %%\n',mean(gc_data)*1e3,std(gc_data,1)*1e3,std(gc_data,1)/mean(gc_data)*1e2);
+fprintf('Group A : mean = %g N/m, std = %g N/m, cv = %g %%\n',mean(gc_data(samplesA+1))*1e3,std(gc_data(samplesA+1),1)*1e3,std(gc_data(samplesA+1),1)/mean(gc_data(samplesA+1))*1e2);
+fprintf('Group B : mean = %g N/m, std = %g N/m, cv = %g %%\n',mean(gc_data(samplesB+1))*1e3,std(gc_data(samplesB+1),1)*1e3,std(gc_data(samplesB+1),1)/mean(gc_data(samplesB+1))*1e2);
+
+fprintf('\nExperimental maximum compression force Fm_exp (no redim)\n')
+fprintf('All     : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data_noredim),std(fmax_exp_data_noredim,1),std(fmax_exp_data_noredim,1)/mean(fmax_exp_data_noredim)*1e2);
+fprintf('Group A : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data_noredim(samplesA+1)),std(fmax_exp_data_noredim(samplesA+1),1),std(fmax_exp_data_noredim(samplesA+1),1)/mean(fmax_exp_data_noredim(samplesA+1))*1e2);
+fprintf('Group B : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data_noredim(samplesB+1)),std(fmax_exp_data_noredim(samplesB+1),1),std(fmax_exp_data_noredim(samplesB+1),1)/mean(fmax_exp_data_noredim(samplesB+1))*1e2);
+
+fprintf('\nExperimental maximum compression force Fm_exp (redim)\n')
+fprintf('All     : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data),std(fmax_exp_data,1),std(fmax_exp_data,1)/mean(fmax_exp_data)*1e2);
+fprintf('Group A : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data(samplesA+1)),std(fmax_exp_data(samplesA+1),1),std(fmax_exp_data(samplesA+1),1)/mean(fmax_exp_data(samplesA+1))*1e2);
+fprintf('Group B : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data(samplesB+1)),std(fmax_exp_data(samplesB+1),1),std(fmax_exp_data(samplesB+1),1)/mean(fmax_exp_data(samplesB+1))*1e2);
+
+fprintf('\nExperimental crack initiation force Fc_exp (no redim)\n')
+fprintf('All     : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_exp_data),std(fc_exp_data,1),std(fc_exp_data,1)/mean(fc_exp_data)*1e2);
+fprintf('Group A : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_exp_data(samplesA+1)),std(fc_exp_data(samplesA+1),1),std(fc_exp_data(samplesA+1),1)/mean(fc_exp_data(samplesA+1))*1e2);
+fprintf('Group B : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_exp_data(samplesB+1)),std(fc_exp_data(samplesB+1),1),std(fc_exp_data(samplesB+1),1)/mean(fc_exp_data(samplesB+1))*1e2);
+
+fprintf('\nNumerical crack initiation force Fc\n')
+fprintf('All     : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_data),std(fc_data,1),std(fc_data,1)/mean(fc_data)*1e2);
+fprintf('Group A : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_data(samplesA+1)),std(fc_data(samplesA+1),1),std(fc_data(samplesA+1),1)/mean(fc_data(samplesA+1))*1e2);
+fprintf('Group B : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_data(samplesB+1)),std(fc_data(samplesB+1),1),std(fc_data(samplesB+1),1)/mean(fc_data(samplesB+1))*1e2);
 
 fprintf('\n');
 fprintf('Sample #%d\n',numSample);
-fprintf('EL  = %g GPa\n',EL_data(numSample)*1e-3);
-fprintf('ET  = %g MPa\n',ET_data(numSample));
-fprintf('GL  = %g MPa\n',GL_data(numSample));
-fprintf('NUL = %g\n',NUL_data(numSample));
+fprintf('EL     = %g GPa\n',EL_data(numSample+1)*1e-3);
+fprintf('ET     = %g MPa\n',ET_data(numSample+1));
+fprintf('GL     = %g MPa\n',GL_data(numSample+1));
+fprintf('NUL    = %g\n',NUL_data(numSample+1));
+fprintf('Gc     = %g N/m\n',gc_data(numSample+1)*1e3);
+fprintf('Fm_exp = %g kN (no redim)\n',fmax_exp_data_noredim(numSample+1));
+fprintf('Fm_exp = %g kN (redim)\n',fmax_exp_data(numSample+1));
+fprintf('Fc_exp = %g kN (no redim)\n',fc_exp_data(numSample+1));
+fprintf('Fc     = %g kN\n',fc_data(numSample+1));
 fprintf('\n');
 
 %% Input data
@@ -76,8 +212,8 @@ displaySolution = false;
 makeMovie = false;
 saveParaview = false;
 
-% test = true; % coarse mesh
-test = false; % fine mesh
+test = true; % coarse mesh
+% test = false; % fine mesh
 
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Anisot'; % 'Isot' or 'Anisot'. Material symmetry
@@ -94,7 +230,7 @@ FEmesh = 'Optim'; % 'Unif' or 'Optim'
 % PFsplits = {'Strain','Stress'};
 % PFregularizations = {'AT1','AT2'};
 % PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
-% maxIters = [1,100];
+% maxIters = [1,Inf];
 
 % for iPFmodel=1:length(PFmodels)
 % PFmodel = PFmodels{iPFmodel};
@@ -111,6 +247,7 @@ FEmesh = 'Optim'; % 'Unif' or 'Optim'
 suffix = '';
 
 foldername = ['plateWithHoleWoodNoel_' num2str(Dim) 'D'];
+testname = test_data{numSample+1};
 filename = ['linElas' symmetry];
 filename = [filename PFmodel PFsplit PFregularization PFsolver...
     'MaxIter' num2str(maxIter)];
@@ -120,10 +257,10 @@ end
 filename = [filename 'Mesh' FEmesh suffix];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','phasefieldDet',foldername,filename);
+    'results','phasefieldDet',foldername,testname,filename);
 if test
     pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-        'results','phasefieldDet_test',foldername,filename);
+        'results','phasefieldDet_test',foldername,testname,filename);
 end
 if ~exist(pathname,'dir')
     mkdir(pathname);
@@ -204,7 +341,7 @@ if setProblem
     %% Phase-field problem
     %% Material
     % Critical energy release rate (or fracture toughness)
-    gc = gc_data(numSample)*1e3; % [J/m^2]=[N/m]
+    gc = gc_data(numSample+1)*1e3; % [J/m^2]=[N/m]
     % Small artificial residual stiffness
     % k = 1e-12;
     k = 0;
@@ -257,17 +394,17 @@ if setProblem
         case 'isot' % isotropic material
             % Lame coefficients
             % Young modulus and Poisson ratio
-            E = EL_data(numSample)*1e6; % [Pa]
+            E = EL_data(numSample+1)*1e6; % [Pa]
             NU = 0.44;
         case 'anisot' % anisotropic material
             % Longitudinal Young modulus
-            EL = EL_data(numSample)*1e6; % [Pa]
+            EL = EL_data(numSample+1)*1e6; % [Pa]
             % Transverse Young modulus
-            ET = ET_data(numSample)*1e6; % [Pa]
+            ET = ET_data(numSample+1)*1e6; % [Pa]
             % Longitudinal shear modulus
-            GL = GL_data(numSample)*1e6; % [Pa]
+            GL = GL_data(numSample+1)*1e6; % [Pa]
             % Longitudinal Poisson ratio
-            NUL = NUL_data(numSample);
+            NUL = NUL_data(numSample+1);
             % Transverse Poisson ratio
             NUT = 0.44;
         otherwise
@@ -308,7 +445,7 @@ if setProblem
     PD = getvertices(D);
     P1 = POINT(PD{1});
     P2 = POINT(PD{2});
-
+    
     addbc = @(S,ud) addbcPlateWithHole(S,ud,BU,BL,P1,P2);
     findddlforce = @(S) findddl(S,'UY',BU);
     
@@ -329,19 +466,18 @@ if setProblem
     % b = -b;
     
     %% Time scheme
-    if Dim==2
-        % [Noel, Pled, Chevalier, Wilquin, EFM, 2025]
-        % du = 24e-5 mm during the first stage (until the phase-field reaches the threshold value)
-        % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value)
-        dt0 = 24e-8;
-        dt1 = 2e-8;
-        tf = 0.31e-3; % tf = 0.31 mm
-        dthreshold = 0.2;
-    elseif Dim==3
-        % du = 24e-5 mm during the first stage (until the phase-field reaches the threshold value)
-        % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value)
-        dt0 = 24e-8;
-        dt1 = 2e-8;
+    % [Noel, Pled, Chevalier, Wilquin, EFM, 2025]
+    % du = 24e-5 mm during the first stage (until the phase-field reaches the threshold value)
+    % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value)
+    dt0 = 24e-8; % dt0 = inc0_data(numSample)*1e-3; [m]
+    dt1 = 2e-8;  % dt1 = inc1_data(numSample)*1e-3; [m]
+    tf = 0.31e-3; % tf = 0.31 mm
+    dthreshold = 0.2; % dthreshold = threshold_data(numSample);
+    if test
+        % du = 48e-5 mm during the first stage (until the phase-field reaches the threshold value)
+        % du = 6e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value)
+        dt0 = 48e-8;
+        dt1 = 6e-8;
         tf = 0.31e-3; % tf = 0.31 mm
         dthreshold = 0.2;
     end
@@ -374,7 +510,8 @@ if solveProblem
     t = gettevol(T);
     dt_val = getvalue(dt);
     dmaxt = max(dt_val);
-    idc = find(dmaxt>=min(0.75,max(dmaxt)),1);
+    % idc = find(dmaxt>=min(0.75,max(dmaxt)),1);
+    idc = find(dmaxt>=min(1,max(dmaxt)),1);
     fc = ft(idc);
     udc = t(idc);
     [fmax,idmax] = max(ft,[],2);
@@ -393,10 +530,61 @@ else
     end
 end
 
+ft_exp_noredim = ft_exp_data_noredim{numSample+1};
+ut_exp_noredim  = ut_exp_data_noredim{numSample+1};
+
+ft_exp = ft_exp_data{numSample+1};
+ut_exp  = ut_exp_data{numSample+1};
+
+fmax_exp_noredim = fmax_exp_data_noredim(numSample+1);
+udmax_exp_noredim = udmax_exp_data_noredim(numSample+1);
+
+udc_exp_noredim = udc_exp_data_noredim(numSample+1);
+
+idmax_exp = idmax_exp_data(numSample+1);
+fmax_exp  = fmax_exp_data(numSample+1);
+udmax_exp = udmax_exp_data(numSample+1);
+
+idc_exp = idc_exp_data(numSample+1);
+fc_exp  = fc_exp_data(numSample+1);
+udc_exp = udc_exp_data(numSample+1);
+
+% Experimental elastic stiffness for redim data
+fe = 15;
+ide_exp = find(ft_exp>fe,1)-1;
+fte_exp = ft_exp(1:ide_exp); % [kN] (redim)
+ute_exp = ut_exp(1:ide_exp); % [mm] (redim)
+k_exp = (fte_exp(end)-fte_exp(1))./(ute_exp(end)-ute_exp(1)); % [kN/mm] (redim)
+% pe_exp = polyfit([ute_exp(1),ute_exp(end)],[fte_exp(1),fte_exp(end)],1);
+% k_exp  = pe_exp(1); % [kN/mm] (redim)
+
+% Numerical elastic stiffness
+t = gettevol(T);
+ide = find(ft*1e-3>fe,1)-1;
+fte = ft(1:ide)*1e-3; % [kN]
+ute = t(1:ide)*1e3; % [mm] (redim)
+k_mat = (fte(end)-fte(1))./(ute(end)-ute(1)); % [kN/mm]
+% pe_mat = polyfit([ute(1),ute(end)],[fte(1),fte(end)],1);
+% k_mat  = pe_mat(1); % [kN/mm]
+
+% Rescaled experimental displacements
+k_setup = 1/(1/k_exp-1/k_mat);
+ut_setup = ft_exp/k_setup;
+t_exp = ut_exp - ut_setup;
+
+udmax_setup = ut_setup(idmax_exp);
+udmax_exp_rescale = udmax_exp - udmax_setup;
+
+udc_setup = interp1(ft_exp([idc_exp-1,idc_exp]),ut_setup([idc_exp-1,idc_exp]),fc_exp,'linear'); % [mm] (redim)
+udc_exp_rescale = udc_exp - udc_setup;
+% udc_exp_rescale = interp1(ft_exp([idc_exp-1,idc_exp]),t_exp([idc_exp-1,idc_exp]),fc_exp,'linear'); % [mm] (redim)
+
 %% Outputs
 if solveProblem
     fid = fopen(fullfile(pathname,'results.txt'),'w');
     fprintf(fid,'Plate with hole\n');
+    fprintf(fid,'\n');
+    fprintf(fid,'Sample #%d\n',numSample);
     fprintf(fid,'\n');
     fprintf(fid,'dim      = %d\n',Dim);
     fprintf(fid,'mat sym  = %s\n',symmetry);
@@ -411,15 +599,14 @@ if solveProblem
     fprintf(fid,'elapsed time = %f s\n',time);
     fprintf(fid,'\n');
     
-    if Dim==2
-        fprintf(fid,'fmax  = %g kN/m\n',fmax*1e-3);
-        fprintf(fid,'fc    = %g kN/m\n',fc*1e-3);
-    elseif Dim==3
-        fprintf(fid,'fmax  = %g kN\n',fmax*1e-3);
-        fprintf(fid,'fc    = %g kN\n',fc*1e-3);
-    end
-    fprintf(fid,'udmax = %g mm\n',udmax*1e3);
-    fprintf(fid,'udc   = %g mm\n',udc*1e3);
+    fprintf(fid,'fmax      = %g kN/m\n',fmax*1e-3);
+    fprintf(fid,'fmax_exp  = %g kN/m\n',fmax_exp);
+    fprintf(fid,'fc        = %g kN/m\n',fc*1e-3);
+    fprintf(fid,'fc_exp    = %g kN/m\n',fc_exp);
+    fprintf(fid,'udmax     = %g mm\n',udmax*1e3);
+    fprintf(fid,'udmax_exp = %g mm\n',udmax_exp_rescale);
+    fprintf(fid,'udc       = %g mm\n',udc*1e3);
+    fprintf(fid,'udc_exp   = %g mm\n',udc_exp_rescale);
     fclose(fid);
 end
 
@@ -475,15 +662,118 @@ end
 if displaySolution
     [t,~] = gettevol(T);
     
-    %% Display force-displacement curve
+    %% Display experimental force-displacement curves (no redim)
+    colors = distinguishable_colors(numSamples);
+    leg = arrayfun(@(i) num2str(i),samples,'UniformOutput',false).';
+    % leg = cell(numSamples,1);
+    figure('Name','Experimental forces vs displacement (no redim)')
+    clf
+    for i=1:numSamples
+        plot(ut_exp_data_noredim{i},ft_exp_data_noredim{i},'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+        % leg{i} = [num2str(samples(i))];
+        % leg{i} = ['Sample #' num2str(samples(i))];
+        hold on
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    limsy = get(gca,'YLim');
+    set(gca,'YLim',[-1,limsy(2)])
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Force [kN]','Interpreter',interpreter)
+    legend(leg{:},'Location','NorthEastOutside')
+    mysaveas(pathname,'forces_displacement_noredim',formats);
+    mymatlab2tikz(pathname,'forces_displacement_noredim.tex');
+    
+    %% Display experimental force-displacement curves (redim)
+    % leg = cell(numSamples,1);
+    figure('Name','Experimental forces vs displacements (redim)')
+    clf
+    for i=1:numSamples
+        plot(ut_exp_data{i},ft_exp_data{i},'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+        % leg{i} = [num2str(samples(i))];
+        % leg{i} = ['Sample #' num2str(samples(i))];
+        hold on
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    limsy = get(gca,'YLim');
+    set(gca,'YLim',[-1,limsy(2)])
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Force [kN]','Interpreter',interpreter)
+    legend(leg{:},'Location','NorthEastOutside')
+    mysaveas(pathname,'forces_displacement_redim',formats);
+    mymatlab2tikz(pathname,'forces_displacement_redim.tex');
+    
+    %% Display experimental force-displacement curve
+    figure('Name','Experimental force vs displacement (no redim)')
+    clf
+    plot(ut_exp_noredim,ft_exp_noredim,'-k','LineWidth',linewidth)
+    hold on
+    scatter(udmax_exp_noredim,fmax_exp_noredim,'Marker','x','MarkerEdgeColor','k','LineWidth',linewidth)
+    scatter(udc_exp_noredim,fc_exp,'Marker','x','MarkerEdgeColor','r','LineWidth',linewidth)
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    limsy = get(gca,'YLim');
+    set(gca,'YLim',[-1,limsy(2)])
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Force [kN]','Interpreter',interpreter)
+    legend('experimental',...
+        ['$F_m^{\mathrm{exp}} = ' sprintf('%.02f',fmax_exp_noredim) '$ kN'],...
+        ['$F_c^{\mathrm{exp}} = ' sprintf('%.02f',fc_exp) '$ kN'],...
+        'Location','SouthEast','Interpreter','latex')
+    mysaveas(pathname,'force_displacement_noredim',formats);
+    mymatlab2tikz(pathname,'force_displacement_noredim.tex');
+    
+    %% Display experimental force-displacement curve
+    figure('Name','Experimental force vs displacement (redim)')
+    clf
+    plot(ut_exp,ft_exp,'-k','LineWidth',linewidth)
+    hold on
+    scatter(udmax_exp,fmax_exp,'Marker','x','MarkerEdgeColor','k','LineWidth',linewidth)
+    scatter(udc_exp,fc_exp,'Marker','x','MarkerEdgeColor','r','LineWidth',linewidth)
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    limsy = get(gca,'YLim');
+    set(gca,'YLim',[-1,limsy(2)])
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Force [kN]','Interpreter',interpreter)
+    legend('experimental',...
+        ['$F_m^{\mathrm{exp}} = ' sprintf('%.02f',fmax_exp) '$ kN'],...
+        ['$F_c^{\mathrm{exp}} = ' sprintf('%.02f',fc_exp) '$ kN'],...
+        'Location','SouthEast','Interpreter','latex')
+    mysaveas(pathname,'force_displacement_redim',formats);
+    mymatlab2tikz(pathname,'force_displacement_redim.tex');
+
+    %% Display numerical and experimental force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','LineWidth',linewidth)
+    plot(t*1e3,ft*1e-3,'-b','LineWidth',linewidth)
+    hold on
+    plot(t_exp,ft_exp,'--k','LineWidth',linewidth)
+    scatter(udmax*1e3,fmax*1e-3,'Marker','+','MarkerEdgeColor','b','LineWidth',linewidth)
+    scatter(udmax_exp_rescale,fmax_exp,'Marker','x','MarkerEdgeColor','k','LineWidth',linewidth)
+    scatter(udc*1e3,fc*1e-3,'Marker','+','MarkerEdgeColor','r','LineWidth',linewidth)
+    scatter(udc_exp_rescale,fc_exp,'Marker','x','MarkerEdgeColor','r','LineWidth',linewidth)
+    hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Force [kN]','Interpreter',interpreter)
+    legend('numerical','experimental',...
+        ['$F_m = ' sprintf('%.02f',fmax*1e-3) '$ kN'],...
+        ['$F_m^{\mathrm{exp}} = ' sprintf('%.02f',fmax_exp) '$ kN'],...
+        ['$F_c = ' sprintf('%.02f',fc*1e-3) '$ kN'],...
+        ['$F_c^{\mathrm{exp}} = ' sprintf('%.02f',fc_exp) '$ kN'],...
+        'Location','SouthEast','Interpreter','latex')
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
@@ -553,7 +843,7 @@ if displaySolution
     
     %% Display solutions at different instants
     ampl = 0;
-    tSnapshots = [0.1 0.2 0.3 0.4]*1e-3;
+    tSnapshots = [0.27 0.28 0.29 0.30]*1e-3;
     rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     rep = [rep,length(T)];
     % tSnapshots = [tSnapshots,gett1(T)];
