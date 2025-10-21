@@ -1050,7 +1050,7 @@ if displaySolution
         % plotSolution(Sj,uj,'sigma','mises','ampl',ampl);
         % mysaveas(pathname,['sigma_von_mises_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
         %
-        % plotSolution(Sj,uj,'energyint','','ampl',ampl);
+        % plotSolution(Sj,uj,'energyint','local','ampl',ampl);
         % mysaveas(pathname,['internal_energy_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
     end
     end
@@ -1081,7 +1081,7 @@ if makeMovie
         %
         % evolSolutionCell(T,St(k,:),ut(k,:),'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename',['epsilon_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
         % evolSolutionCell(T,St(k,:),ut(k,:),'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename',['sigma_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
-        % evolSolutionCell(T,St(k,:),ut(k,:),'energyint','','ampl',ampl,'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
+        % evolSolutionCell(T,St(k,:),ut(k,:),'energyint','local','ampl',ampl,'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
     end
 end
 

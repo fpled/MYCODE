@@ -644,7 +644,7 @@ if displaySolution
         % plotSolution(S,uj,'sigma','mises','ampl',ampl);
         % mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
         %
-        % plotSolution(S,uj,'energyint','','ampl',ampl);
+        % plotSolution(S,uj,'energyint','local','ampl',ampl);
         % mysaveas(pathname,['internal_energy_density_t' num2str(rep(j))],formats,renderer);
         %
         % if strcmpi(PFsolver,'historyfieldelem')
@@ -681,7 +681,7 @@ if makeMovie
     %
     % evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
     % evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
-    % evolSolution(S,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density','pathname',pathname,options{:});
+    % evolSolution(S,ut,'energyint','local','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density','pathname',pathname,options{:});
     % if strcmpi(PFsolver,'historyfieldelem')
     %     figure('Name','Solution H')
     %     clf

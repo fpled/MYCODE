@@ -1047,7 +1047,7 @@ if displaySolution
         % plotSolution(S,uj,'sigma','mises','ampl',ampl);
         % mysaveas(pathname,['sigma_von_mises_mean_t' num2str(rep(j))],formats,renderer);
         %
-        % plotSolution(S,uj,'energyint','','ampl',ampl);
+        % plotSolution(S,uj,'energyint','local','ampl',ampl);
         % mysaveas(pathname,['internal_energy_mean_t' num2str(rep(j))],formats,renderer);
     end
     
@@ -1078,7 +1078,7 @@ if displaySolution
         % plotSolution(S,uj,'sigma','mises','ampl',ampl);
         % mysaveas(pathname,['sigma_von_mises_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
         %
-        % plotSolution(S,uj,'energyint','','ampl',ampl);
+        % plotSolution(S,uj,'energyint','local','ampl',ampl);
         % mysaveas(pathname,['internal_energy_sample_' num2str(k) '_t' num2str(rep(j))],formats,renderer);
     end
     end
@@ -1122,7 +1122,7 @@ if makeMovie
     %
     % evolSolution(S,uk,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises_mean','pathname',pathname,options{:});
     % evolSolution(S,uk,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises_mean','pathname',pathname,options{:});
-    % evolSolution(S,uk,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_mean','pathname',pathname,options{:});
+    % evolSolution(S,uk,'energyint','local','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_mean','pathname',pathname,options{:});
     
     for k=1:size(dt_sample,1)
         dk = TIMEMATRIX(reshape(dt_sample(k,:,:),sz_d),T);
@@ -1140,7 +1140,7 @@ if makeMovie
         %
         % evolSolution(S,uk,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename',['epsilon_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
         % evolSolution(S,uk,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename',['sigma_von_mises_sample_' num2str(k)],'pathname',pathname,options{:});
-        % evolSolution(S,uk,'energyint','','ampl',ampl,'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
+        % evolSolution(S,uk,'energyint','local','ampl',ampl,'FrameRate',framerate,'filename',['internal_energy_sample_' num2str(k)],'pathname',pathname,options{:});
     end
 end
 

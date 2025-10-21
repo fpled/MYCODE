@@ -368,7 +368,8 @@ if setProblem
     % Energetic degradation function
     if selfhealing
         % g = @(d,h) (1-d.*h).^2;
-        g = @(d,h) (1-d.*(1-h)).^2;
+        % g = @(d,h) (1-d.*(1-h)).^2;
+        g = @(d,h) (1-d+h).^2;
     else
         g = @(d) (1-d).^2;
     end
@@ -384,9 +385,9 @@ if setProblem
     % Material
     d = calc_init_dirichlet(S_phase);
     if selfhealing
-        %h = calc_init_dirichlet(S_healing);
-        h = ones(getnbddlfree(S_healing),1);
-        h = unfreevector(S_healing,h);
+        h = calc_init_dirichlet(S_healing);
+        % h = ones(getnbddlfree(S_healing),1);
+        % h = unfreevector(S_healing,h);
         mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'h',h,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
     else
         mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
@@ -938,7 +939,7 @@ if displaySolution
         % plotSolution(S,uj,'sigma','mises','ampl',ampl);
         % mysaveas(pathname,['sigma_von_mises_t' num2str(rep(j))],formats,renderer);
         %
-        % plotSolution(S,uj,'energyint','','ampl',ampl);
+        % plotSolution(S,uj,'energyint','local','ampl',ampl);
         % mysaveas(pathname,['internal_energy_density_t' num2str(rep(j))],formats,renderer);
         %
         % if strcmpi(PFsolver,'historyfieldelem')
@@ -980,7 +981,7 @@ if makeMovie
     %
     % evolSolution(S,ut,'epsilon','mises','ampl',ampl,'FrameRate',framerate,'filename','epsilon_von_mises','pathname',pathname,options{:});
     % evolSolution(S,ut,'sigma','mises','ampl',ampl,'FrameRate',framerate,'filename','sigma_von_mises','pathname',pathname,options{:});
-    % evolSolution(S,ut,'energyint','','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density','pathname',pathname,options{:});
+    % evolSolution(S,ut,'energyint','local','ampl',ampl,'FrameRate',framerate,'filename','internal_energy_density','pathname',pathname,options{:});
     % if strcmpi(PFsolver,'historyfieldelem')
     %     figure('Name','Solution H')
     %     clf
