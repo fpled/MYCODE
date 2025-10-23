@@ -99,14 +99,10 @@ maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
-selfhealing = false; % self-healing
 
 suffix = '';
 
 foldername = ['LshapedPanel' num2str(loading) '_' num2str(Dim) 'D'];
-if selfhealing
-    foldername = [foldername '_selfHealing'];
-end
 filename = ['linElas' PFmodel PFsplit PFregularization PFsolver...
     'MaxIter' num2str(maxIter)];
 if maxIter>1
@@ -261,10 +257,6 @@ if setProblem
     % l = 1.18e-3; % [Tian, Tang, Xu, Yang, Li, 2019, IJNME]
     % l = 1e-3; % [Kakouris, Triantafyllou, 2017, IJNME]
     % l = 0.2e-3; % [Hirshikesh, Jansari, Kannan, Annabattula, Natarajan, 2019, EFM]
-    if selfhealing
-        % Healing toughness
-        kh = gc/2;
-    end
     % Small artificial residual stiffness
     % k = 1e-12;
     k = 0;
@@ -274,12 +266,6 @@ if setProblem
     mat_phase = FOUR_ISOT('k',K,'r',R,'qn',Qn,'DIM3',e,'PFregularization',PFregularization);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
-    if selfhealing
-        [Kh,Rh,Qnh] = sethealingfieldparam(kh,l,PFregularization);
-        mat_healing = FOUR_ISOT('k',Kh,'r',Rh,'qn',Qnh,'DIM3',e,'PFregularization',PFregularization);
-        mat_healing = setnumber(mat_healing,1);
-        S_healing = setmaterial(S_healing,mat_healing);
-    end
     
     %% Dirichlet boundary conditions
     if Dim==2
@@ -293,9 +279,6 @@ if setProblem
     findddlboundary = @(S_phase) findddl(S_phase,'T',BLeft);
     
     S_phase = final(S_phase);
-    if selfhealing
-        S_healing = final(S_healing);
-    end
     
     S_phase = addcl(S_phase,BR,'T');
     
@@ -366,13 +349,7 @@ if setProblem
     % NU = 0.499; % [Mang, Wick, Wollner, 2020, CM]
     % NU = 0.4999; % [Mang, Wick, Wollner, 2020, CM]
     % Energetic degradation function
-    if selfhealing
-        % g = @(d,h) (1-d.*h).^2;
-        % g = @(d,h) (1-d.*(1-h)).^2;
-        g = @(d,h) (1-d+h).^2;
-    else
-        g = @(d) (1-d).^2;
-    end
+    g = @(d) (1-d).^2;
     % Density
     RHO = 1;
     % RHO = 2200; % [Huang, Yang, Liu, Chen, 2016, CM]
@@ -384,14 +361,7 @@ if setProblem
     
     % Material
     d = calc_init_dirichlet(S_phase);
-    if selfhealing
-        h = calc_init_dirichlet(S_healing);
-        % h = ones(getnbddlfree(S_healing),1);
-        % h = unfreevector(S_healing,h);
-        mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'h',h,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
-    else
-        mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
-    end
+    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
     mat = setnumber(mat,1);
     S = setoption(S,option);
     S = setmaterial(S,mat);
@@ -599,56 +569,32 @@ if setProblem
     T = TIMEMODEL(t);
     
     %% Save variables
-    if selfhealing
-        save(fullfile(pathname,'problem.mat'),'T','S_phase','S_healing','S','addbc','findddlforce','findddlboundary');
-    else
-        save(fullfile(pathname,'problem.mat'),'T','S_phase','S','addbc','findddlforce','findddlboundary');
-    end
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','addbc','findddlforce','findddlboundary');
 else
-    if selfhealing
-        load(fullfile(pathname,'problem.mat'),'T','S_phase','S_healing','S','addbc','findddlforce','findddlboundary');
-    else
-        load(fullfile(pathname,'problem.mat'),'T','S_phase','S','addbc','findddlforce','findddlboundary');
-    end
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','addbc','findddlforce','findddlboundary');
 end
 
 %% Solution
 if solveProblem
     tTotal = tic;
     
-    if selfhealing
-        switch lower(PFsolver)
-            case {'historyfieldelem','historyfieldnode'}
-                [dt,ht,ut,ft,Ht,Edt,Eht,Eut,output] = solvePFSHDetLinElas(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
-            otherwise
-                [dt,ht,ut,ft,~,Edt,Eht,Eut,output] = solvePFSHDetLinElas(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
-        end
-    else
-        switch lower(PFsolver)
-            case {'historyfieldelem','historyfieldnode'}
-                [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
-            otherwise
-                [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
-        end
-        % switch lower(PFsolver)
-        %     case {'historyfieldelem','historyfieldnode'}
-        %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanel(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
-        %     otherwise
-        %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasLshapedPanel(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
-        % end
+    switch lower(PFsolver)
+        case {'historyfieldelem','historyfieldnode'}
+            [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+        otherwise
+            [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
     end
+    % switch lower(PFsolver)
+    %     case {'historyfieldelem','historyfieldnode'}
+    %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanel(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %     otherwise
+    %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasLshapedPanel(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    % end
     
     t = gettevol(T);
     dt_val = getvalue(dt);
     dmaxt = max(dt_val);
     idc = find(dmaxt>=min(0.75,max(dmaxt)),1);
-    if selfhealing
-        ht_val = getvalue(ht);
-        Dt_val = dt_val.*(1-ht_val);
-        hmaxt = max(ht_val);
-        Dmaxt = max(Dt_val);
-        idc = find(Dmaxt>=min(0.75,max(Dmaxt)),1);
-    end
     fc = ft(idc);
     udc = t(idc);
     [fmax,idmax] = max(ft,[],2);
@@ -657,17 +603,11 @@ if solveProblem
     time = toc(tTotal);
     
     save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
-    if selfhealing
-        save(fullfile(pathname,'solution.mat'),'ht','Eht','hmaxt','Dmaxt','-append');
-    end
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         save(fullfile(pathname,'solution.mat'),'Ht','-append');
     end
 else
     load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
-    if selfhealing
-        load(fullfile(pathname,'solution.mat'),'ht','Eht','hmaxt','Dmaxt');
-    end
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         load(fullfile(pathname,'solution.mat'),'Ht');
     end
@@ -782,55 +722,20 @@ if displaySolution
     mysaveas(pathname,'max_damage_displacement',formats);
     mymatlab2tikz(pathname,'max_damage_displacement.tex');
     
-    if selfhealing
-        %% Display maximum healing-displacement curve
-        figure('Name','Maximum healing vs displacement')
-        clf
-        plot(t*1e3,hmaxt,'-b','LineWidth',linewidth)
-        grid on
-        box on
-        set(gca,'FontSize',fontsize)
-        xlabel('Displacement [mm]','Interpreter',interpreter)
-        ylabel('Maximum healing','Interpreter',interpreter)
-        mysaveas(pathname,'max_healing_displacement',formats);
-        mymatlab2tikz(pathname,'max_healing_displacement.tex');
-        
-         %% Display maximum effective damage-displacement curve
-        figure('Name','Maximum effective damage vs displacement')
-        clf
-        plot(t*1e3,Dmaxt,'-b','LineWidth',linewidth)
-        grid on
-        box on
-        set(gca,'FontSize',fontsize)
-        xlabel('Displacement [mm]','Interpreter',interpreter)
-        ylabel('Maximum effective damage','Interpreter',interpreter)
-        mysaveas(pathname,'max_damage_eff_displacement',formats);
-        mymatlab2tikz(pathname,'max_damage_eff_displacement.tex');
-    end
-    
     %% Display energy-displacement curves
     figure('Name','Energies vs displacement')
     clf
     plot(t*1e3,Eut,'-b','LineWidth',linewidth)
     hold on
     plot(t*1e3,Edt,'-r','LineWidth',linewidth)
-    if selfhealing
-        plot(t*1e3,Eht,'-g','LineWidth',linewidth)
-        plot(t*1e3,Eut+Edt+Eht,'-k','LineWidth',linewidth)
-    else
-        plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
-    end
+    plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Energy [J]','Interpreter',interpreter)
-    if selfhealing
-       leg = {'$\Psi_u$','$\Psi_c$','$\Psi_h$','$\Psi_{\mathrm{tot}}$'};
-    else
-        leg = {'$\Psi_u$','$\Psi_c$','$\Psi_{\mathrm{tot}}$'};
-    end
+    leg = {'$\Psi_u$','$\Psi_c$','$\Psi_{\mathrm{tot}}$'};
     legend(leg{:},'Location','NorthWest','Interpreter','latex')
     mysaveas(pathname,'energies_displacement',formats);
     mymatlab2tikz(pathname,'energies_displacement.tex');
@@ -901,10 +806,6 @@ if displaySolution
     
     for j=1:length(rep)
         dj = getmatrixatstep(dt,rep(j));
-        if selfhealing
-            hj = getmatrixatstep(ht,rep(j));
-            Dj = dj.*(1-hj);
-        end
         uj = getmatrixatstep(ut,rep(j));
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
             Hj = getmatrixatstep(Ht,rep(j));
@@ -912,13 +813,6 @@ if displaySolution
         
         plotSolution(S_phase,dj);
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
-        
-        if selfhealing
-            plotSolution(S_healing,hj);
-            mysaveas(pathname,['healing_t' num2str(rep(j))],formats,renderer);
-            plotSolution(S_phase,Dj);
-            mysaveas(pathname,['damage_eff_t' num2str(rep(j))],formats,renderer);
-        end
         
         for i=1:Dim
             plotSolution(S,uj,'displ',i,'ampl',ampl);
@@ -965,11 +859,6 @@ if makeMovie
     framerate = 80;
     
     evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
-    if selfhealing
-        evolSolution(S_healing,ht,'FrameRate',framerate,'filename','healing','pathname',pathname,options{:});
-        Dt = dt.*(1-ht);
-        evolSolution(S_phase,Dt,'FrameRate',framerate,'filename','damage_eff','pathname',pathname,options{:});
-    end
     % for i=1:Dim
     %     evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
     % end
@@ -998,45 +887,24 @@ if saveParaview
     [t,rep] = gettevol(T);
     for i=1:length(T)
         di = getmatrixatstep(dt,rep(i));
-        if selfhealing
-            hi = getmatrixatstep(ht,rep(i));
-            Di = di.*(1-hi);
-        end
         ui = getmatrixatstep(ut,rep(i));
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
             Hi = getmatrixatstep(Ht,rep(i));
         end
         
-        if selfhealing
-            switch lower(PFsolver)
-                case 'historyfieldelem'
-                    write_vtk_mesh(S,{di,hi,Di,ui},{Hi},...
-                        {'damage','healing','effective damage','displacement'},{'internal energy density history'},...
-                        pathname,'solution',1,i-1);
-                case 'historyfieldnode'
-                    write_vtk_mesh(S,{di,hi,Di,ui,Hi},[],...
-                        {'damage','healing','effective damage','displacement','internal energy density history'},[],...
-                        pathname,'solution',1,i-1);
-                otherwise
-                    write_vtk_mesh(S,{di,hi,Di,ui},[],...
-                        {'damage','healing','effective damage','displacement'},[],...
-                        pathname,'solution',1,i-1);
-            end
-        else
-            switch lower(PFsolver)
-                case 'historyfieldelem'
-                    write_vtk_mesh(S,{di,ui},{Hi},...
-                        {'damage','displacement'},{'internal energy density history'},...
-                        pathname,'solution',1,i-1);
-                case 'historyfieldnode'
-                    write_vtk_mesh(S,{di,ui,Hi},[],...
-                        {'damage','displacement','internal energy density history'},[],...
-                        pathname,'solution',1,i-1);
-                otherwise
-                    write_vtk_mesh(S,{di,ui},[],...
-                        {'damage','displacement'},[],...
-                        pathname,'solution',1,i-1);
-            end
+        switch lower(PFsolver)
+            case 'historyfieldelem'
+                write_vtk_mesh(S,{di,ui},{Hi},...
+                    {'damage','displacement'},{'internal energy density history'},...
+                    pathname,'solution',1,i-1);
+            case 'historyfieldnode'
+                write_vtk_mesh(S,{di,ui,Hi},[],...
+                    {'damage','displacement','internal energy density history'},[],...
+                    pathname,'solution',1,i-1);
+            otherwise
+                write_vtk_mesh(S,{di,ui},[],...
+                    {'damage','displacement'},[],...
+                    pathname,'solution',1,i-1);
         end
     end
     make_pvd_file(pathname,'solution',1,length(T));
