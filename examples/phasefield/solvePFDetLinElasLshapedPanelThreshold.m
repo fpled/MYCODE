@@ -4,6 +4,7 @@ function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanelThreshold(S
 
 display_ = getcharin('display',varargin,true);
 displayIter = getcharin('displayiter',varargin,false);
+displaySol = getcharin('displaysol',varargin,false);
 maxIter = getcharin('maxiter',varargin,100);
 tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
@@ -177,6 +178,39 @@ while ti < tf-eps
                     H = calc_historyfield(S,u,H_old);
                 otherwise
                     H = calc_energyint(S,u,'intorder','mass','positive','local');
+            end
+            
+            % Display solution fields
+            if displaySol
+                % Display phase field
+                plotSolution(S_phase,d);
+                
+                % Display displacement field
+                for j=1:Dim
+                    plotSolution(S,u,'displ',j);
+                end
+                
+                % Display internal energy field
+                if strcmpi(PFsolver,'historyfieldnode')
+                    plotSolution(S_phase,H);
+                else
+                    figure('Name','Solution H')
+                    clf
+                    plot(H,S_phase);
+                    colorbar
+                    set(gca,'FontSize',16)
+                end
+                
+                % figure('Name','Solution H')
+                % clf
+                % subplot(1,2,1)
+                % plot_sol(S,u,'energyint','local');
+                % colorbar
+                % title('Internal energy')
+                % subplot(1,2,2)
+                % plot_sol(S,u,'energyint',{'positive','local'});
+                % colorbar
+                % title('Positive internal energy')
             end
             
             % Convergence
