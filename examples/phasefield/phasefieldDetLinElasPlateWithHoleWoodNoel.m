@@ -726,7 +726,7 @@ if displaySolution
     legend('experimental',...
         ['$F_m^{\mathrm{exp}} = ' sprintf('%.02f',fmax_exp_noredim) '$ kN'],...
         ['$F_c^{\mathrm{exp}} = ' sprintf('%.02f',fc_exp) '$ kN'],...
-        'Location','SouthEast','Interpreter','latex')
+        'Location','SouthEast','Interpreter',interpreter)
     mysaveas(pathname,'force_displacement_noredim',formats);
     mymatlab2tikz(pathname,'force_displacement_noredim.tex');
     
@@ -748,7 +748,7 @@ if displaySolution
     legend('experimental',...
         ['$F_m^{\mathrm{exp}} = ' sprintf('%.02f',fmax_exp) '$ kN'],...
         ['$F_c^{\mathrm{exp}} = ' sprintf('%.02f',fc_exp) '$ kN'],...
-        'Location','SouthEast','Interpreter','latex')
+        'Location','SouthEast','Interpreter',interpreter)
     mysaveas(pathname,'force_displacement_redim',formats);
     mymatlab2tikz(pathname,'force_displacement_redim.tex');
 
@@ -773,7 +773,7 @@ if displaySolution
         ['$F_m^{\mathrm{exp}} = ' sprintf('%.02f',fmax_exp) '$ kN'],...
         ['$F_c = ' sprintf('%.02f',fc*1e-3) '$ kN'],...
         ['$F_c^{\mathrm{exp}} = ' sprintf('%.02f',fc_exp) '$ kN'],...
-        'Location','SouthEast','Interpreter','latex')
+        'Location','SouthEast','Interpreter',interpreter)
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
@@ -803,7 +803,7 @@ if displaySolution
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Energy [J]','Interpreter',interpreter)
     legend('$\Psi_u$','$\Psi_c$','$\Psi_{\mathrm{tot}}$',...
-        'Location','NorthWest','Interpreter','latex')
+        'Location','NorthWest','Interpreter',interpreter)
     mysaveas(pathname,'energies_displacement',formats);
     mymatlab2tikz(pathname,'energies_displacement.tex');
     

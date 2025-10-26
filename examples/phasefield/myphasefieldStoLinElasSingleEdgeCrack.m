@@ -664,7 +664,7 @@ if displaySolution
         xlabel('Displacement [mm]','Interpreter',interpreter)
         ylabel('Force [kN]','Interpreter',interpreter)
         legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
-            'mean value'},'Location','NorthWest','Interpreter','latex')
+            'mean value'},'Location','NorthWest','Interpreter',interpreter)
         mysaveas(figPathname,['force_displacement' solFileAppend],formats);
         % mymatlab2tikz(figPathname,['force_displacement' solFileAppend '.tex']);
     

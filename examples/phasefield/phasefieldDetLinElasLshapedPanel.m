@@ -208,7 +208,6 @@ if setProblem
     clC = cl; % characteristic length for crack
     S_phase = gmshLshapedPanel(a,b,e,clD,clC,fullfile(pathname,'gmsh_Lshaped_panel'),Dim,'Box',B);
     S = S_phase;
-    S_healing = S_phase;
     
     %% Phase-field problem
     %% Material
@@ -736,7 +735,7 @@ if displaySolution
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Energy [J]','Interpreter',interpreter)
     leg = {'$\Psi_u$','$\Psi_c$','$\Psi_{\mathrm{tot}}$'};
-    legend(leg{:},'Location','NorthWest','Interpreter','latex')
+    legend(leg{:},'Location','NorthWest','Interpreter',interpreter)
     mysaveas(pathname,'energies_displacement',formats);
     mymatlab2tikz(pathname,'energies_displacement.tex');
     
