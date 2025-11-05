@@ -11,7 +11,7 @@ displaySol = getcharin('displaysol',varargin,false);
 maxIter = getcharin('maxiter',varargin,100);
 tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
-dbthreshold = getcharin('damageboundarythreshold',varargin,0.999);
+dbth = getcharin('dbth',varargin,0.999);
 
 if verLessThan('matlab','9.1') % compatibility (<R2016b)
     contain = @(str,pat) ~isempty(strfind(lower(str),pat));
@@ -106,6 +106,12 @@ if display_
     fprintf('\n+-----------+---------+-----------+-----------+-----------+-----------+-----------+\n');
 end
 
+if displaySol
+    fontsize = 16;
+    fd = figure('Name','Damage/Phase field');
+    clf
+end
+
 ismonotonic = ~any(diff(sign(t(t~=0))));
 numddlb = findddlboundary(S_phase);
 db = d(numddlb,:);
@@ -113,7 +119,7 @@ db = d(numddlb,:);
 for i=1:length(T)
     tIter = tic;
     nbIter = 0;
-    if any(db > dbthreshold)
+    if any(db > dbth)
         f = 0;
     else
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
@@ -244,24 +250,30 @@ for i=1:length(T)
             
             % Display solution fields
             if displaySol
+                figure(fd)
+                clf
+                plot_sol(S_phase,d);
+                colorbar
+                set(gca,'FontSize',fontsize)
+                
                 % Display phase field
-                plotSolution(S_phase,d);
+                % plotSolution(S_phase,d);
                 
                 % Display displacement field
-                for j=1:Dim
-                    plotSolution(S,u,'displ',j);
-                end
+                % for j=1:Dim
+                %     plotSolution(S,u,'displ',j);
+                % end
                 
                 % Display internal energy field
-                if strcmpi(PFsolver,'historyfieldnode')
-                    plotSolution(S_phase,H);
-                else
-                    figure('Name','Solution H')
-                    clf
-                    plot(H,S_phase);
-                    colorbar
-                    set(gca,'FontSize',16)
-                end
+                % if strcmpi(PFsolver,'historyfieldnode')
+                %     plotSolution(S_phase,H);
+                % else
+                %     figure('Name','Solution H')
+                %     clf
+                %     plot(H,S_phase);
+                %     colorbar
+                %     set(gca,'FontSize',fontsize)
+                % end
                 
                 % figure('Name','Solution H')
                 % clf
@@ -310,7 +322,7 @@ for i=1:length(T)
                     fprintf('\n');
                 end
             end
-            if any(db > dbthreshold)
+            if any(db > dbth)
                 break
             end
         end
@@ -357,6 +369,10 @@ for i=1:length(T)
         fprintf('| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e |\n',i,length(T),nbIter,t(i)*1e3,f*1e-3,dmax,Ed,Eu);
     end
 end
+
+% if displaySol
+%     close(fd)
+% end
 
 if display_
     fprintf('+-----------+---------+-----------+-----------+-----------+-----------+-----------+\n');

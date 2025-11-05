@@ -277,17 +277,17 @@ if setProblem
     %% Domains and meshes
     % [Noel, Pled, Chevalier, Wilquin, EFM, 2025]
     L = 45e-3; % length
-    h = 2*L; % height
+    H = 2*L; % height
     e = 20e-3; % thickness
     r = 5e-3; % radius of the hole
     l = L/100; % regularization length (width of the smeared crack)
     if Dim==2
-        D = DOMAIN(2,[0.0,0.0],[L,h]);
-        C = CIRCLE(L/2,h/2,r);
+        D = DOMAIN(2,[0.0,0.0],[L,H]);
+        C = CIRCLE(L/2,H/2,r);
     elseif Dim==3
-        D = DOMAIN(3,[0.0,0.0,0.0],[L,h,e]);
-        C = CIRCLE(L/2,h/2,0.0,r);
-        C = CYLINDER(C,e); % CYLINDER(L/2,h/2,0.0,r,e);
+        D = DOMAIN(3,[0.0,0.0,0.0],[L,H,e]);
+        C = CIRCLE(L/2,H/2,0.0,r);
+        C = CYLINDER(C,e); % CYLINDER(L/2,H/2,0.0,r,e);
     end
     
     switch lower(FEmesh)
@@ -310,11 +310,11 @@ if setProblem
             switch lower(PFmodel)
                 case {'bourdin','amor','heamor'}
                     XMin = 0; XMax = L;
-                    YMin = h/2-2*r; YMax = h/2+2*r;
-                    % Thickness = h/2-2*r;
+                    YMin = H/2-2*r; YMax = H/2+2*r;
+                    % Thickness = H/2-2*r;
                 otherwise
                     XMin = L/2-2*r; XMax = L/2+2*r;
-                    YMin = 0; YMax = h;
+                    YMin = 0; YMax = H;
                     % Thickness = L/2-2*r;
             end
             Thickness = 0;
@@ -354,11 +354,11 @@ if setProblem
     
     %% Dirichlet boundary conditions
     if Dim==2
-        BRight = LINE([L,0.0],[L,h]);
-        BLeft = LINE([0.0,0.0],[0.0,h]);
+        BRight = LINE([L,0.0],[L,H]);
+        BLeft = LINE([0.0,0.0],[0.0,H]);
     elseif Dim==3
-        BRight = PLANE([L,0.0,0.0],[L,h,0.0],[L,0.0,e]);
-        BLeft = PLANE([0.0,0.0,0.0],[0.0,h,0.0],[0.0,0.0,e]);
+        BRight = PLANE([L,0.0,0.0],[L,H,0.0],[L,0.0,e]);
+        BLeft = PLANE([0.0,0.0,0.0],[0.0,H,0.0],[0.0,0.0,e]);
     end
     
     findddlboundary = @(S_phase) union(findddl(S_phase,'T',BRight),findddl(S_phase,'T',BLeft));
@@ -436,10 +436,10 @@ if setProblem
     
     %% Dirichlet boundary conditions
     if Dim==2
-        BU = LINE([0.0,h],[L,h]);
+        BU = LINE([0.0,H],[L,H]);
         BL = LINE([0.0,0.0],[L,0.0]);
     elseif Dim==3
-        BU = PLANE([0.0,h,0.0],[L,h,0.0],[0.0,h,e]);
+        BU = PLANE([0.0,H,0.0],[L,H,0.0],[0.0,H,e]);
         BL = PLANE([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
     end
     PD = getvertices(D);
@@ -472,16 +472,16 @@ if setProblem
     dt0 = 24e-8; % dt0 = inc0_data(numSample)*1e-3; [m]
     dt1 = 2e-8;  % dt1 = inc1_data(numSample)*1e-3; [m]
     tf = 0.31e-3; % tf = 0.31 mm
-    dthreshold = 0.2; % dthreshold = threshold_data(numSample);
+    dth = 0.2; % dth = threshold_data(numSample);
     if test
         % du = 48e-5 mm during the first stage (until the phase-field reaches the threshold value)
         % du = 6e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value)
         dt0 = 48e-8;
         dt1 = 6e-8;
         tf = 0.31e-3; % tf = 0.31 mm
-        dthreshold = 0.2;
+        dth = 0.2;
     end
-    T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
+    T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dth',dth);
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','addbc','findddlforce','findddlboundary');

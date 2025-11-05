@@ -11,7 +11,7 @@ displaySol = getcharin('displaysol',varargin,false);
 maxIter = getcharin('maxiter',varargin,100);
 tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
-dbthreshold = getcharin('damageboundarythreshold',varargin,0.999);
+dbth = getcharin('dbth',varargin,0.999);
 
 if verLessThan('matlab','9.1') % compatibility (<R2016b)
     contain = @(str,pat) ~isempty(strfind(lower(str),pat));
@@ -27,7 +27,7 @@ Dim = getdim(S);
 dt0 = T.dt0;
 dt1 = T.dt1;
 tf = T.tf;
-dthreshold = T.dthreshold;
+dth = T.dth;
 
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
@@ -91,6 +91,12 @@ if display_
     fprintf('\n+------+---------+-----------+-----------+-----------+-----------+-----------+\n');
 end
 
+if displaySol
+    fontsize = 16;
+    fd = figure('Name','Damage/Phase field');
+    clf
+end
+
 numddlb = findddlboundary(S_phase);
 db = d(numddlb,:);
 
@@ -101,7 +107,7 @@ while ti < tf-eps
     i = i+1;
     tIter = tic;
     nbIter = 0;
-    if any(db > dbthreshold)
+    if any(db > dbth)
         ti = ti + dti;
         f = 0;
     else
@@ -148,7 +154,7 @@ while ti < tf-eps
                             d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                     end
             end
-            if any(d > dthreshold)
+            if any(d > dth)
                 dti = dt1;
             end
             dmax = max(d);
@@ -184,24 +190,30 @@ while ti < tf-eps
             
             % Display solution fields
             if displaySol
+                figure(fd)
+                clf
+                plot_sol(S_phase,d);
+                colorbar
+                set(gca,'FontSize',fontsize)
+
                 % Display phase field
-                plotSolution(S_phase,d);
+                % plotSolution(S_phase,d);
                 
                 % Display displacement field
-                for j=1:Dim
-                    plotSolution(S,u,'displ',j);
-                end
+                % for j=1:Dim
+                %     plotSolution(S,u,'displ',j);
+                % end
                 
                 % Display internal energy field
-                if strcmpi(PFsolver,'historyfieldnode')
-                    plotSolution(S_phase,H);
-                else
-                    figure('Name','Solution H')
-                    clf
-                    plot(H,S_phase);
-                    colorbar
-                    set(gca,'FontSize',16)
-                end
+                % if strcmpi(PFsolver,'historyfieldnode')
+                %     plotSolution(S_phase,H);
+                % else
+                %     figure('Name','Solution H')
+                %     clf
+                %     plot(H,S_phase);
+                %     colorbar
+                %     set(gca,'FontSize',fontsize)
+                % end
                 
                 % figure('Name','Solution H')
                 % clf
@@ -250,7 +262,7 @@ while ti < tf-eps
                     fprintf('\n');
                 end
             end
-            if any(db > dbthreshold)
+            if any(db > dbth)
                 break
             end
         end
@@ -296,6 +308,10 @@ while ti < tf-eps
         fprintf('| %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e |\n',i,nbIter,t(i)*1e3,f*1e-3,dmax,Ed,Eu);
     end
 end
+
+% if displaySol
+%     close(fd)
+% end
 
 if display_
     fprintf('+------+---------+-----------+-----------+-----------+-----------+-----------+\n');

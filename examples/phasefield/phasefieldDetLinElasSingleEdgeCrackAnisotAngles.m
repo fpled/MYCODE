@@ -646,7 +646,7 @@ if setProblem
                         dt1 = 4e-8;
                     end
                     tf = 10e-6;
-                    dthreshold = 0.6;
+                    dth = 0.6;
                     
                     % du = 1e-5 mm during the first stage (until the phase-field reaches the threshold value)
                     % du = 1e-6 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 10e-3 mm)
@@ -657,7 +657,7 @@ if setProblem
                     %     dt1 = 1e-8;
                     % end
                     % tf = 10e-6;
-                    % dthreshold = 0.6;
+                    % dth = 0.6;
                 case 'shear'
                     % du = 6e-5 mm during the first stage (until the phase-field reaches the threshold value)
                     % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 20e-3 mm)
@@ -668,7 +668,7 @@ if setProblem
                         dt1 = 4e-8;
                     end
                     tf = 20e-6;
-                    dthreshold = 0.6;
+                    dth = 0.6;
                     
                     % du = 1e-5 mm during the first stage (until the phase-field reaches the threshold value)
                     % du = 1e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 20e-3 mm)
@@ -684,9 +684,9 @@ if setProblem
                     %     end
                     % end
                     % tf = 20e-6;
-                    % dthreshold = 0.6;
+                    % dth = 0.6;
             end
-            T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
+            T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dth',dth);
             
         otherwise
             error('Wrong material symmetry class');

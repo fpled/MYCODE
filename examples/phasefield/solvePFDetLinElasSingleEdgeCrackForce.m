@@ -8,7 +8,7 @@ displaySol = getcharin('displaysol',varargin,false);
 maxIter = getcharin('maxiter',varargin,100);
 tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
-dbthreshold = getcharin('damageboundarythreshold',varargin,0.999);
+dbth = getcharin('dbth',varargin,0.999);
 
 if verLessThan('matlab','9.1') % compatibility (<R2016b)
     contain = @(str,pat) ~isempty(strfind(lower(str),pat));
@@ -95,7 +95,7 @@ db = d(numddlb,:);
 for i=1:length(T)
     
     nbIter = 0;
-    if any(db > dbthreshold)
+    if any(db > dbth)
         f = 0;
     else
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
@@ -240,7 +240,7 @@ for i=1:length(T)
                     fprintf('\n');
                 end
             end
-            if any(db > dbthreshold)
+            if any(db > dbth)
                 break
             end
         end

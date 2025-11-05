@@ -8,7 +8,7 @@ displaySol = getcharin('displaysol',varargin,false);
 maxIter = getcharin('maxiter',varargin,100);
 tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
-dbthreshold = getcharin('damageboundarythreshold',varargin,0.999);
+dbth = getcharin('dbth',varargin,0.999);
 filename = getcharin('filename',varargin,'gmsh_domain_single_edge_crack');
 pathname = getcharin('pathname',varargin,'.');
 gmshoptions = getcharin('gmshoptions',varargin,'-v 0');
@@ -124,7 +124,7 @@ db = d(numddlb,:);
 for i=1:length(T)
     tIter = tic;
     nbIter = 0;
-    if any(db > dbthreshold)
+    if any(db > dbth)
         f = 0;
     else
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
@@ -279,7 +279,7 @@ for i=1:length(T)
                     fprintf('\n');
                 end
             end
-            if any(db > dbthreshold)
+            if any(db > dbth)
                 break
             end
         end
@@ -339,7 +339,7 @@ for i=1:length(T)
         fprintf('| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',i,length(T),nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),dmax,Ed,Eu,getnbnode(S),getnbelem(S));
     end
     
-    if i<length(T) && ~any(db > dbthreshold)
+    if i<length(T) && ~any(db > dbth)
         % Mesh adaptation
         S_phase_old = S_phase;
         S_phase_ref = addcl(S_phase_old,C,'T',1);

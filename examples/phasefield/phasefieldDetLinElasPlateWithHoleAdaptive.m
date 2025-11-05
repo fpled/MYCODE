@@ -92,12 +92,12 @@ if setProblem
     %% Domains and meshes
     % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
     % L = 20e-3; % length
-    % h = 30e-3; % height
+    % H = 30e-3; % height
     % r = 4e-3; % radius of the hole
     
     % 2D and 3D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
     % L = 100e-3; % length
-    % h = 65e-3; % height
+    % H = 65e-3; % height
     % e = 40e-3; % thickness [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
     % % e = 20e-3; % thickness [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
     % % r = 1.5e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
@@ -107,18 +107,18 @@ if setProblem
     
     % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
     L = 15e-3; % length
-    h = 2*L; % height
+    H = 2*L; % height
     r = 3e-3; % radius of the hole
     
     if Dim==2
         e = 1; % thickness
-        D = DOMAIN(2,[0.0,0.0],[L,h]);
-        C = CIRCLE(L/2,h/2,r);
+        D = DOMAIN(2,[0.0,0.0],[L,H]);
+        C = CIRCLE(L/2,H/2,r);
     elseif Dim==3
         e = 1e-3; % thickness
-        D = DOMAIN(3,[0.0,0.0,0.0],[L,h,e]);
-        C = CIRCLE(L/2,h/2,0.0,r);
-        C = CYLINDER(C,e); % CYLINDER(L/2,h/2,0.0,r,e);
+        D = DOMAIN(3,[0.0,0.0,0.0],[L,H,e]);
+        C = CIRCLE(L/2,H/2,0.0,r);
+        C = CYLINDER(C,e); % CYLINDER(L/2,H/2,0.0,r,e);
     end
     
     % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
@@ -198,11 +198,11 @@ if setProblem
     
     %% Dirichlet boundary conditions
     if Dim==2
-        BRight = LINE([L,0.0],[L,h]);
-        BLeft = LINE([0.0,0.0],[0.0,h]);
+        BRight = LINE([L,0.0],[L,H]);
+        BLeft = LINE([0.0,0.0],[0.0,H]);
     elseif Dim==3
-        BRight = PLANE([L,0.0,0.0],[L,h,0.0],[L,0.0,e]);
-        BLeft = PLANE([0.0,0.0,0.0],[0.0,h,0.0],[0.0,0.0,e]);
+        BRight = PLANE([L,0.0,0.0],[L,H,0.0],[L,0.0,e]);
+        BLeft = PLANE([0.0,0.0,0.0],[0.0,H,0.0],[0.0,0.0,e]);
     end
     
     addbcdamage = @(S_phase) S_phase;
@@ -305,10 +305,10 @@ if setProblem
     
     %% Dirichlet boundary conditions
     if Dim==2
-        BU = LINE([0.0,h],[L,h]);
+        BU = LINE([0.0,H],[L,H]);
         BL = LINE([0.0,0.0],[L,0.0]);
     elseif Dim==3
-        BU = PLANE([0.0,h,0.0],[L,h,0.0],[0.0,h,e]);
+        BU = PLANE([0.0,H,0.0],[L,H,0.0],[0.0,H,e]);
         BL = PLANE([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
     end
     PD = getvertices(D);
@@ -360,8 +360,8 @@ if setProblem
     %     dt1 = 2e-7;
     % end
     % tf = 2e-4;
-    % % dthreshold = 0.9;
-    % dthreshold = 0.6;
+    % % dth = 0.9;
+    % dth = 0.6;
     
     % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     % du = 8e-5 mm during the first stage (until the phase-field reaches the threshold value)
@@ -373,8 +373,8 @@ if setProblem
         dt1 = 4e-8;
     end
     tf = 25e-6;
-    dthreshold = 0.6;
-    T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
+    dth = 0.6;
+    T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dth',dth);
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','addbc','addbcdamage','addbcdamageadapt','findddlforce','findddlboundary');

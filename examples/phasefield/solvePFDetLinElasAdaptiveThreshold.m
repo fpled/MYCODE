@@ -10,10 +10,11 @@ findddlboundary = fcnchk(findddlboundary);
 display_ = getcharin('display',varargin,true);
 displayIter = getcharin('displayiter',varargin,false);
 displaySol = getcharin('displaysol',varargin,false);
+displayMesh = getcharin('displaymesh',varargin,false);
 maxIter = getcharin('maxiter',varargin,100);
 tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
-dbthreshold = getcharin('damageboundarythreshold',varargin,0.999);
+dbth = getcharin('damageboundarythreshold',varargin,0.999);
 filename = getcharin('filename',varargin,'gmsh_domain');
 pathname = getcharin('pathname',varargin,'.');
 gmshoptions = getcharin('gmshoptions',varargin,'-v 0');
@@ -33,7 +34,7 @@ Dim = getdim(S);
 dt0 = T.dt0;
 dt1 = T.dt1;
 tf = T.tf;
-dthreshold = T.dthreshold;
+dth = T.dth;
 
 materials_phase = MATERIALS(S_phase);
 materials = MATERIALS(S);
@@ -101,6 +102,20 @@ if display_
     fprintf('\n| %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',0,0,0,0,0,0,0,getnbnode(S),getnbelem(S));
 end
 
+fpos = get(groot,'DefaultFigurePosition');
+% spos = get(groot,'ScreenSize');
+if displaySol
+    fontsize = 16;
+    fd = figure('Name','Damage/Phase field',...
+        'Position',[fpos(1)-fpos(3)/2 fpos(2:4)]);
+    clf
+end
+if displayMesh
+    fm = figure('Name','Mesh',...
+        'Position',[fpos(1)+fpos(3)/2 fpos(2:4)]);
+    clf
+end
+
 numddlb = findddlboundary(S_phase);
 db = d(numddlb,:);
 
@@ -111,7 +126,7 @@ while ti < tf-eps
     i = i+1;
     tIter = tic;
     nbIter = 0;
-    if any(db > dbthreshold)
+    if any(db > dbth)
         ti = ti + dti;
         f = 0;
     else
@@ -167,7 +182,7 @@ while ti < tf-eps
                             d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                     end
             end
-            if any(d > dthreshold)
+            if any(d > dth)
                 dti = dt1;
             end
             dmax = max(d);
@@ -204,24 +219,30 @@ while ti < tf-eps
             
             % Display solution fields
             if displaySol
+                figure(fd)
+                clf
+                plot_sol(S_phase,d);
+                colorbar
+                set(gca,'FontSize',fontsize)
+
                 % Display phase field
-                plotSolution(S_phase,d);
+                % plotSolution(S_phase,d);
                 
                 % Display displacement field
-                for j=1:Dim
-                    plotSolution(S,u,'displ',j);
-                end
+                % for j=1:Dim
+                %     plotSolution(S,u,'displ',j);
+                % end
                 
                 % Display internal energy field
-                if strcmpi(PFsolver,'historyfieldnode')
-                    plotSolution(S_phase,H);
-                else
-                    figure('Name','Solution H')
-                    clf
-                    plot(H,S_phase);
-                    colorbar
-                    set(gca,'FontSize',16)
-                end
+                % if strcmpi(PFsolver,'historyfieldnode')
+                %     plotSolution(S_phase,H);
+                % else
+                %     figure('Name','Solution H')
+                %     clf
+                %     plot(H,S_phase);
+                %     colorbar
+                %     set(gca,'FontSize',fontsize)
+                % end
                 
                 % figure('Name','Solution H')
                 % clf
@@ -270,7 +291,7 @@ while ti < tf-eps
                     fprintf('\n');
                 end
             end
-            if any(db > dbthreshold)
+            if any(db > dbth)
                 break
             end
         end
@@ -322,7 +343,7 @@ while ti < tf-eps
         fprintf('| %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',i,nbIter,t(i)*1e3,f*1e-3,dmax,Ed,Eu,getnbnode(S),getnbelem(S));
     end
     
-    if ti < tf-eps && ~any(db > dbthreshold)
+    if ti < tf-eps && ~any(db > dbth)
         % Mesh adaptation
         S_phase_old = S_phase;
         S_phase_ref = addbcdamageadapt(S_phase_old);
@@ -357,8 +378,24 @@ while ti < tf-eps
         else
             H = calc_energyint(S,u,'intorder','mass','positive','local');
         end
+        
+        if displayMesh
+            figure(fm)
+            clf
+            plot(S_phase);
+            
+            % Display mesh
+            % plotModel(S_phase);
+        end
     end
 end
+
+% if displaySol
+%     close(fd)
+% end
+% if displayMesh
+%     close(fm)
+% end
 
 if display_
     fprintf('+------+---------+-----------+-----------+-----------+-----------+-----------+----------+----------+\n');

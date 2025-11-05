@@ -23,7 +23,7 @@ Dim = getdim(S);
 dt0 = T.dt0;
 dt1 = T.dt1;
 tf = T.tf;
-dthreshold = T.dthreshold;
+dth = T.dth;
 
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
@@ -137,7 +137,7 @@ while ti < tf-eps
                         d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                 end
         end
-        if any(d > dthreshold)
+        if any(d > dth)
             dti = dt1;
         end
         dmax = max(d);

@@ -8,7 +8,7 @@ displaySol = getcharin('displaysol',varargin,false);
 maxIter = getcharin('maxiter',varargin,100);
 tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
-dbthreshold = getcharin('damageboundarythreshold',varargin,0.999);
+dbth = getcharin('dbth',varargin,0.999);
 filename = getcharin('filename',varargin,'gmsh_domain_single_edge_crack');
 pathname = getcharin('pathname',varargin,'.');
 gmshoptions = getcharin('gmshoptions',varargin,'-v 0');
@@ -28,7 +28,7 @@ Dim = getdim(S);
 dt0 = T.dt0;
 dt1 = T.dt1;
 tf = T.tf;
-dthreshold = T.dthreshold;
+dth = T.dth;
 
 materials_phase = MATERIALS(S_phase);
 materials = MATERIALS(S);
@@ -106,7 +106,7 @@ while ti < tf-eps
     i = i+1;
     
     nbIter = 0;
-    if any(db > dbthreshold)
+    if any(db > dbth)
         ti = ti + dti;
         f = 0;
     else
@@ -164,7 +164,7 @@ while ti < tf-eps
                             d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                     end
             end
-            if any(d > dthreshold)
+            if any(d > dth)
                 dti = dt1;
             end
             dmax = max(d);
@@ -268,7 +268,7 @@ while ti < tf-eps
                     fprintf('\n');
                 end
             end
-            if any(db > dbthreshold)
+            if any(db > dbth)
                 break
             end
         end
@@ -296,7 +296,7 @@ while ti < tf-eps
         fprintf('| %4d | %7d | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',i,nbIter,t(i)*1e3,f*((Dim==2)*1e-6+(Dim==3)*1e-3),dmax,getnbnode(S),getnbelem(S));
     end
     
-    if ti < tf-eps && ~any(db > dbthreshold)
+    if ti < tf-eps && ~any(db > dbth)
         % Mesh adaptation
         S_phase_old = S_phase;
         S_phase_ref = addcl(S_phase_old,C,'T',1);

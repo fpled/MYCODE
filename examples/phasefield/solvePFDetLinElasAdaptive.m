@@ -10,10 +10,11 @@ findddlboundary = fcnchk(findddlboundary);
 display_ = getcharin('display',varargin,true);
 displayIter = getcharin('displayiter',varargin,false);
 displaySol = getcharin('displaysol',varargin,false);
+displayMesh = getcharin('displaymesh',varargin,false);
 maxIter = getcharin('maxiter',varargin,100);
 tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
-dbthreshold = getcharin('damageboundarythreshold',varargin,0.999);
+dbthreshold = getcharin('dbthreshold',varargin,0.999);
 filename = getcharin('filename',varargin,'gmsh_domain');
 pathname = getcharin('pathname',varargin,'.');
 gmshoptions = getcharin('gmshoptions',varargin,'-v 0');
@@ -122,6 +123,20 @@ if display_
     fprintf('\n| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',0,length(T),0,0,0,0,0,0,getnbnode(S),getnbelem(S));
 end
 
+fpos = get(groot,'DefaultFigurePosition');
+% spos = get(groot,'ScreenSize');
+if displaySol
+    fontsize = 16;
+    fd = figure('Name','Damage/Phase field',...
+        'Position',[fpos(1)-fpos(3)/2 fpos(2:4)]);
+    clf
+end
+if displayMesh
+    fm = figure('Name','Mesh',...
+        'Position',[fpos(1)+fpos(3)/2 fpos(2:4)]);
+    clf
+end
+
 ismonotonic = ~any(diff(sign(t(t~=0))));
 numddlb = findddlboundary(S_phase);
 db = d(numddlb,:);
@@ -217,24 +232,30 @@ for i=1:length(T)
             
             % Display solution fields
             if displaySol
+                figure(fd)
+                clf
+                plot_sol(S_phase,d);
+                colorbar
+                set(gca,'FontSize',fontsize)
+                
                 % Display phase field
-                plotSolution(S_phase,d);
+                % plotSolution(S_phase,d);
                 
                 % Display displacement field
-                for j=1:Dim
-                    plotSolution(S,u,'displ',j);
-                end
+                % for j=1:Dim
+                %     plotSolution(S,u,'displ',j);
+                % end
                 
                 % Display internal energy field
-                if strcmpi(PFsolver,'historyfieldnode')
-                    plotSolution(S_phase,H);
-                else
-                    figure('Name','Solution H')
-                    clf
-                    plot(H,S_phase);
-                    colorbar
-                    set(gca,'FontSize',16)
-                end
+                % if strcmpi(PFsolver,'historyfieldnode')
+                %     plotSolution(S_phase,H);
+                % else
+                %     figure('Name','Solution H')
+                %     clf
+                %     plot(H,S_phase);
+                %     colorbar
+                %     set(gca,'FontSize',fontsize)
+                % end
                 
                 % figure('Name','Solution H')
                 % clf
@@ -371,8 +392,24 @@ for i=1:length(T)
         else
             H = calc_energyint(S,u,'intorder','mass','positive','local');
         end
+        
+        if displayMesh
+            figure(fm)
+            clf
+            plot(S_phase);
+            
+            % Display mesh
+            % plotModel(S_phase);
+        end
     end
 end
+
+% if displaySol
+%     close(fd)
+% end
+% if displayMesh
+%     close(fm)
+% end
 
 if display_
     fprintf('+-----------+---------+-----------+-----------+-----------+-----------+-----------+----------+----------+\n');

@@ -102,35 +102,35 @@ if setProblem
     %% Domains and meshes
     switch setup
         case 1
-            h = 40e-3; % domain height
-            w = h; % w = 40e-3; % domain width
-            a = 0.2*h; % a = 8e-3; % crack length
-            e = 0.025*h; % e = 1e-3; % eccentricity from the middle line
+            H = 40e-3; % domain height
+            w = H; % w = 40e-3; % domain width
+            a = 0.2*H; % a = 8e-3; % crack length
+            e = 0.025*H; % e = 1e-3; % eccentricity from the middle line
             DIM3 = 1e-3; % thickness
         case 2
-            h = 1e-3; % domain height
-            w = h; % w = 1e-3; % domain width
-            a = 0.2*h; % a = 0.2e-3; % crack length
-            e = -0.05*h; % e = -0.05e-3; % eccentricity from the middle line
+            H = 1e-3; % domain height
+            w = H; % w = 1e-3; % domain width
+            a = 0.2*H; % a = 0.2e-3; % crack length
+            e = -0.05*H; % e = -0.05e-3; % eccentricity from the middle line
             DIM3 = 0.1e-3; % thickness
         case 3
-            h = 120e-3; % domain height
+            H = 120e-3; % domain height
             w = 60e-3; % domain width
-            a = h/12; % a = 10e-3; % crack length
-            % e = -h/48; % e = -2.5e-3; % eccentricity from the middle line
-            % e = -h/24; % e = -5e-3; % eccentricity from the middle line
-            e = -h/16; % e = -7.5e-3; % eccentricity from the middle line
+            a = H/12; % a = 10e-3; % crack length
+            % e = -H/48; % e = -2.5e-3; % eccentricity from the middle line
+            % e = -H/24; % e = -5e-3; % eccentricity from the middle line
+            e = -H/16; % e = -7.5e-3; % eccentricity from the middle line
             DIM3 = 10e-3; % thickness
     end
     
     if Dim==2
-        D = DOMAIN(2,[0.0,0.0],[w,h]);
-        Ca = LINE([0.0,h/2+e],[a,h/2+e]);
-        Cb = LINE([w-a,h/2-e],[w,h/2-e]);
+        D = DOMAIN(2,[0.0,0.0],[w,H]);
+        Ca = LINE([0.0,H/2+e],[a,H/2+e]);
+        Cb = LINE([w-a,H/2-e],[w,H/2-e]);
     elseif Dim==3
-        D = DOMAIN(3,[0.0,0.0,0.0],[w,h,DIM3]);
-        Ca = QUADRANGLE([0.0,h/2+e,0.0],[  a,h/2+e,0.0],[  a,h/2+e,DIM3],[0.0,h/2+e,DIM3]);
-        Cb = QUADRANGLE([  w,h/2-e,0.0],[w-a,h/2-e,0.0],[w-a,h/2-e,DIM3],[  w,h/2-e,DIM3]);
+        D = DOMAIN(3,[0.0,0.0,0.0],[w,H,DIM3]);
+        Ca = QUADRANGLE([0.0,H/2+e,0.0],[  a,H/2+e,0.0],[  a,H/2+e,DIM3],[0.0,H/2+e,DIM3]);
+        Cb = QUADRANGLE([  w,H/2-e,0.0],[w-a,H/2-e,0.0],[w-a,H/2-e,DIM3],[  w,H/2-e,DIM3]);
     end
     
     switch setup
@@ -236,13 +236,13 @@ if setProblem
             XMin = 0; XMax = w;
             switch setup
                 case {1,2}
-                    YMin = h/2-abs(3*e); YMax = h/2+abs(3*e);
-                    Thickness = h/2-abs(3*e);
+                    YMin = H/2-abs(3*e); YMax = H/2+abs(3*e);
+                    Thickness = H/2-abs(3*e);
                 case 3
-                    % YMin = h/2-3*h/16; YMax = h/2+3*h/16;
-                    % Thickness = h/2-3*h/16;
-                    YMin = h/2-h/8; YMax = h/2+h/8;
-                    Thickness = h/2-h/8;
+                    % YMin = H/2-3*H/16; YMax = H/2+3*H/16;
+                    % Thickness = H/2-3*H/16;
+                    YMin = H/2-H/8; YMax = H/2+H/8;
+                    Thickness = H/2-H/8;
             end
             % Thickness = 0;
             if Dim==2
@@ -322,11 +322,11 @@ if setProblem
     
     %% Dirichlet boundary conditions
     if Dim==2
-        BRight = LINE([  w,0.0],[  w,h]);
-        BLeft  = LINE([0.0,0.0],[0.0,h]);
+        BRight = LINE([  w,0.0],[  w,H]);
+        BLeft  = LINE([0.0,0.0],[0.0,H]);
     elseif Dim==3
-        BRight = PLANE([  w,0.0,0.0],[  w,h,0.0],[  w,0.0,DIM3]);
-        BLeft  = PLANE([0.0,0.0,0.0],[0.0,h,0.0],[0.0,0.0,DIM3]);
+        BRight = PLANE([  w,0.0,0.0],[  w,H,0.0],[  w,0.0,DIM3]);
+        BLeft  = PLANE([0.0,0.0,0.0],[0.0,H,0.0],[0.0,0.0,DIM3]);
     end
     
     findddlboundary = @(S_phase) union(findddl(S_phase,'T',BRight),findddl(S_phase,'T',BLeft));
@@ -414,15 +414,15 @@ if setProblem
     
     %% Dirichlet boundary conditions
     if Dim==2
-        BU = LINE([0.0,h],[w,h]);
+        BU = LINE([0.0,H],[w,H]);
         BL = LINE([0.0,0.0],[w,0.0]);
         P0 = POINT([0.0,0.0]); % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Ribeiro Nogueira, Rastiello, Giry, Gatuingt, Callari, 2023, AJCE]
-        % P0 = POINT([0.0,h]); % [Tong, Shen, Shao, Chen, 2020, EFM], [Li, Lu, Huang, Yang, 2022, OE]
+        % P0 = POINT([0.0,H]); % [Tong, Shen, Shao, Chen, 2020, EFM], [Li, Lu, Huang, Yang, 2022, OE]
     elseif Dim==3
-        BU = PLANE([0.0,h,0.0],[w,h,0.0],[0.0,h,DIM3]);
+        BU = PLANE([0.0,H,0.0],[w,H,0.0],[0.0,H,DIM3]);
         BL = PLANE([0.0,0.0,0.0],[w,0.0,0.0],[0.0,0.0,DIM3]);
         P0 = POINT([0.0,0.0,0.0]); % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Ribeiro Nogueira, Rastiello, Giry, Gatuingt, Callari, 2023, AJCE]
-        % P0 = POINT([0.0,h,0.0]); % [Tong, Shen, Shao, Chen, 2020, EFM], [Li, Lu, Huang, Yang, 2022, OE]
+        % P0 = POINT([0.0,H,0.0]); % [Tong, Shen, Shao, Chen, 2020, EFM], [Li, Lu, Huang, Yang, 2022, OE]
     end
     
     addbc = @(S,ud) addbcDoubleEdgeCrack(S,ud,BU,BL,P0,setup);
@@ -492,8 +492,8 @@ if setProblem
             %     dt1 = 4e-8;
             % end
             % tf = 15e-5;
-            % dthreshold = 0.6;
-            % T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dthreshold',dthreshold);
+            % dth = 0.6;
+            % T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dth',dth);
             
             % du = 1e-4 mm during the first 400 time steps (up to u = 0.04 mm)
             % du = 1e-5 mm during the last 4000 time steps (up to u = 0.08 mm)

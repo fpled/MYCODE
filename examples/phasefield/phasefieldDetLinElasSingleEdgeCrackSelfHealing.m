@@ -39,8 +39,8 @@ displaySolution = false;
 makeMovie = false;
 saveParaview = false;
 
-% test = true; % coarse mesh
-test = false; % fine mesh
+test = true; % coarse mesh
+% test = false; % fine mesh
 
 Dim = 2; % space dimension Dim = 2, 3
 symmetry = 'Isot'; % 'Isot' or 'Anisot'. Material symmetry
@@ -55,8 +55,13 @@ tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
+heff = 1; % self-healing efficiency
+dact = 0.25; % damage activation threshold
+ratiohcgc = 1; % ratio Hc/Gc
+healing = (heff~=0);
 coeff_gc = 1.0;
 
+% angs = [0:10:90];
 % PFmodels = {'Bourdin','Amor','Miehe','HeAmor','HeFreddi','Zhang'};
 % PFsplits = {'Strain','Stress'};
 % PFregularizations = {'AT1','AT2'};
@@ -65,6 +70,8 @@ coeff_gc = 1.0;
 % maxIters = [1,Inf];
 % coeffs_gc = [0.6,0.8,1.0,1.2,1.4];
 
+% for iang=1:length(angs)
+% ang = angs(iang);
 % for iPFmodel=1:length(PFmodels)
 % PFmodel = PFmodels{iPFmodel};
 % for iPFsplit=1:length(PFsplits)
@@ -81,15 +88,24 @@ coeff_gc = 1.0;
 % coeff_gc = coeffs_gc(icoeff_gc);
 % close all
 
-suffix = ['_coeffgc' num2str(coeff_gc,'_%g')];
+suffix = '';
+% suffix = '_6e-5_2e-5';
+% suffix = ['_coeffgc' num2str(coeff_gc,'_%g')];
 
 foldername = ['singleEdgeCrack' loading '_' num2str(Dim) 'D'];
 filename = ['linElas' symmetry];
 if strcmpi(symmetry,'anisot') % anisotropic material
     filename = [filename num2str(ang) 'deg'];
 end
-filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...% 'MaxIter' num2str(maxIter) 'Tol' num2str(tolConv) num2str(critConv)
-    'Mesh' FEmesh];
+filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...
+    'MaxIter' num2str(maxIter)];
+if maxIter>1
+    filename = [filename 'Tol' num2str(tolConv) num2str(critConv)];
+end
+filename = [filename 'Mesh' FEmesh];
+if healing
+    filename = [filename 'Heff' num2str(heff) 'Dact' num2str(dact) 'RatioHcGc' num2str(ratiohcgc)];
+end
 filename = [filename suffix];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -219,20 +235,20 @@ if setProblem
         otherwise
             error('Wrong FE mesh')
     end
-    % switch lower(initialCrack)
-    %     case 'geometriccrack'
-    %         S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
-    %     case 'geometricnotch'
-    %         c = 1e-5; % crack width
-    %         clC = min(clC,c/2);
-    %         S_phase = gmshDomainWithSingleEdgeNotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
-    %     case 'initialphasefield'
-    %         S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate','refinecrack','Box',B);
-    %     otherwise
-    %         error('Wrong model for initial crack');
-    % end
-    S_phase = gmsh2femobject(Dim,fullfile(pathname,'gmsh_domain_single_edge_crack.msh'));
+    switch lower(initialCrack)
+        case 'geometriccrack'
+            S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
+        case 'geometricnotch'
+            c = 1e-5; % crack width
+            clC = min(clC,c/2);
+            S_phase = gmshDomainWithSingleEdgeNotch(D,C,c,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
+        case 'initialphasefield'
+            S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'noduplicate','refinecrack','Box',B);
+        otherwise
+            error('Wrong model for initial crack');
+    end
     S = S_phase;
+    S_healing = S_phase;
     
     %% Phase-field problem
     %% Material
@@ -267,6 +283,12 @@ if setProblem
             error('Wrong material symmetry class');
     end
     gc = gc*coeff_gc;
+    if healing
+        % Healing toughness
+        hc = ratiohcgc*gc;
+        % Regularization parameter (width of the healed zone)
+        lh = l;
+    end
     % Small artificial residual stiffness
     % k = 1e-12;
     k = 0;
@@ -276,12 +298,32 @@ if setProblem
     mat_phase = FOUR_ISOT('k',K,'r',R,'qn',Qn,'DIM3',e,'PFregularization',PFregularization);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
+    if healing
+        [Kh,Rh,Qnh] = sethealingfieldparam(hc,lh,PFregularization);
+        mat_healing = FOUR_ISOT('k',Kh,'r',Rh,'qn',Qnh,'DIM3',e,'PFregularization',PFregularization);
+        mat_healing = setnumber(mat_healing,1);
+        S_healing = setmaterial(S_healing,mat_healing);
+    end
     
     %% Dirichlet boundary conditions
+    if Dim==2
+        BRight = LINE([L,0.0],[L,L]);
+    elseif Dim==3
+        BRight = PLANE([L,0.0,0.0],[L,L,0.0],[L,0.0,e]);
+    end
+    
+    findddlboundary = @(S_phase) findddl(S_phase,'T',BRight);
+    
     if strcmpi(initialCrack,'geometriccrack')
         S_phase = final(S_phase,'duplicate');
+        if healing
+            S_healing = final(S_healing,'duplicate');
+        end
     else
         S_phase = final(S_phase);
+        if healing
+            S_healing = final(S_healing);
+        end
     end
     
     S_phase = addbcdamageSingleEdgeCrack(S_phase,C,initialCrack);
@@ -364,17 +406,35 @@ if setProblem
             error('Wrong material symmetry class');
     end
     % Energetic degradation function
-    g = @(d) (1-d).^2;
+    if healing
+        % deff = @(d,h) max(min(d-heff*h,1),0);
+        deff = @(d,h) d-heff*h;
+        fundact = @(d,h) deff(d,h)>dact;
+        g = @(d,h) (1-deff(d,h)).^2;
+    else
+        g = @(d) (1-d).^2;
+    end
     % Density
     RHO = 1;
     
     % Material
     d = calc_init_dirichlet(S_phase);
+    if healing
+        h = calc_init_dirichlet(S_healing);
+    end
     switch lower(symmetry)
         case 'isot' % isotropic material
-            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
+            if healing
+                mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'h',h,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
+            else
+                mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
+            end
         case 'anisot' % anisotropic material
-            mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
+            if healing
+                mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'h',h,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
+            else
+                mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit);
+            end
         otherwise
             error('Wrong material symmetry class');
     end
@@ -386,17 +446,27 @@ if setProblem
     if Dim==2
         BU = LINE([0.0,L],[L,L]);
         BL = LINE([0.0,0.0],[L,0.0]);
-        BRight = LINE([L,0.0],[L,L]);
+        % BRight = LINE([L,0.0],[L,L]);
         BLeft = LINE([0.0,0.0],[0.0,L]);
         BFront = [];
         BBack = [];
     elseif Dim==3
         BU = PLANE([0.0,L,0.0],[L,L,0.0],[0.0,L,e]);
         BL = PLANE([0.0,0.0,0.0],[L,0.0,0.0],[0.0,0.0,e]);
-        BRight = PLANE([L,0.0,0.0],[L,L,0.0],[L,0.0,e]);
+        % BRight = PLANE([L,0.0,0.0],[L,L,0.0],[L,0.0,e]);
         BLeft = PLANE([0.0,0.0,0.0],[0.0,L,0.0],[0.0,0.0,e]);
         BFront = PLANE([0.0,0.0,e],[L,0.0,e],[0.0,L,e]);
         BBack = PLANE([0.0,0.0,0.0],[L,0.0,0.0],[0.0,L,0.0]);
+    end
+    
+    addbc = @(S,ud) addbcSingleEdgeCrack(S,ud,BU,BL,BLeft,BRight,BFront,BBack,loading);
+    switch lower(loading)
+        case 'tension'
+            findddlforce = @(S) findddl(S,'UY',BU);
+        case 'shear'
+            findddlforce = @(S) findddl(S,'UX',BU);
+        otherwise
+            error('Wrong loading case');
     end
     
     if strcmpi(initialCrack,'geometriccrack')
@@ -406,7 +476,14 @@ if setProblem
     end
     
     ud = 0;
-    S = addbcSingleEdgeCrack(S,ud,BU,BL,BLeft,BRight,BFront,BBack,loading);
+    S = addbc(S,ud);
+    
+    u = calc_init_dirichlet(S);
+    mats = MATERIALS(S);
+    for m=1:length(mats)
+        mats{m} = setparam(mats{m},'u',u);
+    end
+    S = actualisematerials(S,mats);
     
     %% Stiffness matrices and sollicitation vectors
     % [A,b] = calc_rigi(S);
@@ -662,28 +739,65 @@ if setProblem
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','addbc','findddlforce','findddlboundary');
+    if healing
+        save(fullfile(pathname,'problem.mat'),'S_healing','deff','heff','dact','fundact','-append');
+    end
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','BU','BL','BRight','BLeft','BFront','BBack','loading','symmetry','ang');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','addbc','findddlforce','findddlboundary');
+    if healing
+        load(fullfile(pathname,'problem.mat'),'S_healing','deff','heff','dact','fundact');
+    end
 end
 
 %% Solution
 if solveProblem
     tTotal = tic;
     
-    switch lower(symmetry)
-        case 'isot' % isotropic material
-            fun = @solvePFDetLinElasSingleEdgeCrack;
-        case 'anisot' % anisotropic material
-            fun = @solvePFDetLinElasSingleEdgeCrackThreshold;
-        otherwise
-            error('Wrong material symmetry class');
-    end
-    switch lower(PFsolver)
-        case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
-        otherwise
-            [dt,ut,ft] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    if healing
+        switch lower(symmetry)
+            case 'isot' % isotropic material
+                fun = @solvePFSHDetLinElas;
+            case 'anisot' % anisotropic material
+                fun = @solvePFSHDetLinElasThreshold;
+            otherwise
+                error('Wrong material symmetry class');
+        end
+        switch lower(PFsolver)
+            case {'historyfieldelem','historyfieldnode'}
+                [dt,ht,ut,ft,Ht,Edt,Eht,Eut,output] = fun(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'heff',heff,'deff',deff,'dact',dact,'fundact',fundact,'displayiter',true,'displaysol',false);
+            otherwise
+                [dt,ht,ut,ft,~,Edt,Eht,Eut,output] = fun(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'heff',heff,'deff',deff,'dact',dact,'fundact',fundact,'displayiter',true,'displaysol',false);
+        end
+    else
+        switch lower(symmetry)
+            case 'isot' % isotropic material
+                fun = @solvePFDetLinElas;
+            case 'anisot' % anisotropic material
+                fun = @solvePFDetLinElasThreshold;
+            otherwise
+                error('Wrong material symmetry class');
+        end
+        switch lower(PFsolver)
+            case {'historyfieldelem','historyfieldnode'}
+                [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+            otherwise
+                [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+        end
+        % switch lower(symmetry)
+        %     case 'isot' % isotropic material
+        %         fun = @solvePFDetLinElasSingleEdgeCrack;
+        %     case 'anisot' % anisotropic material
+        %         fun = @solvePFDetLinElasSingleEdgeCrackThreshold;
+        %     otherwise
+        %         error('Wrong material symmetry class');
+        % end
+        % switch lower(PFsolver)
+        %     case {'historyfieldelem','historyfieldnode'}
+        %         [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+        %     otherwise
+        %         [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+        % end
     end
     
     if strcmpi(symmetry,'anisot')
@@ -693,6 +807,13 @@ if solveProblem
     dt_val = getvalue(dt);
     dmaxt = max(dt_val);
     idc = find(dmaxt>=min(0.75,max(dmaxt)),1);
+    if healing
+        ht_val = getvalue(ht);
+        Dt_val = deff(dt_val,ht_val);
+        hmaxt = max(ht_val);
+        Dmaxt = max(Dt_val);
+        idc = find(Dmaxt>=min(0.75,max(Dmaxt)),1);
+    end
     fc = ft(idc);
     udc = t(idc);
     [fmax,idmax] = max(ft,[],2);
@@ -700,7 +821,10 @@ if solveProblem
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','dmaxt','fmax','udmax','fc','udc','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
+    if healing
+        save(fullfile(pathname,'solution.mat'),'ht','Eht','hmaxt','Dmaxt','-append');
+    end
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         save(fullfile(pathname,'solution.mat'),'Ht','-append');
     end
@@ -708,7 +832,10 @@ if solveProblem
         save(fullfile(pathname,'solution.mat'),'T','-append');
     end
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','dmaxt','fmax','udmax','fc','udc','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
+    if healing
+        load(fullfile(pathname,'solution.mat'),'ht','Eht','hmaxt','Dmaxt');
+    end
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         load(fullfile(pathname,'solution.mat'),'Ht');
     end
@@ -716,6 +843,14 @@ else
         load(fullfile(pathname,'solution.mat'),'T');
     end
 end
+
+% u = getvalue(ut);
+% d = getvalue(dt);
+% save(fullfile(pathname,'solution.mat'),'u','d','-append');
+% if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+%     H = getvalue(Ht);
+%     save(fullfile(pathname,'solution.mat'),'H','-append');
+% end
 
 %% Outputs
 if solveProblem
@@ -831,6 +966,93 @@ if displaySolution
     mysaveas(pathname,'max_damage_displacement',formats);
     mymatlab2tikz(pathname,'max_damage_displacement.tex');
     
+    if healing
+        %% Display maximum healing-displacement curve
+        figure('Name','Maximum healing vs displacement')
+        clf
+        plot(t*1e3,hmaxt,'-b','LineWidth',linewidth)
+        grid on
+        box on
+        set(gca,'FontSize',fontsize)
+        xlabel('Displacement [mm]','Interpreter',interpreter)
+        ylabel('Maximum healing','Interpreter',interpreter)
+        mysaveas(pathname,'max_healing_displacement',formats);
+        mymatlab2tikz(pathname,'max_healing_displacement.tex');
+        
+         %% Display maximum effective damage-displacement curve
+        figure('Name','Maximum effective damage vs displacement')
+        clf
+        plot(t*1e3,Dmaxt,'-b','LineWidth',linewidth)
+        grid on
+        box on
+        set(gca,'FontSize',fontsize)
+        xlabel('Displacement [mm]','Interpreter',interpreter)
+        ylabel('Maximum effective damage','Interpreter',interpreter)
+        mysaveas(pathname,'max_damage_eff_displacement',formats);
+        mymatlab2tikz(pathname,'max_damage_eff_displacement.tex');
+    end
+
+    %% Display energy-displacement curves
+    figure('Name','Energies vs displacement')
+    clf
+    plot(t*1e3,Eut,'-b','LineWidth',linewidth)
+    hold on
+    plot(t*1e3,Edt,'-r','LineWidth',linewidth)
+    if healing
+        plot(t*1e3,Eht,'-g','LineWidth',linewidth)
+        plot(t*1e3,Eut+Edt+Eht,'-k','LineWidth',linewidth)
+    else
+        plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Energy [J]','Interpreter',interpreter)
+    if healing
+        leg = {'$\Psi_u$','$\Psi_c$','$\Psi_h$','$\Psi_{\mathrm{tot}}$'};
+    else
+        leg = {'$\Psi_u$','$\Psi_c$','$\Psi_{\mathrm{tot}}$'};
+    end
+    legend(leg{:},'Location','NorthWest','Interpreter',interpreter)
+    mysaveas(pathname,'energies_displacement',formats);
+    mymatlab2tikz(pathname,'energies_displacement.tex');
+    
+    %% Display outputs of iterative resolution
+    figure('Name','Number of iterations vs displacement')
+    clf
+    plot(t*1e3,output.iteration,'-b','LineWidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Number of iterations','Interpreter',interpreter)
+    mysaveas(pathname,'nb_iterations_displacement',formats);
+    mymatlab2tikz(pathname,'nb_iterations_displacement.tex');
+    
+    figure('Name','Computing time vs displacement')
+    clf
+    plot(t*1e3,output.time,'-r','LineWidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Computing time [s]','Interpreter',interpreter)
+    mysaveas(pathname,'cpu_time_displacement',formats);
+    mymatlab2tikz(pathname,'cpu_time_displacement.tex');
+    
+    figure('Name','Error vs displacement')
+    clf
+    plot(t*1e3,output.error,'-k','LineWidth',linewidth)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Error','Interpreter',interpreter)
+    mysaveas(pathname,'error_displacement',formats);
+    mymatlab2tikz(pathname,'error_displacement.tex');
+    
     %% Display solutions at different instants
     ampl = 0;
     switch lower(symmetry)
@@ -862,6 +1084,10 @@ if displaySolution
     
     for j=1:length(rep)
         dj = getmatrixatstep(dt,rep(j));
+        if healing
+            hj = getmatrixatstep(ht,rep(j));
+            Dj = deff(dj,hj);
+        end
         uj = getmatrixatstep(ut,rep(j));
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
             Hj = getmatrixatstep(Ht,rep(j));
@@ -869,6 +1095,13 @@ if displaySolution
         
         plotSolution(S_phase,dj);
         mysaveas(pathname,['damage_t' num2str(rep(j))],formats,renderer);
+        
+        if healing
+            plotSolution(S_healing,hj);
+            mysaveas(pathname,['healing_t' num2str(rep(j))],formats,renderer);
+            plotSolution(S_phase,Dj);
+            mysaveas(pathname,['damage_eff_t' num2str(rep(j))],formats,renderer);
+        end
         
         for i=1:Dim
             plotSolution(S,uj,'displ',i,'ampl',ampl);
@@ -923,6 +1156,11 @@ if makeMovie
     end
     
     evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
+    if healing
+        evolSolution(S_healing,ht,'FrameRate',framerate,'filename','healing','pathname',pathname,options{:});
+        Dt = deff(dt,ht);
+        evolSolution(S_phase,Dt,'FrameRate',framerate,'filename','damage_eff','pathname',pathname,options{:});
+    end
     % for i=1:Dim
     %     evolSolution(S,ut,'displ',i,'ampl',ampl,'FrameRate',framerate,'filename',['displacement_' num2str(i)],'pathname',pathname,options{:});
     % end
@@ -951,24 +1189,45 @@ if saveParaview
     [t,rep] = gettevol(T);
     for i=1:length(T)
         di = getmatrixatstep(dt,rep(i));
+        if healing
+            hi = getmatrixatstep(ht,rep(i));
+            Di = deff(di,hi);
+        end
         ui = getmatrixatstep(ut,rep(i));
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
             Hi = getmatrixatstep(Ht,rep(i));
         end
         
-        switch lower(PFsolver)
-            case 'historyfieldelem'
-                write_vtk_mesh(S,{di,ui},{Hi},...
-                    {'damage','displacement'},{'internal energy density history'},...
-                    pathname,'solution',1,i-1);
-            case 'historyfieldnode'
-                write_vtk_mesh(S,{di,ui,Hi},[],...
-                    {'damage','displacement','internal energy density history'},[],...
-                    pathname,'solution',1,i-1);
-            otherwise
-                write_vtk_mesh(S,{di,ui},[],...
-                    {'damage','displacement'},[],...
-                    pathname,'solution',1,i-1);
+        if healing
+            switch lower(PFsolver)
+                case 'historyfieldelem'
+                    write_vtk_mesh(S,{di,hi,Di,ui},{Hi},...
+                        {'damage','healing','effective damage','displacement'},{'internal energy density history'},...
+                        pathname,'solution',1,i-1);
+                case 'historyfieldnode'
+                    write_vtk_mesh(S,{di,hi,Di,ui,Hi},[],...
+                        {'damage','healing','effective damage','displacement','internal energy density history'},[],...
+                        pathname,'solution',1,i-1);
+                otherwise
+                    write_vtk_mesh(S,{di,hi,Di,ui},[],...
+                        {'damage','healing','effective damage','displacement'},[],...
+                        pathname,'solution',1,i-1);
+            end
+        else
+            switch lower(PFsolver)
+                case 'historyfieldelem'
+                    write_vtk_mesh(S,{di,ui},{Hi},...
+                        {'damage','displacement'},{'internal energy density history'},...
+                        pathname,'solution',1,i-1);
+                case 'historyfieldnode'
+                    write_vtk_mesh(S,{di,ui,Hi},[],...
+                        {'damage','displacement','internal energy density history'},[],...
+                        pathname,'solution',1,i-1);
+                otherwise
+                    write_vtk_mesh(S,{di,ui},[],...
+                        {'damage','displacement'},[],...
+                        pathname,'solution',1,i-1);
+            end
         end
     end
     make_pvd_file(pathname,'solution',1,length(T));

@@ -8,7 +8,7 @@ displaySol = getcharin('displaysol',varargin,false);
 maxIter = getcharin('maxiter',varargin,100);
 tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
-dbthreshold = getcharin('damageboundarythreshold',varargin,0.999);
+dbth = getcharin('dbth',varargin,0.999);
 
 if verLessThan('matlab','9.1') % compatibility (<R2016b)
     contain = @(str,pat) ~isempty(strfind(lower(str),pat));
@@ -24,7 +24,7 @@ Dim = getdim(S);
 dt0 = T.dt0;
 dt1 = T.dt1;
 tf = T.tf;
-dthreshold = T.dthreshold;
+dth = T.dth;
 
 d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
@@ -98,7 +98,7 @@ while ti < tf-eps
     i = i+1;
     
     nbIter = 0;
-    if any(db > dbthreshold)
+    if any(db > dbth)
         ti = ti + dti;
         f = 0;
     else
@@ -145,7 +145,7 @@ while ti < tf-eps
                             d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
                     end
             end
-            if any(d > dthreshold)
+            if any(d > dth)
                 dti = dt1;
             end
             dmax = max(d);
@@ -248,7 +248,7 @@ while ti < tf-eps
                     fprintf('\n');
                 end
             end
-            if any(db > dbthreshold)
+            if any(db > dbth)
                 break
             end
         end
