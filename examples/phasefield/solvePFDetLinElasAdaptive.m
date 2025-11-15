@@ -14,7 +14,7 @@ displayMesh = getcharin('displaymesh',varargin,false);
 maxIter = getcharin('maxiter',varargin,100);
 tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
-dbthreshold = getcharin('dbthreshold',varargin,0.999);
+dbth = getcharin('dbth',varargin,0.999);
 filename = getcharin('filename',varargin,'gmsh_domain');
 pathname = getcharin('pathname',varargin,'.');
 gmshoptions = getcharin('gmshoptions',varargin,'-v 0');
@@ -144,7 +144,7 @@ db = d(numddlb,:);
 for i=1:length(T)
     tIter = tic;
     nbIter = 0;
-    if any(db > dbthreshold)
+    if any(db > dbth)
         f = 0;
     else
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
@@ -304,7 +304,7 @@ for i=1:length(T)
                     fprintf('\n');
                 end
             end
-            if any(db > dbthreshold)
+            if any(db > dbth)
                 break
             end
         end
@@ -357,7 +357,7 @@ for i=1:length(T)
         fprintf('| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',i,length(T),nbIter,t(i)*1e3,f*1e-3,dmax,Ed,Eu,getnbnode(S),getnbelem(S));
     end
     
-    if i<length(T) && ~any(db > dbthreshold)
+    if i<length(T) && ~any(db > dbth)
         % Mesh adaptation
         S_phase_old = S_phase;
         S_phase_ref = addbcdamageadapt(S_phase_old);
@@ -367,37 +367,37 @@ for i=1:length(T)
         cl = sizemap(d_ref);
         S_phase = adaptmesh(S_phase_ref,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
         S = S_phase;
-        
+
         % Update phase field properties
         S_phase = setphasefieldproperties(S_phase,materials_phase);
         S_phase = final(S_phase);
         S_phase = addbcdamage(S_phase);
-        
+
         % Update material properties
         S = setmaterialproperties(S,materials);
         S = final(S);
         S = addbc(S,t(i));
-        
+
         % Update fields
         P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
         d = P_phase'*d;
-        
+
         % P = calcProjection(S,S_old,[],'free',false,'full',true);
         P = kron(P_phase,eye(Dim));
         u = P'*u;
-        
+
         if strcmpi(PFsolver,'historyfieldnode')
             h = P_phase'*h;
             H = setvalue(H,h);
         else
             H = calc_energyint(S,u,'intorder','mass','positive','local');
         end
-        
+
         if displayMesh
             figure(fm)
             clf
             plot(S_phase);
-            
+
             % Display mesh
             % plotModel(S_phase);
         end

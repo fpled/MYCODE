@@ -25,6 +25,7 @@ else
 end
 textprogressbar('Solving problem: ');
 j = 0;
+% for i=1:N
 parfor i=1:N
     if ~verLessThan('matlab','9.2') % introduced in R2017a
         send(q,i);
@@ -43,7 +44,7 @@ parfor i=1:N
         %     gauss = calc_gauss(elem,'mass');
         %     xgauss = gauss.coord;
         %     delta = getparam(mat,'delta'); % coefficients of variation for fracture toughness and regularization parameter
-        %     if length(delta)==1
+        %     if isscalar(delta)
         %         deltaGc = delta; % 0 <= deltaGc < 1/sqrt(2). coefficient of variation for fracture toughness
         %         deltaL = delta; % 0 <= deltaL < 1/sqrt(2). coefficient of variation for regularization parameter
         %     else
@@ -257,7 +258,7 @@ parfor i=1:N
                     % NU = (3*C1-2*C2)./(6*C1+2*C2);
                     delta = getparam(mat,'delta'); % coefficients of variation for Young modulus and Poisson ratio
                     deltaNUsup = min(sqrt((1-2*NU)/(1+2*NU)),(1-2*NU)/2/sqrt(NU*(1-NU)));
-                    if length(delta)==1
+                    if isscalar(delta)
                         deltaE = delta; % 0 <= deltaE < 1/sqrt(2). coefficient of variation for Young modulus
                         deltaNU = delta; % 0 <= deltaNU < deltaNUsup. coefficient of variation for Poisson ratio
                     else
@@ -311,10 +312,19 @@ parfor i=1:N
     filenamei = [filename '_' num2str(i)];
     G = GMSHFILE(fullfile(pathname,filename));
     Gi = GMSHFILE(fullfile(pathname,filenamei));
-    command = ['cp ' getfile(G,'.msh') ' ' getfile(Gi,'.msh') ';'...
-        'cp ' getfile(G,'.mesh') ' ' getfile(Gi,'.mesh') ';'...
-        'cp ' getfile(G,'.sol') ' ' getfilesol(Gi,'.sol')];
-    dos(command);
+    % command = ['cp ' getfile(G,'.geo')  ' ' getfile(Gi,'.geo')  ';' ...
+    %            'cp ' getfile(G,'.msh')  ' ' getfile(Gi,'.msh')  ';' ...
+    %            'cp ' getfile(G,'.mesh') ' ' getfile(Gi,'.mesh') ';' ...
+    %            'cp ' getfile(G,'.sol')  ' ' getfile(Gi,'.sol')];
+    % dos(command);
+    copyfile(getfile(G,'.geo'),getfile(Gi,'.geo'));
+    copyfile(getfile(G,'.msh'),getfile(Gi,'.msh'));
+    if exist(getfile(G,'.mesh'),'file')
+        copyfile(getfile(G,'.mesh'),getfile(Gi,'.mesh'));
+    end
+    if exist(getfile(G,'.sol'),'file')
+        copyfile(getfile(G,'.sol'),getfile(Gi,'.sol'));
+    end
     
     % Solve deterministic problem
     [dt,ut,ft,St_phase,St] = fun(S_phasei,Si,filenamei);
