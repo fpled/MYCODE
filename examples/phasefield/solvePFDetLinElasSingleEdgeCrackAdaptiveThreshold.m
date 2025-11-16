@@ -5,9 +5,11 @@ function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasSingleEdg
 display_ = getcharin('display',varargin,true);
 displayIter = getcharin('displayiter',varargin,false);
 displaySol = getcharin('displaysol',varargin,false);
+displayMesh = getcharin('displaymesh',varargin,false);
 maxIter = getcharin('maxiter',varargin,100);
 tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
+meshAdapt = getcharin('meshadapt',varargin,'Gmsh');
 dbth = getcharin('dbth',varargin,0.999);
 filename = getcharin('filename',varargin,'gmsh_domain_single_edge_crack');
 pathname = getcharin('pathname',varargin,'.');
@@ -96,6 +98,20 @@ if display_
     fprintf('\n| %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',0,0,0,0,0,0,0,getnbnode(S),getnbelem(S));
 end
 
+fpos = get(groot,'DefaultFigurePosition');
+% spos = get(groot,'ScreenSize');
+if displaySol
+    fontsize = 16;
+    fd = figure('Name','Damage/Phase field',...
+        'Position',[fpos(1)-fpos(3)/2 fpos(2:4)]);
+    clf
+end
+if displayMesh
+    fm = figure('Name','Mesh',...
+        'Position',[fpos(1)+fpos(3)/2 fpos(2:4)]);
+    clf
+end
+
 numddlb = findddl(S_phase,'T',BRight);
 db = d(numddlb,:);
 
@@ -138,7 +154,7 @@ while ti < tf-eps
                 E_prev = E;
             end
             
-            % Phase field
+            % Damage/Phase field
             if ~checkConvRes
                 [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
             end
@@ -200,24 +216,31 @@ while ti < tf-eps
             
             % Display solution fields
             if displaySol
-                % Display phase field
-                plotSolution(S_phase,d);
+                % Display damage/phase field
+                figure(fd)
+                clf
+                plot_sol(S_phase,d);
+                colorbar
+                set(gca,'FontSize',fontsize)
+                
+                % Display damage/phase field
+                % plotSolution(S_phase,d);
                 
                 % Display displacement field
-                for j=1:Dim
-                    plotSolution(S,u,'displ',j);
-                end
+                % for j=1:Dim
+                %     plotSolution(S,u,'displ',j);
+                % end
                 
                 % Display internal energy field
-                if strcmpi(PFsolver,'historyfieldnode')
-                    plotSolution(S_phase,H);
-                else
-                    figure('Name','Solution H')
-                    clf
-                    plot(H,S_phase);
-                    colorbar
-                    set(gca,'FontSize',16)
-                end
+                % if strcmpi(PFsolver,'historyfieldnode')
+                %     plotSolution(S_phase,H);
+                % else
+                %     figure('Name','Solution H')
+                %     clf
+                %     plot(H,S_phase);
+                %     colorbar
+                %     set(gca,'FontSize',fontsize)
+                % end
                 
                 % figure('Name','Solution H')
                 % clf
@@ -238,7 +261,7 @@ while ti < tf-eps
                 errConvs = max(errConvd,errConvu);
             end
             if checkConvRes
-                % Phase field residual
+                % Damage/Phase field residual
                 [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
                 r_phase = A_phase*d - b_phase;
                 errConvr = norm(r_phase)/norm(b_phase);
@@ -333,7 +356,12 @@ while ti < tf-eps
         d_ref = unfreevector(S_phase_ref,d_ref);
         % S_old = S;
         cl = sizemap(d_ref);
-        S_phase = adaptmesh(S_phase_ref,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+        switch lower(meshAdapt)
+            case 'gmsh'
+                S_phase = adaptmesh(S_phase_ref,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions);
+            case 'mmg'
+                S_phase = adaptmesh(S_phase_ref,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+        end
         S = S_phase;
         
         % Update phase field properties
@@ -360,8 +388,25 @@ while ti < tf-eps
         else
             H = calc_energyint(S,u,'intorder','mass','positive','local');
         end
+        
+        if displayMesh
+            % Display mesh
+            figure(fm)
+            clf
+            plot(S_phase);
+            
+            % Display mesh
+            % plotModel(S_phase);
+        end
     end
 end
+
+% if displaySol
+%     close(fd)
+% end
+% if displayMesh
+%     close(fm)
+% end
 
 if display_
     fprintf('+------+---------+-----------+-----------+-----------+-----------+-----------+----------+----------+\n');

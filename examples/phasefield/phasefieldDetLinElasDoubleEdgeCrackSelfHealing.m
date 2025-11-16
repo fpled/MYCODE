@@ -611,31 +611,48 @@ end
 if solveProblem
     tTotal = tic;
     
+    displayIter = true;
+    displaySol  = false;
+    
     if healing
         fun = @solvePFSHDetLinElas;
         % fun = @solvePFSHDetLinElasThreshold;
         switch lower(PFsolver)
             case {'historyfieldelem','historyfieldnode'}
-                [dt,ht,ut,ft,Ht,Edt,Eht,Eut,output] = fun(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'heff',heff,'deff',deff,'dact',dact,'fundact',fundact,'displayiter',true,'displaysol',false);
+                [dt,ht,ut,ft,Ht,Edt,Eht,Eut,output] = fun(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                    'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+                    'heff',heff,'deff',deff,'dact',dact,'fundact',fundact,...
+                    'displayiter',displayIter,'displaysol',displaySol);
             otherwise
-                [dt,ht,ut,ft,~,Edt,Eht,Eut,output] = fun(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'heff',heff,'deff',deff,'dact',dact,'fundact',fundact,'displayiter',true,'displaysol',false);
+                [dt,ht,ut,ft,~,Edt,Eht,Eut,output] = fun(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                    'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+                    'heff',heff,'deff',deff,'dact',dact,'fundact',fundact,...
+                    'displayiter',displayIter,'displaysol',displaySol);
         end
     else
         fun = @solvePFDetLinElas;
         % fun = @solvePFDetLinElasThreshold;
         switch lower(PFsolver)
             case {'historyfieldelem','historyfieldnode'}
-                [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+                [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                    'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+                    'displayiter',displayIter,'displaysol',displaySol);
             otherwise
-                [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+                [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                    'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+                    'displayiter',displayIter,'displaysol',displaySol);
         end
         % fun = @solvePFDetLinElasDoubleEdgeCrack;
         % % fun = @solvePFDetLinElasDoubleEdgeCrackThreshold;
         % switch lower(PFsolver)
         %     case {'historyfieldelem','historyfieldnode'}
-        %         [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,P0,BRight,BLeft,setup,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+        %         [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,P0,BRight,BLeft,setup,...
+        %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+        %             'displayiter',displayIter,'displaysol',displaySol);
         %     otherwise
-        %         [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,P0,BRight,BLeft,setup,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+        %         [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,P0,BRight,BLeft,setup,...
+        %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+        %             'displayiter',displayIter,'displaysol',displaySol);
         % end
     end
     

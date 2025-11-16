@@ -50,7 +50,7 @@ for m=1:length(materials)
 %             E = (9*C1.*C2)./(3*C1+C2); % [Pa]
 %             NU = (3*C1-2*C2)./(6*C1+2*C2);
             delta = getparam(mat,'delta'); % coefficients of variation for Young modulus and Poisson ratio
-            if length(delta)==1
+            if isscalar(delta)
                 deltaE = delta; % 0 <= deltaE < 1/sqrt(2). coefficient of variation for Young modulus
                 deltaNU = delta; % coefficient of variation for Poisson ratio
             else

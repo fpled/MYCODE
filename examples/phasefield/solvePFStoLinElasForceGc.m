@@ -22,6 +22,7 @@ else
 end
 textprogressbar('Solving problem: ');
 j = 0;
+% for i=1:N
 parfor i=1:N
     if ~verLessThan('matlab','9.2') % introduced in R2017a
         send(q,i);
@@ -29,7 +30,7 @@ parfor i=1:N
     sampleindex = sampleindices(i);
     si = RandStream.create('mrg32k3a','NumStreams',numsamples,'StreamIndices',sampleindex);
     
-    % Generate random phase field parameters
+    % Generate random damage/phase field parameters
     S_phasei = S_phase;
     mats_phase = MATERIALS(S_phase);
     node_phase = getnode(S_phase);
@@ -37,7 +38,7 @@ parfor i=1:N
     for m=1:getnbgroupelem(S_phase)
         elem = getgroupelem(S_phase,m);
         mat = getmaterial(elem);
-        % if isparam(mat,'delta') && any(getparam(mat,'delta')>0) % random phase field parameters
+        % if isparam(mat,'delta') && any(getparam(mat,'delta')>0) % random damage/phase field parameters
         %     nbelem = getnbelem(elem);
         %     xnode = node_phase(elem);
         %     gauss = calc_gauss(elem,'mass');
@@ -137,7 +138,7 @@ parfor i=1:N
         %     end
         %     mats_phase{m} = setparam(mats_phase{m},'k',k);
         % end
-        if isparam(mat,'aGc') && isparam(mat,'bGc') && any(getparam(mat,'aGc')>0) && any(getparam(mat,'bGc')>0) % random phase field parameters
+        if isparam(mat,'aGc') && isparam(mat,'bGc') && any(getparam(mat,'aGc')>0) && any(getparam(mat,'bGc')>0) % random damage/phase field parameters
             nbelem = getnbelem(elem);
             xnode = node_phase(elem);
             gauss = calc_gauss(elem,'mass');

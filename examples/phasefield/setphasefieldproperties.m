@@ -31,7 +31,7 @@ for m=1:length(materials)
 %                 error('Wrong regularization model');
 %         end
 %         delta = getparam(mat,'delta'); % coefficients of variation for fracture toughness and regularization parameter
-%         if length(delta)==1
+%         if isscalar(delta)
 %             deltaGc = delta; % 0 <= deltaGc < 1/sqrt(2). coefficient of variation for fracture toughness
 %             deltaL = delta; % 0 <= deltaL < 1/sqrt(2). coefficient of variation for regularization parameter
 %         else

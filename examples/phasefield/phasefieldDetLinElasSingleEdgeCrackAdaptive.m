@@ -53,7 +53,13 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
-initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+meshAdapt = 'Gmsh'; % 'Gmsh', 'Mmg'
+switch lower(meshAdapt)
+    case 'gmsh'
+        initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+    case 'mmg'
+        initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+end
 coeff_gc = 1.0;
 
 % angs = [0:10:90];
@@ -96,7 +102,7 @@ filename = [filename PFmodel PFsplit PFregularization PFsolver initialCrack...
 if maxIter>1
     filename = [filename 'Tol' num2str(tolConv) num2str(critConv)];
 end
-filename = [filename 'MeshAdapt' suffix];
+filename = [filename 'MeshAdapt' meshAdapt suffix];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefieldDet',foldername,filename);
@@ -280,7 +286,14 @@ if setProblem
     % d = unfreevector(S_phase,d);
     d = calc_init_dirichlet(S_phase);
     cl = sizemap(d);
-    S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    switch lower(meshAdapt)
+        case 'gmsh'
+            S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'),'gmshoptions',gmshoptions);
+        case 'mmg'
+            S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_single_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+        otherwise
+            error('Wrong mesh adaptation software');
+    end
     S = S_phase;
     
     S_phase = setmaterial(S_phase,mat_phase);
@@ -695,24 +708,32 @@ end
 if solveProblem
     tTotal = tic;
     
+    displayIter = true;
+    displaySol  = true;
+    displayMesh = true;
+    
     switch lower(symmetry)
         case 'isot' % isotropic material
             switch lower(PFsolver)
                 case {'historyfieldelem','historyfieldnode'}
                     [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
-                        'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+                        'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
+                        'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
                 otherwise
                     [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
-                        'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+                        'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
+                        'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
             end
         case 'anisot' % anisotropic material
             switch lower(PFsolver)
                 case {'historyfieldelem','historyfieldnode'}
                     [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcadapt,findddlforce,findddlboundary,sizemap,...
-                        'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+                        'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
+                        'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
                 otherwise
                     [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
-                        'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+                        'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
+                        'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
             end
         otherwise
             error('Wrong material symmetry class');
@@ -722,19 +743,23 @@ if solveProblem
     %         switch lower(PFsolver)
     %             case {'historyfieldelem','historyfieldnode'}
     %                 [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,...
-    %                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    %                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
+    %                     'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
     %             otherwise
     %                 [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,...
-    %                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    %                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
+    %                     'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
     %         end
     %     case 'anisot' % anisotropic material
     %         switch lower(PFsolver)
     %             case {'historyfieldelem','historyfieldnode'}
     %                 [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasSingleEdgeCrackAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,...
-    %                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    %                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
+    %                     'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
     %             otherwise
     %                 [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasSingleEdgeCrackAdaptiveThreshold(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,...
-    %                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    %                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
+    %                     'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
     %         end
     %     otherwise
     %         error('Wrong material symmetry class');

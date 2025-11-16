@@ -130,7 +130,7 @@ while ti < tf-eps
                 E_prev = E;
             end
             
-            % Phase field
+            % Damage/Phase field
             if ~checkConvRes
                 [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
             end
@@ -190,13 +190,14 @@ while ti < tf-eps
             
             % Display solution fields
             if displaySol
+                % Display damage/phase field
                 figure(fd)
                 clf
                 plot_sol(S_phase,d);
                 colorbar
                 set(gca,'FontSize',fontsize)
 
-                % Display phase field
+                % Display damage/phase field
                 % plotSolution(S_phase,d);
                 
                 % Display displacement field
@@ -234,7 +235,7 @@ while ti < tf-eps
                 errConvs = max(errConvd,errConvu);
             end
             if checkConvRes
-                % Phase field residual
+                % Damage/Phase field residual
                 [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
                 r_phase = A_phase*d - b_phase;
                 errConvr = norm(r_phase)/norm(b_phase);

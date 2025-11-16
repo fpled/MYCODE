@@ -173,7 +173,7 @@ for i=1:length(T)
                 E_prev = E;
             end
             
-            % Phase field
+            % Damage/Phase field
             if ~checkConvRes
                 [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,h,heff,d_old,fundact);
             end
@@ -243,7 +243,7 @@ for i=1:length(T)
             h = unfreevector(S_healing,h);
             % hb = h(numddlb,:);
             
-            % Effective damage field
+            % Effective damage/phase field
             D = deff(d,h);
             Dmax = max(D);
             D = unfreevector(S_phase,D);
@@ -278,29 +278,34 @@ for i=1:length(T)
             
             % Display solution fields
             if displaySol
+                % Display damage/phase field
                 figure(fd)
                 clf
                 plot_sol(S_phase,d);
                 colorbar
                 set(gca,'FontSize',fontsize)
+                
+                % Display healing field
                 figure(fh)
                 clf
                 plot_sol(S_healing,h);
                 colorbar
                 set(gca,'FontSize',fontsize)
+                
+                % Display effective damage/phase field
                 figure(fD)
                 clf
                 plot_sol(S_phase,D);
                 colorbar
                 set(gca,'FontSize',fontsize)
                 
-                % Display phase field
+                % Display damage/phase field
                 % plotSolution(S_phase,d);
                 
                 % Display healing field
                 % plotSolution(S_healing,h);
                 
-                % Display effective phase field
+                % Display effective damage/phase field
                 % plotSolution(S_phase,D);
                 
                 % Display displacement field
@@ -339,7 +344,7 @@ for i=1:length(T)
                 errConvs = max(errConvd,errConvh,errConvu);
             end
             if checkConvRes
-                % Phase field residual
+                % Damage/Phase field residual
                 [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,h,heff,d_old,fundact);
                 r_phase = A_phase*d - b_phase;
                 errConvrd = norm(r_phase)/norm(b_phase);

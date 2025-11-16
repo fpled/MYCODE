@@ -32,6 +32,13 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
+meshAdapt = 'Gmsh'; % 'Gmsh', 'Mmg'
+switch lower(meshAdapt)
+    case 'gmsh'
+        initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+    case 'mmg'
+        initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+end
 
 % PFmodels = {'Bourdin','Amor','Miehe','HeAmor','HeFreddi','Zhang'};
 % PFsplits = {'Strain','Stress'};
@@ -63,7 +70,7 @@ filename = [filename PFmodel PFsplit PFregularization PFsolver...
 if maxIter>1
     filename = [filename 'Tol' num2str(tolConv) num2str(critConv)];
 end
-filename = [filename 'MeshAdapt' suffix];
+filename = [filename 'MeshAdapt' meshAdapt suffix];
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','phasefieldDet',foldername,filename);
@@ -219,7 +226,14 @@ if setProblem
     % d = unfreevector(S_phase,d);
     d = calc_init_dirichlet(S_phase);
     cl = sizemap(d);
-    S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_plate_with_hole'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    switch lower(meshAdapt)
+        case 'gmsh'
+            S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_plate_with_hole'),'gmshoptions',gmshoptions);
+        case 'mmg'
+            S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_plate_with_hole'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+        otherwise
+            error('Wrong mesh adaptation software');
+    end
     S = S_phase;
     
     S_phase = setmaterial(S_phase,mat_phase);
@@ -386,21 +400,29 @@ end
 if solveProblem
     tTotal = tic;
     
+    displayIter = true;
+    displaySol  = false;
+    displayMesh = false;
+    
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
             [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
-                'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+                'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
+                'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
         otherwise
             [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
-                'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+                'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
+                'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
     end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
     %         [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,C,sizemap,...
-    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
+    %             'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
     %     otherwise
     %         [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,C,sizemap,...
-    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
+    %             'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
     % end
     
     t = gettevol(T);

@@ -1,5 +1,5 @@
 function [k,r,qn] = sethealingfieldparam(hc,l,PFregularization)
-% function [k,r,qn] = setphasefieldparam(kh,l,PFregularization)
+% function [k,r,qn] = sethealingfieldparam(hc,l,PFregularization)
 
 switch lower(PFregularization)
     case 'at1'

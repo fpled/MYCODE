@@ -566,21 +566,32 @@ end
 if solveProblem
     tTotal = tic;
     
+    displayIter = true;
+    displaySol  = false;
+    
     fun = @solvePFDetLinElas;
     % fun = @solvePFDetLinElasThreshold;
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+            [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+                'displayiter',displayIter,'displaysol',displaySol);
         otherwise
-            [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+            [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+                'displayiter',displayIter,'displaysol',displaySol);
     end
     % fun = @solvePFDetLinElasDoubleEdgeCrack;
     % % fun = @solvePFDetLinElasDoubleEdgeCrackThreshold;
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
-    %         [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,P0,BRight,BLeft,setup,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %         [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,P0,BRight,BLeft,setup,...
+    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+    %             'displayiter',displayIter,'displaysol',displaySol);
     %     otherwise
-    %         [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,P0,BRight,BLeft,setup,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %         [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,P0,BRight,BLeft,setup,...
+    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+    %             'displayiter',displayIter,'displaysol',displaySol);
     % end
     
     t = gettevol(T);

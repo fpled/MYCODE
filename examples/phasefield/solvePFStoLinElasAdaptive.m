@@ -32,14 +32,14 @@ parfor i=1:N
     end
     si = RandStream.create('mrg32k3a','NumStreams',N,'StreamIndices',i);
     
-    % Generate random phase field parameters
+    % Generate random damage/phase field parameters
     S_phasei = S_phase;
     mats_phase = MATERIALS(S_phase);
     node_phase = getnode(S_phase);
     for m=1:getnbgroupelem(S_phase)
         elem = getgroupelem(S_phase,m);
         mat = getmaterial(elem);
-        % if isparam(mat,'delta') && any(getparam(mat,'delta')>0) % random phase field parameters
+        % if isparam(mat,'delta') && any(getparam(mat,'delta')>0) % random damage/phase field parameters
         %     xnode = node_phase(elem);
         %     gauss = calc_gauss(elem,'mass');
         %     xgauss = gauss.coord;
@@ -128,7 +128,7 @@ parfor i=1:N
         %         mats_phase{m} = setparam(mats_phase{m},'k',k);
         %     end
         % end
-        if isparam(mat,'aGc') && isparam(mat,'bGc') && any(getparam(mat,'aGc')>0) && any(getparam(mat,'bGc')>0) % random phase field parameters
+        if isparam(mat,'aGc') && isparam(mat,'bGc') && any(getparam(mat,'aGc')>0) && any(getparam(mat,'bGc')>0) % random damage/phase field parameters
             aGc = getparam(mat,'aGc'); % lower bound(s) for fracture toughness aGc > 0
             bGc = getparam(mat,'bGc'); % upper bound(s) for fracture toughness bGc > aGc > 0
             if ~isscalar(aGc) || ~isscalar(bGc)

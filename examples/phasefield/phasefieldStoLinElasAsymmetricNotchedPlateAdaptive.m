@@ -59,7 +59,13 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
-initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+meshAdapt = 'Gmsh'; % 'Gmsh', 'Mmg'
+switch lower(meshAdapt)
+    case 'gmsh'
+        initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+    case 'mmg'
+        initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+end
 
 % Random model parameters
 % N = 500; % number of samples
@@ -75,7 +81,7 @@ filename = ['linElas' PFmodel PFsplit PFregularization PFsolver initialCrack...
 if maxIter>1
     filename = [filename 'Tol' num2str(tolConv) num2str(critConv)];
 end
-filename = [filename 'MeshAdapt_' num2str(N) 'samples'];
+filename = [filename 'MeshAdapt' meshAdapt '_' num2str(N) 'samples'];
 % if any(randMat.delta)
 %     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 % end
@@ -266,7 +272,14 @@ if setProblem
     % d = unfreevector(S_phase,d);
     d = calc_init_dirichlet(S_phase);
     cl = sizemap(d);
-    S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_asymmetric_notched_plate'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    switch lower(meshAdapt)
+        case 'gmsh'
+            S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_asymmetric_notched_plate'),'gmshoptions',gmshoptions);
+        case 'mmg'
+            S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_asymmetric_notched_plate'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+        otherwise
+            error('Wrong mesh adaptation software');
+    end
     S = S_phase;
     
     S_phase = setmaterial(S_phase,mat_phase);
@@ -439,11 +452,17 @@ if solveProblem
     %% Solution
     tTotal = tic;
     
+    displayIter = false;
+    displaySol  = false;
+    displayMesh = false;
+    
     nbSamples = 1;
     fun = @(S_phase,S,filename) solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
-        'maxiter',maxIter,'tol',tolConv,'crit',critConv,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+        'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
+        'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
     % fun = @(S_phase,S,filename) solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,initialCrack,sizemap,...
-    %     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+    %     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
+    %     'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
     [ft,dmaxt,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_asymmetric_notched_plate','pathname',pathname,'nbsamples',nbSamples);
     t = gettevol(T);
     idc = arrayfun(@(i) find(dmaxt(i,:)>=min(0.75,max(dmaxt(i,:))),1),1:N)';

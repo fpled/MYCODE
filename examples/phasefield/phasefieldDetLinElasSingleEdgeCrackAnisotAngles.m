@@ -702,6 +702,9 @@ end
 if solveProblem
     tTotal = tic;
     
+    displayIter = true;
+    displaySol  = false;
+    
     switch lower(symmetry)
         case 'isot' % isotropic material
             fun = @solvePFDetLinElas;
@@ -712,9 +715,13 @@ if solveProblem
     end
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+            [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+                'displayiter',displayIter,'displaysol',displaySol);
         otherwise
-            [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+            [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+                'displayiter',displayIter,'displaysol',displaySol);
     end
     % switch lower(symmetry)
     %     case 'isot' % isotropic material
@@ -726,9 +733,13 @@ if solveProblem
     % end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
-    %         [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %         [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,...
+    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+    %             'displayiter',displayIter,'displaysol',displaySol);
     %     otherwise
-    %         [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %         [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,...
+    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+    %             'displayiter',displayIter,'displaysol',displaySol);
     % end
     
     if strcmpi(symmetry,'anisot')

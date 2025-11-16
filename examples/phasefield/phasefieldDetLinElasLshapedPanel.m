@@ -577,17 +577,28 @@ end
 if solveProblem
     tTotal = tic;
     
+    displayIter = true;
+    displaySol  = false;
+    
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+            [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+                'displayiter',displayIter,'displaysol',displaySol);
         otherwise
-            [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+            [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+                'displayiter',displayIter,'displaysol',displaySol);
     end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
-    %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanel(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasLshapedPanel(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,...
+    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+    %             'displayiter',displayIter,'displaysol',displaySol);
     %     otherwise
-    %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasLshapedPanel(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+    %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasLshapedPanel(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,...
+    %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+    %             'displayiter',displayIter,'displaysol',displaySol);
     % end
     
     t = gettevol(T);

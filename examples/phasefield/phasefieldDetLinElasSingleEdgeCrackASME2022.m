@@ -671,6 +671,9 @@ end
 if solveProblem
     tTotal = tic;
     
+    displayIter = true;
+    displaySol  = false;
+    
     switch lower(symmetry)
         case 'isot' % isotropic material
             fun = @solvePFDetLinElasSingleEdgeCrack;
@@ -681,9 +684,13 @@ if solveProblem
     end
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+            [dt,ut,ft,Ht] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,...
+                'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+                'displayiter',displayIter,'displaysol',displaySol);
         otherwise
-            [dt,ut,ft] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,'displayiter',true);
+            [dt,ut,ft] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,...
+                'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+                'displayiter',displayIter,'displaysol',displaySol);
     end
     
     if strcmpi(symmetry,'anisot')

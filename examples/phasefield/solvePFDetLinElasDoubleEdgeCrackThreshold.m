@@ -88,6 +88,12 @@ if display_
     fprintf('\n+------+---------+-----------+-----------+-----------+-----------+-----------+\n');
 end
 
+if displaySol
+    fontsize = 16;
+    fd = figure('Name','Damage/Phase field');
+    clf
+end
+
 numddlbr = findddl(S_phase,'T',BRight);
 numddlbl = findddl(S_phase,'T',BLeft);
 numddlb = union(numddlbr,numddlbl);
@@ -123,7 +129,7 @@ while ti < tf-eps
                 E_prev = E;
             end
             
-            % Phase field
+            % Damage/Phase field
             if ~checkConvRes
                 [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
             end
@@ -184,24 +190,31 @@ while ti < tf-eps
             
             % Display solution fields
             if displaySol
-                % Display phase field
-                plotSolution(S_phase,d);
+                % Display damage/phase field
+                figure(fd)
+                clf
+                plot_sol(S_phase,d);
+                colorbar
+                set(gca,'FontSize',fontsize)
+                
+                % Display damage/phase field
+                % plotSolution(S_phase,d);
                 
                 % Display displacement field
-                for j=1:Dim
-                    plotSolution(S,u,'displ',j);
-                end
+                % for j=1:Dim
+                %     plotSolution(S,u,'displ',j);
+                % end
                 
                 % Display internal energy field
-                if strcmpi(PFsolver,'historyfieldnode')
-                    plotSolution(S_phase,H);
-                else
-                    figure('Name','Solution H')
-                    clf
-                    plot(H,S_phase);
-                    colorbar
-                    set(gca,'FontSize',16)
-                end
+                % if strcmpi(PFsolver,'historyfieldnode')
+                %     plotSolution(S_phase,H);
+                % else
+                %     figure('Name','Solution H')
+                %     clf
+                %     plot(H,S_phase);
+                %     colorbar
+                %     set(gca,'FontSize',fontsize)
+                % end
                 
                 % figure('Name','Solution H')
                 % clf
@@ -222,7 +235,7 @@ while ti < tf-eps
                 errConvs = max(errConvd,errConvu);
             end
             if checkConvRes
-                % Phase field residual
+                % Damage/Phase field residual
                 [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
                 r_phase = A_phase*d - b_phase;
                 errConvr = norm(r_phase)/norm(b_phase);
@@ -296,6 +309,10 @@ while ti < tf-eps
         fprintf('| %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e |\n',i,nbIter,t(i)*1e3,f*1e-3,dmax,Ed,Eu);
     end
 end
+
+% if displaySol
+%     close(fd)
+% end
 
 if display_
     fprintf('+------+---------+-----------+-----------+-----------+-----------+-----------+\n');
