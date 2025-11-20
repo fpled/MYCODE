@@ -59,10 +59,10 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
-meshAdapt = 'Gmsh'; % 'Gmsh', 'Mmg'
+meshAdapt = 'Mmg'; % 'Gmsh', 'Mmg'
 switch lower(meshAdapt)
     case 'gmsh'
-        initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+        initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
     case 'mmg'
         initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 end
@@ -194,8 +194,9 @@ if setProblem
             error('Wrong model for initial crack');
     end
     
-    sizemap = @(d) (clC-clD)*d+clD;
-    % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
+    sizemap = @(d) (clC-clD)*d+clD; % linear
+    % sizemap = @(d) clD*clC./((clD-clC)*d+clC); % inverse
+    % p = 1/2; sizemap = @(d) clD*(clC/clD).^(d.^p); % power-exponential with shape parameter p
     
     %% Phase-field problem
     %% Material
@@ -257,12 +258,13 @@ if setProblem
     addbcdamageadapt = @(S_phase) addbcdamageAsymmetricNotchedPlateAdaptive(S_phase,C,H1,H2,H3);
     % findddlboundary = @(S_phase) findddl(S_phase,'T',LU);
     findddlboundary = @(S_phase) [];
-    
     if strcmpi(initialCrack,'geometriccrack')
-        S_phase = final(S_phase,'duplicate');
+        final = @(S_phase) final(S_phase,'duplicate');
     else
-        S_phase = final(S_phase);
+        final = @(S_phase) final(S_phase);
     end
+    
+    S_phase = final(S_phase);
     
     S_phase = addbcdamageadapt(S_phase);
     
@@ -276,7 +278,7 @@ if setProblem
         case 'gmsh'
             S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_asymmetric_notched_plate'),'gmshoptions',gmshoptions);
         case 'mmg'
-            S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_asymmetric_notched_plate'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+            S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_asymmetric_notched_plate'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'export'); % export to remove NodeData field in .msh file before copying to workers
         otherwise
             error('Wrong mesh adaptation software');
     end
@@ -284,11 +286,7 @@ if setProblem
     
     S_phase = setmaterial(S_phase,mat_phase);
     
-    if strcmpi(initialCrack,'geometriccrack')
-        S_phase = final(S_phase,'duplicate');
-    else
-        S_phase = final(S_phase);
-    end
+    S_phase = final(S_phase);
     
     S_phase = addbcdamage(S_phase);
     
@@ -356,11 +354,7 @@ if setProblem
     addbc = @(S,ud) addbcAsymmetricNotchedPlate(S,ud,PU,PL,PR);
     findddlforce = @(S) findddl(S,'UY',PU);
     
-    if strcmpi(initialCrack,'geometriccrack')
-        S = final(S,'duplicate');
-    else
-        S = final(S);
-    end
+    S = final(S);
     
     ud = 0;
     S = addbc(S,ud);
@@ -457,7 +451,7 @@ if solveProblem
     displayMesh = false;
     
     nbSamples = 1;
-    fun = @(S_phase,S,filename) solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
+    fun = @(S_phase,S,filename) solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
         'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
         'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
     % fun = @(S_phase,S,filename) solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,initialCrack,sizemap,...

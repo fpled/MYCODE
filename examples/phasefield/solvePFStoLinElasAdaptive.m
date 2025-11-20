@@ -3,11 +3,15 @@ function [ft_sample,dmaxt_sample,dt_sample,ut_sample,St_phase_sample,St_sample] 
 % Solve stochastic phase-field problem with mesh adaptation.
 
 fun = fcnchk(fun);
+f = functions(fun);
+meshAdapt = f.workspace{1}.meshAdapt;
 filename = getcharin('filename',varargin,'filename');
 pathname = getcharin('pathname',varargin,'.');
 nbSamples = getcharin('nbsamples',varargin,1);
 
 Dim = getdim(S);
+
+G = GMSHFILE(fullfile(pathname,filename));
 
 % Initialize samples
 ft_sample = zeros(N,length(T));
@@ -310,26 +314,27 @@ parfor i=1:N
     
     % Copy msh, mesh and sol files
     filenamei = [filename '_' num2str(i)];
-    G = GMSHFILE(fullfile(pathname,filename));
     Gi = GMSHFILE(fullfile(pathname,filenamei));
-    % command = ['cp ' getfile(G,'.geo')  ' ' getfile(Gi,'.geo')  ';' ...
-    %            'cp ' getfile(G,'.msh')  ' ' getfile(Gi,'.msh')  ';' ...
-    %            'cp ' getfile(G,'.mesh') ' ' getfile(Gi,'.mesh') ';' ...
-    %            'cp ' getfile(G,'.sol')  ' ' getfile(Gi,'.sol')];
-    % dos(command);
-    copyfile(getfile(G,'.geo'),getfile(Gi,'.geo'));
+    switch lower(meshAdapt)
+        case 'gmsh'
+            copyfile(getfile(G,'.geo'),getfile(Gi,'.geo'));
+            if exist(getfile(G,'.geo','post'),'file')
+                copyfile(getfile(G,'.geo','post'),getfile(Gi,'.geo','post'));
+            end
+        case 'mmg'
+            if exist(getfile(G,'.mesh'),'file')
+                copyfile(getfile(G,'.mesh'),getfile(Gi,'.mesh'));
+            end
+            if exist(getfile(G,'.sol'),'file')
+                copyfile(getfile(G,'.sol'),getfile(Gi,'.sol'));
+            end
+    end
     copyfile(getfile(G,'.msh'),getfile(Gi,'.msh'));
-    if exist(getfile(G,'.mesh'),'file')
-        copyfile(getfile(G,'.mesh'),getfile(Gi,'.mesh'));
-    end
-    if exist(getfile(G,'.sol'),'file')
-        copyfile(getfile(G,'.sol'),getfile(Gi,'.sol'));
-    end
     
     % Solve deterministic problem
     [dt,ut,ft,St_phase,St] = fun(S_phasei,Si,filenamei);
     dmaxt = cellfun(@(d) max(d),dt);
-
+    
     ft_sample(i,:) = ft;
     dmaxt_sample(i,:) = dmaxt;
     if i<=nbSamples

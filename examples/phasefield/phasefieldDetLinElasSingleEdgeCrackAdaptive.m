@@ -53,10 +53,10 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
-meshAdapt = 'Gmsh'; % 'Gmsh', 'Mmg'
+meshAdapt = 'Mmg'; % 'Gmsh', 'Mmg'
 switch lower(meshAdapt)
     case 'gmsh'
-        initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
+        initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
     case 'mmg'
         initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 end
@@ -197,8 +197,9 @@ if setProblem
             error('Wrong model for initial crack');
     end
     
-    sizemap = @(d) (clC-clD)*d+clD;
-    % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
+    sizemap = @(d) (clC-clD)*d+clD; % linear
+    % sizemap = @(d) clD*clC./((clD-clC)*d+clC); % inverse
+    % p = 1/2; sizemap = @(d) clD*(clC/clD).^(d.^p); % power-exponential with shape parameter p
     
     %% Phase-field problem
     %% Material
@@ -271,12 +272,13 @@ if setProblem
     addbcdamage = @(S_phase) addbcdamageSingleEdgeCrack(S_phase,C,initialCrack);
     addbcdamageadapt = @(S_phase) addcl(S_phase,C,'T',1);
     findddlboundary = @(S_phase) findddl(S_phase,'T',BRight);
-    
     if strcmpi(initialCrack,'geometriccrack')
-        S_phase = final(S_phase,'duplicate');
+        final = @(S_phase) final(S_phase,'duplicate');
     else
-        S_phase = final(S_phase);
+        final = @(S_phase) final(S_phase);
     end
+    
+    S_phase = final(S_phase);
     
     S_phase = addbcdamageadapt(S_phase);
     
@@ -298,11 +300,7 @@ if setProblem
     
     S_phase = setmaterial(S_phase,mat_phase);
     
-    if strcmpi(initialCrack,'geometriccrack')
-        S_phase = final(S_phase,'duplicate');
-    else
-        S_phase = final(S_phase);
-    end
+    S_phase = final(S_phase);
     
     S_phase = addbcdamage(S_phase);
     
@@ -429,11 +427,7 @@ if setProblem
             error('Wrong loading case');
     end
     
-    if strcmpi(initialCrack,'geometriccrack')
-        S = final(S,'duplicate');
-    else
-        S = final(S);
-    end
+    S = final(S);
     
     ud = 0;
     S = addbc(S,ud);
@@ -716,22 +710,22 @@ if solveProblem
         case 'isot' % isotropic material
             switch lower(PFsolver)
                 case {'historyfieldelem','historyfieldnode'}
-                    [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
+                    [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
                         'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
                         'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
                 otherwise
-                    [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
+                    [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
                         'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
                         'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
             end
         case 'anisot' % anisotropic material
             switch lower(PFsolver)
                 case {'historyfieldelem','historyfieldnode'}
-                    [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcadapt,findddlforce,findddlboundary,sizemap,...
+                    [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcadapt,findddlforce,findddlboundary,final,sizemap,...
                         'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
                         'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
                 otherwise
-                    [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
+                    [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
                         'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
                         'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
             end

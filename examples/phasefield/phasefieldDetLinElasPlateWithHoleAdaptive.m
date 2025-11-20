@@ -32,13 +32,7 @@ PFsolver = 'BoundConstrainedOptim'; % 'HistoryFieldElem', 'HistoryFieldNode' or 
 maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
-meshAdapt = 'Gmsh'; % 'Gmsh', 'Mmg'
-switch lower(meshAdapt)
-    case 'gmsh'
-        initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
-    case 'mmg'
-        initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
-end
+meshAdapt = 'Mmg'; % 'Gmsh', 'Mmg'
 
 % PFmodels = {'Bourdin','Amor','Miehe','HeAmor','HeFreddi','Zhang'};
 % PFsplits = {'Strain','Stress'};
@@ -168,8 +162,9 @@ if setProblem
         S_phase = gmshDomainWithHole(D,C,clD,clC,fullfile(pathname,'gmsh_plate_with_hole'),Dim,'extrude');
     end
     
-    sizemap = @(d) (clC-clD)*d+clD;
-    % sizemap = @(d) clD*clC./((clD-clC)*d+clC);
+    sizemap = @(d) (clC-clD)*d+clD; % linear
+    % sizemap = @(d) clD*clC./((clD-clC)*d+clC); % inverse
+    % p = 1/2; sizemap = @(d) clD*(clC/clD).^(d.^p); % power-exponential with shape parameter p
     
     %% Phase-field problem
     %% Material
@@ -215,7 +210,8 @@ if setProblem
     addbcdamage = @(S_phase) S_phase;
     addbcdamageadapt = @(S_phase) addcl(S_phase,C,'T',1);
     findddlboundary = @(S_phase) union(findddl(S_phase,'T',BRight),findddl(S_phase,'T',BLeft));
-    
+    final = @(S_phase) final(S_phase);
+
     S_phase = final(S_phase);
     
     S_phase = addbcdamageadapt(S_phase);
@@ -406,11 +402,11 @@ if solveProblem
     
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
+            [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
                 'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
         otherwise
-            [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,...
+            [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
                 'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
     end

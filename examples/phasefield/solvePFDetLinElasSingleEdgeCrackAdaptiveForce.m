@@ -330,12 +330,20 @@ for i=1:length(T)
         
         % Update phase field properties
         S_phase = setphasefieldproperties(S_phase,materials_phase);
-        S_phase = final(S_phase);
+        if strcmpi(initialCrack,'geometriccrack')
+            S_phase = final(S_phase,'duplicate');
+        else
+            S_phase = final(S_phase);
+        end
         S_phase = addbcdamageSingleEdgeCrack(S_phase,C,initialCrack);
         
         % Update material properties
         S = setmaterialproperties(S,materials);
-        S = final(S);
+        if strcmpi(initialCrack,'geometriccrack')
+            S = final(S,'duplicate');
+        else
+            S = final(S);
+        end
         S = addbcSingleEdgeCrack(S,ud,BU,BL,BLeft,BRight,BFront,BBack,loading);
         
         % Update fields

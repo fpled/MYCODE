@@ -345,12 +345,20 @@ while ti < tf-eps
         
         % Update phase field properties
         S_phase = setphasefieldproperties(S_phase,materials_phase);
-        S_phase = final(S_phase);
+        if strcmpi(initialCrack,'geometriccrack')
+            S_phase = final(S_phase,'duplicate');
+        else
+            S_phase = final(S_phase);
+        end
         S_phase = addbcdamageAsymmetricNotchedPlate(S_phase,C,BU,BL,BR,initialCrack);
         
         % Update material properties
         S = setmaterialproperties(S,materials);
-        S = final(S);
+        if strcmpi(initialCrack,'geometriccrack')
+            S = final(S,'duplicate');
+        else
+            S = final(S);
+        end
         S = addbcAsymmetricNotchedPlate(S,ud,PU,PL,PR);
         
         % Update fields

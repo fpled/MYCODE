@@ -1,5 +1,5 @@
-function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,varargin)
-% function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,sizemap,varargin)
+function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,varargin)
+% function [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,varargin)
 % Solve deterministic phase-field problem with mesh adaptation.
 
 addbc = fcnchk(addbc);
@@ -7,6 +7,7 @@ addbcdamage = fcnchk(addbcdamage);
 addbcdamageadapt = fcnchk(addbcdamageadapt);
 findddlforce = fcnchk(findddlforce);
 findddlboundary = fcnchk(findddlboundary);
+final = fcnchk(final);
 display_ = getcharin('display',varargin,true);
 displayIter = getcharin('displayiter',varargin,false);
 displaySol = getcharin('displaysol',varargin,false);
