@@ -27,7 +27,8 @@ pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+% formats = {'fig','epsc'};
+formats = {'fig','epsc','png'};
 
 Scal = 1;
 Unitx = '[mm]';
@@ -50,10 +51,10 @@ FD = cell(numDowels,1);
 mlD = cell(numDowels,1);
 angleD = cell(numDowels,1);
 kD = cell(numDowels,1);
+pD = zeros(numDowels,2);
 mean_KD_data = zeros(numDowels,1);
 
-% for j=1:numDowels
-for j=2
+for j=1:numDowels
     
     numSample = ['D' num2str(j)];
     numSamplea = ['D' num2str(j) 'a'];
@@ -68,7 +69,6 @@ for j=2
     angle = zeros(numImages,1);
     
     for k=1:numImages
-    % for k=[3,numImages]
         
         numImage = num2str(k,'%02d');
         filenameDICa = [numSamplea '_00-' numImage '-Mesh'];
@@ -103,8 +103,8 @@ for j=2
             elem_a = TRI_a;
             elem_b = TRI_b;
             elemtype = 'TRI3';
-            S_a = MODEL('PLAN');
-            S_b = MODEL('PLAN');
+            S_a = MODEL('PLANE');
+            S_b = MODEL('PLANE');
             S_a = addnode(S_a,node_a);
             S_b = addnode(S_b,node_b);
             S_a = addelem(S_a,elemtype,elem_a);
@@ -125,49 +125,88 @@ for j=2
             axis image
         end
         
-        points_a = find(coordy_a>=max(coordy_a)-cl_a/3);
-        points_b = find(coordy_b<=min(coordy_b)+cl_b/3 &...
-            coordx_b<=max(coordx_a));
+        points_a_left = find(coordx_a<min(coordx_a)+cl_a/3 &...
+            coordy_a>=(min(coordy_a)+max(coordy_a))/2);
+        points_a_right = find(coordx_a>max(coordx_a)-cl_a/3 &...
+            coordy_a>=(min(coordy_a)+max(coordy_a))/2);
+        points_b_bot = find(coordy_b<min(coordy_b)+cl_b/3);
+        points_b_top = find(coordy_b>max(coordy_b)-cl_b/3);
         
-        % initial line1 and line2
-        L1x0 = coordx_a(points_a);
-        L1y0 = coordy_a(points_a);
-        [L1x0_sort,index] = sort(L1x0);
-        L1y0_sort = L1y0(index);
-        fit10 = polyfit(L1x0_sort,L1y0_sort,1);
-        val10 = polyval(fit10,L1x0_sort);
+        % initial line a and line b
+        x0a_left = coordx_a(points_a_left);
+        y0a_left = coordy_a(points_a_left);
+        [y0a_left_sort,index] = sort(y0a_left);
+        x0a_left_sort = x0a_left(index);
+        p0a_left = polyfit(y0a_left_sort,x0a_left_sort,1);
         
-        L2x0 = coordx_b(points_b);
-        L2y0 = coordy_b(points_b);
-        [L2x0_sort,index] = sort(L2x0);
-        L2y0_sort = L2y0(index);
-        fit20 = polyfit(L2x0_sort,L2y0_sort,1);
-        val20 = polyval(fit20,L2x0_sort);
+        x0a_right = coordx_a(points_a_right);
+        y0a_right = coordy_a(points_a_right);
+        [y0a_right_sort,index] = sort(y0a_right);
+        x0a_right_sort = x0a_right(index);
+        p0a_right = polyfit(y0a_right_sort,x0a_right_sort,1);
         
-        % deformed line1 and line2
-        L1x = coordx_a(points_a)+u_exp_a(2*points_a-1);
-        L1y = coordy_a(points_a)+u_exp_a(2*points_a);
-        [L1x_sort,index] = sort(L1x);
-        L1y_sort = L1y(index);
-        fit1 = polyfit(L1x_sort,L1y_sort,1);
-        val1 = polyval(fit1,L1x_sort);
+        p0a = (p0a_left+p0a_right)/2;
+        y0a = [min(y0a_left_sort(1),y0a_right_sort(1)),max(y0a_left_sort(end),y0a_right_sort(end))];
+        x0a = polyval(p0a,y0a);
         
-        L2x = coordx_b(points_b)+u_exp_b(2*points_b-1);
-        L2y = coordy_b(points_b)+u_exp_b(2*points_b);
-        [L2x_sort,index] = sort(L2x);
-        L2y_sort = L2y(index);
-        fit2 = polyfit(L2x_sort,L2y_sort,1);
-        val2 = polyval(fit2,L2x_sort);
+        x0b_bot = coordx_b(points_b_bot);
+        y0b_bot = coordy_b(points_b_bot);
+        [x0b_bot_sort,index] = sort(x0b_bot);
+        y0b_bot_sort = y0b_bot(index);
+        p0b_bot = polyfit(x0b_bot_sort,y0b_bot_sort,1);
+        
+        x0b_top = coordx_b(points_b_top);
+        y0b_top = coordy_b(points_b_top);
+        [x0b_top_sort,index] = sort(x0b_top);
+        y0b_top_sort = y0b_top(index);
+        p0b_top = polyfit(x0b_top_sort,y0b_top_sort,1);
+        
+        p0b = (p0b_bot+p0b_top)/2;
+        x0b = [min(x0b_bot_sort(1),x0b_top_sort(1)),max(x0b_bot_sort(end),x0b_top_sort(end))];
+        y0b = polyval(p0b,x0b);
+        
+        % deformed line a and line b
+        xa_left = coordx_a(points_a_left)+u_exp_a(2*points_a_left-1);
+        ya_left = coordy_a(points_a_left)+u_exp_a(2*points_a_left);
+        [ya_left_sort,index] = sort(ya_left);
+        xa_left_sort = xa_left(index);
+        pa_left = polyfit(ya_left_sort,xa_left_sort,1);
+        
+        xa_right = coordx_a(points_a_right)+u_exp_a(2*points_a_right-1);
+        ya_right = coordy_a(points_a_right)+u_exp_a(2*points_a_right);
+        [ya_right_sort,index] = sort(ya_right);
+        xa_right_sort = xa_right(index);
+        pa_right = polyfit(ya_right_sort,xa_right_sort,1);
+        
+        pa = (pa_left+pa_right)/2;
+        ya = [min(ya_left_sort(1),ya_right_sort(1)),max(ya_left_sort(end),ya_right_sort(end))];
+        xa = polyval(pa,ya);
+        
+        xb_bot = coordx_b(points_b_bot)+u_exp_b(2*points_b_bot-1);
+        yb_bot = coordy_b(points_b_bot)+u_exp_b(2*points_b_bot);
+        [xb_bot_sort,index] = sort(xb_bot);
+        yb_bot_sort = yb_bot(index);
+        pb_bot = polyfit(xb_bot_sort,yb_bot_sort,1);
+        
+        xb_top = coordx_b(points_b_top)+u_exp_b(2*points_b_top-1);
+        yb_top = coordy_b(points_b_top)+u_exp_b(2*points_b_top);
+        [xb_top_sort,index] = sort(xb_top);
+        yb_top_sort = yb_top(index);
+        pb_top = polyfit(xb_top_sort,yb_top_sort,1);
+        
+        pb = (pb_bot+pb_top)/2;
+        xb = [min(xb_bot_sort(1),xb_top_sort(1)),max(xb_bot_sort(end),xb_top_sort(end))];
+        yb = polyval(pb,xb);
         
         %-----------------------------
         % initial and deformed angles of junction
         %-----------------------------
-        t = [L1x0_sort(end)-L1x0_sort(1) val10(end)-val10(1)];
-        s = [L2x0_sort(end)-L2x0_sort(1) val20(end)-val20(1)];
-        delta0 = acosd(abs(t*s')/(norm(t)*norm(s)));
+        t0 = [x0a(end)-x0a(1) y0a(end)-y0a(1)];
+        s0 = [x0b(end)-x0b(1) y0b(end)-y0b(1)];
+        delta0 = acosd(abs(t0*s0')/(norm(t0)*norm(s0)));
         
-        t = [L1x_sort(end)-L1x_sort(1) val1(end)-val1(1)];
-        s = [L2x_sort(end)-L2x_sort(1) val2(end)-val2(1)];
+        t = [xa(end)-xa(1) ya(end)-ya(1)];
+        s = [xb(end)-xb(1) yb(end)-yb(1)];
         delta = acosd(abs(t*s')/(norm(t)*norm(s)));
         
         angle(k) = abs(delta0-delta);
@@ -181,8 +220,8 @@ for j=2
             triplot(TRI_a,coordx_a,coordy_a,'k');
             hold on
             triplot(TRI_b,coordx_b,coordy_b,'k');
-            plot(L1x0,L1y0,'b.',L1x0_sort,val10,'b','LineWidth',linewidth);
-            plot(L2x0,L2y0,'b.',L2x0_sort,val20,'b','LineWidth',linewidth);
+            plot(x0a_left,y0a_left,'b.',x0a_right,y0a_right,'b.',x0a,y0a,'b','LineWidth',linewidth);
+            plot(x0b_bot,y0b_bot,'b.',x0b_top,y0b_top,'b.',x0b,y0b,'b','LineWidth',linewidth);
             hold off
             axis image
             grid on
@@ -195,36 +234,50 @@ for j=2
             mysaveas(pathname,['best_fit_line_mesh_init_' numSample '_00'],formats);
         end
         
-        L1x = coordx_a(points_a)+Scal*u_exp_a(2*points_a-1);
-        L1y = coordy_a(points_a)+Scal*u_exp_a(2*points_a);
-        [L1x_sort,index] = sort(L1x);
-        L1y_sort = L1y(index);
-        fit1 = polyfit(L1x_sort,L1y_sort,1);
-        val1 = polyval(fit1,L1x_sort);
+        xa_left = coordx_a(points_a_left)+Scal*u_exp_a(2*points_a_left-1);
+        ya_left = coordy_a(points_a_left)+Scal*u_exp_a(2*points_a_left);
+        [ya_left_sort,index] = sort(ya_left);
+        xa_left_sort = xa_left(index);
+        pa_left = polyfit(ya_left_sort,xa_left_sort,1);
         
-        L2x = coordx_b(points_b)+Scal*u_exp_b(2*points_b-1);
-        L2y = coordy_b(points_b)+Scal*u_exp_b(2*points_b);
-        [L2x_sort,index] = sort(L2x);
-        L2y_sort = L2y(index);
-        fit2 = polyfit(L2x_sort,L2y_sort,1);
-        val2 = polyval(fit2,L2x_sort);
+        xa_right = coordx_a(points_a_right)+Scal*u_exp_a(2*points_a_right-1);
+        ya_right = coordy_a(points_a_right)+Scal*u_exp_a(2*points_a_right);
+        [ya_right_sort,index] = sort(ya_right);
+        xa_right_sort = xa_right(index);
+        pa_right = polyfit(ya_right_sort,xa_right_sort,1);
+        
+        pa = (pa_left+pa_right)/2;
+        ya = [min(ya_left_sort(1),ya_right_sort(1)),max(ya_left_sort(end),ya_right_sort(end))];
+        xa = polyval(pa,ya);
+        
+        xb_bot = coordx_b(points_b_bot)+Scal*u_exp_b(2*points_b_bot-1);
+        yb_bot = coordy_b(points_b_bot)+Scal*u_exp_b(2*points_b_bot);
+        [xb_bot_sort,index] = sort(xb_bot);
+        yb_bot_sort = yb_bot(index);
+        pb_bot = polyfit(xb_bot_sort,yb_bot_sort,1);
+        
+        xb_top = coordx_b(points_b_top)+Scal*u_exp_b(2*points_b_top-1);
+        yb_top = coordy_b(points_b_top)+Scal*u_exp_b(2*points_b_top);
+        [xb_top_sort,index] = sort(xb_top);
+        yb_top_sort = yb_top(index);
+        pb_top = polyfit(xb_top_sort,yb_top_sort,1);
+        
+        pb = (pb_bot+pb_top)/2;
+        xb = [min(xb_bot_sort(1),xb_top_sort(1)),max(xb_bot_sort(end),xb_top_sort(end))];
+        yb = polyval(pb,xb);
         
         %--------------------------------
         % Best fit line of deformed mesh
         %--------------------------------
-        if displayMesh
+        if displayMesh && k==min(3,numImages)
             figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of deformed mesh'])
             triplot(TRI_a,coordx_a+Scal*u_exp_a(1:2:end),...
                 coordy_a+Scal*u_exp_a(2:2:end),'r');
             hold on
             triplot(TRI_b,coordx_b+Scal*u_exp_b(1:2:end),...
                 coordy_b+Scal*u_exp_b(2:2:end),'r');
-            plot(coordx_a(points_a)+Scal*u_exp_a(2*points_a-1),...
-                coordy_a(points_a)+Scal*u_exp_a(2*points_a),'b.',...
-                L1x_sort,val1,'b','LineWidth',linewidth);
-            plot(coordx_b(points_b)+Scal*u_exp_b(2*points_b-1),...
-                coordy_b(points_b)+Scal*u_exp_b(2*points_b),'b.',...
-                L2x_sort,val2,'b','LineWidth',linewidth);
+            plot(xa_left,ya_left,'b.',xa_right,ya_right,'b.',xa,ya,'b','LineWidth',linewidth);
+            plot(xb_bot,yb_bot,'b.',xb_top,yb_top,'b.',xb,yb,'b','LineWidth',linewidth);
             hold off
             axis image
             grid on
@@ -239,7 +292,7 @@ for j=2
         %-------------------------------
         % Reference and deformed meshes
         %-------------------------------
-        if displayMesh
+        if displayMesh && k==min(3,numImages)
             figure('name',['Sample ' numSample ' - Image ' numImage ': Reference and deformed meshes'])
             triplot(TRI_a,coordx_a,coordy_a,'k');
             hold on
@@ -276,27 +329,37 @@ for j=2
     
     toc(time)
     
-    FD{j} = F; % [N]
-    mlD{j} = ml; % [N.m/m]
-    angleD{j} = angle; % [deg]
-    kD{j} = ml./deg2rad(angle)'; % [N/rad]
-    mean_KD_data(j) = mean(kD{j}); % [N/rad]
+    if j==1 || j==3 || j==5 || j==6
+        keptImages = 1:numImages-1;
+    elseif j==2
+        keptImages = 1:numImages-2;
+    else
+        keptImages = 1:numImages;
+    end
+    FD{j} = F(keptImages); % [N]
+    mlD{j} = ml(keptImages); % [N.m/m]
+    angleD{j} = angle(keptImages); % [deg]
+    kD{j} = mlD{j}./deg2rad(angleD{j}); % [N/rad]
+    % mean_KD_data(j) = mean(kD{j}); % [N/rad]
+    % pD(j,:) = [mean_KD_data(j) 0];
+    pD(j,:) = polyfit(deg2rad(angleD{j}),mlD{j},1); % linear fit
+    mean_KD_data(j) = pD(j,1); % [N/rad]
 end
 
 %% Save variables
 save(fullfile(pathname,filename),'numDowels',...
-    'FD','mlD','angleD','kD','mean_KD_data');
+    'FD','mlD','angleD','kD','pD','mean_KD_data');
 else
 %% Load variables
 load(fullfile(pathname,filename),'numDowels',...
-    'FD','mlD','angleD','kD','mean_KD_data');
+    'FD','mlD','angleD','kD','pD','mean_KD_data');
 end
 
 %% Statistics
 fprintf('\nDowel junctions: Bending stiffness per unit length kD\n');
-fprintf('mean(kD) = %g kN/rad\n',mean(mean_KD_data));
-fprintf('var(kD)  = %g (kN/rad)^2\n',var(mean_KD_data));
-fprintf('std(kD)  = %g kN/rad\n',std(mean_KD_data));
+fprintf('mean(kD) = %g kN/rad\n',mean(mean_KD_data)*1e-3);
+fprintf('var(kD)  = %g (kN/rad)^2\n',var(mean_KD_data)*1e-6);
+fprintf('std(kD)  = %g kN/rad\n',std(mean_KD_data)*1e-3);
 fprintf('cv(kD)   = %g\n',std(mean_KD_data)/mean(mean_KD_data));
 
 %% Plot data
@@ -306,71 +369,75 @@ if displaySolution
     for j=1:numDowels
         numSample = ['D' num2str(j)];
         
-        figure('name',['Dowel junction ' numSample ': Variation of angle w.r.t. bending moment per unit length'])
+        figure('name',['Dowel junction ' numSample ': bending moment per unit length w.r.t. variation of angle'])
         clf
-        plot(mlD{j},angleD{j},'+b','LineWidth',linewidth)
+        plot(angleD{j},mlD{j},'+b','LineWidth',linewidth)
         hold on
-        plot(mlD{j},rad2deg(mlD{j}./mean_KD_data(j)),'-r','LineWidth',linewidth)
+        plot(angleD{j},polyval(pD(j,:),deg2rad(angleD{j})),'-r','LineWidth',linewidth)
         hold off
         grid on
         set(gca,'FontSize',fontsize)
-        xlabel('Bending moment per unit length [N.m/m]','Interpreter',interpreter);
-        ylabel('Variation of angle [deg]','Interpreter',interpreter);
-        %xlabel('Moment lin\''eique de flexion [N.m/m]','Interpreter',interpreter);
-        %ylabel('Variation d''angle [deg]','Interpreter',interpreter);
-        mysaveas(pathname,['data_angle_moment_' numSample],formats);
-        mymatlab2tikz(pathname,['data_angle_moment_' numSample '.tex']);
+        set(gca,'XLim',[0,inf])
+        set(gca,'YLim',[0,inf])
+        xlabel('Variation of angle [deg]','Interpreter',interpreter);
+        ylabel('Bending moment per unit length [N.m/m]','Interpreter',interpreter);
+        %xlabel('Variation d''angle [deg]','Interpreter',interpreter);
+        %ylabel('Moment lin\''eique de flexion [N.m/m]','Interpreter',interpreter);
+        mysaveas(pathname,['data_moment_angle_' numSample],formats);
+        mymatlab2tikz(pathname,['data_moment_angle_' numSample '.tex']);
         
-        figure('name',['Dowel junction ' numSample ': Bending stiffness per unit length w.r.t. applied load'])
-        clf
-        plot(FD{j},kD{j}*1e-3,'+b','LineWidth',linewidth)
-        grid on
-        set(gca,'FontSize',fontsize)
-        xlabel('Applied load [N]','Interpreter',interpreter);
-        ylabel('Bending stiffness per unit length [kN/rad]','Interpreter',interpreter);
-        %xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
-        %ylabel('Rigidit\''e lin\''eique en flexion [kN/rad]','Interpreter',interpreter);
-        mysaveas(pathname,['data_stiffness_load_' numSample],formats);
-        mymatlab2tikz(pathname,['data_stiffness_load_' numSample '.tex']);
+        % figure('name',['Dowel junction ' numSample ': Bending stiffness per unit length w.r.t. applied load'])
+        % clf
+        % plot(FD{j},kD{j}*1e-3,'+b','LineWidth',linewidth)
+        % grid on
+        % set(gca,'FontSize',fontsize)
+        % xlabel('Applied load [N]','Interpreter',interpreter);
+        % ylabel('Bending stiffness per unit length [kN/rad]','Interpreter',interpreter);
+        % %xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
+        % %ylabel('Rigidit\''e lin\''eique en flexion [kN/rad]','Interpreter',interpreter);
+        % mysaveas(pathname,['data_stiffness_load_' numSample],formats);
+        % mymatlab2tikz(pathname,['data_stiffness_load_' numSample '.tex']);
     end
     
-    figure('name','Dowel junctions: Variation of angle w.r.t. bending moment per unit length')
+    figure('name','Dowel junctions: Bending moment per unit length w.r.t. variation of angle')
     clf
     leg = cell(numDowels,1);
     h = gobjects(numDowels,1);
     for j=1:numDowels
-        plot(mlD{j},angleD{j},'+','Color',colors(j,:),'LineWidth',linewidth)
+        plot(angleD{j},mlD{j},'+','Color',colors(j,:),'LineWidth',linewidth)
         hold on
-        h(j) = plot(mlD{j},rad2deg(mlD{j}./mean_KD_data(j)),'LineStyle','-','Color',colors(j,:),'LineWidth',linewidth);
+        h(j) = plot(angleD{j},polyval(pD(j,:),deg2rad(angleD{j})),'LineStyle','-','Color',colors(j,:),'LineWidth',linewidth);
         leg{j} = ['Sample #' num2str(j)];
     end
     grid on
     set(gca,'FontSize',fontsize)
-    xlabel('Bending moment per unit length [N.m/m]','Interpreter',interpreter);
-    ylabel('Variation of angle [deg]','Interpreter',interpreter);
-    %xlabel('Moment lin\''eique de flexion [N.m/m]','Interpreter',interpreter);
-    %ylabel('Variation d''angle [deg]','Interpreter',interpreter);
+    set(gca,'XLim',[0,inf])
+    set(gca,'YLim',[0,inf])
+    xlabel('Variation of angle [deg]','Interpreter',interpreter);
+    ylabel('Bending moment per unit length [N.m/m]','Interpreter',interpreter);
+    %xlabel('Variation d''angle [deg]','Interpreter',interpreter);
+    %ylabel('Moment lin\''eique de flexion [N.m/m]','Interpreter',interpreter);
     legend(h(:),leg{:},'Location','NorthEastOutside')
-    mysaveas(pathname,'data_angle_moment_D',formats);
-    mymatlab2tikz(pathname,'data_angle_moment_D.tex');
+    mysaveas(pathname,'data_moment_angle_D',formats);
+    mymatlab2tikz(pathname,'data_moment_angle_D.tex');
     
-    figure('name','Dowel junctions: Bending stiffness per unit length w.r.t. applied load')
-    clf
-    leg = cell(numDowels,1);
-    for j=1:numDowels
-        plot(FD{j},kD{j}*1e-3,'+','Color',colors(j,:),'LineWidth',linewidth)
-        hold on
-        leg{j} = ['Sample #' num2str(j)];
-    end
-    grid on
-    set(gca,'FontSize',fontsize)
-    xlabel('Applied load [N]','Interpreter',interpreter);
-    ylabel('Bending stiffness per unit length [kN/rad]','Interpreter',interpreter);
-    %xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
-    %ylabel('Rigidit\''e lin\''eique en flexion [kN/rad]','Interpreter',interpreter);
-    legend(leg{:},'Location','NorthEastOutside')
-    mysaveas(pathname,'data_stiffness_load_D',formats);
-    mymatlab2tikz(pathname,'data_stiffness_load_D.tex');
+    % figure('name','Dowel junctions: Bending stiffness per unit length w.r.t. applied load')
+    % clf
+    % leg = cell(numDowels,1);
+    % for j=1:numDowels
+    %     plot(FD{j},kD{j}*1e-3,'+','Color',colors(j,:),'LineWidth',linewidth)
+    %     hold on
+    %     leg{j} = ['Sample #' num2str(j)];
+    % end
+    % grid on
+    % set(gca,'FontSize',fontsize)
+    % xlabel('Applied load [N]','Interpreter',interpreter);
+    % ylabel('Bending stiffness per unit length [kN/rad]','Interpreter',interpreter);
+    % %xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
+    % %ylabel('Rigidit\''e lin\''eique en flexion [kN/rad]','Interpreter',interpreter);
+    % legend(leg{:},'Location','NorthEastOutside')
+    % mysaveas(pathname,'data_stiffness_load_D',formats);
+    % mymatlab2tikz(pathname,'data_stiffness_load_D.tex');
     
     figure('Name','Dowel junctions: Bending stiffness per unit length')
     clf

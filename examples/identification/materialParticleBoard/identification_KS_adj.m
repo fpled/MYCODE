@@ -124,88 +124,49 @@ for j=1:numScrews
             axis image
         end
         
-        points_a_left = find(coordx_a<min(coordx_a)+cl_a/3 &...
+        points_a = find(coordx_a>max(coordx_a)-cl_a/3 &...
             coordy_a>=min(coordy_b));
-        points_a_right = find(coordx_a>max(coordx_a)-cl_a/3 &...
-            coordy_a>=min(coordy_b));
-        points_b_bot = find(coordy_b<min(coordy_b)+cl_b/3);
-        points_b_top = find(coordy_b>max(coordy_b)-cl_b/3);
+        points_b = find(coordx_b<min(coordx_b)+cl_b/3);
         
         % initial line a and line b
-        x0a_left = coordx_a(points_a_left);
-        y0a_left = coordy_a(points_a_left);
-        [y0a_left_sort,index] = sort(y0a_left);
-        x0a_left_sort = x0a_left(index);
-        p0a_left = polyfit(y0a_left_sort,x0a_left_sort,1);
+        x0a = coordx_a(points_a);
+        y0a = coordy_a(points_a);
+        [y0a_sort,index] = sort(y0a);
+        x0a_sort = x0a(index);
+        p0a = polyfit(y0a_sort,x0a_sort,1);
+        v0a = polyval(p0a,y0a_sort);
         
-        x0a_right = coordx_a(points_a_right);
-        y0a_right = coordy_a(points_a_right);
-        [y0a_right_sort,index] = sort(y0a_right);
-        x0a_right_sort = x0a_right(index);
-        p0a_right = polyfit(y0a_right_sort,x0a_right_sort,1);
-        
-        p0a = (p0a_left+p0a_right)/2;
-        y0a = [min(y0a_left_sort(1),y0a_right_sort(1)),max(y0a_left_sort(end),y0a_right_sort(end))];
-        x0a = polyval(p0a,y0a);
-        
-        x0b_bot = coordx_b(points_b_bot);
-        y0b_bot = coordy_b(points_b_bot);
-        [x0b_bot_sort,index] = sort(x0b_bot);
-        y0b_bot_sort = y0b_bot(index);
-        p0b_bot = polyfit(x0b_bot_sort,y0b_bot_sort,1);
-        
-        x0b_top = coordx_b(points_b_top);
-        y0b_top = coordy_b(points_b_top);
-        [x0b_top_sort,index] = sort(x0b_top);
-        y0b_top_sort = y0b_top(index);
-        p0b_top = polyfit(x0b_top_sort,y0b_top_sort,1);
-        
-        p0b = (p0b_bot+p0b_top)/2;
-        x0b = [min(x0b_bot_sort(1),x0b_top_sort(1)),max(x0b_bot_sort(end),x0b_top_sort(end))];
-        y0b = polyval(p0b,x0b);
+        x0b = coordx_b(points_b);
+        y0b = coordy_b(points_b);
+        [y0b_sort,index] = sort(y0b);
+        x0b_sort = x0b(index);
+        p0b = polyfit(y0b_sort,x0b_sort,1);
+        v0b = polyval(p0b,y0b_sort);
         
         % deformed line a and line b
-        xa_left = coordx_a(points_a_left)+u_exp_a(2*points_a_left-1);
-        ya_left = coordy_a(points_a_left)+u_exp_a(2*points_a_left);
-        [ya_left_sort,index] = sort(ya_left);
-        xa_left_sort = xa_left(index);
-        pa_left = polyfit(ya_left_sort,xa_left_sort,1);
+        xa = coordx_a(points_a)+u_exp_a(2*points_a-1);
+        ya = coordy_a(points_a)+u_exp_a(2*points_a);
+        [ya_sort,index] = sort(ya);
+        xa_sort = xa(index);
+        pa = polyfit(ya_sort,xa_sort,1);
+        va = polyval(pa,ya_sort);
         
-        xa_right = coordx_a(points_a_right)+u_exp_a(2*points_a_right-1);
-        ya_right = coordy_a(points_a_right)+u_exp_a(2*points_a_right);
-        [ya_right_sort,index] = sort(ya_right);
-        xa_right_sort = xa_right(index);
-        pa_right = polyfit(ya_right_sort,xa_right_sort,1);
-        
-        pa = (pa_left+pa_right)/2;
-        ya = [min(ya_left_sort(1),ya_right_sort(1)),max(ya_left_sort(end),ya_right_sort(end))];
-        xa = polyval(pa,ya);
-        
-        xb_bot = coordx_b(points_b_bot)+u_exp_b(2*points_b_bot-1);
-        yb_bot = coordy_b(points_b_bot)+u_exp_b(2*points_b_bot);
-        [xb_bot_sort,index] = sort(xb_bot);
-        yb_bot_sort = yb_bot(index);
-        pb_bot = polyfit(xb_bot_sort,yb_bot_sort,1);
-        
-        xb_top = coordx_b(points_b_top)+u_exp_b(2*points_b_top-1);
-        yb_top = coordy_b(points_b_top)+u_exp_b(2*points_b_top);
-        [xb_top_sort,index] = sort(xb_top);
-        yb_top_sort = yb_top(index);
-        pb_top = polyfit(xb_top_sort,yb_top_sort,1);
-        
-        pb = (pb_bot+pb_top)/2;
-        xb = [min(xb_bot_sort(1),xb_top_sort(1)),max(xb_bot_sort(end),xb_top_sort(end))];
-        yb = polyval(pb,xb);
+        xb = coordx_b(points_b)+u_exp_b(2*points_b-1);
+        yb = coordy_b(points_b)+u_exp_b(2*points_b);
+        [yb_sort,index] = sort(yb);
+        xb_sort = xb(index);
+        pb = polyfit(yb_sort,xb_sort,1);
+        vb = polyval(pb,yb_sort);
         
         %-----------------------------
         % initial and deformed angles of junction
         %-----------------------------
-        t0 = [x0a(end)-x0a(1) y0a(end)-y0a(1)];
-        s0 = [x0b(end)-x0b(1) y0b(end)-y0b(1)];
+        t0 = [v0a(end)-v0a(1) y0a_sort(end)-y0a_sort(1)];
+        s0 = [v0b(end)-v0b(1) y0b_sort(end)-y0b_sort(1)];
         delta0 = acosd(abs(t0*s0')/(norm(t0)*norm(s0)));
         
-        t = [xa(end)-xa(1) ya(end)-ya(1)];
-        s = [xb(end)-xb(1) yb(end)-yb(1)];
+        t = [va(end)-va(1) ya_sort(end)-ya_sort(1)];
+        s = [vb(end)-vb(1) yb_sort(end)-yb_sort(1)];
         delta = acosd(abs(t*s')/(norm(t)*norm(s)));
         
         angle(k) = abs(delta0-delta);
@@ -219,8 +180,8 @@ for j=1:numScrews
             triplot(TRI_a,coordx_a,coordy_a,'k');
             hold on
             triplot(TRI_b,coordx_b,coordy_b,'k');
-            plot(x0a_left,y0a_left,'b.',x0a_right,y0a_right,'b.',x0a,y0a,'b','LineWidth',linewidth);
-            plot(x0b_bot,y0b_bot,'b.',x0b_top,y0b_top,'b.',x0b,y0b,'b','LineWidth',linewidth);
+            plot(x0a,y0a,'b.',v0a,y0a_sort,'b','LineWidth',linewidth);
+            plot(x0b,y0b,'b.',v0b,y0b_sort,'b','LineWidth',linewidth);
             hold off
             axis image
             grid on
@@ -233,37 +194,19 @@ for j=1:numScrews
             mysaveas(pathname,['best_fit_line_mesh_init_' numSample '_00'],formats);
         end
         
-        xa_left = coordx_a(points_a_left)+Scal*u_exp_a(2*points_a_left-1);
-        ya_left = coordy_a(points_a_left)+Scal*u_exp_a(2*points_a_left);
-        [ya_left_sort,index] = sort(ya_left);
-        xa_left_sort = xa_left(index);
-        pa_left = polyfit(ya_left_sort,xa_left_sort,1);
+        xa = coordx_a(points_a)+Scal*u_exp_a(2*points_a-1);
+        ya = coordy_a(points_a)+Scal*u_exp_a(2*points_a);
+        [ya_sort,index] = sort(ya);
+        xa_sort = xa(index);
+        pa = polyfit(ya_sort,xa_sort,1);
+        va = polyval(pa,ya_sort);
         
-        xa_right = coordx_a(points_a_right)+Scal*u_exp_a(2*points_a_right-1);
-        ya_right = coordy_a(points_a_right)+Scal*u_exp_a(2*points_a_right);
-        [ya_right_sort,index] = sort(ya_right);
-        xa_right_sort = xa_right(index);
-        pa_right = polyfit(ya_right_sort,xa_right_sort,1);
-        
-        pa = (pa_left+pa_right)/2;
-        ya = [min(ya_left_sort(1),ya_right_sort(1)),max(ya_left_sort(end),ya_right_sort(end))];
-        xa = polyval(pa,ya);
-        
-        xb_bot = coordx_b(points_b_bot)+Scal*u_exp_b(2*points_b_bot-1);
-        yb_bot = coordy_b(points_b_bot)+Scal*u_exp_b(2*points_b_bot);
-        [xb_bot_sort,index] = sort(xb_bot);
-        yb_bot_sort = yb_bot(index);
-        pb_bot = polyfit(xb_bot_sort,yb_bot_sort,1);
-        
-        xb_top = coordx_b(points_b_top)+Scal*u_exp_b(2*points_b_top-1);
-        yb_top = coordy_b(points_b_top)+Scal*u_exp_b(2*points_b_top);
-        [xb_top_sort,index] = sort(xb_top);
-        yb_top_sort = yb_top(index);
-        pb_top = polyfit(xb_top_sort,yb_top_sort,1);
-        
-        pb = (pb_bot+pb_top)/2;
-        xb = [min(xb_bot_sort(1),xb_top_sort(1)),max(xb_bot_sort(end),xb_top_sort(end))];
-        yb = polyval(pb,xb);
+        xb = coordx_b(points_b)+Scal*u_exp_b(2*points_b-1);
+        yb = coordy_b(points_b)+Scal*u_exp_b(2*points_b);
+        [yb_sort,index] = sort(yb);
+        xb_sort = xb(index);
+        pb = polyfit(yb_sort,xb_sort,1);
+        vb = polyval(pb,yb_sort);
         
         %--------------------------------
         % Best fit line of deformed mesh
@@ -275,8 +218,8 @@ for j=1:numScrews
             hold on
             triplot(TRI_b,coordx_b+Scal*u_exp_b(1:2:end),...
                 coordy_b+Scal*u_exp_b(2:2:end),'r');
-            plot(xa_left,ya_left,'b.',xa_right,ya_right,'b.',xa,ya,'b','LineWidth',linewidth);
-            plot(xb_bot,yb_bot,'b.',xb_top,yb_top,'b.',xb,yb,'b','LineWidth',linewidth);
+            plot(xa,ya,'b.',va,ya_sort,'b','LineWidth',linewidth);
+            plot(xb,yb,'b.',vb,yb_sort,'b','LineWidth',linewidth);
             hold off
             axis image
             grid on
@@ -314,7 +257,7 @@ for j=1:numScrews
     end
     
     %% Outputs
-    % fprintf('\n')
+    fprintf('\n')
     disp('+-----------------------+')
     fprintf('| Sample S%2d            |\n',j)
     disp('+-------+---------------+-----------+------------------+')
@@ -329,12 +272,12 @@ for j=1:numScrews
     toc(time)
     
     % keptImages = 2:numImages-1;
-    if j==3
-        keptImages = 1:numImages-3;
-    elseif j==4 || j==6 || j==8 || j==10 || j==12
-        keptImages = 1:numImages-2;
-    elseif j==2 || j==9 || j==11 || j==15
+    if j==1 || j==2 || j==4 || j==8 || j==9 || j==13 || j==14 || j==15 || j==16
         keptImages = 2:numImages-1;
+    elseif j==3 || j==6 || j==12
+        keptImages = 1:numImages-2;
+    elseif j==11
+        keptImages = 2:numImages-2;
     else
         keptImages = 1:numImages-1;
     end
@@ -347,10 +290,10 @@ for j=1:numScrews
     mlS{j} = ml(keptImages); % [N.m/m]
     angleS{j} = angle(keptImages); % [deg]
     kS{j} = mlS{j}./deg2rad(angleS{j}); % [N/rad]
-    % mean_KS_data(j) = mean(kS{j}); % [N/rad]
-    % pS(j,:) = [mean_KS_data(j) 0];
-    pS(j,:) = polyfit(deg2rad(angleS{j}),mlS{j},1); % linear fit
-    mean_KS_data(j) = pS(j,1); % [N/rad]
+    mean_KS_data(j) = mean(kS{j}); % [N/rad]
+    pS(j,:) = [mean_KS_data(j) 0];
+    % pS(j,:) = polyfit(deg2rad(angleS{j}),mlS{j},1); % linear fit
+    % mean_KS_data(j) = pS(j,1); % [N/rad]
 end
 
 %% Save variables

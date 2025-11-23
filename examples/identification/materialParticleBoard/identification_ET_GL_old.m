@@ -200,7 +200,7 @@ fprintf('cv(ET)   = %g\n',std(mean_ET_data)/mean(mean_ET_data));
 
 fprintf('\nLongitudinal shear modulus GL\n');
 fprintf('mean(GL) = %g MPa\n',mean(mean_GL_data));
-fprintf('var(GL) = %g (MPa)^2\n',var(mean_GL_data));
+fprintf('var(GL)  = %g (MPa)^2\n',var(mean_GL_data));
 fprintf('std(GL)  = %g MPa\n',std(mean_GL_data));
 fprintf('cv(GL)   = %g\n',std(mean_GL_data)/mean(mean_GL_data));
 

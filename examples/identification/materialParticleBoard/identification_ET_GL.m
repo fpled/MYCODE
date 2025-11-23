@@ -43,11 +43,11 @@ V0 = 0; % rigid body displacement along y direction [mm]
 
 disp('Initial parameters');
 disp('------------------');
-fprintf('ET  = %g MPa\n',ET0);
-fprintf('GL  = %g MPa\n',GL0);
-fprintf('R   = %g rad = %g deg\n',R0,rad2deg(R0));
-fprintf('U   = %g mm\n',U0);
-fprintf('V   = %g mm\n',V0);
+fprintf('ET = %g MPa\n',ET0);
+fprintf('GL = %g MPa\n',GL0);
+fprintf('R  = %g rad = %g deg\n',R0,rad2deg(R0));
+fprintf('U  = %g mm\n',U0);
+fprintf('V  = %g mm\n',V0);
 
 x0 = [ET0 GL0 R0 U0 V0];
 lb = [0 0 -Inf -Inf -Inf];
@@ -225,7 +225,7 @@ fprintf('cv(ET)   = %g\n',std(mean_ET_data)/mean(mean_ET_data));
 
 fprintf('\nLongitudinal shear modulus GL\n');
 fprintf('mean(GL) = %g MPa\n',mean(mean_GL_data));
-fprintf('var(GL) = %g (MPa)^2\n',var(mean_GL_data));
+fprintf('var(GL)  = %g (MPa)^2\n',var(mean_GL_data));
 fprintf('std(GL)  = %g MPa\n',std(mean_GL_data));
 fprintf('cv(GL)   = %g\n',std(mean_GL_data)/mean(mean_GL_data));
 

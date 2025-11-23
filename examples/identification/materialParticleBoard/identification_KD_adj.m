@@ -1,9 +1,10 @@
-%% Identification of bending stiffness for screw junction %%
+%% Identification of bending stiffness for dowel junction %%
 %%--------------------------------------------------------%%
 % Call after Digital Image Correlation (DIC) RT3
 % Coordinate system
 % CORRELI:    right     down
 % MATLAB:     right     up
+% The load cell capacity of 50kN is too large for the dowel junction which is fragile
 
 % clc
 clearvars
@@ -14,7 +15,7 @@ solveProblem = true;
 displayMesh = true;
 displaySolution = true;
 
-filename = 'data_KS.mat';
+filename = 'data_KD.mat';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification','materialParticleBoard');
 if ~exist(pathname,'dir')
@@ -44,20 +45,20 @@ h = 15; % sample thickness [mm]
 % Bending moment per unit length: ml = F*Lb/b
 % Bending stiffness per unit length: k = ml/angle
 
-numScrews = 16;
+numDowels = 8;
 
-FS = cell(numScrews,1);
-mlS = cell(numScrews,1);
-angleS = cell(numScrews,1);
-kS = cell(numScrews,1);
-pS = zeros(numScrews,2);
-mean_KS_data = zeros(numScrews,1);
+FD = cell(numDowels,1);
+mlD = cell(numDowels,1);
+angleD = cell(numDowels,1);
+kD = cell(numDowels,1);
+pD = zeros(numDowels,2);
+mean_KD_data = zeros(numDowels,1);
 
-for j=1:numScrews
+for j=1:numDowels
     
-    numSample = ['S' num2str(j)];
-    numSamplea = ['S' num2str(j) 'a'];
-    numSampleb = ['S' num2str(j) 'b'];
+    numSample = ['D' num2str(j)];
+    numSamplea = ['D' num2str(j) 'a'];
+    numSampleb = ['D' num2str(j) 'b'];
     
     time = tic;
     
@@ -87,7 +88,7 @@ for j=1:numScrews
         TRI_b = Mesh.TRI;
         U_b = U;
         
-        [u_exp_a,u_exp_b,coord_a,coord_b,cl_a,cl_b] = extractCorreliJunctionScrew(Job_a,Job_b,Mesh_a,Mesh_b,U_a,U_b,h); % [mm]
+        [u_exp_a,u_exp_b,coord_a,coord_b,cl_a,cl_b] = extractCorreliJunctionDowel(Job_a,Job_b,Mesh_a,Mesh_b,U_a,U_b,h); % [mm]
         coordx_a = coord_a(:,1);
         coordy_a = coord_a(:,2);
         coordx_b = coord_b(:,1);
@@ -124,88 +125,49 @@ for j=1:numScrews
             axis image
         end
         
-        points_a_left = find(coordx_a<min(coordx_a)+cl_a/3 &...
-            coordy_a>=min(coordy_b));
-        points_a_right = find(coordx_a>max(coordx_a)-cl_a/3 &...
-            coordy_a>=min(coordy_b));
-        points_b_bot = find(coordy_b<min(coordy_b)+cl_b/3);
-        points_b_top = find(coordy_b>max(coordy_b)-cl_b/3);
+        points_a = find(coordy_a>max(coordy_a)-cl_a/3);
+        points_b = find(coordy_b<min(coordy_b)+cl_b/3 &...
+            coordx_b<=max(coordx_a));
         
         % initial line a and line b
-        x0a_left = coordx_a(points_a_left);
-        y0a_left = coordy_a(points_a_left);
-        [y0a_left_sort,index] = sort(y0a_left);
-        x0a_left_sort = x0a_left(index);
-        p0a_left = polyfit(y0a_left_sort,x0a_left_sort,1);
+        x0a = coordx_a(points_a);
+        y0a = coordy_a(points_a);
+        [x0a_sort,index] = sort(x0a);
+        y0a_sort = y0a(index);
+        p0a = polyfit(x0a_sort,y0a_sort,1);
+        v0a = polyval(p0a,x0a_sort);
         
-        x0a_right = coordx_a(points_a_right);
-        y0a_right = coordy_a(points_a_right);
-        [y0a_right_sort,index] = sort(y0a_right);
-        x0a_right_sort = x0a_right(index);
-        p0a_right = polyfit(y0a_right_sort,x0a_right_sort,1);
-        
-        p0a = (p0a_left+p0a_right)/2;
-        y0a = [min(y0a_left_sort(1),y0a_right_sort(1)),max(y0a_left_sort(end),y0a_right_sort(end))];
-        x0a = polyval(p0a,y0a);
-        
-        x0b_bot = coordx_b(points_b_bot);
-        y0b_bot = coordy_b(points_b_bot);
-        [x0b_bot_sort,index] = sort(x0b_bot);
-        y0b_bot_sort = y0b_bot(index);
-        p0b_bot = polyfit(x0b_bot_sort,y0b_bot_sort,1);
-        
-        x0b_top = coordx_b(points_b_top);
-        y0b_top = coordy_b(points_b_top);
-        [x0b_top_sort,index] = sort(x0b_top);
-        y0b_top_sort = y0b_top(index);
-        p0b_top = polyfit(x0b_top_sort,y0b_top_sort,1);
-        
-        p0b = (p0b_bot+p0b_top)/2;
-        x0b = [min(x0b_bot_sort(1),x0b_top_sort(1)),max(x0b_bot_sort(end),x0b_top_sort(end))];
-        y0b = polyval(p0b,x0b);
+        x0b = coordx_b(points_b);
+        y0b = coordy_b(points_b);
+        [x0b_sort,index] = sort(x0b);
+        y0b_sort = y0b(index);
+        p0b = polyfit(x0b_sort,y0b_sort,1);
+        v0b = polyval(p0b,x0b_sort);
         
         % deformed line a and line b
-        xa_left = coordx_a(points_a_left)+u_exp_a(2*points_a_left-1);
-        ya_left = coordy_a(points_a_left)+u_exp_a(2*points_a_left);
-        [ya_left_sort,index] = sort(ya_left);
-        xa_left_sort = xa_left(index);
-        pa_left = polyfit(ya_left_sort,xa_left_sort,1);
+        xa = coordx_a(points_a)+u_exp_a(2*points_a-1);
+        ya = coordy_a(points_a)+u_exp_a(2*points_a);
+        [xa_sort,index] = sort(xa);
+        ya_sort = ya(index);
+        pa = polyfit(xa_sort,ya_sort,1);
+        va = polyval(pa,xa_sort);
         
-        xa_right = coordx_a(points_a_right)+u_exp_a(2*points_a_right-1);
-        ya_right = coordy_a(points_a_right)+u_exp_a(2*points_a_right);
-        [ya_right_sort,index] = sort(ya_right);
-        xa_right_sort = xa_right(index);
-        pa_right = polyfit(ya_right_sort,xa_right_sort,1);
-        
-        pa = (pa_left+pa_right)/2;
-        ya = [min(ya_left_sort(1),ya_right_sort(1)),max(ya_left_sort(end),ya_right_sort(end))];
-        xa = polyval(pa,ya);
-        
-        xb_bot = coordx_b(points_b_bot)+u_exp_b(2*points_b_bot-1);
-        yb_bot = coordy_b(points_b_bot)+u_exp_b(2*points_b_bot);
-        [xb_bot_sort,index] = sort(xb_bot);
-        yb_bot_sort = yb_bot(index);
-        pb_bot = polyfit(xb_bot_sort,yb_bot_sort,1);
-        
-        xb_top = coordx_b(points_b_top)+u_exp_b(2*points_b_top-1);
-        yb_top = coordy_b(points_b_top)+u_exp_b(2*points_b_top);
-        [xb_top_sort,index] = sort(xb_top);
-        yb_top_sort = yb_top(index);
-        pb_top = polyfit(xb_top_sort,yb_top_sort,1);
-        
-        pb = (pb_bot+pb_top)/2;
-        xb = [min(xb_bot_sort(1),xb_top_sort(1)),max(xb_bot_sort(end),xb_top_sort(end))];
-        yb = polyval(pb,xb);
+        xb = coordx_b(points_b)+u_exp_b(2*points_b-1);
+        yb = coordy_b(points_b)+u_exp_b(2*points_b);
+        [xb_sort,index] = sort(xb);
+        yb_sort = yb(index);
+        pb = polyfit(xb_sort,yb_sort,1);
+        vb = polyval(pb,xb_sort);
         
         %-----------------------------
         % initial and deformed angles of junction
         %-----------------------------
-        t0 = [x0a(end)-x0a(1) y0a(end)-y0a(1)];
-        s0 = [x0b(end)-x0b(1) y0b(end)-y0b(1)];
+        t0 = [x0a_sort(end)-x0a_sort(1) v0a(end)-v0a(1)];
+        s0 = [x0b_sort(end)-x0b_sort(1) v0b(end)-v0b(1)];
         delta0 = acosd(abs(t0*s0')/(norm(t0)*norm(s0)));
         
-        t = [xa(end)-xa(1) ya(end)-ya(1)];
-        s = [xb(end)-xb(1) yb(end)-yb(1)];
+        t = [xa_sort(end)-xa_sort(1) va(end)-va(1)];
+        s = [xb_sort(end)-xb_sort(1) vb(end)-vb(1)];
         delta = acosd(abs(t*s')/(norm(t)*norm(s)));
         
         angle(k) = abs(delta0-delta);
@@ -219,8 +181,8 @@ for j=1:numScrews
             triplot(TRI_a,coordx_a,coordy_a,'k');
             hold on
             triplot(TRI_b,coordx_b,coordy_b,'k');
-            plot(x0a_left,y0a_left,'b.',x0a_right,y0a_right,'b.',x0a,y0a,'b','LineWidth',linewidth);
-            plot(x0b_bot,y0b_bot,'b.',x0b_top,y0b_top,'b.',x0b,y0b,'b','LineWidth',linewidth);
+            plot(x0a,y0a,'b.',x0a_sort,v0a,'b','LineWidth',linewidth);
+            plot(x0b,y0b,'b.',x0b_sort,v0b,'b','LineWidth',linewidth);
             hold off
             axis image
             grid on
@@ -233,50 +195,32 @@ for j=1:numScrews
             mysaveas(pathname,['best_fit_line_mesh_init_' numSample '_00'],formats);
         end
         
-        xa_left = coordx_a(points_a_left)+Scal*u_exp_a(2*points_a_left-1);
-        ya_left = coordy_a(points_a_left)+Scal*u_exp_a(2*points_a_left);
-        [ya_left_sort,index] = sort(ya_left);
-        xa_left_sort = xa_left(index);
-        pa_left = polyfit(ya_left_sort,xa_left_sort,1);
+        xa = coordx_a(points_a)+Scal*u_exp_a(2*points_a-1);
+        ya = coordy_a(points_a)+Scal*u_exp_a(2*points_a);
+        [xa_sort,index] = sort(xa);
+        ya_sort = ya(index);
+        pa = polyfit(xa_sort,ya_sort,1);
+        va = polyval(pa,xa_sort);
         
-        xa_right = coordx_a(points_a_right)+Scal*u_exp_a(2*points_a_right-1);
-        ya_right = coordy_a(points_a_right)+Scal*u_exp_a(2*points_a_right);
-        [ya_right_sort,index] = sort(ya_right);
-        xa_right_sort = xa_right(index);
-        pa_right = polyfit(ya_right_sort,xa_right_sort,1);
-        
-        pa = (pa_left+pa_right)/2;
-        ya = [min(ya_left_sort(1),ya_right_sort(1)),max(ya_left_sort(end),ya_right_sort(end))];
-        xa = polyval(pa,ya);
-        
-        xb_bot = coordx_b(points_b_bot)+Scal*u_exp_b(2*points_b_bot-1);
-        yb_bot = coordy_b(points_b_bot)+Scal*u_exp_b(2*points_b_bot);
-        [xb_bot_sort,index] = sort(xb_bot);
-        yb_bot_sort = yb_bot(index);
-        pb_bot = polyfit(xb_bot_sort,yb_bot_sort,1);
-        
-        xb_top = coordx_b(points_b_top)+Scal*u_exp_b(2*points_b_top-1);
-        yb_top = coordy_b(points_b_top)+Scal*u_exp_b(2*points_b_top);
-        [xb_top_sort,index] = sort(xb_top);
-        yb_top_sort = yb_top(index);
-        pb_top = polyfit(xb_top_sort,yb_top_sort,1);
-        
-        pb = (pb_bot+pb_top)/2;
-        xb = [min(xb_bot_sort(1),xb_top_sort(1)),max(xb_bot_sort(end),xb_top_sort(end))];
-        yb = polyval(pb,xb);
+        xb = coordx_b(points_b)+Scal*u_exp_b(2*points_b-1);
+        yb = coordy_b(points_b)+Scal*u_exp_b(2*points_b);
+        [xb_sort,index] = sort(xb);
+        yb_sort = yb(index);
+        pb = polyfit(xb_sort,yb_sort,1);
+        vb = polyval(pb,xb_sort);
         
         %--------------------------------
         % Best fit line of deformed mesh
         %--------------------------------
-        if displayMesh && k==min(6,numImages)
+        if displayMesh && k==min(3,numImages)
             figure('name',['Sample ' numSample ' - Image ' numImage ': Best fit line of deformed mesh'])
             triplot(TRI_a,coordx_a+Scal*u_exp_a(1:2:end),...
                 coordy_a+Scal*u_exp_a(2:2:end),'r');
             hold on
             triplot(TRI_b,coordx_b+Scal*u_exp_b(1:2:end),...
                 coordy_b+Scal*u_exp_b(2:2:end),'r');
-            plot(xa_left,ya_left,'b.',xa_right,ya_right,'b.',xa,ya,'b','LineWidth',linewidth);
-            plot(xb_bot,yb_bot,'b.',xb_top,yb_top,'b.',xb,yb,'b','LineWidth',linewidth);
+            plot(xa,ya,'b.',xa_sort,va,'b','LineWidth',linewidth);
+            plot(xb,yb,'b.',xb_sort,vb,'b','LineWidth',linewidth);
             hold off
             axis image
             grid on
@@ -291,7 +235,7 @@ for j=1:numScrews
         %-------------------------------
         % Reference and deformed meshes
         %-------------------------------
-        if displayMesh && k==min(6,numImages)
+        if displayMesh && k==min(3,numImages)
             figure('name',['Sample ' numSample ' - Image ' numImage ': Reference and deformed meshes'])
             triplot(TRI_a,coordx_a,coordy_a,'k');
             hold on
@@ -314,9 +258,9 @@ for j=1:numScrews
     end
     
     %% Outputs
-    % fprintf('\n')
+    fprintf('\n')
     disp('+-----------------------+')
-    fprintf('| Sample S%2d            |\n',j)
+    fprintf('| Sample D%2d            |\n',j)
     disp('+-------+---------------+-----------+------------------+')
     disp('| Load  | Moment p.u.l. |   Angle   | Stiffness p.u.l. |')
     disp('| F [N] |  ml [N.m/m]   | theta [°] |    k [kN/rad]    |')
@@ -328,59 +272,51 @@ for j=1:numScrews
     
     toc(time)
     
-    % keptImages = 2:numImages-1;
-    if j==3
-        keptImages = 1:numImages-3;
-    elseif j==4 || j==6 || j==8 || j==10 || j==12
-        keptImages = 1:numImages-2;
-    elseif j==2 || j==9 || j==11 || j==15
-        keptImages = 2:numImages-1;
-    else
+    if j==1 || j==3 || j==5 || j==6
         keptImages = 1:numImages-1;
+    elseif j==2
+        keptImages = 1:numImages-2;
+    else
+        keptImages = 1:numImages;
     end
-    % if j==2 || j==3 || j==6 || j==8 || j==9 || j==10 || j==11 || j==12
-    %     keptImages = 1:numImages-2;
-    % else
-    %     keptImages = 1:numImages-1;
-    % end
-    FS{j} = F(keptImages); % [N]
-    mlS{j} = ml(keptImages); % [N.m/m]
-    angleS{j} = angle(keptImages); % [deg]
-    kS{j} = mlS{j}./deg2rad(angleS{j}); % [N/rad]
-    % mean_KS_data(j) = mean(kS{j}); % [N/rad]
-    % pS(j,:) = [mean_KS_data(j) 0];
-    pS(j,:) = polyfit(deg2rad(angleS{j}),mlS{j},1); % linear fit
-    mean_KS_data(j) = pS(j,1); % [N/rad]
+    FD{j} = F(keptImages); % [N]
+    mlD{j} = ml(keptImages); % [N.m/m]
+    angleD{j} = angle(keptImages); % [deg]
+    kD{j} = mlD{j}./deg2rad(angleD{j}); % [N/rad]
+    mean_KD_data(j) = mean(kD{j}); % [N/rad]
+    pD(j,:) = [mean_KD_data(j) 0];
+    % pD(j,:) = polyfit(deg2rad(angleD{j}),mlD{j},1); % linear fit
+    % mean_KD_data(j) = pD(j,1); % [N/rad]
 end
 
 %% Save variables
-save(fullfile(pathname,filename),'numScrews',...
-    'FS','mlS','angleS','kS','pS','mean_KS_data');
+save(fullfile(pathname,filename),'numDowels',...
+    'FD','mlD','angleD','kD','pD','mean_KD_data');
 else
 %% Load variables
-load(fullfile(pathname,filename),'numScrews',...
-    'FS','mlS','angleS','kS','pS','mean_KS_data');
+load(fullfile(pathname,filename),'numDowels',...
+    'FD','mlD','angleD','kD','pD','mean_KD_data');
 end
 
 %% Statistics
-fprintf('\nScrew junctions: Bending stiffness per unit length kS\n');
-fprintf('mean(kS) = %g kN/rad\n',mean(mean_KS_data)*1e-3);
-fprintf('var(kS)  = %g (kN/rad)^2\n',var(mean_KS_data)*1e-6);
-fprintf('std(kS)  = %g kN/rad\n',std(mean_KS_data)*1e-3);
-fprintf('cv(kS)   = %g\n',std(mean_KS_data)/mean(mean_KS_data));
+fprintf('\nDowel junctions: Bending stiffness per unit length kD\n');
+fprintf('mean(kD) = %g kN/rad\n',mean(mean_KD_data)*1e-3);
+fprintf('var(kD)  = %g (kN/rad)^2\n',var(mean_KD_data)*1e-6);
+fprintf('std(kD)  = %g kN/rad\n',std(mean_KD_data)*1e-3);
+fprintf('cv(kD)   = %g\n',std(mean_KD_data)/mean(mean_KD_data));
 
 %% Plot data
 if displaySolution
-    colors = distinguishable_colors(numScrews);
+    colors = distinguishable_colors(numDowels);
     
-    for j=1:numScrews
-        numSample = ['S' num2str(j)];
+    for j=1:numDowels
+        numSample = ['D' num2str(j)];
         
-        figure('name',['Screw junction ' numSample ': Bending moment per unit length w.r.t. variation of angle'])
+        figure('name',['Dowel junction ' numSample ': bending moment per unit length w.r.t. variation of angle'])
         clf
-        plot(angleS{j},mlS{j},'+b','LineWidth',linewidth)
+        plot(angleD{j},mlD{j},'+b','LineWidth',linewidth)
         hold on
-        plot(angleS{j},polyval(pS(j,:),deg2rad(angleS{j})),'-r','LineWidth',linewidth)
+        plot(angleD{j},polyval(pD(j,:),deg2rad(angleD{j})),'-r','LineWidth',linewidth)
         hold off
         grid on
         set(gca,'FontSize',fontsize)
@@ -393,9 +329,9 @@ if displaySolution
         mysaveas(pathname,['data_moment_angle_' numSample],formats);
         mymatlab2tikz(pathname,['data_moment_angle_' numSample '.tex']);
         
-        % figure('name',['Screw junction ' numSample ': Bending stiffness per unit length w.r.t. applied load'])
+        % figure('name',['Dowel junction ' numSample ': Bending stiffness per unit length w.r.t. applied load'])
         % clf
-        % plot(FS{j},kS{j}*1e-3,'+b','LineWidth',linewidth)
+        % plot(FD{j},kD{j}*1e-3,'+b','LineWidth',linewidth)
         % grid on
         % set(gca,'FontSize',fontsize)
         % xlabel('Applied load [N]','Interpreter',interpreter);
@@ -406,14 +342,14 @@ if displaySolution
         % mymatlab2tikz(pathname,['data_stiffness_load_' numSample '.tex']);
     end
     
-    figure('name','Screw junctions: Bending moment per unit length w.r.t. variation of angle')
+    figure('name','Dowel junctions: Bending moment per unit length w.r.t. variation of angle')
     clf
-    leg = cell(numScrews,1);
-    h = gobjects(numScrews,1);
-    for j=1:numScrews
-        plot(angleS{j},mlS{j},'+','Color',colors(j,:),'LineWidth',linewidth)
+    leg = cell(numDowels,1);
+    h = gobjects(numDowels,1);
+    for j=1:numDowels
+        plot(angleD{j},mlD{j},'+','Color',colors(j,:),'LineWidth',linewidth)
         hold on
-        h(j) = plot(angleS{j},polyval(pS(j,:),deg2rad(angleS{j})),'LineStyle','-','Color',colors(j,:),'LineWidth',linewidth);
+        h(j) = plot(angleD{j},polyval(pD(j,:),deg2rad(angleD{j})),'LineStyle','-','Color',colors(j,:),'LineWidth',linewidth);
         leg{j} = ['Sample #' num2str(j)];
     end
     grid on
@@ -425,14 +361,14 @@ if displaySolution
     %xlabel('Variation d''angle [deg]','Interpreter',interpreter);
     %ylabel('Moment lin\''eique de flexion [N.m/m]','Interpreter',interpreter);
     legend(h(:),leg{:},'Location','NorthEastOutside')
-    mysaveas(pathname,'data_moment_angle_S',formats);
-    mymatlab2tikz(pathname,'data_moment_angle_S.tex');
+    mysaveas(pathname,'data_moment_angle_D',formats);
+    mymatlab2tikz(pathname,'data_moment_angle_D.tex');
     
-    % figure('name','Screw junctions: Bending stiffness per unit length w.r.t. applied load')
+    % figure('name','Dowel junctions: Bending stiffness per unit length w.r.t. applied load')
     % clf
-    % leg = cell(numScrews,1);
-    % for j=1:numScrews
-    %     plot(FS{j},kS{j}*1e-3,'+','Color',colors(j,:),'LineWidth',linewidth)
+    % leg = cell(numDowels,1);
+    % for j=1:numDowels
+    %     plot(FD{j},kD{j}*1e-3,'+','Color',colors(j,:),'LineWidth',linewidth)
     %     hold on
     %     leg{j} = ['Sample #' num2str(j)];
     % end
@@ -443,18 +379,18 @@ if displaySolution
     % %xlabel('Chargement appliqu\''e [N]','Interpreter',interpreter);
     % %ylabel('Rigidit\''e lin\''eique en flexion [kN/rad]','Interpreter',interpreter);
     % legend(leg{:},'Location','NorthEastOutside')
-    % mysaveas(pathname,'data_stiffness_load_S',formats);
-    % mymatlab2tikz(pathname,'data_stiffness_load_S.tex');
+    % mysaveas(pathname,'data_stiffness_load_D',formats);
+    % mymatlab2tikz(pathname,'data_stiffness_load_D.tex');
     
-    figure('Name','Screw junctions: Bending stiffness per unit length')
+    figure('Name','Dowel junctions: Bending stiffness per unit length')
     clf
-    bar(mean_KS_data*1e-3);
+    bar(mean_KD_data*1e-3);
     grid on
     set(gca,'FontSize',fontsize)
     xlabel('Sample number','Interpreter',interpreter);
-    ylabel('Bending stiffness per unit length $k_S$ [kN/rad]','Interpreter',interpreter);
+    ylabel('Bending stiffness per unit length $k_D$ [kN/rad]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    %ylabel('Rigidit\''e lin\''eique en flexion $k_S$ [kN/rad]','Interpreter',interpreter);
-    mysaveas(pathname,'data_KS',formats);
-    mymatlab2tikz(pathname,'data_KS.tex');
+    %ylabel('Rigidit\''e lin\''eique en flexion $k_D$ [kN/rad]','Interpreter',interpreter);
+    mysaveas(pathname,'data_KD',formats);
+    mymatlab2tikz(pathname,'data_KD.tex');
 end
