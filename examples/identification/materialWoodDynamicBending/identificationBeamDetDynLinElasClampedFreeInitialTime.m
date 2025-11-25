@@ -121,6 +121,7 @@ switch optimFun
     case {'lsqnonlin','fminunc','fmincon'}
         options  = optimoptions(optimFun,'Display',display);
         % options  = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun);
+        % options  = optimoptions(optimFun,'Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun);
     case 'fminsearch'
         options = optimset('Display',display);
         % options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);

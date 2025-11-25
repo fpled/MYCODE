@@ -54,7 +54,8 @@ tolFun = 1e-14; % tolerance on the function value
 
 switch optimFun
     case {'lsqnonlin','fminunc','fmincon'}
-        options  = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun);
+        % options  = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun);
+        options  = optimoptions(optimFun,'Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun);
     case 'fminsearch'
         options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
     otherwise

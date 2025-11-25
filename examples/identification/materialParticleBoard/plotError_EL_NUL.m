@@ -80,8 +80,8 @@ for j=1:numSamples
         % u_exp_in = [ux_exp(nodes_in) uy_exp(nodes_in)]';
         % u_exp_in = u_exp_in(:);
         
-        EL_series=linspace(EL*0.5,EL*1.5,1e2);
-        NUL_series=linspace(eps,0.02,1e2);
+        EL_series  = linspace(EL*0.5,EL*1.5,1e2);
+        NUL_series = linspace(eps,0.02,1e2);
         
         err_series = zeros(length(EL_series),length(NUL_series));
         for m=1:length(EL_series)

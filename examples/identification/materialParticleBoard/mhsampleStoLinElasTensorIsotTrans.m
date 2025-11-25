@@ -7,7 +7,8 @@ function [C_sample,accept] = mhsampleStoLinElasTensorIsotTrans(lambda,C_data,N)
 % C_data(:,i): data for random coordinate Ci
 % N: number of samples
 % C_sample: sample set for random vector C=(C1,C2,C3)
-% C_sample(:,i): data for random coordinate Ci
+% C_sample(:,i): samples for random coordinate Ci
+% accept: acceptance rate
 
 la1 = lambda(1);
 la2 = lambda(2);
@@ -39,7 +40,8 @@ end
 
 function p = pdf(c,la1,la2,la3,la)
 supp = (c(1)>0).*(c(2)>0).*(c(1)*c(2)-c(3)^2>0);
-p = (c(1)*c(2)-c(3)^2)^(-la)*exp(-la1*c(1)-la2*c(2)-la3*c(3));
+% p = (c(1)*c(2)-c(3)^2)^(-la)*exp(-la1*c(1)-la2*c(2)-la3*c(3));
+p = exp(-la*log(c(1)*c(2)-c(3)^2)-la1*c(1)-la2*c(2)-la3*c(3));
 if p==0
     p = realmin;
 end

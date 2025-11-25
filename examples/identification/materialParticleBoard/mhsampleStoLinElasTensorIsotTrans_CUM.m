@@ -2,8 +2,8 @@ function C_sample = mhsampleStoLinElasTensorIsotTrans_CUM(lambda,C_data,N)
 % function C_sample = mhsampleStoLinElasTensorIsotTrans_CUM(lambda,C_data,N)
 % Metropolis-Hastings Sampling using Componentwise Updating Method (CUM)
 % for stochastic linear elastic tensor with transversely isotropic symmetry
-% The proposal distribution is symmetric with normal distribution for the 
-% components c1, c2, c3.
+% The proposal distribution is symmetric with trivariate normal distribution 
+% for the components c1, c2, c3.
 % See page 31 in 'Computational Statistics with Matlab' 
 % 
 % lambda = (la1,la2,la3,la4,la5,la)
@@ -11,7 +11,7 @@ function C_sample = mhsampleStoLinElasTensorIsotTrans_CUM(lambda,C_data,N)
 % C_data(:,i): data for random coordinate Ci
 % N: number of samples
 % C_sample: sample set for random vector C=(C1,C2,C3)
-% C_sample(:,i): data for random coordinate Ci
+% C_sample(:,i): samples for random coordinate Ci
 
 % la1 = lambda(1);
 % la2 = lambda(2);

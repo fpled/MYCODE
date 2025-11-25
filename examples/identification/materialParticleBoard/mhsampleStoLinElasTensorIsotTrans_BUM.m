@@ -13,7 +13,7 @@ function C_sample = mhsampleStoLinElasTensorIsotTrans_BUM(lambda,C_data,N)
 % C_data(:,i): data for random coordinate Ci
 % N: number of samples
 % C_sample: sample set for random vector C=(C1,C2,C3)
-% C_sample(:,i): data for random coordinate Ci
+% C_sample(:,i): samples for random coordinate Ci
 
 la1 = lambda(1);
 la2 = lambda(2);
