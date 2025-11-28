@@ -1,5 +1,5 @@
-function [f, g, H] = funoptimPF(d,A,b,varargin)
-% function [f, g, h] = funoptimPF(d,A,b,varargin)
+function [f,g,H] = funoptimPF(d,A,b,varargin)
+% function [f,g,H] = funoptimPF(d,A,b,varargin)
 
 % Compute objective function
 f = 1/2*d'*A*d - d'*b;

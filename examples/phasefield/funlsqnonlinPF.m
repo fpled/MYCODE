@@ -4,7 +4,7 @@ function [F,J] = funlsqnonlinPF(d,A,b,varargin)
 % Compute objective function
 F = A*d - b;
 
-if nargout > 1 % jacobian required
-    % Compute jacobian of objective function
+if nargout > 1 % Jacobian required
+    % Compute Jacobian of objective function
     J = A;
 end
