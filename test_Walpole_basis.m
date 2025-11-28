@@ -2,19 +2,19 @@
 syms C1 C2
 E1 = [1/3*ones(3) zeros(3); zeros(3) zeros(3)];
 
-% in Voigt-Mandel notation
+% Voigt-Mandel notation
 E2 = [eye(3) zeros(3); zeros(3) eye(3)/2] - E1;
 C = 3*C1*E1 + 2*C2*E2;
 C
-eig(C)
-det(C)
+valC = eig(C)
+detC = det(C)
 
-% in Kelvin-Mandel notation
+% Kelvin-Mandel notation
 E2 = eye(6) - E1;
 C = 3*C1*E1 + 2*C2*E2;
 C
-eig(C)
-det(C)
+valC = eig(C)
+detC = det(C)
 
 %% Tensorial basis for transversely isotropic elasticity matrix 
 % with rotational symmetry axis n = (0,0,1)
@@ -23,7 +23,7 @@ n = [0 0 1]';
 P = n*n';
 Q = eye(3) - P;
 
-% in Voigt notation
+% Voigt notation
 I = [eye(3) zeros(3); zeros(3) eye(3)/2];
 % E1 = [P zeros(3); zeros(3) zeros(3)];
 E1 = [[0 0 0; 0 0 0; 0 0 1] zeros(3); zeros(3) zeros(3)];
@@ -34,29 +34,29 @@ E5 = I - E1 - E2 - E4;
 % E5 = [zeros(3) zeros(3); zeros(3) [1/2 0 0; 0 1/2 0; 0 0 0]];
 C = C1*E1 + C2*E2 + C3*E3 + C4*E4 + C5*E5;
 C
-eig(C)
-simplify(det(C))
+valC = eig(C)
+detC = simplify(det(C))
 
-% in Kelvin-Mandel notation
+% Kelvin-Mandel notation
 I = eye(6);
 E4 = [[1/2 -1/2 0; -1/2 1/2 0; 0 0 0] zeros(3); zeros(3) [0 0 0; 0 0 0; 0 0 1]];
 E5 = I - E1 - E2 - E4;
 % E5 = [zeros(3) zeros(3); zeros(3) [1 0 0; 0 1 0; 0 0 0]];
 C = C1*E1 + C2*E2 + C3*E3 + C4*E4 + C5*E5;
 C
-eig(C)
-simplify(det(C))
+valC = eig(C)
+detC = simplify(det(C))
 
 % in compact symbolic representation
 C123 = [C1 C3; C3 C2];
 C123
-eig(C123)
-simplify(det(C123))
+valC123 = eig(C123)
+detC123 = simplify(det(C123))
 
 %% [Guilleminot, Soize, 2012, IJNME]
 % transversely isotropic mean elasticity matrix 
 % with rotational symmetry axis n = (0,0,1)
-% in Kelvin-Mandel notation
+% Kelvin-Mandel notation
 mC = [10.0735 0.5497 2.9745 0 0 0;
     0.5497 10.0735 2.9745 0 0 0;
     2.9745 2.9745 182.6657 0 0 0;
@@ -72,7 +72,7 @@ mC5 = trace(mC'*E5)/norm(E5,'fro')^2; % mC5 = trace(mC'*E5)/trace(E5'*E5);
 
 mC_data = [mC1 mC2 mC3 mC4 mC5];
 
-%% Relations between coefficients (C1,...,C5) and engineering elastic moduli (ET,ET,GL,NUL,NUT) 
+%% Relations between coefficients (C1,...,C5) and engineering elastic moduli (EL,ET,GL,NUL,NUT) 
 % for transversely isotropic elasticity matrix with rotational symmetry axis n = (1,0,0)
 n = [1 0 0]';
 
