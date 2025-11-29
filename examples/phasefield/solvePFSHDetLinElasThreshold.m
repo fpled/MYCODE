@@ -67,33 +67,44 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     % optimFun = 'lsqnonlin';
     % optimFun = 'fmincon';
     
-    displayoptim = 'off';
-    % displayoptim = 'iter';
-    % displayoptim = 'iter-detailed';
-    % displayoptim = 'final';
-    % displayoptim = 'final-detailed';
+    optimDisplay = 'off';
+    % optimDisplay = 'iter';
+    % optimDisplay = 'iter-detailed';
+    % optimDisplay = 'notify'; % only for fmincon
+    % optimDisplay = 'notify-detailed'; % only for fmincon
+    % optimDisplay = 'final';
+    % optimDisplay = 'final-detailed';
+    
+    % optimAlgo = 'interior-point'; % default for lsqlin and fmincon
+    optimAlgo = 'trust-region-reflective'; % default for lsqnonlin
+    % optimAlgo = 'active-set';
+    % optimAlgo = 'sqp';
+    % optimAlgo = 'sqp-legacy';
+    % optimAlgo = 'levenberg-marquardt';
+    
+    optimSubproblemAlgo = 'cg'; % 'cg' or 'factorization'
     
     tolX = 100*eps; % tolerance on the parameter value
     tolFun = 100*eps; % tolerance on the function value
+    % tolCon = 100*eps; % tolerance on the constraint violation
+    tolCon = 0; % tolerance on the constraint violation
+    maxIters = Inf; % maximum number of iterations
     maxFunEvals = Inf; % maximum number of function evaluations
-    
-    % optimAlgo = 'interior-point';
-    optimAlgo = 'trust-region-reflective';
-    % optimAlgo = 'sqp';
-    % optimAlgo = 'active-set';
-    % optimAlgo = 'levenberg-marquardt';
     
     switch optimFun
         case 'lsqlin'
-            options = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo);
+            options = optimoptions(optimFun,'Display',optimDisplay,'Algorithm',optimAlgo,...
+                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,'ConstraintTolerance',tolCon,...
+                'MaxIterations',maxIters);
         case 'lsqnonlin'
-            options  = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo,...
-                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+            options  = optimoptions(optimFun,'Display',optimDisplay,'Algorithm',optimAlgo,'SubproblemAlgorithm',optimSubproblemAlgo,...
+                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,'ConstraintTolerance',tolCon,...
+                'MaxFunctionEvaluations',maxFunEvals,'MaxIterations',maxIters,...
                 'SpecifyObjectiveGradient',true);
         case 'fmincon'
-            options  = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo,...
-                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
-                'MaxFunctionEvaluations',maxFunEvals,...
+            options  = optimoptions(optimFun,'Display',optimDisplay,'Algorithm',optimAlgo,...
+                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,'ConstraintTolerance',tolCon,...
+                'MaxFunctionEvaluations',maxFunEvals,'MaxIterations',maxIters,...
                 'SpecifyObjectiveGradient',true,'HessianFcn','objective');
     end
 end

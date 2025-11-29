@@ -69,33 +69,44 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     % optimFun = 'lsqnonlin';
     % optimFun = 'fmincon';
     
-    displayoptim = 'off';
-    % displayoptim = 'iter';
-    % displayoptim = 'iter-detailed';
-    % displayoptim = 'final';
-    % displayoptim = 'final-detailed';
+    optimDisplay = 'off';
+    % optimDisplay = 'iter';
+    % optimDisplay = 'iter-detailed';
+    % optimDisplay = 'notify'; % only for fmincon
+    % optimDisplay = 'notify-detailed'; % only for fmincon
+    % optimDisplay = 'final';
+    % optimDisplay = 'final-detailed';
+    
+    % optimAlgo = 'interior-point'; % default for lsqlin and fmincon
+    optimAlgo = 'trust-region-reflective'; % default for lsqnonlin
+    % optimAlgo = 'active-set';
+    % optimAlgo = 'sqp';
+    % optimAlgo = 'sqp-legacy';
+    % optimAlgo = 'levenberg-marquardt';
+    
+    optimSubproblemAlgo = 'cg'; % 'cg' or 'factorization'
     
     tolX = 100*eps; % tolerance on the parameter value
     tolFun = 100*eps; % tolerance on the function value
+    % tolCon = 100*eps; % tolerance on the constraint violation
+    tolCon = 0; % tolerance on the constraint violation
+    maxIters = Inf; % maximum number of iterations
     maxFunEvals = Inf; % maximum number of function evaluations
-    
-    % optimAlgo = 'interior-point';
-    optimAlgo = 'trust-region-reflective';
-    % optimAlgo = 'sqp';
-    % optimAlgo = 'active-set';
-    % optimAlgo = 'levenberg-marquardt';
     
     switch optimFun
         case 'lsqlin'
-            options = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo);
+            options = optimoptions(optimFun,'Display',optimDisplay,'Algorithm',optimAlgo,...
+                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,'ConstraintTolerance',tolCon,...
+                'MaxIterations',maxIters);
         case 'lsqnonlin'
-            options  = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo,...
-                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+            options  = optimoptions(optimFun,'Display',optimDisplay,'Algorithm',optimAlgo,'SubproblemAlgorithm',optimSubproblemAlgo,...
+                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,'ConstraintTolerance',tolCon,...
+                'MaxFunctionEvaluations',maxFunEvals,'MaxIterations',maxIters,...
                 'SpecifyObjectiveGradient',true);
         case 'fmincon'
-            options  = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo,...
-                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
-                'MaxFunctionEvaluations',maxFunEvals,...
+            options  = optimoptions(optimFun,'Display',optimDisplay,'Algorithm',optimAlgo,...
+                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,'ConstraintTolerance',tolCon,...
+                'MaxFunctionEvaluations',maxFunEvals,'MaxIterations',maxIters,...
                 'SpecifyObjectiveGradient',true,'HessianFcn','objective');
     end
 end
@@ -170,7 +181,7 @@ for i=1:length(T)
             %     case {'historyfieldelem','historyfieldnode'}
             %         d_new = d_old;
             %         tolIter = 100*eps;
-            %         maxIter = 1e3;
+            %         maxIters = 1e3;
             %         % Steepdest descent
             %         alpha = 2/eigs(A_phase,1); % maximum stable constant learning rate
             %                                    % that is inversely proportional to the
@@ -178,7 +189,7 @@ for i=1:length(T)
             % 
             %         relres = 1;
             %         iter = 0;
-            %         while (relres > tolIter) && (iter < maxIter)
+            %         while (relres > tolIter) && (iter < maxIters)
             %             iter = iter+1;
             %             g = A_phase*d_new-b_phase;
             %             p = -g;
@@ -191,31 +202,37 @@ for i=1:length(T)
             %         relres, iter
             %         % Conjugate gradient
             %         L = ichol(A_phase);
-            %         [d_new,flag,relres,iter] = cgs(A_phase,b_phase,tolIter,maxIter,L);
+            %         [d_new,flag,relres,iter,resvec] = cgs(A_phase,b_phase,tolIter,maxIters,L);
             %         relres, iter
             %     otherwise
             %         optimFun = 'lsqnonlin';
             % 
-            %         % displayoptim = 'off';
-            %         % displayoptim = 'iter';
-            %         displayoptim = 'iter-detailed';
-            %         % displayoptim = 'final';
-            %         % displayoptim = 'final-detailed';
+            %         % optimDisplay = 'off';
+            %         % optimDisplay = 'iter';
+            %         optimDisplay = 'iter-detailed';
+            %         % optimDisplay = 'final';
+            %         % optimDisplay = 'final-detailed';
+            % 
+            %         % optimAlgo = 'interior-point';
+            %         optimAlgo = 'trust-region-reflective'; % default for lsqnonlin
+            %         % optimAlgo = 'levenberg-marquardt';
+            % 
+            %         optimSubproblemAlgo = 'cg'; % 'cg' or 'factorization'
             % 
             %         tolX = 100*eps; % tolerance on the parameter value
             %         tolFun = 100*eps; % tolerance on the function value
+            %         % tolCon = 100*eps; % tolerance on the constraint violation
+            %         tolCon = 0; % tolerance on the constraint violation
+            %         maxIters = Inf; % maximum number of iterations
             %         maxFunEvals = Inf; % maximum number of function evaluations
             % 
-            %         % optimAlgo = 'interior-point';
-            %         optimAlgo = 'trust-region-reflective';
-            %         % optimAlgo = 'sqp';
-            %         % optimAlgo = 'active-set';
-            %         % optimAlgo = 'levenberg-marquardt';
-            %         options  = optimoptions(optimFun,'Display',displayoptim,'Algorithm',optimAlgo,...
-            %             'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+            %         options  = optimoptions(optimFun,'Display',optimDisplay,'Algorithm',optimAlgo,'SubproblemAlgorithm',optimSubproblemAlgo,...
+            %             'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,'ConstraintTolerance',tolCon,...
+            %             'MaxFunctionEvaluations',maxFunEvals,'MaxIterations',maxIters,...
             %             'SpecifyObjectiveGradient',true);
             %         fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-            %         d_new = lsqnonlin(fun,d0,lb,ub,options);
+            %         [d_new,resnorm,residual,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
+            %         resnorm
             % end
             %%
             dmax = max(d);
