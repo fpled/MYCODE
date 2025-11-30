@@ -61,18 +61,35 @@ optimFun = 'lsqnonlin'; % optimization function
 display = 'off';
 % display = 'iter';
 % display = 'iter-detailed';
+% display = 'notify'; % only for fmincon and fminunc
+% display = 'notify-detailed'; % only for fmincon and fminunc
 % display = 'final';
 % display = 'final-detailed';
 
+algo = 'trust-region-reflective'; % default for lsqnonlin
+% algo = 'interior-point'; % default for fmincon
+% algo = 'active-set'; % only for fmincon
+% algo = 'sqp'; % only for fmincon
+% algo = 'sqp-legacy'; % only for fmincon
+% algo = 'levenberg-marquardt'; % only for lsqnonlin
+% algo = 'quasi-newton'; % default for minunc
+% algo = 'trust-region'; % only for minunc
+
 tolX = 1e-14; % tolerance on the parameter value
 tolFun = 1e-14; % tolerance on the function value
+maxIters = Inf; % maximum number of iterations
+maxFunEvals = Inf; % maximum number of function evaluations
 
 switch optimFun
     case {'lsqnonlin','fminunc','fmincon'}
-        % options  = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun);
-        options  = optimoptions(optimFun,'Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun);
+        % options  = optimoptions(optimFun,'Display',display,'Algorithm',algo,...
+        %     'TolX',tolX,'TolFun',tolFun,'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
+        options  = optimoptions(optimFun,'Display',display,'Algorithm',algo,...
+            'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+            'MaxIterations',maxIters,'MaxFunctionEvaluations',maxFunEvals);
     case 'fminsearch'
-        options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
+        options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun,...
+            'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
     otherwise
         error(['Wrong optimization function' optimFun])
 end
@@ -90,7 +107,8 @@ GL_data = cell(numSamples,1);
 R0_data = cell(numSamples,1);
 U0_data = cell(numSamples,1);
 V0_data = cell(numSamples,1);
-err_ana_data = cell(numSamples,1);
+resnorm_ana = cell(numSamples,1);
+err_ana = cell(numSamples,1);
 
 mean_ET_data = zeros(numSamples,1);
 mean_GL_data = zeros(numSamples,1);
@@ -118,6 +136,7 @@ for j=1:numSamples
     R0 = zeros(numImages,1);
     U0 = zeros(numImages,1);
     V0 = zeros(numImages,1);
+    resnorm = zeros(numImages,1);
     err = zeros(numImages,1);
     
     for k=1:numImages
@@ -150,16 +169,16 @@ for j=1:numSamples
         switch optimFun
             case 'lsqnonlin'
                 fun = @(x) funlsqnonlinThreePointBending(x,@solveThreePointBendingAna,u_exp,coord,F(k),Iz,h);
-                [x,err(k),~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
+                [x,resnorm(k),residual,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
             case 'fminsearch'
                 fun = @(x) funoptimThreePointBending(x,@solveThreePointBendingAna,u_exp,coord,F(k),Iz,h);
-                [x,err(k),exitflag,output] = fminsearch(fun,x0,options);
+                [x,resnorm(k),exitflag,output] = fminsearch(fun,x0,options);
             case 'fminunc'
                 fun = @(x) funoptimThreePointBending(x,@solveThreePointBendingAna,u_exp,coord,F(k),Iz,h);
-                [x,err(k),exitflag,output] = fminunc(fun,x0,options);
+                [x,resnorm(k),exitflag,output] = fminunc(fun,x0,options);
             case 'fmincon'
                 fun = @(x) funoptimThreePointBending(x,@solveThreePointBendingAna,u_exp,coord,F(k),Iz,h);
-                [x,err(k),exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
+                [x,resnorm(k),exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
         end
         
         ET(k) = x(1); % [MPa]
@@ -167,21 +186,20 @@ for j=1:numSamples
         R0(k) = x(3); % [rad]
         U0(k) = x(4); % [mm]
         V0(k) = x(5); % [mm]
-        err(k) = sqrt(err(k))./norm(u_exp);
+        err(k) = sqrt(resnorm(k))./norm(u_exp);
     end
     
     %% Outputs
     fprintf('\n')
-    disp('+-----------------+')
-    fprintf('| Sample #%2d      |\n',j)
-    disp('+-----------------+---------------+-----------------+')
-    disp('| Young''s modulus | Shear modulus |  Error between  |')
-    disp('|     ET [GPa]    |    GL [MPa]   | U_ana and U_exp |')
-    disp('+-----------------+---------------+-----------------+')
+    fprintf('Sample B%d\n',j)
+    disp('+--------+-----------------+---------------+---------------+----------------+')
+    disp('| Image  | Young''s modulus | Shear modulus | Objective fun | Relative error |')
+    disp('| number |     ET [GPa]    |    GL [MPa]   |     value     | U_ana vs U_exp |')
+    disp('+--------+-----------------+---------------+---------------+----------------+')
     for k=1:numImages
-        fprintf('| %15.4f | %13.4f | %15.4e |\n',ET(k)*1e-3,GL(k),err(k))
+        fprintf('| %6d | %15.4f | %13.4f | %13.4e | %14.4e |\n',k,ET(k)*1e-3,GL(k),resnorm(k),err(k))
     end
-    disp('+-----------------+---------------+-----------------+')
+    disp('+--------+-----------------+---------------+---------------+----------------+')
     
     toc(t)
     
@@ -190,7 +208,8 @@ for j=1:numSamples
     R0_data{j} = R0;
     U0_data{j} = U0;
     V0_data{j} = V0;
-    err_ana_data{j} = err;
+    resnorm_ana{j} = resnorm;
+    err_ana{j} = err;
     mean_ET_data(j) = mean(ET(initImage:end));
     mean_GL_data(j) = mean(GL(initImage:end));
     mean_R0_data(j) = mean(R0(initImage:end));
@@ -206,13 +225,13 @@ close all
 
 %% Save variables
 save(fullfile(pathname,filename),'ET_data','GL_data',...
-    'R0_data','U0_data','V0_data','err_ana_data','initImage',...
+    'R0_data','U0_data','V0_data','resnorm_ana','err_ana','initImage',...
     'mean_ET_data','mean_GL_data','std_ET_data','std_GL_data',...
     'mean_R0_data','mean_U0_data','mean_V0_data','std_R0_data','std_U0_data','std_V0_data');
 else
 %% Load variables
 load(fullfile(pathname,filename),'ET_data','GL_data',...
-    'R0_data','U0_data','V0_data','err_ana_data','initImage',...
+    'R0_data','U0_data','V0_data','resnorm_ana','err_ana','initImage',...
     'mean_ET_data','mean_GL_data','std_ET_data','std_GL_data',...
     'mean_R0_data','mean_U0_data','mean_V0_data','std_R0_data','std_U0_data','std_V0_data');
 end

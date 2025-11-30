@@ -316,8 +316,7 @@ for j=1:numDowels
     
     %% Outputs
     fprintf('\n')
-    disp('+-----------------------+')
-    fprintf('| Sample D%2d            |\n',j)
+    fprintf('Sample D%d\n',j)
     disp('+-------+---------------+-----------+------------------+')
     disp('| Load  | Moment p.u.l. |   Angle   | Stiffness p.u.l. |')
     disp('| F [N] |  ml [N.m/m]   | theta [°] |    k [kN/rad]    |')

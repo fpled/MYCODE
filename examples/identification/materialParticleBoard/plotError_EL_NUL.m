@@ -59,7 +59,7 @@ for j=1:numSamples
         GL = GL_data{j}(k); % [MPa]
         EL = EL_data{j}(k); % [MPa]
         NUL = NUL_data{j}(k);
-        err = err_num_data{j}(k);
+        err = err_num{j}(k);
         
         mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',EL,'ET',ET,'NUL',NUL,'GL',GL,'DIM3',h);
         mat = setnumber(mat,1);

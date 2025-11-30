@@ -48,7 +48,7 @@ for j=1:numSamples
         R0 = R0_data{j}(k); % [rad]
         U0 = U0_data{j}(k); % [mm]
         V0 = V0_data{j}(k); % [mm]
-        err = err_ana_data{j}(k);
+        err = err_ana{j}(k);
         
         ET_series = linspace(ET*0.5,ET*1.5,1e2); % [MPa]
         GL_series = linspace(GL*0.5,GL*1.5,1e2); % [MPa]

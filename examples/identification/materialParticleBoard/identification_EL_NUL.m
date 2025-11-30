@@ -46,18 +46,35 @@ optimFun = 'lsqnonlin'; % optimization function
 display = 'off';
 % display = 'iter';
 % display = 'iter-detailed';
+% display = 'notify'; % only for fmincon and fminunc
+% display = 'notify-detailed'; % only for fmincon and fminunc
 % display = 'final';
 % display = 'final-detailed';
 
+algo = 'trust-region-reflective'; % default for lsqnonlin
+% algo = 'interior-point'; % default for fmincon
+% algo = 'active-set'; % only for fmincon
+% algo = 'sqp'; % only for fmincon
+% algo = 'sqp-legacy'; % only for fmincon
+% algo = 'levenberg-marquardt'; % only for lsqnonlin
+% algo = 'quasi-newton'; % default for minunc
+% algo = 'trust-region'; % only for minunc
+
 tolX = 1e-14; % tolerance on the parameter value
 tolFun = 1e-14; % tolerance on the function value
+maxIters = Inf; % maximum number of iterations
+maxFunEvals = Inf; % maximum number of function evaluations
 
 switch optimFun
     case {'lsqnonlin','fminunc','fmincon'}
-        % options  = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun);
-        options  = optimoptions(optimFun,'Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun);
+        % options  = optimoptions(optimFun,'Display',display,'Algorithm',algo,...
+        %     'TolX',tolX,'TolFun',tolFun,'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
+        options  = optimoptions(optimFun,'Display',display,'Algorithm',algo,...
+            'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+            'MaxIterations',maxIters,'MaxFunctionEvaluations',maxFunEvals);
     case 'fminsearch'
-        options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
+        options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun,...
+            'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
     otherwise
         error(['Wrong optimization function' optimFun])
 end
@@ -71,7 +88,8 @@ d = 20; % distance between the support and the region of interest (ROI) [mm]
 numSamples = 27;
 EL_data = cell(numSamples,1);
 NUL_data = cell(numSamples,1);
-err_num_data = cell(numSamples,1);
+resnorm_num = cell(numSamples,1);
+err_num = cell(numSamples,1);
 
 mean_EL_data = zeros(numSamples,1);
 mean_NUL_data = zeros(numSamples,1);
@@ -88,6 +106,7 @@ for j=1:numSamples
     numImages = length(F);
     EL = zeros(numImages,1);
     NUL = zeros(numImages,1);
+    resnorm = zeros(numImages,1);
     err = zeros(numImages,1);
     
     for k=1:numImages
@@ -123,41 +142,41 @@ for j=1:numSamples
         switch optimFun
             case 'lsqnonlin'
                 fun = @(x) funlsqnonlinThreePointBending(x,@solveThreePointBendingNum,u_exp_in,S);
-                [x,err(k),~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
+                [x,resnorm(k),residual,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
             case 'fminsearch'
                 fun = @(x) funoptimThreePointBending(x,@solveThreePointBendingNum,u_exp_in,S);
-                [x,err(k),exitflag,output] = fminsearch(fun,x0,options);
+                [x,resnorm(k),exitflag,output] = fminsearch(fun,x0,options);
             case 'fminunc'
                 fun = @(x) funoptimThreePointBending(x,@solveThreePointBendingNum,u_exp_in,S);
-                [x,err(k),exitflag,output] = fminunc(fun,x0,options);
+                [x,resnorm(k),exitflag,output] = fminunc(fun,x0,options);
             case 'fmincon'
                 fun = @(x) funoptimThreePointBending(x,@solveThreePointBendingNum,u_exp_in,S);
-                [x,err(k),exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
+                [x,resnorm(k),exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
         end
         
         EL(k) = x(1); % [MPa]
         NUL(k) = x(2);
-        err(k) = sqrt(err(k))./norm(u_exp_in);
+        err(k) = sqrt(resnorm(k))./norm(u_exp_in);
     end
     
     %% Outputs
     fprintf('\n')
-    disp('+-----------------+')
-    fprintf('| Sample #%2d      |\n',j)
-    disp('+-----------------+-----------------+-----------------+')
-    disp('| Young''s modulus | Poisson''s ratio |  Error between  |')
-    disp('|     EL [MPa]    |       NUL       | U_num and U_exp |')
-    disp('+-----------------+-----------------+-----------------+')
+    fprintf('Sample B%d\n',j)
+    disp('+--------+-----------------+------------+---------------+----------------+')
+    disp('| Image  | Young''s modulus | Poisson''s  | Objective fun | Relative error |')
+    disp('| number |     EL [MPa]    | ratio  NUL |     value     | U_num vs U_exp |')
+    disp('+--------+-----------------+------------+---------------+----------------+')
     for k=1:numImages
-        fprintf('| %15.4f | %15.4f | %15.4e |\n',EL(k),NUL(k),err(k))
+        fprintf('| %6d | %15.4f | %10.4f | %13.4e | %14.4e |\n',k,EL(k),NUL(k),resnorm(k),err(k))
     end
-    disp('+-----------------+-----------------+-----------------+')
+    disp('+--------+-----------------+------------+---------------+----------------+')
     
     toc(t)
     
     EL_data{j} = EL;
     NUL_data{j} = NUL;
-    err_num_data{j} = err;
+    resnorm_num{j} = resnorm;
+    err_num{j} = err;
     mean_EL_data(j) = mean(EL(initImage:end));
     mean_NUL_data(j) = mean(NUL(initImage:end));
     std_EL_data(j) = std(EL(initImage:end));
@@ -166,11 +185,11 @@ end
 close all
 
 %% Save variables
-save(fullfile(pathname,filenameNum),'EL_data','NUL_data','err_num_data',...
+save(fullfile(pathname,filenameNum),'EL_data','NUL_data','resnorm_num','err_num',...
     'mean_EL_data','mean_NUL_data','std_EL_data','std_NUL_data');
 else
 %% Load variables
-load(fullfile(pathname,filenameNum),'EL_data','NUL_data','err_num_data',...
+load(fullfile(pathname,filenameNum),'EL_data','NUL_data','resnorm_num','err_num',...
     'mean_EL_data','mean_NUL_data','std_EL_data','std_NUL_data');
 end
 

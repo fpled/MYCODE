@@ -315,8 +315,7 @@ for j=1:numScrews
     
     %% Outputs
     % fprintf('\n')
-    disp('+-----------------------+')
-    fprintf('| Sample S%2d            |\n',j)
+    fprintf('Sample S%d\n',j)
     disp('+-------+---------------+-----------+------------------+')
     disp('| Load  | Moment p.u.l. |   Angle   | Stiffness p.u.l. |')
     disp('| F [N] |  ml [N.m/m]   | theta [°] |    k [kN/rad]    |')
