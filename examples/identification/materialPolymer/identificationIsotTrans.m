@@ -5,11 +5,11 @@
 clearvars
 close all
 % rng('default');
+myparallel('start');
 
 fontsize = 16;
 interpreter = 'latex';
 formats = {'fig','epsc'};
-renderer = 'OpenGL';
 
 % structure = 'plate';
 structure = 'plate_hole';
@@ -40,7 +40,7 @@ elseif strcmp(structure,'plate_hole')
     PD = getvertices(D);
     PC = getvertices(C);
     G = createpoint(G,getcenter(C),cl,1);
-    G = createpoints(G,PC(3:4),cl,2:3);
+    G = createpoints(G,PC(1:2),cl,2:3);
     G = createpoints(G,PD(2:4),cl,4:6);
     G = createcirclearc(G,1,2:3,1);
     G = createlines(G,[[2 4];[4 5];[5 6];[6 3]],2:5);
@@ -100,27 +100,27 @@ u_exp_in = freevector(S,u_exp);
 ampl = 0.5;
 [hN,legN] = vectorplot(S_exp,'F',b,ampl,'r','LineWidth',1);
 legend([hD,hN],[legD,legN],'Location','NorthEastOutside')
-mysaveas(pathname,'boundary_conditions_exp',formats,renderer);
+mysaveas(pathname,'boundary_conditions_exp',formats);
 
 plotModel(S_exp,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
-mysaveas(pathname,'mesh_exp',formats,renderer);
+mysaveas(pathname,'mesh_exp',formats);
 
 ampl = getsize(S_exp)/max(abs(u_exp))/10;
 plotModelDeflection(S_exp,u_exp,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
-mysaveas(pathname,'mesh_deflected_exp',formats,renderer);
+mysaveas(pathname,'mesh_deflected_exp',formats);
 
 figure('Name','Meshes')
 clf
 plot(S_exp,'Color','k','FaceColor','k','FaceAlpha',0.1);
 plot(S_exp+ampl*u_exp,'Color','b','FaceColor','b','FaceAlpha',0.1);
-mysaveas(pathname,'meshes_deflected_exp',formats,renderer);
+mysaveas(pathname,'meshes_deflected_exp',formats);
 
 ampl = 0;
 plotSolution(S_exp,u_exp,'displ',1,'ampl',ampl);
-mysaveas(pathname,'Ux_exp',formats,renderer);
+mysaveas(pathname,'Ux_exp',formats);
 
 plotSolution(S_exp,u_exp,'displ',2,'ampl',ampl);
-mysaveas(pathname,'Uy_exp',formats,renderer);
+mysaveas(pathname,'Uy_exp',formats);
 
 %% Identification
 % initial guess
@@ -138,7 +138,7 @@ x0 = [EL0 NUL0 GL0];
 lb = [0 0 0];
 ub = [Inf 0.5 Inf];
 
-optimFun = 'lsqnonlin';  % optimization function
+optimFun = 'lsqnonlin'; % optimization function
 % optimFun = 'fminsearch';
 % optimFun = 'fminunc';
 % optimFun = 'fmincon';
@@ -146,18 +146,35 @@ optimFun = 'lsqnonlin';  % optimization function
 display = 'off';
 % display = 'iter';
 % display = 'iter-detailed';
+% display = 'notify'; % only for fmincon and fminunc
+% display = 'notify-detailed'; % only for fmincon and fminunc
 % display = 'final';
 % display = 'final-detailed';
 
+algo = 'trust-region-reflective'; % default for lsqnonlin
+% algo = 'interior-point'; % default for fmincon
+% algo = 'active-set'; % only for fmincon
+% algo = 'sqp'; % only for fmincon
+% algo = 'sqp-legacy'; % only for fmincon
+% algo = 'levenberg-marquardt'; % only for lsqnonlin
+% algo = 'quasi-newton'; % default for minunc
+% algo = 'trust-region'; % only for minunc
+
 tolX = 1e-14; % tolerance on the parameter value
 tolFun = 1e-14; % tolerance on the function value
+maxIters = Inf; % maximum number of iterations
+maxFunEvals = Inf; % maximum number of function evaluations
 
 switch optimFun
     case {'lsqnonlin','fminunc','fmincon'}
-        % options  = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun);
-        options  = optimoptions(optimFun,'Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun);
+        % options  = optimoptions(optimFun,'Display',display,'Algorithm',algo,...
+        %     'TolX',tolX,'TolFun',tolFun,'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
+        options  = optimoptions(optimFun,'Display',display,'Algorithm',algo,...
+            'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+            'MaxIterations',maxIters,'MaxFunctionEvaluations',maxFunEvals);
     case 'fminsearch'
-        options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
+        options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun,...
+            'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
     otherwise
         error(['Wrong optimization function' optimFun])
 end
@@ -166,29 +183,31 @@ t = tic;
 switch optimFun
     case 'lsqnonlin'
         fun = @(x) funlsqnonlinIsotTrans(x,@solveTractionIsotTrans,u_exp_in,S);
-        [x,err,~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
+        [x,resnorm,residual,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
     case 'fminsearch'
         fun = @(x) funoptimIsotTrans(x,@solveTractionIsotTrans,u_exp_in,S);
-        [x,err,exitflag,output] = fminsearch(fun,x0,options);
+        [x,resnorm,exitflag,output] = fminsearch(fun,x0,options);
     case 'fminunc'
         fun = @(x) funoptimIsotTrans(x,@solveTractionIsotTrans,u_exp_in,S);
-        [x,err,exitflag,output] = fminunc(fun,x0,options);
+        [x,resnorm,exitflag,output] = fminunc(fun,x0,options);
     case 'fmincon'
         fun = @(x) funoptimIsotTrans(x,@solveTractionIsotTrans,u_exp_in,S);
-        [x,err,exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
+        [x,resnorm,exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
 end
 toc(t)
 
 EL = x(1); % [MPa]
 NUL = x(2);
 GL = x(3); % [MPa]
-err = sqrt(err)./norm(u_exp_in);
+err = sqrt(resnorm)./norm(u_exp_in);
 
+fprintf('\n');
 disp('Optimal parameters');
 disp('------------------');
 fprintf('EL  = %g MPa\n',EL);
 fprintf('NUL = %g\n',NUL);
 fprintf('GL  = %g MPa\n',GL);
+fprintf('resnorm = %g\n',resnorm);
 fprintf('err = %g\n',err);
 % fprintf('exitflag = %g\n',exitflag);
 % disp(output);
@@ -212,149 +231,178 @@ set([h(:),hD],'Parent',hg);
 axis image
 legend(hD,'{\boldmath$u$}$^{\mathrm{exp}}$','Location','NorthEastOutside','Interpreter',interpreter)
 % legend(hD,legD,'Location','NorthEastOutside','Interpreter',interpreter)
-mysaveas(pathname,'boundary_conditions',formats,renderer);
+mysaveas(pathname,'boundary_conditions',formats);
 
 plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
-mysaveas(pathname,'mesh',formats,renderer);
+mysaveas(pathname,'mesh',formats);
 
 ampl = getsize(S)/max(abs(u))/10;
 plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
-mysaveas(pathname,'mesh_deflected',formats,renderer);
+mysaveas(pathname,'mesh_deflected',formats);
 
 figure('Name','Meshes')
 clf
 plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
 plot(S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1);
-mysaveas(pathname,'meshes_deflected',formats,renderer);
+mysaveas(pathname,'meshes_deflected',formats);
 
 ampl = 0;
 plotSolution(S,u,'displ',1,'ampl',ampl);
-mysaveas(pathname,'Ux',formats,renderer);
+mysaveas(pathname,'Ux',formats);
 
 plotSolution(S,u,'displ',2,'ampl',ampl);
-mysaveas(pathname,'Uy',formats,renderer);
+mysaveas(pathname,'Uy',formats);
 
 %% Test numerical solution
 EL_series = linspace(EL*0.5,EL*1.5,50); % [MPa]
 NUL_series = linspace(NUL*0.5,NUL*1.5,50);
 GL_series = linspace(GL*0.5,GL*1.5,50); % [MPa]
 
-% Plot error EL GL
-err = zeros(length(EL_series),length(GL_series));
+% Plot error with respect to EL and GL
+err_series = zeros(length(EL_series),length(GL_series));
 for m=1:length(EL_series)
-    for n=1:length(GL_series)
-        x = [EL_series(m) NUL GL_series(n)];
+    EL_m = EL_series(m);
+    parfor n=1:length(GL_series)
+        GL_n = GL_series(n);
+        x = [EL_m NUL GL_n];
         u_in = solveTractionIsotTrans(x,S);
-        err(m,n) = norm(u_exp_in - u_in);
+        err_series(m,n) = norm(u_exp_in - u_in);
     end
 end
-err = err./norm(u_exp_in);
-[errmin,I] = min(err);
-[errmin,c] = min(errmin);
-r = I(c);
+err_series = err_series./norm(u_exp_in);
+% [err_min,I] = min(err_series);
+% [err_min,c] = min(err_min);
+% r = I(c);
+% GL_min = GL_series(c);
+% EL_min = EL_series(r);
 
-figure
-surfc(GL_series,EL_series,err,'EdgeColor','none');
+figure('Name','Surface plot: Error with respect to EL and GL')
+clf
+surfc(GL_series,EL_series,err_series,'EdgeColor','none');
 colorbar
+view(-37.5,30) % default view
 hold on
-scatter3(GL_series(c),EL_series(r),errmin,'MarkerEdgeColor','k','MarkerFaceColor','r');
+% scatter3(GL_min,EL_min,err_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
+scatter3(GL,EL,err,'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
 xlabel('$G_L$ [MPa]','Interpreter',interpreter)
 ylabel('$E_L$ [MPa]','Interpreter',interpreter)
 zlabel('Error','Interpreter',interpreter)
-% zlabel('Erreur','Interpreter',interpreter)
-mysaveas(pathname,'error_EL_GL_3D',formats,renderer);
+%zlabel('Erreur','Interpreter',interpreter)
+mysaveas(pathname,'error_EL_GL_3D',formats);
 
-figure
-contourf(GL_series,EL_series,err,30);
+figure('Name','Contour plot: Error with respect to EL and GL')
+clf
+contourf(GL_series,EL_series,err_series,30);
 colorbar
 hold on
-scatter(GL_series(c),EL_series(r),'MarkerEdgeColor','k','MarkerFaceColor','r');
+% scatter(GL_min,EL_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
+scatter(GL,EL,'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
 xlabel('$G_L$ [MPa]','Interpreter',interpreter)
 ylabel('$E_L$ [MPa]','Interpreter',interpreter)
-mysaveas(pathname,'error_EL_GL_2D',formats,renderer);
+mysaveas(pathname,'error_EL_GL_2D',formats);
 
-% Plot error EL NUL
-err = zeros(length(EL_series),length(NUL_series));
+% Plot error with respect to EL and NUL
+err_series = zeros(length(EL_series),length(NUL_series));
 for m=1:length(EL_series)
-    for n=1:length(NUL_series)
-        x = [EL_series(m) NUL_series(n) GL];
+    EL_m = EL_series(m);
+    parfor n=1:length(NUL_series)
+        NUL_n = NUL_series(n);
+        x = [EL_m NUL_n GL];
         u_in = solveTractionIsotTrans(x,S);
-        err(m,n) = norm(u_exp_in - u_in);
+        err_series(m,n) = norm(u_exp_in - u_in);
     end
 end
-err = err./norm(u_exp_in);
-[errmin,I] = min(err);
-[errmin,c] = min(errmin);
-r = I(c);
+err_series = err_series./norm(u_exp_in);
+% [err_min,I] = min(err_series);
+% [err_min,c] = min(err_min);
+% r = I(c);
+% NUL_min = NUL_series(c);
+% EL_min = EL_series(r);
 
-figure
-surfc(NUL_series,EL_series,err,'EdgeColor','none');
+figure('Name','Surface plot: Error with respect to EL and NUL')
+clf
+surfc(NUL_series,EL_series,err_series,'EdgeColor','none');
 colorbar
+view(-37.5,30) % default view
 hold on
-scatter3(NUL_series(c),EL_series(r),errmin,'MarkerEdgeColor','k','MarkerFaceColor','r');
+% scatter3(NUL_min,EL_min,err_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
+scatter3(NUL,EL,err,'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
 xlabel('$\nu_L$','Interpreter',interpreter)
 ylabel('$E_L$ [MPa]','Interpreter',interpreter)
 zlabel('Error','Interpreter',interpreter)
-% zlabel('Erreur','Interpreter',interpreter)
-mysaveas(pathname,'error_EL_NUL_3D',formats,renderer);
+%zlabel('Erreur','Interpreter',interpreter)
+mysaveas(pathname,'error_EL_NUL_3D',formats);
 
-figure
-contourf(NUL_series,EL_series,err,30);
+figure('Name','Contour plot: Error with respect to EL and NUL')
+clf
+contourf(NUL_series,EL_series,err_series,30);
 colorbar
 hold on
-scatter(NUL_series(c),EL_series(r),'MarkerEdgeColor','k','MarkerFaceColor','r');
+% scatter(NUL_min,EL_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
+scatter(NUL,EL,'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
 xlabel('$\nu_L$','Interpreter',interpreter)
 ylabel('$E_L$ [MPa]','Interpreter',interpreter)
-mysaveas(pathname,'error_EL_NUL_2D',formats,renderer);
+mysaveas(pathname,'error_EL_NUL_2D',formats);
 
-% Plot error NUL GL
-err = zeros(length(NUL_series),length(GL_series));
+% Plot error with respect to NUL and GL
+err_series = zeros(length(NUL_series),length(GL_series));
 for m=1:length(NUL_series)
-    for n=1:length(GL_series)
-        x = [EL NUL_series(m) GL_series(n)];
+    NUL_m = NUL_series(m);
+    parfor n=1:length(GL_series)
+        GL_n = GL_series(n);
+        x = [EL NUL_m GL_n];
         u_in = solveTractionIsotTrans(x,S);
-        err(m,n) = norm(u_exp_in - u_in);
+        err_series(m,n) = norm(u_exp_in - u_in);
     end
 end
-err = err./norm(u_exp_in);
-[errmin,I] = min(err);
-[errmin,c] = min(errmin);
-r = I(c);
+err_series = err_series./norm(u_exp_in);
+% [err_min,I] = min(err_series);
+% [err_min,c] = min(err_min);
+% r = I(c);
+% GL_min = GL_series(c);
+% NUL_min = NUL_series(r);
 
-figure
-surfc(GL_series,NUL_series,err,'EdgeColor','none');
+figure('Name','Surface plot: Error with respect to NUL and GL')
+clf
+surfc(GL_series,NUL_series,err_series,'EdgeColor','none');
 colorbar
+view(-37.5,30) % default view
 hold on
-scatter3(GL_series(c),NUL_series(r),errmin,'MarkerEdgeColor','k','MarkerFaceColor','r');
+% scatter3(GL_min,NUL_min,err_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
+scatter3(GL,NUL,err,'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
 xlabel('$G_L$ [MPa]','Interpreter',interpreter)
 ylabel('$\nu_L$','Interpreter',interpreter)
 zlabel('Error','Interpreter',interpreter)
-% zlabel('Erreur','Interpreter',interpreter)
-mysaveas(pathname,'error_NUL_GL_3D',formats,renderer);
+%zlabel('Erreur','Interpreter',interpreter)
+mysaveas(pathname,'error_NUL_GL_3D',formats);
 
-figure
-contourf(GL_series,NUL_series,err,30);
+figure('Name','Contour plot: Error with respect to NUL and GL')
+clf
+contourf(GL_series,NUL_series,err_series,30);
 colorbar
 hold on
-scatter(GL_series(c),NUL_series(r),'MarkerEdgeColor','k','MarkerFaceColor','r');
+% scatter(GL_min,NUL_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
+scatter(GL,NUL,'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
 % set(gca,'ZScale','log')
 xlabel('$G_L$ [MPa]','Interpreter',interpreter)
 ylabel('$\nu_L$','Interpreter',interpreter)
-mysaveas(pathname,'error_NUL_GL_2D',formats,renderer);
+mysaveas(pathname,'error_NUL_GL_2D',formats);
+
+myparallel('stop');

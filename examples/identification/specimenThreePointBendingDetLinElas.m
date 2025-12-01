@@ -28,7 +28,7 @@ load(fullfile(pathnameIdentification,filenameNum));
 fontsize = 16;
 interpreter = 'latex';
 formats = {'fig','epsc'};
-renderer = 'OpenGL';
+renderer = 'painters';
 
 % geometric dimensions
 b = 50; % sample width [mm]
@@ -38,7 +38,7 @@ d = 20; % distance between the support and the region of interest (ROI) [mm]
 
 numSamples = 27;
 % for j=1:numSamples
-for j=14
+for j=27
     
     numSample = ['B' num2str(j)];
     F = appliedLoad(numSample); % applied load [N]
@@ -169,7 +169,6 @@ for j=14
             axis image
             legend(hD,'{\boldmath$u$}$^{\mathrm{exp}}$','Location','NorthEastOutside','Interpreter',interpreter)
             % legend(hD,legD,'Location','NorthEastOutside','Interpreter',interpreter)
-            set(gcf,'position',[100,100,500,150])
             mysaveas(pathname,'boundary_conditions',formats,renderer);
             
             % plotModel(S,'legend',false);

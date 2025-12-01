@@ -15,8 +15,8 @@ if nargin<5 || isempty(displayIter)
     displayIter = false;
 end
 display = 'off';
-options  = optimoptions('fsolve','Display',display,'tolX',eps,'tolFun',eps);
-% options  = optimoptions('fsolve','Display',display,'StepTolerance',eps,'FunctionTolerance',eps,'OptimalityTolerance',eps);
+% options  = optimoptions('fsolve','Display',display,'tolX',eps,'tolFun',eps);
+options  = optimoptions('fsolve','Display',display,'StepTolerance',eps,'FunctionTolerance',eps,'OptimalityTolerance',eps);
 
 ks = param(2); % elastic modulus of times steel proportion of steel in RC section [MPa]
 kc = param(3); % elastic modulus of concrete times proportion of concrete in RC section [MPa]

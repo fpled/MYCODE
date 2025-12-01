@@ -13,7 +13,6 @@ fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
 formats = {'fig','epsc'};
-renderer = 'OpenGL';
 
 damageFun = 2; % choice for damage function
 
@@ -36,7 +35,7 @@ angle = atan(h/L); % angle between rod and axis x [rad]
 epsilon = displ/l; % strain
 
 %% Identification
-% Initial point
+% Initial guess
 S = sqrt(L*h)*t; % equivalent rod section [m^2]
 Es = 200e3; % elastic modulus of steel [MPa]
 Ec = 28.6e3; % elastic modulus of concrete [MPa]
@@ -109,6 +108,7 @@ switch damageFun
         lb = [lb -Inf -Inf];
         ub = [ub 1 1];
 end
+
 optimFun = 'lsqnonlin'; % optimization function
 % optimFun = 'fminsearch';
 % optimFun = 'fminunc';
@@ -117,21 +117,36 @@ optimFun = 'lsqnonlin'; % optimization function
 % display = 'off';
 % display = 'iter';
 display = 'iter-detailed';
+% display = 'notify'; % only for fmincon and fminunc
+% display = 'notify-detailed'; % only for fmincon and fminunc
 % display = 'final';
 % display = 'final-detailed';
+
+algo = 'trust-region-reflective'; % default for lsqnonlin
+% algo = 'interior-point'; % default for fmincon
+% algo = 'active-set'; % only for fmincon
+% algo = 'sqp'; % only for fmincon
+% algo = 'sqp-legacy'; % only for fmincon
+% algo = 'levenberg-marquardt'; % only for lsqnonlin
+% algo = 'quasi-newton'; % default for minunc
+% algo = 'trust-region'; % only for minunc
 
 tolX = 1e-6; % tolerance on the parameter value in optimization algorithm
 tolFun = 1e-6; % tolerance on the function value in optimization algorithm
 tol = 1e-10; % tolerance for fixed-point algorithm
-maxFunEvals = 1e3; % maximum number of function evaluations
+maxIters = Inf; % maximum number of iterations
+maxFunEvals = Inf; % maximum number of function evaluations
 
 switch optimFun
     case {'lsqnonlin','fminunc','fmincon'}
-        options  = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun,'MaxFunEvals',maxFunEvals);
-        % options  = optimoptions(optimFun,'Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,...
-        %     'OptimalityTolerance',tolFun,'MaxFunctionEvaluations',maxFunEvals);
+        % options  = optimoptions(optimFun,'Display',display,'Algorithm',algo,...
+        %     'TolX',tolX,'TolFun',tolFun,'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
+        options  = optimoptions(optimFun,'Display',display,'Algorithm',algo,...
+            'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+            'MaxIterations',maxIters,'MaxFunctionEvaluations',maxFunEvals);
     case 'fminsearch'
-        options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun,'MaxFunEvals',maxFunEvals);
+        options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun,...
+            'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
     otherwise
         error(['Wrong optimization function' optimFun])
 end
