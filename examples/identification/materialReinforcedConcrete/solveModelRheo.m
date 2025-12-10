@@ -14,9 +14,26 @@ end
 if nargin<5 || isempty(displayIter)
     displayIter = false;
 end
+
 display = 'off';
-% options  = optimoptions('fsolve','Display',display,'tolX',eps,'tolFun',eps);
-options  = optimoptions('fsolve','Display',display,'StepTolerance',eps,'FunctionTolerance',eps,'OptimalityTolerance',eps);
+% display = 'iter';
+% display = 'iter-detailed';
+% display = 'final'; % default
+% display = 'final-detailed';
+
+algo = 'trust-region-dogleg'; % default for fsolve
+% algo = 'trust-region';
+% algo = 'levenberg-marquardt';
+
+tolX = eps; % tolerance on the parameter value
+tolFun = eps; % tolerance on the function value
+maxIters = Inf; % maximum number of iterations
+maxFunEvals = Inf; % maximum number of function evaluations
+finDiffType = 'forward'; % finite diffferences, 'forward' or 'central' ('forward' by default)
+
+options  = optimoptions('fsolve','Display',display,'Algorithm',algo,...
+            'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+            'MaxIterations',maxIters,'MaxFunctionEvaluations',maxFunEvals,'FiniteDifferenceType',finDiffType);
 
 ks = param(2); % elastic modulus of times steel proportion of steel in RC section [MPa]
 kc = param(3); % elastic modulus of concrete times proportion of concrete in RC section [MPa]
@@ -131,7 +148,7 @@ for iter=2:length(epsilon)
             end
             
             if ~updateDebonding || ((updateDamage && abs(funDamage(e,De,d))<tol))
-                    break
+                break
             end
         end
         if d<d_old

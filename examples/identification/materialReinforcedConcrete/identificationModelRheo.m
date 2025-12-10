@@ -128,12 +128,11 @@ algo = 'trust-region-reflective'; % default for lsqnonlin
 % algo = 'sqp'; % only for fmincon
 % algo = 'sqp-legacy'; % only for fmincon
 % algo = 'levenberg-marquardt'; % only for lsqnonlin
-% algo = 'quasi-newton'; % default for minunc
-% algo = 'trust-region'; % only for minunc
+% algo = 'quasi-newton'; % default for fminunc
+% algo = 'trust-region'; % only for fminunc
 
-tolX = 1e-6; % tolerance on the parameter value in optimization algorithm
-tolFun = 1e-6; % tolerance on the function value in optimization algorithm
-tol = 1e-10; % tolerance for fixed-point algorithm
+tolX = 1e-12; % tolerance on the parameter value in optimization algorithm
+tolFun = 1e-12; % tolerance on the function value in optimization algorithm
 maxIters = Inf; % maximum number of iterations
 maxFunEvals = Inf; % maximum number of function evaluations
 
@@ -151,19 +150,22 @@ switch optimFun
         error(['Wrong optimization function' optimFun])
 end
 
+displayIter = false; % display for fixed-point algorithm
+tol = eps; % tolerance for fixed-point algorithm
+
 time = tic;
 switch optimFun
     case 'lsqnonlin'
-        fun = @(x) funlsqnonlinModelRheo(x,force_exp,epsilon,angle,damageFun,tol);
+        fun = @(x) funlsqnonlinModelRheo(x,force_exp,epsilon,angle,damageFun,tol,displayIter);
         [x,err,~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
     case 'fminsearch'
-        fun = @(x) funoptimModelRheo(x,force_exp,epsilon,angle,damageFun,tol);
+        fun = @(x) funoptimModelRheo(x,force_exp,epsilon,angle,damageFun,tol,displayIter);
         [x,err,exitflag,output] = fminsearch(fun,x0,options);
     case 'fminunc'
-        fun = @(x) funoptimModelRheo(x,force_exp,epsilon,angle,damageFun,tol);
+        fun = @(x) funoptimModelRheo(x,force_exp,epsilon,angle,damageFun,tol,displayIter);
         [x,err,exitflag,output] = fminunc(fun,x0,options);
     case 'fmincon'
-        fun = @(x) funoptimModelRheo(x,force_exp,epsilon,angle,damageFun,tol);
+        fun = @(x) funoptimModelRheo(x,force_exp,epsilon,angle,damageFun,tol,displayIter);
         [x,err,exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
 end
 % x = x0;

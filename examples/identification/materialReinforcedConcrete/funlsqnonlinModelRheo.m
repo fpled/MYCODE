@@ -3,7 +3,7 @@ function f = funlsqnonlinModelRheo(x,force_exp,epsilon,angle,varargin)
 
 strain = epsilon(:)*cos(angle)*[1 -1]; 
 stress = zeros(size(strain));              
-for i=1:2
+parfor i=1:2
     stress(:,i) = solveModelRheo(x,strain(:,i),varargin{:}); % [MPa]
 end
 sigma = (stress(:,1)-stress(:,2))/(2*cos(angle)); % [MPa]

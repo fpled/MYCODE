@@ -9,7 +9,7 @@ end
 sigma = (stress(:,1)-stress(:,2))/(2*cos(angle)); % [MPa]
 
 S = x(1); % equivalent rod section [m^2]
-force = sigma*S;  % [MN]
+force = sigma*S; % [MN]
 f = norm(force - force_exp)^2;
 
 end
