@@ -157,8 +157,8 @@ algo = 'trust-region-reflective'; % default for lsqnonlin
 % algo = 'sqp'; % only for fmincon
 % algo = 'sqp-legacy'; % only for fmincon
 % algo = 'levenberg-marquardt'; % only for lsqnonlin
-% algo = 'quasi-newton'; % default for minunc
-% algo = 'trust-region'; % only for minunc
+% algo = 'quasi-newton'; % default for fminunc
+% algo = 'trust-region'; % only for fminunc
 
 tolX = 1e-14; % tolerance on the parameter value
 tolFun = 1e-14; % tolerance on the function value
@@ -258,7 +258,7 @@ EL_series = linspace(EL*0.5,EL*1.5,50); % [MPa]
 NUL_series = linspace(NUL*0.5,NUL*1.5,50);
 GL_series = linspace(GL*0.5,GL*1.5,50); % [MPa]
 
-% Plot error with respect to EL and GL
+% Plot relative error with respect to EL and GL
 err_series = zeros(length(EL_series),length(GL_series));
 for m=1:length(EL_series)
     EL_m = EL_series(m);
@@ -276,38 +276,39 @@ err_series = err_series./norm(u_exp_in);
 % GL_min = GL_series(c);
 % EL_min = EL_series(r);
 
-figure('Name','Surface plot: Error with respect to EL and GL')
+figure('Name','Surface plot: Relative error with respect to EL and GL')
 clf
 surfc(GL_series,EL_series,err_series,'EdgeColor','none');
 colorbar
+set(gca,'ColorScale','log')
 view(-37.5,30) % default view
 hold on
 % scatter3(GL_min,EL_min,err_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
 scatter3(GL,EL,err,'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
-% set(gca,'ZScale','log')
+set(gca,'ZScale','log')
 xlabel('$G_L$ [MPa]','Interpreter',interpreter)
 ylabel('$E_L$ [MPa]','Interpreter',interpreter)
-zlabel('Error','Interpreter',interpreter)
-%zlabel('Erreur','Interpreter',interpreter)
+zlabel('Relative error','Interpreter',interpreter)
+%zlabel('Erreur relative','Interpreter',interpreter)
 mysaveas(pathname,'error_EL_GL_3D',formats);
 
-figure('Name','Contour plot: Error with respect to EL and GL')
+figure('Name','Contour plot: Relative error with respect to EL and GL')
 clf
-contourf(GL_series,EL_series,err_series,30);
+contourf(GL_series,EL_series,err_series,50);
 colorbar
+set(gca,'ColorScale','log')
 hold on
 % scatter(GL_min,EL_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
 scatter(GL,EL,'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
-% set(gca,'ZScale','log')
 xlabel('$G_L$ [MPa]','Interpreter',interpreter)
 ylabel('$E_L$ [MPa]','Interpreter',interpreter)
 mysaveas(pathname,'error_EL_GL_2D',formats);
 
-% Plot error with respect to EL and NUL
+% Plot relative error with respect to EL and NUL
 err_series = zeros(length(EL_series),length(NUL_series));
 for m=1:length(EL_series)
     EL_m = EL_series(m);
@@ -325,38 +326,39 @@ err_series = err_series./norm(u_exp_in);
 % NUL_min = NUL_series(c);
 % EL_min = EL_series(r);
 
-figure('Name','Surface plot: Error with respect to EL and NUL')
+figure('Name','Surface plot: Relative error with respect to EL and NUL')
 clf
 surfc(NUL_series,EL_series,err_series,'EdgeColor','none');
 colorbar
+set(gca,'ColorScale','log')
 view(-37.5,30) % default view
 hold on
 % scatter3(NUL_min,EL_min,err_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
 scatter3(NUL,EL,err,'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
-% set(gca,'ZScale','log')
+set(gca,'ZScale','log')
 xlabel('$\nu_L$','Interpreter',interpreter)
 ylabel('$E_L$ [MPa]','Interpreter',interpreter)
-zlabel('Error','Interpreter',interpreter)
-%zlabel('Erreur','Interpreter',interpreter)
+zlabel('Relative error','Interpreter',interpreter)
+%zlabel('Erreur relative','Interpreter',interpreter)
 mysaveas(pathname,'error_EL_NUL_3D',formats);
 
-figure('Name','Contour plot: Error with respect to EL and NUL')
+figure('Name','Contour plot: Relative error with respect to EL and NUL')
 clf
-contourf(NUL_series,EL_series,err_series,30);
+contourf(NUL_series,EL_series,err_series,50);
 colorbar
+set(gca,'ColorScale','log')
 hold on
 % scatter(NUL_min,EL_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
 scatter(NUL,EL,'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
-% set(gca,'ZScale','log')
 xlabel('$\nu_L$','Interpreter',interpreter)
 ylabel('$E_L$ [MPa]','Interpreter',interpreter)
 mysaveas(pathname,'error_EL_NUL_2D',formats);
 
-% Plot error with respect to NUL and GL
+% Plot relative error with respect to NUL and GL
 err_series = zeros(length(NUL_series),length(GL_series));
 for m=1:length(NUL_series)
     NUL_m = NUL_series(m);
@@ -374,33 +376,34 @@ err_series = err_series./norm(u_exp_in);
 % GL_min = GL_series(c);
 % NUL_min = NUL_series(r);
 
-figure('Name','Surface plot: Error with respect to NUL and GL')
+figure('Name','Surface plot: Relative error with respect to NUL and GL')
 clf
 surfc(GL_series,NUL_series,err_series,'EdgeColor','none');
 colorbar
+set(gca,'ColorScale','log')
 view(-37.5,30) % default view
 hold on
 % scatter3(GL_min,NUL_min,err_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
 scatter3(GL,NUL,err,'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
-% set(gca,'ZScale','log')
+set(gca,'ZScale','log')
 xlabel('$G_L$ [MPa]','Interpreter',interpreter)
 ylabel('$\nu_L$','Interpreter',interpreter)
-zlabel('Error','Interpreter',interpreter)
-%zlabel('Erreur','Interpreter',interpreter)
+zlabel('Relative error','Interpreter',interpreter)
+%zlabel('Erreur relative','Interpreter',interpreter)
 mysaveas(pathname,'error_NUL_GL_3D',formats);
 
-figure('Name','Contour plot: Error with respect to NUL and GL')
+figure('Name','Contour plot: Relative error with respect to NUL and GL')
 clf
-contourf(GL_series,NUL_series,err_series,30);
+contourf(GL_series,NUL_series,err_series,50);
 colorbar
+set(gca,'ColorScale','log')
 hold on
 % scatter(GL_min,NUL_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
 scatter(GL,NUL,'MarkerEdgeColor','k','MarkerFaceColor','r');
 hold off
 set(gca,'FontSize',fontsize)
-% set(gca,'ZScale','log')
 xlabel('$G_L$ [MPa]','Interpreter',interpreter)
 ylabel('$\nu_L$','Interpreter',interpreter)
 mysaveas(pathname,'error_NUL_GL_2D',formats);

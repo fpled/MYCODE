@@ -20,7 +20,7 @@ fontsize = 16;
 interpreter = 'latex';
 formats = {'fig','epsc'};
 
-%% Plot error
+%% Plot relative error
 % geometric dimensions
 b = 50; % sample width [mm]
 h = 15; % sample thickness [mm]
@@ -100,10 +100,11 @@ for j=1:numSamples
         % NUL_min = NUL_series(c);
         % EL_min = EL_series(r);
         
-        figure('Name','Surface plot: Error with respect to EL and NUL')
+        figure('Name','Surface plot: Relative error with respect to EL and NUL')
         clf
         surfc(NUL_series,EL_series,err_series,'EdgeColor','none');
         colorbar
+        set(gca,'ColorScale','log')
         %view(-37.5,30) % default view
         view(-50,30)
         hold on
@@ -111,25 +112,25 @@ for j=1:numSamples
         scatter3(NUL,EL,err,'MarkerEdgeColor','k','MarkerFaceColor','r');
         hold off
         set(gca,'FontSize',fontsize)
-        % set(gca,'ZScale','log')
+        set(gca,'ZScale','log')
         set(gca,'XLim',[min(NUL_series),max(NUL_series)*1.1])
         xlabel('$\nu_L$','Interpreter',interpreter)
         ylabel('$E_L$ [MPa]','Interpreter',interpreter)
-        zlabel('Error','Interpreter',interpreter)
-        %zlabel('Erreur','Interpreter',interpreter)
+        zlabel('Relative error','Interpreter',interpreter)
+        %zlabel('Erreur relative','Interpreter',interpreter)
         mysaveas(pathname,['error_EL_NUL_' numSample '_' numImage '_3D'],formats);
         close(gcf)
         
-        figure('Name','Contour plot: Error with respect to EL and NUL')
+        figure('Name','Contour plot: Relative error with respect to EL and NUL')
         clf
-        contourf(NUL_series,EL_series,err_series,30);
+        contourf(NUL_series,EL_series,err_series,50);
         colorbar
+        set(gca,'ColorScale','log')
         hold on
         % scatter(NUL_min,EL_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
         scatter(NUL,EL,'MarkerEdgeColor','k','MarkerFaceColor','r');
         hold off
         set(gca,'FontSize',fontsize)
-        % set(gca,'ZScale','log')
         xlabel('$\nu_L$','Interpreter',interpreter)
         ylabel('$E_L$ [MPa]','Interpreter',interpreter)
         mysaveas(pathname,['error_EL_NUL_' numSample '_' numImage '_2D'],formats);

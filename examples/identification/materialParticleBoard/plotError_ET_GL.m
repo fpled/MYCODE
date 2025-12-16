@@ -17,7 +17,7 @@ fontsize = 16;
 interpreter = 'latex';
 formats = {'fig','epsc'};
 
-%% Plot error
+%% Plot relative error
 % geometric dimensions
 b = 50; % sample width [mm]
 h = 15; % sample thickness [mm]
@@ -70,35 +70,36 @@ for j=1:numSamples
         % GL_min = GL_series(c);
         % ET_min = ET_series(r);
         
-        figure('Name','Surface plot: Error with respect to ET and GL')
+        figure('Name','Surface plot: Relative error with respect to ET and GL')
         clf
         surfc(GL_series,ET_series,err_series,'EdgeColor','none');
         colorbar
+        set(gca,'ColorScale','log')
         %view(-37.5,30) % default view
-        view(-40,30)
+        view(-30,30)
         hold on
         % scatter3(GL_min,ET_min,err_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
         scatter3(GL,ET,err,'MarkerEdgeColor','k','MarkerFaceColor','r');
         hold off
         set(gca,'FontSize',fontsize)
-        % set(gca,'ZScale','log')
+        set(gca,'ZScale','log')
         xlabel('$G_L$ [MPa]','Interpreter',interpreter)
         ylabel('$E_T$ [MPa]','Interpreter',interpreter)
-        zlabel('Error','Interpreter',interpreter)
-        %zlabel('Erreur','Interpreter',interpreter)
+        zlabel('Relative error','Interpreter',interpreter)
+        %zlabel('Erreur relative','Interpreter',interpreter)
         mysaveas(pathname,['error_ET_GL_' numSample '_' numImage '_3D'],formats);
         close(gcf)
         
-        figure('Name','Contour plot: Error with respect to ET and GL')
+        figure('Name','Contour plot: Relative error with respect to ET and GL')
         clf
-        contourf(GL_series,ET_series,err_series,30);
+        contourf(GL_series,ET_series,err_series,50);
         colorbar
+        set(gca,'ColorScale','log')
         hold on
         % scatter(GL_min,ET_min,'MarkerEdgeColor','k','MarkerFaceColor','r');
         scatter(GL,ET,'MarkerEdgeColor','k','MarkerFaceColor','r');
         hold off
         set(gca,'FontSize',fontsize)
-        % set(gca,'ZScale','log')
         xlabel('$G_L$ [MPa]','Interpreter',interpreter)
         ylabel('$E_T$ [MPa]','Interpreter',interpreter)
         mysaveas(pathname,['error_ET_GL_' numSample '_' numImage '_2D'],formats);

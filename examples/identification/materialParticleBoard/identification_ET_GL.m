@@ -72,8 +72,8 @@ algo = 'trust-region-reflective'; % default for lsqnonlin
 % algo = 'sqp'; % only for fmincon
 % algo = 'sqp-legacy'; % only for fmincon
 % algo = 'levenberg-marquardt'; % only for lsqnonlin
-% algo = 'quasi-newton'; % default for minunc
-% algo = 'trust-region'; % only for minunc
+% algo = 'quasi-newton'; % default for fminunc
+% algo = 'trust-region'; % only for fminunc
 
 tolX = 1e-14; % tolerance on the parameter value
 tolFun = 1e-14; % tolerance on the function value
