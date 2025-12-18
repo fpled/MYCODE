@@ -84,8 +84,8 @@ maxFunEvals = 1e3; % maximum number of function evaluations
 
 switch optimFun
     case {'lsqnonlin','fminunc','fmincon'}
-        % options  = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun,'MaxFunEvals',maxFunEvals);
-        options  = optimoptions(optimFun,'Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,...
+        % options = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun,'MaxFunEvals',maxFunEvals);
+        options = optimoptions(optimFun,'Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,...
             'OptimalityTolerance',tolFun,'MaxFunctionEvaluations',maxFunEvals);
     case 'fminsearch'
         options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun,'MaxFunEvals',maxFunEvals);
