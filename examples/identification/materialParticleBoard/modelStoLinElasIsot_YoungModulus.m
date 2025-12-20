@@ -29,39 +29,72 @@ load(fullfile(pathnameIdentification,filenameAna));
 
 E_data = mean_ET_data*1e-3; % [GPa]
 
+% Empirical estimates
+N_data = length(E_data);
 mE_data = mean(E_data);
-% mE_data = sum(E_data)/length(E_data);
+% mE_data = sum(E_data)/N_data;
 vE_data = var(E_data);
-% vE_data = length(E_data)/(length(E_data)-1)*moment(E_data,2);
+% vE_data = N_data/(N_data-1)*moment(E_data,2);
 sE_data = std(E_data);
 % sE_data = sqrt(vE_data);
 dE_data = sE_data/mE_data;
 
 %% Maximum likelihood estimation
-param = gamfit(E_data);
-% param = mle(E_data,'Distribution','gam');
-% param = mle(E_data,'pdf',@gampdf,'Start',[3 1],'LowerBound',[2 0]);
-% param = mle(E_data,'nloglf',@gamlike,'Start',[3 1],'LowerBound',[2 0]);
+display = 'off'; % default for gamfit and mle
+% display = 'iter';
+% display = 'final';
+
+tolX = 1e-8; % tolerance on the parameter value (default: 1e-8 for gamfit and 1e-6 for mle)
+tolFun = 1e-8; % tolerance on the function value (default: 1e-8 for gamfit and 1e-6 for mle)
+tolBnd = 1e-6; % tolerance on the parameter bound (default: 1e-6 for gamfit and mle)
+maxIters = Inf; % maximum number of iterations
+maxFunEvals = Inf; % maximum number of function evaluations
+
+options_gamfit = statset(statset('gamfit'),'Display',display,...
+    'TolX',tolX,'TolFun',tolFun,'TolBnd',tolBnd,...
+    'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
+
+options_mlecustom = statset(statset('mlecustom'),'Display',display,...
+    'TolX',tolX,'TolFun',tolFun,'TolBnd',tolBnd,...
+    'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
+
+param = gamfit(E_data,[],[],[],options_gamfit);
+% param = mle(E_data,'Distribution','gam','Options',options_gamfit);
+
+% Initial parameter values using Method of moments estimates
+a0 = mE_data^2/vE_data; % a > 2
+b0 = mE_data/a0;        % b > 0
+
+param0 = [a0 b0]; % initial parameter vector
+lb     = [2 0];   % lower bounds
+
+loglfval0 = -gamlike(param0,E_data); % initial log-likelihood
+
+% param = mle(E_data,'pdf',@gampdf,'Start',param0,'LowerBound',lb,'Options',options_mlecustom);
+% param = mle(E_data,'nloglf',@gamlike,'Start',param0,'LowerBound',lb,'Options',options_mlecustom);
 
 custpdf = @(data,a,b) gampdf(data,a,b);
 % custpdf = @(data,a,b) exp(-(a*log(b)+gammaln(a))) * data.^(a-1) .* exp(-data/b);
-% param = mle(E_data,'pdf',custpdf,'Start',[3 1],'LowerBound',[2 0]);
+% param = mle(E_data,'pdf',custpdf,'Start',param0,'LowerBound',lb,'Options',options_mlecustom);
 
 nloglf = @(param,data,cens,freq) gamlike(param,data);
 % nloglf = @(param,data,cens,freq) length(data)*param(1)*log(param(2))...
 %     +length(data)*gammaln(param(1))...
 %     +(1-param(1))*sum(log(data))...
 %     +1/param(2)*sum(data);
-% param = mle(E_data,'nloglf',nloglf,'Start',[3 1],'LowerBound',[2 0]);
+% param = mle(E_data,'nloglf',nloglf,'Start',param0,'LowerBound',lb,'Options',options_mlecustom);
 
-a = param(1);
-b = param(2);
+% Optimal parameter values
+a = param(1); % a > 2
+b = param(2); % b > 0
 
-% [mE,vE] = gamstat(a,b);
-mE = a*b;
-vE = a*b^2;
+[mE,vE] = gamstat(a,b);
+% mE = a*b;
+% vE = a*b^2;
 sE = sqrt(vE); % sE = sqrt(a)*b;
 dE = sE/mE; % dE = 1/sqrt(a);
+
+loglfval = -gamlike(param,E_data); % optimal (maximal) log-likelihood = log-likelihood function evaluated at MLE param
 
 %% Pdf and cdf
 pdf_E = @(x) gampdf(x,a,b);
@@ -71,48 +104,77 @@ cdf_E = @(x) gamcdf(x,a,b);
 % cdf_E = @(x) cdf('gam',x,a,b);
 
 %% Sample generation
-N = 1e3; % number of samples
+N = 1e4; % number of samples
 E_sample = gamrnd(a,b,N,1); % [GPa]
 % u = randn(N,1);
 % E_sample = gaminv(normcdf(u),a,b); % [GPa]
 
 mE_sample = mean(E_sample);
-% mE_sample = sum(E_sample)/length(E_sample);
+% mE_sample = sum(E_sample)/N;
 vE_sample = var(E_sample);
-% vE_sample = length(E_sample)/(length(E_sample)-1)*moment(E_sample,2);
+% vE_sample = N/(N-1)*moment(E_sample,2);
 sE_sample = std(E_sample);
 % sE_sample = sqrt(vE_sample);
 dE_sample = sE_sample/mE_sample;
 
 %% Outputs
-fprintf('\nnb data = %g',length(E_data));
-fprintf('\nnb sample = %g',N);
 fprintf('\n');
+fprintf('nb data    = %g\n',N_data);
+fprintf('nb samples = %g\n',N);
 
-fprintf('\nalpha = %.4f',a);
-fprintf('\nbeta  = %.4f',b);
 fprintf('\n');
+fprintf('Initial parameter values\n');
+fprintf('alpha = %.4f\n',a0);
+fprintf('beta  = %.6f\n',b0);
+fprintf('loglf = %.4f\n',loglfval0);
 
-fprintf('\nmean(E)        = %.4f GPa',mE);
-fprintf('\nmean(E_sample) = %.4f GPa',mE_sample);
-fprintf('\nmean(E_data)   = %.4f GPa',mE_data);
-fprintf('\nvar(E)         = %.4f (GPa)^2',vE);
-fprintf('\nvar(E_sample)  = %.4f (GPa)^2',vE_sample);
-fprintf('\nvar(E_data)    = %.4f (GPa)^2',vE_data);
-fprintf('\nstd(E)         = %.4f GPa',sE);
-fprintf('\nstd(E_sample)  = %.4f GPa',sE_sample);
-fprintf('\nstd(E_data)    = %.4f GPa',sE_data);
-fprintf('\ndisp(E)        = %.4f',dE);
-fprintf('\ndisp(E_sample) = %.4f',dE_sample);
-fprintf('\ndisp(E_data)   = %.4f',dE_data);
 fprintf('\n');
-    
+fprintf('Optimal parameter values\n');
+fprintf('alpha = %.4f\n',a);
+fprintf('beta  = %.6f\n',b);
+fprintf('loglf = %.4f\n',loglfval);
+
+fprintf('\n');
+fprintf('mean(E_data)   = %.4f GPa\n',mE_data);
+fprintf('mean(E)        = %.4f GPa\n',mE);
+fprintf('mean(E_sample) = %.4f GPa\n',mE_sample);
+fprintf('var(E_data)    = %.4f (GPa)^2\n',vE_data);
+fprintf('var(E)         = %.4f (GPa)^2\n',vE);
+fprintf('var(E_sample)  = %.4f (GPa)^2\n',vE_sample);
+fprintf('std(E_data)    = %.4f GPa\n',sE_data);
+fprintf('std(E)         = %.4f GPa\n',sE);
+fprintf('std(E_sample)  = %.4f GPa\n',sE_sample);
+fprintf('cv(E_data)     = %.4f\n',dE_data);
+fprintf('cv(E)          = %.4f\n',dE);
+fprintf('cv(E_sample)   = %.4f\n',dE_sample);
+
+err_meanE = abs(mE - mE_data)/abs(mE_data);
+err_varE = abs(vE - vE_data)/abs(vE_data);
+err_stdE = abs(sE - sE_data)/abs(sE_data);
+err_cvE = abs(dE - dE_data)/abs(dE_data);
+
+err_meanE_sample = abs(mE_sample - mE_data)/abs(mE_data);
+err_varE_sample = abs(vE_sample - vE_data)/abs(vE_data);
+err_stdE_sample = abs(sE_sample - sE_data)/abs(sE_data);
+err_cvE_sample = abs(dE_sample - dE_data)/abs(dE_data);
+
 alpha = 1/2;
 mse = alpha * (mE - mE_data)^2/(mE_data)^2 + (1-alpha) * (dE - dE_data)^2/(dE_data)^2;
 mse_sample = alpha * (mE_sample - mE_data)^2/(mE_data)^2 + (1-alpha) * (dE_sample - dE_data)^2/(dE_data)^2;
-fprintf('\nmean-squared error mse        = %.4e',mse);
-fprintf('\nmean-squared error mse_sample = %.4e',mse_sample);
+
 fprintf('\n');
+fprintf('relative error on mean(E) = %.4e\n',err_meanE);
+fprintf('relative error on var(E)  = %.4e\n',err_varE);
+fprintf('relative error on std(E)  = %.4e\n',err_stdE);
+fprintf('relative error on cv(E)   = %.4e\n',err_cvE);
+fprintf('mean-squared error mse(E) = %.4e\n',mse);
+
+fprintf('\n');
+fprintf('relative error on mean(E_sample) = %.4e\n',err_meanE_sample);
+fprintf('relative error on var(E_sample)  = %.4e\n',err_varE_sample);
+fprintf('relative error on std(E_sample)  = %.4e\n',err_stdE_sample);
+fprintf('relative error on cv(E_sample)   = %.4e\n',err_cvE_sample);
+fprintf('mean-squared error mse(E_sample) = %.4e\n',mse_sample);
 
 %% Display
 if displaySolution
@@ -130,25 +192,29 @@ if displaySolution
     mymatlab2tikz(pathname,'data_E.tex');
     
     %% Plot log-likelihood function
+    loglf = @(A,B,data) arrayfun(@(a,b) -gamlike([a,b],data), A, B);
+
     a_series = linspace(a*0.5,a*1.5,1e2);
     b_series = linspace(b*0.5,b*1.5,1e2);
-    loglf = zeros(length(a_series),length(b_series));
+    logL = zeros(length(a_series),length(b_series));
     for i=1:length(a_series)
-        aS_i = a_series(i);
+        a_i = a_series(i);
         for j=1:length(b_series)
             b_j = b_series(j);
-            param_ij = [aS_i,b_j];
-            loglf(j,i) = -gamlike(param_ij,E_data);
+            param_ij = [a_i,b_j];
+            logL(j,i) = -gamlike(param_ij,E_data);
         end
     end
+    [A,B] = meshgrid(a_series,b_series);
+    logL = loglf(A,B,E_data);
     
     % Plot log-likelihood function loglf for E
     figure('Name','Surface plot: Log-likelihood function for E')
     clf
-    surfc(a_series,b_series,loglf,'EdgeColor','none');
+    surfc(a_series,b_series,logL,'EdgeColor','none');
     colorbar
     hold on
-    scatter3(a,b,-gamlike(param,E_data),'MarkerEdgeColor','k','MarkerFaceColor','r');
+    scatter3(a,b,loglfval,'MarkerEdgeColor','k','MarkerFaceColor','r');
     hold off
     set(gca,'FontSize',fontsize)
     xlabel('$\alpha$','Interpreter',interpreter)
@@ -157,16 +223,16 @@ if displaySolution
     mysaveas(pathname,'loglf_E_3D',formats);
     % mymatlab2tikz(pathname,'loglf_E_3D.tex');
     
-    figure('Name','Contour plot: Log-likelihood function for KS')
+    figure('Name','Contour plot: Log-likelihood function for E')
     clf
-    contourf(a_series,b_series,loglf,30);
+    contourf(a_series,b_series,logL,50);
     colorbar
     hold on
     scatter(a,b,'MarkerEdgeColor','k','MarkerFaceColor','r');
     hold off
     set(gca,'FontSize',fontsize)
     xlabel('$\alpha$','Interpreter',interpreter)
-    ylabel('$\beta$ [kN/rad]','Interpreter',interpreter)
+    ylabel('$\beta$ [GPa]','Interpreter',interpreter)
     zlabel('$\mathcal{L}(\alpha,\beta)$','Interpreter',interpreter)
     mysaveas(pathname,'loglf_E_2D',formats);
     % mymatlab2tikz(pathname,'loglf_E_2D.tex');
@@ -214,9 +280,9 @@ if displaySolution
     %% Plot samples
     figure('Name','Samples')
     clf
-    scatter(1:length(E_sample),E_sample,'b.')
+    scatter(1:N,E_sample,'b.')
     hold on
-    plot([1 length(E_sample)],[mE mE],'-r','LineWidth',linewidth)
+    plot([1 N],[mE mE],'-r','LineWidth',linewidth)
     hold off
     grid on
     box on
