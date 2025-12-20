@@ -27,12 +27,13 @@ algo = 'trust-region-dogleg'; % default for fsolve
 
 tolX = eps; % tolerance on the parameter value
 tolFun = eps; % tolerance on the function value
+tolOpt = eps; % tolerance on the first-order optimality
 maxIters = Inf; % maximum number of iterations
 maxFunEvals = Inf; % maximum number of function evaluations
 finDiffType = 'forward'; % finite diffferences, 'forward' or 'central' ('forward' by default)
 
 options = optimoptions('fsolve','Display',display,'Algorithm',algo,...
-            'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+            'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolOpt,...
             'MaxIterations',maxIters,'MaxFunctionEvaluations',maxFunEvals,'FiniteDifferenceType',finDiffType);
 
 ks = param(2); % elastic modulus of times steel proportion of steel in RC section [MPa]

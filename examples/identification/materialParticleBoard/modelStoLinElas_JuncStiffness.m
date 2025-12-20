@@ -50,9 +50,9 @@ dKD_data = sKD_data/mKD_data;
 display = 'iter';
 % display = 'final';
 
-tolX = 1e-8; % tolerance on the parameter value (default: 1e-8 for gamfit and 1e-6 for mle)
-tolFun = 1e-8; % tolerance on the function value (default: 1e-8 for gamfit and 1e-6 for mle)
-tolBnd = 1e-6; % tolerance on the parameter bound (default: 1e-6 for gamfit and mle)
+tolX = 1e-8; % tolerance on the parameter value (1e-8 by default for gamfit and 1e-6 for mle)
+tolFun = 1e-8; % tolerance on the function value (1e-8 by default for gamfit and 1e-6 for mle)
+tolBnd = 1e-6; % tolerance on the parameter bound (1e-6 by default for gamfit and mle)
 maxIters = Inf; % maximum number of iterations
 maxFunEvals = Inf; % maximum number of function evaluations
 

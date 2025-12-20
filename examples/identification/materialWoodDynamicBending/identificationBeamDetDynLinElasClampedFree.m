@@ -104,17 +104,24 @@ display = 'iter-detailed';
 % display = 'final';
 % display = 'final-detailed';
 
-% tolX = 1e-5; % tolerance on the parameter value
-% tolFun = 1e-5; % tolerance on the function value
+% tolX = 1e-6; % tolerance on the parameter value
+% tolFun = 1e-6; % tolerance on the function value
+% tolOpt = 1e-6; % tolerance on the first-order optimality
+% maxIters = Inf; % maximum number of iterations
+% maxFunEvals = Inf; % maximum number of function evaluations
 
 switch optimFun
     case {'lsqnonlin','fminunc','fmincon'}
         options = optimoptions(optimFun,'Display',display);
-        % options = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun);
-        % options = optimoptions(optimFun,'Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun);
+        % options = optimoptions(optimFun,'Display',display,...
+        %     'TolX',tolX,'TolFun',tolFun,'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
+        % options = optimoptions(optimFun,'Display',display,...
+        %     'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolOpt,...
+        %     'MaxIterations',maxIters,'MaxFunctionEvaluations',maxFunEvals);
     case 'fminsearch'
         options = optimset('Display',display);
-        % options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun);
+        % options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun,...
+        %     'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
     otherwise
         error(['Wrong optimization function' optimFun])
 end
@@ -228,22 +235,22 @@ end
 %% Solution
 if solveProblem
     t = tic;
-    
     switch optimFun
         case 'lsqnonlin'
             fun = @(param) funlsqnonlinBeamDetDynLinElasClampedFree(param,uy_exp,S,N,M,b,funu0,v0,P1);
-            [param,err,~,exitflag,output] = lsqnonlin(fun,param0,lb,ub,options);
+            [param,resnorm,residual,exitflag,output] = lsqnonlin(fun,param0,lb,ub,options);
         case 'fminsearch'
             fun = @(param) funoptimBeamDetDynLinElasClampedFree(param,uy_exp,S,N,M,b,funu0,v0,P1);
-            [param,err,exitflag,output] = fminsearch(fun,param0,options);
+            [param,resnorm,exitflag,output] = fminsearch(fun,param0,options);
         case 'fminunc'
             fun = @(param) funoptimBeamDetDynLinElasClampedFree(param,uy_exp,S,N,M,b,funu0,v0,P1);
-            [param,err,exitflag,output] = fminunc(fun,param0,options);
+            [param,resnorm,exitflag,output] = fminunc(fun,param0,options);
         case 'fmincon'
             fun = @(param) funoptimBeamDetDynLinElasClampedFree(param,uy_exp,S,N,M,b,funu0,v0,P1);
-            [param,err,exitflag,output] = fmincon(fun,param0,[],[],[],[],lb,ub,[],options);
+            [param,resnorm,exitflag,output] = fmincon(fun,param0,[],[],[],[],lb,ub,[],options);
     end
-    
+    timeIdentification = toc(t);
+
     E = param(1); % [GPa]
     alpha = param(2);
     beta = param(3);
@@ -251,7 +258,7 @@ if solveProblem
         c = param(4); % [kN.m/rad]
         J = param(5); % [kg.m2/rad]=[N.m.s2/rad]
     end
-    err = sqrt(err)./norm(uy_exp);
+    err = sqrt(resnorm)./norm(uy_exp);
     
     disp('Optimal parameters');
     disp('------------------');
@@ -262,11 +269,10 @@ if solveProblem
         fprintf('c     = %g kN.m/rad\n',c);
         fprintf('J     = %g kg.m2/rad\n',J);
     end
+    fprintf('resnorm = %g\n',resnorm);
     fprintf('err = %g\n',err);
     % fprintf('exitflag = %g\n',exitflag);
     % disp(output);
-    
-    timeIdentification = toc(t);
     
     %% Numerical solution
     t = tic;

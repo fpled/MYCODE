@@ -1,4 +1,4 @@
-function [displ,force] = readData(filename)
+function [displ,force] = readDataModelRheo(filename)
 
 displ = [];
 force = [];

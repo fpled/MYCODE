@@ -143,9 +143,9 @@ optimFun = 'lsqnonlin'; % optimization function
 % optimFun = 'fminunc';
 % optimFun = 'fmincon';
 
-display = 'off';
+% display = 'off';
 % display = 'iter';
-% display = 'iter-detailed';
+display = 'iter-detailed';
 % display = 'notify'; % only for fmincon and fminunc
 % display = 'notify-detailed'; % only for fmincon and fminunc
 % display = 'final';
@@ -160,8 +160,9 @@ algo = 'trust-region-reflective'; % default for lsqnonlin
 % algo = 'quasi-newton'; % default for fminunc
 % algo = 'trust-region'; % only for fminunc
 
-tolX = 1e-14; % tolerance on the parameter value
-tolFun = 1e-14; % tolerance on the function value
+tolX = eps; % tolerance on the parameter value
+tolFun = eps; % tolerance on the function value
+tolOpt = eps; % tolerance on the first-order optimality
 maxIters = Inf; % maximum number of iterations
 maxFunEvals = Inf; % maximum number of function evaluations
 
@@ -170,7 +171,7 @@ switch optimFun
         % options = optimoptions(optimFun,'Display',display,'Algorithm',algo,...
         %     'TolX',tolX,'TolFun',tolFun,'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
         options = optimoptions(optimFun,'Display',display,'Algorithm',algo,...
-            'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+            'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolOpt,...
             'MaxIterations',maxIters,'MaxFunctionEvaluations',maxFunEvals);
     case 'fminsearch'
         options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun,...

@@ -8,6 +8,7 @@
 % clc
 clearvars
 close all
+myparallel('start');
 
 fontsize = 16;
 linewidth = 1;
@@ -25,7 +26,7 @@ end
 %% Experimental data
 pathnameExp = fileparts(mfilename('fullpath'));
 filename = 'resu_exp.11';
-[displ,force_exp] = readData(fullfile(pathnameExp,filename)); % displacement [m], force [N]
+[displ,force_exp] = readDataModelRheo(fullfile(pathnameExp,filename)); % displacement [m], force [N]
 force_exp = force_exp*1e-6; % force [MN]
 L = 3; % wall length [m]
 h = 1.2; % wall height [m]
@@ -133,6 +134,7 @@ algo = 'trust-region-reflective'; % default for lsqnonlin
 
 tolX = 1e-12; % tolerance on the parameter value in optimization algorithm
 tolFun = 1e-12; % tolerance on the function value in optimization algorithm
+tolOpt = 1e-12; % tolerance on the first-order optimality
 maxIters = Inf; % maximum number of iterations
 maxFunEvals = Inf; % maximum number of function evaluations
 
@@ -141,7 +143,7 @@ switch optimFun
         % options = optimoptions(optimFun,'Display',display,'Algorithm',algo,...
         %     'TolX',tolX,'TolFun',tolFun,'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
         options = optimoptions(optimFun,'Display',display,'Algorithm',algo,...
-            'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolFun,...
+            'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolOpt,...
             'MaxIterations',maxIters,'MaxFunctionEvaluations',maxFunEvals);
     case 'fminsearch'
         options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun,...
@@ -151,25 +153,24 @@ switch optimFun
 end
 
 displayIter = false; % display for fixed-point algorithm
-tol = eps; % tolerance for fixed-point algorithm
+tol = 1e-14; % tolerance for fixed-point algorithm
 
 time = tic;
 switch optimFun
     case 'lsqnonlin'
         fun = @(x) funlsqnonlinModelRheo(x,force_exp,epsilon,angle,damageFun,tol,displayIter);
-        [x,err,~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
+        [x,resnorm,~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
     case 'fminsearch'
         fun = @(x) funoptimModelRheo(x,force_exp,epsilon,angle,damageFun,tol,displayIter);
-        [x,err,exitflag,output] = fminsearch(fun,x0,options);
+        [x,resnorm,exitflag,output] = fminsearch(fun,x0,options);
     case 'fminunc'
         fun = @(x) funoptimModelRheo(x,force_exp,epsilon,angle,damageFun,tol,displayIter);
-        [x,err,exitflag,output] = fminunc(fun,x0,options);
+        [x,resnorm,exitflag,output] = fminunc(fun,x0,options);
     case 'fmincon'
         fun = @(x) funoptimModelRheo(x,force_exp,epsilon,angle,damageFun,tol,displayIter);
-        [x,err,exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
+        [x,resnorm,exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
 end
-% x = x0;
-% err = 0;
+toc(time)
 
 S = x(1);
 ks = x(2);
@@ -187,7 +188,7 @@ switch damageFun
         gammat = x(7);
         gammac = x(8);
 end
-err = sqrt(err)./norm(force_exp);
+err = sqrt(resnorm)./norm(force_exp);
 
 Es = ks/ps;
 Ec = kc/pc;
@@ -195,6 +196,7 @@ F0t = sig0t*S;
 F0c = sig0c*S;
 DF0 = Dsig0*S;
 
+fprintf('\n');
 disp('Optimal parameters');
 disp('------------------');
 fprintf('S  = %g m^2\n',S);
@@ -218,10 +220,10 @@ switch damageFun
         fprintf('gammat = %g\n',gammat);
         fprintf('gammac = %g\n',gammac);
 end
+fprintf('resnorm = %g\n',resnorm);
 fprintf('err = %g\n',err);
 % fprintf('exitflag = %g\n',exitflag);
 % disp(output);
-toc(time)
 
 %% Solution
 strain = epsilon(:)*cos(angle)*[1 -1]; 
@@ -348,3 +350,5 @@ ylabel('Energie dissipee [J/m$^3$]','Interpreter',interpreter)
 legend('barre 1 - total','barre 1 - endommagement','barre 1 - glissement',...
     'barre 2 - total','barre 2 - endommagement','barre 2 - glissement','Location','NorthWest')
 mysaveas(pathname,'disspated_energy',formats);
+
+myparallel('stop');

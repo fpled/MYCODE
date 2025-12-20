@@ -1,5 +1,5 @@
-function [time,displ,force] = readData(filename)
-% function [time,delta,force] = readData(filename)
+function [time,displ,force] = readDataCyclicCompression(filename)
+% function [time,delta,force] = readDataCyclicCompression(filename)
 
 data = load(filename);
 time = data(:,1);

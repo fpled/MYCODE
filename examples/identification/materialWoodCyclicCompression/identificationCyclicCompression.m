@@ -9,7 +9,6 @@ fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
 formats = {'fig','epsc'};
-renderer = 'OpenGL';
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification','materialWoodCyclicCompression');
@@ -18,7 +17,6 @@ if ~exist(pathname,'dir')
 end
 
 %% Input data
-
 %F = [120 240 360 480 600 720];
 %F = [120 360 600];
 %F = [240 480 720];
@@ -29,7 +27,7 @@ h = 50; % [mm]
 pathnameExp = fileparts(mfilename('fullpath'));
 filename = 'BG1-A-10k-300N-4000.txt';
 % filename  ='BG1-A-10k-300N-propre.txt';
-[time,displ,force] = readData(fullfile(pathnameExp,filename));
+[time,displ,force] = readDataCyclicCompression(fullfile(pathnameExp,filename));
 
 flag = true;
 displ_max = [];
@@ -74,21 +72,25 @@ optimFun = 'lsqnonlin'; % optimization function
 
 % display = 'off';
 % display = 'iter';
-% display = 'iter-detailed';
+display = 'iter-detailed';
 % display = 'final';
-display = 'final-detailed';
+% display = 'final-detailed';
 
-tolX = 1e-6; % tolerance on the parameter value in optimization algorithm
-tolFun = 1e-6; % tolerance on the function value in optimization algorithm
-maxFunEvals = 1e3; % maximum number of function evaluations
+tolX = eps; % tolerance on the parameter value
+tolFun = eps; % tolerance on the function value
+tolOpt = eps; % tolerance on the first-order optimality
+maxIters = Inf; % maximum number of iterations
+maxFunEvals = Inf; % maximum number of function evaluations
 
 switch optimFun
     case {'lsqnonlin','fminunc','fmincon'}
         % options = optimoptions(optimFun,'Display',display,'TolX',tolX,'TolFun',tolFun,'MaxFunEvals',maxFunEvals);
-        options = optimoptions(optimFun,'Display',display,'StepTolerance',tolX,'FunctionTolerance',tolFun,...
-            'OptimalityTolerance',tolFun,'MaxFunctionEvaluations',maxFunEvals);
+        options = optimoptions(optimFun,'Display',display,...
+            'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolOpt,...
+            'MaxIterations',maxIters,'MaxFunctionEvaluations',maxFunEvals);
     case 'fminsearch'
-        options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun,'MaxFunEvals',maxFunEvals);
+        options = optimset('Display',display,'TolX',tolX,'TolFun',tolFun,...
+            'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
     otherwise
         error(['Wrong optimization function' optimFun])
 end
@@ -97,32 +99,34 @@ t = tic;
 switch optimFun
     case 'lsqnonlin'
         fun = @(x) funlsqnonlinCyclicCompression(x,delta_exp,N);
-        [x,err,~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
+        [x,resnorm,~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
     case 'fminsearch'
         fun = @(x) funoptimCyclicCompression(x,delta_exp,N);
-        [x,err,exitflag,output] = fminsearch(fun,x0,options);
+        [x,resnorm,exitflag,output] = fminsearch(fun,x0,options);
     case 'fminunc'
         fun = @(x) funoptimCyclicCompression(x,delta_exp,N);
-        [x,err,exitflag,output] = fminunc(fun,x0,options);
+        [x,resnorm,exitflag,output] = fminunc(fun,x0,options);
     case 'fmincon'
         fun = @(x) funoptimCyclicCompression(x,delta_exp,N);
-        [x,err,exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
+        [x,resnorm,exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
 end
+toc(t)
 
 delta0 = x(1);
 Kinf = x(2);
 Nref = x(3);
-err = sqrt(err)./norm(delta_exp);
+err = sqrt(resnorm)./norm(delta_exp);
 
+fprintf('\n');
 disp('Optimal parameters');
 disp('------------------');
 fprintf('delta0 = %g mm\n',delta0);
 fprintf('Kinf   = %g mm\n',Kinf);
 fprintf('Nref   = %g\n',Nref);
+fprintf('resnorm = %g\n',resnorm);
 fprintf('err = %g\n',err);
 % fprintf('exitflag = %g\n',exitflag);
 % disp(output);
-toc(t)
 
 %% Solution
 delta = solveCyclicCompression(x,N);
