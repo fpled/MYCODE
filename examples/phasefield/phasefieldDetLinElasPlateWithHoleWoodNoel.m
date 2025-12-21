@@ -142,67 +142,79 @@ numSamples = numel(samples); % number of samples/tests
 numSample = 4; % sample number
 
 %% Statistics of elastic and fracture properties: mean value and biased standard deviation
-fprintf(['Samples : all = [' sprintf(' %d ',samples) '], kept = [' sprintf(' %d ',samplesKept) ']\n']);
-fprintf(['Group A : all = [' sprintf(' %d ',samplesA) '], kept = [' sprintf(' %d ',samplesKeptA) ']\n']);
-fprintf(['Group B : all = [' sprintf(' %d ',samplesB) '], kept = [' sprintf(' %d ',samplesKeptB) ']\n']);
+filenameStat = fullfile(pathname,'stat_data.txt');
+fidStat = fopen(filenameStat,'w');
+fprintf(fidStat,['Samples : all = [' sprintf(' %d ',samples) '], kept = [' sprintf(' %d ',samplesKept) ']\n']);
+fprintf(fidStat,['Group A : all = [' sprintf(' %d ',samplesA) '], kept = [' sprintf(' %d ',samplesKeptA) ']\n']);
+fprintf(fidStat,['Group B : all = [' sprintf(' %d ',samplesB) '], kept = [' sprintf(' %d ',samplesKeptB) ']\n']);
 
-fprintf('\nLongitudinal Young modulus EL\n')
-fprintf('All     : mean = %g GPa, std = %g MPa, cv = %g %%\n',mean(EL_data(samplesKept+1))*1e-3,std(EL_data(samplesKept+1),1),std(EL_data(samplesKept+1),1)/mean(EL_data(samplesKept+1))*1e2);
-fprintf('Group A : mean = %g GPa, std = %g MPa, cv = %g %%\n',mean(EL_data(samplesKeptA+1))*1e-3,std(EL_data(samplesKeptA+1),1),std(EL_data(samplesKeptA+1),1)/mean(EL_data(samplesKeptA+1))*1e2);
-fprintf('Group B : mean = %g GPa, std = %g MPa, cv = %g %%\n',mean(EL_data(samplesKeptB+1))*1e-3,std(EL_data(samplesKeptB+1),1),std(EL_data(samplesKeptB+1),1)/mean(EL_data(samplesKeptB+1))*1e2);
+fprintf(fidStat,'\n');
+fprintf(fidStat,'Longitudinal Young modulus EL\n');
+fprintf(fidStat,'All     : mean = %g GPa, std = %g MPa, cv = %g %%\n',mean(EL_data(samplesKept+1))*1e-3,std(EL_data(samplesKept+1),1),std(EL_data(samplesKept+1),1)/mean(EL_data(samplesKept+1))*1e2);
+fprintf(fidStat,'Group A : mean = %g GPa, std = %g MPa, cv = %g %%\n',mean(EL_data(samplesKeptA+1))*1e-3,std(EL_data(samplesKeptA+1),1),std(EL_data(samplesKeptA+1),1)/mean(EL_data(samplesKeptA+1))*1e2);
+fprintf(fidStat,'Group B : mean = %g GPa, std = %g MPa, cv = %g %%\n',mean(EL_data(samplesKeptB+1))*1e-3,std(EL_data(samplesKeptB+1),1),std(EL_data(samplesKeptB+1),1)/mean(EL_data(samplesKeptB+1))*1e2);
 
-fprintf('\nTransverse Young modulus ET\n')
-fprintf('All     : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(ET_data(samplesKept+1)),std(ET_data(samplesKept+1),1),std(ET_data(samplesKept+1),1)/mean(ET_data(samplesKept+1))*1e2);
-fprintf('Group A : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(ET_data(samplesKeptA+1)),std(ET_data(samplesKeptA+1),1),std(ET_data(samplesKeptA+1),1)/mean(ET_data(samplesKeptA+1))*1e2);
-fprintf('Group B : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(ET_data(samplesKeptB+1)),std(ET_data(samplesKeptB+1),1),std(ET_data(samplesKeptB+1),1)/mean(ET_data(samplesKeptB+1))*1e2);
+fprintf(fidStat,'\n');
+fprintf(fidStat,'Transverse Young modulus ET\n');
+fprintf(fidStat,'All     : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(ET_data(samplesKept+1)),std(ET_data(samplesKept+1),1),std(ET_data(samplesKept+1),1)/mean(ET_data(samplesKept+1))*1e2);
+fprintf(fidStat,'Group A : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(ET_data(samplesKeptA+1)),std(ET_data(samplesKeptA+1),1),std(ET_data(samplesKeptA+1),1)/mean(ET_data(samplesKeptA+1))*1e2);
+fprintf(fidStat,'Group B : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(ET_data(samplesKeptB+1)),std(ET_data(samplesKeptB+1),1),std(ET_data(samplesKeptB+1),1)/mean(ET_data(samplesKeptB+1))*1e2);
 
-fprintf('\nLongitudinal shear modulus GL\n')
-fprintf('All     : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(GL_data(samplesKept+1)),std(GL_data(samplesKept+1),1),std(GL_data(samplesKept+1),1)/mean(GL_data(samplesKept+1))*1e2);
-fprintf('Group A : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(GL_data(samplesKeptA+1)),std(GL_data(samplesKeptA+1),1),std(GL_data(samplesKeptA+1),1)/mean(GL_data(samplesKeptA+1))*1e2);
-fprintf('Group B : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(GL_data(samplesKeptB+1)),std(GL_data(samplesKeptB+1),1),std(GL_data(samplesKeptB+1),1)/mean(GL_data(samplesKeptB+1))*1e2);
+fprintf(fidStat,'\n');
+fprintf(fidStat,'Longitudinal shear modulus GL\n');
+fprintf(fidStat,'All     : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(GL_data(samplesKept+1)),std(GL_data(samplesKept+1),1),std(GL_data(samplesKept+1),1)/mean(GL_data(samplesKept+1))*1e2);
+fprintf(fidStat,'Group A : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(GL_data(samplesKeptA+1)),std(GL_data(samplesKeptA+1),1),std(GL_data(samplesKeptA+1),1)/mean(GL_data(samplesKeptA+1))*1e2);
+fprintf(fidStat,'Group B : mean = %g MPa, std = %g MPa, cv = %g %%\n',mean(GL_data(samplesKeptB+1)),std(GL_data(samplesKeptB+1),1),std(GL_data(samplesKeptB+1),1)/mean(GL_data(samplesKeptB+1))*1e2);
 
-fprintf('\nLongitudinal Poisson ratio NUL\n')
-fprintf('All     : mean = %g, std = %g, cv = %g %%\n',mean(NUL_data(samplesKept+1)),std(NUL_data(samplesKept+1),1),std(NUL_data(samplesKept+1),1)/mean(NUL_data(samplesKept+1))*1e2);
-fprintf('Group A : mean = %g, std = %g, cv = %g %%\n',mean(NUL_data(samplesKeptA+1)),std(NUL_data(samplesKeptA+1),1),std(NUL_data(samplesKeptA+1),1)/mean(NUL_data(samplesKeptA+1))*1e2);
-fprintf('Group B : mean = %g, std = %g, cv = %g %%\n',mean(NUL_data(samplesKeptB+1)),std(NUL_data(samplesKeptB+1),1),std(NUL_data(samplesKeptB+1),1)/mean(NUL_data(samplesKeptB+1))*1e2);
+fprintf(fidStat,'\n');
+fprintf(fidStat,'Longitudinal Poisson ratio NUL\n');
+fprintf(fidStat,'All     : mean = %g, std = %g, cv = %g %%\n',mean(NUL_data(samplesKept+1)),std(NUL_data(samplesKept+1),1),std(NUL_data(samplesKept+1),1)/mean(NUL_data(samplesKept+1))*1e2);
+fprintf(fidStat,'Group A : mean = %g, std = %g, cv = %g %%\n',mean(NUL_data(samplesKeptA+1)),std(NUL_data(samplesKeptA+1),1),std(NUL_data(samplesKeptA+1),1)/mean(NUL_data(samplesKeptA+1))*1e2);
+fprintf(fidStat,'Group B : mean = %g, std = %g, cv = %g %%\n',mean(NUL_data(samplesKeptB+1)),std(NUL_data(samplesKeptB+1),1),std(NUL_data(samplesKeptB+1),1)/mean(NUL_data(samplesKeptB+1))*1e2);
 
-fprintf('\nCritical energy release rate Gc\n')
-fprintf('All     : mean = %g N/m, std = %g N/m, cv = %g %%\n',mean(gc_data)*1e3,std(gc_data,1)*1e3,std(gc_data,1)/mean(gc_data)*1e2);
-fprintf('Group A : mean = %g N/m, std = %g N/m, cv = %g %%\n',mean(gc_data(samplesA+1))*1e3,std(gc_data(samplesA+1),1)*1e3,std(gc_data(samplesA+1),1)/mean(gc_data(samplesA+1))*1e2);
-fprintf('Group B : mean = %g N/m, std = %g N/m, cv = %g %%\n',mean(gc_data(samplesB+1))*1e3,std(gc_data(samplesB+1),1)*1e3,std(gc_data(samplesB+1),1)/mean(gc_data(samplesB+1))*1e2);
+fprintf(fidStat,'\n');
+fprintf(fidStat,'Critical energy release rate Gc\n');
+fprintf(fidStat,'All     : mean = %g N/m, std = %g N/m, cv = %g %%\n',mean(gc_data)*1e3,std(gc_data,1)*1e3,std(gc_data,1)/mean(gc_data)*1e2);
+fprintf(fidStat,'Group A : mean = %g N/m, std = %g N/m, cv = %g %%\n',mean(gc_data(samplesA+1))*1e3,std(gc_data(samplesA+1),1)*1e3,std(gc_data(samplesA+1),1)/mean(gc_data(samplesA+1))*1e2);
+fprintf(fidStat,'Group B : mean = %g N/m, std = %g N/m, cv = %g %%\n',mean(gc_data(samplesB+1))*1e3,std(gc_data(samplesB+1),1)*1e3,std(gc_data(samplesB+1),1)/mean(gc_data(samplesB+1))*1e2);
 
-fprintf('\nExperimental maximum compression force Fm_exp (no redim)\n')
-fprintf('All     : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data_noredim),std(fmax_exp_data_noredim,1),std(fmax_exp_data_noredim,1)/mean(fmax_exp_data_noredim)*1e2);
-fprintf('Group A : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data_noredim(samplesA+1)),std(fmax_exp_data_noredim(samplesA+1),1),std(fmax_exp_data_noredim(samplesA+1),1)/mean(fmax_exp_data_noredim(samplesA+1))*1e2);
-fprintf('Group B : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data_noredim(samplesB+1)),std(fmax_exp_data_noredim(samplesB+1),1),std(fmax_exp_data_noredim(samplesB+1),1)/mean(fmax_exp_data_noredim(samplesB+1))*1e2);
+fprintf(fidStat,'\n');
+fprintf(fidStat,'Experimental maximum compression force Fm_exp (no redim)\n');
+fprintf(fidStat,'All     : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data_noredim),std(fmax_exp_data_noredim,1),std(fmax_exp_data_noredim,1)/mean(fmax_exp_data_noredim)*1e2);
+fprintf(fidStat,'Group A : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data_noredim(samplesA+1)),std(fmax_exp_data_noredim(samplesA+1),1),std(fmax_exp_data_noredim(samplesA+1),1)/mean(fmax_exp_data_noredim(samplesA+1))*1e2);
+fprintf(fidStat,'Group B : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data_noredim(samplesB+1)),std(fmax_exp_data_noredim(samplesB+1),1),std(fmax_exp_data_noredim(samplesB+1),1)/mean(fmax_exp_data_noredim(samplesB+1))*1e2);
 
-fprintf('\nExperimental maximum compression force Fm_exp (redim)\n')
-fprintf('All     : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data),std(fmax_exp_data,1),std(fmax_exp_data,1)/mean(fmax_exp_data)*1e2);
-fprintf('Group A : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data(samplesA+1)),std(fmax_exp_data(samplesA+1),1),std(fmax_exp_data(samplesA+1),1)/mean(fmax_exp_data(samplesA+1))*1e2);
-fprintf('Group B : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data(samplesB+1)),std(fmax_exp_data(samplesB+1),1),std(fmax_exp_data(samplesB+1),1)/mean(fmax_exp_data(samplesB+1))*1e2);
+fprintf(fidStat,'\n');
+fprintf(fidStat,'Experimental maximum compression force Fm_exp (redim)\n');
+fprintf(fidStat,'All     : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data),std(fmax_exp_data,1),std(fmax_exp_data,1)/mean(fmax_exp_data)*1e2);
+fprintf(fidStat,'Group A : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data(samplesA+1)),std(fmax_exp_data(samplesA+1),1),std(fmax_exp_data(samplesA+1),1)/mean(fmax_exp_data(samplesA+1))*1e2);
+fprintf(fidStat,'Group B : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fmax_exp_data(samplesB+1)),std(fmax_exp_data(samplesB+1),1),std(fmax_exp_data(samplesB+1),1)/mean(fmax_exp_data(samplesB+1))*1e2);
 
-fprintf('\nExperimental crack initiation force Fc_exp (no redim)\n')
-fprintf('All     : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_exp_data),std(fc_exp_data,1),std(fc_exp_data,1)/mean(fc_exp_data)*1e2);
-fprintf('Group A : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_exp_data(samplesA+1)),std(fc_exp_data(samplesA+1),1),std(fc_exp_data(samplesA+1),1)/mean(fc_exp_data(samplesA+1))*1e2);
-fprintf('Group B : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_exp_data(samplesB+1)),std(fc_exp_data(samplesB+1),1),std(fc_exp_data(samplesB+1),1)/mean(fc_exp_data(samplesB+1))*1e2);
+fprintf(fidStat,'\n');
+fprintf(fidStat,'Experimental crack initiation force Fc_exp (no redim)\n');
+fprintf(fidStat,'All     : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_exp_data),std(fc_exp_data,1),std(fc_exp_data,1)/mean(fc_exp_data)*1e2);
+fprintf(fidStat,'Group A : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_exp_data(samplesA+1)),std(fc_exp_data(samplesA+1),1),std(fc_exp_data(samplesA+1),1)/mean(fc_exp_data(samplesA+1))*1e2);
+fprintf(fidStat,'Group B : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_exp_data(samplesB+1)),std(fc_exp_data(samplesB+1),1),std(fc_exp_data(samplesB+1),1)/mean(fc_exp_data(samplesB+1))*1e2);
 
-fprintf('\nNumerical crack initiation force Fc\n')
-fprintf('All     : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_data),std(fc_data,1),std(fc_data,1)/mean(fc_data)*1e2);
-fprintf('Group A : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_data(samplesA+1)),std(fc_data(samplesA+1),1),std(fc_data(samplesA+1),1)/mean(fc_data(samplesA+1))*1e2);
-fprintf('Group B : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_data(samplesB+1)),std(fc_data(samplesB+1),1),std(fc_data(samplesB+1),1)/mean(fc_data(samplesB+1))*1e2);
+fprintf(fidStat,'\n');
+fprintf(fidStat,'Numerical crack initiation force Fc\n');
+fprintf(fidStat,'All     : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_data),std(fc_data,1),std(fc_data,1)/mean(fc_data)*1e2);
+fprintf(fidStat,'Group A : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_data(samplesA+1)),std(fc_data(samplesA+1),1),std(fc_data(samplesA+1),1)/mean(fc_data(samplesA+1))*1e2);
+fprintf(fidStat,'Group B : mean = %g kN, std = %g kN, cv = %g %%\n',mean(fc_data(samplesB+1)),std(fc_data(samplesB+1),1),std(fc_data(samplesB+1),1)/mean(fc_data(samplesB+1))*1e2);
 
-fprintf('\n');
-fprintf('Sample #%d\n',numSample);
-fprintf('EL     = %g GPa\n',EL_data(numSample+1)*1e-3);
-fprintf('ET     = %g MPa\n',ET_data(numSample+1));
-fprintf('GL     = %g MPa\n',GL_data(numSample+1));
-fprintf('NUL    = %g\n',NUL_data(numSample+1));
-fprintf('Gc     = %g N/m\n',gc_data(numSample+1)*1e3);
-fprintf('Fm_exp = %g kN (no redim)\n',fmax_exp_data_noredim(numSample+1));
-fprintf('Fm_exp = %g kN (redim)\n',fmax_exp_data(numSample+1));
-fprintf('Fc_exp = %g kN (no redim)\n',fc_exp_data(numSample+1));
-fprintf('Fc     = %g kN\n',fc_data(numSample+1));
-fprintf('\n');
+fprintf(fidStat,'\n');
+fprintf(fidStat,'Sample #%d\n',numSample);
+fprintf(fidStat,'EL     = %g GPa\n',EL_data(numSample+1)*1e-3);
+fprintf(fidStat,'ET     = %g MPa\n',ET_data(numSample+1));
+fprintf(fidStat,'GL     = %g MPa\n',GL_data(numSample+1));
+fprintf(fidStat,'NUL    = %g\n',NUL_data(numSample+1));
+fprintf(fidStat,'Gc     = %g N/m\n',gc_data(numSample+1)*1e3);
+fprintf(fidStat,'Fm_exp = %g kN (no redim)\n',fmax_exp_data_noredim(numSample+1));
+fprintf(fidStat,'Fm_exp = %g kN (redim)\n',fmax_exp_data(numSample+1));
+fprintf(fidStat,'Fc_exp = %g kN (no redim)\n',fc_exp_data(numSample+1));
+fprintf(fidStat,'Fc     = %g kN\n',fc_data(numSample+1));
+fclose(fidStat);
+type(filenameStat) % fprintf('%s', fileread(filenameExp))
 
 %% Input data
 setProblem = true;
@@ -592,7 +604,8 @@ udc_exp_rescale = udc_exp - udc_setup;
 
 %% Outputs
 if solveProblem
-    fid = fopen(fullfile(pathname,'results.txt'),'w');
+    filenameResults = fullfile(pathname,'results.txt');
+    fid = fopen(filenameResults,'w');
     fprintf(fid,'Plate with hole\n');
     fprintf(fid,'\n');
     fprintf(fid,'Sample #%d\n',numSample);
@@ -608,8 +621,8 @@ if solveProblem
     fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
     fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
     fprintf(fid,'elapsed time = %f s\n',time);
-    fprintf(fid,'\n');
     
+    fprintf(fid,'\n');
     fprintf(fid,'fmax      = %g kN/m\n',fmax*1e-3);
     fprintf(fid,'fmax_exp  = %g kN/m\n',fmax_exp);
     fprintf(fid,'fc        = %g kN/m\n',fc*1e-3);
@@ -619,6 +632,7 @@ if solveProblem
     fprintf(fid,'udc       = %g mm\n',udc*1e3);
     fprintf(fid,'udc_exp   = %g mm\n',udc_exp_rescale);
     fclose(fid);
+    type(filenameResults) % fprintf('%s', fileread(filenameResults))
 end
 
 %% Display

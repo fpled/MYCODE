@@ -71,7 +71,7 @@ fundelta = @(tinit) uy_exp(find(t>=tinit,1));
 funuy_exp = @(tinit) uy_exp(t>=tinit);
 
 %% Identification
-% initial guess
+% Initial parameter values
 tinit0 = t(Imax-1); % initial time [s]
 delta0 = fundelta(tinit0)*1e2; % initial vertical displacement [cm]
 E0 = 13; % Young modulus [GPa]
@@ -82,8 +82,8 @@ if junction
     J0 = 15; % moment of inertia [kg.m2/rad]=[N.m.s2/rad]
 end
 
-disp('Initial parameters');
-disp('------------------');
+fprintf('\n');
+fprintf('Initial parameter values\n');
 fprintf('tinit = %g s\n',tinit0);
 fprintf('delta = %g cm\n',delta0);
 fprintf('E     = %g GPa\n',E0);
@@ -153,8 +153,8 @@ if setProblem
     elemtype = 'BEAM';
     nbelem = 100;
     S = build_model(Line,'nbelem',nbelem,'elemtype',elemtype);
-%     cl = 0.1;
-%     S = build_model(Line,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,'gmsh_domain'));
+    % cl = 0.1;
+    % S = build_model(Line,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,'gmsh_domain'));
     
     %% Materials
     % Gravitational acceleration
@@ -222,17 +222,17 @@ if setProblem
     
     %% Mass, stiffness and damping matrices and sollicitation vectors
     M = calc_mass(S);
-%     K = calc_rigi(S);
-%     M0 = M;
-%     K0 = K;
-%     if junction
-%         % [~,numnode,~] = intersect(S,P1,'strict',false);
-%         numnode = find(S.node==P1);
-%         numddl = findddl(S,'RZ',numnode,'free');
-%         K0(numddl,numddl) = K0(numddl,numddl) + c;
-%         M0(numddl,numddl) = M0(numddl,numddl) + J;
-%     end
-%     C0 = alpha0*K0 + beta0*M0;
+    % K = calc_rigi(S);
+    % M0 = M;
+    % K0 = K;
+    % if junction
+    %     % [~,numnode,~] = intersect(S,P1,'strict',false);
+    %     numnode = find(S.node==P1);
+    %     numddl = findddl(S,'RZ',numnode,'free');
+    %     K0(numddl,numddl) = K0(numddl,numddl) + c;
+    %     M0(numddl,numddl) = M0(numddl,numddl) + J;
+    % end
+    % C0 = alpha0*K0 + beta0*M0;
     b0 = zeros(getnbddlfree(S),1);
     funb = @(tinit) b0*loadFunction(funN(tinit));
     
@@ -259,7 +259,8 @@ if solveProblem
             [param,resnorm,exitflag,output] = fmincon(fun,param0,[],[],[],[],lb,ub,[],options);
     end
     timeIdentification = toc(t);
-
+    
+    % Optimal parameter values
     tinit = param(1); % [s]
     E = param(2); % [GPa]
     alpha = param(3);
@@ -269,20 +270,21 @@ if solveProblem
         J = param(6); % [kg.m2/rad]=[N.m.s2/rad]
     end
     
-%     tinit = tinit0; % initial time [s]
-%     E = param(1); % [GPa]
-%     alpha = param(2);
-%     beta = param(3);
-%     if junction
-%         c = param(4); % [kN.m/rad]
-%         J = param(5); % [kg.m2/rad]=[N.m.s2/rad]
-%     end
+    % tinit = tinit0; % initial time [s]
+    % E = param(1); % [GPa]
+    % alpha = param(2);
+    % beta = param(3);
+    % if junction
+    %     c = param(4); % [kN.m/rad]
+    %     J = param(5); % [kg.m2/rad]=[N.m.s2/rad]
+    % end
+    
     uy_exp = funuy_exp(tinit);
     delta = fundelta(tinit)*1e2;
     err = sqrt(resnorm)./norm(uy_exp);
     
-    disp('Optimal parameters');
-    disp('------------------');
+    fprintf('\n');
+    fprintf('Optimal parameter values\n');
     fprintf('tinit = %g s\n',tinit);
     fprintf('delta = %g cm\n',delta);
     fprintf('E     = %g GPa\n',E);

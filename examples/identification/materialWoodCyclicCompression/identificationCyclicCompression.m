@@ -50,13 +50,13 @@ displ_max(end) = [];
 delta_exp = displ_min;
 N = 1:length(delta_exp);
 
-% Initial point
+% Initial parameter values
 delta0 = 0.08; % [mm]
 Kinf = 1e-5; % [mm]
 Nref = 30;
 
-disp('Initial parameters');
-disp('------------------');
+fprintf('\n');
+fprintf('Initial parameter values\n');
 fprintf('delta0 = %g mm\n',delta0);
 fprintf('Kinf   = %g mm\n',Kinf);
 fprintf('Nref   = %g\n',Nref);
@@ -99,7 +99,7 @@ t = tic;
 switch optimFun
     case 'lsqnonlin'
         fun = @(x) funlsqnonlinCyclicCompression(x,delta_exp,N);
-        [x,resnorm,~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
+        [x,resnorm,residual,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
     case 'fminsearch'
         fun = @(x) funoptimCyclicCompression(x,delta_exp,N);
         [x,resnorm,exitflag,output] = fminsearch(fun,x0,options);
@@ -112,14 +112,14 @@ switch optimFun
 end
 toc(t)
 
+% Optimal parameter values
 delta0 = x(1);
 Kinf = x(2);
 Nref = x(3);
 err = sqrt(resnorm)./norm(delta_exp);
 
 fprintf('\n');
-disp('Optimal parameters');
-disp('------------------');
+fprintf('Optimal parameter values\n');
 fprintf('delta0 = %g mm\n',delta0);
 fprintf('Kinf   = %g mm\n',Kinf);
 fprintf('Nref   = %g\n',Nref);

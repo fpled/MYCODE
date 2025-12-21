@@ -693,7 +693,8 @@ end
 
 %% Outputs
 if solveProblem
-    fid = fopen(fullfile(pathname,'results.txt'),'w');
+    filenameResults = fullfile(pathname,'results.txt');
+    fid = fopen(filenameResults,'w');
     fprintf(fid,'Double edge crack');
     if e==0
         fprintf(fid,' (two symmetric edge cracks)\n');
@@ -712,13 +713,14 @@ if solveProblem
     fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
     fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
     fprintf(fid,'elapsed time = %f s\n',time);
-    fprintf(fid,'\n');
     
+    fprintf(fid,'\n');
     fprintf(fid,'fmax  = %g kN/mm\n',fmax*1e-6);
     fprintf(fid,'fc    = %g kN/mm\n',fc*1e-6);
     fprintf(fid,'udmax = %g mm\n',udmax*1e3);
     fprintf(fid,'udc   = %g mm\n',udc*1e3);
     fclose(fid);
+    type(filenameResults) % fprintf('%s', fileread(filenameResults))
 end
 
 %% Display

@@ -34,7 +34,7 @@ UnitU = '[mm]';
 
 %% Identification
 if solveProblem
-% geometric dimensions
+% Geometric dimensions
 b = 50; % sample width [mm]
 h = 15; % sample thickness [mm]
 Iz = b*h^3/12; % planar second moment of area (or planar area moment of inertia) [mm^4]
@@ -132,6 +132,7 @@ for j=1:numSamples
         
         param = A\B;
         
+        % Optimal parameter values
         ET(k) = 1/param(1); % [MPa]
         GL(k) = 1/param(2); % [MPa]
         R0(k) = param(3); % [rad]
@@ -146,8 +147,7 @@ for j=1:numSamples
     
     %% Outputs
     fprintf('\n')
-    disp('+-----------------+')
-    fprintf('| Sample #%2d      |\n',j)
+    fprintf('Sample B%d\n',j)
     disp('+-----------------+---------------+-----------------+')
     disp('| Young''s modulus | Shear modulus |  Error between  |')
     disp('|     ET [GPa]    |    GL [MPa]   | U_ana and U_exp |')
@@ -192,13 +192,15 @@ load(fullfile(pathname,filename),'ET_data','GL_data',...
 end
 
 %% Statistics
-fprintf('\nTransverse Young''s modulus ET\n');
+fprintf('\n');
+fprintf('Transverse Young''s modulus ET\n');
 fprintf('mean(ET) = %g GPa\n',mean(mean_ET_data*1e-3));
 fprintf('var(ET)  = %g (GPa)^2\n',var(mean_ET_data*1e-3));
 fprintf('std(ET)  = %g GPa\n',std(mean_ET_data*1e-3));
 fprintf('cv(ET)   = %g\n',std(mean_ET_data)/mean(mean_ET_data));
 
-fprintf('\nLongitudinal shear modulus GL\n');
+fprintf('\n');
+fprintf('Longitudinal shear modulus GL\n');
 fprintf('mean(GL) = %g MPa\n',mean(mean_GL_data));
 fprintf('var(GL)  = %g (MPa)^2\n',var(mean_GL_data));
 fprintf('std(GL)  = %g MPa\n',std(mean_GL_data));

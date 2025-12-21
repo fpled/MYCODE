@@ -36,7 +36,7 @@ angle = atan(h/L); % angle between rod and axis x [rad]
 epsilon = displ/l; % strain
 
 %% Identification
-% Initial guess
+% Initial parameter values
 S = sqrt(L*h)*t; % equivalent rod section [m^2]
 Es = 200e3; % elastic modulus of steel [MPa]
 Ec = 28.6e3; % elastic modulus of concrete [MPa]
@@ -67,11 +67,11 @@ switch damageFun
         gammac = 0.8; % damage parameter for concrete under compression
 end
 
-disp(['Damage function = ' num2str(damageFun)]);
-disp('-------------------');
+fprintf('\n');
+fprintf('Damage function = %d\n',damageFun);
 
-disp('Initial parameters');
-disp('------------------');
+fprintf('\n');
+fprintf('Initial parameter values\n');
 fprintf('S  = %g m^2\n',S);
 fprintf('Es = %g GPa\n',Es*1e-3);
 fprintf('Ec = %g GPa\n',Ec*1e-3);
@@ -159,7 +159,7 @@ time = tic;
 switch optimFun
     case 'lsqnonlin'
         fun = @(x) funlsqnonlinModelRheo(x,force_exp,epsilon,angle,damageFun,tol,displayIter);
-        [x,resnorm,~,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
+        [x,resnorm,residual,exitflag,output] = lsqnonlin(fun,x0,lb,ub,options);
     case 'fminsearch'
         fun = @(x) funoptimModelRheo(x,force_exp,epsilon,angle,damageFun,tol,displayIter);
         [x,resnorm,exitflag,output] = fminsearch(fun,x0,options);
@@ -172,6 +172,7 @@ switch optimFun
 end
 toc(time)
 
+% Optimal parameter values
 S = x(1);
 ks = x(2);
 kc = x(3);
@@ -197,8 +198,7 @@ F0c = sig0c*S;
 DF0 = Dsig0*S;
 
 fprintf('\n');
-disp('Optimal parameters');
-disp('------------------');
+fprintf('Optimal parameter values\n');
 fprintf('S  = %g m^2\n',S);
 fprintf('Es = %g GPa\n',Es*1e-3);
 fprintf('Ec = %g GPa\n',Ec*1e-3);

@@ -355,7 +355,8 @@ load(fullfile(pathname,filename),'numDowels',...
 end
 
 %% Statistics
-fprintf('\nDowel junctions: Bending stiffness per unit length kD\n');
+fprintf('\n');
+fprintf('Dowel junctions: Bending stiffness per unit length kD\n');
 fprintf('mean(kD) = %g kN/rad\n',mean(mean_KD_data)*1e-3);
 fprintf('var(kD)  = %g (kN/rad)^2\n',var(mean_KD_data)*1e-6);
 fprintf('std(kD)  = %g kN/rad\n',std(mean_KD_data)*1e-3);

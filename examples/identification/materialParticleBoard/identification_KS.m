@@ -314,7 +314,7 @@ for j=1:numScrews
     end
     
     %% Outputs
-    % fprintf('\n')
+    fprintf('\n')
     fprintf('Sample S%d\n',j)
     disp('+-------+---------------+-----------+------------------+')
     disp('| Load  | Moment p.u.l. |   Angle   | Stiffness p.u.l. |')
@@ -362,7 +362,8 @@ load(fullfile(pathname,filename),'numScrews',...
 end
 
 %% Statistics
-fprintf('\nScrew junctions: Bending stiffness per unit length kS\n');
+fprintf('\n');
+fprintf('Screw junctions: Bending stiffness per unit length kS\n');
 fprintf('mean(kS) = %g kN/rad\n',mean(mean_KS_data)*1e-3);
 fprintf('var(kS)  = %g (kN/rad)^2\n',var(mean_KS_data)*1e-6);
 fprintf('std(kS)  = %g kN/rad\n',std(mean_KS_data)*1e-3);

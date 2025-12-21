@@ -25,12 +25,12 @@ formats = {'fig','epsc'};
 
 %% Identification
 if solveProblem
-% initial guess
+% Initial parameter values
 EL0 = 1e2; % longitudinal Young modulus [MPa]
 NUL0 = 1e-2; % longitudinal Poisson ratio
 
-disp('Initial parameters');
-disp('------------------');
+fprintf('\n');
+fprintf('Initial parameter values\n');
 fprintf('EL  = %g MPa\n',EL0);
 fprintf('NUL = %g\n',NUL0);
 
@@ -80,7 +80,7 @@ switch optimFun
         error(['Wrong optimization function' optimFun])
 end
 
-% geometric dimensions
+% Geometric dimensions
 b = 50; % sample width [mm]
 h = 15; % sample thickness [mm]
 Iz = b*h^3/12; % planar second moment of area (or planar area moment of inertia) [mm^4]
@@ -155,6 +155,7 @@ for j=1:numSamples
                 [x,resnorm(k),exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
         end
         
+        % Optimal parameter values
         EL(k) = x(1); % [MPa]
         NUL(k) = x(2);
         err(k) = sqrt(resnorm(k))./norm(u_exp_in);
@@ -195,13 +196,15 @@ load(fullfile(pathname,filenameNum),'EL_data','NUL_data','resnorm_num','err_num'
 end
 
 %% Statistics
-fprintf('\nLongitudinal Young''s modulus EL\n');
+fprintf('\n');
+fprintf('Longitudinal Young''s modulus EL\n');
 fprintf('mean(EL) = %g GPa\n',mean(mean_EL_data));
 fprintf('var(EL)  = %g (GPa)^2\n',var(mean_EL_data));
 fprintf('std(EL)  = %g GPa\n',std(mean_EL_data));
 fprintf('cv(EL)   = %g\n',std(mean_EL_data)/mean(mean_EL_data));
 
-fprintf('\nLongitudinal Poisson''s ratio NUL\n');
+fprintf('\n');
+fprintf('Longitudinal Poisson''s ratio NUL\n');
 fprintf('mean(NUL) = %g MPa\n',mean(mean_NUL_data));
 fprintf('var(NUL)  = %g (MPa)^2\n',var(mean_NUL_data));
 fprintf('std(NUL)  = %g MPa\n',std(mean_NUL_data));

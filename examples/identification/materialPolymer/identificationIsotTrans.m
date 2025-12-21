@@ -4,7 +4,6 @@
 % clc
 clearvars
 close all
-% rng('default');
 myparallel('start');
 
 fontsize = 16;
@@ -123,13 +122,13 @@ plotSolution(S_exp,u_exp,'displ',2,'ampl',ampl);
 mysaveas(pathname,'Uy_exp',formats);
 
 %% Identification
-% initial guess
+% Initial parameter values
 EL0 = 1e3; % longitudinal Young modulus [MPa]
 NUL0 = 0.1; % longitudinal Poisson ratio
 GL0 = 5e2; % longitudinal shear modulus [MPa]
 
-disp('Initial parameters');
-disp('------------------');
+fprintf('\n');
+fprintf('Initial parameter values\n');
 fprintf('EL  = %g MPa\n',EL0);
 fprintf('NUL = %g\n',NUL0);
 fprintf('GL  = %g MPa\n',GL0);
@@ -197,14 +196,14 @@ switch optimFun
 end
 toc(t)
 
+% Optimal parameter values
 EL = x(1); % [MPa]
 NUL = x(2);
 GL = x(3); % [MPa]
 err = sqrt(resnorm)./norm(u_exp_in);
 
 fprintf('\n');
-disp('Optimal parameters');
-disp('------------------');
+fprintf('Optimal parameter values\n');
 fprintf('EL  = %g MPa\n',EL);
 fprintf('NUL = %g\n',NUL);
 fprintf('GL  = %g MPa\n',GL);

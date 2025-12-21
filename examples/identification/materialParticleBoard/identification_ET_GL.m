@@ -34,15 +34,14 @@ UnitU = '[mm]';
 
 %% Identification
 if solveProblem
-% initial guess
+% Initial parameter values
 ET0 = 1e3; % transverse Young modulus [MPa]
 GL0 = 1e2; % longitudinal shear modulus [MPa]
 R0 = 0; % rigid body rotation around z direction [rad]
 U0 = 0; % rigid body displacement along x direction [mm]
 V0 = 0; % rigid body displacement along y direction [mm]
 
-disp('Initial parameters');
-disp('------------------');
+fprintf('Initial parameter values\n');
 fprintf('ET = %g MPa\n',ET0);
 fprintf('GL = %g MPa\n',GL0);
 fprintf('R  = %g rad = %g deg\n',R0,rad2deg(R0));
@@ -95,7 +94,7 @@ switch optimFun
         error(['Wrong optimization function' optimFun])
 end
 
-% geometric dimensions
+% Geometric dimensions
 b = 50; % sample width [mm]
 h = 15; % sample thickness [mm]
 Iz = b*h^3/12; % planar second moment of area (or planar area moment of inertia) [mm^4]
@@ -182,6 +181,7 @@ for j=1:numSamples
                 [x,resnorm(k),exitflag,output] = fmincon(fun,x0,[],[],[],[],lb,ub,[],options);
         end
         
+        % Optimal parameter values
         ET(k) = x(1); % [MPa]
         GL(k) = x(2); % [MPa]
         R0(k) = x(3); % [rad]
@@ -238,13 +238,15 @@ load(fullfile(pathname,filename),'ET_data','GL_data',...
 end
 
 %% Statistics
-fprintf('\nTransverse Young''s modulus ET\n');
+fprintf('\n');
+fprintf('Transverse Young''s modulus ET\n');
 fprintf('mean(ET) = %g GPa\n',mean(mean_ET_data*1e-3));
 fprintf('var(ET)  = %g (GPa)^2\n',var(mean_ET_data*1e-3));
 fprintf('std(ET)  = %g GPa\n',std(mean_ET_data*1e-3));
 fprintf('cv(ET)   = %g\n',std(mean_ET_data)/mean(mean_ET_data));
 
-fprintf('\nLongitudinal shear modulus GL\n');
+fprintf('\n');
+fprintf('Longitudinal shear modulus GL\n');
 fprintf('mean(GL) = %g MPa\n',mean(mean_GL_data));
 fprintf('var(GL)  = %g (MPa)^2\n',var(mean_GL_data));
 fprintf('std(GL)  = %g MPa\n',std(mean_GL_data));

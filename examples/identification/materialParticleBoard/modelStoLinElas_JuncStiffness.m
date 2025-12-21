@@ -130,49 +130,50 @@ sKD_sample = std(KD_sample);
 dKD_sample = sKD_sample/mKD_sample;
 
 %% Outputs
-fprintf('\n');
-fprintf('nb data    = %g for screw junction\n',NS_data);
-fprintf('nb data    = %g for dowel junction\n',ND_data);
-fprintf('nb samples = %g\n',N);
+filenameResults = fullfile(pathname,'results.txt');
+fid = fopen(filenameResults,'w');
+fprintf(fid,'nb data    = %g for screw junction\n',NS_data);
+fprintf(fid,'nb data    = %g for dowel junction\n',ND_data);
+fprintf(fid,'nb samples = %g\n',N);
 
-fprintf('\n');
-fprintf('Initial parameter values for screw junction\n');
-fprintf('alphaS = %.4f\n',a0S);
-fprintf('betaS  = %.6f\n',b0S);
-fprintf('loglfS = %.4f\n',loglfval0S);
+fprintf(fid,'\n');
+fprintf(fid,'Initial parameter values for screw junction\n');
+fprintf(fid,'alphaS = %.4f\n',a0S);
+fprintf(fid,'betaS  = %.6f\n',b0S);
+fprintf(fid,'loglfS = %.4f\n',loglfval0S);
 
-fprintf('\n');
-fprintf('Optimal parameter values for screw junction\n');
-fprintf('alphaS = %.4f\n',aS);
-fprintf('betaS  = %.6f\n',bS);
-fprintf('loglfS = %.4f\n',loglfvalS);
+fprintf(fid,'\n');
+fprintf(fid,'Optimal parameter values for screw junction\n');
+fprintf(fid,'alphaS = %.4f\n',aS);
+fprintf(fid,'betaS  = %.6f\n',bS);
+fprintf(fid,'loglfS = %.4f\n',loglfvalS);
 
-fprintf('\n');
-fprintf('Initial parameter values for dowel junction\n');
-fprintf('alphaD = %.4f\n',a0D);
-fprintf('betaD  = %.6f\n',b0D);
-fprintf('loglfD = %.4f\n',loglfval0D);
+fprintf(fid,'\n');
+fprintf(fid,'Initial parameter values for dowel junction\n');
+fprintf(fid,'alphaD = %.4f\n',a0D);
+fprintf(fid,'betaD  = %.6f\n',b0D);
+fprintf(fid,'loglfD = %.4f\n',loglfval0D);
 
-fprintf('\n');
-fprintf('Optimal parameter values for dowel junction\n');
-fprintf('alphaD = %.4f\n',aD);
-fprintf('betaD  = %.6f\n',bD);
-fprintf('loglfD = %.4f\n',loglfvalD);
+fprintf(fid,'\n');
+fprintf(fid,'Optimal parameter values for dowel junction\n');
+fprintf(fid,'alphaD = %.4f\n',aD);
+fprintf(fid,'betaD  = %.6f\n',bD);
+fprintf(fid,'loglfD = %.4f\n',loglfvalD);
 
 % Screw junction
-fprintf('\n');
-fprintf('mean(KS_data)   = %.4f kN/rad\n',mKS_data);
-fprintf('mean(KS)        = %.4f kN/rad\n',mKS);
-fprintf('mean(KS_sample) = %.4f kN/rad\n',mKS_sample);
-fprintf('var(KS_data)    = %.4f (kN/rad)^2\n',vKS_data);
-fprintf('var(KS)         = %.4f (kN/rad)^2\n',vKS);
-fprintf('var(KS_sample)  = %.4f (kN/rad)^2\n',vKS_sample);
-fprintf('std(KS_data)    = %.4f kN/rad\n',sKS_data);
-fprintf('std(KS)         = %.4f kN/rad\n',sKS);
-fprintf('std(KS_sample)  = %.4f kN/rad\n',sKS_sample);
-fprintf('cv(KS_data)     = %.4f\n',dKS_data);
-fprintf('cv(KS)          = %.4f\n',dKS);
-fprintf('cv(KS_sample)   = %.4f\n',dKS_sample);
+fprintf(fid,'\n');
+fprintf(fid,'mean(KS_data)   = %.4f kN/rad\n',mKS_data);
+fprintf(fid,'mean(KS)        = %.4f kN/rad\n',mKS);
+fprintf(fid,'mean(KS_sample) = %.4f kN/rad\n',mKS_sample);
+fprintf(fid,'var(KS_data)    = %.4f (kN/rad)^2\n',vKS_data);
+fprintf(fid,'var(KS)         = %.4f (kN/rad)^2\n',vKS);
+fprintf(fid,'var(KS_sample)  = %.4f (kN/rad)^2\n',vKS_sample);
+fprintf(fid,'std(KS_data)    = %.4f kN/rad\n',sKS_data);
+fprintf(fid,'std(KS)         = %.4f kN/rad\n',sKS);
+fprintf(fid,'std(KS_sample)  = %.4f kN/rad\n',sKS_sample);
+fprintf(fid,'cv(KS_data)     = %.4f\n',dKS_data);
+fprintf(fid,'cv(KS)          = %.4f\n',dKS);
+fprintf(fid,'cv(KS_sample)   = %.4f\n',dKS_sample);
 
 err_meanKS = (mKS - mKS_data)/mKS_data;
 err_varKS = (vKS - vKS_data)/vKS_data;
@@ -188,34 +189,34 @@ alpha = 1/2;
 mseKS = alpha * (mKS - mKS_data)^2/(mKS_data)^2 + (1-alpha) * (dKS - dKS_data)^2/(dKS_data)^2;
 mseKS_sample = alpha * (mKS_sample - mKS_data)^2/(mKS_data)^2 + (1-alpha) * (dKS_sample - dKS_data)^2/(dKS_data)^2;
 
-fprintf('\n');
-fprintf('relative error on mean(KS) = %.4e\n',err_meanKS);
-fprintf('relative error on var(KS)  = %.4e\n',err_varKS);
-fprintf('relative error on std(KS)  = %.4e\n',err_stdKS);
-fprintf('relative error on cv(KS)   = %.4e\n',err_cvKS);
-fprintf('mean-squared error mse(KS) = %.4e\n',mseKS);
+fprintf(fid,'\n');
+fprintf(fid,'relative error on mean(KS) = %.4e\n',err_meanKS);
+fprintf(fid,'relative error on var(KS)  = %.4e\n',err_varKS);
+fprintf(fid,'relative error on std(KS)  = %.4e\n',err_stdKS);
+fprintf(fid,'relative error on cv(KS)   = %.4e\n',err_cvKS);
+fprintf(fid,'mean-squared error mse(KS) = %.4e\n',mseKS);
 
-fprintf('\n');
-fprintf('relative error on mean(KS_sample) = %.4e\n',err_meanKS_sample);
-fprintf('relative error on var(KS_sample)  = %.4e\n',err_varKS_sample);
-fprintf('relative error on std(KS_sample)  = %.4e\n',err_stdKS_sample);
-fprintf('relative error on cv(KS_sample)   = %.4e\n',err_cvKS_sample);
-fprintf('mean-squared error mse(KS_sample) = %.4e\n',mseKS_sample);
+fprintf(fid,'\n');
+fprintf(fid,'relative error on mean(KS_sample) = %.4e\n',err_meanKS_sample);
+fprintf(fid,'relative error on var(KS_sample)  = %.4e\n',err_varKS_sample);
+fprintf(fid,'relative error on std(KS_sample)  = %.4e\n',err_stdKS_sample);
+fprintf(fid,'relative error on cv(KS_sample)   = %.4e\n',err_cvKS_sample);
+fprintf(fid,'mean-squared error mse(KS_sample) = %.4e\n',mseKS_sample);
 
 % Dowel junction
-fprintf('\n');
-fprintf('mean(KD_data)   = %.4f kN/rad\n',mKD_data);
-fprintf('mean(KD)        = %.4f kN/rad\n',mKD);
-fprintf('mean(KD_sample) = %.4f kN/rad\n',mKD_sample);
-fprintf('var(KD_data)    = %.4f (kN/rad)^2\n',vKD_data);
-fprintf('var(KD)         = %.4f (kN/rad)^2\n',vKD);
-fprintf('var(KD_sample)  = %.4f (kN/rad)^2\n',vKD_sample);
-fprintf('std(KD_data)    = %.4f kN/rad\n',sKD_data);
-fprintf('std(KD)         = %.4f kN/rad\n',sKD);
-fprintf('std(KD_sample)  = %.4f kN/rad\n',sKD_sample);
-fprintf('cv(KD_data)     = %.4f\n',dKD_data);
-fprintf('cv(KD)          = %.4f\n',dKD);
-fprintf('cv(KD_sample)   = %.4f\n',dKD_sample);
+fprintf(fid,'\n');
+fprintf(fid,'mean(KD_data)   = %.4f kN/rad\n',mKD_data);
+fprintf(fid,'mean(KD)        = %.4f kN/rad\n',mKD);
+fprintf(fid,'mean(KD_sample) = %.4f kN/rad\n',mKD_sample);
+fprintf(fid,'var(KD_data)    = %.4f (kN/rad)^2\n',vKD_data);
+fprintf(fid,'var(KD)         = %.4f (kN/rad)^2\n',vKD);
+fprintf(fid,'var(KD_sample)  = %.4f (kN/rad)^2\n',vKD_sample);
+fprintf(fid,'std(KD_data)    = %.4f kN/rad\n',sKD_data);
+fprintf(fid,'std(KD)         = %.4f kN/rad\n',sKD);
+fprintf(fid,'std(KD_sample)  = %.4f kN/rad\n',sKD_sample);
+fprintf(fid,'cv(KD_data)     = %.4f\n',dKD_data);
+fprintf(fid,'cv(KD)          = %.4f\n',dKD);
+fprintf(fid,'cv(KD_sample)   = %.4f\n',dKD_sample);
 
 err_meanKD = (mKD - mKD_data)/mKD_data;
 err_varKD = (vKD - vKD_data)/vKD_data;
@@ -231,19 +232,21 @@ alpha = 1/2;
 mseKD = alpha * (mKD - mKD_data)^2/(mKD_data)^2 + (1-alpha) * (dKD - dKD_data)^2/(dKD_data)^2;
 mseKD_sample = alpha * (mKD_sample - mKD_data)^2/(mKD_data)^2 + (1-alpha) * (dKD_sample - dKD_data)^2/(dKD_data)^2;
 
-fprintf('\n');
-fprintf('relative error on mean(KD) = %.4e\n',err_meanKD);
-fprintf('relative error on var(KD)  = %.4e\n',err_varKD);
-fprintf('relative error on std(KD)  = %.4e\n',err_stdKD);
-fprintf('relative error on cv(KD)   = %.4e\n',err_cvKD);
-fprintf('mean-squared error mse(KD) = %.4e\n',mseKD);
+fprintf(fid,'\n');
+fprintf(fid,'relative error on mean(KD) = %.4e\n',err_meanKD);
+fprintf(fid,'relative error on var(KD)  = %.4e\n',err_varKD);
+fprintf(fid,'relative error on std(KD)  = %.4e\n',err_stdKD);
+fprintf(fid,'relative error on cv(KD)   = %.4e\n',err_cvKD);
+fprintf(fid,'mean-squared error mse(KD) = %.4e\n',mseKD);
 
-fprintf('\n');
-fprintf('relative error on mean(KD_sample) = %.4e\n',err_meanKD_sample);
-fprintf('relative error on var(KD_sample)  = %.4e\n',err_varKD_sample);
-fprintf('relative error on std(KD_sample)  = %.4e\n',err_stdKD_sample);
-fprintf('relative error on cv(KD_sample)   = %.4e\n',err_cvKD_sample);
-fprintf('mean-squared error mse(KD_sample) = %.4e\n',mseKD_sample);
+fprintf(fid,'\n');
+fprintf(fid,'relative error on mean(KD_sample) = %.4e\n',err_meanKD_sample);
+fprintf(fid,'relative error on var(KD_sample)  = %.4e\n',err_varKD_sample);
+fprintf(fid,'relative error on std(KD_sample)  = %.4e\n',err_stdKD_sample);
+fprintf(fid,'relative error on cv(KD_sample)   = %.4e\n',err_cvKD_sample);
+fprintf(fid,'mean-squared error mse(KD_sample) = %.4e\n',mseKD_sample);
+fclose(fid);
+type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
 if displaySolution

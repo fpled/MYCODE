@@ -759,7 +759,8 @@ gc_unif_f = myunifpdf(gc_unif_xi,aGc,bGc);
 
 %% Outputs
 if solveProblem
-    fid = fopen(fullfile(pathname,'results.txt'),'w');
+    filenameResults = fullfile(pathname,'results.txt');
+    fid = fopen(filenameResults,'w');
     fprintf(fid,'Single edge crack\n');
     fprintf(fid,'\n');
     fprintf(fid,'dim      = %d\n',Dim);
@@ -778,8 +779,8 @@ if solveProblem
     fprintf(fid,'nb time dofs = %g\n',getnbtimedof(T));
     fprintf(fid,'nb samples = %g\n',N);
     fprintf(fid,'elapsed time = %f s\n',time);
-    fprintf(fid,'\n');
     
+    fprintf(fid,'\n');
     if Dim==2
         fprintf(fid,'mean(fmax)   = %g kN/mm\n',fmax_mean*1e-6);
         fprintf(fid,'std(fmax)    = %g kN/mm\n',fmax_std*1e-6);
@@ -793,8 +794,8 @@ if solveProblem
     elseif Dim==3
         fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-3,fmax_ci(2)*1e-3);
     end
-    fprintf(fid,'\n');
     
+    fprintf(fid,'\n');
     if Dim==2
         fprintf(fid,'mean(fc)   = %g kN/mm\n',fc_mean*1e-6);
         fprintf(fid,'std(fc)    = %g kN/mm\n',fc_std*1e-6);
@@ -808,20 +809,20 @@ if solveProblem
     elseif Dim==3
         fprintf(fid,'%d%% ci(fc) = [%g,%g] kN\n',(probs(2)-probs(1))*100,fc_ci(1)*1e-3,fc_ci(2)*1e-3);
     end
-    fprintf(fid,'\n');
     
+    fprintf(fid,'\n');
     fprintf(fid,'mean(udmax)   = %g mm\n',udmax_mean*1e3);
     fprintf(fid,'std(udmax)    = %g mm\n',udmax_std*1e3);
     fprintf(fid,'disp(udmax)   = %g\n',udmax_std/udmax_mean);
     fprintf(fid,'%d%% ci(udmax) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udmax_ci(1)*1e3,udmax_ci(2)*1e3);
-    fprintf(fid,'\n');
     
+    fprintf(fid,'\n');
     fprintf(fid,'mean(udc)   = %g mm\n',udc_mean*1e3);
     fprintf(fid,'std(udc)    = %g mm\n',udc_std*1e3);
     fprintf(fid,'disp(udc)   = %g\n',udc_std/udc_mean);
     fprintf(fid,'%d%% ci(udc) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udc_ci(1)*1e3,udc_ci(2)*1e3);
-    fprintf(fid,'\n');
     
+    fprintf(fid,'\n');
     fprintf(fid,'mean(gc)   = %g N/mm (estimate)\n',gc_mean*1e-3);
     fprintf(fid,'           = %g N/mm (exact)\n',gc_unif_mean*1e-3);
     fprintf(fid,'std(gc)    = %g N/mm (estimate)\n',gc_std*1e-3);
@@ -831,6 +832,7 @@ if solveProblem
     fprintf(fid,'%d%% ci(gc) = [%g,%g] N/mm (estimate)\n',(probs(2)-probs(1))*100,gc_ci(1)*1e-3,gc_ci(2)*1e-3);
     fprintf(fid,'           = [%g,%g] N/mm (exact)\n',gc_unif_ci(1)*1e-3,gc_unif_ci(2)*1e-3);
     fclose(fid);
+    type(filenameResults) % fprintf('%s', fileread(filenameResults))
 end
 
 %% Display

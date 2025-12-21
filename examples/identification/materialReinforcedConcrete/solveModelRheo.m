@@ -25,9 +25,9 @@ algo = 'trust-region-dogleg'; % default for fsolve
 % algo = 'trust-region';
 % algo = 'levenberg-marquardt';
 
-tolX = eps; % tolerance on the parameter value
-tolFun = eps; % tolerance on the function value
-tolOpt = eps; % tolerance on the first-order optimality
+tolX = eps; % tolerance on the parameter value (1e-6 by default for fsolve)
+tolFun = eps; % tolerance on the function value (1e-6 by default for fsolve)
+tolOpt = eps; % tolerance on the first-order optimality (1e-6 by default for fsolve)
 maxIters = Inf; % maximum number of iterations
 maxFunEvals = Inf; % maximum number of function evaluations
 finDiffType = 'forward'; % finite diffferences, 'forward' or 'central' ('forward' by default)
