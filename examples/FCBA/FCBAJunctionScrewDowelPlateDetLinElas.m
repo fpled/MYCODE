@@ -75,7 +75,7 @@ if solveProblem
             %G = mean(mean_GL_data)*1e6*13; % [Pa]
             % Poisson ratio
             %NU = E./(2*G)-1;
-            NU = 0.25;
+            NU = 0.2;
             % Material
             mat = ELAS_SHELL('E',E,'NU',NU,'RHO',RHO,'DIM3',h,'k',5/6);
         case 'isottrans'
@@ -87,8 +87,9 @@ if solveProblem
             % EL = mean(mean_EL_data)*1e6; % [Pa]
             % Longitudinal Poisson ratio
             % NUL = mean(mean_NUL_data);
+            % NUL = 0.045;
             % Transverse Poisson ratio
-            NUT = 0.25;
+            NUT = 0.2;
             % Material
             mat = ELAS_SHELL_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'RHO',RHO,'DIM3',h,'k',5/6);
         otherwise
@@ -111,26 +112,13 @@ if solveProblem
     end
     
     L_load = LINE([L2,0,L1],[L2,b,L1]);
-    junction_type = 'S1';
+    junction_sample = 'S1';
     
-    switch lower(junction_type)
-        case 's1'
-            p = [24 65 114 163 200 252 291];
-        case 's2'
-            p = [14 54 113 159 199 249 299];
-        case 's3'
-            p = [15 65 111 153 203 243 295 341];
-        case 's4'
-            p = [23 34 91 141 180 229 290];
-        case 'd1'
-            p = [40 46 101 146];
-        case 'd2'
-            p = [6 63 110 175];
-    end
-    p = 100; % pointwise load, F=100, 130, 160 [N]
+    % p = appliedLoad(junction_sample); numLoad  = 3; p = p(numLoad);
+    p = 100; % point load, F=100, 130, 160 [N]
     % p = 130;
     % p = 160;
-    p = p(1)/b; % line load (surface load for plates) [N/m]
+    p = p/b; % line load (surface load for plates) [N/m]
     
     %% Dirichlet boundary conditions
     L1 = getedge(Q1,1);
@@ -269,7 +257,7 @@ if solveProblem
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S','elemtype',...
         'L1','L2','b','h',...
-        'f','p','junction','junction_type');
+        'f','p','junction','junction_sample');
     save(fullfile(pathname,'solution.mat'),'u','s','e','time',...
         'Ux','Uy','Uz','Rx','Ry','Rz',...
         'Nxx','Nyy','Nxy','Mxx','Myy','Mxy','Qx','Qy',...
@@ -281,7 +269,7 @@ if solveProblem
 else
     load(fullfile(pathname,'problem.mat'),'S','elemtype',...
         'L1','L2','b','h',...
-        'f','p','junction','junction_type');
+        'f','p','junction','junction_sample');
     load(fullfile(pathname,'solution.mat'),'u','s','e','time',...
         'Ux','Uy','Uz','Rx','Ry','Rz',...
         'Nxx','Nyy','Nxy','Mxx','Myy','Mxy','Qx','Qy',...
@@ -293,14 +281,15 @@ else
 end
 
 %% Outputs
-fprintf('\nJunction %s\n',junction_type);
+fprintf('Junction %s\n',junction_sample);
+fprintf('\n');
 fprintf(['mesh : ' elemtype ' elements\n']);
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
 
+fprintf('\n');
 fprintf('Displacement u and rotation r at point (%g,%g,%g) m\n',double(P3));
 fprintf('ux    = %g m\n',ux);
 fprintf('uy    = %g m\n',uy);
@@ -314,8 +303,8 @@ else
     fprintf('ry    = %g rad = %g deg\n',ry,rad2deg(ry));
 end
 fprintf('rz    = %g rad = %g deg\n',rz,rad2deg(rz));
-fprintf('\n');
 
+fprintf('\n');
 if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
     disp('Maximum membrane forces Nxx, Nyy, Nxy, moments Mxx, Myy, Mxy and shear forces Qx, Qy');
 else
@@ -331,8 +320,8 @@ if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
     fprintf('Qx = %g N/m\n',qx);
     fprintf('Qy = %g N/m\n',qy);
 end
-fprintf('\n');
 
+fprintf('\n');
 if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
     disp('Maximum membrane strains Exx, Eyy, Exy, bending strains (curvatures) Gxx, Gyy, Gxy and shear strains Gzx, Gzy');
 else
@@ -348,7 +337,6 @@ if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
     fprintf('Gzx = %g\n',gzx);
     fprintf('Gzy = %g\n',gzy);
 end
-fprintf('\n');
 
 %% Display
 if displaySolution
@@ -358,7 +346,7 @@ if displaySolution
     mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
-    ampl = 3;
+    ampl = 1;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',linewidth);
     hP = plot(P3,'g+');
     legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')

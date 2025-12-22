@@ -24,6 +24,8 @@ renderer = 'OpenGL';
 
 junction = false; % junction modeling
 sym = false; % symmetry boundary conditions
+             % sym = false for L-shaped corner junction
+             % sym = true  for simplified portal frame by axial symmetry
 selfweight = false; % self-weight
 
 %% Problem
@@ -103,7 +105,7 @@ if solveProblem
             %G = mean(mean_GL_data)*1e6*13; % [Pa]
             % Poisson ratio
             %NU = E./(2*G)-1;
-            NU = 0.25;
+            NU = 0.2;
             % Material
             mat_1 = ELAS_BEAM('E',E,'NU',NU,'S',Sec1,'IZ',IZ1,'IY',IY1,'IX',IX1,'RHO',RHO);
             mat_2 = ELAS_BEAM('E',E,'NU',NU,'S',Sec2,'IZ',IZ2,'IY',IY2,'IX',IX2,'RHO',RHO);
@@ -116,8 +118,9 @@ if solveProblem
             % EL = mean(mean_EL_data)*1e6; % [Pa]
             % Longitudinal Poisson ratio
             % NUL = mean(mean_NUL_data);
+            NUL = 0.045;
             % Transverse Poisson ratio
-            NUT = 0.25;
+            NUT = 0.2;
             % Material
             mat_1 = ELAS_BEAM_ISOT_TRANS('EL',ET,'NUT',NUT,'GL',GL,'S',Sec1,'IZ',IZ1,'IY',IY1,'IX',IX1,'RHO',RHO);
             mat_2 = ELAS_BEAM_ISOT_TRANS('EL',ET,'NUT',NUT,'GL',GL,'S',Sec2,'IZ',IZ2,'IY',IY2,'IX',IX2,'RHO',RHO);
@@ -148,30 +151,17 @@ if solveProblem
         p2 = 0;
     end
     
-    junction_type = 'S1';
+    junction_sample = 'S1';
     if sym
-        % half portal frame
-        p = 300; % pointwise load, F=300, 400, 500 [N]
+        % simplified portal frame by axial symmetry
+        p = 300; % point load, F=300, 400, 500 [N]
         % p = 400;
         % p = 500;
-        p = p/2; % pointwise load, F/2=150, 200, 250 [N]
+        p = p/2; % point load, F/2=150, 200, 250 [N]
     else
         % L-shaped corner junction
-        switch lower(junction_type)
-            case 's1'
-                p = [24 65 114 163 200 252 291];
-            case 's2'
-                p = [14 54 113 159 199 249 299];
-            case 's3'
-                p = [15 65 111 153 203 243 295 341];
-            case 's4'
-                p = [23 34 91 141 180 229 290];
-            case 'd1'
-                p = [40 46 101 146];
-            case 'd2'
-                p = [6 63 110 175];
-        end
-        p = 100; % pointwise load, F=100, 130, 160 [N]
+        % p = appliedLoad(junction_sample); numLoad  = 3; p = p(numLoad);
+        p = 100; % point load, F=100, 130, 160 [N]
         % p = 130;
         % p = 160;
     end
@@ -457,7 +447,7 @@ if solveProblem
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'S',...
         'L1','L2','b1','b2','h',...
-        'f','p','junction','junction_type');
+        'f','p','junction','junction_sample');
     save(fullfile(pathname,'solution.mat'),'u','s','e','time',...
         'Ux','Uy','Rz','N','Mz','Epsx','Gamz');
     save(fullfile(pathname,'reference_solution.mat'),'u_ex','s_ex','e_ex',...
@@ -470,7 +460,7 @@ if solveProblem
 else
     load(fullfile(pathname,'problem.mat'),'S',...
         'L1','L2','b1','b2','h',...
-        'f','p','junction','junction_type');
+        'f','p','junction','junction_sample');
     load(fullfile(pathname,'solution.mat'),'u','s','e','time',...
         'Ux','Uy','Rz','N','Mz','Epsx','Gamz');
     load(fullfile(pathname,'reference_solution.mat'),'u_ex','s_ex','e_ex',...
@@ -483,7 +473,8 @@ else
 end
 
 %% Outputs
-fprintf('\nJunction %s\n',junction_type);
+fprintf('Junction %s\n',junction_sample);
+fprintf('\n');
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
@@ -503,8 +494,8 @@ for i=1:getnbgroupelem(S)
     fprintf('      = %.3e for Gamz in groupelem #%d\n',err_Gamz(i),i);
 end
 fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
 
+fprintf('\n');
 fprintf('Displacement u and rotation r at point (%g,%g) m\n',double(P2));
 fprintf('ux    = %g m\n',ux);
 fprintf('ux_ex = %g m, error = %g\n',ux_ex,err_ux);
@@ -521,34 +512,33 @@ else
     fprintf('rz    = %g rad = %g deg\n',rz,rad2deg(rz));
     fprintf('rz_ex = %g rad = %g deg, error = %g\n',rz_ex,rad2deg(rz_ex),err_rz);
 end
-fprintf('\n');
 
+fprintf('\n');
 fprintf('Force N and moment Mz at point (%g,%g) m\n',double(P2));
 fprintf('N     = %g N\n',n);
 fprintf('N_ex  = %g N, error = %g\n',n_ex,err_n);
 fprintf('Mz    = %g N.m\n',mz);
 fprintf('Mz_ex = %g N.m, error = %g\n',mz_ex,err_mz);
-fprintf('\n');
 
+fprintf('\n');
 fprintf('Axial strain Epsx and bending strain (curvature) Gamz at point (%g,%g) m\n',double(P2));
 fprintf('Epsx    = %g\n',epsx);
 fprintf('Epsx_ex = %g, error = %g\n',epsx_ex,err_epsx);
 fprintf('Gamz    = %g\n',gamz);
 fprintf('Gamz_ex = %g, error = %g\n',gamz_ex,err_gamz);
-fprintf('\n');
 
 %% Display
 if displaySolution
     %% Display domains, boundary conditions and meshes
-    plotDomain(S,'legend',false);
+    plotDomain(S,'facecolor','k','legend',false);
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     if selfweight
-        ampl = 3;
+        ampl = 2;
     else
-        ampl = 5e-4;
+        ampl = 2e-4;
     end
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',linewidth);
     hP = plot(P2,'g+');

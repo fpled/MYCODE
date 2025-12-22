@@ -102,7 +102,7 @@ if solveProblem
     x_hori = {[x3_23,(y3_12+y3_34)/2,z3],[x3_14,(y3_12+y3_34)/2,z3],...
               [(x3_23+x3_14)/2,y3_34,z3],[(x3_23+x3_14)/2,y3_12,z3]};
     x_vert = double(getcenter(D3))-[0.0,0.0,h/2];
-    x_dura = {[x3_23,y3_12+50e-3,z3-h/2],[x3_14,y3_12+50e-3,z3-h/2],[x3_23-50e-3,y3_12,z3-h/2],[x3_23-50e-3,y3_34,z3-h/2]};
+    x_dura = {[x3_23,y3_12+50e-3,z3],[x3_14,y3_12+50e-3,z3],[x3_23-50e-3,y3_12,z3],[x3_23-50e-3,y3_34,z3]};
     x_stab = double(POINT([x_hori{4}(1),x_hori{4}(2)+50e-3,x_hori{4}(3)-h/2]));
     x_meas = [x_hori,x_vert,x_dura,x_stab];
     P_hori = cellfun(@(x) POINT(x),x_hori,'UniformOutput',false);
@@ -175,10 +175,10 @@ if solveProblem
     S3 = convertelem(S3,elemtype);
     %
     S5a = build_model(D5a,'cl',cl_5,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_desk_5a_' elemtype]));
+        'filename',fullfile(pathname,['gmsh_desk_5a_' elemtype]),'all'); % option 'all' for facets, ridges, peaks
     %
     S5b = build_model(D5b,'cl',cl_5,'elemtype',elemtype,...
-        'filename',fullfile(pathname,['gmsh_desk_5b_' elemtype]));
+        'filename',fullfile(pathname,['gmsh_desk_5b_' elemtype]),'all'); % option 'all' for facets, ridges, peaks
     
     S = union(S1,S2,S3,S5a,S5b);
     
@@ -206,12 +206,11 @@ if solveProblem
         case 'isot'
             % Young modulus
             E = mean(mean_ET_data)*1e6; % [Pa]
-            %E = 2e9; % [Pa]
             % Shear modulus
             %G = mean(mean_GL_data)*1e6*13; % [Pa]
             % Poisson ratio
             %NU = E./(2*G)-1;
-            NU = 0.25;
+            NU = 0.2;
             % Material
             mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO);
             mat = setnumber(mat,1);
@@ -224,9 +223,10 @@ if solveProblem
             % Longitudinal Young modulus
             EL = mean(mean_EL_data)*1e6; % [Pa]
             % Longitudinal Poisson ratio
-            NUL = mean(mean_NUL_data);
+            %NUL = mean(mean_NUL_data);
+            NUL = 0.045;
             % Transverse Poisson ratio
-            NUT = 0.25;
+            NUT = 0.2;
             % Material
             mat_12 = ELAS_ISOT_TRANS('AXISL',[1;0;0],'AXIST',[0;1;0],'EL',EL,'ET',ET,'NUL',NUL,'NUT',NUT,'GL',GL,'RHO',RHO);
             mat_3 = ELAS_ISOT_TRANS('AXISL',[0;0;1],'AXIST',[1;0;0],'EL',EL,'ET',ET,'NUL',NUL,'NUT',NUT,'GL',GL,'RHO',RHO);
@@ -399,7 +399,8 @@ else
 end
 
 %% Outputs
-fprintf('\nDesk\n');
+fprintf('3D Desk\n');
+fprintf('\n');
 fprintf(['test : ' test '\n']);
 fprintf(['mesh : ' elemtype ' elements\n']);
 fprintf('nb elements = %g\n',getnbelem(S));
@@ -409,7 +410,6 @@ fprintf('span-to-thickness ratio of plates 1 and 2 = %g\n',min(a12,b12)/h);
 fprintf('span-to-thickness ratio of plate 3 = %g\n',min(a3,b3)/h);
 fprintf('span-to-thickness ratio of plates 5a and 5b = %g\n',min(a5,b5)/h);
 fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
 
 switch lower(test)
     case 'statichori1'
@@ -423,12 +423,12 @@ switch lower(test)
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
+        fprintf('\n');
         fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uz     = %g m\n',uz);
-        fprintf('\n');
     case 'statichori2'
         if p==100/Sec_hori_dura
             ux_exp_start = 2.12*1e-3;
@@ -440,36 +440,36 @@ switch lower(test)
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
+        fprintf('\n');
         fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uz     = %g m\n',uz);
-        fprintf('\n');
     case 'statichori3'
         uy_exp_start = -3.77*1e-3;
         uy_exp_end = -[4.71 4.73 4.69 4.56 4.47 4.73]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
+        fprintf('\n');
         fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
         fprintf('uz     = %g m\n',uz);
-        fprintf('\n');
     case 'statichori4'
         uy_exp_start = 9.71*1e-3;
         uy_exp_end = [12.21 12.2 12.2 12.23 12.2 12.19 12.21]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
+        fprintf('\n');
         fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
         fprintf('uz     = %g m\n',uz);
-        fprintf('\n');
     case 'staticvert'
         if p==300/Sec_vert_stab
             uz_exp_start = -0.69*1e-3;
@@ -484,72 +484,72 @@ switch lower(test)
         uz_exp = mean(uz_exp_end - uz_exp_start);
         err_uz = norm(uz-uz_exp)/norm(uz_exp);
         
+        fprintf('\n');
         fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uz     = %g m\n',uz);
         fprintf('uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
-        fprintf('\n');
     case 'durabilityhori1'
         ux_exp_start = -4.42*1e-3;
         ux_exp_end = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
+        fprintf('\n');
         fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uz     = %g m\n',uz);
-        fprintf('\n');
     case 'durabilityhori2'
         ux_exp_start = 3.48*1e-3;
         ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
+        fprintf('\n');
         fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uz     = %g m\n',uz);
-        fprintf('\n');
     case 'durabilityhori3'
         uy_exp_start = 3.35*1e-3;
         uy_exp_end = [6.16 5.76 5.97 5.81 5.84 5.61 5.86 5.64 5.62 5.68]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
+        fprintf('\n');
         fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
         fprintf('uz     = %g m\n',uz);
-        fprintf('\n');
     case 'durabilityhori4'
         uy_exp_start = -3.75*1e-3;
         uy_exp_end = -[3.89 3.88 3.89 3.88 3.89]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
+        fprintf('\n');
         fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
         fprintf('uz     = %g m\n',uz);
-        fprintf('\n');
     case 'stabilityvert'
         uz_exp_start = -1.93*1e-3;
         uz_exp_end = -[18.46 18.44 18.53 18.58 18.59 18.7 18.77 18.73 18.85 18.76]*1e-3;
         uz_exp = mean(uz_exp_end - uz_exp_start);
         err_uz = norm(uz-uz_exp)/norm(uz_exp);
         
+        fprintf('\n');
         fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
         fprintf('ux     = %g m\n',ux);
         fprintf('uy     = %g m\n',uy);
         fprintf('uz     = %g m\n',uz);
         fprintf('uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
-        fprintf('\n');
 end
 
 %% Display
@@ -560,29 +560,33 @@ if displaySolution
     mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
-    ampl = 8;
+    ampl = 10;
     [hN,legN] = vectorplot(S,'F',f,ampl,'r','LineWidth',linewidth);
     hP = plot(P,'g+');
     legend([hD,hN,hP],[legD,legN,'measure'],'Location','NorthEastOutside')
     %legend([hD,hN,hP],[legD,legN,'mesure'],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
-    plotModel(S,'legend',false);
+    % plotModel(S,'legend',false);
+    plotModel(S,'Color','k','FaceColor','w','legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
-    ampl = getsize(S)/max(abs(u))/10;
-    plotModelDeflection(S,u,'ampl',ampl,'FaceColor','b','legend',false);
+    ampl = getsize(S)/max(abs(u))/20;
+    % plotModelDeflection(S,u,'ampl',ampl,'FaceColor','b','legend',false);
+    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','w','legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
-    plot(S);
-    plot(S+ampl*u,'FaceColor','b');
+    % plot(S);
+    % plot(S+ampl*u,'FaceColor','b');
+    plot(S,'Color','k','FaceColor','w');
+    plot(S+ampl*u,'Color','b','FaceColor','w');
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display solution
     % ampl = 0;
-    ampl = getsize(S)/max(abs(u))/10;
+    ampl = getsize(S)/max(abs(u))/20;
     options = {'solid',true};
     % options = {};
     

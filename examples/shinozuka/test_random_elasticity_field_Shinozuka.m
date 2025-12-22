@@ -182,18 +182,20 @@ nx = size(x,1); % number of points
 
 lcorr = repmat(L/50,Dim,1); % spatial correlation lengths
 
-fprintf('\nNumber of points  = %d',nx);
-fprintf('\nNumber of fields  = %d',nU);
-fprintf('\nNumber of samples = %d for each Gaussian random field',N);
-fprintf('\nNumber of samples = %d for all Gaussian random fields',nV);
-fprintf('\nNumber of terms   = %d in the spectral representation',order);
+fprintf('\n');
+fprintf('Number of points  = %d\n',nx);
+fprintf('Number of fields  = %d\n',nU);
+fprintf('Number of samples = %d for each Gaussian random field\n',N);
+fprintf('Number of samples = %d for all Gaussian random fields\n',nV);
+fprintf('Number of terms   = %d in the spectral representation\n',order);
 
 rng('default');
 s = rng; % get current random number generator settings
 
 %% Gaussian random fields
 % Standard Shinozuka method
-fprintf('\nStandard Shinozuka method\n');
+fprintf('\n');
+fprintf('Standard Shinozuka method\n');
 tGaussShinozukaStd = tic;
 
 V = shinozuka(x,lcorr,nU,N,'order',nu,'state',s);
@@ -202,7 +204,8 @@ timeGaussShinozukaStd = toc(tGaussShinozukaStd);
 fprintf('elapsed time = %f s\n',timeGaussShinozukaStd);
 
 % Randomized Shinozuka method
-fprintf('\nRandomized Shinozuka method\n');
+fprintf('\n');
+fprintf('Randomized Shinozuka method\n');
 tGaussShinozukaRand = tic;
 
 W = shinozukaRand(x,lcorr,nU,N,'order',order,'state',s);
@@ -216,7 +219,8 @@ mC = double(calc_opmat(S)); % mean elasticity matrix
 mL = chol(mC); % upper triangular matrix of the Cholesky factor of mean elasticity matrix
 
 % Standard Shinozuka method
-fprintf('\nStandard Shinozuka method\n');
+fprintf('\n');
+fprintf('Standard Shinozuka method\n');
 fprintf('Computing non-Gaussian random elasticity fields\n');
 tElasShinozukaStd = tic;
 
@@ -226,7 +230,8 @@ timeElasShinozukaStd = toc(tElasShinozukaStd);
 fprintf('elapsed time = %f s\n',timeElasShinozukaStd);
 
 % Randomized Shinozuka method
-fprintf('\nRandomized Shinozuka method\n');
+fprintf('\n');
+fprintf('Randomized Shinozuka method\n');
 fprintf('Computing non-Gaussian random elasticity fields\n');
 tElasShinozukaRand = tic;
 

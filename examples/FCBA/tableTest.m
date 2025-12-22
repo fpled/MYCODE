@@ -67,7 +67,7 @@ p_vol = RHO*g; % body load [N/m3]
 r = 40e-3; % [m]
 C = CIRCLE(500e-3,250e-3,620e-3,r);
 Sec = pi*r^2;
-p = 200; % pointwise load [N]
+p = 200; % point load [N]
 p_surf = p/Sec; % surface load [N/m2]
 
 %% Dirichlet boundary conditions
@@ -97,12 +97,12 @@ u = A\f;
 time = toc(t);
 
 %% Outputs
-fprintf('\nTable\n');
+fprintf('Table\n');
+fprintf('\n');
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
 
 %% Display domains, boundary conditions and meshes
 plotDomain(S,'legend',false);

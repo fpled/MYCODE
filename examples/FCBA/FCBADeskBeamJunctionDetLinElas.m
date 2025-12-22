@@ -117,7 +117,8 @@ if solveProblem
             % Longitudinal Young modulus
             % EL = mean(mean_EL_data)*1e6; % [Pa]
             % Longitudinal Poisson ratio
-            % NUL = mean(mean_NUL_data);
+            %NUL = mean(mean_NUL_data);
+            % NUL = 0.045;
             % Transverse Poisson ratio
             NUT = 0.25;
             % Material
@@ -141,7 +142,7 @@ if solveProblem
     %% Neumann boundary conditions
     p1 = RHO*g*Sec1; % line load (body load for beams) [N/m]
     p2 = RHO*g*Sec2; % line load (body load for beams) [N/m]
-    p = 300; % pointwise load, F=300, 400, 500 [N]
+    p = 300; % point load, F=300, 400, 500 [N]
     
     %% Dirichlet boundary conditions
     if junction
@@ -462,7 +463,8 @@ else
 end
 
 %% Outputs
-fprintf('\nDesk\n');
+fprintf('1D Beam Desk\n');
+fprintf('\n');
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
@@ -482,8 +484,8 @@ for i=1:getnbgroupelem(S)
     fprintf('      = %.3e for Gamz in groupelem #%d\n',err_Gamz(i),i);
 end
 fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
 
+fprintf('\n');
 fprintf('Displacement u and rotation r at point (%g,%g) m\n',double(P3));
 fprintf('ux    = %g m\n',ux);
 fprintf('ux_ex = %g m, error = %g\n',ux_ex,err_ux);
@@ -500,21 +502,20 @@ else
     fprintf('rz    = %g rad = %g deg\n',rz,rad2deg(rz));
     fprintf('rz_ex = %g rad = %g deg, error = %g\n',rz_ex,rad2deg(rz_ex),err_rz);
 end
-fprintf('\n');
 
+fprintf('\n');
 fprintf('Force N and moment Mz at point (%g,%g) m\n',double(P2));
 fprintf('N     = %g N\n',n);
 fprintf('N_ex  = %g N, error = %g\n',n_ex,err_n);
 fprintf('Mz    = %g N.m\n',mz);
 fprintf('Mz_ex = %g N.m, error = %g\n',mz_ex,err_mz);
-fprintf('\n');
 
+fprintf('\n');
 fprintf('Axial strain Epsx and bending strain (curvature) Gamz at point (%g,%g) m\n',double(P2));
 fprintf('Epsx    = %g\n',epsx);
 fprintf('Epsx_ex = %g, error = %g\n',epsx_ex,err_epsx);
 fprintf('Gamz    = %g\n',gamz);
 fprintf('Gamz_ex = %g, error = %g\n',gamz_ex,err_gamz);
-fprintf('\n');
 
 %% Display
 if displaySolution

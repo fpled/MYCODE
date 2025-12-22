@@ -214,17 +214,17 @@ if solveProblem
             masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
             p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
-            p = 400; % pointwise load [N]
+            p = 400; % point load [N]
             slope = 0;
         case 'staticvert'
-            p = 1200; % pointwise load [N]
+            p = 1200; % point load [N]
         case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
             masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
             p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
-            p = 300; % pointwise load [N]
+            p = 300; % point load [N]
         case {'stabilityvert1','stabilityvert2','stabilityvert3','stabilityvert4'}
-            p = 400; % pointwise load, pmin = 668 [N]
+            p = 400; % point load, pmin = 668 [N]
         case 'impact'
             H = 180e-3; % [m]
         case 'drop'

@@ -306,7 +306,7 @@ if solveProblem
     p1 = RHO*g*b1; % surface load (body load for bottom rails, side rails, guard rails and slats) [N/m2]
     p2 = RHO*g*b2; % surface load (body load for end rails and parts 2 and 4 of guard rail support) [N/m2]
     p3 = RHO*g*(b1+b2); % surface load (body load for parts 1, 3 and 5 of guard rail support) [N/m2]
-    p = 500; % pointwise load [N]
+    p = 500; % point load [N]
     
     %% Dirichlet boundary conditions
     S = final(S);

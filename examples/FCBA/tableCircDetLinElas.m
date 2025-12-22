@@ -126,7 +126,7 @@ if solveProblem
             p = RHO*g*h; % surface load (body load for plates) [N/m2]
         case 'concentrated'
             Sec = pi*r^2;
-            p = RHO*g*h*Sec; % pointwise load [N]
+            p = RHO*g*h*Sec; % point load [N]
     end
     
     A = calc_rigi(S);

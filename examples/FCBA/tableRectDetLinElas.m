@@ -142,7 +142,7 @@ if solveProblem
             p = RHO*g*h; % surface load (body load for plates) [N/m2]
         case 'concentrated'
             Sec = a*b;
-            p = RHO*g*h*Sec; % pointwise load [N]
+            p = RHO*g*h*Sec; % point load [N]
     end
     
     A = calc_rigi(S);
@@ -200,7 +200,8 @@ else
 end
 
 %% Outputs
-fprintf('\nRectangular table\n');
+fprintf('Rectangular table\n');
+fprintf('\n');
 fprintf(['load : ' loading '\n']);
 fprintf(['mesh : ' elemtype ' ' meshtype ' elements\n']);
 fprintf('nb elements = %g\n',getnbelem(S_plate));
@@ -208,19 +209,18 @@ fprintf('nb nodes    = %g\n',getnbnode(S_plate));
 fprintf('nb dofs     = %g\n',getnbddl(S_plate));
 fprintf('span-to-thickness ratio = %g\n',max(a,b)/h);
 fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
 
+fprintf('\n');
 fprintf('Displacement u at point (%g,%g,%g)\n',double(P));
 fprintf('ux    = %g\n',ux);
 fprintf('uy    = %g\n',uy);
 fprintf('uz    = %g\n',uz);
-fprintf('\n');
 
+fprintf('\n');
 fprintf('Rotation r at point (%g,%g,%g)\n',double(P));
 fprintf('rx    = %g\n',rx);
 fprintf('ry    = %g\n',ry);
 fprintf('rz    = %g\n',rz);
-fprintf('\n');
 
 %% Display
 if displaySolution

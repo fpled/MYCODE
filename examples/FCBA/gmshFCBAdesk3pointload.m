@@ -1,5 +1,5 @@
-function varargout = gmshFCBAdesk3simplified(Q,I,L1,L2,PbQ,PiQeI,PiI,clQ,clI,clL1,clL2,clPbQ,clPiQeI,clPiI,filename,indim,varargin)
-% function varargout = gmshFCBAdesk3simplified(Q,I,L1,L2,PbQ,PiQeI,PiI,clQ,clI,clL1,clL2,clPbQ,clPiQeI,clPiI,filename,indim,varargin)
+function varargout = gmshFCBAdesk3pointload(Q,I,L1,L2,PbQ,PiQeI,PiI,clQ,clI,clL1,clL2,clPbQ,clPiQeI,clPiI,filename,indim,varargin)
+% function varargout = gmshFCBAdesk3pointload(Q,I,L1,L2,PbQ,PiQeI,PiI,clQ,clI,clL1,clL2,clPbQ,clPiQeI,clPiI,filename,indim,varargin)
 % Q : QUADRANGLE
 % I : DOMAIN or CIRCLE or ELLIPSE or QUADRANGLE
 % L1, L2 : LINE

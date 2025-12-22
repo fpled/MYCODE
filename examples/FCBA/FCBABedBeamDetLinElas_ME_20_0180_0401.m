@@ -307,7 +307,7 @@ if solveProblem
         p4 = RHO*g*Sec4; % line load (body load for slats) [N/m]
         p5 = RHO*g*Sec5; % line load (body load for long slats) [N/m]
     end
-    p = 500; % pointwise load [N]
+    p = 500; % point load [N]
     
     %% Dirichlet boundary conditions
     S = final(S);

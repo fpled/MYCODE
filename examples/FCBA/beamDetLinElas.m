@@ -87,7 +87,7 @@ if solveProblem
     
     %% Neumann boundary conditions
     pl = RHO*g*Sec; % line load (body load for beams) [N/m]
-    p = 1; % pointwise load, 200 [N]
+    p = 1; % point load, 200 [N]
     
     %% Dirichlet boundary conditions
     S = final(S);
@@ -242,13 +242,14 @@ else
 end
 
 %% Outputs
-fprintf('\nBeam\n');
+fprintf('\n');
+fprintf('Beam\n');
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
 
+fprintf('\n');
 if Dim==2
     fprintf('Displacement u and rotation r at point (%g,%g) m\n',double(P));
 elseif Dim==3
@@ -262,8 +263,8 @@ if Dim==3
     fprintf('ry = %g rad = %g deg\n',ry,rad2deg(ry));
 end
 fprintf('rz = %g rad = %g deg\n',rz,rad2deg(rz));
-fprintf('\n');
 
+fprintf('\n');
 if Dim==2
     fprintf('Force N and moment Mz at point (%g,%g) m\n',double(P));
 elseif Dim==3
@@ -275,8 +276,8 @@ if Dim==3
     fprintf('My = %g N.m\n',my);
 end
 fprintf('Mz = %g N.m\n',mz);
-fprintf('\n');
 
+fprintf('\n');
 if Dim==2
     fprintf('Axial strain Epsx and bending strain (curvature) Gamz at point (%g,%g) m\n',double(P));
 elseif Dim==3
@@ -288,7 +289,6 @@ if Dim==3
     fprintf('Gamy = %g\n',gamy);
 end
 fprintf('Gamz = %g\n',gamz);
-fprintf('\n');
 
 %% Display
 if displaySolution

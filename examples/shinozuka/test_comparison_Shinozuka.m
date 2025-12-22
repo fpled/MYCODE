@@ -88,14 +88,17 @@ nx = size(x,1); % number of points
 
 lcorr = repmat(L/50,Dim,1); % spatial correlation lengths
 
-fprintf('\nNumber of points  = %d',nx);
-fprintf('\nNumber of fields  = %d',nU);
-fprintf('\nNumber of samples = %d for each Gaussian random field',N);
-fprintf('\nNumber of samples = %d for all Gaussian random fields',nV);
-fprintf('\nNumber of terms   = %d in the spectral representation',order);
+fprintf('\n');
+fprintf('Number of points  = %d\n',nx);
+fprintf('Number of fields  = %d\n',nU);
+fprintf('Number of samples = %d for each Gaussian random field\n',N);
+fprintf('Number of samples = %d for all Gaussian random fields\n',nV);
+fprintf('Number of terms   = %d in the spectral representation\n',order);
 
 %% Standard Shinozuka method
-fprintf('\nStandard Shinozuka method\n');
+fprintf('\n');
+fprintf('Standard Shinozuka method\n');
+fprintf('\n');
 
 rng('default');
 srng = rng; % get current random number generator settings
@@ -127,7 +130,7 @@ parfor i=1:nV
     Vscalar(:,i) = shinozuka_scalar(c,z,phi,k,x);
 end
 timeVscalar = toc(tVscalar);
-fprintf('\nScalar implementation     : elapsed time = %f s',timeVscalar);
+fprintf('Scalar implementation     : elapsed time = %f s\n',timeVscalar);
 
 tVcpp = tic;
 Vcpp = zeros(nx,nV);
@@ -138,7 +141,7 @@ parfor i=1:nV
 end
 timeVcpp = toc(tVcpp);
 errVcpp = norm(Vcpp-Vscalar)/norm(Vscalar);
-fprintf('\nC++ implementation        : elapsed time = %f s, relative error = %e',timeVcpp,errVcpp);
+fprintf('C++ implementation        : elapsed time = %f s, relative error = %e\n',timeVcpp,errVcpp);
 
 tVsum = tic;
 Vsum = zeros(nx,nV);
@@ -149,7 +152,7 @@ parfor i=1:nV
 end
 timeVsum = toc(tVsum);
 errVsum = norm(Vsum-Vscalar)/norm(Vscalar);
-fprintf('\nSummation implementation  : elapsed time = %f s, relative error = %e',timeVsum,errVsum);
+fprintf('Summation implementation  : elapsed time = %f s, relative error = %e\n',timeVsum,errVsum);
 
 tVvec = tic;
 Vvec = zeros(nx,nV);
@@ -160,11 +163,12 @@ parfor i=1:nV
 end
 timeVvec = toc(tVvec);
 errVvec = norm(Vvec-Vscalar)/norm(Vscalar);
-fprintf('\nVectorized implementation : elapsed time = %f s, relative error = %e',timeVvec,errVvec);
-fprintf('\n');
+fprintf('Vectorized implementation : elapsed time = %f s, relative error = %e\n',timeVvec,errVvec);
 
 %% Randomized Shinozuka method
-fprintf('\nRandomized Shinozuka method\n');
+fprintf('\n');
+fprintf('Randomized Shinozuka method\n');
+fprintf('\n');
 
 rng(srng) % set same random number generator settings as for standard Shinozuka method
 X = rand(2+Dim,order,nV);
@@ -192,7 +196,7 @@ parfor i=1:nV
     Wscalar(:,i) = shinozukaRand_scalar(c,z,phi,k,x);
 end
 timeWscalar = toc(tWscalar);
-fprintf('\nScalar implementation     : elapsed time = %f s',timeWscalar);
+fprintf('Scalar implementation     : elapsed time = %f s\n',timeWscalar);
 
 tWcpp = tic;
 Wcpp = zeros(nx,nV);
@@ -213,7 +217,7 @@ parfor i=1:nV
 end
 timeWcpp = toc(tWcpp);
 errWcpp = norm(Wcpp-Wscalar)/norm(Wscalar);
-fprintf('\nC++ implementation        : elapsed time = %f s, relative error = %e',timeWcpp,errWcpp);
+fprintf('C++ implementation        : elapsed time = %f s, relative error = %e\n',timeWcpp,errWcpp);
 
 tWsum = tic;
 Wsum = zeros(nx,nV);
@@ -234,7 +238,7 @@ parfor i=1:nV
 end
 timeWsum = toc(tWsum);
 errWsum = norm(Wsum-Wscalar)/norm(Wscalar);
-fprintf('\nSummation implementation  : elapsed time = %f s, relative error = %e',timeWsum,errWsum);
+fprintf('Summation implementation  : elapsed time = %f s, relative error = %e\n',timeWsum,errWsum);
 
 tWvec = tic;
 Wvec = zeros(nx,nV);
@@ -255,7 +259,7 @@ parfor i=1:nV
 end
 timeWvec = toc(tWvec);
 errWvec = norm(Wvec-Wscalar)/norm(Wscalar);
-fprintf('\nVectorized implementation : elapsed time = %f s, relative error = %e',timeWvec,errWvec);
+fprintf('Vectorized implementation : elapsed time = %f s, relative error = %e\n',timeWvec,errWvec);
 
 V = reshape(Vcpp,nx,nU,N);
 W = reshape(Wcpp,nx,nU,N);
