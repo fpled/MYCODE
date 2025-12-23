@@ -10,7 +10,16 @@ rng('default');
 %% Input data
 displaySolution = true;
 
-filename = 'modelStoLinElasIsot_ElasTensor';
+useRedParam = true; % reduced parameterization
+method = 'mle'; % parameter estimation method = 'mle' or 'lse'
+
+filename = 'modelStoLinElasIsot_ElasTensor_';
+if useRedParam
+    filename = [filename 'ReducedParam_'];
+else
+    filename = [filename 'FullParam_'];
+end
+filename = [filename method];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification',filename);
 if ~exist(pathname,'dir')
@@ -30,62 +39,122 @@ pathnameIdentification = fullfile(getfemobjectoptions('path'),'MYCODE',...
 load(fullfile(pathnameIdentification,filenameAna));
 load(fullfile(pathnameIdentification,filenameNum));
 
+N_data = length(mean_ET_data);
 E_data = mean_ET_data*1e-3; % [GPa]
-G_data = mean_GL_data*1e-3*13; % [GPa]
-NU_data = E_data./(2*G_data)-1;
+NU_data = 0.1+0.2*rand(N_data,1); % artificial data for NU uniformly distributed from 0.1 to 0.3
+G_data = E_data./(2*(1+NU_data)); % [GPa]
 lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data)); % [GPa]
 C1_data = lambda_data + 2/3*G_data; % [GPa]
 C2_data = G_data; % [GPa]
 C_data = [C1_data(:) C2_data(:)];
 
+% Empirical estimates
 mC_data = mean(C_data,1);
-vC_data = var(C_data,0,1);
-% vC_data = size(C_data,1)/(size(C_data,1)-1)*moment(C_data,2,1);
-sC_data = sqrt(norm(vC_data));
-dC_data = sC_data/norm(mC_data);
+vC_data = var(C_data,0,1); % vC_data = size(C_data,1)/(size(C_data,1)-1)*moment(C_data,2,1);
+stdC_data = std(C_data,0,1); % stdC_data = sqrt(vC_data);
+cvC_data = stdC_data./mC_data;
+% sC_data = sqrt(norm(vC_data));
+mCnorm_data = norm(mC_data);
+% dC_data = sC_data/mCnorm_data;
 phiC_data = log(96*C_data(:,1).*C_data(:,2).^5);
 nuC_data = mean(phiC_data,1);
+fC_data = [mC_data nuC_data];
 
 %% Parameter estimation for computing Lagrange multipliers
-lambda = mleStoLinElasTensorIsot(C_data); % Maximum likelihood estimation
-% lambda = lseStoLinElasTensorIsot(C_data); % Least-squares estimation
+% Initial parameter values
+la0 = mean([1-1/cvC_data(1)^2 (1-1/cvC_data(2)^2)/5]); % la < 1/5 (match cv with averaged empirical cv for C1 and C2)
+a01 = 1-la0;   % a1 > 0
+a02 = 1-5*la0; % a2 > 0
+la01 = a01/mC_data(1); % la1 > 0 (match mathematical expectation with empirical mean value for C1)
+la02 = a02/mC_data(2); % la2 > 0 (match mathematical expectation with empirical mean value for C2)
+% la01 = -la0/mC_data(1);   % la1 > 0 (match mode with empirical mean value for C1)
+% la02 = -5*la0/mC_data(2); % la2 > 0 (match mode with empirical mean value for C2)
+b01 = 1/la01;  % b1 > 0
+b02 = 1/la02;  % b2 > 0
 
-la1 = lambda(1);
-la2 = lambda(2);
-la  = lambda(3);
+% Initial parameter vector
+if useRedParam
+    lambda0 = la0; % reduced parameterization
+else
+    lambda0 = [la01 la02 la0]; % full parameterization
+end
 
-a1 = 1-la;
-b1 = 1/la1;
-a2 = 1-5*la;
-b2 = 1/la2;
+% Parameter estimation
+t = tic;
+switch lower(method)
+    case 'mle'
+        % Maximum likelihood estimation
+        nloglf = @nloglfElasIsot;
+        lambda = mleStoLinElasIsot(C_data,lambda0,'display','iter');
+        % [lambda,loglfval,loglfval0] = mleStoLinElasIsot(C_data,lambda0,'display','iter');
+    case 'lse'
+        % Least-squares estimation
+        lambda = lseStoLinElasIsot(C_data,lambda0,'display','iter-detailed'); 
+        % [lambda,resnorm,residual,exitflag,output] = lseStoLinElasIsot(C_data,lambda0,'display','iter-detailed');
+end
+toc(t)
 
-mC = [a1*b1 a2*b2];
-vC = [a1*b1^2 a2*b2^2];
-sC = sqrt(norm(vC));
-dC = sC/norm(mC);
+% Optimal parameter values
+if useRedParam
+    la  = lambda(1);     % la < 1/5
+    a1  = 1-la;          % a1 > 0
+    a2  = 1-5*la;        % a2 > 0
+    la1 = a1/mC_data(1); % la1 > 0
+    la2 = a2/mC_data(2); % la2 > 0
+else
+    la1 = lambda(1); % la1 > 0
+    la2 = lambda(2); % la2 > 0
+    la  = lambda(3); % la < 1/5
+    a1  = 1-la;      % a1 > 0
+    a2  = 1-5*la;    % a2 > 0
+end
+b1 = 1/la1; % b1 > 0
+b2 = 1/la2; % b2 > 0
+
+[mC,vC] = gamstat([a1,a2],[b1,b2]);
+% mC = [a1*b1, a2*b2];
+% vC = [a1*b1^2, a2*b2^2];
+stdC = sqrt(vC);
+cvC = stdC./mC;
+% sC = sqrt(norm(vC));
+mCnorm = norm(mC);
+% dC = sC/mCnorm;
 nuC = log(96) + psi(a1)+log(b1) + 5*(psi(a2)+log(b2));
+fC = [mC nuC];
 
+if strcmpi(method,'mle')
+    if ~exist('loglfval0','var')
+        loglfval0 = -nloglf(lambda0,C_data);
+    end
+    if ~exist('loglfval','var')
+        loglfval = -nloglf(lambda,C_data);
+    end
+end
+
+%% Pdfs and cdfs
 k1ln = -a1*log(b1)-gammaln(a1);
 k2ln = -a2*log(b2)-gammaln(a2);
 % k1ln = (1-la)*log(la1)-gammaln(1-la);
 % k2ln = (1-5*la)*log(la2)-gammaln(1-5*la);
 
-%% Pdfs and cdfs
 pdf_C1 = @(c1) gampdf(c1,a1,b1); % Gamma probability density function of C1
 pdf_C2 = @(c2) gampdf(c2,a2,b2); % Gamma probability density function of C2
 pdf_C = @(c1,c2) pdf_C1(c1).*pdf_C2(c2); % joint probability density function of C=(C1,C2)
-% pdf_C = @(c1,c2) exp(k1ln+k2ln)*c1.^(-la)*c2.^(-5*la)*exp(-la1*c1-la2*c2);
-pdf_EN = @(e,n) exp(k1ln+k2ln)*(e./(3*(1-2*n))).^(-la).*(e./(2*(1+n))).^(-5*la)...
-    .*(e./(2*((1+n).^2).*((1-2*n).^2)))...
-    .*exp(-la1*e./(3*(1-2*n))-la2*e./(2*(1+n))); % joint probability density function of (E,N)
+% pdf_C = @(c1,c2) exp(k1ln+k2ln -la*log(c1) -5*la*log(c2) -la1*c1 -la2*c2);
+% pdf_C = @(c1,c2) exp(k1ln+k2ln)*c1.^(-la)*c2.^(-5*la)*exp(-la1*c1-la2*c2); % it does not work due to the value of la
+pdf_EN = @(e,n) exp(k1ln+k2ln -la*(log(e)-log(3*(1-2*n))) -5*la*(log(e)-log(2*(1+n))) -la1*e./(3*(1-2*n)) -la2*e./(2*(1+n)))...
+    .*(e./(2*((1+n).^2).*((1-2*n).^2))); % joint probability density function of (E,N)
+% pdf_EN = @(e,n) exp(k1ln+k2ln)*(e./(3*(1-2*n))).^(-la).*(e./(2*(1+n))).^(-5*la)...
+%     .*(e./(2*((1+n).^2).*((1-2*n).^2)))...
+%     .*exp(-la1*e./(3*(1-2*n))-la2*e./(2*(1+n)));
 
 cdf_C1 = @(c1) gamcdf(c1,a1,b1); % Gamma cumulative density function of C1
 cdf_C2 = @(c2) gamcdf(c2,a2,b2); % Gamma cumulative density function of C2
 cdf_C = @(c1,c2) cdf_C1(c1).*cdf_C2(c2); % joint cumulative density function of C=(C1,C2)
-% cdf_C1 = @(c1) integral(@(x) pdf_C1(x),-Inf,c1);
-% cdf_C2 = @(c2) integral(@(x) pdf_C2(x),-Inf,c2);
-% cdf_C = @(c1,c2) integral2(@(x1,x2) pdf_C(x1,x2),-Inf,c1,-Inf,c2);
-cdf_EN = @(e,n) integral2(@(xe,xn) pdf_EN(xe,xn),0,e,-1,n);
+% cdf_C1 = @(c1) arrayfun(@(x) integral(pdf_C1,0,x), c1);
+% cdf_C2 = @(c2) arrayfun(@(x) integral(pdf_C2,0,x), c2);
+% cdf_C = @(c1,c2) arrayfun(@(x1,x2) integral2(pdf_C,0,x1,0,x2), c1, c2);
+cdf_EN = @(e,n) arrayfun(@(xe,xn) integral2(pdf_EN,0,xe,-1,xn), e, n);
 
 %% Sample generation
 N = 1e4; % number of samples
@@ -98,62 +167,113 @@ E_sample = (9*C1_sample.*C2_sample)./(3*C1_sample+C2_sample); % [GPa]
 NU_sample = (3*C1_sample-2*C2_sample)./(6*C1_sample+2*C2_sample); % [GPa]
 
 mC_sample = mean(C_sample,1);
-vC_sample = var(C_sample,0,1);
-% vC_sample = size(C_sample,1)/(size(C_sample,1)-1)*moment(C_sample,2,1);
+vC_sample = var(C_sample,0,1); % vC_sample = N/(N-1)*moment(C_sample,2,1);
+stdC_sample = std(C_sample,0,1); % stdC_sample = sqrt(vC_sample);
+cvC_sample = stdC_sample./mC_sample;
 sC_sample = sqrt(norm(vC_sample));
-dC_sample = sC_sample/norm(mC_sample);
+mCnorm_sample = norm(mC_sample);
+dC_sample = sC_sample/mCnorm_sample;
 phiC_sample = log(96*C1_sample.*C2_sample.^5);
 nuC_sample = mean(phiC_sample,1);
+fC_sample = [mC_sample nuC_sample];
 
 %% Outputs
-fprintf('\nnb data   = %g',size(C_data,1));
-fprintf('\nnb sample = %g',N);
-fprintf('\n');
+filenameResults = fullfile(pathname,'results.txt');
+fid = fopen(filenameResults,'w');
+fprintf(fid,'nb data    = %g\n',size(C_data,1));
+fprintf(fid,'nb samples = %g\n',N);
+fprintf(fid,'estimation method = %s\n',method);
+if useRedParam
+    fprintf(fid,'parameterization  = reduced\n');
+else
+    fprintf(fid,'parameterization  = full\n');
+end
 
-fprintf('\nlambda_1 = %.4f',la1);
-fprintf('\nlambda_2 = %.4f',la2);
-fprintf('\nlambda   = %.4f',la);
-fprintf('\n');
-fprintf('\nalpha_1 = %.4f',a1);
-fprintf('\nbeta_1  = %.4f',b1);
-fprintf('\n');
-fprintf('\nalpha_2 = %.4f',a2);
-fprintf('\nbeta_2  = %.4f',b2);
-fprintf('\n');
+fprintf(fid,'\n');
+fprintf(fid,'Initial parameter values\n');
+fprintf(fid,'lambda_1 = %.4f\n',la01);
+fprintf(fid,'lambda_2 = %.4f\n',la02);
+fprintf(fid,'lambda   = %.4f\n',la0);
+fprintf(fid,'alpha_1  = %.4f\n',a01);
+fprintf(fid,'beta_1   = %.6f\n',b01);
+fprintf(fid,'alpha_2  = %.4f\n',a02);
+fprintf(fid,'beta_2   = %.6f\n',b02);
+if strcmpi(method,'mle')
+    fprintf(fid,'loglf    = %.4f\n',loglfval0);
+end
+
+fprintf(fid,'\n');
+fprintf(fid,'Optimal parameter values\n');
+fprintf(fid,'lambda_1 = %.4f\n',la1);
+fprintf(fid,'lambda_2 = %.4f\n',la2);
+fprintf(fid,'lambda   = %.4f\n',la);
+fprintf(fid,'alpha_1  = %.4f\n',a1);
+fprintf(fid,'beta_1   = %.6f\n',b1);
+fprintf(fid,'alpha_2  = %.4f\n',a2);
+fprintf(fid,'beta_2   = %.6f\n',b2);
+if strcmpi(method,'mle')
+    fprintf(fid,'loglf    = %.4f\n',loglfval);
+end
 
 for i=1:2
-    fprintf('\nmean(C%u)        = %.4f GPa',i,mC(i));
-    fprintf('\nmean(C%u_sample) = %.4f GPa',i,mC_sample(i));
-    fprintf('\nmean(C%u_data)   = %.4f GPa',i,mC_data(i));
-    fprintf('\nvar(C%u)         = %.4f (GPa)^2',i,vC(i));
-    fprintf('\nvar(C%u_sample)  = %.4f (GPa)^2',i,vC_sample(i));
-    fprintf('\nvar(C%u_data)    = %.4f (GPa)^2',i,vC_data(i));
-    fprintf('\nstd(C%u)         = %.4f GPa',i,sqrt(vC(i)));
-    fprintf('\nstd(C%u_sample)  = %.4f GPa',i,sqrt(vC_sample(i)));
-    fprintf('\nstd(C%u_data)    = %.4f GPa',i,sqrt(vC_data(i)));
-    fprintf('\ndisp(C%u)        = %.4f',i,sqrt(vC(i))/mC(i));
-    fprintf('\ndisp(C%u_sample) = %.4f',i,sqrt(vC_sample(i))/mC_sample(i));
-    fprintf('\ndisp(C%u_data)   = %.4f',i,sqrt(vC_data(i))/mC_data(i));
-    fprintf('\n');
+    fprintf(fid,'\n');
+    fprintf(fid,'mean(C%u_data)   = %.4f GPa\n',i,mC_data(i));
+    fprintf(fid,'mean(C%u)        = %.4f GPa\n',i,mC(i));
+    fprintf(fid,'mean(C%u_sample) = %.4f GPa\n',i,mC_sample(i));
+    fprintf(fid,'var(C%u_data)    = %.4f (GPa)^2\n',i,vC_data(i));
+    fprintf(fid,'var(C%u)         = %.4f (GPa)^2\n',i,vC(i));
+    fprintf(fid,'var(C%u_sample)  = %.4f (GPa)^2\n',i,vC_sample(i));
+    fprintf(fid,'std(C%u_data)    = %.4f GPa\n',i,stdC_data(i));
+    fprintf(fid,'std(C%u)         = %.4f GPa\n',i,stdC(i));
+    fprintf(fid,'std(C%u_sample)  = %.4f GPa\n',i,stdC_sample(i));
+    fprintf(fid,'cv(C%u_data)     = %.4f\n',i,cvC_data(i));
+    fprintf(fid,'cv(C%u)          = %.4f\n',i,cvC(i));
+    fprintf(fid,'cv(C%u_sample)   = %.4f\n',i,cvC_sample(i));
 end
-fprintf('\nnu(C)        = mean(log(det([C]))        = %.4f',i,nuC);
-fprintf('\nnu(C_sample) = mean(log(det([C_sample])) = %.4f',i,nuC_sample);
-fprintf('\nnu(C_data)   = mean(log(det([C_data]))   = %.4f',i,nuC_data);
+fprintf(fid,'\n');
+fprintf(fid,'norm(mC_data)   = %.4f GPa\n',mCnorm_data);
+fprintf(fid,'norm(mC)        = %.4f GPa\n',mCnorm);
+fprintf(fid,'norm(mC_sample) = %.4f GPa\n',mCnorm_sample);
+fprintf(fid,'\n');
+fprintf(fid,'nu(C_data)   = mean(log(det([C_data]))   = %.4f\n',nuC_data);
+fprintf(fid,'nu(C)        = mean(log(det([C]))        = %.4f\n',nuC);
+fprintf(fid,'nu(C_sample) = mean(log(det([C_sample])) = %.4f\n',nuC_sample);
 
-err_mean_comp = (mC - mC_data)^2./(mC_data)^2;
-err_mean = norm(mC - mC_data)^2/norm(mC_data)^2;
-err_nu = (nuC - nuC_data)^2/(nuC_data)^2;
-err_mean_comp_sample = (mC_sample - mC_data)^2./(mC_data)^2;
-err_mean_sample = norm(mC_sample - mC_data)^2/norm(mC_data)^2;
-err_nu_sample = (nuC_sample - nuC_data)^2/(nuC_data)^2;
+err_meanCi = abs(mC - mC_data)./abs(mC_data);
+err_meanC  = norm(mC - mC_data)/norm(mC_data);
+err_nuC    = abs(nuC - nuC_data)/abs(nuC_data);
+resnorm    = norm(fC - fC_data)^2;
+relresnorm = norm((fC - fC_data)./fC_data)^2;
+weightresnorm = norm(mC - mC_data)^2/norm(mC_data)^2 + abs(nuC - nuC_data)^2/abs(nuC_data)^2;
+
+err_meanCi_sample = abs(mC_sample - mC_data)./abs(mC_data);
+err_meanC_sample  = norm(mC_sample - mC_data)/norm(mC_data);
+err_nuC_sample    = abs(nuC_sample - nuC_data)/abs(nuC_data);
+resnorm_sample    = norm(fC_sample - fC_data)^2;
+relresnorm_sample = norm((fC_sample - fC_data)./fC_data)^2;
+weightresnorm_sample = norm(mC_sample - mC_data)^2/norm(mC_data)^2 + abs(nuC_sample - nuC_data)^2/abs(nuC_data)^2;
+
+fprintf(fid,'\n');
 for i=1:2
-    fprintf('\nerror on mean(C%u) = %.4e',i,err_mean_comp);
+    fprintf(fid,'relative error on mean(C%u)             = %.4e\n',i,err_meanCi(i));
 end
-fprintf('\nerror on mean(C) = %.4e',err_mean);
-fprintf('\nerror on mean(C_sample) = %.4e',err_mean_sample);
-fprintf('\nerror on mean(log(det([C])) = %.4e',err_nu);
-fprintf('\nerror on mean(log(det([C_sample])) = %.4e',err_nu_sample);
-fprintf('\n');
+fprintf(fid,'relative error on mean(C) in norm      = %.4e\n',err_meanC);
+fprintf(fid,'relative error on mean(log(det([C]))   = %.4e\n',err_nuC);
+fprintf(fid,'squared norm of residual on C          = %.4e\n',resnorm);
+fprintf(fid,'squared norm of relative residual on C = %.4e\n',relresnorm);
+fprintf(fid,'weighted squared norm of residual on C = %.4e\n',weightresnorm);
+
+fprintf(fid,'\n');
+for i=1:2
+    fprintf(fid,'relative error on mean(C%u_sample)             = %.4e\n',i,err_meanCi_sample(i));
+end
+fprintf(fid,'relative error on mean(C_sample) in norm      = %.4e\n',err_meanC_sample);
+fprintf(fid,'relative error on mean(log(det([C_sample]))   = %.4e\n',err_nuC_sample);
+fprintf(fid,'squared norm of residual on C_sample          = %.4e\n',resnorm_sample);
+fprintf(fid,'squared norm of relative residual on C_sample = %.4e\n',relresnorm_sample);
+fprintf(fid,'weighted squared norm of residual on C_sample = %.4e\n',weightresnorm_sample);
+fclose(fid);
+type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
 if displaySolution
@@ -170,6 +290,18 @@ if displaySolution
     mysaveas(pathname,'data_E','fig');
     mymatlab2tikz(pathname,'data_E.tex');
     
+    figure('Name','Data for NU')
+    clf
+    bar(NU_data)
+    grid on
+    set(gca,'FontSize',fontsize)
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Poisson''s ratio $\nu$','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    %ylabel('Coefficient de Poisson $\nu$','Interpreter',interpreter);
+    mysaveas(pathname,'data_NU','fig');
+    mymatlab2tikz(pathname,'data_NU.tex');
+    
     figure('Name','Data for G')
     clf
     bar(G_data)
@@ -182,30 +314,226 @@ if displaySolution
     mysaveas(pathname,'data_G','fig');
     mymatlab2tikz(pathname,'data_G.tex');
     
-    %% Plot pdfs and cdfs
-    x1_min = max(0,mean(C1_data)-5*std(C1_data));
-    x1_max = mean(C1_data)+5*std(C1_data);
-    x2_min = max(0,mean(C2_data)-10*std(C2_data));
-    x2_max = mean(C2_data)+10*std(C2_data);
+    figure('Name','Data for C1')
+    clf
+    bar(C1_data)
+    grid on
+    set(gca,'FontSize',fontsize)
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Coefficient $C_1$ [GPa]','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    mysaveas(pathname,'data_C1','fig');
+    mymatlab2tikz(pathname,'data_C1.tex');
     
-    xe_min = max(0,mean(E_data)-10*std(E_data));
-    xe_max = mean(E_data)+10*std(E_data);
-    xn_min = max(-1,mean(NU_data)-5*std(NU_data));
-    xn_max = min(0.5,mean(NU_data)+5*std(NU_data));
+    figure('Name','Data for C2')
+    clf
+    bar(C2_data)
+    grid on
+    set(gca,'FontSize',fontsize)
+    xlabel('Sample number','Interpreter',interpreter);
+    ylabel('Coefficient $C_2$ [GPa]','Interpreter',interpreter);
+    %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
+    mysaveas(pathname,'data_C2','fig');
+    mymatlab2tikz(pathname,'data_C2.tex');
+    
+    %% Plot log-likelihood function
+    if strcmpi(method,'mle')
+        npts = 1e2;
+        if useRedParam
+            loglf = @(La,data) arrayfun(@(la) -nloglf(la,data), La1, La2, La);
+            la_delta = 0.5*abs(la);
+            la_series = linspace(la-la_delta,la+la_delta,npts);
+            loglf = @(La,data) arrayfun(@(la) -nloglf(la,data), La);
+            % logL = zeros(size(la));
+            % for i=1:length(la)
+            %     la_i = la_series(i);
+            %     logL(i) = -nloglf(la_i,C_data);
+            % end
+            logL = loglf(la_series,C_data);
+            
+            % Plot log-likelihood function loglf for C
+            plot(la_series,logL,'-b','LineWidth',linewidth);
+            hold on
+            scatter(la,loglfval,'o','MarkerEdgeColor','k','MarkerFaceColor','r');
+            % scatter(la0,loglfval0,'o','MarkerEdgeColor','k','MarkerFaceColor','g');
+            % % plot(la,loglfval,'o','MarkerSize',6,'MarkerEdgeColor','k','MarkerFaceColor','r');
+            % % plot(la0,loglfval0,'o','MarkerSize',6,'MarkerEdgeColor','k','MarkerFaceColor','g');
+            hold off
+            grid on
+            box on
+            set(gca,'FontSize',fontsize)
+            xlabel('$\lambda$','Interpreter',interpreter)
+            ylabel('$\mathcal{L}(\lambda_1,\lambda_2,\lambda)$','Interpreter',interpreter)
+        else
+            loglf = @(La1,La2,La,data) arrayfun(@(la1,la2,la) -nloglf([la1,la2,la],data), La1, La2, La);
+            la_delta  = 0.5*abs(la);
+            la1_delta = 0.5*abs(la1);
+            la2_delta = 0.5*abs(la2);
+            la_series = linspace(la-la_delta,la+la_delta,npts);
+            la1_series = linspace(la1-la1_delta,la1+la1_delta,npts);
+            la2_series = linspace(la2-la2_delta,la2+la2_delta,npts);
+            n1 = length(la1_series);
+            n2 = length(la2_series);
+            n3 = length(la_series);
+            % logL12 = zeros(n2,n1);
+            % for i=1:n1
+            %     la1_i = la1_series(i);
+            %     for j=1:n2
+            %         la2_j = la2_series(j);
+            %         param12_ij = [la1_i,la2_j,la];
+            %         logL12(j,i) = -nloglf(param12_ij,C_data);
+            %     end
+            % end
+            % logL13 = zeros(n3,n1);
+            % for i=1:n1
+            %     la1_i = la1_series(i);
+            %     for j=1:n3
+            %         la_j = la_series(j);
+            %         param13_ij = [la1_i,la2,la_j];
+            %         logL13(j,i) = -nloglf(param13_ij,C_data);
+            %     end
+            % end
+            % logL23 = zeros(n3,n2);
+            % for i=1:n2
+            %     la2_i = la2_series(i);
+            %     for j=1:n3
+            %         la_j = la_series(j);
+            %         param23_ij = [la1,la2_i,la_j];
+            %         logL23(j,i) = -nloglf(param23_ij,C_data);
+            %     end
+            % end
+            [La1,La2] = meshgrid(la1_series,la2_series);
+            logL12 = loglf(La1,La2,repmat(la,n2,n1),C_data);
+            [La1,La] = meshgrid(la1_series,la_series);
+            logL13 = loglf(La1,repmat(la2,n3,n1),La,C_data);
+            [La2,La] = meshgrid(la2_series,la_series);
+            logL23 = loglf(repmat(la1,n3,n2),La2,La,C_data);
+            
+            % Plot log-likelihood function loglf_la1_la2 for C
+            figure('Name','Surface plot: Log-likelihood function for C')
+            clf
+            surfc(la1_series,la2_series,logL12,'EdgeColor','none');
+            colorbar
+            hold on
+            scatter3(la1,la2,loglfval,'MarkerEdgeColor','k','MarkerFaceColor','r');
+            % scatter3(la01,la02,loglfval0,'MarkerEdgeColor','k','MarkerFaceColor','g');
+            hold off
+            set(gca,'FontSize',fontsize)
+            xlabel('$\lambda_1$ [GPa$^{-1}$]','Interpreter',interpreter)
+            ylabel('$\lambda_2$ [GPa$^{-1}$]','Interpreter',interpreter)
+            zlabel('$\mathcal{L}(\lambda_1,\lambda_2,\lambda)$','Interpreter',interpreter)
+            mysaveas(pathname,'loglf_12_3D',formats);
+            % mymatlab2tikz(pathname,'loglf_12_3D.tex');
+            
+            figure('Name','Contour plot: Log-likelihood function for C')
+            clf
+            contourf(la1_series,la2_series,logL12,50);
+            colorbar
+            hold on
+            scatter(la1,la2,'MarkerEdgeColor','k','MarkerFaceColor','r');
+            % scatter(la01,la02,'MarkerEdgeColor','k','MarkerFaceColor','g');
+            hold off
+            set(gca,'FontSize',fontsize)
+            xlabel('$\lambda_1$ [GPa$^{-1}$]','Interpreter',interpreter)
+            ylabel('$\lambda_2$ [GPa$^{-1}$]','Interpreter',interpreter)
+            zlabel('$\mathcal{L}(\lambda_1,\lambda_2,\lambda)$','Interpreter',interpreter)
+            mysaveas(pathname,'loglf_12_2D',formats);
+            % mymatlab2tikz(pathname,'loglf_12_2D.tex');
+            
+            % Plot log-likelihood function loglf_la1_la for C
+            figure('Name','Surface plot: Log-likelihood function for C')
+            clf
+            surfc(la1_series,la_series,logL13,'EdgeColor','none');
+            colorbar
+            hold on
+            scatter3(la1,la,loglfval,'MarkerEdgeColor','k','MarkerFaceColor','r');
+            % scatter3(la01,la0,loglfval0,'MarkerEdgeColor','k','MarkerFaceColor','g');
+            hold off
+            set(gca,'FontSize',fontsize)
+            xlabel('$\lambda_1$ [GPa$^{-1}$]','Interpreter',interpreter)
+            ylabel('$\lambda$','Interpreter',interpreter)
+            zlabel('$\mathcal{L}(\lambda_1,\lambda_2,\lambda)$','Interpreter',interpreter)
+            mysaveas(pathname,'loglf_13_3D',formats);
+            % mymatlab2tikz(pathname,'loglf_13_3D.tex');
+            
+            figure('Name','Contour plot: Log-likelihood function for C')
+            clf
+            contourf(la1_series,la_series,logL13,50);
+            colorbar
+            hold on
+            scatter(la1,la,'MarkerEdgeColor','k','MarkerFaceColor','r');
+            % scatter(la01,la0,'MarkerEdgeColor','k','MarkerFaceColor','g');
+            hold off
+            set(gca,'FontSize',fontsize)
+            xlabel('$\lambda_1$ [GPa$^{-1}$]','Interpreter',interpreter)
+            ylabel('$\lambda$','Interpreter',interpreter)
+            zlabel('$\mathcal{L}(\lambda_1,\lambda_2,\lambda)$','Interpreter',interpreter)
+            mysaveas(pathname,'loglf_13_2D',formats);
+            % mymatlab2tikz(pathname,'loglf_13_2D.tex');
+            
+            % Plot log-likelihood function loglf_la2_la for C
+            figure('Name','Surface plot: Log-likelihood function for C')
+            clf
+            surfc(la2_series,la_series,logL23,'EdgeColor','none');
+            colorbar
+            hold on
+            scatter3(la2,la,loglfval,'MarkerEdgeColor','k','MarkerFaceColor','r');
+            % scatter3(la02,la0,loglfval0,'MarkerEdgeColor','k','MarkerFaceColor','g');
+            hold off
+            set(gca,'FontSize',fontsize)
+            xlabel('$\lambda_2$ [GPa$^{-1}$]','Interpreter',interpreter)
+            ylabel('$\lambda$','Interpreter',interpreter)
+            zlabel('$\mathcal{L}(\lambda_1,\lambda_2,\lambda)$','Interpreter',interpreter)
+            mysaveas(pathname,'loglf_23_3D',formats);
+            % mymatlab2tikz(pathname,'loglf_23_3D.tex');
+            
+            figure('Name','Contour plot: Log-likelihood function for C')
+            clf
+            contourf(la2_series,la_series,logL23,50);
+            colorbar
+            hold on
+            scatter(la2,la,'MarkerEdgeColor','k','MarkerFaceColor','r');
+            % scatter(la02,la0,'MarkerEdgeColor','k','MarkerFaceColor','g');
+            hold off
+            set(gca,'FontSize',fontsize)
+            xlabel('$\lambda_2$ [GPa$^{-1}$]','Interpreter',interpreter)
+            ylabel('$\lambda$','Interpreter',interpreter)
+            zlabel('$\mathcal{L}(\lambda_1,\lambda_2,\lambda)$','Interpreter',interpreter)
+            mysaveas(pathname,'loglf_23_2D',formats);
+            % mymatlab2tikz(pathname,'loglf_23_2D.tex');
+        end
+    end
+
+    %% Plot pdfs and cdfs
+    c1_min = max(0,mean(C1_data)-5*std(C1_data));
+    c1_max = mean(C1_data)+5*std(C1_data);
+    c2_min = max(0,mean(C2_data)-5*std(C2_data));
+    c2_max = mean(C2_data)+5*std(C2_data);
+    
+    c1 = linspace(c1_min,c1_max,1e2);
+    c2 = linspace(c2_min,c2_max,1e2);
+    [C1,C2] = meshgrid(c1,c2);
+    
+    e_min = max(0,mean(E_data)-5*std(E_data));
+    e_max = mean(E_data)+5*std(E_data);
+    nu_min = max(-1,mean(NU_data)-5*std(NU_data));
+    nu_max = min(0.5,mean(NU_data)+5*std(NU_data));
+    
+    e = linspace(e_min,e_max,1e2);
+    nu = linspace(nu_min,nu_max,1e2);
+    [E,NU] = meshgrid(e,nu);
     
     % Plot pdf of C1
     figure('Name','Probability density function of C1')
     clf
-    x1 = linspace(x1_min,x1_max,1e2);
-    y1 = pdf_C1(x1);
-    plot(x1,y1,'-b','LineWidth',linewidth);
+    plot(c1,pdf_C1(c1),'-b','LineWidth',linewidth);
     % hold on
     % plot(C1_data,pdf_C1(C1_data),'k+','LineWidth',linewidth);
     % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[min(x1),max(x1)])
+    set(gca,'XLim',[min(c1),max(c1)])
     xlabel('$c_1$ [GPa]','Interpreter',interpreter)
     ylabel('$p_{C_1}(c_1)$','Interpreter',interpreter)
     mysaveas(pathname,'pdf_C1',formats);
@@ -214,16 +542,14 @@ if displaySolution
     % Plot pdf of C2
     figure('Name','Probability density function of C2')
     clf
-    x2 = linspace(x2_min,x2_max,1e2);
-    y2 = pdf_C2(x2);
-    plot(x2,y2,'-b','LineWidth',linewidth);
+    plot(c2,pdf_C2(c2),'-b','LineWidth',linewidth);
     % hold on
     % plot(C2_data,pdf_C2(C2_data),'k+','LineWidth',linewidth);
     % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[min(x2),max(x2)])
+    set(gca,'XLim',[min(c2),max(c2)])
     xlabel('$c_2$ [GPa]','Interpreter',interpreter)
     ylabel('$p_{C_2}(c_2)$','Interpreter',interpreter)
     mysaveas(pathname,'pdf_C2',formats);
@@ -232,16 +558,14 @@ if displaySolution
     % Plot pdf of C=(C1,C2)
     figure('Name','Probability density function of C=(C1,C2)')
     clf
-    [X1,X2] = meshgrid(x1,x2);
-    Z = pdf_C(X1,X2);
-    surf(X1,X2,Z);
+    surf(C1,C2,pdf_C(C1,C2));
     % hold on
     % plot3(C1_data,C2_data,pdf_C(C1_data,C2_data),'k+','LineWidth',linewidth);
     % hold off
     grid on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[min(x1),max(x1)])
-    set(gca,'YLim',[min(x2),max(x2)])
+    set(gca,'XLim',[min(c1),max(c1)])
+    set(gca,'YLim',[min(c2),max(c2)])
     xlabel('$c_1$ [GPa]','Interpreter',interpreter)
     ylabel('$c_2$ [GPa]','Interpreter',interpreter)
     zlabel('$p_{(C_1,C_2)}(c_1,c_2)$','Interpreter',interpreter)
@@ -251,36 +575,31 @@ if displaySolution
     % Plot pdf of (E,N)
     figure('Name','Probability density function of (E,N)')
     clf
-    xe = linspace(xe_min,xe_max,1e2);
-    xn = linspace(xn_min,xn_max,1e2);
-    [Xe,Xn] = meshgrid(xe,xn);
-    Z = pdf_EN(Xe,Xn);
-    surf(Xe,Xn,Z);
+    surf(E,NU,pdf_EN(E,NU));
     % hold on
     % plot3(E_data,NU_data,pdf_EN(E_data,NU_data),'k+','LineWidth',linewidth);
     % hold off
     grid on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[min(xe),max(xe)])
-    set(gca,'YLim',[min(xn),max(xn)])
+    set(gca,'XLim',[min(e),max(e)])
+    set(gca,'YLim',[min(nu),max(nu)])
     xlabel('$e$ [GPa]','Interpreter',interpreter)
-    ylabel('$n$','Interpreter',interpreter)
-    zlabel('$p_{(E,N)}(e,n)$','Interpreter',interpreter)
+    ylabel('$\nu$','Interpreter',interpreter)
+    zlabel('$p_{(E,N)}(e,\nu)$','Interpreter',interpreter)
     mysaveas(pathname,'pdf_E_N',formats);
     mymatlab2tikz(pathname,'pdf_E_N.tex');
     
     % Plot cdf of C1
     figure('name','cumulative distribution function of C1')
     clf
-    z1 = cdf_C1(x1);
-    plot(x1,z1,'-r','LineWidth',linewidth);
+    plot(c1,cdf_C1(c1),'-r','LineWidth',linewidth);
     % hold on
-    % plot(C1_data,gamcdf(C1_data,a1,b1),'k+','LineWidth',linewidth);
+    % plot(C1_data,cdf_C1(C1_data),'k+','LineWidth',linewidth);
     % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[min(x1),max(x1)])
+    set(gca,'XLim',[min(c1),max(c1)])
     xlabel('$c_1$ [GPa]','Interpreter',interpreter)
     ylabel('$F_{C_1}(c_1)$','Interpreter',interpreter)
     mysaveas(pathname,'cdf_C1',formats);
@@ -289,15 +608,14 @@ if displaySolution
     % Plot cdf of C2
     figure('name','cumulative distribution function of C2')
     clf
-    z2 = cdf_C2(x2);
-    plot(x2,z2,'-r','LineWidth',linewidth);
+    plot(c2,cdf_C2(c2),'-r','LineWidth',linewidth);
     % hold on
-    % plot(C2_data,gamcdf(C2_data,a2,b2),'k+','LineWidth',linewidth);
+    % plot(C2_data,cdf_C2(C2_data),'k+','LineWidth',linewidth);
     % hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[min(x2),max(x2)])
+    set(gca,'XLim',[min(c2),max(c2)])
     xlabel('$c_2$ [GPa]','Interpreter',interpreter)
     ylabel('$F_{C_2}(c_2)$','Interpreter',interpreter)
     mysaveas(pathname,'cdf_C2',formats);
@@ -306,15 +624,21 @@ if displaySolution
     % Plot cdf of C=(C1,C2)
     figure('Name','Cumulative density function of C=(C1,C2)')
     clf
-    Z = cdf_C(X1,X2);
-    surf(X1,X2,Z);
+    % p12 = zeros(size(C1));
+    % for i=1:length(c1)
+    %     for j=1:length(c2)
+    %         p12(j,i) = cdf_C(c1(i),c2(j));
+    %     end
+    % end
+    % p12 = cdf_C(C1,C2);
+    surf(C1,C2,cdf_C(C1,C2));
     % hold on
     % plot3(C1_data,C2_data,cdf_C(C1_data,C2_data),'k+','LineWidth',linewidth);
     % hold off
     grid on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[min(x1),max(x1)])
-    set(gca,'YLim',[min(x2),max(x2)])
+    set(gca,'XLim',[min(c1),max(c1)])
+    set(gca,'YLim',[min(c2),max(c2)])
     xlabel('$c_1$ [GPa]','Interpreter',interpreter)
     ylabel('$c_2$ [GPa]','Interpreter',interpreter)
     zlabel('$F_{(C_1,C_2)}(c_1,c_2)$','Interpreter',interpreter)
@@ -324,28 +648,24 @@ if displaySolution
     % Plot cdf of (E,N)
     figure('Name','Cumulative density function of (E,N)')
     clf
-    [XE,XN] = meshgrid(xe,xn);
-    Z = zeros(size(XE));
-    for i=1:length(xe)
-        for j=1:length(xn)
-            Z(j,i) = cdf_EN(xe(i),xn(j));
-        end
-    end
-    surf(XE,XN,Z);
-    % hold on
-    % Z_data = zeros(1,length(E_data));
-    % for i=1:length(E_data)
-    %     Z_data(i) = cdf_EN(E_data(i),NU_data(i));
+    % pEN = zeros(size(Xe));
+    % for i=1:length(e)
+    %     for j=1:length(n)
+    %         pEN(j,i) = cdf_EN(e(i),n(j));
+    %     end
     % end
-    % plot3(E_data,NU_data,Z_data,'k+','LineWidth',linewidth);
+    % pEN = cdf_EN(E,NU);
+    surf(E,NU,cdf_EN(E,NU));
+    % hold on
+    % plot3(E_data,NU_data,cdf_EN(E_data,NU_data),'k+','LineWidth',linewidth);
     % hold off
     grid on
     set(gca,'FontSize',fontsize)
-    set(gca,'XLim',[min(xe),max(xe)])
-    set(gca,'YLim',[min(xn),max(xn)])
+    set(gca,'XLim',[min(e),max(e)])
+    set(gca,'YLim',[min(nu),max(nu)])
     xlabel('$e$ [GPa]','Interpreter',interpreter)
-    ylabel('$n$','Interpreter',interpreter)
-    zlabel('$F_{(E,N)}(e,n)$','Interpreter',interpreter)
+    ylabel('$\nu$','Interpreter',interpreter)
+    zlabel('$F_{(E,N)}(e,\nu)$','Interpreter',interpreter)
     mysaveas(pathname,'cdf_E_N',formats);
     mymatlab2tikz(pathname,'cdf_E_N.tex');
 

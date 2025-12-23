@@ -1,13 +1,14 @@
 # Username
 User_Name_mac = Op
-User_NameLinux = pled
+User_Name_linux = pled
 # Machine name
-Machine_Name_mac = MacBookProOp
+#Machine_Name_mac = MacBookProOp
+Machine_Name_mac = MPLAV-MSME-24-001
 Machine_Name_pcmsme = pcmsmemeca52
 # Directory
 Dir_mac = /Users/$(User_Name_mac)/Documents/Recherche/GeM
-Dir_pcmsme = /home/p/$(User_NameLinux)/Documents
-Dir_cluster = /home/p/pled/$(User_NameLinux)/Documents
+Dir_pcmsme = /home/p/$(User_Name_linux)/Documents
+Dir_cluster = /home/p/pled/$(User_Name_linux)/Documents
 Dir_qsub = /usr/local/pbs/default/bin
 # Cluster name
 Cluster_Name = cluster
@@ -67,20 +68,31 @@ Cluster_Name = cluster
 #Pb_Name = FCBADeskPlateStoLinElas
 #Pb_Name = FCBADeskPlateJunctionDetLinElas
 #Pb_Name = FCBADeskPlateJunctionStoLinElas
-#Pb_Name = FCBAJunctionScrewDowelBeamDetLinElas
-#Pb_Name = FCBAJunctionScrewDowelBeamStoLinElas
 #Pb_Name = FCBADesk3DDetLinElas
 #Pb_Name = FCBADesk3DStoLinElas
+#Pb_Name = FCBAJunctionScrewDowelBeamDetLinElas
+#Pb_Name = FCBAJunctionScrewDowelBeamStoLinElas
 
 #Pb_Name = identification_ET_GL
 #Pb_Name = identification_EL_NUL
-#Pb_Name = identification_Kjunction
+#Pb_Name = identification_KS
+#Pb_Name = identification_KD
 
-#Pb_Name = phasefieldDetLinElasSingleEdgeCrack
-#Pb_Name = phasefieldDetLinElasSingleEdgeCrackHelem
-Pb_Name = phasefieldDetLinElasSingleEdgeCrackAdaptive
 #Pb_Name = phasefieldDetLinElasAsymmetricNotchedPlate
 #Pb_Name = phasefieldDetLinElasAsymmetricNotchedPlateAdaptive
+#Pb_Name = phasefieldDetLinElasDoubleEdgeCrack
+#Pb_Name = phasefieldDetLinElasDoubleEdgeCrackAdaptive
+#Pb_Name = phasefieldDetLinElasDoubleEdgeCrackSelfHealing
+#Pb_Name = phasefieldDetLinElasLshapedPanel
+#Pb_Name = phasefieldDetLinElasLshapedPanelAdaptive
+#Pb_Name = phasefieldDetLinElasLshapedPanelSelfHealing
+#Pb_Name = phasefieldDetLinElasPlateWithHole
+#Pb_Name = phasefieldDetLinElasPlateWithHoleAdaptive
+#Pb_Name = phasefieldDetLinElasPlateWithHoleSelfHealing
+#Pb_Name = phasefieldDetLinElasPlateWithHoleWoodNoel
+#Pb_Name = phasefieldDetLinElasSingleEdgeCrack
+Pb_Name = phasefieldDetLinElasSingleEdgeCrackAdaptive
+#Pb_Name = phasefieldDetLinElasSingleEdgeCrackSelfHealing
 
 # Default ---------------------------
 default:
@@ -158,44 +170,66 @@ monosto:
 # Sparse approximation ---------------------------
 sparse:
 	matlab -nodesktop -nosplash -noFigureWindows -r "sparseAnisotropicFunction; exit" -logfile results/sparse/anisotropicFunction.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "sparseGeometricBrownian; exit" -logfile results/sparse/geometricBrownian.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "sparseIshigamiFunction; exit" -logfile results/sparse/ishigamiFunction.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "sparsePolynomialFunction; exit" -logfile results/sparse/polynomialFunction.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "sparseSobolFunction; exit" -logfile results/sparse/sobolFunction.log
-#	matlab -nodesktop -nosplash -noFigureWindows -r "sparseGeometricBrownian; exit" -logfile results/sparse/geometricBrownian.log
 
 # Plate Shell ---------------------------
 plate:
-	matlab -nodesktop -nosplash -noFigureWindows -r "plateCircDetLinElas; exit" -logfile results/plate/plateCircDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "plateCircDetLinElasCv; exit" -logfile results/plate/plateCircDetLinElasCv.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "plateRectDetLinElas; exit" -logfile results/plate/plateRectDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "plateRectDetLinElasCv; exit" -logfile results/plate/plateRectDetLinElasCv.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "tableCircDetLinElas; exit" -logfile results/plate/tableCircDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "tableRectDetLinElas; exit" -logfile results/plate/tableRectDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBATableCircDetLinElas; exit" -logfile results/plate/FCBATableCircDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBATableCircStoLinElas; exit" -logfile results/plate/FCBATableCircStoLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskBeamJunctionDetLinElas; exit" -logfile results/plate/FCBADeskBeamJunctionDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskDetLinElas; exit" -logfile results/plate/FCBADeskDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateDetLinElas; exit" -logfile results/plate/FCBADeskPlateDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateStoLinElas; exit" -logfile results/plate/FCBADeskPlateStoLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionDetLinElas; exit" -logfile results/plate/FCBADeskPlateJunctionDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElas; exit" -logfile results/plate/FCBADeskPlateJunctionStoLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBAJunctionScrewDowelBeamDetLinElas; exit" -logfile results/plate/FCBAJunctionScrewDowelBeamDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBAJunctionScrewDowelPlateDetLinElas; exit" -logfile results/plate/FCBAJunctionScrewDowelPlateDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADesk3DDetLinElas; exit" -logfile results/plate/FCBADesk3DDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADesk3DStoLinElas; exit" -logfile results/plate/FCBADesk3DStoLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "plateCircDetLinElas; exit" -logfile results/FCBA/plateCircDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "plateCircDetLinElasCv; exit" -logfile results/FCBA/plateCircDetLinElasCv.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "plateRectDetLinElas; exit" -logfile results/FCBA/plateRectDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "plateRectDetLinElasCv; exit" -logfile results/FCBA/plateRectDetLinElasCv.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "tableCircDetLinElas; exit" -logfile results/FCBA/tableCircDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "tableRectDetLinElas; exit" -logfile results/FCBA/tableRectDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBATableCircDetLinElas; exit" -logfile results/FCBA/FCBATableCircDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBATableCircStoLinElas; exit" -logfile results/FCBA/FCBATableCircStoLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskBeamJunctionDetLinElas; exit" -logfile results/FCBA/FCBADeskBeamJunctionDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskDetLinElas; exit" -logfile results/FCBA/FCBADeskDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateDetLinElas; exit" -logfile results/FCBA/FCBADeskPlateDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateStoLinElas; exit" -logfile results/FCBA/FCBADeskPlateStoLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionDetLinElas; exit" -logfile results/FCBA/FCBADeskPlateJunctionDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElas; exit" -logfile results/FCBA/FCBADeskPlateJunctionStoLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADesk3DDetLinElas; exit" -logfile results/FCBA/FCBADesk3DDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADesk3DStoLinElas; exit" -logfile results/FCBA/FCBADesk3DStoLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBAJunctionScrewDowelBeamDetLinElas; exit" -logfile results/FCBA/FCBAJunctionScrewDowelBeamDetLinElas.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "FCBAJunctionScrewDowelPlateDetLinElas; exit" -logfile results/FCBA/FCBAJunctionScrewDowelPlateDetLinElas.log
 
 # Identification ---------------------------
 identification:
-	matlab -nodesktop -nosplash -noFigureWindows -r "identification_ET_GL; exit" -logfile results/plate/identification_ET_GL.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "identification_EL_NUL; exit" -logfile results/plate/identification_EL_NUL.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "identification_Kjunction; exit" -logfile results/plate/identification_Kjunction.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "identification_ET_GL; exit" -logfile results/identification/materialParticleBoard/identification_ET_GL.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "identification_EL_NUL; exit" -logfile results/identification/materialParticleBoard/identification_EL_NUL.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "identification_KS; exit" -logfile results/identification/materialParticleBoard/identification_KS.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "identification_KD; exit" -logfile results/identification/materialParticleBoard/identification_KD.log
 
-# Phase field ---------------------------
-phasefield:
-	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasSingleEdgeCrack; exit" -logfile results/phasefield/phasefieldDetLinElasSingleEdgeCrack.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasSingleEdgeCrackAdaptive; exit" -logfile results/phasefield/phasefieldDetLinElasSingleEdgeCrackAdaptive.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasAsymmetricNotchedPlate; exit" -logfile results/phasefield/phasefieldDetLinElasAsymmetricNotchedPlateCrack.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasAsymmetricNotchedPlateAdaptive; exit" -logfile results/phasefield/phasefieldDetLinElasAsymmetricNotchedPlateAdaptive.log
+# Multiscale ---------------------------
+phasefield: phasefielddet phasefieldsto
+
+# Phase-field Deterministic ---------------------------
+phasefielddet:
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasAsymmetricNotchedPlate; exit" -logfile results/phasefieldDet/phasefieldDetLinElasAsymmetricNotchedPlate.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasAsymmetricNotchedPlateAdaptive; exit" -logfile results/phasefieldDet/phasefieldDetLinElasAsymmetricNotchedPlateAdaptive.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasDoubleEdgeCrack; exit" -logfile results/phasefieldDet/phasefieldDetLinElasDoubleEdgeCrack.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasDoubleEdgeCrackAdaptive; exit" -logfile results/phasefieldDet/phasefieldDetLinElasDoubleEdgeCrackAdaptive.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasDoubleEdgeCrackSelfHealing; exit" -logfile results/phasefieldDet/phasefieldDetLinElasDoubleEdgeCrackSelfHealing.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasLshapedPanel; exit" -logfile results/phasefieldDet/phasefieldDetLinElasLshapedPanel.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasLshapedPanelAdaptive; exit" -logfile results/phasefieldDet/phasefieldDetLinElasLshapedPanelAdaptive.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasLshapedPanelSelfHealing; exit" -logfile results/phasefieldDet/phasefieldDetLinElasLshapedPanelSelfHealing.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasPlateWithHole; exit" -logfile results/phasefieldDet/phasefieldDetLinElasPlateWithHole.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasPlateWithHoleAdaptive; exit" -logfile results/phasefieldDet/phasefieldDetLinElasPlateWithHoleAdaptive.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasPlateWithHoleSelfHealing; exit" -logfile results/phasefieldDet/phasefieldDetLinElasPlateWithHoleSelfHealing.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasPlateWithHoleWoodNoel; exit" -logfile results/phasefieldDet/phasefieldDetLinElasPlateWithHoleWoodNoel.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasSingleEdgeCrack; exit" -logfile results/phasefieldDet/phasefieldDetLinElasSingleEdgeCrack.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasSingleEdgeCrackAdaptive; exit" -logfile results/phasefieldDet/phasefieldDetLinElasSingleEdgeCrackAdaptive.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldDetLinElasSingleEdgeCrackSelfHealing; exit" -logfile results/phasefieldDet/phasefieldDetLinElasSingleEdgeCrackSelfHealing.log
+
+# Phase-field Stochastic ---------------------------
+phasefieldsto:
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldStoLinElasAsymmetricNotchedPlate; exit" -logfile results/phasefieldSto/phasefieldStoLinElasAsymmetricNotchedPlate.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldStoLinElasAsymmetricNotchedPlateAdaptive; exit" -logfile results/phasefieldSto/phasefieldStoLinElasAsymmetricNotchedPlateAdaptive.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldStoLinElasSingleEdgeCrack; exit" -logfile results/phasefieldSto/phasefieldStoLinElasSingleEdgeCrack.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldStoLinElasSingleEdgeCrackAdaptive; exit" -logfile results/phasefieldSto/phasefieldStoLinElasSingleEdgeCrackAdaptive.log
 
 # Clean ---------------------------
 clean:
@@ -217,26 +251,26 @@ sync_results: sync_results_from_pcmsme_to_mac sync_results_from_mac_to_pcmsme
 exclude = --exclude 'links.m' --exclude 'initfemobjectoptions.m' --exclude '.svn' --exclude '.DS_Store' --exclude '.directory' --exclude '*.mat' --exclude '*.geo' --exclude '*.msh' --exclude '*.err' --exclude '*.out' --exclude '*.log' --exclude '*.err' --exclude '*.jpeg' --exclude '*.jpg' --exclude '*.png' --exclude '*.tiff' --exclude '*.eps' --exclude '*.dvi' --exclude '*.pdf' --exclude '*.fig' --exclude '*.tex' --exclude '*.tsv' --exclude '*.avi' --exclude 'spams-matlab'
 
 sync_from_mac_to_pcmsme:
-	rsync -auv $(Dir_mac)/FEMObject/MYCODE $(User_NameLinux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/FEMObject $(exclude)
+	rsync -auv $(Dir_mac)/FEMObject/MYCODE $(User_Name_linux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/FEMObject $(exclude)
 
 sync_from_pcmsme_to_mac:
-	rsync -auv $(User_NameLinux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/FEMObject/MYCODE $(Dir_mac)/FEMObject $(exclude)
+	rsync -auv $(User_Name_linux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/FEMObject/MYCODE $(Dir_mac)/FEMObject $(exclude)
 
 sync_from_mac_to_cluster:
-	rsync -auv $(Dir_mac)/FEMObject/MYCODE $(User_NameLinux)@$(Cluster_Name):$(Dir_cluster)/FEMObject $(exclude)
+	rsync -auv $(Dir_mac)/FEMObject/MYCODE $(User_Name_linux)@$(Cluster_Name):$(Dir_cluster)/FEMObject $(exclude)
 
 sync_from_cluster_to_mac:
-	rsync -auv $(User_NameLinux)@$(Cluster_Name):$(Dir_cluster)/FEMObject/MYCODE $(Dir_mac)/FEMObject $(exclude)
+	rsync -auv $(User_Name_linux)@$(Cluster_Name):$(Dir_cluster)/FEMObject/MYCODE $(Dir_mac)/FEMObject $(exclude)
 
 sync_results_from_mac_to_pcmsme:
-	rsync -auv $(Dir_mac)/FEMObject/MYCODE/results $(User_NameLinux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/FEMObject/MYCODE
+	rsync -auv $(Dir_mac)/FEMObject/MYCODE/results $(User_Name_linux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/FEMObject/MYCODE
 
 sync_results_from_pcmsme_to_mac:
-	rsync -auv $(User_NameLinux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/FEMObject/MYCODE/results $(Dir_mac)/FEMObject/MYCODE
+	rsync -auv $(User_Name_linux)@$(Machine_Name_pcmsme):$(Dir_pcmsme)/FEMObject/MYCODE/results $(Dir_mac)/FEMObject/MYCODE
 
 # Cluster ---------------------------
 cluster:
-	ssh -YC $(User_NameLinux)@$(Cluster_Name) "hostname; cd $(Dir_cluster)/FEMObject/MYCODE/examples/multiscale; qsub $(Pb_Name).pbs"
+	ssh -YC $(User_Name_linux)@$(Cluster_Name) "hostname; cd $(Dir_cluster)/FEMObject/MYCODE/examples/multiscale; qsub $(Pb_Name).pbs"
 
 interactive:
-	ssh -YC $(User_NameLinux)@$(Cluster_Name) "hostname; cd $(Dir_cluster)/FEMObject/MYCODE/examples/multiscale; qsub -I -X $(Pb_Name).pbs"
+	ssh -YC $(User_Name_linux)@$(Cluster_Name) "hostname; cd $(Dir_cluster)/FEMObject/MYCODE/examples/multiscale; qsub -I -X $(Pb_Name).pbs"

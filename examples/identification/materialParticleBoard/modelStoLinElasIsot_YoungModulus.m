@@ -40,8 +40,8 @@ sE_data = std(E_data);
 dE_data = sE_data/mE_data;
 
 %% Maximum likelihood estimation
-display = 'off'; % default for gamfit and mle
-% display = 'iter';
+% display = 'off'; % default for gamfit and mle
+display = 'iter';
 % display = 'final';
 
 tolX = 1e-8; % tolerance on the parameter value (default: 1e-8 for gamfit and 1e-6 for mle)
