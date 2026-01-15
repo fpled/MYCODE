@@ -25,6 +25,7 @@
 % [Hu, Guilleminot, Dolbow, 2020, CMAME] (anisotropic phase-field model of Hu et al.)
 % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME] (anisotropic phase-field model of Miehe et al.)
 % [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM] (PF-CZM)
+% [Li, Zhang, Zhou, 2024, CG] (hybrid isotropic-anisotropic phase-field model of Ambati et al. with Li et al. decomposition encompasing the anisotropic ones of Amor et al. and Miehe et al.)
 
 % clc
 clearvars
@@ -163,7 +164,7 @@ if setProblem
     
     % clC = 7.92e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
     % clC = 1/150*1e-3; clC = 6.667e-6; % (tension test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
-    % clC = 5e-6; % [Hu, Guilleminot, Dolbow, 2020, CMAME]
+    % clC = 5e-6; % [Hu, Guilleminot, Dolbow, 2020, CMAME], [Li, Zhang, Zhou, 2024, CG]
     % clC = 1/250*1e-3; clC = 4e-6; % (shear test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
     % clC = 3.96e-6; % [Zhou, Rabczuk, Zhuang, 2018, AES]
     % clC = 3.906e-6; % [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME]
@@ -275,7 +276,7 @@ if setProblem
             % l = 1.5e-5; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Hesch, Weinberg, 2014, IJNME], [Liu, Li, Msekh, Zuo, 2016, CMS], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Hu, Guilleminot, Dolbow, 2020, CMAME], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
             % l = 1.33e-5; % (tension test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
             % l = 1.25e-5; % [Zhou, Rabczuk, Zhuang, 2018, AES]
-            l = 1e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Gerasimov, De Lorenzis, 2016, CMAME], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, 2018, JMPS], [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
+            l = 1e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Gerasimov, De Lorenzis, 2016, CMAME], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, 2018, JMPS], [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM], [Li, Zhang, Zhou, 2024, CG]
             % l = 8e-6; % (shear test) [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM)
             % l = 7.5e-6; % [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Hesch, Weinberg, 2014, IJNME], [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
             % l = 5.5e-6; % (2D) [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD]
@@ -332,7 +333,7 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    option = 'DEFO'; % plane strain [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Hesch, Weinberg, 2014, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Gerasimov, De Lorenzis, 2019, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
+    option = 'DEFO'; % plane strain [Miehe, Welschinger, Hofacker, 2010, IJNME], [Miehe, Hofacker, Welschinger, 2010, CMAME], [Borden, Verhoosel, Scott, Hughes, Landis, 2012, CMAME], [Hesch, Weinberg, 2014, IJNME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Gerasimov, De Lorenzis, 2016, CMAME], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Gerasimov, De Lorenzis, 2019, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME], [Li, Zhang, Zhou, 2024, CG]
     % option = 'CONT'; % plane stress [Nguyen, Yvonnet, Zhu, Bornert, Chateau, 2015, EFM], [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, 2018, JMPS], [Wu, Nguyen, Zhou, Huang, 2020, CMAME]
     switch lower(symmetry)
         case {'isot','meanisot'} % almost surely or mean isotropic material
@@ -352,7 +353,7 @@ if setProblem
                             NU = lambda/(lambda+2*mu);
                     end
                     % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
-                    % E = 210e9; NU = 0.3; % [Gerasimov, De Lorenzis, 2016, CMAME], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, 2018, JMPS], [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD], [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME], [Kristensen, Martinez-Paneda, 2020, TAFM], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM]
+                    % E = 210e9; NU = 0.3; % [Gerasimov, De Lorenzis, 2016, CMAME], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, 2018, JMPS], [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD], [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME], [Kristensen, Martinez-Paneda, 2020, TAFM], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM], [Li, Zhang, Zhou, 2024, CG]
                     % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
                 elseif Dim==3
                     E = mu*(3*lambda+2*mu)/(lambda+mu);
@@ -457,7 +458,7 @@ if setProblem
         case {'isot','meanisot'} % almost surely or mean isotropic material
             switch lower(loading)
                 case 'tension'
-                    % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Molnar, Gravouil, 2017, FEAD]
+                    % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Molnar, Gravouil, 2017, FEAD], [Li, Zhang, Zhou, 2024, CG]
                     % du = 1e-5 mm during the first 500 time steps (up to u = 5e-3 mm)
                     % du = 1e-6 mm during the last 1300 time steps (up to u = 6.3e-3 mm)
                     % dt0 = 1e-8;
@@ -628,6 +629,12 @@ if setProblem
                     % du = 1e-4 mm during 200 time steps (up to u = 20e-3 mm)
                     % dt = 1e-7;
                     % nt = 200;
+                    % t = linspace(dt,nt*dt,nt);
+                    
+                    % [Li, Zhang, Zhou, 2024, CG]
+                    % du = 1e-5 mm during 2000 time steps (up to u = 23.9e-3 mm)
+                    % dt = 1e-8;
+                    % nt = 2390;
                     % t = linspace(dt,nt*dt,nt);
                     
                     % (2D) [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD]
