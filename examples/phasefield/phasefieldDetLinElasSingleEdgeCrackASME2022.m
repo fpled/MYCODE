@@ -16,7 +16,7 @@
 % [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM = anisotropic PFM of Miehe et.al + XFEM + MsFEM)
 % [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD] (anisotropic phase-field model of Miehe et al.)
 % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM] (PF-CZM, anisotropic phase-field model of Wu et al.)
-% [Gerasimov, De Lorenzis, 2019, CMAME] (anisotropic phase-field model of Amor et al. and Miehe et al.)
+% [Gerasimov, De Lorenzis, 2019, CMAME] (anisotropic phase-field models of Amor et al. and Miehe et al.)
 % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US] (anisotropic phase-field model of Amor et al.)
 % [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME] (anisotropic phase-field model of Miehe et al.)
 % [Wu, Nguyen, Zhou, Huang, 2020, CMAME] (PF-CZM, anisotropic phase-field model of Wu et al.)

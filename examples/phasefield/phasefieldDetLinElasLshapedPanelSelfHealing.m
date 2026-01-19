@@ -67,7 +67,7 @@
 % [Wick, 2017, SIAM JSC] (anisotropic phase-field model of Miehe et al.)
 % [Kakouris, Triantafyllou, 2017, IJNME] (PF MPM)
 % [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM = anisotropic PFM of Miehe et.al + MsFEM)
-% [Gerasimov, De Lorenzis, 2019, CMAME] (anisotropic phase-field model of Amor et al. and Miehe et al.)
+% [Gerasimov, De Lorenzis, 2019, CMAME] (anisotropic phase-field models of Amor et al. and Miehe et al.)
 % [Egger, Pillai, Agathos, Kakouris, Chatzi, Aschroft, Triantafyllou, 2019, AS] (XFEM, SBFEM, PF)
 % [Tian, Tang, Xu, Yang, Li, 2019, IJNME] (anisotropic phase-field model of Miehe et al. with hybrid adaptive mesh refinement)
 % [Mang, Wick, Wollner, 2020, CM] (anisotropic phase-field model of Miehe et al.)
