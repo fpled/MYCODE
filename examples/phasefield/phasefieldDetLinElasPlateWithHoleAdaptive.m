@@ -5,6 +5,7 @@
 % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF] (anisotropic phase-field model of Miehe et al.)
 % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME] (anisotropic phase-field model of He et al.)
 % [Luo, Chen, Wang, Li, 2022, CM] (anisotropic phase-field model of He et al. with anisotropic fracture surface energy)
+% [Vu, Le Quang, He, 2024, AES] (anisotropic phase-field model of He et al. with improved degradation function of Sargado et al.)
 
 % clc
 clearvars
@@ -91,12 +92,12 @@ mmgoptions = ['-nomove -hausd 0.01 -hgrad ' num2str(hgrad) ' -v -1'];
 %% Problem
 if setProblem
     %% Domains and meshes
-    % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Vu, Le Quang, He, 2024, AES]
     % L = 20e-3; % length
     % H = 30e-3; % height
     % r = 4e-3; % radius of the hole
     
-    % 2D and 3D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    % 2D and 3D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], 2D [Vu, Le Quang, He, 2024, AES]
     % L = 100e-3; % length
     % H = 65e-3; % height
     % e = 40e-3; % thickness [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
@@ -122,11 +123,11 @@ if setProblem
         C = CYLINDER(C,e); % CYLINDER(L/2,H/2,0.0,r,e);
     end
     
-    % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], 2D [Vu, Le Quang, He, 2024, AES]
     % clD = 1e-3; % characteristic length for domain
     % clC = 0.01e-3; % characteristic length for circular hole
     
-    % 2D and 3D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    % 2D and 3D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], 2D [Vu, Le Quang, He, 2024, AES]
     % clD = 0.25e-3; % characteristic length for domain
     % clC = 0.05e-3; % characteristic length for circular hole
     % if test
@@ -171,13 +172,15 @@ if setProblem
     switch lower(symmetry)
         case 'isot' % isotropic material
             % Critical energy release rate (or fracture toughness)
-            gc = 1.4; % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
+            gc = 1.4; % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM], [Vu, Le Quang, He, 2024, AES]
             % Regularization parameter (width of the smeared crack)
             % l = 0.5e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-            % l = 0.3e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-            % l = 0.2e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+            % l = 0.45e-3; % [Vu, Le Quang, He, 2024, AES]
+            % l = 0.3e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Vu, Le Quang, He, 2024, AES]
+            % l = 0.2e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Vu, Le Quang, He, 2024, AES]
             l = 0.12e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
-            % l = 0.1e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+            % l = 0.1e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Vu, Le Quang, He, 2024, AES]
+            % l = 0.06e-3; % [Vu, Le Quang, He, 2024, AES]
             % l = 0.05e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
             % l = 0.025e-3; % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
         case 'anisot' % anisotropic material
@@ -258,14 +261,14 @@ if setProblem
     %% Linear elastic displacement field problem
     %% Materials
     % Option
-    option = 'DEFO'; % plane strain [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
+    option = 'DEFO'; % plane strain [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM], [Vu, Le Quang, He, 2024, AES]
     % option = 'CONT'; % plane stress [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
     switch lower(symmetry)
         case 'isot' % isotropic material
             % Lame coefficients
             % Young modulus and Poisson ratio
-            E = 12e9; % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
-            NU = 0.3; % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
+            E = 12e9; % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM], [Vu, Le Quang, He, 2024, AES]
+            NU = 0.3; % [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM], [Vu, Le Quang, He, 2024, AES]
         case 'anisot' % anisotropic material
             if Dim==2
                 switch lower(option)
@@ -345,7 +348,7 @@ if setProblem
     % b = -b;
     
     %% Time scheme
-    % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], 2D [Vu, Le Quang, He, 2024, AES]
     % % du = 5e-3 mm during 11 time steps (up to u = 0.055 mm)
     % % du = 1.5e-3 mm during 37 time steps (up to u = 0.0555 mm)
     % % du = 1e-3 mm during 55 time steps (up to u = 0.055 mm)

@@ -13,7 +13,7 @@ Dim = getdim(S);
 % S = addcl(S,BL);
 
 if Dim==2
-    % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Vu, Le Quang, He, 2024, AES]
     S = addcl(S,BU,'UY',-ud);
     S = addcl(S,BL,'UY');
     S = addcl(S,P1,'UX');
