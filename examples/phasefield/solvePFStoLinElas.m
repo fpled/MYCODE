@@ -69,7 +69,7 @@ parfor i=1:N
         %     gc = c0*sqrt(k.*r)/2; % mean fracture toughness
         %     l = sqrt(k./r); % mean regularization parameter
         %     delta = getparam(mat,'delta'); % coefficients of variation for fracture toughness and regularization parameter
-        %     if length(delta)==1
+        %     if isscalar(delta)
         %         deltaGc = delta; % 0 <= deltaGc < 1/sqrt(2). coefficient of variation for fracture toughness
         %         deltaL = delta; % 0 <= deltaL < 1/sqrt(2). coefficient of variation for regularization parameter
         %     else
@@ -279,7 +279,7 @@ parfor i=1:N
                 % NU = (3*C1-2*C2)./(6*C1+2*C2);
                 delta = getparam(mat,'delta'); % coefficients of variation for Young modulus and Poisson ratio
                 deltaNUsup = min(sqrt((1-2*NU)/(1+2*NU)),(1-2*NU)/2/sqrt(NU*(1-NU)));
-                if length(delta)==1
+                if isscalar(delta)
                     deltaE = delta; % 0 <= deltaE < 1/sqrt(2). coefficient of variation for Young modulus
                     deltaNU = delta; % 0 <= deltaNU < deltaNUsup. coefficient of variation for Poisson ratio
                 else
