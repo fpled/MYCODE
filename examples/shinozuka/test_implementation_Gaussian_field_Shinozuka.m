@@ -6,8 +6,10 @@ myparallel('start');
 %% Inputs
 displayGaussianField = false;
 
+Dim = 2; % space dimension Dim = 2, 3
+
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-        'results','shinozuka');
+    'results',['shinozuka_' num2str(Dim) 'D']);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
@@ -17,22 +19,30 @@ interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
-Dim = 2; % space dimension Dim = 2, 3
 storage = 'node'; % storage at nodal points
 % storage = 'gauss'; % storage at gauss points
 
-% n3D = 6; % size of 3D elasticity matrix
 % n = Dim*(Dim+1)/2; % size of elasticity matrix
 % nU = n*(n+1)/2; % number of Gaussian random fields
 nU = 1; % number of Gaussian random fields
 N = 1; % number of independent realizations for each Gaussian random field
 nV = nU*N; % number of independent realizations for all Gaussian random fields
 
-nu = 2^3; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
+% nu = 4; % nu = 2^2; % one-dimensional order (number of terms in each spatial dimension) of the spectral representation
+nu = 8; % nu = 2^3;
+% nu = 16; % nu = 2^4;
+% nu = 20; % nu = L/lcorr = 1e-3/5e-5; % minimal order to avoid spatial periodicity of gaussian random fields computed using standard Shinozuka, 
+                                       % such that the domain extent <= one half period in each spatial direction:
+                                       % L_j <= nu * lcorr_j for all spatial dimensions j in 1,...,Dim
+% nu = 32; % nu = 2^5;
+% nu = 48;
+% nu = 64; % nu = 2^6;
 order = nu^Dim; % Dim-dimensional order (number of terms) of the spectral representation
 
 %% Domains and meshes
-L = 1e-3; % [m]
+L = 1e-3; % domain size [m]
+lcorr = repmat(L/20,Dim,1); % spatial correlation lengths
+
 a = L/2;
 b = L/2;
 if Dim==1
@@ -46,7 +56,8 @@ elseif Dim==2
     elemtype = 'QUA4';
     % elemtype = 'TRI6';
 elseif Dim==3
-    e = 0.1e-3;
+    % e = 0.1e-3;
+    e = 1e-3;
     D = DOMAIN(3,[0.0,0.0,0.0],[L,L,e]);
     C = QUADRANGLE([0.0,b,0.0],[a,b,0.0],[a,b,e],[0.0,b,e]);
     % elemtype = 'TET4';
@@ -56,13 +67,14 @@ end
 % option = 'DEFO'; % plane strain
 option = 'CONT'; % plane stress
 if Dim==1
-    cl = 2e-6;
+    cl = 5e-6; % cl = L/200;
 elseif Dim==2
-    % cl = 1e-5;
-    cl = 2e-6;
+    % cl = 1e-5; % cl = L/100;
+    cl = 5e-6; % cl = L/200;
 elseif Dim==3
-    cl = 2e-5;
-    % cl = 7.5e-6;
+    % cl = 2e-5; % cl = L/50;
+    cl = 1e-5; % cl = L/100;
+    % cl = 5e-6; % cl = L/200;
 end
 nbelem = repmat(round(L/cl),1,Dim);
 S = build_model(D,'nbelem',nbelem,'elemtype',elemtype,'option',option);
@@ -86,8 +98,6 @@ switch storage
 end
 nx = size(x,1); % number of points
 
-lcorr = repmat(L/50,Dim,1); % spatial correlation lengths
-
 fprintf('\n');
 fprintf('Number of points  = %d\n',nx);
 fprintf('Number of fields  = %d\n',nU);
@@ -95,13 +105,14 @@ fprintf('Number of samples = %d for each Gaussian random field\n',N);
 fprintf('Number of samples = %d for all Gaussian random fields\n',nV);
 fprintf('Number of terms   = %d in the spectral representation\n',order);
 
-%% Standard Shinozuka method
-fprintf('\n');
-fprintf('Standard Shinozuka method\n');
-fprintf('\n');
-
 rng('default');
 srng = rng; % get current random number generator settings
+
+%% Standard Shinozuka
+fprintf('\n');
+fprintf('Standard Shinozuka\n');
+fprintf('\n');
+
 X = rand(2,order,nV);
 Phi = X(1,:,:)*(2*pi); % random phase shifts Phi uniformly distributed on [0,2*pi]
 Psi = X(2,:,:); % random variables Psi uniformly distributed on [0,1]
@@ -165,12 +176,12 @@ timeVvec = toc(tVvec);
 errVvec = norm(Vvec-Vscalar)/norm(Vscalar);
 fprintf('Vectorized implementation : elapsed time = %f s, relative error = %e\n',timeVvec,errVvec);
 
-%% Randomized Shinozuka method
+%% Randomized Shinozuka
 fprintf('\n');
-fprintf('Randomized Shinozuka method\n');
+fprintf('Randomized Shinozuka\n');
 fprintf('\n');
 
-rng(srng) % set same random number generator settings as for standard Shinozuka method
+rng(srng) % set same random number generator settings as for standard Shinozuka
 X = rand(2+Dim,order,nV);
 Phi = X(1,:,:)*(2*pi); % random phase shifts Phi uniformly distributed on [0,2*pi]
 Psi = X(2,:,:); % random variables Psi uniformly distributed on [0,1]
@@ -265,22 +276,30 @@ V = reshape(Vcpp,nx,nU,N);
 W = reshape(Wcpp,nx,nU,N);
 
 %% Display one realization of a Gaussian random field
+fpos = get(groot,'DefaultFigurePosition');
+fposStd  = [fpos(1)-fpos(3)/2 fpos(2:4)];
+fposRand = [fpos(1)+fpos(3)/2 fpos(2:4)];
 if displayGaussianField
     switch storage
         case 'node'
-            figure('Name',['Gaussian field - standard Shinozuka (order ' num2str(order) ')'])
+            % Standard Shinozuka
+            figure('Name',['Gaussian field - standard Shinozuka (order ' num2str(order) ')'],...
+                'Position',fposStd)
             clf
             plot_sol(S,V(:,1,1));
             colorbar
             set(gca,'FontSize',fontsize)
             mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
-
-            figure('Name',['Gaussian field - randomized Shinozuka (order ' num2str(order) ')'])
+            
+            % Randomized Shinozuka
+            figure('Name',['Gaussian field - randomized Shinozuka (order ' num2str(order) ')'],...
+                'Position',fposRand)
             clf
             plot_sol(S,W(:,1,1));
             colorbar
             set(gca,'FontSize',fontsize)
             mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(order)],formats,renderer);
+            
         case 'gauss'
             Ve = cell(getnbgroupelem(S),1);
             We = cell(getnbgroupelem(S),1);
@@ -296,18 +315,22 @@ if displayGaussianField
                 We{i} = MYDOUBLEND(Wi);
                 nbgauss = rep(end);
             end
-
+            
             Ve = FEELEMFIELD(Ve,'storage','gauss','type','scalar','ddl',DDL('V'));
             We = FEELEMFIELD(We,'storage','gauss','type','scalar','ddl',DDL('W'));
-
-            figure('Name',['Gaussian field - standard Shinozuka with order = ' num2str(order)])
+            
+            % Standard Shinozuka
+            figure('Name',['Gaussian field - standard Shinozuka (order ' num2str(order) ')'],...
+                'Position',fposStd)
             clf
             plot(Ve(1),S);
             colorbar
             set(gca,'FontSize',fontsize)
             mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
-
-            figure('Name',['Gaussian field - randomized Shinozuka with order = ' num2str(order)])
+            
+            % Randomized Shinozuka
+            figure('Name',['Gaussian field - randomized Shinozuka (order ' num2str(order) ')'],...
+                'Position',fposRand)
             clf
             plot(We(1),S);
             colorbar
