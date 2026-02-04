@@ -43,6 +43,8 @@ switch lower(loading)
             S = addcl(S,BBack,{'UY','UZ'});
         end
         S = addcl(S,BL);
+        % [Bourdin, Francfort, Marigo, 2000, JMPS], [Gmati, Mareau, Ammar, El_Arem, 2020, IJNME]
+        % S = addcl(S,BL,{'UX','UY'},[-ud;0]);
     otherwise
         error('Wrong loading case');
 end
