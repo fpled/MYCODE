@@ -64,6 +64,7 @@ options_mlecustom = statset(statset('mlecustom'),'Display',display,...
     'TolX',tolX,'TolFun',tolFun,'TolBnd',tolBnd,...
     'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
 
+% Maximum likelihood estimation without bounds
 % paramS = gamfit(KS_data,[],[],[],options_gamfit);
 % paramD = gamfit(KD_data,[],[],[],options_gamfit);
 % paramS = mle(KS_data,'Distribution','gam','Options',options_gamfit);
@@ -82,6 +83,7 @@ lb      = [2 0];     % lower bounds
 loglfval0S = -gamlike(param0S,KS_data); % initial log-likelihood for screw junction
 loglfval0D = -gamlike(param0D,KD_data); % initial log-likelihood for dowel junction
 
+% Maximum likelihood estimation with bounds
 paramS = mle(KS_data,'pdf',@gampdf,'Start',param0S,'LowerBound',lb,'Options',options_mlecustom);
 paramD = mle(KD_data,'pdf',@gampdf,'Start',param0D,'LowerBound',lb,'Options',options_mlecustom);
 % paramS = mle(KS_data,'nloglf',@gamlike,'Start',param0S,'LowerBound',lb,'Options',options_mlecustom);
@@ -175,15 +177,15 @@ fprintf(fid,'cv(KS_data)     = %.4f\n',dKS_data);
 fprintf(fid,'cv(KS)          = %.4f\n',dKS);
 fprintf(fid,'cv(KS_sample)   = %.4f\n',dKS_sample);
 
-err_meanKS = (mKS - mKS_data)/mKS_data;
-err_varKS = (vKS - vKS_data)/vKS_data;
-err_stdKS = (sKS - sKS_data)/sKS_data;
-err_cvKS = (dKS - dKS_data)/dKS_data;
+err_meanKS = abs(mKS - mKS_data)/abs(mKS_data);
+err_varKS = abs(vKS - vKS_data)/abs(vKS_data);
+err_stdKS = abs(sKS - sKS_data)/abs(sKS_data);
+err_cvKS = abs(dKS - dKS_data)/abs(dKS_data);
 
-err_meanKS_sample = (mKS_sample - mKS_data)/mKS_data;
-err_varKS_sample = (vKS_sample - vKS_data)/vKS_data;
-err_stdKS_sample = (sKS_sample - sKS_data)/sKS_data;
-err_cvKS_sample = (dKS_sample - dKS_data)/dKS_data;
+err_meanKS_sample = abs(mKS_sample - mKS_data)/abs(mKS_data);
+err_varKS_sample = abs(vKS_sample - vKS_data)/abs(vKS_data);
+err_stdKS_sample = abs(sKS_sample - sKS_data)/abs(sKS_data);
+err_cvKS_sample = abs(dKS_sample - dKS_data)/abs(dKS_data);
 
 alpha = 1/2;
 mseKS = alpha * (mKS - mKS_data)^2/(mKS_data)^2 + (1-alpha) * (dKS - dKS_data)^2/(dKS_data)^2;

@@ -393,7 +393,7 @@ if displayConvergenceInit
     ylabel('Relative error','Interpreter',interpreter)
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
     %ylabel('Erreur relative','Interpreter',interpreter)
-    legend(legerrmCnorm{:},'Location',location,'Interpreter',interpreter)
+    legend(legerrmCnorm{:},'Location','NorthEast','Interpreter',interpreter)
     mysaveas(pathname,'convergence_error_norm_mean_C_lambda_init',formats);
     % mymatlab2tikz(pathname,'convergence_error_norm_mean_C_lambda_init.tex');
     
@@ -422,7 +422,7 @@ if displayConvergenceInit
     ylabel('Squared norm of residual','Interpreter',interpreter)
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
     %ylabel('Norme au carr\''e du r\''esidu','Interpreter',interpreter)
-    legend(legresnorm{:},'Location',location,'Interpreter',interpreter)
+    legend(legresnorm{:},'Location','NorthEast','Interpreter',interpreter)
     mysaveas(pathname,'convergence_resnorm_lambda_init',formats);
     % mymatlab2tikz(pathname,'convergence_resnorm_lambda_init.tex');
     
@@ -436,7 +436,7 @@ if displayConvergenceInit
     ylabel('Objective function value','Interpreter',interpreter)
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
     %ylabel('Valeur de la fonction objectif','Interpreter',interpreter)
-    legend(legfval{:},'Location',location,'Interpreter',interpreter)
+    legend(legfval{:},'Location','NorthEast','Interpreter',interpreter)
     mysaveas(pathname,'convergence_fval_lambda_init',formats);
     % mymatlab2tikz(pathname,'convergence_fval_lambda_init.tex');
 end
@@ -776,7 +776,7 @@ if displayConvergenceOpt
     ylabel('Relative error','Interpreter',interpreter)
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
     %ylabel('Erreur relative','Interpreter',interpreter)
-    legend(legerrmCnorm{:},'Location',location,'Interpreter',interpreter)
+    legend(legerrmCnorm{:},'Location','NorthEast','Interpreter',interpreter)
     mysaveas(pathname,'convergence_error_norm_mean_C_lambda_opt',formats);
     % mymatlab2tikz(pathname,'convergence_error_norm_mean_C_lambda_opt.tex');
     
@@ -805,7 +805,7 @@ if displayConvergenceOpt
     ylabel('Squared norm of residual','Interpreter',interpreter)
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
     %ylabel('Norme au carr\''e du r\''esidu','Interpreter',interpreter)
-    legend(legresnorm{:},'Location',location,'Interpreter',interpreter)
+    legend(legresnorm{:},'Location','NorthEast','Interpreter',interpreter)
     mysaveas(pathname,'convergence_resnorm_lambda_opt',formats);
     % mymatlab2tikz(pathname,'convergence_resnorm_lambda_opt.tex');
     
@@ -819,7 +819,7 @@ if displayConvergenceOpt
     ylabel('Objective function value','Interpreter',interpreter)
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
     %ylabel('Valeur de la fonction objectif','Interpreter',interpreter)
-    legend(legfval{:},'Location',location,'Interpreter',interpreter)
+    legend(legfval{:},'Location','NorthEast','Interpreter',interpreter)
     mysaveas(pathname,'convergence_fval_lambda_opt',formats);
     % mymatlab2tikz(pathname,'convergence_fval_lambda_opt.tex');
 end

@@ -72,7 +72,7 @@ display = getcharin('display',varargin,'off');
 % display = 'final-detailed';
 
 algo = 'interior-point'; % default for fmincon
-% algo = 'trust-region-reflective'; % does not work, as it requires to provide a gradient in the objective function, it allows only bounds or only linear equality constraints (but not both), and it does not accept nonlinear constraints.
+% algo = 'trust-region-reflective'; % does not work, as it requires to provide the gradient in the objective function, it allows only bounds or only linear equality constraints (but not both), and it does not accept nonlinear constraints.
 % algo = 'sqp';
 % algo = 'sqp-legacy';
 % algo = 'active-set';

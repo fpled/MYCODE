@@ -58,6 +58,7 @@ options_mlecustom = statset(statset('mlecustom'),'Display',display,...
     'TolX',tolX,'TolFun',tolFun,'TolBnd',tolBnd,...
     'MaxIter',maxIters,'MaxFunEvals',maxFunEvals);
 
+% Maximum likelihood estimation without bounds
 param = gamfit(E_data,[],[],[],options_gamfit);
 % param = mle(E_data,'Distribution','gam','Options',options_gamfit);
 
@@ -70,6 +71,7 @@ lb     = [2 0];   % lower bounds
 
 loglfval0 = -gamlike(param0,E_data); % initial log-likelihood
 
+% Maximum likelihood estimation with bounds
 % param = mle(E_data,'pdf',@gampdf,'Start',param0,'LowerBound',lb,'Options',options_mlecustom);
 % param = mle(E_data,'nloglf',@gamlike,'Start',param0,'LowerBound',lb,'Options',options_mlecustom);
 
