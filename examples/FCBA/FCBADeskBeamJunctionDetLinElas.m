@@ -24,7 +24,7 @@ interpreter = 'latex';
 formats = {'fig','epsc'};
 renderer = 'OpenGL';
 
-junction = true; % junction modeling
+junction = false; % junction modeling
 
 tol = getfemobjectoptions('tolerancepoint');
 
@@ -158,7 +158,7 @@ if solveProblem
     else
         S = final(S);
     end
-    P_support = [P1 P4];
+    P_support = [P1;P4];
     S = addcl(S,P_support);
     
     %% Stiffness matrix and sollicitation vector
@@ -561,17 +561,20 @@ if displaySolution
     options = {'solid',true};
     % options = {};
     
+    u_mm = u*1e3; % [mm]
+    u_ex_mm = u_ex*1e3; % [mm]
+    
     % Displacements
-    plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
+    plotSolution(S,u_mm,'displ',1,'ampl',ampl,options{:});
     mysaveas(pathname,'Ux',formats,renderer);
     
-    plotSolution(S,u_ex,'displ',1,'ampl',ampl,options{:});
+    plotSolution(S,u_ex_mm,'displ',1,'ampl',ampl,options{:});
     mysaveas(pathname,'Ux_ex',formats,renderer);
     
-    plotSolution(S,u,'displ',2,'ampl',ampl,options{:});
+    plotSolution(S,u_mm,'displ',2,'ampl',ampl,options{:});
     mysaveas(pathname,'Uy',formats,renderer);
     
-    plotSolution(S,u_ex,'displ',2,'ampl',ampl,options{:});
+    plotSolution(S,u_ex_mm,'displ',2,'ampl',ampl,options{:});
     mysaveas(pathname,'Uy_ex',formats,renderer);
     
     % Rotations

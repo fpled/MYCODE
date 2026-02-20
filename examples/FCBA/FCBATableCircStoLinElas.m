@@ -595,8 +595,8 @@ if displaySolution
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display solution
-    % ampl = 0;
-    ampl = getsize(S)/max(abs(mean_U))/20;
+    ampl = 0;
+    % ampl = getsize(S)/max(abs(mean_U))/20;
     options = {'solid',true};
     % options = {};
     

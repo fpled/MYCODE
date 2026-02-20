@@ -373,14 +373,16 @@ if displaySolution
     options = {'solid',true};
     % options = {};
     
+    u_mm = u*1e3; % [mm]
+    
     % Displacements
-    plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
+    plotSolution(S,u_mm,'displ',1,'ampl',ampl,options{:});
     mysaveas(pathname,'Ux',formats,renderer);
     
-    plotSolution(S,u,'displ',2,'ampl',ampl,options{:});
+    plotSolution(S,u_mm,'displ',2,'ampl',ampl,options{:});
     mysaveas(pathname,'Uy',formats,renderer);
     
-    plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
+    plotSolution(S,u_mm,'displ',3,'ampl',ampl,options{:});
     mysaveas(pathname,'Uz',formats,renderer);
     
     % Rotations

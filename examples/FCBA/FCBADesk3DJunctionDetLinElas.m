@@ -585,20 +585,21 @@ if displaySolution
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display solution
-    % ampl = 0;
-    ampl = getsize(S)/max(abs(u))/20;
+    ampl = 0;
+    % ampl = getsize(S)/max(abs(u))/20;
     options = {'solid',true};
     % options = {};
     
+    u_mm = u*1e3; % [mm]
     switch lower(test)
         case {'statichori1','statichori2','durabilityhori1','durabilityhori2'}
-            plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
+            plotSolution(S,u_mm,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'Ux',formats,renderer);
         case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
-            plotSolution(S,u,'displ',2,'ampl',ampl,options{:});
+            plotSolution(S,u_mm,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'Uy',formats,renderer);
         case {'staticvert','stabilityvert','impact','drop'}
-            plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
+            plotSolution(S,u_mm,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'Uz',formats,renderer);
     end
     
