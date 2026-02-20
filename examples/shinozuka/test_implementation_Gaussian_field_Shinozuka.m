@@ -289,7 +289,7 @@ if displayGaussianField
             plot_sol(S,V(:,1,1));
             colorbar
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
+            mysaveas(pathname,['gaussian_field_std_order_' num2str(order)],formats,renderer);
             
             % Randomized Shinozuka
             figure('Name',['Gaussian field - randomized Shinozuka (order ' num2str(order) ')'],...
@@ -298,7 +298,7 @@ if displayGaussianField
             plot_sol(S,W(:,1,1));
             colorbar
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(order)],formats,renderer);
+            mysaveas(pathname,['gaussian_field_rand_order_' num2str(order)],formats,renderer);
             
         case 'gauss'
             Ve = cell(getnbgroupelem(S),1);
@@ -326,7 +326,7 @@ if displayGaussianField
             plot(Ve(1),S);
             colorbar
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,['gaussian_field_shinozuka_std_order_' num2str(order)],formats,renderer);
+            mysaveas(pathname,['gaussian_field_std_order_' num2str(order)],formats,renderer);
             
             % Randomized Shinozuka
             figure('Name',['Gaussian field - randomized Shinozuka (order ' num2str(order) ')'],...
@@ -335,7 +335,7 @@ if displayGaussianField
             plot(We(1),S);
             colorbar
             set(gca,'FontSize',fontsize)
-            mysaveas(pathname,['gaussian_field_shinozuka_rand_order_' num2str(order)],formats,renderer);
+            mysaveas(pathname,['gaussian_field_rand_order_' num2str(order)],formats,renderer);
         otherwise
             error('Wrong storage');
     end
