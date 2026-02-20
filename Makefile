@@ -122,7 +122,7 @@ default:
 #	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElasFatigue2_100N; exit" -logfile results/plate/FCBADeskPlateJunctionStoLinElasFatigue2_100N.log
 
 # All ---------------------------
-all: sparse monosto multidet multisto identification plate phasefield
+all: sparse monosto multidet multisto identification fcba phasefield
 
 # Multiscale ---------------------------
 multi: multidet multisto
@@ -175,8 +175,8 @@ sparse:
 	matlab -nodesktop -nosplash -noFigureWindows -r "sparsePolynomialFunction; exit" -logfile results/sparse/polynomialFunction.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "sparseSobolFunction; exit" -logfile results/sparse/sobolFunction.log
 
-# Plate Shell ---------------------------
-plate:
+# FCBA plate/shell-based furniture ---------------------------
+fcba:
 	matlab -nodesktop -nosplash -noFigureWindows -r "plateCircDetLinElas; exit" -logfile results/FCBA/plateCircDetLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "plateCircDetLinElasCv; exit" -logfile results/FCBA/plateCircDetLinElasCv.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "plateRectDetLinElas; exit" -logfile results/FCBA/plateRectDetLinElas.log
