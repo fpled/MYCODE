@@ -16,6 +16,10 @@ displayConvergenceOpt = true;
 useRedParam = true; % reduced parameterization
 MCMCalgo = 'IMH'; % algorithm for Markov Chain Monte Carlo (MCMC) method = 'IMH', 'RWMH' or 'SS'
 useParallel = true; % parallel computing to evaluate gradients of objective function
+% plotFcn = []; % plot functions called at each iteration
+plotFcn = {'optimplot',...
+    'optimplotx','optimplotfunccount','optimplotfval','optimplotfvalconstr',...
+    'optimplotconstrviolation','optimplotstepsize','optimplotfirstorderopt'}; % plot functions called at each iteration
 globalSolver = []; % local solver
 % globalSolver = 'PatternSearch'; % PatternSearch solver
 % globalSolver = 'GlobalSearch'; % GlobalSearch solver
@@ -453,11 +457,11 @@ end
 % Parameter estimation
 myparallel('start')
 t = tic;
-% lambda = lseStoLinElasIsotTrans(C_data,lambda0,N,MCMCalgo,s,'useParallel',useParallel,globalSolver);
+% lambda = lseStoLinElasIsotTrans(C_data,lambda0,N,MCMCalgo,s,'useParallel',useParallel,'plotFcn',plotFcn,globalSolver);
 if isempty(globalSolver)
-    [lambda,fval,exitflag,output] = lseStoLinElasIsotTrans(C_data,lambda0,N,MCMCalgo,s,'display','iter-detailed','useParallel',useParallel);
+    [lambda,fval,exitflag,output] = lseStoLinElasIsotTrans(C_data,lambda0,N,MCMCalgo,s,'display','iter-detailed','useParallel',useParallel,'plotFcn',plotFcn);
 else
-    [lambda,fval,exitflag,output,solutions] = lseStoLinElasIsotTrans(C_data,lambda0,N,MCMCalgo,s,'display','iter-detailed','useParallel',useParallel,globalSolver);
+    [lambda,fval,exitflag,output,solutions] = lseStoLinElasIsotTrans(C_data,lambda0,N,MCMCalgo,s,'display','iter-detailed','useParallel',useParallel,'plotFcn',plotFcn,globalSolver);
 end
 toc(t)
 myparallel('stop')
