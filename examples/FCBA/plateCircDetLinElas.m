@@ -60,7 +60,7 @@ if solveProblem
     switch lower(loading)
         case 'uniform'
             S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_circ_' elemtype]));
-            S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_circ_' elemtype]),'all'); % option 'all' for facets, ridges, peaks
+            % S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_circ_' elemtype '_cl_' num2str(cl)]),'all'); % option 'all' for facets, ridges, peaks
         case 'concentrated'
             S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_circ_' elemtype]),'points',x_load);
             % S = build_model(C,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_circ_' elemtype '_cl_' num2str(cl)]),'points',x_load,'all'); % option 'all' for facets, ridges, peaks
