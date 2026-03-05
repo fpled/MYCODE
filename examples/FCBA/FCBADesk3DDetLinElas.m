@@ -7,34 +7,53 @@ close all
 
 %% Input data
 solveProblem = true;
-displaySolution = true;
+displaySolution = false;
 
-% tests = {'StaticHori1'}; % strength test under static horizontal load 1
-% tests = {'StaticHori2'}; % strength test under static horizontal load 2
-% tests = {'StaticHori3'}; % strength test under static horizontal load 3 (lifting)
-% tests = {'StaticHori4'}; % strength test under static horizontal load 4 (lifting)
-tests = {'StaticVert'}; % strength test under static vertical load
+% tests = {'StaticHori1'};     % strength test under static horizontal load 1
+% tests = {'StaticHori2'};     % strength test under static horizontal load 2
+% tests = {'StaticHori3'};     % strength test under static horizontal load 3 (lifting)
+% tests = {'StaticHori4'};     % strength test under static horizontal load 4 (lifting)
+% tests = {'StaticVert'};      % strength test under static vertical load
 % tests = {'DurabilityHori1'}; % durability test under horizontal load 1
 % tests = {'DurabilityHori2'}; % durability test under horizontal load 2
 % tests = {'DurabilityHori3'}; % durability test under horizontal load 3 (lifting)
 % tests = {'DurabilityHori4'}; % durability test under horizontal load 4 (lifting)
-% tests = {'StabilityVert'}; % stability test under vertical load
-% tests = {'Impact'}; % vertical impact test
-% tests = {'Drop'}; % drop test
-% tests = {'StaticHori1','StaticHori2',...
-%     'StaticVert',...
-%     'DurabilityHori1','DurabilityHori2',...
-%     'StabilityVert'};
+% tests = {'StabilityVert'};   % stability test under vertical load
+% tests = {'Impact'};          % vertical impact test
+% tests = {'Drop'};            % drop test
+
+tests = {'StaticHori1','StaticHori2',...
+    'StaticVert',...
+    'DurabilityHori1','DurabilityHori2',...
+    'StabilityVert'};
 
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc','png'};
 renderer = 'OpenGL';
 
 for it=1:length(tests)
     test = tests{it};
-filename = ['FCBADesk3DDetLinElas' test];
+    switch lower(test)
+        case {'statichori1','statichori2'}
+            loads = [100, 200]; % point load, F1=F2=100, 200 [N]
+        case {'statichori3','statichori4'}
+            loads = 100; % point load, F3=F4=100 [N]
+        case 'staticvert'
+            loads = [300, 400, 500]; % point load, F=300, 400, 500 [N]
+        case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
+            loads = 100; % point load, F=100 [N]
+        case 'stabilityvert'
+            loads = 400; % point load, V=400 [N]
+        case 'impact'
+            loads = 180e-3; % height [m]
+        case 'drop'
+            loads = 100e-3; % height [m]
+    end
+for il=1:length(loads)
+    loading = loads(il);
+filename = ['FCBADesk3DDetLinElas' test '_' num2str(loading) 'N'];
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','FCBA',filename);
 if ~exist(pathname,'dir')
@@ -113,13 +132,13 @@ if solveProblem
     
     % Plates meshes
     elemtype = 'TET10';
-    cl = h;
+    cl = h/2;
     cl_12 = cl;
     cl_3 = cl;
     cl_5 = cl;
+    r_load = 40e-3;
     r_masse = 100e-3;
     C_masse = CIRCLE(0.0,y3_12+b3/2,z3+h/2,r_masse);
-    r_load = 40e-3;
     C_vert = CIRCLE(x_vert(1),x_vert(2),x_vert(3)+h,r_load);
     C_stab = CIRCLE(x_stab(1),x_stab(2),x_stab(3)+h,r_load);
     LbD3 = {LINE(x_hori{4}+[-r_load,0,-h/2],x_hori{4}+[-r_load,0,h/2]),...
@@ -217,21 +236,21 @@ if solveProblem
             masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
             p_masse = masse*g/Sec_masse; % surface load [N/m2]
-            p = 100/Sec_hori_dura; % surface load [N/m2], F1=F2=100, 200 [N], F3=F4=100 [N]
+            p = loading/Sec_hori_dura; % surface load [N/m2]
             slope = 0;
         case 'staticvert'
-            p = 300/Sec_vert_stab; % surface load [N/m2], F=300, 400, 500 [N]
+            p = loading/Sec_vert_stab; % surface load [N/m2]
         case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
             masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
             p_masse = masse*g/Sec_masse; % surface load [N/m2]
-            p = 100/Sec_hori_dura; % surface load [N/m2], F=100 [N]
+            p = loading/Sec_hori_dura; % surface load [N/m2]
         case 'stabilityvert'
-            p = 400/Sec_vert_stab; % surface load [N/m2], V=400 [N]
+            p = loading/Sec_vert_stab; % surface load [N/m2]
         case 'impact'
-            H = 180e-3; % [m]
+            p = loading; % height [m]
         case 'drop'
-            H = 100e-3; % [m]
+            p = loading; % height [m]
     end
     
     %% Dirichlet boundary conditions
@@ -350,9 +369,8 @@ if solveProblem
     uz = eval_sol(S,u,P,'UZ');
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'S','elemtype',...
-        'a12','b12','a3','b3','a5','b5','h','Sec_hori_dura','Sec_vert_stab',...
-        'f','p');
+    save(fullfile(pathname,'problem.mat'),'S','elemtype','loading','f',...
+        'a12','b12','a3','b3','a5','b5','h');
     save(fullfile(pathname,'solution.mat'),'u','time');
     save(fullfile(pathname,'test_solution.mat'),'P',...
         'ux','uy','uz');
@@ -366,165 +384,170 @@ else
 end
 
 %% Outputs
-fprintf('3D Desk\n');
-fprintf('\n');
-fprintf(['test : ' test '\n']);
-fprintf(['mesh : ' elemtype ' elements\n']);
-fprintf('nb elements = %g\n',getnbelem(S));
-fprintf('nb nodes    = %g\n',getnbnode(S));
-fprintf('nb dofs     = %g\n',getnbddl(S));
-fprintf('span-to-thickness ratio of plates 1 and 2 = %g\n',min(a12,b12)/h);
-fprintf('span-to-thickness ratio of plate 3 = %g\n',min(a3,b3)/h);
-fprintf('span-to-thickness ratio of plates 5a and 5b = %g\n',min(a5,b5)/h);
-fprintf('elapsed time = %f s\n',time);
+filenameResults = fullfile(pathname,'results.txt');
+fid = fopen(filenameResults,'w');
+fprintf(fid,'3D Desk\n');
+fprintf(fid,'\n');
+fprintf(fid,'test = %s\n',test);
+fprintf(fid,'load = %g N\n',loading);
+fprintf(fid,'mesh = %s elements\n',elemtype);
+fprintf(fid,'nb elements = %g\n',getnbelem(S));
+fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+fprintf(fid,'span-to-thickness ratio of plates 1 and 2 = %g\n',min(a12,b12)/h);
+fprintf(fid,'span-to-thickness ratio of plate 3 = %g\n',min(a3,b3)/h);
+fprintf(fid,'span-to-thickness ratio of plates 5a and 5b = %g\n',min(a5,b5)/h);
+fprintf(fid,'elapsed time = %f s\n',time);
 
 switch lower(test)
     case 'statichori1'
-        if p==100/Sec_hori_dura
+        if loading==100
             ux_exp_start = -6.88*1e-3;
             ux_exp_end = -[10.5 10.51 10.44 10.8 10.72 10.62 10.67 10.65 10.66 10.87 10.86]*1e-3;
-        elseif p==200/Sec_hori_dura
+        elseif loading==200
             ux_exp_start = -6.16*1e-3;
             ux_exp_end = -[16.78 16.74 16.72 17.13 17 16.8 16.87 16.78 17.04 16.82 16.71 17.17]*1e-3;
         end
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
-        fprintf('\n');
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('ux     = %g m\n',ux);
-        fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
-        fprintf('uy     = %g m\n',uy);
-        fprintf('uz     = %g m\n',uz);
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'ux     = %g m\n',ux);
+        fprintf(fid,'ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
+        fprintf(fid,'uy     = %g m\n',uy);
+        fprintf(fid,'uz     = %g m\n',uz);
     case 'statichori2'
-        if p==100/Sec_hori_dura
+        if loading==100
             ux_exp_start = 2.12*1e-3;
             ux_exp_end = [6.22 6.17 6.26 6.31 6.33 6.24 6.26 6.4 6.26 6.49 6.48 6.42 6.36 6.56 6.37 6.39]*1e-3;
-        elseif p==200/Sec_hori_dura
+        elseif loading==200
             ux_exp_start = 1.91*1e-3;
             ux_exp_end = [12.45 12.68 12.66 12.65 12.71 12.64 12.82 12.73 12.89 12.86 12.79 12.86]*1e-3;
         end
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
-        fprintf('\n');
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('ux     = %g m\n',ux);
-        fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
-        fprintf('uy     = %g m\n',uy);
-        fprintf('uz     = %g m\n',uz);
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'ux     = %g m\n',ux);
+        fprintf(fid,'ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
+        fprintf(fid,'uy     = %g m\n',uy);
+        fprintf(fid,'uz     = %g m\n',uz);
     case 'statichori3'
         uy_exp_start = -3.77*1e-3;
         uy_exp_end = -[4.71 4.73 4.69 4.56 4.47 4.73]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
-        fprintf('\n');
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('ux     = %g m\n',ux);
-        fprintf('uy     = %g m\n',uy);
-        fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
-        fprintf('uz     = %g m\n',uz);
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'ux     = %g m\n',ux);
+        fprintf(fid,'uy     = %g m\n',uy);
+        fprintf(fid,'uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
+        fprintf(fid,'uz     = %g m\n',uz);
     case 'statichori4'
         uy_exp_start = 9.71*1e-3;
         uy_exp_end = [12.21 12.2 12.2 12.23 12.2 12.19 12.21]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
-        fprintf('\n');
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('ux     = %g m\n',ux);
-        fprintf('uy     = %g m\n',uy);
-        fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
-        fprintf('uz     = %g m\n',uz);
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'ux     = %g m\n',ux);
+        fprintf(fid,'uy     = %g m\n',uy);
+        fprintf(fid,'uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
+        fprintf(fid,'uz     = %g m\n',uz);
     case 'staticvert'
-        if p==300/Sec_vert_stab
+        if loading==300
             uz_exp_start = -0.69*1e-3;
             uz_exp_end = -[10.10 9.88 9.64 9.88 9.94 9.79 9.92 9.93 9.82 9.95]*1e-3;
-        elseif p==400/Sec_vert_stab
+        elseif loading==400
             uz_exp_start = -0.75*1e-3;
             uz_exp_end = -[13.45 13.52 13.56 13.64 13.65 13.74 13.75 13.44 13.74 13.53]*1e-3;
-        elseif p==500/Sec_vert_stab
+        elseif loading==500
             uz_exp_start = -0.78*1e-3;
             uz_exp_end = -[16.66 16.57 16.59 16.78 16.55 16.69 16.75 16.59 16.73 16.76]*1e-3;
         end
         uz_exp = mean(uz_exp_end - uz_exp_start);
         err_uz = norm(uz-uz_exp)/norm(uz_exp);
         
-        fprintf('\n');
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('ux     = %g m\n',ux);
-        fprintf('uy     = %g m\n',uy);
-        fprintf('uz     = %g m\n',uz);
-        fprintf('uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'ux     = %g m\n',ux);
+        fprintf(fid,'uy     = %g m\n',uy);
+        fprintf(fid,'uz     = %g m\n',uz);
+        fprintf(fid,'uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
     case 'durabilityhori1'
         ux_exp_start = -4.42*1e-3;
         ux_exp_end = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
-        fprintf('\n');
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('ux     = %g m\n',ux);
-        fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
-        fprintf('uy     = %g m\n',uy);
-        fprintf('uz     = %g m\n',uz);
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'ux     = %g m\n',ux);
+        fprintf(fid,'ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
+        fprintf(fid,'uy     = %g m\n',uy);
+        fprintf(fid,'uz     = %g m\n',uz);
     case 'durabilityhori2'
         ux_exp_start = 3.48*1e-3;
         ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(ux-ux_exp)/norm(ux_exp);
         
-        fprintf('\n');
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('ux     = %g m\n',ux);
-        fprintf('ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
-        fprintf('uy     = %g m\n',uy);
-        fprintf('uz     = %g m\n',uz);
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'ux     = %g m\n',ux);
+        fprintf(fid,'ux_exp = %g m, error = %.3e\n',ux_exp,err_ux);
+        fprintf(fid,'uy     = %g m\n',uy);
+        fprintf(fid,'uz     = %g m\n',uz);
     case 'durabilityhori3'
         uy_exp_start = 3.35*1e-3;
         uy_exp_end = [6.16 5.76 5.97 5.81 5.84 5.61 5.86 5.64 5.62 5.68]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
-        fprintf('\n');
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('ux     = %g m\n',ux);
-        fprintf('uy     = %g m\n',uy);
-        fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
-        fprintf('uz     = %g m\n',uz);
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'ux     = %g m\n',ux);
+        fprintf(fid,'uy     = %g m\n',uy);
+        fprintf(fid,'uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
+        fprintf(fid,'uz     = %g m\n',uz);
     case 'durabilityhori4'
         uy_exp_start = -3.75*1e-3;
         uy_exp_end = -[3.89 3.88 3.89 3.88 3.89]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(uy-uy_exp)/norm(uy_exp);
         
-        fprintf('\n');
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('ux     = %g m\n',ux);
-        fprintf('uy     = %g m\n',uy);
-        fprintf('uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
-        fprintf('uz     = %g m\n',uz);
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'ux     = %g m\n',ux);
+        fprintf(fid,'uy     = %g m\n',uy);
+        fprintf(fid,'uy_exp = %g m, error = %.3e\n',uy_exp,err_uy);
+        fprintf(fid,'uz     = %g m\n',uz);
     case 'stabilityvert'
         uz_exp_start = -1.93*1e-3;
         uz_exp_end = -[18.46 18.44 18.53 18.58 18.59 18.7 18.77 18.73 18.85 18.76]*1e-3;
         uz_exp = mean(uz_exp_end - uz_exp_start);
         err_uz = norm(uz-uz_exp)/norm(uz_exp);
         
-        fprintf('\n');
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('ux     = %g m\n',ux);
-        fprintf('uy     = %g m\n',uy);
-        fprintf('uz     = %g m\n',uz);
-        fprintf('uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'ux     = %g m\n',ux);
+        fprintf(fid,'uy     = %g m\n',uy);
+        fprintf(fid,'uz     = %g m\n',uz);
+        fprintf(fid,'uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
 end
+fclose(fid);
+type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
 if displaySolution
     %% Display domains, boundary conditions and meshes
     plotDomain(S,'legend',false);
     mysaveas(pathname,'domain',formats,renderer);
-    mymatlab2tikz(pathname,'domain.tex');
+    % mymatlab2tikz(pathname,'domain.tex'); % only for cl >= h
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 10;
@@ -577,4 +600,5 @@ if displaySolution
     % mysaveas(pathname,'SigVM',formats,renderer);
 end
 
+end
 end

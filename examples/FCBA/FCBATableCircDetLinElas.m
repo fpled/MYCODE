@@ -7,7 +7,7 @@ close all
 
 %% Input data
 solveProblem = true;
-displaySolution = true;
+displaySolution = false;
 
 % tests = {'StaticHori1'};     % strength test under static horizontal load 1
 % tests = {'StaticHori2'};     % strength test under static horizontal load 2

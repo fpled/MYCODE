@@ -5,44 +5,65 @@
 clearvars
 close all
 rng('default');
+s = rng;
 myparallel('start');
 
 %% Input data
+estimateParam = false;
 solveProblem = true;
-displaySolution = true;
-displayCv = true;
+displaySolution = false;
+displayCv = false;
 
-% tests = {'StaticHori1'}; % strength test under static horizontal load 1
-% tests = {'StaticHori2'}; % strength test under static horizontal load 2
-% tests = {'StaticHori3'}; % strength test under static horizontal load 3 (lifting)
-% tests = {'StaticHori4'}; % strength test under static horizontal load 4 (lifting)
-tests = {'StaticVert'}; % strength test under static vertical load
+% tests = {'StaticHori1'};     % strength test under static horizontal load 1
+% tests = {'StaticHori2'};     % strength test under static horizontal load 2
+% tests = {'StaticHori3'};     % strength test under static horizontal load 3 (lifting)
+% tests = {'StaticHori4'};     % strength test under static horizontal load 4 (lifting)
+% tests = {'StaticVert'};      % strength test under static vertical load
 % tests = {'DurabilityHori1'}; % durability test under horizontal load 1
 % tests = {'DurabilityHori2'}; % durability test under horizontal load 2
 % tests = {'DurabilityHori3'}; % durability test under horizontal load 3 (lifting)
 % tests = {'DurabilityHori4'}; % durability test under horizontal load 4 (lifting)
-% tests = {'StabilityVert'}; % stability test under vertical load
-% tests = {'Impact'}; % vertical impact test
-% tests = {'Drop'}; % drop test
-% tests = {'StaticHori1','StaticHori2',...
-%     'StaticVert',...
-%     'DurabilityHori1','DurabilityHori2',...
-%     'StabilityVert'};
+% tests = {'StabilityVert'};   % stability test under vertical load
+% tests = {'Impact'};          % vertical impact test
+% tests = {'Drop'};            % drop test
 
-pointwiseLoading = false; % pointwise loading
+tests = {'StaticHori1','StaticHori2',...
+    'StaticVert',...
+    'DurabilityHori1','DurabilityHori2',...
+    'StabilityVert'};
+
+pointLoad = false; % point load
 
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc','png'};
 renderer = 'OpenGL';
 
 for it=1:length(tests)
     test = tests{it};
-if pointwiseLoading
-    filename = ['FCBADeskPlateStoLinElas' test 'PointwiseLoading'];
+    switch lower(test)
+        case {'statichori1','statichori2'}
+            loads = [100, 200]; % point load, F1=F2=100, 200 [N]
+        case {'statichori3','statichori4'}
+            loads = 100; % point load, F3=F4=100 [N]
+        case 'staticvert'
+            loads = [300, 400, 500]; % point load, F=300, 400, 500 [N]
+        case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
+            loads = 100; % point load, F=100 [N]
+        case 'stabilityvert'
+            loads = 400; % point load, V=400 [N]
+        case 'impact'
+            loads = 180e-3; % height [m]
+        case 'drop'
+            loads = 100e-3; % height [m]
+    end
+for il=1:length(loads)
+    loading = loads(il);
+if pointLoad
+    filename = ['FCBADeskPlateStoLinElas' test '_' num2str(loading) 'N_PointLoad'];
 else
-    filename = ['FCBADeskPlateStoLinElas' test];
+    filename = ['FCBADeskPlateStoLinElas' test '_' num2str(loading) 'N'];
 end
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','FCBA',filename);
@@ -124,8 +145,8 @@ if solveProblem
     P_meas = cellfun(@(x) POINT(x),x_meas,'UniformOutput',false);
     
     % Plates meshes
-    elemtype = 'DKT';
-    cl = h;
+    elemtype = 'DST';
+    cl = h/3;
     cl_12 = cl;
     cl_3 = cl;
     cl_5 = cl;
@@ -133,15 +154,15 @@ if solveProblem
     r_masse = 100e-3;
     C_masse = CIRCLE(0.0,y3_12+b3/2,z3,r_masse);
     x_masse = double(getcenter(C_masse));
-    if pointwiseLoading
+    if pointLoad
         PbQ3 = {x_hori{4},x_dura{3},x_dura{1},x_hori{1},...
                 x_dura{4},x_hori{3},x_hori{2},x_dura{2}};
         if ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4')
-            S = gmshFCBAdesksimplified(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
+            S = gmshFCBAdeskpointload(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
                 cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
                 fullfile(pathname,['gmsh_desk_' elemtype]),3);
         else
-            S = gmshFCBAdesksimplified(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
+            S = gmshFCBAdeskpointload(Q1,Q2,Q3,Q5a,Q5b,C_masse,PbQ3,x_stab,x_masse,...
                 cl_12,cl_12,cl_3,cl_5,cl_5,cl_3,cl_3,cl_3,cl_3,...
                 fullfile(pathname,['gmsh_desk_' elemtype]),3,'recombine');
         end
@@ -182,49 +203,116 @@ if solveProblem
     % Material symmetry
     materialSym = 'isotTrans';
     
+    % Parameterization
+    useRedParam = true; % reduced parameterization
+    
     % Number of samples
-    N = 500;
-    % Markov Chain Monte Carlo method
-    MCMCalg = 'MH'; % 'MH', 'BUM', 'CUM' or 'SS' for materialSym = 'isotTrans'
+    N = 1e3;
     
     switch lower(materialSym)
         case 'isot'
             % Data
+            N_data = length(mean_ET_data);
             E_data = mean_ET_data*1e-3; % [GPa]
-            G_data = mean_GL_data*1e-3*13; % [GPa]
-            NU_data = E_data./(2*G_data)-1;
+            NU_data = 0.1+0.2*rand(N_data,1); % artificial data for NU uniformly distributed from 0.1 to 0.3
+            G_data = E_data./(2*(1+NU_data)); % [GPa]
             lambda_data = E_data.*NU_data./((1+NU_data).*(1-2*NU_data)); % [GPa]
             C1_data = lambda_data + 2/3*G_data; % [GPa]
             C2_data = G_data; % [GPa]
             C_data = [C1_data(:) C2_data(:)]; % [GPa]
             
+            % Empirical estimates
+            mC_data = mean(C_data,1);
+            % vC_data = var(C_data,0,1); % vC_data = size(C_data,1)/(size(C_data,1)-1)*moment(C_data,2,1);
+            stdC_data = std(C_data,0,1); % stdC_data = sqrt(vC_data);
+            cvC_data = stdC_data./mC_data;
+            % sC_data = sqrt(norm(vC_data));
+            % mCnorm_data = norm(mC_data);
+            % dC_data = sC_data/mCnorm_data;
+            % phiC_data = log(96*C_data(:,1).*C_data(:,2).^5);
+            % nuC_data = mean(phiC_data,1);
+            % fC_data = [mC_data nuC_data];
+            
+            % Initial parameter values
+            la0 = mean([1-1/cvC_data(1)^2 (1-1/cvC_data(2)^2)/5]); % la < 1/5
+            a01 = 1-la0;   % a1 > 0
+            a02 = 1-5*la0; % a2 > 0
+            la01 = a01/mC_data(1);   % la1 > 0 (match mathematical expectation with empirical mean value for C1)
+            la02 = a02/mC_data(2); % la2 > 0 (match mathematical expectation with empirical mean value for C2)
+            % la01 = -la0/mC_data(1);   % la1 > 0 (match mode with empirical mean value for C1)
+            % la02 = -5*la0/mC_data(2); % la2 > 0 (match mode with empirical mean value for C2)
+            b01 = 1/la01;  % b1 > 0
+            b02 = 1/la02;  % b2 > 0
+            
+            % Initial parameter vector
+            if useRedParam
+                lambda0 = la0; % reduced parameterization
+            else
+                lambda0 = [la01 la02 la0]; % full parameterization
+            end
+            
             % Parameter estimation
-            lambda = mleStoLinElasTensorIsot(C_data); % Maximum likelihood estimation
-            % lambda = lseStoLinElasTensorIsot(C_data); % Least-squares estimation
+            method = 'mle'; % parameter estimation method = 'mle' or 'lse'
+            if estimateParam
+                switch lower(method)
+                    case 'mle'
+                        % Maximum likelihood estimation
+                        % loglfval0 = -nloglfElasIsot(lambda0,C_data);
+                        % lambda = mleStoLinElasIsot(C_data,lambda0,'display','iter');
+                        % loglfval = -nloglfElasIsot(lambda,C_data);
+                        [lambda,loglfval,loglfval0] = mleStoLinElasIsot(C_data,lambda0,'display','iter');
+                    case 'lse'
+                        % Least-squares estimation
+                        % lambda = lseStoLinElasIsot(C_data,lambda0,'display','iter-detailed');
+                        [lambda,resnorm,residual,exitflag,output] = lseStoLinElasIsot(C_data,lambda0,'display','iter-detailed');
+                end
+            else
+                filenameParam = 'param_lambda.mat';
+                foldernameParam = 'modelStoLinElasIsot_ElasTensor_';
+                if useRedParam
+                    foldernameParam = [foldernameParam 'ReducedParam_'];
+                else
+                    foldernameParam = [foldernameParam 'FullParam_'];
+                end
+                foldernameParam = [foldernameParam method];
+                pathnameParam = fullfile(getfemobjectoptions('path'),'MYCODE',...
+                    'results','identification',foldernameParam);
+                load(fullfile(pathnameParam,filenameParam));
+            end
             
-            la1 = lambda(1); % la1 > 0
-            la2 = lambda(2); % la2 > 0
-            la  = lambda(3); % la < 1/5
-            
-            a1 = 1-la; % a1 > 0
+            % Optimal parameter values
+            if useRedParam
+                la  = lambda(1);     % la < 1/5
+                a1  = 1-la;          % a1 > 0
+                a2  = 1-5*la;        % a2 > 0
+                la1 = a1/mC_data(1); % la1 > 0
+                la2 = a2/mC_data(2); % la2 > 0
+            else
+                la1 = lambda(1); % la1 > 0
+                la2 = lambda(2); % la2 > 0
+                la  = lambda(3); % la < 1/5
+                a1  = 1-la;      % a1 > 0
+                a2  = 1-5*la;    % a2 > 0
+            end
             b1 = 1/la1; % b1 > 0
-            a2 = 1-5*la; % a2 > 0
             b2 = 1/la2; % b2 > 0
             
             % Sample set
-            C_sample(:,1) = gamrnd(a1,b1,N,1)*1e9; % [Pa]
-            C_sample(:,2) = gamrnd(a2,b2,N,1)*1e9; % [Pa]
-            lambda_sample = C_sample(:,1)-2/3*C_sample(:,2); % [Pa]
-            E_sample = (9*C_sample(:,1).*C_sample(:,2))./(3*C_sample(:,1)+C_sample(:,2)); % [Pa]
-            NU_sample = (3*C_sample(:,1)-2*C_sample(:,2))./(6*C_sample(:,1)+2*C_sample(:,2));
+            C1_sample = gamrnd(a1,b1,N,1)*1e9; % [Pa]
+            C2_sample = gamrnd(a2,b2,N,1)*1e9; % [Pa]
+            lambda_sample = C1_sample-2/3*C2_sample; % [Pa]
+            E_sample = (9*C1_sample.*C2_sample)./(3*C1_sample+C2_sample); % [Pa]
+            NU_sample = (3*C1_sample-2*C2_sample)./(6*C1_sample+2*C2_sample);
             
         case 'isottrans'
             % Data
+            N_data = length(mean_ET_data);
             ET_data = mean_ET_data*1e-3; % [GPa]
             GL_data = mean_GL_data*1e-3; % [GPa]
             EL_data = mean_EL_data*1e-3; % [GPa]
-            NUL_data = mean_NUL_data;
-            NUT_data = 0.1+0.2*rand(length(ET_data),1); % artificial data for NUT varying from 0.1 to 0.3
+            % NUL_data = mean_NUL_data;
+            NUL_data = 0.03+0.03*rand(N_data,1); % artificial data for NUL uniformly distributed from 0.03 to 0.06
+            NUT_data = 0.1+0.2*rand(N_data,1);   % artificial data for NUT uniformly distributed from 0.1 to 0.3
             GT_data = ET_data./(2*(1+NUT_data)); % [GPa]
             kT_data = (EL_data.*ET_data)./(2*(1-NUT_data).*EL_data-4*ET_data.*(NUL_data).^2); % [GPa]
             C1_data = EL_data + 4*(NUL_data.^2).*kT_data; % [GPa]
@@ -234,43 +322,102 @@ if solveProblem
             C5_data = 2*GL_data; % [GPa]
             C_data = [C1_data(:) C2_data(:) C3_data(:) C4_data(:) C5_data(:)];
             
-            % Least-squares estimation with MCMC method
-            lambda = lseStoLinElasTensorIsotTrans(C_data,MCMCalg);
+            % Empirical estimates
+            mC_data = mean(C_data,1);
+            % vC_data = var(C_data,0,1); % vC_data = size(C_data,1)/(size(C_data,1)-1)*moment(C_data,2,1);
+            stdC_data = std(C_data,0,1); % stdC_data = sqrt(vC_data);
+            cvC_data = stdC_data./mC_data;
+            % sC_data = sqrt(norm(vC_data));
+            % mCnorm_data = norm(mC_data);
+            % dC_data = sC_data/mCnorm_data;
+            % phiC_data = log((C_data(:,1).*C_data(:,2)-C_data(:,3).^2).*(C_data(:,4).^2).*(C_data(:,5).^2));
+            % nuC_data = mean(phiC_data,1);
+            % fC_data = [mC_data nuC_data];
             
+            % Initial parameter values
+            cvC45 = cvC_data(4:5); % empirical coefficient of variations (cv) for C4 and C5
+            la0 = (1-1/mean(cvC45).^2)/2; % la < 1/2, la < 0 for MH sampling (match cv with averaged empirical cv for C4 and C5)
+            la01 = -(mC_data(2)*la0)/(mC_data(1)*mC_data(2)-mC_data(3)^2); % la1 > 0 (match mode with empirical mean value for C1)
+            la02 = -(mC_data(1)*la0)/(mC_data(1)*mC_data(2)-mC_data(3)^2); % la2 > 0 (match mode with empirical mean value for C2)
+            la03 = (2*mC_data(3)*la0)/(mC_data(1)*mC_data(2)-mC_data(3)^2); % la3 in R such that 2*sqrt(la1*la2)-la3 > 0 (match mode with empirical mean value for C3)
+            a0 = 1-2*la0; % a > 0
+            la04 = a0/mC_data(4); % la4 > 0 (match mathematical expectation with empirical mean value for C4)
+            la05 = a0/mC_data(5); % la5 > 0 (match mathematical expectation with empirical mean value for C5)
+            % la04 = -2*la0/mC_data(4); % la4 > 0 (match mode with empirical mean value for C4)
+            % la05 = -2*la0/mC_data(5); % la5 > 0 (match mode with empirical mean value for C5)
+            b04 = 1/la04; % b4 > 0
+            b05 = 1/la05; % b5 > 0
+            
+            % Initial parameter vector
+            if useRedParam
+                lambda0 = [la01 la02 la03 la0]; % reduced parameterization
+            else
+                lambda0 = [la01 la02 la03 la04 la05 la0]; % full parameterization
+            end
+            
+            % Markov Chain Monte Carlo (MCMC) method
+            MCMCalgo = 'IMH'; % algorithm for MCMC method = 'IMH', 'RWMH' or 'SS'
+            useParallel = true; % parallel computing to evaluate gradients of objective function
+            
+            % Least-squares estimation with MCMC method
+            if estimateParam
+                Nconv = 1e6; % number of samples to ensure convergence of statistical estimates
+                % lambda = lseStoLinElasIsotTrans(C_data,lambda0,Nconv,MCMCalgo,s,'display','iter-detailed','useParallel',useParallel);
+                [lambda,fval,exitflag,output] = lseStoLinElasIsotTrans(C_data,lambda0,Nconv,MCMCalgo,s,'display','iter-detailed','useParallel',useParallel);
+            else
+                filenameParam = 'param_lambda.mat';
+                foldernameParam = 'modelStoLinElasIsotTrans_ElasTensor_';
+                if useRedParam
+                    foldernameParam = [foldernameParam 'ReducedParam_'];
+                else
+                    foldernameParam = [foldernameParam 'FullParam_'];
+                end
+                foldernameParam = [foldernameParam MCMCalgo];
+                pathnameParam = fullfile(getfemobjectoptions('path'),'MYCODE',...
+                    'results','identification',foldernameParam);
+                load(fullfile(pathnameParam,filenameParam));
+            end
+            
+            % Optimal parameter values
             la1 = lambda(1); % la1 > 0
             la2 = lambda(2); % la2 > 0
             la3 = lambda(3); % la3 in R such that 2*sqrt(la1*la2)-la3 > 0
-            la4 = lambda(4); % la4 > 0
-            la5 = lambda(5); % la5 > 0
-            la  = lambda(6); % la < 1/2
-            
-            a = 1-2*la; % a > 0
+            if useRedParam
+                la  = lambda(4);    % la < 1/2, la < 0 for MH sampling using a trivariate normal proposal pdf with positive-definite covariance matrix Sigma
+                a   = 1-2*la;       % a > 0
+                la4 = a/mC_data(4); % la4 > 0
+                la5 = a/mC_data(5); % la5 > 0
+            else
+                la4 = lambda(4); % la4 > 0
+                la5 = lambda(5); % la5 > 0
+                la  = lambda(6); % la < 1/2, la < 0 for MH sampling using a trivariate normal proposal pdf with positive-definite covariance matrix Sigma
+                a   = 1-2*la;    % a > 0
+            end
             b4 = 1/la4; % b4 > 0
             b5 = 1/la5; % b5 > 0
             
             % Sample generation
-            switch lower(MCMCalg)
-                case 'mh'
-                    C_sample(:,1:3) = mhsampleStoLinElasTensorIsotTrans(lambda,C_data(:,1:3),N);
-                case 'bum'
-                    C_sample(:,1:3) = mhsampleStoLinElasTensorIsotTrans_BUM(lambda,C_data(:,1:3),N);
-                case 'cum'
-                    C_sample(:,1:3) = mhsampleStoLinElasTensorIsotTrans_CUM(lambda,C_data(:,1:3),N);
+            rng(s); % initialize the random number generator using the default settings contained in s
+            switch lower(MCMCalgo)
+                case {'imh','rwmh'}
+                    [C123_sample,accept] = mhsampleStoLinElasTensorIsotTrans(lambda,C_data(:,1:3),N,MCMCalgo);
                 case 'ss'
-                    C_sample = slicesampleStoLinElasTensorIsotTrans(lambda,C_data(:,1:3),N);
+                    [C123_sample,neval] = slicesampleStoLinElasTensorIsotTrans(lambda,C_data(:,1:3),N);
                 otherwise
                     error(['MCMC algorithm ' MCMC ' not implemented'])
             end
-            C_sample(:,4) = gamrnd(a,b4,N,1);
-            C_sample(:,5) = gamrnd(a,b5,N,1);
+            C1_sample = C123_sample(:,1)*1e9; % [Pa]
+            C2_sample = C123_sample(:,2)*1e9; % [Pa]
+            C3_sample = C123_sample(:,3)*1e9; % [Pa]
+            C4_sample = gamrnd(a,b4,N,1)*1e9; % [Pa]
+            C5_sample = gamrnd(a,b5,N,1)*1e9; % [Pa]
             
             % Sample set
-            C_sample = C_sample*1e9; % [Pa]
-            kT_sample = C_sample(:,2)/2; % [Pa]
-            NUL_sample = (C_sample(:,3)./kT_sample)/(2*sqrt(2));
-            EL_sample = C_sample(:,1) - 4*(NUL_sample.^2).*kT_sample; % [Pa]
-            GT_sample = C_sample(:,4)/2; % [Pa]
-            GL_sample = C_sample(:,5)/2; % [Pa]
+            kT_sample = C2_sample/2; % [Pa]
+            NUL_sample = (C3_sample./kT_sample)/(2*sqrt(2));
+            EL_sample = C1_sample - 4*(NUL_sample.^2).*kT_sample; % [Pa]
+            GT_sample = C4_sample/2; % [Pa]
+            GL_sample = C5_sample/2; % [Pa]
             ET_sample = 4./(1./kT_sample+1./GT_sample+4*(NUL_sample.^2)./EL_sample); % [Pa]
             NUT_sample = (ET_sample./GT_sample)/2-1;
             
@@ -306,7 +453,7 @@ if solveProblem
             % Longitudinal Poisson ratio
             % NUL = mean(NUL_sample);
             % Transverse Poisson ratio
-            NUT = 0.25;
+            NUT = mean(NUT_sample);
             % Material
             mat = ELAS_SHELL_ISOT_TRANS('ET',ET,'NUT',NUT,'GL',GL,'RHO',RHO,'DIM3',h,'k',5/6);
         otherwise
@@ -324,33 +471,37 @@ if solveProblem
             masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
             p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
-            p = 100; % pointwise load, F1=F2=100, 200 [N], F3=F4=100 [N]
-            if ~pointwiseLoading
-                p = p/L_hori_dura; % line load (surface load for plates) [N/m]
+            if pointLoad
+                p = loading; % point load [N]
+            else
+                p = loading/L_hori_dura; % line load (surface load for plates) [N/m]
             end
             slope = 0;
         case 'staticvert'
-            p = 300; % pointwise load, F=300, 400, 500 [N]
-            if ~pointwiseLoading
-                p = p/Sec_vert_stab; % surface load (body load for plates) [N/m2]
+            if pointLoad
+                p = loading; % point load [N]
+            else
+                p = loading/Sec_vert_stab; % surface load (body load for plates) [N/m2]
             end
         case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
             masse = 50.5; % [kg]
             Sec_masse = pi*r_masse^2;
             p_masse = masse*g/Sec_masse; % surface load (body load for plates) [N/m2]
-            p = 100; % pointwise load, F=100 [N]
-            if ~pointwiseLoading
-                p = p/L_hori_dura; % line load (surface load for plates) [N/m]
+            if pointLoad
+                p = loading; % point load [N]
+            else
+                p = loading/L_hori_dura; % line load (surface load for plates) [N/m]
             end
         case 'stabilityvert'
-            p = 400; % pointwise load, V=400 [N]
-            if ~pointwiseLoading
-                p = p/Sec_vert_stab; % surface load (body load for plates) [N/m2]
+            if pointLoad
+                p = loading; % point load [N]
+            else
+                p = loading/Sec_vert_stab; % surface load (body load for plates) [N/m2]
             end
         case 'impact'
-            H = 180e-3; % [m]
+            p = loading; % height [m]
         case 'drop'
-            H = 100e-3; % [m]
+            p = loading; % height [m]
     end
     
     %% Dirichlet boundary conditions
@@ -386,7 +537,7 @@ if solveProblem
     switch lower(test)
         case {'statichori1','statichori2','statichori3','statichori4'}
             if strcmpi(test,'statichori1')
-                if pointwiseLoading
+                if pointLoad
                     f = nodalload(S,P_hori{1},{'FX','FZ'},-p*[cosd(slope);sind(slope)]);
                     if isempty(ispointin(P_hori{1},POINT(S.node)))
                         error('Pointwise load must be applied to a node of the mesh')
@@ -395,7 +546,7 @@ if solveProblem
                     f = surfload(S,L_hori{1},{'FX','FZ'},-p*[cosd(slope);sind(slope)]);
                 end
             elseif strcmpi(test,'statichori2')
-                if pointwiseLoading
+                if pointLoad
                     f = nodalload(S,P_hori{2},{'FX','FZ'},p*[cosd(slope);-sind(slope)]);
                     if isempty(ispointin(P_hori{2},POINT(S.node)))
                         error('Pointwise load must be applied to a node of the mesh')
@@ -404,7 +555,7 @@ if solveProblem
                     f = surfload(S,L_hori{2},{'FX','FZ'},p*[cosd(slope);-sind(slope)]);
                 end
             elseif strcmpi(test,'statichori3')
-                if pointwiseLoading
+                if pointLoad
                     f = nodalload(S,P_hori{3},{'FY','FZ'},-p*[cosd(slope);sind(slope)]);
                     if isempty(ispointin(P_hori{3},POINT(S.node)))
                         error('Pointwise load must be applied to a node of the mesh')
@@ -413,7 +564,7 @@ if solveProblem
                     f = surfload(S,L_hori{3},{'FY','FZ'},-p*[cosd(slope);sind(slope)]);
                 end
             elseif strcmpi(test,'statichori4')
-                if pointwiseLoading
+                if pointLoad
                     f = nodalload(S,P_hori{4},{'FY','FZ'},p*[cosd(slope);-sind(slope)]);
                     if isempty(ispointin(P_hori{4},POINT(S.node)))
                         error('Pointwise load must be applied to a node of the mesh')
@@ -422,13 +573,13 @@ if solveProblem
                     f = surfload(S,L_hori{4},{'FY','FZ'},p*[cosd(slope);-sind(slope)]);
                 end
             end
-            if pointwiseLoading
+            if pointLoad
                 f = f + bodyload(keepgroupelem(S,4),[],'FZ',-p_masse);
             else
                 f = f + bodyload(keepgroupelem(S,[4,5]),[],'FZ',-p_masse);
             end
         case 'staticvert'
-            if pointwiseLoading
+            if pointLoad
                 f = nodalload(S,P_vert,'FZ',-p);
                 if isempty(ispointin(P_vert,POINT(S.node)))
                     error('Pointwise load must be applied to a node of the mesh')
@@ -438,7 +589,7 @@ if solveProblem
             end
         case {'durabilityhori1','durabilityhori2','durabilityhori3','durabilityhori4'}
             if strcmpi(test,'durabilityhori1')
-                if pointwiseLoading
+                if pointLoad
                     f = nodalload(S,P_dura{1},'FX',-p);
                     if isempty(ispointin(P_dura{1},POINT(S.node)))
                         error('Pointwise load must be applied to a node of the mesh')
@@ -447,7 +598,7 @@ if solveProblem
                     f = surfload(S,L_dura{1},'FX',-p);
                 end
             elseif strcmpi(test,'durabilityhori2')
-                if pointwiseLoading
+                if pointLoad
                     f = nodalload(S,P_dura{2},'FX',p);
                     if isempty(ispointin(P_dura{2},POINT(S.node)))
                         error('Pointwise load must be applied to a node of the mesh')
@@ -456,7 +607,7 @@ if solveProblem
                     f = surfload(S,L_dura{2},'FX',p);
                 end
             elseif strcmpi(test,'durabilityhori3')
-                if pointwiseLoading
+                if pointLoad
                     f = nodalload(S,P_dura{3},'FY',p);
                     if isempty(ispointin(P_dura{3},POINT(S.node)))
                         error('Pointwise load must be applied to a node of the mesh')
@@ -465,7 +616,7 @@ if solveProblem
                     f = surfload(S,L_dura{3},'FY',p);
                 end
             elseif strcmpi(test,'durabilityhori4')
-                if pointwiseLoading
+                if pointLoad
                     f = nodalload(S,P_dura{4},'FY',-p);
                     if isempty(ispointin(P_dura{4},POINT(S.node)))
                         error('Pointwise load must be applied to a node of the mesh')
@@ -474,13 +625,13 @@ if solveProblem
                     f = surfload(S,L_dura{4},'FY',-p);
                 end
             end
-            if pointwiseLoading
+            if pointLoad
                 f = f + bodyload(keepgroupelem(S,4),[],'FZ',-p_masse);
             else
                 f = f + bodyload(keepgroupelem(S,[4,5]),[],'FZ',-p_masse);
             end
         case 'stabilityvert'
-            if pointwiseLoading
+            if pointLoad
                 f = nodalload(S,P_stab,'FZ',-p);
                 if isempty(ispointin(P_stab,POINT(S.node)))
                     error('Pointwise load must be applied to a node of the mesh')
@@ -517,7 +668,7 @@ if solveProblem
                 % Longitudinal Poisson ratio
                 % NULi = NUL_sample(i);
                 % Transverse Poisson ratio
-                % NUTi = 0.25;
+                % NUTi = 0.2;
                 NUTi = NUT_sample(i);
                 % Material
                 mati = setparam(mati,'ET',ETi);
@@ -620,9 +771,8 @@ if solveProblem
     ci_rz = eval_sol(S,ci_u,P,'RZ');
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'S','elemtype',...
-        'a12','b12','a3','b3','a5','b5','h','L_hori_dura','Sec_vert_stab',...
-        'f','p','pointwiseLoading','N');
+    save(fullfile(pathname,'problem.mat'),'S','elemtype','loading','f','N',...
+        'a12','b12','a3','b3','a5','b5','h');
     save(fullfile(pathname,'solution.mat'),'u','mean_u','std_u','ci_u','probs','time');
     save(fullfile(pathname,'test_solution.mat'),'P',...
         'mean_ux','mean_uy','mean_uz',...
@@ -632,9 +782,8 @@ if solveProblem
         'ci_ux','ci_uy','ci_uz',...
         'ci_rx','ci_ry','ci_rz');
 else
-    load(fullfile(pathname,'problem.mat'),'S','elemtype',...
-        'a12','b12','a3','b3','a5','b5','h','L_hori_dura','Sec_vert_stab',...
-        'f','p','pointwiseLoading','N');
+    load(fullfile(pathname,'problem.mat'),'S','elemtype','loading','f','N',...
+        'a12','b12','a3','b3','a5','b5','h');
     load(fullfile(pathname,'solution.mat'),'u','mean_u','std_u','ci_u','probs','time');
     load(fullfile(pathname,'test_solution.mat'),'P',...
         'mean_ux','mean_uy','mean_uz',...
@@ -646,175 +795,180 @@ else
 end
 
 %% Outputs
-fprintf('\nDesk\n');
-fprintf(['test : ' test '\n']);
-fprintf(['mesh : ' elemtype ' elements\n']);
-fprintf('nb elements = %g\n',getnbelem(S));
-fprintf('nb nodes    = %g\n',getnbnode(S));
-fprintf('nb dofs     = %g\n',getnbddl(S));
-fprintf('span-to-thickness ratio of plates 1 and 2 = %g\n',min(a12,b12)/h);
-fprintf('span-to-thickness ratio of plate 3 = %g\n',min(a3,b3)/h);
-fprintf('span-to-thickness ratio of plates 5a and 5b = %g\n',min(a5,b5)/h);
-fprintf('nb samples = %g\n',N);
-fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
+filenameResults = fullfile(pathname,'results.txt');
+fid = fopen(filenameResults,'w');
+fprintf(fid,'2D Plate Desk\n');
+fprintf(fid,'\n');
+fprintf(fid,'test = %s\n',test);
+fprintf(fid,'load = %g N\n',loading);
+fprintf(fid,'mesh = %s elements\n',elemtype);
+fprintf(fid,'nb elements = %g\n',getnbelem(S));
+fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+fprintf(fid,'span-to-thickness ratio of plates 1 and 2 = %g\n',min(a12,b12)/h);
+fprintf(fid,'span-to-thickness ratio of plate 3 = %g\n',min(a3,b3)/h);
+fprintf(fid,'span-to-thickness ratio of plates 5a and 5b = %g\n',min(a5,b5)/h);
+fprintf(fid,'nb samples = %g\n',N);
+fprintf(fid,'elapsed time = %f s\n',time);
 
 switch lower(test)
     case 'statichori1'
-        if (pointwiseLoading && p==100) || (~pointwiseLoading && p==100/L_hori_dura)
+        if loading==100
             ux_exp_start = -6.88*1e-3;
             ux_exp_end = -[10.5 10.51 10.44 10.8 10.72 10.62 10.67 10.65 10.66 10.87 10.86]*1e-3;
-        elseif (pointwiseLoading && p==200) || (~pointwiseLoading && p==200/L_hori_dura)
+        elseif loading==200
             ux_exp_start = -6.16*1e-3;
             ux_exp_end = -[16.78 16.74 16.72 17.13 17 16.8 16.87 16.78 17.04 16.82 16.71 17.17]*1e-3;
         end
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
-        ci_u_exp = quantile(ux_exp_end - ux_exp_start,probs);
+        env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
         
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
-        fprintf('ux_exp   = %g m, error = %.3e\n',ux_exp,err_ux);
-        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
-        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
-        fprintf('\n');
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf(fid,'ux_exp   = %g m, error(mean(ux)) = %.3e, env(ux_exp) = [%g %g] m\n',ux_exp,err_ux,env_ux_exp);
+        fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
     case 'statichori2'
-        if (pointwiseLoading && p==100) || (~pointwiseLoading && p==100/L_hori_dura)
+        if loading==100
             ux_exp_start = 2.12*1e-3;
             ux_exp_end = [6.22 6.17 6.26 6.31 6.33 6.24 6.26 6.4 6.26 6.49 6.48 6.42 6.36 6.56 6.37 6.39]*1e-3;
-        elseif (pointwiseLoading && p==200) || (~pointwiseLoading && p==200/L_hori_dura)
+        elseif loading==200
             ux_exp_start = 1.91*1e-3;
             ux_exp_end = [12.45 12.68 12.66 12.65 12.71 12.64 12.82 12.73 12.89 12.86 12.79 12.86]*1e-3;
         end
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
-        ci_u_exp = quantile(ux_exp_end - ux_exp_start,probs);
+        env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
         
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
-        fprintf('ux_exp   = %g m, error = %.3e\n',ux_exp,err_ux);
-        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
-        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
-        fprintf('\n');
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf(fid,'ux_exp   = %g m, error(mean(ux)) = %.3e, env(ux_exp) = [%g %g] m\n',ux_exp,err_ux,env_ux_exp);
+        fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
     case 'statichori3'
         uy_exp_start = -3.77*1e-3;
         uy_exp_end = -[4.71 4.73 4.69 4.56 4.47 4.73]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
-        ci_u_exp = quantile(uy_exp_end - uy_exp_start,probs);
+        env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
         
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
-        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
-        fprintf('uy_exp   = %g m, error = %.3e\n',uy_exp,err_uy);
-        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
-        fprintf('\n');
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf(fid,'uy_exp   = %g m, error(mean(uy)) = %.3e, env(uy_exp) = [%g %g] m\n',uy_exp,err_uy,env_uy_exp);
+        fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
     case 'statichori4'
         uy_exp_start = 9.71*1e-3;
         uy_exp_end = [12.21 12.2 12.2 12.23 12.2 12.19 12.21]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
-        ci_u_exp = quantile(uy_exp_end - uy_exp_start,probs);
+        env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
         
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
-        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
-        fprintf('uy_exp   = %g m, error = %.3e\n',uy_exp,err_uy);
-        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
-        fprintf('\n');
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf(fid,'uy_exp   = %g m, error(mean(uy)) = %.3e, env(uy_exp) = [%g %g] m\n',uy_exp,err_uy,env_uy_exp);
+        fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
     case 'staticvert'
-        if (pointwiseLoading && p==300) || (~pointwiseLoading && p==300/Sec_vert_stab)
+        if loading==300
             uz_exp_start = -0.69*1e-3;
             uz_exp_end = -[10.10 9.88 9.64 9.88 9.94 9.79 9.92 9.93 9.82 9.95]*1e-3;
-        elseif (pointwiseLoading && p==400) || (~pointwiseLoading && p==400/Sec_vert_stab)
+        elseif loading==400
             uz_exp_start = -0.75*1e-3;
             uz_exp_end = -[13.45 13.52 13.56 13.64 13.65 13.74 13.75 13.44 13.74 13.53]*1e-3;
-        elseif (pointwiseLoading && p==500) || (~pointwiseLoading && p==500/Sec_vert_stab)
+        elseif loading==500
             uz_exp_start = -0.78*1e-3;
             uz_exp_end = -[16.66 16.57 16.59 16.78 16.55 16.69 16.75 16.59 16.73 16.76]*1e-3;
         end
         uz_exp = mean(uz_exp_end - uz_exp_start);
         err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
-        ci_u_exp = quantile(uz_exp_end - uz_exp_start,probs);
+        env_uz_exp = [min(uz_exp_end - uz_exp_start),max(uz_exp_end - uz_exp_start)];
         
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
-        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
-        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
-        fprintf('uz_exp   = %g m, error = %.3e\n',uz_exp,err_uz);
-        fprintf('\n');
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
+        fprintf(fid,'uz_exp   = %g m, error(mean(uz)) = %.3e, env(uz_exp) = [%g %g] m\n',uz_exp,err_uz,env_uz_exp);
     case 'durabilityhori1'
         ux_exp_start = -4.42*1e-3;
         ux_exp_end = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
-        ci_u_exp = quantile(ux_exp_end - ux_exp_start,probs);
+        env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
         
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
-        fprintf('ux_exp   = %g m, error = %.3e\n',ux_exp,err_ux);
-        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
-        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
-        fprintf('\n');
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf(fid,'ux_exp   = %g m, error(mean(ux)) = %.3e, env(ux_exp) = [%g %g] m\n',ux_exp,err_ux,env_ux_exp);
+        fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
     case 'durabilityhori2'
         ux_exp_start = 3.48*1e-3;
         ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;
         ux_exp = mean(ux_exp_end - ux_exp_start);
         err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
-        ci_u_exp = quantile(ux_exp_end - ux_exp_start,probs);
+        env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
         
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
-        fprintf('ux_exp   = %g m, error = %.3e\n',ux_exp,err_ux);
-        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
-        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
-        fprintf('\n');
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf(fid,'ux_exp   = %g m, error(mean(ux)) = %.3e, env(ux_exp) = [%g %g] m\n',ux_exp,err_ux,env_ux_exp);
+        fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
     case 'durabilityhori3'
         uy_exp_start = 3.35*1e-3;
         uy_exp_end = [6.16 5.76 5.97 5.81 5.84 5.61 5.86 5.64 5.62 5.68]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
-        ci_u_exp = quantile(uy_exp_end - uy_exp_start,probs);
+        env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
         
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
-        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
-        fprintf('uy_exp   = %g m, error = %.3e\n',uy_exp,err_uy);
-        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
-        fprintf('\n');
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf(fid,'uy_exp   = %g m, error(mean(uy)) = %.3e, env(uy_exp) = [%g %g] m\n',uy_exp,err_uy,env_uy_exp);
+        fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
     case 'durabilityhori4'
         uy_exp_start = -3.75*1e-3;
         uy_exp_end = -[3.89 3.88 3.89 3.88 3.89]*1e-3;
         uy_exp = mean(uy_exp_end - uy_exp_start);
         err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
-        ci_u_exp = quantile(uy_exp_end - uy_exp_start,probs);
+        env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
         
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
-        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
-        fprintf('uy_exp   = %g m, error = %.3e\n',uy_exp,err_uy);
-        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
-        fprintf('\n');
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf(fid,'uy_exp   = %g m, error(mean(uy)) = %.3e, env(uy_exp) = [%g %g] m\n',uy_exp,err_uy,env_uy_exp);
+        fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
     case 'stabilityvert'
         uz_exp_start = -1.93*1e-3;
         uz_exp_end = -[18.46 18.44 18.53 18.58 18.59 18.7 18.77 18.73 18.85 18.76]*1e-3;
         uz_exp = mean(uz_exp_end - uz_exp_start);
         err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
-        ci_u_exp = quantile(uz_exp_end - uz_exp_start,probs);
+        env_uz_exp = [min(uz_exp_end - uz_exp_start),max(uz_exp_end - uz_exp_start)];
         
-        fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-        fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
-        fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
-        fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
-        fprintf('uz_exp   = %g m, error = %.3e\n',uz_exp,err_uz);
-        fprintf('\n');
+        fprintf(fid,'\n');
+        fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+        fprintf(fid,'mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+        fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+        fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
+        fprintf(fid,'uz_exp   = %g m, error(mean(uz)) = %.3e, env(uz_exp) = [%g %g] m\n',uz_exp,err_uz,env_uz_exp);
 end
 
-fprintf('Rotation r at point (%g,%g,%g) m\n',double(P));
-fprintf('mean(rx) = %g rad = %g deg, std(rx) = %g rad = %g deg, ci(rx) = [%g %g] rad = [%g %g] deg\n',mean_rx,rad2deg(mean_rx),std_rx,rad2deg(std_rx),ci_rx(1),ci_rx(2),rad2deg(ci_rx(1)),rad2deg(ci_rx(2)));
-fprintf('mean(ry) = %g rad = %g deg, std(ry) = %g rad = %g deg, ci(ry) = [%g %g] rad = [%g %g] deg\n',mean_ry,rad2deg(mean_ry),std_ry,rad2deg(std_ry),ci_ry(1),ci_ry(2),rad2deg(ci_ry(1)),rad2deg(ci_ry(2)));
-fprintf('mean(rz) = %g rad = %g deg, std(rz) = %g rad = %g deg, ci(rz) = [%g %g] rad = [%g %g] deg\n',mean_rz,rad2deg(mean_rz),std_rz,rad2deg(std_rz),ci_rz(1),ci_rz(2),rad2deg(ci_rz(1)),rad2deg(ci_rz(2)));
-fprintf('\n');
+fprintf(fid,'\n');
+fprintf(fid,'Rotation r at point (%g,%g,%g) m\n',double(P));
+fprintf(fid,'mean(rx) = %g rad = %g deg, std(rx) = %g rad = %g deg, ci(rx) = [%g %g] rad = [%g %g] deg\n',mean_rx,rad2deg(mean_rx),std_rx,rad2deg(std_rx),ci_rx(1),ci_rx(2),rad2deg(ci_rx(1)),rad2deg(ci_rx(2)));
+fprintf(fid,'mean(ry) = %g rad = %g deg, std(ry) = %g rad = %g deg, ci(ry) = [%g %g] rad = [%g %g] deg\n',mean_ry,rad2deg(mean_ry),std_ry,rad2deg(std_ry),ci_ry(1),ci_ry(2),rad2deg(ci_ry(1)),rad2deg(ci_ry(2)));
+fprintf(fid,'mean(rz) = %g rad = %g deg, std(rz) = %g rad = %g deg, ci(rz) = [%g %g] rad = [%g %g] deg\n',mean_rz,rad2deg(mean_rz),std_rz,rad2deg(std_rz),ci_rz(1),ci_rz(2),rad2deg(ci_rz(1)),rad2deg(ci_rz(2)));
+fclose(fid);
+type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
 if displaySolution
@@ -846,71 +1000,74 @@ if displaySolution
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display solution
-    % ampl = 0;
-    ampl = getsize(S)/max(abs(mean_U))/20;
+    ampl = 0;
+    % ampl = getsize(S)/max(abs(mean_U))/20;
     options = {'solid',true};
     % options = {};
     
+    mean_u_mm = mean_u*1e3; % [mm]
+    std_u_mm = std_u*1e3; % [mm]
+    
     switch lower(test)
         case {'statichori1','statichori2','durabilityhori1','durabilityhori2'}
-            plotSolution(S,mean_u,'displ',1,'ampl',ampl,options{:});
+            plotSolution(S,mean_u_mm,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Ux',formats,renderer);
             
-            plotSolution(S,std_u,'displ',1,'ampl',ampl,options{:});
+            plotSolution(S,std_u_mm,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Ux',formats,renderer);
         case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
-            plotSolution(S,mean_u,'displ',2,'ampl',ampl,options{:});
+            plotSolution(S,mean_u_mm,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Uy',formats,renderer);
             
-            plotSolution(S,std_u,'displ',2,'ampl',ampl,options{:});
+            plotSolution(S,std_u_mm,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Uy',formats,renderer);
         case {'staticvert','stabilityvert','impact','drop'}
-            plotSolution(S,mean_u,'displ',3,'ampl',ampl,options{:});
+            plotSolution(S,mean_u_mm,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Uz',formats,renderer);
             
-            plotSolution(S,std_u,'displ',3,'ampl',ampl,options{:});
+            plotSolution(S,std_u_mm,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Uz',formats,renderer);
     end
 end
 
-%% Display convergence Monte-Carlo
+%% Display convergence
 if displayCv
     N = size(u,2);
     switch lower(test)
         case {'stabilityvert','staticvert','impact','drop'}
             means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UZ'),1:N);
             stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UZ'),1:N);
-            lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UZ'),1:N);
-            uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UZ'),1:N);
+            lbs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UZ'),1:N);
+            ubs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UZ'),1:N);
+            mean_u_exp = uz_exp;
+            lbs_u_exp = env_uz_exp(1);
+            ubs_u_exp = env_uz_exp(2);
         case {'statichori1','statichori2','durabilityhori1','durabilityhori2'}
             means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UX'),1:N);
             stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UX'),1:N);
-            lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UX'),1:N);
-            uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UX'),1:N);
+            lbs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UX'),1:N);
+            ubs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UX'),1:N);
+            mean_u_exp = ux_exp;
+            lbs_u_exp = env_ux_exp(1);
+            ubs_u_exp = env_ux_exp(2);
         case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
             means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UY'),1:N);
             stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UY'),1:N);
-            lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UY'),1:N);
-            uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UY'),1:N);
+            lbs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UY'),1:N);
+            ubs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UY'),1:N);
+            mean_u_exp = uy_exp;
+            lbs_u_exp = env_uy_exp(1);
+            ubs_u_exp = env_uy_exp(2);
     end
-    uppercis_u_exp = ci_u_exp(1);
-    lowercis_u_exp = ci_u_exp(2);
     
     figure('Name','Convergence solution')
     clf
-    ciplot(lowercis_u,uppercis_u,1:N,'b');
+    ciplot(lbs_u*1e3,ubs_u*1e3,1:N,'b');
     hold on
-    ciplot(repmat(lowercis_u_exp,1,N),repmat(uppercis_u_exp,1,N),1:N,'r');
+    ciplot([lbs_u_exp,lbs_u_exp]*1e3,[ubs_u_exp,ubs_u_exp]*1e3,[1,N],'r');
     alpha(0.2)
-    plot(1:N,means_u,'-b','LineWidth',linewidth)
-    switch lower(test)
-        case {'stabilityvert','staticvert'}
-            plot(1:N,repmat(uz_exp,1,N),'-r','LineWidth',linewidth)
-        case {'statichori1','statichori2','durabilityhori1','durabilityhori2'}
-            plot(1:N,repmat(ux_exp,1,N),'-r','LineWidth',linewidth)
-        case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
-            plot(1:N,repmat(uy_exp,1,N),'-r','LineWidth',linewidth)
-    end
+    plot(1:N,means_u*1e3,'-b','LineWidth',linewidth)
+    plot([1,N],[mean_u_exp,mean_u_exp]*1e3,'-r','LineWidth',linewidth)
     hold off
     grid on
     box on
@@ -919,22 +1076,22 @@ if displayCv
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
     switch lower(test)
         case {'stabilityvert','staticvert'}
-            ylabel('Vertical displacement [m]','Interpreter',interpreter)
-            %ylabel('D\''eplacement vertical [m]','Interpreter',interpreter)
+            ylabel('Vertical displacement [mm]','Interpreter',interpreter)
+            %ylabel('D\''eplacement vertical [mm]','Interpreter',interpreter)
         case {'statichori1','statichori2','durabilityhori1','durabilityhori2',...
                 'statichori3','statichori4','durabilityhori3','durabilityhori4'}
-            ylabel('Horizontal displacement [m]','Interpreter',interpreter)
-            %ylabel('D\''eplacement horizontal [m]','Interpreter',interpreter)
+            ylabel('Horizontal displacement [mm]','Interpreter',interpreter)
+            %ylabel('D\''eplacement horizontal [mm]','Interpreter',interpreter)
     end
     switch lower(test)
         case {'stabilityvert','staticvert','statichori1','statichori2','durabilityhori1','durabilityhori2',...
                 'statichori3','statichori4','durabilityhori3','durabilityhori4'}
-            legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],...
-                [num2str((probs(2)-probs(1))*100) '% confidence interval'],...
-                'mean value','experimental value'})
-            %legend({['intervalle de confiance à ' num2str((probs(2)-probs(1))*100) '%'],...
-            %    'intervalle de confiance à ' [num2str((probs(2)-probs(1))*100) '%'],...
-            %    'valeur moyenne','valeur exp\''erimentale'})
+            legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+                'experimental envelope',...
+                'mean value','experimental mean value'},'Interpreter',interpreter)
+            % legend({['intervalle de confiance \`a $' num2str((probs(2)-probs(1))*100) '\%$'],...
+            %     'enveloppe exp\''erimentale',...
+            %    'valeur moyenne','valeur moyenne exp\''erimentale'},'Interpreter',interpreter)
         case{'impact','drop'}
             
     end
@@ -943,31 +1100,32 @@ if displayCv
     
     figure('Name','Convergence mean')
     clf
-    plot(1:N,means_u,'-b','LineWidth',linewidth)
+    plot(1:N,means_u*1e3,'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Number of samples','Interpreter',interpreter)
-    ylabel('Mean value','Interpreter',interpreter)
+    ylabel('Mean value [mm]','Interpreter',interpreter)
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-    %ylabel('Moyenne','Interpreter',interpreter)
+    %ylabel('Moyenne [mm]','Interpreter',interpreter)
     mysaveas(pathname,'convergence_mean',formats,renderer);
     mymatlab2tikz(pathname,'convergence_mean.tex');
     
     figure('Name','Convergence standard deviation')
     clf
-    plot(1:N,stds_u,'-r','LineWidth',linewidth)
+    plot(1:N,stds_u*1e3,'-r','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Number of samples','Interpreter',interpreter)
-    ylabel('Standard deviation','Interpreter',interpreter)
+    ylabel('Standard deviation [mm]','Interpreter',interpreter)
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
-    %ylabel('Ecart-type','Interpreter',interpreter)
+    %ylabel('Ecart-type [mm]','Interpreter',interpreter)
     mysaveas(pathname,'convergence_std',formats,renderer);
     mymatlab2tikz(pathname,'convergence_std.tex');
 end
 
+end
 end
 
 myparallel('stop');

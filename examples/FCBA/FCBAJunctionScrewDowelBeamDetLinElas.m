@@ -7,7 +7,7 @@ close all
 
 %% Input data
 solveProblem = true;
-displaySolution = true;
+displaySolution = false;
 
 filename = 'FCBAJunctionScrewDowelBeamDetLinElas';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
