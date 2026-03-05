@@ -285,7 +285,7 @@ filenameResults = fullfile(pathname,'results.txt');
 fid = fopen(filenameResults,'w');
 fprintf(fid,'Junction %s\n',junction_sample);
 fprintf(fid,'\n');
-fprintf(fid,['mesh : ' elemtype ' elements\n']);
+fprintf(fid,'mesh = %s elements\n',elemtype);
 fprintf(fid,'nb elements = %g\n',getnbelem(S));
 fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
 fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
