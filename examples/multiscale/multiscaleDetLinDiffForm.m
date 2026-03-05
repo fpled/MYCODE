@@ -19,7 +19,8 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-formats = {'fig','epsc'};
+
+formats = {'epsc'};
 renderer = 'OpenGL';
 
 %% Problem
