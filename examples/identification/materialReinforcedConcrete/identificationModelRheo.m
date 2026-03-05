@@ -10,11 +10,6 @@ clearvars
 close all
 myparallel('start');
 
-fontsize = 16;
-linewidth = 1;
-interpreter = 'latex';
-formats = {'fig','epsc'};
-
 damageFun = 2; % choice for damage function
 
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
@@ -22,6 +17,11 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
+
+fontsize = 16;
+linewidth = 1;
+interpreter = 'latex';
+formats = {'epsc'};
 
 %% Experimental data
 pathnameExp = fileparts(mfilename('fullpath'));

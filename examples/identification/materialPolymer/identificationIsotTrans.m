@@ -6,10 +6,6 @@ clearvars
 close all
 myparallel('start');
 
-fontsize = 16;
-interpreter = 'latex';
-formats = {'fig','epsc'};
-
 % structure = 'plate';
 structure = 'plate_hole';
 
@@ -18,6 +14,10 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
+
+fontsize = 16;
+interpreter = 'latex';
+formats = {'epsc'};
 
 %% Domains and meshes
 D = DOMAIN(2,[36.3462,66.6026],[89.6795,83.0128]); % [mm]

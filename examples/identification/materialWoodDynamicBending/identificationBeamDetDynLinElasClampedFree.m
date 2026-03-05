@@ -26,7 +26,7 @@ end
 
 fontsize = 16;
 interpreter = 'latex';
-formats = {'fig','epsc','png'};
+formats = {'epsc','png'};
 renderer = 'OpenGL';
 
 %% Experimental data
@@ -290,12 +290,12 @@ end
 
 %% Outputs
 fprintf('\n');
-fprintf(['data file : ' filenameCamera '\n']);
-fprintf(['spatial mesh : ' elemtype ' elements\n']);
+fprintf('data file = %s\n',filenameCamera);
+fprintf('spatial mesh = %s elements\n',elemtype);
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
-fprintf('time solver : %s\n',class(N));
+fprintf('time solver = %s\n',class(N));
 fprintf('nb time steps = %g\n',getnt(ut));
 fprintf('nb time dofs  = %g\n',getnbtimedof(ut));
 fprintf('elapsed time = %f s for identification\n',timeIdentification);

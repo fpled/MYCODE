@@ -5,16 +5,16 @@
 clearvars
 close all
 
-fontsize = 16;
-linewidth = 1;
-interpreter = 'latex';
-formats = {'fig','epsc'};
-
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','identification','materialWoodCyclicCompression');
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
+
+fontsize = 16;
+linewidth = 1;
+interpreter = 'latex';
+formats = {'epsc'};
 
 %% Input data
 %F = [120 240 360 480 600 720];
