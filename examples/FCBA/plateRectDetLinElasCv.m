@@ -27,7 +27,7 @@ nbelems = 2.^(1:7);
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc','png'};
 renderer = 'OpenGL';
 
 for ib=1:length(boundaries)
@@ -307,34 +307,38 @@ err_Ry(i) = err_Ry_i;
 time(i) = time_i;
 Nbelem(i) = getnbelem(S);
 
-fprintf('Rectangular plate\n');
-fprintf('\n');
-fprintf(['boundary : ' boundary '\n']);
-fprintf(['load     : ' loading '\n']);
-fprintf(['mesh     : ' elemtype ' ' meshtype ' elements\n']);
-fprintf('nb elements = %g\n',Nbelem(i));
-fprintf('nb nodes    = %g\n',getnbnode(S));
-fprintf('nb dofs     = %g\n',getnbddl(S));
-fprintf('span-to-thickness ratio = %g\n',max(a,b)/h);
-fprintf('error = %.3e for Uz\n',err_Uz(i));
-fprintf('      = %.3e for Rx\n',err_Rx(i));
-fprintf('      = %.3e for Ry\n',err_Ry(i));
-fprintf('elapsed time = %f s\n',time(i));
+filenameResults = fullfile(pathname,'results.txt');
+fid = fopen(filenameResults,'w');
+fprintf(fid,'Rectangular plate\n');
+fprintf(fid,'\n');
+fprintf(fid,['boundary : ' boundary '\n']);
+fprintf(fid,['load     : ' loading '\n']);
+fprintf(fid,['mesh     : ' elemtype ' ' meshtype ' elements\n']);
+fprintf(fid,'nb elements = %g\n',Nbelem(i));
+fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+fprintf(fid,'span-to-thickness ratio = %g\n',max(a,b)/h);
+fprintf(fid,'error = %.3e for Uz\n',err_Uz(i));
+fprintf(fid,'      = %.3e for Rx\n',err_Rx(i));
+fprintf(fid,'      = %.3e for Ry\n',err_Ry(i));
+fprintf(fid,'elapsed time = %f s\n',time(i));
 
-fprintf('\n');
-fprintf('Displacement u at point (%g,%g,%g)\n',double(P));
-fprintf('ux    = %g\n',ux);
-fprintf('uy    = %g\n',uy);
-fprintf('uz    = %g\n',uz);
-fprintf('uz_ex = %g, error = %.3e\n',uz_ex,err_uz);
+fprintf(fid,'\n');
+fprintf(fid,'Displacement u at point (%g,%g,%g)\n',double(P));
+fprintf(fid,'ux    = %g\n',ux);
+fprintf(fid,'uy    = %g\n',uy);
+fprintf(fid,'uz    = %g\n',uz);
+fprintf(fid,'uz_ex = %g, error = %.3e\n',uz_ex,err_uz);
 
-fprintf('\n');
-fprintf('Rotation r at point (%g,%g,%g)\n',double(P));
-fprintf('rx    = %g\n',rx);
-fprintf('rx_ex = %g, error = %.3e\n',rx_ex,err_rx);
-fprintf('ry    = %g\n',ry);
-fprintf('ry_ex = %g, error = %.3e\n',ry_ex,err_ry);
-fprintf('rz    = %g\n',rz);
+fprintf(fid,'\n');
+fprintf(fid,'Rotation r at point (%g,%g,%g)\n',double(P));
+fprintf(fid,'rx    = %g\n',rx);
+fprintf(fid,'rx_ex = %g, error = %.3e\n',rx_ex,err_rx);
+fprintf(fid,'ry    = %g\n',ry);
+fprintf(fid,'ry_ex = %g, error = %.3e\n',ry_ex,err_ry);
+fprintf(fid,'rz    = %g\n',rz);
+fclose(fid);
+type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
 if displaySolution
