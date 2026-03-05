@@ -7,7 +7,7 @@ close all
 
 %% Input data
 solveProblem = true;
-displaySolution = true;
+displaySolution = false;
 
 Dim = 2; % space dimension Dim = 2, 3
 filename = ['beamDetLinElas_' num2str(Dim) 'D'];
