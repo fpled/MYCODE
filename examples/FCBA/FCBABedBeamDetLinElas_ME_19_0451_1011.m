@@ -9,16 +9,22 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-% tests = {'StaticHoriIn'}; % strength test under static horizontal inward load
-tests = {'StaticHoriOut'}; % strength test under static horizontal outward load
-% tests = {'StaticVertUp'}; % strength test under static vertical upward load
+% tests = {'StaticHoriIn'};   % strength test under static horizontal inward load
+tests = {'StaticHoriOut'};  % strength test under static horizontal outward load
+% tests = {'StaticVertUp'};   % strength test under static vertical upward load
 % tests = {'StaticVertDown'}; % strength test under static vertical downward load
+
 % tests = {'StaticHoriIn','StaticHoriOut','StaticVertUp','StaticVertDown'};
 
-junction = false; % junction modeling
 % materialSym = 'isot'; % isotropic material symmetry class
 materialSym = 'isotTrans'; % transversely isotropic material symmetry class
 slat = true; % slat modeling
+
+fontsize = 16;
+linewidth = 1;
+interpreter = 'latex';
+formats = {'epsc','png'};
+renderer = 'OpenGL';
 
 for it=1:length(tests)
     test = tests{it};
@@ -29,12 +35,6 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-
-fontsize = 16;
-linewidth = 1;
-interpreter = 'latex';
-formats = {'fig','epsc','png'};
-renderer = 'OpenGL';
 
 %% Problem
 if solveProblem
@@ -432,73 +432,77 @@ else
 end
 
 %% Outputs
-fprintf('\nBed\n');
-fprintf(['test : ' test '\n']);
-fprintf('nb elements = %g\n',getnbelem(S));
-fprintf('nb nodes    = %g\n',getnbnode(S));
-fprintf('nb dofs     = %g\n',getnbddl(S));
-fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
+filenameResults = fullfile(pathname,'results.txt');
+fid = fopen(filenameResults,'w');
+fprintf(fid,'Bed\n');
+fprintf(fid,'\n');
+fprintf(fid,'test = %s\n',test);
+fprintf(fid,'nb elements = %g\n',getnbelem(S));
+fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+fprintf(fid,'elapsed time = %f s\n',time);
 
-fprintf('Displacement u and rotation r at point (%g,%g,%g) m\n',double(P));
-fprintf('ux = %g m\n',ux);
-fprintf('uy = %g m\n',uy);
-fprintf('uz = %g m\n',uz);
-fprintf('rx = %g rad = %g deg\n',rx,rad2deg(rx));
-fprintf('ry = %g rad = %g deg\n',ry,rad2deg(ry));
-fprintf('rz = %g rad = %g deg\n',rz,rad2deg(rz));
-fprintf('\n');
+fprintf(fid,'\n');
+fprintf(fid,'Displacement u and rotation r at point (%g,%g,%g) m\n',double(P));
+fprintf(fid,'ux = %g m\n',ux);
+fprintf(fid,'uy = %g m\n',uy);
+fprintf(fid,'uz = %g m\n',uz);
+fprintf(fid,'rx = %g rad = %g deg\n',rx,rad2deg(rx));
+fprintf(fid,'ry = %g rad = %g deg\n',ry,rad2deg(ry));
+fprintf(fid,'rz = %g rad = %g deg\n',rz,rad2deg(rz));
 
-fprintf('Maximum force N and moments Mx, My, Mz at point (%g,%g,%g) m\n',double(P));
-fprintf('N  = %g N\n',n);
-fprintf('Mx = %g N.m\n',mx);
-fprintf('My = %g N.m\n',my);
-fprintf('Mz = %g N.m\n',mz);
-fprintf('\n');
+fprintf(fid,'\n');
+fprintf(fid,'Maximum force N and moments Mx, My, Mz at point (%g,%g,%g) m\n',double(P));
+fprintf(fid,'N  = %g N\n',n);
+fprintf(fid,'Mx = %g N.m\n',mx);
+fprintf(fid,'My = %g N.m\n',my);
+fprintf(fid,'Mz = %g N.m\n',mz);
 
-fprintf('Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point (%g,%g,%g) m\n',double(P));
-fprintf('Epsx = %g\n',epsx);
-fprintf('Gamx = %g\n',gamx);
-fprintf('Gamy = %g\n',gamy);
-fprintf('Gamz = %g\n',gamz);
-fprintf('\n');
+fprintf(fid,'\n');
+fprintf(fid,'Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point (%g,%g,%g) m\n',double(P));
+fprintf(fid,'Epsx = %g\n',epsx);
+fprintf(fid,'Gamx = %g\n',gamx);
+fprintf(fid,'Gamy = %g\n',gamy);
+fprintf(fid,'Gamz = %g\n',gamz);
 
-fprintf('Maximum displacement u and rotation r\n');
+fprintf(fid,'\n');
+fprintf(fid,'Maximum displacement u and rotation r\n');
 Puxmax = POINT(getcoord(S.node(numnodeUxmax)));
 Puymax = POINT(getcoord(S.node(numnodeUymax)));
 Puzmax = POINT(getcoord(S.node(numnodeUzmax)));
 Prxmax = POINT(getcoord(S.node(numnodeRxmax)));
 Prymax = POINT(getcoord(S.node(numnodeRymax)));
 Przmax = POINT(getcoord(S.node(numnodeRzmax)));
-fprintf('ux = %g m at point (%g,%g,%g) m\n',uxmax,double(Puxmax));
-fprintf('uy = %g m at point (%g,%g,%g) m\n',uymax,double(Puymax));
-fprintf('uz = %g m at point (%g,%g,%g) m\n',uzmax,double(Puzmax));
-fprintf('rx = %g rad = %g deg at point (%g,%g,%g) m\n',rxmax,rad2deg(rxmax),double(Prxmax));
-fprintf('ry = %g rad = %g deg at point (%g,%g,%g) m\n',rymax,rad2deg(rymax),double(Prymax));
-fprintf('rz = %g rad = %g deg at point (%g,%g,%g) m\n',rzmax,rad2deg(rzmax),double(Przmax));
-fprintf('\n');
+fprintf(fid,'ux = %g m at point (%g,%g,%g) m\n',uxmax,double(Puxmax));
+fprintf(fid,'uy = %g m at point (%g,%g,%g) m\n',uymax,double(Puymax));
+fprintf(fid,'uz = %g m at point (%g,%g,%g) m\n',uzmax,double(Puzmax));
+fprintf(fid,'rx = %g rad = %g deg at point (%g,%g,%g) m\n',rxmax,rad2deg(rxmax),double(Prxmax));
+fprintf(fid,'ry = %g rad = %g deg at point (%g,%g,%g) m\n',rymax,rad2deg(rymax),double(Prymax));
+fprintf(fid,'rz = %g rad = %g deg at point (%g,%g,%g) m\n',rzmax,rad2deg(rzmax),double(Przmax));
 
-fprintf('Maximum force N and moments Mx, My, Mz\n');
+fprintf(fid,'\n');
+fprintf(fid,'Maximum force N and moments Mx, My, Mz\n');
 PNmax = POINT(getcoord(S.node(numgroupelemnodeNmax(2))));
 PMxmax = POINT(getcoord(S.node(numgroupelemnodeMxmax(2))));
 PMymax = POINT(getcoord(S.node(numgroupelemnodeMymax(2))));
 PMzmax = POINT(getcoord(S.node(numgroupelemnodeMzmax(2))));
-fprintf('N  = %g N in groupelem #%d at point (%g,%g,%g) m\n',nmax,numgroupelemnodeNmax(1),double(PNmax));
-fprintf('Mx = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mxmax,numgroupelemnodeMxmax(1),double(PMxmax));
-fprintf('My = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mymax,numgroupelemnodeMymax(1),double(PMymax));
-fprintf('Mz = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mzmax,numgroupelemnodeMzmax(1),double(PMzmax));
-fprintf('\n');
+fprintf(fid,'N  = %g N in groupelem #%d at point (%g,%g,%g) m\n',nmax,numgroupelemnodeNmax(1),double(PNmax));
+fprintf(fid,'Mx = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mxmax,numgroupelemnodeMxmax(1),double(PMxmax));
+fprintf(fid,'My = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mymax,numgroupelemnodeMymax(1),double(PMymax));
+fprintf(fid,'Mz = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mzmax,numgroupelemnodeMzmax(1),double(PMzmax));
 
-fprintf('Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz\n');
+fprintf(fid,'\n');
+fprintf(fid,'Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz\n');
 PEpsxmax = POINT(getcoord(S.node(numgroupelemnodeEpsxmax(2))));
 PGamxmax = POINT(getcoord(S.node(numgroupelemnodeGamxmax(2))));
 PGamymax = POINT(getcoord(S.node(numgroupelemnodeGamymax(2))));
 PGamzmax = POINT(getcoord(S.node(numgroupelemnodeGamzmax(2))));
-fprintf('Epsx = %g in groupelem #%d at point (%g,%g,%g) m\n',epsxmax,numgroupelemnodeEpsxmax(1),double(PEpsxmax));
-fprintf('Gamx = %g in groupelem #%d at point (%g,%g,%g) m\n',gamxmax,numgroupelemnodeGamxmax(1),double(PGamxmax));
-fprintf('Gamy = %g in groupelem #%d at point (%g,%g,%g) m\n',gamymax,numgroupelemnodeGamymax(1),double(PGamymax));
-fprintf('Gamz = %g in groupelem #%d at point (%g,%g,%g) m\n',gamzmax,numgroupelemnodeGamzmax(1),double(PGamzmax));
-fprintf('\n');
+fprintf(fid,'Epsx = %g in groupelem #%d at point (%g,%g,%g) m\n',epsxmax,numgroupelemnodeEpsxmax(1),double(PEpsxmax));
+fprintf(fid,'Gamx = %g in groupelem #%d at point (%g,%g,%g) m\n',gamxmax,numgroupelemnodeGamxmax(1),double(PGamxmax));
+fprintf(fid,'Gamy = %g in groupelem #%d at point (%g,%g,%g) m\n',gamymax,numgroupelemnodeGamymax(1),double(PGamymax));
+fprintf(fid,'Gamz = %g in groupelem #%d at point (%g,%g,%g) m\n',gamzmax,numgroupelemnodeGamzmax(1),double(PGamzmax));
+fclose(fid);
+type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
 if displaySolution
@@ -530,17 +534,17 @@ if displaySolution
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
-%     figure('Name','Group of elements')
-%     plotparamelem(S,'group')
-%     mysaveas(pathname,'groupelem',formats,renderer);
+    % figure('Name','Group of elements')
+    % plotparamelem(S,'group')
+    % mysaveas(pathname,'groupelem',formats,renderer);
     
-%     figure('Name','Materials')
-%     plotparamelem(S,'material')
-%     mysaveas(pathname,'material',formats,renderer);
+    % figure('Name','Materials')
+    % plotparamelem(S,'material')
+    % mysaveas(pathname,'material',formats,renderer);
     
-%     plotDomain(S,'legend',false);
-%     mysaveas(pathname,'domain',formats,renderer);
-%     mymatlab2tikz(pathname,'domain.tex');
+    % plotDomain(S,'legend',false);
+    % mysaveas(pathname,'domain',formats,renderer);
+    % mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     ampl = 5;
@@ -583,14 +587,14 @@ if displaySolution
     mysaveas(pathname,'Uz',formats,renderer);
     
     % Rotations
-%     plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
-%     mysaveas(pathname,'Rx',formats,renderer);
-%     
-%     plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
-%     mysaveas(pathname,'Ry',formats,renderer);
-%     
-%     plotSolution(S,u,'rotation',3,'ampl',ampl,options{:});
-%     mysaveas(pathname,'Rz',formats,renderer);
+    % plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Rx',formats,renderer);
+    % 
+    % plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Ry',formats,renderer);
+    % 
+    % plotSolution(S,u,'rotation',3,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Rz',formats,renderer);
     
     % DO NOT WORK WITH BEAM ELEMENTS
     % Strains
@@ -620,33 +624,33 @@ if displaySolution
     % mysaveas(pathname,'Mz',formats,renderer);
     
     % Strains
-%     figure('Name','Solution Epsx')
-%     clf
-%     plot(e,S+ampl*u,'compo','EPSX')
-%     colorbar
-%     set(gca,'FontSize',fontsize)
-%     mysaveas(pathname,'Epsx',formats,renderer);
-%     
-%     figure('Name','Solution Gamx')
-%     clf
-%     plot(e,S+ampl*u,'compo','GAMX')
-%     colorbar
-%     set(gca,'FontSize',fontsize)
-%     mysaveas(pathname,'Gamx',formats,renderer);
-%     
-%     figure('Name','Solution Gamy')
-%     clf
-%     plot(e,S+ampl*u,'compo','GAMY')
-%     colorbar
-%     set(gca,'FontSize',fontsize)
-%     mysaveas(pathname,'Gamy',formats,renderer);
-%     
-%     figure('Name','Solution Gamz')
-%     clf
-%     plot(e,S+ampl*u,'compo','GAMZ')
-%     colorbar
-%     set(gca,'FontSize',fontsize)
-%     mysaveas(pathname,'Gamz',formats,renderer);
+    % figure('Name','Solution Epsx')
+    % clf
+    % plot(e,S+ampl*u,'compo','EPSX')
+    % colorbar
+    % set(gca,'FontSize',fontsize)
+    % mysaveas(pathname,'Epsx',formats,renderer);
+    % 
+    % figure('Name','Solution Gamx')
+    % clf
+    % plot(e,S+ampl*u,'compo','GAMX')
+    % colorbar
+    % set(gca,'FontSize',fontsize)
+    % mysaveas(pathname,'Gamx',formats,renderer);
+    % 
+    % figure('Name','Solution Gamy')
+    % clf
+    % plot(e,S+ampl*u,'compo','GAMY')
+    % colorbar
+    % set(gca,'FontSize',fontsize)
+    % mysaveas(pathname,'Gamy',formats,renderer);
+    % 
+    % figure('Name','Solution Gamz')
+    % clf
+    % plot(e,S+ampl*u,'compo','GAMZ')
+    % colorbar
+    % set(gca,'FontSize',fontsize)
+    % mysaveas(pathname,'Gamz',formats,renderer);
     
     % Stresses
     figure('Name','Solution N')

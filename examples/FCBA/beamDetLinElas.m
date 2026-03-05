@@ -19,7 +19,7 @@ end
 
 fontsize = 16;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc','png'};
 renderer = 'OpenGL';
 
 %% Problem
@@ -242,63 +242,67 @@ else
 end
 
 %% Outputs
-fprintf('\n');
-fprintf('Beam\n');
-fprintf('nb elements = %g\n',getnbelem(S));
-fprintf('nb nodes    = %g\n',getnbnode(S));
-fprintf('nb dofs     = %g\n',getnbddl(S));
-fprintf('elapsed time = %f s\n',time);
+filenameResults = fullfile(pathname,'results.txt');
+fid = fopen(filenameResults,'w');
+fprintf(fid,'Beam\n');
+fprintf(fid,'\n');
+fprintf(fid,'nb elements = %g\n',getnbelem(S));
+fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+fprintf(fid,'elapsed time = %f s\n',time);
 
-fprintf('\n');
+fprintf(fid,'\n');
 if Dim==2
-    fprintf('Displacement u and rotation r at point (%g,%g) m\n',double(P));
+    fprintf(fid,'Displacement u and rotation r at point (%g,%g) m\n',double(P));
 elseif Dim==3
-    fprintf('Displacement u and rotation r at point (%g,%g,%g) m\n',double(P));
+    fprintf(fid,'Displacement u and rotation r at point (%g,%g,%g) m\n',double(P));
 end
-fprintf('ux = %g m\n',ux);
-fprintf('uy = %g m\n',uy);
+fprintf(fid,'ux = %g m\n',ux);
+fprintf(fid,'uy = %g m\n',uy);
 if Dim==3
-    fprintf('uz = %g m\n',uz);
-    fprintf('rx = %g rad = %g deg\n',rx,rad2deg(rx));
-    fprintf('ry = %g rad = %g deg\n',ry,rad2deg(ry));
+    fprintf(fid,'uz = %g m\n',uz);
+    fprintf(fid,'rx = %g rad = %g deg\n',rx,rad2deg(rx));
+    fprintf(fid,'ry = %g rad = %g deg\n',ry,rad2deg(ry));
 end
-fprintf('rz = %g rad = %g deg\n',rz,rad2deg(rz));
+fprintf(fid,'rz = %g rad = %g deg\n',rz,rad2deg(rz));
 
-fprintf('\n');
+fprintf(fid,'\n');
 if Dim==2
-    fprintf('Force N and moment Mz at point (%g,%g) m\n',double(P));
+    fprintf(fid,'Force N and moment Mz at point (%g,%g) m\n',double(P));
 elseif Dim==3
-    fprintf('Force N and moments Mx, My, Mz at point (%g,%g,%g) m\n',double(P));
+    fprintf(fid,'Force N and moments Mx, My, Mz at point (%g,%g,%g) m\n',double(P));
 end
-fprintf('N  = %g N\n',n);
+fprintf(fid,'N  = %g N\n',n);
 if Dim==3
-    fprintf('Mx = %g N.m\n',mx);
-    fprintf('My = %g N.m\n',my);
+    fprintf(fid,'Mx = %g N.m\n',mx);
+    fprintf(fid,'My = %g N.m\n',my);
 end
-fprintf('Mz = %g N.m\n',mz);
+fprintf(fid,'Mz = %g N.m\n',mz);
 
-fprintf('\n');
+fprintf(fid,'\n');
 if Dim==2
-    fprintf('Axial strain Epsx and bending strain (curvature) Gamz at point (%g,%g) m\n',double(P));
+    fprintf(fid,'Axial strain Epsx and bending strain (curvature) Gamz at point (%g,%g) m\n',double(P));
 elseif Dim==3
-    fprintf('Axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point (%g,%g,%g) m\n',double(P));
+    fprintf(fid,'Axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point (%g,%g,%g) m\n',double(P));
 end
-fprintf('Epsx = %g\n',epsx);
+fprintf(fid,'Epsx = %g\n',epsx);
 if Dim==3
-    fprintf('Gamx = %g\n',gamx);
-    fprintf('Gamy = %g\n',gamy);
+    fprintf(fid,'Gamx = %g\n',gamx);
+    fprintf(fid,'Gamy = %g\n',gamy);
 end
-fprintf('Gamz = %g\n',gamz);
+fprintf(fid,'Gamz = %g\n',gamz);
+fclose(fid);
+type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
 if displaySolution
     %% Display domains, boundary conditions and meshes
-%     plotparamelem(S,'group')
-%     plotparamelem(S,'material')
+    % plotparamelem(S,'group')
+    % plotparamelem(S,'material')
     
-%     plotDomain(S,'legend',false);
-%     mysaveas(pathname,'domain',formats,renderer);
-%     mymatlab2tikz(pathname,'domain.tex');
+    % plotDomain(S,'legend',false);
+    % mysaveas(pathname,'domain',formats,renderer);
+    % mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     ampl = getsize(S)/max(abs(f))/10;

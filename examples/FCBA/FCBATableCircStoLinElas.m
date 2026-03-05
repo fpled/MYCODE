@@ -12,21 +12,22 @@ solveProblem = true;
 displaySolution = true;
 displayCv = true;
 
-% tests = {'StaticHori1'}; % strength test under static horizontal load 1
-% tests = {'StaticHori2'}; % strength test under static horizontal load 2
-% tests = {'StaticHori3'}; % strength test under static horizontal load 3 (lifting)
-% tests = {'StaticHori4'}; % strength test under static horizontal load 4 (lifting)
-tests = {'StaticVert'}; % strength  test under static vertical load
+% tests = {'StaticHori1'};     % strength test under static horizontal load 1
+% tests = {'StaticHori2'};     % strength test under static horizontal load 2
+% tests = {'StaticHori3'};     % strength test under static horizontal load 3 (lifting)
+% tests = {'StaticHori4'};     % strength test under static horizontal load 4 (lifting)
+tests = {'StaticVert'};      % strength  test under static vertical load
 % tests = {'DurabilityHori1'}; % durability test under horizontal load 1
 % tests = {'DurabilityHori2'}; % durability test under horizontal load 2
 % tests = {'DurabilityHori3'}; % durability test under horizontal load 3 (lifting)
 % tests = {'DurabilityHori4'}; % durability test under horizontal load 4 (lifting)
-% tests = {'StabilityVert1'}; % stability test under vertical load 1
-% tests = {'StabilityVert2'}; % stability test under vertical load 2
-% tests = {'StabilityVert3'}; % stability test under vertical load 3
-% tests = {'StabilityVert4'}; % stability test under vertical load 4
-% tests = {'Impact'}; % vertical impact test
-% tests = {'Drop'}; % drop test
+% tests = {'StabilityVert1'};  % stability test under vertical load 1
+% tests = {'StabilityVert2'};  % stability test under vertical load 2
+% tests = {'StabilityVert3'};  % stability test under vertical load 3
+% tests = {'StabilityVert4'};  % stability test under vertical load 4
+% tests = {'Impact'};          % vertical impact test
+% tests = {'Drop'};            % drop test
+
 % tests = {'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
 %     'StaticVert',...
 %     'DurabilityHori1','DurabilityHori2','DurabilityHori3','DurabilityHori4',...
@@ -37,7 +38,7 @@ belt = true; % belt modeling
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc','png'};
 renderer = 'OpenGL';
 
 for it=1:length(tests)
@@ -105,7 +106,7 @@ if solveProblem
     elemtype = 'DKT';
     r_masse = 150e-3;
     C_masse = CIRCLE(0.0,0.0,0.0,r_masse);
-    Pb = {getvertex(C,1),getvertex(C,2),getvertex(C,3),x_load_dura{4},getvertex(C,4),x_load_dura{3}};
+    Pb = {getvertex(C,1),x_load_dura{4},getvertex(C,2),x_load_dura{3},getvertex(C,3),getvertex(C,4)};
     Pe = x_load_stab;
     Pi = double(getcenter(C));
     if ~strcmp(elemtype,'QUA4') && ~strcmp(elemtype,'CUB8') && ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4') && ~strcmp(elemtype,'STOKES')
@@ -226,9 +227,9 @@ if solveProblem
         case {'stabilityvert1','stabilityvert2','stabilityvert3','stabilityvert4'}
             p = 400; % point load, pmin = 668 [N]
         case 'impact'
-            H = 180e-3; % [m]
+            p = 180e-3; % height [m]
         case 'drop'
-            H = 100e-3; % [m]
+            p = 100e-3; % height [m]
     end
     
     %% Dirichlet boundary conditions
@@ -529,37 +530,42 @@ else
 end
 
 %% Outputs
-fprintf('\nCircular table\n');
-fprintf(['test : ' test '\n']);
-fprintf(['mesh : ' elemtype ' elements\n']);
-fprintf('nb elements = %g\n',getnbelem(S_plate));
-fprintf('nb nodes    = %g\n',getnbnode(S));
-fprintf('nb dofs     = %g\n',getnbddl(S_plate));
-fprintf('span-to-thickness ratio = %g\n',r/h);
-fprintf('nb samples = %g\n',N);
-fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
+filenameResults = fullfile(pathname,'results.txt');
+fid = fopen(filenameResults,'w');
+fprintf(fid,'Circular table\n');
+fprintf(fid,'\n');
+fprintf(fid,'test = %s\n',test);
+fprintf(fid,'mesh = %s elements\n',elemtype);
+fprintf(fid,'nb elements = %g\n',getnbelem(S_plate));
+fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+fprintf(fid,'nb dofs     = %g\n',getnbddl(S_plate));
+fprintf(fid,'span-to-thickness ratio = %g\n',r/h);
+fprintf(fid,'nb samples = %g\n',N);
+fprintf(fid,'elapsed time = %f s\n',time);
+fprintf(fid,'\n');
 
-fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-fprintf('mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
-fprintf('mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
-fprintf('mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
+fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+fprintf(fid,'mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
+fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
+fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
 if strcmpi(test,'staticvert')
     uz_exp = -2.35e-3;
     err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
-    fprintf('uz_exp   = %g m, error    = %.3e\n',uz_exp,err_uz);
+    fprintf(fid,'uz_exp   = %g m, error(mean(uz)) = %.3e\n',uz_exp,err_uz);
 end
-fprintf('mean(ur) = %g m, std(ur) = %g m, ci(ur) = [%g %g] m\n',mean_ur,std_ur,ci_ur(1),ci_ur(2));
-fprintf('mean(ut) = %g m, std(ut) = %g m, ci(ut) = [%g %g] m\n',mean_ut,std_ut,ci_ut(1),ci_ut(2));
-fprintf('\n');
+fprintf(fid,'mean(ur) = %g m, std(ur) = %g m, ci(ur) = [%g %g] m\n',mean_ur,std_ur,ci_ur(1),ci_ur(2));
+fprintf(fid,'mean(ut) = %g m, std(ut) = %g m, ci(ut) = [%g %g] m\n',mean_ut,std_ut,ci_ut(1),ci_ut(2));
+fprintf(fid,'\n');
 
-fprintf('Rotation r at point (%g,%g,%g) m\n',double(P));
-fprintf('mean(rx) = %g rad = %g deg, std(rx) = %g rad = %g deg, ci(rx) = [%g %g] rad = [%g %g] deg\n',mean_rx,rad2deg(mean_rx),std_rx,rad2deg(std_rx),ci_rx(1),ci_rx(2),rad2deg(ci_rx(1)),rad2deg(ci_rx(2)));
-fprintf('mean(ry) = %g rad = %g deg, std(ry) = %g rad = %g deg, ci(ry) = [%g %g] rad = [%g %g] deg\n',mean_ry,rad2deg(mean_ry),std_ry,rad2deg(std_ry),ci_ry(1),ci_ry(2),rad2deg(ci_ry(1)),rad2deg(ci_ry(2)));
-fprintf('mean(rz) = %g rad = %g deg, std(rz) = %g rad = %g deg, ci(rz) = [%g %g] rad = [%g %g] deg\n',mean_rz,rad2deg(mean_rz),std_rz,rad2deg(std_rz),ci_rz(1),ci_rz(2),rad2deg(ci_rz(1)),rad2deg(ci_rz(2)));
-fprintf('mean(rr) = %g rad = %g deg, std(rr) = %g rad = %g deg, ci(rr) = [%g %g] rad = [%g %g] deg\n',mean_rr,rad2deg(mean_rr),std_rr,rad2deg(std_rr),ci_rr(1),ci_rr(2),rad2deg(ci_rr(1)),rad2deg(ci_rr(2)));
-fprintf('mean(rt) = %g rad = %g deg, std(rt) = %g rad = %g deg, ci(rt) = [%g %g] rad = [%g %g] deg\n',mean_rt,rad2deg(mean_rt),std_rt,rad2deg(std_rt),ci_rt(1),ci_rt(2),rad2deg(ci_rt(1)),rad2deg(ci_rt(2)));
-fprintf('\n');
+fprintf(fid,'Rotation r at point (%g,%g,%g) m\n',double(P));
+fprintf(fid,'mean(rx) = %g rad = %g deg, std(rx) = %g rad = %g deg, ci(rx) = [%g %g] rad = [%g %g] deg\n',mean_rx,rad2deg(mean_rx),std_rx,rad2deg(std_rx),ci_rx(1),ci_rx(2),rad2deg(ci_rx(1)),rad2deg(ci_rx(2)));
+fprintf(fid,'mean(ry) = %g rad = %g deg, std(ry) = %g rad = %g deg, ci(ry) = [%g %g] rad = [%g %g] deg\n',mean_ry,rad2deg(mean_ry),std_ry,rad2deg(std_ry),ci_ry(1),ci_ry(2),rad2deg(ci_ry(1)),rad2deg(ci_ry(2)));
+fprintf(fid,'mean(rz) = %g rad = %g deg, std(rz) = %g rad = %g deg, ci(rz) = [%g %g] rad = [%g %g] deg\n',mean_rz,rad2deg(mean_rz),std_rz,rad2deg(std_rz),ci_rz(1),ci_rz(2),rad2deg(ci_rz(1)),rad2deg(ci_rz(2)));
+fprintf(fid,'mean(rr) = %g rad = %g deg, std(rr) = %g rad = %g deg, ci(rr) = [%g %g] rad = [%g %g] deg\n',mean_rr,rad2deg(mean_rr),std_rr,rad2deg(std_rr),ci_rr(1),ci_rr(2),rad2deg(ci_rr(1)),rad2deg(ci_rr(2)));
+fprintf(fid,'mean(rt) = %g rad = %g deg, std(rt) = %g rad = %g deg, ci(rt) = [%g %g] rad = [%g %g] deg\n',mean_rt,rad2deg(mean_rt),std_rt,rad2deg(std_rt),ci_rt(1),ci_rt(2),rad2deg(ci_rt(1)),rad2deg(ci_rt(2)));
+fprintf(fid,'\n');
+fclose(fid);
+type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
 if displaySolution
@@ -600,25 +606,27 @@ if displaySolution
     options = {'solid',true};
     % options = {};
     
+    mean_u_mm = mean_u*1e3; % [mm]
+    std_u_mm = std_u*1e3; % [mm]
     switch lower(test)
         case {'statichori1','statichori2','durabilityhori1','durabilityhori2'}
-            plotSolution(S,mean_u,'displ',1,'ampl',ampl,options{:});
+            plotSolution(S,mean_u_mm,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Ux',formats,renderer);
             
-            plotSolution(S,std_u,'displ',1,'ampl',ampl,options{:});
+            plotSolution(S,std_u_mm,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Ux',formats,renderer);
         case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
             plotSolution(S,mean_u,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Uy',formats,renderer);
             
-            plotSolution(S,std_u,'displ',2,'ampl',ampl,options{:});
+            plotSolution(S,std_u_mm,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Uy',formats,renderer);
         case {'staticvert','stabilityvert1','stabilityvert2','stabilityvert3','stabilityvert4',...
                 'impact','drop'}
-            plotSolution(S,mean_u,'displ',3,'ampl',ampl,options{:});
+            plotSolution(S,mean_u_mm,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Uz',formats,renderer);
             
-            plotSolution(S,std_u,'displ',3,'ampl',ampl,options{:});
+            plotSolution(S,std_u_mm,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Uz',formats,renderer);
     end
     
@@ -635,77 +643,82 @@ if displaySolution
     % mysaveas(pathname,'std_Ry',formats,renderer);
 end
 
-%% Display convergence Monte-Carlo
+%% Display convergence
 if displayCv
     N = size(u,2);
     switch lower(test)
         case {'statichori1','statichori2','durabilityhori1','durabilityhori2'}
             means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UY'),1:N);
             stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UY'),1:N);
-            lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UY'),1:N);
-            uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UY'),1:N);
+            lbs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UY'),1:N);
+            ubs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UY'),1:N);
         case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
             means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UX'),1:N);
             stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UX'),1:N);
-            lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UX'),1:N);
-            uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UX'),1:N);
+            lbs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UX'),1:N);
+            ubs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UX'),1:N);
         case {'staticvert','stabilityvert1','stabilityvert2','stabilityvert3','stabilityvert4',...
                 'impact','drop'}
             means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UZ'),1:N);
             stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UZ'),1:N);
-            lowercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UZ'),1:N);
-            uppercis_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UZ'),1:N);
+            lbs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UZ'),1:N);
+            ubs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UZ'),1:N);
     end
     
     figure('Name','Convergence solution')
     clf
-    ciplot(lowercis_u,uppercis_u,1:N,'b');
+    ciplot(lbs_u*1e3,ubs_u*1e3,1:N,'b');
     hold on
     alpha(0.2)
-    plot(1:N,means_u,'-b','LineWidth',linewidth)
+    plot(1:N,means_u*1e3,'-b','LineWidth',linewidth)
     if strcmpi(test,'staticvert')
-        plot(1:N,repmat(uz_exp,1,N),'-r','LineWidth',linewidth)
+        plot([1,N],[uz_exp,uz_exp]*1e3,'-r','LineWidth',linewidth)
     end
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('Number of samples')
-    %xlabel('Nombre de réalisations')
-    ylabel('Solution')
+    xlabel('Number of samples','Interpreter',interpreter)
+    %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+    ylabel('Displacement [mm]','Interpreter',interpreter)
+    %ylabel('D\''eplacement [mm]','Interpreter',interpreter)
     if strcmpi(test,'staticvert')
-        legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean value','experimental value'})
-        %legend({['intervalle de confiance à ' num2str((probs(2)-probs(1))*100) '%'],'valeur moyenne','valeur expérimentale'})
+        legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+            'mean value','experimental value'},'Interpreter',interpreter)
+        %legend({['intervalle de confiance \`a $' num2str((probs(2)-probs(1))*100) '\%$'],...
+        %    'valeur moyenne','valeur exp\''erimentale'},'Interpreter',interpreter)
     else
-        legend({[num2str((probs(2)-probs(1))*100) '% confidence interval'],'mean value'})
-        %legend({['intervalle de confiance à ' num2str((probs(2)-probs(1))*100) '%'],'valeur moyenne'})
+        legend({['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+            'mean value'},'Interpreter',interpreter)
+        %legend({['intervalle de confiance \`a $' num2str((probs(2)-probs(1))*100) '\%$'],...
+        %    'valeur moyenne'},'Interpreter',interpreter)
     end
     mysaveas(pathname,'convergence_solution',formats,renderer);
     mymatlab2tikz(pathname,'convergence_solution.tex');
     
     figure('Name','Convergence mean')
     clf
-    plot(1:N,means_u,'-b','LineWidth',linewidth)
+    plot(1:N,means_u*1e3,'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('Number of samples')
-    ylabel('Mean value')
-    %xlabel('Nombre de réalisations')
-    %ylabel('Moyenne')
+    xlabel('Number of samples','Interpreter',interpreter)
+    ylabel('Mean value [mm]','Interpreter',interpreter)
+    %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+    %ylabel('Moyenne [mm]','Interpreter',interpreter)
     mysaveas(pathname,'convergence_mean',formats,renderer);
     mymatlab2tikz(pathname,'convergence_mean.tex');
     
     figure('Name','Convergence standard deviation')
     clf
-    plot(1:N,stds_u,'-r','LineWidth',linewidth)
+    plot(1:N,stds_u*1e3,'-r','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('Number of samples')
-    ylabel('Standard deviation')
-    %xlabel('Nombre de réalisations')
-    %ylabel('Ecart-type')
+    xlabel('Number of samples','Interpreter',interpreter)
+    ylabel('Standard deviation [mm]','Interpreter',interpreter)
+    %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
+    %ylabel('Ecart-type [mm]','Interpreter',interpreter)
     mysaveas(pathname,'convergence_std',formats,renderer);
     mymatlab2tikz(pathname,'convergence_std.tex');
 end

@@ -19,7 +19,7 @@ end
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc','png'};
 renderer = 'OpenGL';
 
 junction = false; % junction modeling
@@ -41,7 +41,7 @@ if solveProblem
     
     % Plates meshes
     elemtype = 'DKT';
-    cl = h/5;
+    cl = h/20;
     S1 = build_model(Q1,'cl',cl,'elemtype',elemtype,...
         'filename',fullfile(pathname,['gmsh_plate_1_' elemtype]));
     S2 = build_model(Q2,'cl',cl,'elemtype',elemtype,...
@@ -114,7 +114,7 @@ if solveProblem
     L_load = LINE([L2,0,L1],[L2,b,L1]);
     junction_sample = 'S1';
     
-    % p = appliedLoad(junction_sample); numLoad  = 3; p = p(numLoad);
+    % p = appliedLoad(junction_sample); numLoad = 3; p = p(numLoad);
     p = 100; % point load, F=100, 130, 160 [N]
     % p = 130;
     % p = 160;
@@ -281,62 +281,66 @@ else
 end
 
 %% Outputs
-fprintf('Junction %s\n',junction_sample);
-fprintf('\n');
-fprintf(['mesh : ' elemtype ' elements\n']);
-fprintf('nb elements = %g\n',getnbelem(S));
-fprintf('nb nodes    = %g\n',getnbnode(S));
-fprintf('nb dofs     = %g\n',getnbddl(S));
-fprintf('elapsed time = %f s\n',time);
+filenameResults = fullfile(pathname,'results.txt');
+fid = fopen(filenameResults,'w');
+fprintf(fid,'Junction %s\n',junction_sample);
+fprintf(fid,'\n');
+fprintf(fid,['mesh : ' elemtype ' elements\n']);
+fprintf(fid,'nb elements = %g\n',getnbelem(S));
+fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+fprintf(fid,'elapsed time = %f s\n',time);
 
-fprintf('\n');
-fprintf('Displacement u and rotation r at point (%g,%g,%g) m\n',double(P3));
-fprintf('ux    = %g m\n',ux);
-fprintf('uy    = %g m\n',uy);
-fprintf('uz    = %g m\n',uz);
-fprintf('rx    = %g rad = %g deg\n',rx,rad2deg(rx))
+fprintf(fid,'\n');
+fprintf(fid,'Displacement u and rotation r at point (%g,%g,%g) m\n',double(P3));
+fprintf(fid,'ux    = %g m\n',ux);
+fprintf(fid,'uy    = %g m\n',uy);
+fprintf(fid,'uz    = %g m\n',uz);
+fprintf(fid,'rx    = %g rad = %g deg\n',rx,rad2deg(rx))
 if junction
-    fprintf('ry(1) = %g rad = %g deg\n',ry(1),rad2deg(ry(1)));
-    fprintf('ry(2) = %g rad = %g deg\n',ry(2),rad2deg(ry(2)));
-    fprintf('|ry(1) - ry(2)| = %g rad = %g deg\n',abs(ry(1)-ry(2)),rad2deg(abs(ry(1)-ry(2))));
+    fprintf(fid,'ry(1) = %g rad = %g deg\n',ry(1),rad2deg(ry(1)));
+    fprintf(fid,'ry(2) = %g rad = %g deg\n',ry(2),rad2deg(ry(2)));
+    fprintf(fid,'|ry(1) - ry(2)| = %g rad = %g deg\n',abs(ry(1)-ry(2)),rad2deg(abs(ry(1)-ry(2))));
 else
-    fprintf('ry    = %g rad = %g deg\n',ry,rad2deg(ry));
+    fprintf(fid,'ry    = %g rad = %g deg\n',ry,rad2deg(ry));
 end
-fprintf('rz    = %g rad = %g deg\n',rz,rad2deg(rz));
+fprintf(fid,'rz    = %g rad = %g deg\n',rz,rad2deg(rz));
 
-fprintf('\n');
+fprintf(fid,'\n');
 if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
-    disp('Maximum membrane forces Nxx, Nyy, Nxy, moments Mxx, Myy, Mxy and shear forces Qx, Qy');
+    fprintf(fid,'Maximum membrane forces Nxx, Nyy, Nxy, moments Mxx, Myy, Mxy and shear forces Qx, Qy');
 else
-    disp('Maximum forces Nxx, Nyy, Nxy and moments Mxx, Myy, Mxy');
+    fprintf(fid,'Maximum forces Nxx, Nyy, Nxy and moments Mxx, Myy, Mxy');
 end
-fprintf('Nxx = %g N/m\n',nxx);
-fprintf('Nyy = %g N/m\n',nyy);
-fprintf('Nxy = %g N/m\n',nxy);
-fprintf('Mxx = %g N\n',mxx);
-fprintf('Myy = %g N\n',myy);
-fprintf('Mxy = %g N\n',mxy);
+fprintf(fid,'Nxx = %g N/m\n',nxx);
+fprintf(fid,'Nyy = %g N/m\n',nyy);
+fprintf(fid,'Nxy = %g N/m\n',nxy);
+fprintf(fid,'Mxx = %g N\n',mxx);
+fprintf(fid,'Myy = %g N\n',myy);
+fprintf(fid,'Mxy = %g N\n',mxy);
 if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
-    fprintf('Qx = %g N/m\n',qx);
-    fprintf('Qy = %g N/m\n',qy);
+    fprintf(fid,'Qx = %g N/m\n',qx);
+    fprintf(fid,'Qy = %g N/m\n',qy);
 end
 
-fprintf('\n');
+fprintf(fid,'\n');
 if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
-    disp('Maximum membrane strains Exx, Eyy, Exy, bending strains (curvatures) Gxx, Gyy, Gxy and shear strains Gzx, Gzy');
+    fprintf(fid,'Maximum membrane strains Exx, Eyy, Exy, bending strains (curvatures) Gxx, Gyy, Gxy and shear strains Gzx, Gzy');
 else
-    disp('Maximum membrane strains Exx, Eyy, Exy and bending strains (curvatures) Gxx, Gyy, Gxy');
+    fprintf(fid,'Maximum membrane strains Exx, Eyy, Exy and bending strains (curvatures) Gxx, Gyy, Gxy');
 end
-fprintf('Exx = %g\n',exx);
-fprintf('Eyy = %g\n',eyy);
-fprintf('Exy = %g\n',exy);
-fprintf('Gxx = %g\n',gxx);
-fprintf('Gyy = %g\n',gyy);
-fprintf('Gxy = %g\n',gxy);
+fprintf(fid,'Exx = %g\n',exx);
+fprintf(fid,'Eyy = %g\n',eyy);
+fprintf(fid,'Exy = %g\n',exy);
+fprintf(fid,'Gxx = %g\n',gxx);
+fprintf(fid,'Gyy = %g\n',gyy);
+fprintf(fid,'Gxy = %g\n',gxy);
 if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
-    fprintf('Gzx = %g\n',gzx);
-    fprintf('Gzy = %g\n',gzy);
+    fprintf(fid,'Gzx = %g\n',gzx);
+    fprintf(fid,'Gzy = %g\n',gzy);
 end
+fclose(fid);
+type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
 if displaySolution

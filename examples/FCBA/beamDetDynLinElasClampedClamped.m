@@ -18,7 +18,8 @@ if ~exist(pathname,'dir')
 end
 
 fontsize = 16;
-formats = {'fig','epsc'};
+interpreter = 'latex';
+formats = {'epsc','png'};
 renderer = 'OpenGL';
 
 %% Problem
@@ -38,8 +39,8 @@ if setProblem
     elemtype = 'BEAM';
     nbelem = 10;
     S = build_model(Line,'nbelem',nbelem,'elemtype',elemtype);
-%     cl = 0.1;
-%     S = build_model(Line,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,'gmsh_domain'));
+    % cl = 0.1;
+    % S = build_model(Line,'cl',cl,'elemtype',elemtype,'filename',fullfile(pathname,'gmsh_domain'));
     
     %% Materials
     % Gravitational acceleration
@@ -132,15 +133,20 @@ Nt = st(1);
 Mzt = st(2);
 
 %% Outputs
-fprintf('\n');
-fprintf(['spatial mesh : ' elemtype ' elements\n']);
-fprintf('nb elements = %g\n',getnbelem(S));
-fprintf('nb nodes    = %g\n',getnbnode(S));
-fprintf('nb dofs     = %g\n',getnbddl(S));
-fprintf('time solver : %s\n',class(N));
-fprintf('nb time steps = %g\n',getnt(N));
-fprintf('nb time dofs  = %g\n',getnbtimedof(N));
-fprintf('elapsed time = %f s\n',time);
+filenameResults = fullfile(pathname,'results.txt');
+fid = fopen(filenameResults,'w');
+fprintf(fid,'Beam\n');
+fprintf(fid,'\n');
+fprintf(fid,'spatial mesh = %s elements\n',elemtype);
+fprintf(fid,'nb elements = %g\n',getnbelem(S));
+fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+fprintf(fid,'time solver = %s\n',class(N));
+fprintf(fid,'nb time steps = %g\n',getnt(N));
+fprintf(fid,'nb time dofs  = %g\n',getnbtimedof(N));
+fprintf(fid,'elapsed time = %f s\n',time);
+fclose(fid);
+type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
 if displaySolution
@@ -175,19 +181,19 @@ if displaySolution
     
     N = setevolparam(N,'colorbar',true,'FontSize',fontsize);
     
-%     figure('Name','Solution Epsx')
-%     clf
-%     set(gcf,'Color','w')
-%     % frame = evol(N,et,S,'compo','EPSX','rescale',true);
-%     frame = evol(N,Epsxt,S,'rescale',true);
-%     saveMovie(frame,'filename','Epsx','pathname',pathname);
-%     
-%     figure('Name','Solution Gamz')
-%     clf
-%     set(gcf,'Color','w')
-%     % frame = evol(N,et,S,'compo','GAMZ','rescale',true);
-%     frame = evol(N,Gamzt,S,'rescale',true);
-%     saveMovie(frame,'filename','Gamz','pathname',pathname);
+    % figure('Name','Solution Epsx')
+    % clf
+    % set(gcf,'Color','w')
+    % % frame = evol(N,et,S,'compo','EPSX','rescale',true);
+    % frame = evol(N,Epsxt,S,'rescale',true);
+    % saveMovie(frame,'filename','Epsx','pathname',pathname);
+    % 
+    % figure('Name','Solution Gamz')
+    % clf
+    % set(gcf,'Color','w')
+    % % frame = evol(N,et,S,'compo','GAMZ','rescale',true);
+    % frame = evol(N,Gamzt,S,'rescale',true);
+    % saveMovie(frame,'filename','Gamz','pathname',pathname);
     
     figure('Name','Solution N')
     clf
@@ -227,19 +233,19 @@ if displaySolution
             % mysaveas(pathname,['acceleration_' num2str(i) '_t' num2str(k-1)],formats,renderer);
         % end
         
-%         figure('Name','Solution Epsx')
-%         clf
-%         plot(ek,S+ampl*uk,'compo','EPSX')
-%         colorbar
-%         set(gca,'FontSize',fontsize)
-%         mysaveas(pathname,['Epsx_t' num2str(k-1)],formats,renderer);
-%         
-%         figure('Name','Solution Gamz')
-%         clf
-%         plot(ek,S+ampl*uk,'compo','GAMZ')
-%         colorbar
-%         set(gca,'FontSize',fontsize)
-%         mysaveas(pathname,['Gamz_t' num2str(k-1)],formats,renderer);
+        % figure('Name','Solution Epsx')
+        % clf
+        % plot(ek,S+ampl*uk,'compo','EPSX')
+        % colorbar
+        % set(gca,'FontSize',fontsize)
+        % mysaveas(pathname,['Epsx_t' num2str(k-1)],formats,renderer);
+        % 
+        % figure('Name','Solution Gamz')
+        % clf
+        % plot(ek,S+ampl*uk,'compo','GAMZ')
+        % colorbar
+        % set(gca,'FontSize',fontsize)
+        % mysaveas(pathname,['Gamz_t' num2str(k-1)],formats,renderer);
         
         figure('Name','Solution N')
         clf

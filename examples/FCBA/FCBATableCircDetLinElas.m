@@ -9,21 +9,22 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-% tests = {'StaticHori1'}; % strength test under static horizontal load 1
-% tests = {'StaticHori2'}; % strength test under static horizontal load 2
-% tests = {'StaticHori3'}; % strength test under static horizontal load 3 (lifting)
-% tests = {'StaticHori4'}; % strength test under static horizontal load 4 (lifting)
-tests = {'StaticVert'}; % strength  test under static vertical load
+% tests = {'StaticHori1'};     % strength test under static horizontal load 1
+% tests = {'StaticHori2'};     % strength test under static horizontal load 2
+% tests = {'StaticHori3'};     % strength test under static horizontal load 3 (lifting)
+% tests = {'StaticHori4'};     % strength test under static horizontal load 4 (lifting)
+tests = {'StaticVert'};      % strength  test under static vertical load
 % tests = {'DurabilityHori1'}; % durability test under horizontal load 1
 % tests = {'DurabilityHori2'}; % durability test under horizontal load 2
 % tests = {'DurabilityHori3'}; % durability test under horizontal load 3 (lifting)
 % tests = {'DurabilityHori4'}; % durability test under horizontal load 4 (lifting)
-% tests = {'StabilityVert1'}; % stability test under vertical load 1
-% tests = {'StabilityVert2'}; % stability test under vertical load 2
-% tests = {'StabilityVert3'}; % stability test under vertical load 3
-% tests = {'StabilityVert4'}; % stability test under vertical load 4
-% tests = {'Impact'}; % vertical impact test
-% tests = {'Drop'}; % drop test
+% tests = {'StabilityVert1'};  % stability test under vertical load 1
+% tests = {'StabilityVert2'};  % stability test under vertical load 2
+% tests = {'StabilityVert3'};  % stability test under vertical load 3
+% tests = {'StabilityVert4'};  % stability test under vertical load 4
+% tests = {'Impact'};          % vertical impact test
+% tests = {'Drop'};            % drop test
+
 % tests = {'StaticHori1','StaticHori2','StaticHori3','StaticHori4',...
 %     'StaticVert',...
 %     'DurabilityHori1','DurabilityHori2','DurabilityHori3','DurabilityHori4',...
@@ -34,7 +35,7 @@ belt = true; % belt modeling
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc','png'};
 renderer = 'OpenGL';
 
 for it=1:length(tests)
@@ -102,7 +103,7 @@ if solveProblem
     elemtype = 'DKT';
     r_masse = 150e-3;
     C_masse = CIRCLE(0.0,0.0,0.0,r_masse);
-    Pb = {getvertex(C,1),getvertex(C,2),getvertex(C,3),x_load_dura{4},getvertex(C,4),x_load_dura{3}};
+    Pb = {getvertex(C,1),x_load_dura{4},getvertex(C,2),x_load_dura{3},getvertex(C,3),getvertex(C,4)};
     Pe = x_load_stab;
     Pi = double(getcenter(C));
     if ~strcmp(elemtype,'QUA4') && ~strcmp(elemtype,'CUB8') && ~strcmp(elemtype,'DKQ') && ~strcmp(elemtype,'DSQ') && ~strcmp(elemtype,'COQ4') && ~strcmp(elemtype,'STOKES')
@@ -199,9 +200,9 @@ if solveProblem
         case {'stabilityvert1','stabilityvert2','stabilityvert3','stabilityvert4'}
             p = 400; % point load, pmin = 668 [N]
         case 'impact'
-            H = 180e-3; % [m]
+            p = 180e-3; % height [m]
         case 'drop'
-            H = 100e-3; % [m]
+            p = 100e-3; % height [m]
     end
     
     %% Dirichlet boundary conditions
@@ -408,36 +409,41 @@ else
 end
 
 %% Outputs
-fprintf('\nCircular table\n');
-fprintf(['test : ' test '\n']);
-fprintf(['mesh : ' elemtype ' elements\n']);
-fprintf('nb elements = %g\n',getnbelem(S_plate));
-fprintf('nb nodes    = %g\n',getnbnode(S));
-fprintf('nb dofs     = %g\n',getnbddl(S_plate));
-fprintf('span-to-thickness ratio = %g\n',r/h);
-fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
+filenameResults = fullfile(pathname,'results.txt');
+fid = fopen(filenameResults,'w');
+fprintf(fid,'Circular table\n');
+fprintf(fid,'\n');
+fprintf(fid,'test = %s\n',test);
+fprintf(fid,'mesh = %s elements\n',elemtype);
+fprintf(fid,'nb elements = %g\n',getnbelem(S_plate));
+fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+fprintf(fid,'nb dofs     = %g\n',getnbddl(S_plate));
+fprintf(fid,'span-to-thickness ratio = %g\n',r/h);
+fprintf(fid,'elapsed time = %f s\n',time);
+fprintf(fid,'\n');
 
-fprintf('Displacement u at point (%g,%g,%g) m\n',double(P));
-fprintf('ux     = %g m\n',ux);
-fprintf('uy     = %g m\n',uy);
-fprintf('uz     = %g m\n',uz);
+fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+fprintf(fid,'ux     = %g m\n',ux);
+fprintf(fid,'uy     = %g m\n',uy);
+fprintf(fid,'uz     = %g m\n',uz);
 if strcmpi(test,'staticvert')
     uz_exp = -2.35e-3;
     err_uz = norm(uz-uz_exp)/norm(uz_exp);
-    fprintf('uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
+    fprintf(fid,'uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
 end
-fprintf('ur     = %g m\n',ur);
-fprintf('ut     = %g m\n',ut);
-fprintf('\n');
+fprintf(fid,'ur     = %g m\n',ur);
+fprintf(fid,'ut     = %g m\n',ut);
+fprintf(fid,'\n');
 
-fprintf('Rotation r at point (%g,%g,%g) m\n',double(P));
-fprintf('rx     = %g rad = %g deg\n',rx,rad2deg(rx));
-fprintf('ry     = %g rad = %g deg\n',ry,rad2deg(ry));
-fprintf('rz     = %g rad = %g deg\n',rz,rad2deg(rz));
-fprintf('rr     = %g rad = %g deg\n',rr,rad2deg(rr));
-fprintf('rt     = %g rad = %g deg\n',rt,rad2deg(rt));
-fprintf('\n');
+fprintf(fid,'Rotation r at point (%g,%g,%g) m\n',double(P));
+fprintf(fid,'rx     = %g rad = %g deg\n',rx,rad2deg(rx));
+fprintf(fid,'ry     = %g rad = %g deg\n',ry,rad2deg(ry));
+fprintf(fid,'rz     = %g rad = %g deg\n',rz,rad2deg(rz));
+fprintf(fid,'rr     = %g rad = %g deg\n',rr,rad2deg(rr));
+fprintf(fid,'rt     = %g rad = %g deg\n',rt,rad2deg(rt));
+fprintf(fid,'\n');
+fclose(fid);
+type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
 if displaySolution
@@ -478,16 +484,17 @@ if displaySolution
     options = {'solid',true};
     % options = {};
     
+    u_mm = u*1e3; % [mm]
     switch lower(test)
         case {'statichori1','statichori2','durabilityhori1','durabilityhori2'}
-            plotSolution(S,u,'displ',2,'ampl',ampl,options{:});
+            plotSolution(S,u_mm,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'Uy',formats,renderer);
         case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
-            plotSolution(S,u,'displ',1,'ampl',ampl,options{:});
+            plotSolution(S,u_mm,'displ',1,'ampl',ampl,options{:});
             mysaveas(pathname,'Ux',formats,renderer);
         case {'staticvert','stabilityvert1','stabilityvert2','stabilityvert3','stabilityvert4',...
                 'impact','drop'}
-            plotSolution(S,u,'displ',3,'ampl',ampl,options{:});
+            plotSolution(S,u_mm,'displ',3,'ampl',ampl,options{:});
             mysaveas(pathname,'Uz',formats,renderer);
     end
     

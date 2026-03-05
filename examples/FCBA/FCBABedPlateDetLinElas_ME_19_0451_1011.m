@@ -9,16 +9,22 @@ close all
 solveProblem = true;
 displaySolution = true;
 
-% tests = {'StaticHoriIn'}; % strength test under static horizontal inward load
-tests = {'StaticHoriOut'}; % strength test under static horizontal outward load
-% tests = {'StaticVertUp'}; % strength test under static vertical upward load
+% tests = {'StaticHoriIn'};   % strength test under static horizontal inward load
+tests = {'StaticHoriOut'};  % strength test under static horizontal outward load
+% tests = {'StaticVertUp'};   % strength test under static vertical upward load
 % tests = {'StaticVertDown'}; % strength test under static vertical downward load
+
 % tests = {'StaticHoriIn','StaticHoriOut','StaticVertUp','StaticVertDown'};
 
-junction = false; % junction modeling
 % materialSym = 'isot'; % isotropic material symmetry class
 materialSym = 'isotTrans'; % transversely isotropic material symmetry class
 slat = true; % slat modeling
+
+fontsize = 16;
+linewidth = 1;
+interpreter = 'latex';
+formats = {'epsc','png'};
+renderer = 'OpenGL';
 
 for it=1:length(tests)
     test = tests{it};
@@ -29,12 +35,6 @@ pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
-
-fontsize = 16;
-linewidth = 1;
-interpreter = 'latex';
-formats = {'fig','epsc','png'};
-renderer = 'OpenGL';
 
 %% Problem
 if solveProblem
@@ -527,57 +527,61 @@ else
 end
 
 %% Outputs
-fprintf('\nBed\n');
-fprintf(['test : ' test '\n']);
-fprintf(['mesh : ' elemtype ' elements\n']);
-fprintf('nb elements       = %g\n',getnbelem(S));
-fprintf('nb beam elements  = %g\n',getnbelem(S_beam));
-fprintf('nb plate elements = %g\n',getnbelem(S_plate));
-fprintf('nb nodes    = %g\n',getnbnode(S));
-fprintf('nb dofs     = %g\n',getnbddl(S));
-fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
+filenameResults = fullfile(pathname,'results.txt');
+fid = fopen(filenameResults,'w');
+fprintf(fid,'Bed\n');
+fprintf(fid,'\n');
+fprintf(fid,'test = %s\n',test);
+fprintf(fid,'mesh = %s elements\n',elemtype);
+fprintf(fid,'nb elements       = %g\n',getnbelem(S));
+fprintf(fid,'nb beam elements  = %g\n',getnbelem(S_beam));
+fprintf(fid,'nb plate elements = %g\n',getnbelem(S_plate));
+fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+fprintf(fid,'elapsed time = %f s\n',time);
 
-fprintf('Displacement u and rotation r at point (%g,%g,%g) m\n',double(P));
-fprintf('ux = %g m\n',ux);
-fprintf('uy = %g m\n',uy);
-fprintf('uz = %g m\n',uz);
-fprintf('rx = %g rad = %g deg\n',rx,rad2deg(rx));
-fprintf('ry = %g rad = %g deg\n',ry,rad2deg(ry));
-fprintf('rz = %g rad = %g deg\n',rz,rad2deg(rz));
-fprintf('\n');
+fprintf(fid,'\n');
+fprintf(fid,'Displacement u and rotation r at point (%g,%g,%g) m\n',double(P));
+fprintf(fid,'ux = %g m\n',ux);
+fprintf(fid,'uy = %g m\n',uy);
+fprintf(fid,'uz = %g m\n',uz);
+fprintf(fid,'rx = %g rad = %g deg\n',rx,rad2deg(rx));
+fprintf(fid,'ry = %g rad = %g deg\n',ry,rad2deg(ry));
+fprintf(fid,'rz = %g rad = %g deg\n',rz,rad2deg(rz));
 
-fprintf('Maximum force N and moments Mx, My, Mz at point (%g,%g,%g) m\n',double(P));
-fprintf('N  = %g N\n',n);
-fprintf('Mx = %g N.m\n',mx);
-fprintf('My = %g N.m\n',my);
-fprintf('Mz = %g N.m\n',mz);
-fprintf('\n');
+fprintf(fid,'\n');
+fprintf(fid,'Maximum force N and moments Mx, My, Mz at point (%g,%g,%g) m\n',double(P));
+fprintf(fid,'N  = %g N\n',n);
+fprintf(fid,'Mx = %g N.m\n',mx);
+fprintf(fid,'My = %g N.m\n',my);
+fprintf(fid,'Mz = %g N.m\n',mz);
 
-fprintf('Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point (%g,%g,%g) m\n',double(P));
-fprintf('Epsx = %g\n',epsx);
-fprintf('Gamx = %g\n',gamx);
-fprintf('Gamy = %g\n',gamy);
-fprintf('Gamz = %g\n',gamz);
-fprintf('\n');
+fprintf(fid,'\n');
+fprintf(fid,'Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point (%g,%g,%g) m\n',double(P));
+fprintf(fid,'Epsx = %g\n',epsx);
+fprintf(fid,'Gamx = %g\n',gamx);
+fprintf(fid,'Gamy = %g\n',gamy);
+fprintf(fid,'Gamz = %g\n',gamz);
 
-fprintf('Maximum forces Nxx, Nyy, Nxy and moments Mxx, Myy, Mxy at point (%g,%g,%g) m\n',double(P));
-fprintf('Nxx = %g N/m\n',nxx);
-fprintf('Nyy = %g N/m\n',nyy);
-fprintf('Nxy = %g N/m\n',nxy);
-fprintf('Mxx = %g N\n',mxx);
-fprintf('Myy = %g N\n',myy);
-fprintf('Mxy = %g N\n',mxy);
-fprintf('\n');
+fprintf(fid,'\n');
+fprintf(fid,'Maximum forces Nxx, Nyy, Nxy and moments Mxx, Myy, Mxy at point (%g,%g,%g) m\n',double(P));
+fprintf(fid,'Nxx = %g N/m\n',nxx);
+fprintf(fid,'Nyy = %g N/m\n',nyy);
+fprintf(fid,'Nxy = %g N/m\n',nxy);
+fprintf(fid,'Mxx = %g N\n',mxx);
+fprintf(fid,'Myy = %g N\n',myy);
+fprintf(fid,'Mxy = %g N\n',mxy);
 
-fprintf('Maximum membrane strains Exx, Eyy, Exy and bending strains (curvatures) Gxx, Gyy, Gxy at point (%g,%g,%g) m\n',double(P));
-fprintf('Exx = %g\n',exx);
-fprintf('Eyy = %g\n',eyy);
-fprintf('Exy = %g\n',exy);
-fprintf('Gxx = %g\n',gxx);
-fprintf('Gyy = %g\n',gyy);
-fprintf('Gxy = %g\n',gxy);
-fprintf('\n');
+fprintf(fid,'\n');
+fprintf(fid,'Maximum membrane strains Exx, Eyy, Exy and bending strains (curvatures) Gxx, Gyy, Gxy at point (%g,%g,%g) m\n',double(P));
+fprintf(fid,'Exx = %g\n',exx);
+fprintf(fid,'Eyy = %g\n',eyy);
+fprintf(fid,'Exy = %g\n',exy);
+fprintf(fid,'Gxx = %g\n',gxx);
+fprintf(fid,'Gyy = %g\n',gyy);
+fprintf(fid,'Gxy = %g\n',gxy);
+fclose(fid);
+type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
 if displaySolution
@@ -615,17 +619,17 @@ if displaySolution
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
-%     figure('Name','Group of elements')
-%     plotparamelem(S,'group')
-%     mysaveas(pathname,'groupelem',formats,renderer);
+    % figure('Name','Group of elements')
+    % plotparamelem(S,'group')
+    % mysaveas(pathname,'groupelem',formats,renderer);
     
-%     figure('Name','Materials')
-%     plotparamelem(S,'material')
-%     mysaveas(pathname,'material',formats,renderer);
+    % figure('Name','Materials')
+    % plotparamelem(S,'material')
+    % mysaveas(pathname,'material',formats,renderer);
     
-%     plotDomain(S,'legend',false);
-%     mysaveas(pathname,'domain',formats,renderer);
-%     mymatlab2tikz(pathname,'domain.tex');
+    % plotDomain(S,'legend',false);
+    % mysaveas(pathname,'domain',formats,renderer);
+    % mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'FaceColor','k','legend',false);
     ampl = 5;
@@ -665,14 +669,14 @@ if displaySolution
     mysaveas(pathname,'Uz',formats,renderer);
     
     % Rotations
-%     plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
-%     mysaveas(pathname,'Rx',formats,renderer);
-%     
-%     plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
-%     mysaveas(pathname,'Ry',formats,renderer);
-%     
-%     plotSolution(S,u,'rotation',3,'ampl',ampl,options{:});
-%     mysaveas(pathname,'Rz',formats,renderer);
+    % plotSolution(S,u,'rotation',1,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Rx',formats,renderer);
+    % 
+    % plotSolution(S,u,'rotation',2,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Ry',formats,renderer);
+    % 
+    % plotSolution(S,u,'rotation',3,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Rz',formats,renderer);
     
     % DO NOT WORK WITH BEAM ELEMENTS
     % Beams strains
@@ -702,33 +706,33 @@ if displaySolution
     % mysaveas(pathname,'Mz',formats,renderer);
     
     % Beams strains
-%     figure('Name','Solution Epsx')
-%     clf
-%     plot(e_beam,S_beam+ampl*u_beam,'compo','EPSX')
-%     colorbar
-%     set(gca,'FontSize',fontsize)
-%     mysaveas(pathname,'Epsx',formats,renderer);
-%     
-%     figure('Name','Solution Gamx')
-%     clf
-%     plot(e_beam,S_beam+ampl*u_beam,'compo','GAMX')
-%     colorbar
-%     set(gca,'FontSize',fontsize)
-%     mysaveas(pathname,'Gamx',formats,renderer);
-%     
-%     figure('Name','Solution Gamy')
-%     clf
-%     plot(e_beam,S_beam+ampl*u_beam,'compo','GAMY')
-%     colorbar
-%     set(gca,'FontSize',fontsize)
-%     mysaveas(pathname,'Gamy',formats,renderer);
-%     
-%     figure('Name','Solution Gamz')
-%     clf
-%     plot(e_beam,S_beam+ampl*u_beam,'compo','GAMZ')
-%     colorbar
-%     set(gca,'FontSize',fontsize)
-%     mysaveas(pathname,'Gamz',formats,renderer);
+    % figure('Name','Solution Epsx')
+    % clf
+    % plot(e_beam,S_beam+ampl*u_beam,'compo','EPSX')
+    % colorbar
+    % set(gca,'FontSize',fontsize)
+    % mysaveas(pathname,'Epsx',formats,renderer);
+    % 
+    % figure('Name','Solution Gamx')
+    % clf
+    % plot(e_beam,S_beam+ampl*u_beam,'compo','GAMX')
+    % colorbar
+    % set(gca,'FontSize',fontsize)
+    % mysaveas(pathname,'Gamx',formats,renderer);
+    % 
+    % figure('Name','Solution Gamy')
+    % clf
+    % plot(e_beam,S_beam+ampl*u_beam,'compo','GAMY')
+    % colorbar
+    % set(gca,'FontSize',fontsize)
+    % mysaveas(pathname,'Gamy',formats,renderer);
+    % 
+    % figure('Name','Solution Gamz')
+    % clf
+    % plot(e_beam,S_beam+ampl*u_beam,'compo','GAMZ')
+    % colorbar
+    % set(gca,'FontSize',fontsize)
+    % mysaveas(pathname,'Gamz',formats,renderer);
     
     % Beams stresses
     figure('Name','Solution N')
@@ -760,23 +764,23 @@ if displaySolution
     mysaveas(pathname,'Mz',formats,renderer);
     
     % Plates strains
-%     plotSolution(S_plate,u_plate,'epsilon',1,'ampl',ampl,options{:});
-%     mysaveas(pathname,'Exx',formats,renderer);
-%     
-%     plotSolution(S_plate,u_plate,'epsilon',2,'ampl',ampl,options{:});
-%     mysaveas(pathname,'Eyy',formats,renderer);
-%     
-%     plotSolution(S_plate,u_plate,'epsilon',3,'ampl',ampl,options{:});
-%     mysaveas(pathname,'Exy',formats,renderer);
-%     
-%     plotSolution(S_plate,u_plate,'epsilon',4,'ampl',ampl,options{:});
-%     mysaveas(pathname,'Gxx',formats,renderer);
-%     
-%     plotSolution(S_plate,u_plate,'epsilon',5,'ampl',ampl,options{:});
-%     mysaveas(pathname,'Gyy',formats,renderer);
-%     
-%     plotSolution(S_plate,u_plate,'epsilon',6,'ampl',ampl,options{:});
-%     mysaveas(pathname,'Gxy',formats,renderer);
+    % plotSolution(S_plate,u_plate,'epsilon',1,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Exx',formats,renderer);
+    % 
+    % plotSolution(S_plate,u_plate,'epsilon',2,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Eyy',formats,renderer);
+    % 
+    % plotSolution(S_plate,u_plate,'epsilon',3,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Exy',formats,renderer);
+    % 
+    % plotSolution(S_plate,u_plate,'epsilon',4,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Gxx',formats,renderer);
+    % 
+    % plotSolution(S_plate,u_plate,'epsilon',5,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Gyy',formats,renderer);
+    % 
+    % plotSolution(S_plate,u_plate,'epsilon',6,'ampl',ampl,options{:});
+    % mysaveas(pathname,'Gxy',formats,renderer);
     
     % Plates stresses
     plotSolution(S_plate,u_plate,'sigma',1,'ampl',ampl,options{:});
