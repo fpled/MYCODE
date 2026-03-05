@@ -15,7 +15,7 @@ load(fullfile(pathname,filenameNum));
 
 fontsize = 16;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc'};
 renderer = 'painters';
 
 %% Compute numerical solution
@@ -38,7 +38,7 @@ for j=1:numSamples
         filenameDIC = [numSample '_00-' numImage '-Mesh'];
         pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
             'examples','identification','materialParticleBoard','resultsDIC');
-        disp(['File = ',filenameDIC]);
+        fprintf('File = %s\n',filenameDIC);
         load(fullfile(pathnameDIC,filenameDIC));
         
         [u_exp,coord] = extractCorreliElas(Job,Mesh,U,h,d); % [mm]

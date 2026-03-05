@@ -39,20 +39,18 @@ d = 20; % distance between the support and the region of interest (ROI) [mm]
 numSamples = 27;
 % for j=1:numSamples
 for j=27
-    
     numSample = ['B' num2str(j)];
     F = appliedLoad(numSample); % applied load [N]
     
     numImages = length(F);
     % for k=1:numImages
-    for k=6
-    % for k=numImages
-        
+    for k=[6,numImages]
         numImage = num2str(k,'%02d');
-        filenameDIC = [numSample '_00-' num2str(numImage) '-Mesh'];
+        
+        filenameDIC = [numSample '_00-' numImage '-Mesh'];
         pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
             'examples','identification','materialParticleBoard','resultsDIC');
-        disp(['File = ',filenameDIC]);
+        fprintf('File = %s\n',filenameDIC);
         load(fullfile(pathnameDIC,filenameDIC));
         
         %% Problem
@@ -98,7 +96,7 @@ for j=27
                     % Longitudinal Poisson ratio
                     NUL = NUL_data{j}(k);
                     % Transverse Poisson ratio
-                    NUT = 0.25;
+                    NUT = 0.2;
                     % Material
                     mat = ELAS_ISOT_TRANS('AXISL',[0;1],'AXIST',[1;0],'EL',EL,'ET',ET,'NUL',NUL,'NUT',NUT,'GL',GL,'RHO',RHO,'DIM3',DIM3);
                 otherwise
@@ -160,13 +158,13 @@ for j=27
             v_exp = calc_init_dirichlet(S);
             figure('Name','Imposed experimental displacement')
             clf
-            h = plot(S,'FaceColor','w','LineWidth',0.5);
+            hM = plot(S,'FaceColor','w','LineWidth',0.5);
             hold on
             [hD,legD] = vectorplot(S,'U',v_exp,ampl,'r','LineWidth',1);
             hold off
             set(gca,'FontSize',fontsize)
             hg = hggroup;
-            set([h(:),hD],'Parent',hg);
+            set([hM(:),hD],'Parent',hg);
             axis image
             legend(hD,'{\boldmath$u$}$^{\mathrm{exp}}$','Location','NorthEastOutside','Interpreter',interpreter)
             % legend(hD,legD,'Location','NorthEastOutside','Interpreter',interpreter)
