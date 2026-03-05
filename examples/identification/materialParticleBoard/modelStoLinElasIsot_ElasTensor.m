@@ -10,6 +10,8 @@ rng('default');
 %% Input data
 displaySolution = true;
 
+filenameParam = 'param_lambda.mat';
+
 useRedParam = true; % reduced parameterization
 method = 'mle'; % parameter estimation method = 'mle' or 'lse'
 
@@ -92,7 +94,10 @@ switch lower(method)
         lambda = lseStoLinElasIsot(C_data,lambda0,'display','iter-detailed'); 
         % [lambda,resnorm,residual,exitflag,output] = lseStoLinElasIsot(C_data,lambda0,'display','iter-detailed');
 end
-toc(t)
+time = toc(t);
+
+% Save variables
+save(fullfile(pathname,filenameParam),'lambda0','lambda');
 
 % Optimal parameter values
 if useRedParam
@@ -188,6 +193,7 @@ if useRedParam
 else
     fprintf(fid,'parameterization  = full\n');
 end
+fprintf(fid,'elapsed time = %f s for parameter estimation\n',time);
 
 fprintf(fid,'\n');
 fprintf(fid,'Initial parameter values\n');

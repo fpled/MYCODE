@@ -13,6 +13,8 @@ displaySolution = true;
 displayConvergenceInit = true;
 displayConvergenceOpt = true;
 
+filenameParam = 'param_lambda.mat';
+
 useRedParam = true; % reduced parameterization
 MCMCalgo = 'IMH'; % algorithm for Markov Chain Monte Carlo (MCMC) method = 'IMH', 'RWMH' or 'SS'
 useParallel = true; % parallel computing to evaluate gradients of objective function
@@ -463,8 +465,11 @@ if isempty(globalSolver)
 else
     [lambda,fval,exitflag,output,solutions] = lseStoLinElasIsotTrans(C_data,lambda0,N,MCMCalgo,s,'display','iter-detailed','useParallel',useParallel,'plotFcn',plotFcn,globalSolver);
 end
-toc(t)
+time = toc(t);
 myparallel('stop')
+
+% Save variables
+save(fullfile(pathname,filenameParam),'lambda0','lambda');
 
 % Optimal parameter values
 la1 = lambda(1); % la1 > 0
@@ -913,6 +918,7 @@ if useRedParam
 else
     fprintf(fid,'parameterization = full\n');
 end
+fprintf(fid,'elapsed time = %f s for parameter estimation\n',time);
 
 fprintf(fid,'\n');
 fprintf(fid,'Initial parameter values\n');
