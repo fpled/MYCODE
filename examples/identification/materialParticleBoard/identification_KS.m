@@ -26,8 +26,7 @@ pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-% formats = {'fig','epsc'};
-formats = {'fig','epsc','png'};
+formats = {'epsc','png'};
 
 Scal = 1;
 Unitx = '[mm]';

@@ -19,7 +19,7 @@ end
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc'};
 
 %% Data
 filenameScrew = 'data_KS.mat';

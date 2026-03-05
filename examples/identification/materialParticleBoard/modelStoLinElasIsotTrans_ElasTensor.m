@@ -43,7 +43,7 @@ end
 fontsize = 16;
 linewidth = 1;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc'};
 
 %% Data
 filenameAna = 'data_ET_GL.mat';
