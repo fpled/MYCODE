@@ -420,8 +420,8 @@ fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
 fprintf(fid,'nb dofs     = %g\n',getnbddl(S_plate));
 fprintf(fid,'span-to-thickness ratio = %g\n',r/h);
 fprintf(fid,'elapsed time = %f s\n',time);
-fprintf(fid,'\n');
 
+fprintf(fid,'\n');
 fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
 fprintf(fid,'ux     = %g m\n',ux);
 fprintf(fid,'uy     = %g m\n',uy);
@@ -433,15 +433,14 @@ if strcmpi(test,'staticvert')
 end
 fprintf(fid,'ur     = %g m\n',ur);
 fprintf(fid,'ut     = %g m\n',ut);
-fprintf(fid,'\n');
 
+fprintf(fid,'\n');
 fprintf(fid,'Rotation r at point (%g,%g,%g) m\n',double(P));
 fprintf(fid,'rx     = %g rad = %g deg\n',rx,rad2deg(rx));
 fprintf(fid,'ry     = %g rad = %g deg\n',ry,rad2deg(ry));
 fprintf(fid,'rz     = %g rad = %g deg\n',rz,rad2deg(rz));
 fprintf(fid,'rr     = %g rad = %g deg\n',rr,rad2deg(rr));
 fprintf(fid,'rt     = %g rad = %g deg\n',rt,rad2deg(rt));
-fprintf(fid,'\n');
 fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
 

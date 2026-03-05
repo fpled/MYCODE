@@ -542,8 +542,8 @@ fprintf(fid,'nb dofs     = %g\n',getnbddl(S_plate));
 fprintf(fid,'span-to-thickness ratio = %g\n',r/h);
 fprintf(fid,'nb samples = %g\n',N);
 fprintf(fid,'elapsed time = %f s\n',time);
-fprintf(fid,'\n');
 
+fprintf(fid,'\n');
 fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
 fprintf(fid,'mean(ux) = %g m, std(ux) = %g m, ci(ux) = [%g %g] m\n',mean_ux,std_ux,ci_ux(1),ci_ux(2));
 fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
@@ -555,15 +555,14 @@ if strcmpi(test,'staticvert')
 end
 fprintf(fid,'mean(ur) = %g m, std(ur) = %g m, ci(ur) = [%g %g] m\n',mean_ur,std_ur,ci_ur(1),ci_ur(2));
 fprintf(fid,'mean(ut) = %g m, std(ut) = %g m, ci(ut) = [%g %g] m\n',mean_ut,std_ut,ci_ut(1),ci_ut(2));
-fprintf(fid,'\n');
 
+fprintf(fid,'\n');
 fprintf(fid,'Rotation r at point (%g,%g,%g) m\n',double(P));
 fprintf(fid,'mean(rx) = %g rad = %g deg, std(rx) = %g rad = %g deg, ci(rx) = [%g %g] rad = [%g %g] deg\n',mean_rx,rad2deg(mean_rx),std_rx,rad2deg(std_rx),ci_rx(1),ci_rx(2),rad2deg(ci_rx(1)),rad2deg(ci_rx(2)));
 fprintf(fid,'mean(ry) = %g rad = %g deg, std(ry) = %g rad = %g deg, ci(ry) = [%g %g] rad = [%g %g] deg\n',mean_ry,rad2deg(mean_ry),std_ry,rad2deg(std_ry),ci_ry(1),ci_ry(2),rad2deg(ci_ry(1)),rad2deg(ci_ry(2)));
 fprintf(fid,'mean(rz) = %g rad = %g deg, std(rz) = %g rad = %g deg, ci(rz) = [%g %g] rad = [%g %g] deg\n',mean_rz,rad2deg(mean_rz),std_rz,rad2deg(std_rz),ci_rz(1),ci_rz(2),rad2deg(ci_rz(1)),rad2deg(ci_rz(2)));
 fprintf(fid,'mean(rr) = %g rad = %g deg, std(rr) = %g rad = %g deg, ci(rr) = [%g %g] rad = [%g %g] deg\n',mean_rr,rad2deg(mean_rr),std_rr,rad2deg(std_rr),ci_rr(1),ci_rr(2),rad2deg(ci_rr(1)),rad2deg(ci_rr(2)));
 fprintf(fid,'mean(rt) = %g rad = %g deg, std(rt) = %g rad = %g deg, ci(rt) = [%g %g] rad = [%g %g] deg\n',mean_rt,rad2deg(mean_rt),std_rt,rad2deg(std_rt),ci_rt(1),ci_rt(2),rad2deg(ci_rt(1)),rad2deg(ci_rt(2)));
-fprintf(fid,'\n');
 fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
