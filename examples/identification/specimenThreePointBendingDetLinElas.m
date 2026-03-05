@@ -27,7 +27,7 @@ load(fullfile(pathnameIdentification,filenameNum));
 
 fontsize = 16;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc'};
 renderer = 'painters';
 
 % geometric dimensions
@@ -142,13 +142,14 @@ for j=27
         end
         
         %% Outputs
-        fprintf('\nRectangular specimen\n');
-        fprintf(['mesh     : ' elemtype ' elements\n']);
+        fprintf('\n');
+        fprintf('Rectangular specimen\n');
+        fprintf('\n');
+        fprintf('mesh = %s elements\n',elemtype);
         fprintf('nb elements = %g\n',getnbelem(S));
         fprintf('nb nodes    = %g\n',getnbnode(S));
         fprintf('nb dofs     = %g\n',getnbddl(S));
         fprintf('elapsed time = %f s\n',time);
-        fprintf('\n');
         
         %% Display
         if displaySolution

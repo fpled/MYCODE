@@ -22,7 +22,7 @@ fontsize = 16;
 linewidth = 1;
 markersize = 36;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc'};
 renderer = 'OpenGL';
 
 %% Nonparametric model
@@ -116,7 +116,7 @@ if mod(lambda,1)==0
 end
 
 %% Statistical outputs
-fprintf('\nNb samples = %g\n',N);
+fprintf('Nb samples = %g\n',N);
 
 fprintf('expect(A) =\n');
 disp(A);
@@ -128,19 +128,22 @@ fprintf('error = %e\n',err_mean_ngam(end));
 fprintf('elapsed time = %f s\n',time_ngam);
 
 if mod(lambda,1)==0 % check if lambda is an integer
-    fprintf('\nWishart distribution\n');
+    fprintf('\n');
+    fprintf('Wishart distribution\n');
     fprintf('mean(A) =\n');
     disp(mean(a_wish,3));
     fprintf('error = %e\n',err_mean_wish(end));
     fprintf('elapsed time = %f s\n',time_wish);
     
-    fprintf('\nMultivariate normal distribution\n');
+    fprintf('\n');
+    fprintf('Multivariate normal distribution\n');
     fprintf('mean(A) =\n');
     disp(mean(a_mvn,3));
     fprintf('error = %e\n',err_mean_mvn(end));
     fprintf('elapsed time = %f s\n',time_mvn);
     
-    fprintf('\nMultivariate standard normal distribution\n');
+    fprintf('\n');
+    fprintf('Multivariate standard normal distribution\n');
     fprintf('mean(A) =\n');
     disp(mean(a_stdmvn,3));
     fprintf('error = %e\n',err_mean_stdmvn(end));
@@ -173,7 +176,6 @@ if displayCv
     else
         legend('Univariate normal and Gamma distributions','$1/\sqrt{N}$','Interpreter',interpreter)
     end
-    set(l,'Interpreter',interpreter);
     mysaveas(pathname,'convergence_empirical_mean','fig');
     mymatlab2tikz(pathname,'convergence_empirical_mean.tex');
 end

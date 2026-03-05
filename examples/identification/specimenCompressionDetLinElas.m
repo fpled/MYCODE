@@ -20,7 +20,7 @@ end
 
 fontsize = 16;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc'};
 renderer = 'OpenGL';
 
 t = tic;
@@ -176,14 +176,15 @@ end
 time = toc(t);
 
 %% Outputs
-fprintf('\nSquare specimen\n');
-fprintf(['load     : ' loading '\n']);
-fprintf(['mesh     : ' elemtype ' elements\n']);
+fprintf('\n');
+fprintf('Square specimen\n');
+fprintf('\n');
+fprintf('load = %s\n',loading);
+fprintf('mesh = %s elements\n',elemtype);
 fprintf('nb elements = %g\n',getnbelem(S));
 fprintf('nb nodes    = %g\n',getnbnode(S));
 fprintf('nb dofs     = %g\n',getnbddl(S));
 fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
 
 %% Display
 if displaySolution
