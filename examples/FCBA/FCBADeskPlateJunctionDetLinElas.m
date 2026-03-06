@@ -860,6 +860,7 @@ fprintf(fid,'ry     = %g rad = %g deg\n',ry,rad2deg(ry));
 fprintf(fid,'rz     = %g rad = %g deg\n',rz,rad2deg(rz));
 fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
+fprintf('\n');
 
 %% Display
 if displaySolution

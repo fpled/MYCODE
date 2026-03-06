@@ -206,6 +206,7 @@ fprintf(fid,'nb time dofs  = %g\n',getnbtimedof(N));
 fprintf(fid,'elapsed time = %f s\n',time);
 fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
+fprintf('\n');
 
 ut = unfreevector(S,ut);
 ut_val = getvalue(ut);

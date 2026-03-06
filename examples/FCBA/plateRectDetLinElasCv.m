@@ -339,6 +339,7 @@ fprintf(fid,'ry_ex = %g, error = %.3e\n',ry_ex,err_ry);
 fprintf(fid,'rz    = %g\n',rz);
 fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
+fprintf('\n');
 
 %% Display
 if displaySolution

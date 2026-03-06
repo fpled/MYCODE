@@ -582,6 +582,7 @@ fprintf(fid,'Gyy = %g\n',gyy);
 fprintf(fid,'Gxy = %g\n',gxy);
 fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
+fprintf('\n');
 
 %% Display
 if displaySolution

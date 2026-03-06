@@ -530,6 +530,7 @@ fprintf(fid,'Gamz    = %g\n',gamz);
 fprintf(fid,'Gamz_ex = %g, error = %g\n',gamz_ex,err_gamz);
 fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
+fprintf('\n');
 
 %% Display
 if displaySolution

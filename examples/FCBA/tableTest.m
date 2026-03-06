@@ -5,15 +5,15 @@
 clearvars
 close all
 
-formats = {'fig','epsc'};
-renderer = 'OpenGL';
-
 filename = 'table';
 pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
     'results','FCBA',filename);
 if ~exist(pathname,'dir')
     mkdir(pathname);
 end
+
+formats = {'epsc'};
+renderer = 'OpenGL';
 
 %% Mesh
 S = gmsh2femobject(3,'tableTest.msh');

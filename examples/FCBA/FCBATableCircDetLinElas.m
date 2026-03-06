@@ -443,6 +443,7 @@ fprintf(fid,'rr     = %g rad = %g deg\n',rr,rad2deg(rr));
 fprintf(fid,'rt     = %g rad = %g deg\n',rt,rad2deg(rt));
 fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
+fprintf('\n');
 
 %% Display
 if displaySolution

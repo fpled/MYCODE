@@ -24,7 +24,7 @@ elemtypes = {'DKT','DKQ','DST','DSQ','COQ4'}; % Both plate theories
 % meshtypes = {'Unstructured'};
 meshtypes = {'Structured','Unstructured'};
 
-formats = {'fig','epsc'};
+formats = {'epsc'};
 renderer = 'OpenGL';
 
 for il=1:length(loadings)
@@ -81,9 +81,9 @@ if solveProblem
     end
     
     % Beams meshes
-    nbelem_beam = 10;
+    nbelem_beam = 20;
     S_beam = cellfun(@(L) build_model(L,'nbelem',nbelem_beam,'elemtype','BEAM'),L_beam,'UniformOutput',false);
-    % cl_beam = 0.1;
+    % cl_beam = l/20;
     % S_beam = cellfun(@(L,n) build_model(L,'cl',cl_beam,'elemtype','BEAM','filename',fullfile(pathname,['gmsh_beam_' num2str(n)])),L_beam,num2cell(1:length(L_beam)),'UniformOutput',false);
     
     %% Materials
@@ -200,10 +200,11 @@ else
 end
 
 %% Outputs
+fprintf('\n');
 fprintf('Rectangular table\n');
 fprintf('\n');
-fprintf(['load : ' loading '\n']);
-fprintf(['mesh : ' elemtype ' ' meshtype ' elements\n']);
+fprintf('load = %s\n',loading);
+fprintf('mesh = %s %s elements\n',elemtype,meshtype);
 fprintf('nb elements = %g\n',getnbelem(S_plate));
 fprintf('nb nodes    = %g\n',getnbnode(S_plate));
 fprintf('nb dofs     = %g\n',getnbddl(S_plate));

@@ -341,6 +341,7 @@ if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
 end
 fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
+fprintf('\n');
 
 %% Display
 if displaySolution

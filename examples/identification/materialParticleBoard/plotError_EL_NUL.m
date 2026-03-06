@@ -18,7 +18,7 @@ pathnameDIC = fullfile(getfemobjectoptions('path'),'MYCODE',...
 
 fontsize = 16;
 interpreter = 'latex';
-formats = {'fig','epsc'};
+formats = {'epsc'};
 
 %% Plot relative error
 % geometric dimensions
@@ -41,7 +41,7 @@ for j=1:numSamples
         
         numImage = num2str(k,'%02d');
         filenameDIC = [numSample '_00-' numImage '-Mesh'];
-        disp(['File = ',filenameDIC]);
+        fprintf('File = %s\n',filenameDIC);
         load(fullfile(pathnameDIC,filenameDIC));
         
         [u_exp,coord] = extractCorreliElas(Job,Mesh,U,h,d); % [mm]

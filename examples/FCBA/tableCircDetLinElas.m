@@ -21,7 +21,7 @@ loadings = {'Uniform','Concentrated'};
 % elemtypes = {'DST','DSQ','COQ4'}; % Reissner-Mindlin (first-order shear) plate theory
 elemtypes = {'DKT','DKQ','DST','DSQ','COQ4'}; % Both plate theories
 
-formats = {'fig','epsc'};
+formats = {'epsc'};
 renderer = 'OpenGL';
 
 for il=1:length(loadings)
@@ -56,7 +56,7 @@ if solveProblem
     L_beam = LINE(P_beam,P_beam+POINT([0.0,0.0,-l]));
     
     % Plate mesh
-    cl_plate = r/10;
+    cl_plate = r/20;
     switch lower(loading)
         case 'uniform'
             points = x_beam;
@@ -66,9 +66,9 @@ if solveProblem
     S_plate = build_model(C,'cl',cl_plate,'elemtype',elemtype,'filename',fullfile(pathname,['gmsh_plate_circ_' elemtype]),'points',points);
     
     % Beam mesh
-    nbelem_beam = 10;
+    nbelem_beam = 20;
     S_beam = build_model(L_beam,'nbelem',nbelem_beam,'elemtype','BEAM');
-    % cl_beam = 0.1;
+    % cl_beam = l/20;
     % S_beam = build_model(L_beam,'cl',cl_beam,'elemtype','BEAM','filename',fullfile(pathname,'gmsh_beam'));
     
     %% Materials
@@ -201,31 +201,32 @@ else
 end
 
 %% Outputs
-fprintf('\nCircular table\n');
-fprintf(['load : ' loading '\n']);
-fprintf(['mesh : ' elemtype ' elements\n']);
+fprintf('\n');
+fprintf('Circular table\n');
+fprintf('\n');
+fprintf('load = %s\n',loading);
+fprintf('mesh = %s elements\n',elemtype);
 fprintf('nb elements = %g\n',getnbelem(S_plate));
 fprintf('nb nodes    = %g\n',getnbnode(S_plate));
 fprintf('nb dofs     = %g\n',getnbddl(S_plate));
 fprintf('span-to-thickness ratio = %g\n',r/h);
 fprintf('elapsed time = %f s\n',time);
-fprintf('\n');
 
+fprintf('\n');
 fprintf('Displacement u at point (%g,%g,%g)\n',double(P));
 fprintf('ux    = %g\n',ux);
 fprintf('uy    = %g\n',uy);
 fprintf('uz    = %g\n',uz);
 fprintf('ur    = %g\n',ur);
 fprintf('ut    = %g\n',ut);
-fprintf('\n');
 
+fprintf('\n');
 fprintf('Rotation r at point (%g,%g,%g)\n',double(P));
 fprintf('rx    = %g\n',rx);
 fprintf('ry    = %g\n',ry);
 fprintf('rz    = %g\n',rz);
 fprintf('rr    = %g\n',rr);
 fprintf('rt    = %g\n',rt);
-fprintf('\n');
 
 %% Display
 if displaySolution

@@ -538,6 +538,7 @@ fprintf(fid,'Gamy = %g in groupelem #%d at point (%g,%g,%g) m\n',gamymax,numgrou
 fprintf(fid,'Gamz = %g in groupelem #%d at point (%g,%g,%g) m\n',gamzmax,numgroupelemnodeGamzmax(1),double(PGamzmax));
 fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
+fprintf('\n');
 
 %% Display
 if displaySolution
