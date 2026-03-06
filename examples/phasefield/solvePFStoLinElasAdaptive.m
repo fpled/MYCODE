@@ -23,16 +23,17 @@ St_sample = cell(nbSamples,length(T));
 
 if ~verLessThan('matlab','9.2') % introduced in R2017a
     q = parallel.pool.DataQueue;
+    j = 0;
     afterEach(q, @nUpdateProgressBar);
 else
     q = [];
 end
 textprogressbar('Solving problem: ');
-j = 0;
 % for i=1:N
 parfor i=1:N
     if ~verLessThan('matlab','9.2') % introduced in R2017a
-        send(q,i);
+        send(q,1); % send(q,1) is enough, since the callback only needs a signal that one iteration has finished, and not the iteration index i
+        % send(q,i);
     end
     si = RandStream.create('mrg32k3a','NumStreams',N,'StreamIndices',i);
     

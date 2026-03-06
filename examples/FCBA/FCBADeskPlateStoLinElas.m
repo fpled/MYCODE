@@ -647,7 +647,18 @@ if solveProblem
     %% Stiffness matrix and solution
     t = tic;
     u = sparse(getnbddlfree(S),N);
+    if ~verLessThan('matlab','9.2') % introduced in R2017a
+        q = parallel.pool.DataQueue;
+        afterEach(q, @(~) nUpdateProgressBar(N));
+    else
+        q = [];
+    end
+    textprogressbar('Solving problem: ');
     parfor i=1:N
+        if ~verLessThan('matlab','9.2') % introduced in R2017a
+            send(q,1); % send(q,1) is enough, since the callback only needs a signal that one iteration has finished, and not the iteration index i
+            % send(q,i);
+        end
         mati = mat;
         switch lower(materialSym)
             case 'isot'
@@ -681,6 +692,7 @@ if solveProblem
         % Solution
         u(:,i) = Ai\f;
     end
+    textprogressbar(' done');
     time = toc(t);
     
     mean_u = mean(u,2);
@@ -969,6 +981,7 @@ fprintf(fid,'mean(ry) = %g rad = %g deg, std(ry) = %g rad = %g deg, ci(ry) = [%g
 fprintf(fid,'mean(rz) = %g rad = %g deg, std(rz) = %g rad = %g deg, ci(rz) = [%g %g] rad = [%g %g] deg\n',mean_rz,rad2deg(mean_rz),std_rz,rad2deg(std_rz),ci_rz(1),ci_rz(2),rad2deg(ci_rz(1)),rad2deg(ci_rz(2)));
 fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
+fprintf('\n');
 
 %% Display
 if displaySolution
@@ -1129,3 +1142,15 @@ end
 end
 
 myparallel('stop');
+
+function nUpdateProgressBar(N)
+persistent j
+if isempty(j)
+    j = 0;
+end
+j = j+1;
+textprogressbar(j/N*100,sprintf('(%d/%d)',j,N));
+if j >= N
+    j = [];
+end
+end

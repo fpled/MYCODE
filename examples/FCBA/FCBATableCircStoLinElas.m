@@ -377,7 +377,18 @@ if solveProblem
     %% Stiffness matrix and solution
     t = tic;
     u = sparse(getnbddlfree(S),N);
+    if ~verLessThan('matlab','9.2') % introduced in R2017a
+        q = parallel.pool.DataQueue;
+        afterEach(q, @(~) nUpdateProgressBar(N));
+    else
+        q = [];
+    end
+    textprogressbar('Solving problem: ');
     parfor i=1:N
+        if ~verLessThan('matlab','9.2') % introduced in R2017a
+            send(q,1); % send(q,1) is enough, since the callback only needs a signal that one iteration has finished, and not the iteration index i
+            % send(q,i);
+        end
         % Young modulus
         Ei = E_sample(i);
         % Material
@@ -388,6 +399,7 @@ if solveProblem
         % Solution
         u(:,i) = Ai\f;
     end
+    textprogressbar(' done');
     time = toc(t);
     
     %% Statistical outputs of solution
@@ -565,6 +577,7 @@ fprintf(fid,'mean(rr) = %g rad = %g deg, std(rr) = %g rad = %g deg, ci(rr) = [%g
 fprintf(fid,'mean(rt) = %g rad = %g deg, std(rt) = %g rad = %g deg, ci(rt) = [%g %g] rad = [%g %g] deg\n',mean_rt,rad2deg(mean_rt),std_rt,rad2deg(std_rt),ci_rt(1),ci_rt(2),rad2deg(ci_rt(1)),rad2deg(ci_rt(2)));
 fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
+fprintf('\n');
 
 %% Display
 if displaySolution
@@ -725,3 +738,15 @@ end
 end
 
 myparallel('stop');
+
+function nUpdateProgressBar(N)
+persistent j
+if isempty(j)
+    j = 0;
+end
+j = j+1;
+textprogressbar(j/N*100,sprintf('(%d/%d)',j,N));
+if j >= N
+    j = [];
+end
+end
