@@ -4,7 +4,7 @@
 % clc
 clearvars
 close all
-% rng('default');
+rng('default');
 myparallel('start');
 
 %% Input data
