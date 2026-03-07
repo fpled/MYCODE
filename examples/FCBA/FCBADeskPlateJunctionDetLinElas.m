@@ -27,6 +27,10 @@ tests = {'StaticHori1','StaticHori2',...
     'DurabilityHori1','DurabilityHori2',...
     'StabilityVert'};
 
+% elemtypes = {'DKT'};       % Kirchhoff-Love (classical) plate theory
+% elemtypes = {'DST'};       % Reissner-Mindlin (first-order shear) plate theory
+elemtypes = {'DKT','DST'}; % Both plate theories
+
 pointLoad = false; % point load
 
 junction = true; % junction modeling
@@ -55,18 +59,21 @@ for it=1:length(tests)
         case 'drop'
             loads = 100e-3; % height [m]
     end
-for il=1:length(loads)
-    loading = loads(il);
-if pointLoad
-    filename = ['FCBADeskPlateJunctionDetLinElas' test '_' num2str(loading) 'N_PointLoad'];
-else
-    filename = ['FCBADeskPlateJunctionDetLinElas' test '_' num2str(loading) 'N'];
-end
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','FCBA',filename);
-if ~exist(pathname,'dir')
-    mkdir(pathname);
-end
+    for il=1:length(loads)
+        loading = loads(il);
+        if pointLoad
+            filename = ['FCBADeskPlateJunctionDetLinElas' test '_' num2str(loading) 'N_PointLoad'];
+        else
+            filename = ['FCBADeskPlateJunctionDetLinElas' test '_' num2str(loading) 'N'];
+        end
+
+for ie=1:length(elemtypes)
+    elemtype = elemtypes{ie};
+    pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+        'results','FCBA',filename,elemtype);
+    if ~exist(pathname,'dir')
+        mkdir(pathname);
+    end
 
 %% Problem
 if solveProblem
@@ -142,7 +149,7 @@ if solveProblem
     P_meas = cellfun(@(x) POINT(x),x_meas,'UniformOutput',false);
     
     % Plates meshes
-    elemtype = 'DST';
+    % elemtype = 'DST';
     cl = h/3;
     cl_12 = cl;
     cl_3 = cl;
@@ -923,5 +930,6 @@ if displaySolution
     % mysaveas(pathname,'SigVM',formats,renderer);
 end
 
+end
 end
 end

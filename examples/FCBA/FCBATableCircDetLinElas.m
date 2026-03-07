@@ -30,6 +30,10 @@ tests = {'StaticVert'};      % strength  test under static vertical load
 %     'DurabilityHori1','DurabilityHori2','DurabilityHori3','DurabilityHori4',...
 %     'StabilityVert1','StabilityVert2','StabilityVert3','StabilityVert4'};
 
+% elemtypes = {'DKT'};       % Kirchhoff-Love (classical) plate theory
+% elemtypes = {'DST'};       % Reissner-Mindlin (first-order shear) plate theory
+elemtypes = {'DKT','DST'}; % Both plate theories
+
 belt = true; % belt modeling
 
 fontsize = 16;
@@ -40,12 +44,15 @@ renderer = 'OpenGL';
 
 for it=1:length(tests)
     test = tests{it};
-filename = ['FCBATableCircDetLinElas' test];
-pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
-    'results','FCBA',filename);
-if ~exist(pathname,'dir')
-    mkdir(pathname);
-end
+    filename = ['FCBATableCircDetLinElas' test];
+    
+for ie=1:length(elemtypes)
+    elemtype = elemtypes{ie};
+    pathname = fullfile(getfemobjectoptions('path'),'MYCODE',...
+        'results','FCBA',filename,elemtype);
+    if ~exist(pathname,'dir')
+        mkdir(pathname);
+    end
 
 %% Problem
 if solveProblem
@@ -100,7 +107,7 @@ if solveProblem
     % Plate mesh
     cl_plate = r/10;
     cl_belt = cl_plate;
-    elemtype = 'DKT';
+    % elemtype = 'DST';
     r_masse = 150e-3;
     C_masse = CIRCLE(0.0,0.0,0.0,r_masse);
     Pb = {getvertex(C,1),x_load_dura{4},getvertex(C,2),x_load_dura{3},getvertex(C,3),getvertex(C,4)};
@@ -511,4 +518,5 @@ if displaySolution
     % mysaveas(pathname,'SigVM',formats,renderer);
 end
 
+end
 end
