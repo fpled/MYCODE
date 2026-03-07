@@ -416,7 +416,8 @@ if solveProblem
     std_u = std(u,0,2);
     std_u = unfreevector(S,std_u);
     
-    probs = [0.025 0.975];
+    % probs = [0.025 0.975];
+    probs = [0.01 0.99];
     ci_u = quantile(u,probs,2);
     ci_u = unfreevector(S,ci_u);
     
