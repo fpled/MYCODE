@@ -12,6 +12,7 @@ displaySolution = true;
 % loadings = {'Uniform'};
 % loadings = {'Concentrated'};
 loadings = {'Uniform','Concentrated'};
+
 % elemtypes = {'DKT'};
 % elemtypes = {'DKQ'};
 % elemtypes = {'DST'};
