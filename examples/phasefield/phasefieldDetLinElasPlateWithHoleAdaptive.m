@@ -575,7 +575,7 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Energy [J]','Interpreter',interpreter)
-    legend('$\Psi_u$','$\Psi_c$','$\Psi_{\mathrm{tot}}$',...
+    legend('elastic','fracture','total',...
         'Location','NorthWest','Interpreter',interpreter)
     mysaveas(pathname,'energies_displacement',formats);
     mymatlab2tikz(pathname,'energies_displacement.tex');

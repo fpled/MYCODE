@@ -33,7 +33,7 @@
 % clc
 clearvars
 close all
-% rng('default');
+rng('default');
 
 %% Input data
 setProblem = true;
@@ -60,7 +60,7 @@ maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 meshAdapt = 'Mmg'; % 'Gmsh', 'Mmg'
-switch lower(meshAdapt)
+switch lower(meshAdapt),
     case 'gmsh'
         initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
     case 'mmg'
@@ -457,7 +457,7 @@ if solveProblem
     % fun = @(S_phase,S,filename) solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,initialCrack,sizemap,...
     %     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
     %     'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
-    [ft,dmaxt,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_asymmetric_notched_plate','pathname',pathname,'nbsamples',nbSamples);
+    [ft,Edt,Eut,dmaxt,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_asymmetric_notched_plate','pathname',pathname,'nbsamples',nbSamples);
     t = gettevol(T);
     idc = arrayfun(@(i) find(dmaxt(i,:)>=min(0.75,max(dmaxt(i,:))),1),1:N)';
     fc = arrayfun(@(i) ft(i,idc(i)),1:N)';
@@ -498,15 +498,29 @@ if solveProblem
     [fc_f,fc_xi,fc_bw] = ksdensity(fc,'NumPoints',npts);
     [udc_f,udc_xi,udc_bw] = ksdensity(udc,'NumPoints',npts);
     
-    save(fullfile(pathname,'solution.mat'),'N','ft','dmaxt','dt','ut','St_phase','St',...
-        'ft_mean','ft_std','ft_ci','probs','time',...
+    Edt_mean = mean(Edt);
+    Edt_std = std(Edt);
+    Edt_ci = quantile(Edt,probs);
+    
+    Eut_mean = mean(Eut);
+    Eut_std = std(Eut);
+    Eut_ci = quantile(Eut,probs);
+    
+    dmaxt_mean = mean(dmaxt);
+    dmaxt_std = std(dmaxt);
+    dmaxt_ci = quantile(dmaxt,probs);
+    
+    save(fullfile(pathname,'solution.mat'),'N','ft','Edt','Eut','dmaxt','dt','ut','St_phase','St',...
+        'ft_mean','ft_std','ft_ci','Edt_mean','Edt_std','Edt_ci','Eut_mean','Eut_std','Eut_ci',...
+        'probs','time',...
         'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
         'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw',...
         'fc','fc_mean','fc_std','fc_ci','fc_f','fc_xi','fc_bw',...
         'udc','udc_mean','udc_std','udc_ci','udc_f','udc_xi','udc_bw');
 else
-    load(fullfile(pathname,'solution.mat'),'N','ft','dmaxt','dt','ut','St_phase','St',...
-        'ft_mean','ft_std','ft_ci','probs','time',...
+    load(fullfile(pathname,'solution.mat'),'N','ft','Edt','Eut','dmaxt','dt','ut','St_phase','St',...
+        'ft_mean','ft_std','ft_ci','Edt_mean','Edt_std','Edt_ci','Eut_mean','Eut_std','Eut_ci',...
+        'probs','time',...
         'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
         'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw',...
         'fc','fc_mean','fc_std','fc_ci','fc_f','fc_xi','fc_bw',...
@@ -648,6 +662,122 @@ if displaySolution
         )
     mysaveas(pathname,'forces_displacement',formats);
     mymatlab2tikz(pathname,'forces_displacement.tex');
+    
+    %% Display maximum damage-displacement curve
+    figure('Name','Maximum damage vs displacement')
+    clf
+    plot(t*1e3,dmaxt_mean,'-b','LineWidth',linewidth)
+    hold on
+    ciplot(dmaxt_ci(1,:),dmaxt_ci(2,:),t*1e3,'b');
+    alpha(0.2)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Maximum damage','Interpreter',interpreter)
+    legend('mean function',...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+        'Location','NorthWest','Interpreter',interpreter)
+    mysaveas(pathname,'max_damage_displacement',formats);
+    mymatlab2tikz(pathname,'max_damage_displacement.tex');
+    
+    colors = distinguishable_colors(N);
+    figure('Name','Maximum damages vs displacement')
+    clf
+    for i=1:N
+        plot(t*1e3,dmaxt(i,:),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+        hold on
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]'...,'Interpreter',interpreter...
+        )
+    ylabel('Maximum damage'...,'Interpreter',interpreter...
+        )
+    mysaveas(pathname,'max_damages_displacement',formats);
+    mymatlab2tikz(pathname,'max_damages_displacement.tex');
+    
+    %% Display energy-displacement curve
+    Et_ci = quantile(Eut+Edt,probs);
+    figure('Name','Energies vs displacement')
+    clf
+    plot(t*1e3,Eut_mean,'-b','LineWidth',linewidth)
+    hold on
+    plot(t*1e3,Edt_mean,'-r','LineWidth',linewidth)
+    plot(t*1e3,Eut_mean+Edt_mean,'-k','LineWidth',linewidth)
+    ciplot(Eut_ci(1,:),Eut_ci(2,:),t*1e3,'b');
+    ciplot(Edt_ci(1,:),Edt_ci(2,:),t*1e3,'r');
+    ciplot(Et_ci(1,:),Et_ci(2,:),t*1e3,'k');
+    alpha(0.2)
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Energy [J]','Interpreter',interpreter)
+    legend('mean function - elastic','mean function - fracture','mean function - total',...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval - elastic'],...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval - fracture'],...
+        ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval - total'],...
+        'Location','NorthWest','Interpreter',interpreter)
+    mysaveas(pathname,'energies_displacement',formats);
+    mymatlab2tikz(pathname,'energies_displacement.tex');
+    
+    % Elastic energy-displacement curves
+    colors = distinguishable_colors(N);
+    figure('Name','Elastic energies vs displacement')
+    clf
+    for i=1:N
+        plot(t*1e3,Eut(i,:),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+        hold on
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]'...,'Interpreter',interpreter...
+        )
+    ylabel('Elastic strain energy [J]'...,'Interpreter',interpreter...
+        )
+    mysaveas(pathname,'energies_elastic_displacement',formats);
+    mymatlab2tikz(pathname,'energies_elastic_displacement.tex');
+    
+    % Fracture energy-displacement curves
+    figure('Name','Fracture energies vs displacement')
+    clf
+    for i=1:N
+        plot(t*1e3,Edt(i,:),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+        hold on
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]'...,'Interpreter',interpreter...
+        )
+    ylabel('Fracture energy [J]'...,'Interpreter',interpreter...
+        )
+    mysaveas(pathname,'energies_fracture_displacement',formats);
+    mymatlab2tikz(pathname,'energies_fracture_displacement.tex');
+    
+    % Total energy-displacement curves
+    figure('Name','Total energies vs displacement')
+    clf
+    for i=1:N
+        plot(t*1e3,Eut(i,:)+Edt(i,:),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+        hold on
+    end
+    hold off
+    grid on
+    box on
+    set(gca,'FontSize',fontsize)
+    xlabel('Displacement [mm]'...,'Interpreter',interpreter...
+        )
+    ylabel('Total energy [J]'...,'Interpreter',interpreter...
+        )
+    mysaveas(pathname,'energies_total_displacement',formats);
+    mymatlab2tikz(pathname,'energies_total_displacement.tex');
     
     %% Display pdf of maximum force
     figure('Name','Probability Density Estimate: Maximum force')

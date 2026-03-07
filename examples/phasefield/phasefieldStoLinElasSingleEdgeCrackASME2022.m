@@ -31,7 +31,7 @@
 % clc
 clearvars
 close all
-% rng('default');
+rng('default');
 
 %% Input data
 setProblem = true;

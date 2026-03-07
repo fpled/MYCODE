@@ -1,5 +1,5 @@
-function [ft_sample,dmaxt_sample,dt_sample,ut_sample,St_phase_sample,St_sample] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,varargin)
-% function [ft_sample,dmaxt_sample,dt_sample,ut_sample,St_phase_sample,St_sample] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,varargin)
+function [ft_sample,Edt_sample,Eut_sample,dmaxt_sample,dt_sample,ut_sample,St_phase_sample,St_sample] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,varargin)
+% function [ft_sample,Edt_sample,Eut_sample,dmaxt_sample,dt_sample,ut_sample,St_phase_sample,St_sample] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,varargin)
 % Solve stochastic phase-field problem with mesh adaptation.
 
 fun = fcnchk(fun);
@@ -15,6 +15,8 @@ G = GMSHFILE(fullfile(pathname,filename));
 
 % Initialize samples
 ft_sample = zeros(N,length(T));
+Edt_sample = zeros(N,length(T));
+Eut_sample = zeros(N,length(T));
 dmaxt_sample = zeros(N,length(T));
 dt_sample = cell(nbSamples,length(T));
 ut_sample = cell(nbSamples,length(T));
@@ -333,10 +335,12 @@ parfor i=1:N
     copyfile(getfile(G,'.msh'),getfile(Gi,'.msh'));
     
     % Solve deterministic problem
-    [dt,ut,ft,St_phase,St] = fun(S_phasei,Si,filenamei);
+    [dt,ut,ft,St_phase,St,~,Edt,Eut] = fun(S_phasei,Si,filenamei);
     dmaxt = cellfun(@(d) max(d),dt);
     
     ft_sample(i,:) = ft;
+    Edt_sample(i,:) = Edt;
+    Eut_sample(i,:) = Eut;
     dmaxt_sample(i,:) = dmaxt;
     if i<=nbSamples
         dt_sample(i,:) = dt;

@@ -1,5 +1,5 @@
-function [ft_sample,dmaxt_sample,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,varargin)
-% function [ft_sample,dmaxt_sample,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,varargin)
+function [ft_sample,Edt_sample,Eut_sample,dmaxt_sample,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,varargin)
+% function [ft_sample,Edt_sample,Eut_sample,dmaxt_sample,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,varargin)
 % Solve stochastic phase-field problem.
 
 fun = fcnchk(fun);
@@ -10,6 +10,8 @@ sz_u = getnbddl(S);
 
 % Initialize samples
 ft_sample = zeros(N,length(T));
+Edt_sample = zeros(N,length(T));
+Eut_sample = zeros(N,length(T));
 dmaxt_sample = zeros(N,length(T));
 dt_sample = zeros(nbSamples,sz_d,length(T));
 ut_sample = zeros(nbSamples,sz_u,length(T));
@@ -363,7 +365,7 @@ parfor i=1:N
     Si = actualisematerials(Si,mats);
     
     % Solve deterministic problem
-    [dt,ut,ft] = fun(S_phasei,Si);
+    [dt,ut,ft,~,Edt,Eut] = fun(S_phasei,Si);
     
     % Compute second-order statistics
     dt_val = getvalue(dt);
@@ -376,6 +378,8 @@ parfor i=1:N
     dmaxt = max(dt_val);
     
     ft_sample(i,:) = ft;
+    Edt_sample(i,:) = Edt;
+    Eut_sample(i,:) = Eut;
     dmaxt_sample(i,:) = dmaxt;
     if i<=nbSamples
         dt_sample(i,:,:) = dt_val;
