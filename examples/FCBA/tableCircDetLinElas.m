@@ -232,7 +232,7 @@ fprintf('rt    = %g\n',rt);
 %% Display
 if displaySolution
     %% Display domains, boundary conditions and meshes
-    plotDomain(C,L_beam,'legend',false);
+    plotDomain({C,L_beam},'legend',false);
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     

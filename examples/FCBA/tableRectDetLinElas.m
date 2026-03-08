@@ -228,7 +228,8 @@ fprintf('rz    = %g\n',rz);
 %% Display
 if displaySolution
     %% Display domains, boundary conditions and meshes
-    plotDomain(Q,L_beam,'Color','w','legend',false);
+    % plotDomain({Q,L_beam{:}},'legend',false);
+    plotDomain([{Q},L_beam(:)'],'legend',false);
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
     
