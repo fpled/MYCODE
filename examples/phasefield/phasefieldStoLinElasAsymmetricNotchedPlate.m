@@ -66,7 +66,8 @@ FEmesh = 'Optim'; % 'Unif' or 'Optim'
 % Random model parameters
 % N = 500; % number of samples
 N = numWorkers;
-randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
+unit = 1e-3; L = 10*unit; h = 4*unit; lcorr = min(2*L,2*h)/10; % lcorr = 8e-4;
+randMat = struct('delta',0.2,'lcorr',lcorr); % random material parameters model
 randPF = struct('aGc',0,'bGc',0,'lcorr',Inf); % random phase-field parameters model
 
 suffix = '';
