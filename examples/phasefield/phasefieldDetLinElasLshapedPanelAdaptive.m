@@ -143,7 +143,7 @@ if setProblem
     
     % clD = 22.4e-3; % [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME]
     clD = 20e-3; % [Gerasimov, De Lorenzis, 2019, CMAME]
-    % clD = 10e-3; % [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM]
+    % clD = 10e-3; % [Muixi, Rodriguez-Ferran, Fernandez-Mendez, 2020, IJNME], [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM]
     if Dim==2
         % cl = 29.1548e-3; % [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME]
         % cl = 22e-3; % [Jodlbauer, Langer, Wick, 2020, CMAME]

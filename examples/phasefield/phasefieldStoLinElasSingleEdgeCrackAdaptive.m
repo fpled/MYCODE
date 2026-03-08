@@ -398,7 +398,7 @@ if setProblem
             elseif Dim==3
                 error('Not implemented yet');
             end
-
+            
         otherwise
             error('Wrong material symmetry class');
     end

@@ -133,7 +133,7 @@ if setProblem
     b = 30e-3; % distance of applied load from the right edge
     e = 100e-3; % thickness
     % e = 50e-3; % thickness [Liu, Chen, Yuan, 2024, AAM]
-    % e = 50e-3; % 3D with symmetry) [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS]
+    % e = 50e-3; % (3D with symmetry) [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS]
     
     if Dim==2
         % cl = 29.1548e-3; % [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME]
