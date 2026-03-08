@@ -108,7 +108,7 @@ if solveProblem
     P_load = cellfun(@(x) POINT(x),x_load,'UniformOutput',false);
     
     % Plate mesh
-    cl_plate = r/10;
+    cl_plate = r/20;
     cl_belt = cl_plate;
     % elemtype = 'DST';
     r_masse = 150e-3;
@@ -591,9 +591,11 @@ fprintf('\n');
 if displaySolution
     %% Display domains, boundary conditions and meshes
     if ~belt
-        plotDomain(C,L_beam,'legend',false);
+        % plotDomain({C,L_beam{:}},'legend',false);
+        plotDomain([{C},L_beam(:)'],'legend',false);
     else
-        plotDomain(C,[L_beam,L_belt],'legend',false);
+        % plotDomain({C,L_beam{:},L_belt{:}},'legend',false);
+        plotDomain([{C},L_beam(:)',L_belt(:)'],'legend',false);
     end
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
@@ -606,18 +608,18 @@ if displaySolution
     %legend([hD,hN,hP],[legD,legN,'mesure'],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
-    plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+    plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
     mean_U = mean_u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
     ampl = getsize(S)/max(abs(mean_U))/20;
-    plotModelDeflection(S,mean_u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+    plotModelDeflection(S,mean_u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
-    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-    plot(S+ampl*mean_u,'Color','b','FaceColor','b','FaceAlpha',0.1);
+    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true);
+    plot(S+ampl*mean_u,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display solution
@@ -630,17 +632,17 @@ if displaySolution
     std_u_mm = std_u*1e3; % [mm]
     switch lower(test)
         case {'statichori1','statichori2','durabilityhori1','durabilityhori2'}
-            plotSolution(S,mean_u_mm,'displ',1,'ampl',ampl,options{:});
-            mysaveas(pathname,'mean_Ux',formats,renderer);
-            
-            plotSolution(S,std_u_mm,'displ',1,'ampl',ampl,options{:});
-            mysaveas(pathname,'std_Ux',formats,renderer);
-        case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
-            plotSolution(S,mean_u,'displ',2,'ampl',ampl,options{:});
+            plotSolution(S,mean_u_mm,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'mean_Uy',formats,renderer);
             
             plotSolution(S,std_u_mm,'displ',2,'ampl',ampl,options{:});
             mysaveas(pathname,'std_Uy',formats,renderer);
+        case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
+            plotSolution(S,mean_u,'displ',1,'ampl',ampl,options{:});
+            mysaveas(pathname,'mean_Ux',formats,renderer);
+            
+            plotSolution(S,std_u_mm,'displ',1,'ampl',ampl,options{:});
+            mysaveas(pathname,'std_Ux',formats,renderer);
         case {'staticvert','stabilityvert1','stabilityvert2','stabilityvert3','stabilityvert4',...
                 'impact','drop'}
             plotSolution(S,mean_u_mm,'displ',3,'ampl',ampl,options{:});
@@ -665,25 +667,48 @@ end
 
 %% Display convergence
 if displayCv
-    N = size(u,2);
+    % N = size(u,2);
     switch lower(test)
         case {'statichori1','statichori2','durabilityhori1','durabilityhori2'}
-            means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UY'),1:N);
-            stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UY'),1:N);
-            lbs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UY'),1:N);
-            ubs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UY'),1:N);
+            comp = 'UY';
         case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
-            means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UX'),1:N);
-            stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UX'),1:N);
-            lbs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UX'),1:N);
-            ubs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UX'),1:N);
-        case {'staticvert','stabilityvert1','stabilityvert2','stabilityvert3','stabilityvert4',...
-                'impact','drop'}
-            means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UZ'),1:N);
-            stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UZ'),1:N);
-            lbs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UZ'),1:N);
-            ubs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UZ'),1:N);
+            comp = 'UX';
+        case {'stabilityvert','staticvert','impact','drop'}
+            comp = 'UZ';
     end
+    % Response samples at point P
+    n = 1:N;
+    uP = arrayfun(@(i) eval_sol(S,u(:,i),P,comp),n);
+    % Cumulative mean and standard deviation
+    c1 = cumsum(uP);
+    c2 = cumsum(uP.^2);
+    means_u = c1 ./ n;
+    stds_u = sqrt(max((c2 - c1.^2 ./ n) ./ (n-1), 0));
+    % Cumulative quantiles
+    lbs_u = zeros(1,N);
+    ubs_u = zeros(1,N);
+    for i=1:N
+        qi = quantile(uP(1:i),probs);
+        lbs_u(i) = qi(1);
+        ubs_u(i) = qi(2);
+    end
+    % % Cumulative mean, standard deviation, and quantiles
+    % means_u = zeros(1,N);
+    % stds_u  = zeros(1,N);
+    % lbs_u = zeros(1,N);
+    % ubs_u = zeros(1,N);
+    % for i=1:N
+    %     ui = uP(1:i);
+    %     means_u(i) = mean(ui);
+    %     stds_u(i)  = std(ui,0);
+    %     qi = quantile(ui,probs);
+    %     lbs_u(i) = qi(1);
+    %     ubs_u(i) = qi(2);
+    % end
+    % means_u = arrayfun(@(i) mean(uP(1:i)),n);
+    % stds_u  = arrayfun(@(i) std(uP(1:i),0),n);
+    % lbs_u   = arrayfun(@(i) quantile(uP(1:i),probs(1)),n);
+    % ubs_u   = arrayfun(@(i) quantile(uP(1:i),probs(2)),n);
     
     figure('Name','Convergence solution')
     clf

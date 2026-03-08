@@ -105,7 +105,7 @@ if solveProblem
     P_load = cellfun(@(x) POINT(x),x_load,'UniformOutput',false);
     
     % Plate mesh
-    cl_plate = r/10;
+    cl_plate = r/20;
     cl_belt = cl_plate;
     % elemtype = 'DST';
     r_masse = 150e-3;
@@ -456,9 +456,11 @@ fprintf('\n');
 if displaySolution
     %% Display domains, boundary conditions and meshes
     if ~belt
-        plotDomain(C,L_beam,'legend',false);
+        % plotDomain({C,L_beam{:}},'legend',false);
+        plotDomain([{C},L_beam(:)'],'legend',false);
     else
-        plotDomain(C,[L_beam,L_belt],'legend',false);
+        % plotDomain({C,L_beam{:},L_belt{:}},'legend',false);
+        plotDomain([{C},L_beam(:)',L_belt(:)'],'legend',false);
     end
     mysaveas(pathname,'domain',formats,renderer);
     mymatlab2tikz(pathname,'domain.tex');
@@ -471,18 +473,18 @@ if displaySolution
     %legend([hD,hN,hP],[legD,legN,'mesure'],'Location','NorthEastOutside')
     mysaveas(pathname,'boundary_conditions',formats,renderer);
     
-    plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'legend',false);
+    plotModel(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true,'legend',false);
     mysaveas(pathname,'mesh',formats,renderer);
     
     U = u(findddl(S,DDL(DDLVECT('U',S.syscoord,'TRANS'))),:);
     ampl = getsize(S)/max(abs(U))/20;
-    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'legend',false);
+    plotModelDeflection(S,u,'ampl',ampl,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true,'legend',false);
     mysaveas(pathname,'mesh_deflected',formats,renderer);
     
     figure('Name','Meshes')
     clf
-    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1);
-    plot(S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1);
+    plot(S,'Color','k','FaceColor','k','FaceAlpha',0.1,'node',true);
+    plot(S+ampl*u,'Color','b','FaceColor','b','FaceAlpha',0.1,'node',true);
     mysaveas(pathname,'meshes_deflected',formats,renderer);
     
     %% Display solution

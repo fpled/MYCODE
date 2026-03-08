@@ -1053,39 +1053,63 @@ end
 
 %% Display convergence
 if displayCv
-    N = size(u,2);
+    % N = size(u,2);
     switch lower(test)
-        case {'stabilityvert','staticvert','impact','drop'}
-            means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UZ'),1:N);
-            stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UZ'),1:N);
-            lbs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UZ'),1:N);
-            ubs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UZ'),1:N);
-            mean_u_exp = uz_exp;
-            lbs_u_exp = env_uz_exp(1);
-            ubs_u_exp = env_uz_exp(2);
         case {'statichori1','statichori2','durabilityhori1','durabilityhori2'}
-            means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UX'),1:N);
-            stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UX'),1:N);
-            lbs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UX'),1:N);
-            ubs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UX'),1:N);
+            comp = 'UX';
             mean_u_exp = ux_exp;
-            lbs_u_exp = env_ux_exp(1);
-            ubs_u_exp = env_ux_exp(2);
+            lb_u_exp = env_ux_exp(1);
+            ub_u_exp = env_ux_exp(2);
         case {'statichori3','statichori4','durabilityhori3','durabilityhori4'}
-            means_u = arrayfun(@(x) eval_sol(S,mean(u(:,1:x),2),P,'UY'),1:N);
-            stds_u = arrayfun(@(x) eval_sol(S,std(u(:,1:x),0,2),P,'UY'),1:N);
-            lbs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(1),2),P,'UY'),1:N);
-            ubs_u = arrayfun(@(x) eval_sol(S,quantile(u(:,1:x),probs(2),2),P,'UY'),1:N);
+            comp = 'UY';
             mean_u_exp = uy_exp;
-            lbs_u_exp = env_uy_exp(1);
-            ubs_u_exp = env_uy_exp(2);
+            lb_u_exp = env_uy_exp(1);
+            ub_u_exp = env_uy_exp(2);
+        case {'stabilityvert','staticvert','impact','drop'}
+            comp = 'UZ';
+            mean_u_exp = uz_exp;
+            lb_u_exp = env_uz_exp(1);
+            ub_u_exp = env_uz_exp(2);
     end
+    % Response samples at point P
+    n = 1:N;
+    uP = arrayfun(@(i) eval_sol(S,u(:,i),P,comp),n);
+    % Cumulative mean and standard deviation
+    c1 = cumsum(uP);
+    c2 = cumsum(uP.^2);
+    means_u = c1 ./ n;
+    stds_u = sqrt(max((c2 - c1.^2 ./ n) ./ (n-1), 0));
+    % Cumulative quantiles
+    lbs_u = zeros(1,N);
+    ubs_u = zeros(1,N);
+    for i=1:N
+        qi = quantile(uP(1:i),probs);
+        lbs_u(i) = qi(1);
+        ubs_u(i) = qi(2);
+    end
+    % % Cumulative mean, standard deviation, and quantiles
+    % means_u = zeros(1,N);
+    % stds_u  = zeros(1,N);
+    % lbs_u = zeros(1,N);
+    % ubs_u = zeros(1,N);
+    % for i=1:N
+    %     ui = uP(1:i);
+    %     means_u(i) = mean(ui);
+    %     stds_u(i)  = std(ui,0);
+    %     qi = quantile(ui,probs);
+    %     lbs_u(i) = qi(1);
+    %     ubs_u(i) = qi(2);
+    % end
+    % means_u = arrayfun(@(i) mean(uP(1:i)),n);
+    % stds_u  = arrayfun(@(i) std(uP(1:i),0),n);
+    % lbs_u   = arrayfun(@(i) quantile(uP(1:i),probs(1)),n);
+    % ubs_u   = arrayfun(@(i) quantile(uP(1:i),probs(2)),n);
     
     figure('Name','Convergence solution')
     clf
     ciplot(lbs_u*1e3,ubs_u*1e3,1:N,'b');
     hold on
-    ciplot([lbs_u_exp,lbs_u_exp]*1e3,[ubs_u_exp,ubs_u_exp]*1e3,[1,N],'r');
+    ciplot([lb_u_exp,lb_u_exp]*1e3,[ub_u_exp,ub_u_exp]*1e3,[1,N],'r');
     alpha(0.2)
     plot(1:N,means_u*1e3,'-b','LineWidth',linewidth)
     plot([1,N],[mean_u_exp,mean_u_exp]*1e3,'-r','LineWidth',linewidth)
