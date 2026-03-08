@@ -251,7 +251,7 @@ if solveProblem
     useRedParam = true; % reduced parameterization
     
     % Number of samples
-    N = 1e3;
+    N = 2e3;
     
     switch lower(materialSym)
         case 'isot'
