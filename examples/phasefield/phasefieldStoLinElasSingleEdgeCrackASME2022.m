@@ -324,25 +324,24 @@ if setProblem
             % lambda = 121.1538e9; mu = 80.7692e9; % [Miehe, Welschinger, Hofacker, 2010 IJNME]
             % lambda = 121.154e9; mu = 80.769e9; % [Hesch, Weinberg, 2014, IJNME]
             lambda = 121.15e9; mu = 80.77e9; % [Miehe, Hofacker, Welschinger, 2010, CMAME], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Patil, Mishra, Singh, 2018, CMAME] (LMXPFM), [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-            if strcmpi(symmetry,'isot')
-                % Young modulus and Poisson ratio
-                if Dim==2
-                    switch lower(option)
-                        case 'defo'
-                            E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 210e9;
-                            NU = lambda/(lambda+mu)/2; % NU = 0.3;
-                        case 'cont'
-                            E = 4*mu*(lambda+mu)/(lambda+2*mu);
-                            NU = lambda/(lambda+2*mu);
-                    end
-                    % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
-                    % E = 210e9; NU = 0.3; % [Gerasimov, De Lorenzis, 2016, CMAME], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, 2018, JMPS], [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD], [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME], [Kristensen, Martinez-Paneda, 2020, TAFM], [Gmati, Mareau, Ammar, El Arem, 2020, IJNME], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM], [Li, Zhang, Zhou, 2024, CG]
-                    % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
-                elseif Dim==3
-                    E = mu*(3*lambda+2*mu)/(lambda+mu);
-                    NU = lambda/(lambda+mu)/2;
+            % Young modulus and Poisson ratio
+            if Dim==2
+                switch lower(option)
+                    case 'defo'
+                        E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 210e9;
+                        NU = lambda/(lambda+mu)/2; % NU = 0.3;
+                    case 'cont'
+                        E = 4*mu*(lambda+mu)/(lambda+2*mu);
+                        NU = lambda/(lambda+2*mu);
                 end
-            elseif strcmpi(symmetry,'meanisot')
+            elseif Dim==3
+                E = mu*(3*lambda+2*mu)/(lambda+mu);
+                NU = lambda/(lambda+mu)/2;
+            end
+            % E = 210e9; NU = 0.2; % [Liu, Li, Msekh, Zuo, 2016, CMS], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
+            % E = 210e9; NU = 0.3; % [Gerasimov, De Lorenzis, 2016, CMAME], [Molnar, Gravouil, 2017, FEAD], [Zhou, Rabczuk, Zhuang, 2018, AES], [Wu, Nguyen, 2018, JMPS], [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD], [Gerasimov, De Lorenzis, 2019, CMAME], [Wu, Nguyen, Zhou, Huang, 2020, CMAME], [Kristensen, Martinez-Paneda, 2020, TAFM], [Gmati, Mareau, Ammar, El Arem, 2020, IJNME], [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM], [Li, Zhang, Zhou, 2024, CG]
+            % kappa = 121030e6; NU=0.227; lambda=3*kappa*NU/(1+NU); mu = 3*kappa*(1-2*NU)/(2*(1+NU)); E = 3*kappa*(1-2*NU); % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
+            if strcmpi(symmetry,'meanisot')
                 % Elasticity matrix
                 if Dim==2
                     Cmat = e*...
@@ -384,6 +383,7 @@ if setProblem
             elseif Dim==3
                 error('Not implemented yet');
             end
+            
         otherwise
             error('Wrong material symmetry class');
     end
@@ -1005,7 +1005,7 @@ if displaySolution
     %% Display means, variances and samples of solutions at different instants
     ampl = 0;
     switch lower(symmetry)
-        case 'isot' % isotropic material
+        case {'isot','meanisot'} % almost surely or mean isotropic material
             switch lower(loading)
                 case 'tension'
                     tSnapshots = [5.5 5.75 6 6.15 6.25 6.30 6.45 6.5]*1e-6;

@@ -404,7 +404,6 @@ if setProblem
     option = 'CONT'; % plane stress [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Noel, Pled, Chevalier, Wilquin, EFM, 2025]
     switch lower(symmetry)
         case 'isot' % isotropic material
-            % Lame coefficients
             % Young modulus and Poisson ratio
             E = EL_data(numSample+1)*1e6; % [Pa]
             NU = 0.44;

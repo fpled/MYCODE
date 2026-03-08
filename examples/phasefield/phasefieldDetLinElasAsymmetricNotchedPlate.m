@@ -278,13 +278,18 @@ if setProblem
     lambda = 12e9;
     mu = 8e9;
     % Young modulus and Poisson ratio
-    switch lower(option)
-        case 'defo'
-            E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 20.8e9;
-            NU = lambda/(lambda+mu)/2; % NU = 0.3;
-        case 'cont'
-            E = 4*mu*(lambda+mu)/(lambda+2*mu);
-            NU = lambda/(lambda+2*mu);
+    if Dim==2
+        switch lower(option)
+            case 'defo'
+                E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 20.8e9;
+                NU = lambda/(lambda+mu)/2; % NU = 0.3;
+            case 'cont'
+                E = 4*mu*(lambda+mu)/(lambda+2*mu);
+                NU = lambda/(lambda+2*mu);
+        end
+    elseif Dim==3
+        E = mu*(3*lambda+2*mu)/(lambda+mu);
+        NU = lambda/(lambda+mu)/2;
     end
     % E = 20e9; NU = 0.3; % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
     % E = 3.102e9; NU = 0.35; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Cervera, Barbat, Chiumenti, 2017, CM]

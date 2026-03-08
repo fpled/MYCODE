@@ -52,6 +52,7 @@ numWorkers = maxNumCompThreads;
 % Deterministic model parameters
 Dim = 2; % space dimension Dim = 2
 setup = 1; % notch geometry setup = 1, 2, 3, 4, 5, 6
+symmetry = 'Isot'; % 'Isot', 'MeanIsot'. Material symmetry
 PFmodel = 'Miehe'; % 'Bourdin', 'Amor', 'Miehe', 'HeAmor', 'HeFreddi', 'Zhang'
 PFsplit = 'Strain'; % 'Strain' or 'Stress'
 PFregularization = 'AT2'; % 'AT1' or 'AT2'
@@ -71,7 +72,7 @@ randPF = struct('aGc',0,'bGc',0,'lcorr',Inf); % random phase-field parameters mo
 suffix = '';
 
 foldername = ['asymmetricNotchedPlateSetup' num2str(setup) '_' num2str(Dim) 'D'];
-filename = ['linElas' PFmodel PFsplit PFregularization PFsolver initialCrack...
+filename = ['linElas' symmetry PFmodel PFsplit PFregularization PFsolver initialCrack...
     'MaxIter' num2str(maxIter)];
 if maxIter>1
     filename = [filename 'Tol' num2str(tolConv) num2str(critConv)];
@@ -197,7 +198,7 @@ if setProblem
             c = 0.05*unit; % crack width
             S_phase = gmshAsymmetricPlateWithSingleEdgeNotchThreeHoles(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'Box',B);
         case 'initialphasefield'
-            S_phase = gmshAsymmetricPlateWithSingleEdgeCrackThreeHoles(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'noduplicate','Box',B);
+            S_phase = gmshAsymmetricPlateWithSingleEdgeCrackThreeHoles(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'noduplicate','refinecrack','Box',B);
         otherwise
             error('Wrong model for initial crack');
     end
@@ -296,13 +297,18 @@ if setProblem
     lambda = 12e9;
     mu = 8e9;
     % Young modulus and Poisson ratio
-    switch lower(option)
-        case 'defo'
-            E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 20.8e9;
-            NU = lambda/(lambda+mu)/2; % NU = 0.3;
-        case 'cont'
-            E = 4*mu*(lambda+mu)/(lambda+2*mu);
-            NU = lambda/(lambda+2*mu);
+    if Dim==2
+        switch lower(option)
+            case 'defo'
+                E = mu*(3*lambda+2*mu)/(lambda+mu); % E = 20.8e9;
+                NU = lambda/(lambda+mu)/2; % NU = 0.3;
+            case 'cont'
+                E = 4*mu*(lambda+mu)/(lambda+2*mu);
+                NU = lambda/(lambda+2*mu);
+        end
+    elseif Dim==3
+        E = mu*(3*lambda+2*mu)/(lambda+mu);
+        NU = lambda/(lambda+mu)/2;
     end
     % E = 20e9; NU = 0.3; % [Msekh, Sargado, Jamshidian, Areias, Rabczuk, 2015, CMS]
     % E = 3.102e9; NU = 0.35; % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME], [Cervera, Barbat, Chiumenti, 2017, CM]
@@ -310,6 +316,22 @@ if setProblem
     % E = 200e9; NU = 0.3; % [Guidault, Allix, Champaney, Cornuault, 2008, CMAME]
     % E = 210e9; NU = 0.2; % [Bhowmick, Liu, 2018, EFM]
     % E = 12e9; NU = 0.2; % [Lee et al., 2024, CBM]
+    if strcmpi(symmetry,'meanisot')
+        % Elasticity matrix
+        if Dim==2
+            Cmat = e*...
+                [lambda+2*mu,lambda,0;...
+                lambda,lambda+2*mu,0;...
+                0,0,mu];
+        elseif Dim==3
+            Cmat = [lambda+2*mu,lambda,lambda,0,0,0;...
+                lambda,lambda+2*mu,lambda,0,0,0;...
+                lambda,lambda,lambda+2*mu,0,0,0;...
+                0,0,0,mu,0,0;...
+                0,0,0,0,mu,0;...
+                0,0,0,0,0,mu];
+        end
+    end
     % Energetic degradation function
     g = @(d) (1-d).^2;
     % Density
@@ -318,7 +340,14 @@ if setProblem
     
     % Material
     d = calc_init_dirichlet(S_phase);
-    mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit,'delta',randMat.delta,'lcorr',randMat.lcorr);
+    switch lower(symmetry)
+        case 'isot' % almost surely isotropic material
+            mat = ELAS_ISOT('E',E,'NU',NU,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit,'delta',randMat.delta,'lcorr',randMat.lcorr);
+        case 'meanisot' % mean isotropic material
+            mat = ELAS_ANISOT('C',Cmat,'RHO',RHO,'DIM3',e,'d',d,'g',g,'k',k,'u',0,'PFM',PFmodel,'PFS',PFsplit,'delta',randMat.delta,'lcorr',randMat.lcorr);
+        otherwise
+            error('Wrong material symmetry class');
+    end
     mat = setnumber(mat,1);
     S = setoption(S,option);
     S = setmaterial(S,mat);
@@ -492,7 +521,10 @@ if solveProblem
     
     save(fullfile(pathname,'solution.mat'),'N','ft','Edt','Eut','dmaxt',...
         'dt_mean','ut_mean','dt_var','ut_var','dt_sample','ut_sample',...
-        'ft_mean','ft_std','ft_ci','Edt_mean','Edt_std','Edt_ci','Eut_mean','Eut_std','Eut_ci',...
+        'ft_mean','ft_std','ft_ci',...
+        'Edt_mean','Edt_std','Edt_ci',...
+        'Eut_mean','Eut_std','Eut_ci',...
+        'dmaxt_mean','dmaxt_std','dmaxt_ci',...
         'probs','time',...
         'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
         'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw',...
@@ -501,7 +533,10 @@ if solveProblem
 else
     load(fullfile(pathname,'solution.mat'),'N','ft','Edt','Eut','dmaxt',...
         'dt_mean','ut_mean','dt_var','ut_var','dt_sample','ut_sample',...
-        'ft_mean','ft_std','ft_ci','Edt_mean','Edt_std','Edt_ci','Eut_mean','Eut_std','Eut_ci',...
+        'ft_mean','ft_std','ft_ci',...
+        'Edt_mean','Edt_std','Edt_ci',...
+        'Eut_mean','Eut_std','Eut_ci',...
+        'dmaxt_mean','dmaxt_std','dmaxt_ci',...
         'probs','time',...
         'fmax','fmax_mean','fmax_std','fmax_ci','fmax_f','fmax_xi','fmax_bw',...
         'udmax','udmax_mean','udmax_std','udmax_ci','udmax_f','udmax_xi','udmax_bw',...
@@ -516,6 +551,7 @@ if solveProblem
     fprintf(fid,'Asymmetric notched plate\n');
     fprintf(fid,'\n');
     fprintf(fid,'setup    = %d\n',setup);
+    fprintf(fid,'mat sym  = %s\n',symmetry);
     fprintf(fid,'PF model = %s\n',PFmodel);
     fprintf(fid,'PF split = %s\n',PFsplit);
     fprintf(fid,'PF regularization = %s\n',PFregularization);
