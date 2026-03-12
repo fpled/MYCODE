@@ -463,6 +463,7 @@ if solveProblem
     fid = fopen(filenameResults,'w');
     fprintf(fid,'Asymmetric notched plate\n');
     fprintf(fid,'\n');
+    fprintf(fid,'dim      = %d\n',Dim);
     fprintf(fid,'setup    = %d\n',setup);
     fprintf(fid,'PF model = %s\n',PFmodel);
     fprintf(fid,'PF split = %s\n',PFsplit);
@@ -475,8 +476,13 @@ if solveProblem
     fprintf(fid,'elapsed time = %f s\n',time);
     
     fprintf(fid,'\n');
-    fprintf(fid,'fmax  = %g kN/mm\n',fmax*1e-6);
-    fprintf(fid,'fc    = %g kN/mm\n',fc*1e-6);
+    if Dim==2
+        fprintf(fid,'fmax  = %g kN/mm\n',fmax*1e-6);
+        fprintf(fid,'fc    = %g kN/mm\n',fc*1e-6);
+    elseif Dim==3
+        fprintf(fid,'fmax  = %g kN\n',fmax*1e-3);
+        fprintf(fid,'fc    = %g kN\n',fc*1e-3);
+    end
     fprintf(fid,'udmax = %g mm\n',udmax*1e3);
     fprintf(fid,'udc   = %g mm\n',udc*1e3);
     fclose(fid);
@@ -534,7 +540,7 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft*1e-6,'-b','LineWidth',linewidth)
+    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)

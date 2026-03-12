@@ -551,6 +551,7 @@ if solveProblem
     fid = fopen(filenameResults,'w');
     fprintf(fid,'Asymmetric notched plate\n');
     fprintf(fid,'\n');
+    fprintf(fid,'dim      = %d\n',Dim);
     fprintf(fid,'setup    = %d\n',setup);
     fprintf(fid,'mat sym  = %s\n',symmetry);
     fprintf(fid,'PF model = %s\n',PFmodel);
@@ -565,16 +566,34 @@ if solveProblem
     fprintf(fid,'elapsed time = %f s\n',time);
     
     fprintf(fid,'\n');
-    fprintf(fid,'mean(fmax)   = %g kN/mm\n',fmax_mean*1e-6);
-    fprintf(fid,'std(fmax)    = %g kN/mm\n',fmax_std*1e-6);
+    if Dim==2
+        fprintf(fid,'mean(fmax)   = %g kN/mm\n',fmax_mean*1e-6);
+        fprintf(fid,'std(fmax)    = %g kN/mm\n',fmax_std*1e-6);
+    elseif Dim==3
+        fprintf(fid,'mean(fmax)   = %g kN\n',fmax_mean*1e-3);
+        fprintf(fid,'std(fmax)    = %g kN\n',fmax_std*1e-3);
+    end
     fprintf(fid,'disp(fmax)   = %g\n',fmax_std/fmax_mean);
-    fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
+    if Dim==2
+        fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
+    elseif Dim==3
+        fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-3,fmax_ci(2)*1e-3);
+    end
     
     fprintf(fid,'\n');
-    fprintf(fid,'mean(fc)   = %g kN/mm\n',fc_mean*1e-6);
-    fprintf(fid,'std(fc)    = %g kN/mm\n',fc_std*1e-6);
+    if Dim==2
+        fprintf(fid,'mean(fc)   = %g kN/mm\n',fc_mean*1e-6);
+        fprintf(fid,'std(fc)    = %g kN/mm\n',fc_std*1e-6);
+    elseif Dim==3
+        fprintf(fid,'mean(fc)   = %g kN\n',fc_mean*1e-3);
+        fprintf(fid,'std(fc)    = %g kN\n',fc_std*1e-3);
+    end
     fprintf(fid,'disp(fc)   = %g\n',fc_std/fc_mean);
-    fprintf(fid,'%d%% ci(fc) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fc_ci(1)*1e-6,fc_ci(2)*1e-6);
+    if Dim==2
+        fprintf(fid,'%d%% ci(fc) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fc_ci(1)*1e-6,fc_ci(2)*1e-6);
+    elseif Dim==3
+        fprintf(fid,'%d%% ci(fc) = [%g,%g] kN\n',(probs(2)-probs(1))*100,fc_ci(1)*1e-3,fc_ci(2)*1e-3);
+    end
     
     fprintf(fid,'\n');
     fprintf(fid,'mean(udmax)   = %g mm\n',udmax_mean*1e3);
@@ -644,9 +663,9 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft_mean*1e-6,'-b','LineWidth',linewidth)
+    plot(t*1e3,ft_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','LineWidth',linewidth)
     hold on
-    ciplot(ft_ci(1,:)*1e-6,ft_ci(2,:)*1e-6,t*1e3,'b');
+    ciplot(ft_ci(1,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),ft_ci(2,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),t*1e3,'b');
     alpha(0.2)
     grid on
     box on
@@ -663,7 +682,7 @@ if displaySolution
     figure('Name','Forces vs displacement')
     clf
     for i=1:N
-        plot(t*1e3,ft(i,:)*1e-6,'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
         hold on
     end
     hold off
