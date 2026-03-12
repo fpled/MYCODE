@@ -702,8 +702,8 @@ if solveProblem
         fprintf(fid,' (two asymmetric edge cracks)\n');
     end
     fprintf(fid,'\n');
-    fprintf(fid,'setup    = %d\n',setup);
     fprintf(fid,'dim      = %d\n',Dim);
+    fprintf(fid,'setup    = %d\n',setup);
     fprintf(fid,'PF model = %s\n',PFmodel);
     fprintf(fid,'PF split = %s\n',PFsplit);
     fprintf(fid,'PF regularization = %s\n',PFregularization);
@@ -715,8 +715,14 @@ if solveProblem
     fprintf(fid,'elapsed time = %f s\n',time);
     
     fprintf(fid,'\n');
-    fprintf(fid,'fmax  = %g kN/mm\n',fmax*1e-6);
-    fprintf(fid,'fc    = %g kN/mm\n',fc*1e-6);
+    switch setup
+        case {1,3}
+            fprintf(fid,'fmax  = %g kN\n',fmax*1e-3);
+            fprintf(fid,'fc    = %g kN\n',fc*1e-3);
+        case 2
+            fprintf(fid,'fmax  = %g N\n',fmax);
+            fprintf(fid,'fc    = %g N\n',fc);
+    end
     fprintf(fid,'udmax = %g mm\n',udmax*1e3);
     fprintf(fid,'udc   = %g mm\n',udc*1e3);
     fclose(fid);

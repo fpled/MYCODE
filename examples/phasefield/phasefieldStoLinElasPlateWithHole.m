@@ -738,7 +738,7 @@ if displaySolution
     mysaveas(pathname,'max_damages_displacement',formats);
     mymatlab2tikz(pathname,'max_damages_displacement.tex');
     
-    %% Display energy-displacement curve
+    %% Display energy-displacement curves
     Et_ci = quantile(Eut+Edt,probs);
     figure('Name','Energies vs displacement')
     clf

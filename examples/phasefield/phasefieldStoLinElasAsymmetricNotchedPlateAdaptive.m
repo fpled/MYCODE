@@ -756,7 +756,7 @@ if displaySolution
     mysaveas(pathname,'max_damages_displacement',formats);
     mymatlab2tikz(pathname,'max_damages_displacement.tex');
     
-    %% Display energy-displacement curve
+    %% Display energy-displacement curves
     Et_ci = quantile(Eut+Edt,probs);
     figure('Name','Energies vs displacement')
     clf
@@ -839,11 +839,11 @@ if displaySolution
     %% Display pdf of maximum force
     figure('Name','Probability Density Estimate: Maximum force')
     clf
-    plot(fmax_xi*1e-6,fmax_f*1e6,'-r','LineWidth',linewidth)
+    plot(fmax_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f*((Dim==2)*1e6+(Dim==3)*1e3),'-r','LineWidth',linewidth)
     hold on
     ind_fmax = find(fmax_xi>=fmax_ci(1) & fmax_xi<fmax_ci(2));
-    area(fmax_xi(ind_fmax)*1e-6,fmax_f(ind_fmax)*1e6,'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
-    scatter(fmax_mean*1e-6,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r')
+    area(fmax_xi(ind_fmax)*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f(ind_fmax)*((Dim==2)*1e6+(Dim==3)*1e3),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
+    scatter(fmax_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r')
     hold off
     grid on
     box on
@@ -860,11 +860,11 @@ if displaySolution
     %% Display pdf of critical force
     figure('Name','Probability Density Estimate: Critical force')
     clf
-    plot(fc_xi*1e-6,fc_f*1e6,'-b','LineWidth',linewidth)
+    plot(fc_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fc_f*((Dim==2)*1e6+(Dim==3)*1e3),'-b','LineWidth',linewidth)
     hold on
     ind_fc = find(fc_xi>=fc_ci(1) & fc_xi<fc_ci(2));
-    area(fc_xi(ind_fc)*1e-6,fc_f(ind_fc)*1e6,'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
-    scatter(fc_mean*1e-6,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','b')
+    area(fc_xi(ind_fc)*((Dim==2)*1e-6+(Dim==3)*1e-3),fc_f(ind_fc)*((Dim==2)*1e6+(Dim==3)*1e3),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
+    scatter(fc_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','b')
     hold off
     grid on
     box on
