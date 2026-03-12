@@ -215,6 +215,7 @@ if solveProblem
     
     % Number of samples
     N = 2e3;
+    rng(s); % initialize the random number generator using the default settings contained in s
     
     switch lower(materialSym)
         case 'isot'
