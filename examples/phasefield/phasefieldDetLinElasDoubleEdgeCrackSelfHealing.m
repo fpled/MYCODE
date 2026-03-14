@@ -852,25 +852,43 @@ if displaySolution
     %% Display energy-displacement curves
     figure('Name','Energies vs displacement')
     clf
-    plot(t*1e3,Eut,'-b','LineWidth',linewidth)
-    hold on
-    plot(t*1e3,Edt,'-r','LineWidth',linewidth)
-    if healing
-        plot(t*1e3,Eht,'-g','LineWidth',linewidth)
-        plot(t*1e3,Eut+Edt+Eht,'-k','LineWidth',linewidth)
-    else
-        plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+    switch setup
+        case 1
+            plot(t*1e3,Eut,'-b','LineWidth',linewidth)
+            hold on
+            plot(t*1e3,Edt,'-r','LineWidth',linewidth)
+            if healing
+                plot(t*1e3,Eht,'-g','LineWidth',linewidth)
+                plot(t*1e3,Eut+Edt+Eht,'-k','LineWidth',linewidth)
+            else
+                plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+            end
+        case {2,3}
+            plot(t*1e3,Eut*1e3,'-b','LineWidth',linewidth)
+            hold on
+            plot(t*1e3,Edt*1e3,'-r','LineWidth',linewidth)
+            if healing
+                plot(t*1e3,Eht*1e3,'-g','LineWidth',linewidth)
+                plot(t*1e3,(Eut+Edt+Eht)*1e3,'-k','LineWidth',linewidth)
+            else
+                plot(t*1e3,(Eut+Edt)*1e3,'-k','LineWidth',linewidth)
+            end
     end
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
-    ylabel('Energy [J]','Interpreter',interpreter)
+    switch setup
+        case 1
+            ylabel('Energy [J]','Interpreter',interpreter)
+        case {2,3}
+            ylabel('Energy [mJ]','Interpreter',interpreter)
+    end
     if healing
-        leg = {'$\Psi_u$','$\Psi_c$','$\Psi_h$','$\Psi_{\mathrm{tot}}$'};
+        leg = {'elastic','fracture','healing','total'};
     else
-        leg = {'$\Psi_u$','$\Psi_c$','$\Psi_{\mathrm{tot}}$'};
+        leg = {'elastic','fracture','total'};
     end
     legend(leg{:},'Location','NorthWest','Interpreter',interpreter)
     mysaveas(pathname,'energies_displacement',formats);
@@ -988,7 +1006,9 @@ if makeMovie
     % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
     
     options = {'plotiter',true,'plottime',false};
-    framerate = 80;
+    duration = 10; % [s]
+    framecount = getnbtimedof(T);
+    framerate = framecount/duration;
     
     evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
     if healing

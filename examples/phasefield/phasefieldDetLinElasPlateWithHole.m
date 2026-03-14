@@ -682,7 +682,9 @@ if makeMovie
     % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
     
     options = {'plotiter',true,'plottime',false};
-    framerate = 80;
+    duration = 10; % [s]
+    framecount = getnbtimedof(T);
+    framerate = framecount/duration;
     
     evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
     % for i=1:Dim

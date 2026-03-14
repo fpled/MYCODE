@@ -313,7 +313,7 @@ if setProblem
                         0,0,0,0,0,mu];
                 end
             end
-
+            
         case 'anisot' % anisotropic material
             if Dim==2
                 switch lower(option)
@@ -997,7 +997,9 @@ if makeMovie
     % ampl = getsize(S)/max(max(max(abs(ut))))/20;
     
     options = {'plotiter',true,'plottime',false};
-    framerate = 80;
+    duration = 10; % [s]
+    framecount = getnbtimedof(T);
+    framerate = framecount/duration;
     
     dk = TIMEMATRIX(reshape(dt_mean(:,:),sz_d),T);
     dk_var = TIMEMATRIX(reshape(dt_var(:,:),sz_d),T);

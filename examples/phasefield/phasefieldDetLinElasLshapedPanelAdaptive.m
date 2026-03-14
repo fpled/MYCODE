@@ -896,7 +896,9 @@ if makeMovie
     % ampl = getsize(S)/max([umax{:}])/20;
     
     options = {'plotiter',true,'plottime',false};
-    framerate = 80;
+    duration = 10; % [s]
+    framecount = getnbtimedof(T);
+    framerate = framecount/duration;
     
     evolModel(T,St,'FrameRate',framerate,'filename','mesh','pathname',pathname,options{:});
     

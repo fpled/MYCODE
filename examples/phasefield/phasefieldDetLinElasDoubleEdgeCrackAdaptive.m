@@ -198,8 +198,8 @@ if setProblem
                     clC = 0.75e-3;
                 elseif Dim==3
                     clD = 6e-3;
-                    clC = 1.5e-3;
                     % clC = 1.75e-3;
+                    clC = 1.5e-3;
                 end
             end
     end
@@ -278,7 +278,7 @@ if setProblem
     switch lower(initialCrack)
         case 'geometriccrack'
             if Dim==2
-                Ca = POINT([  a,H/2+e]);   % crack tip
+                Ca = POINT([  a,H/2+e]); % crack tip
                 Cb = POINT([w-a,H/2-e]); % crack tip
             elseif Dim==3
                 Ca = LINE([  a,H/2+e,0.0],[  a,H/2+e,DIM3]); % crack tip
@@ -762,16 +762,29 @@ if displaySolution
     %% Display energy-displacement curves
     figure('Name','Energies vs displacement')
     clf
-    plot(t*1e3,Eut,'-b','LineWidth',linewidth)
-    hold on
-    plot(t*1e3,Edt,'-r','LineWidth',linewidth)
-    plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+    switch setup
+        case 1
+            plot(t*1e3,Eut,'-b','LineWidth',linewidth)
+            hold on
+            plot(t*1e3,Edt,'-r','LineWidth',linewidth)
+            plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+        case {2,3}
+            plot(t*1e3,Eut*1e3,'-b','LineWidth',linewidth)
+            hold on
+            plot(t*1e3,Edt*1e3,'-r','LineWidth',linewidth)
+            plot(t*1e3,(Eut+Edt)*1e3,'-k','LineWidth',linewidth)
+    end
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
-    ylabel('Energy [J]','Interpreter',interpreter)
+    switch setup
+        case 1
+            ylabel('Energy [J]','Interpreter',interpreter)
+        case {2,3}
+            ylabel('Energy [mJ]','Interpreter',interpreter)
+    end
     legend('elastic','fracture','total',...
         'Location','NorthWest','Interpreter',interpreter)
     mysaveas(pathname,'energies_displacement',formats);
@@ -884,7 +897,9 @@ if makeMovie
     % ampl = getsize(S)/max([umax{:}])/20;
     
     options = {'plotiter',true,'plottime',false};
-    framerate = 80;
+    duration = 10; % [s]
+    framecount = getnbtimedof(T);
+    framerate = framecount/duration;
     
     evolModel(T,St,'FrameRate',framerate,'filename','mesh','pathname',pathname,options{:});
     

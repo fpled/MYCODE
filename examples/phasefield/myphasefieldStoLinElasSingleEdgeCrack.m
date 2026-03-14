@@ -739,7 +739,9 @@ end
 %% Display evolution of means and variances of solutions
 if makeMovie
     options = {'plotiter',true,'plottime',false};
-    framerate = 80;
+    duration = 10; % [s]
+    framecount = getnbtimedof(T);
+    framerate = framecount/duration;
     
     sz_d = [getnbddl(S_phaseInit),getnbtimedof(T)];
     dk = TIMEMATRIX(reshape(dt_mean(:,:),sz_d),T);

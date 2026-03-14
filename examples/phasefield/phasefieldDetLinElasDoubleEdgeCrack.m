@@ -393,7 +393,7 @@ if setProblem
             % Young modulus and Poisson ratio
             % E = 40e9; NU = 1/3; % [Tong, Shen, Shao, Chen, 2020, EFM]
             % E = 40e9; NU = 0.2; % [Han, Li, Yu, Li, Zhang, 2022, JMPS]
-            % E = 31e9; NU = 0.2; % [Galvez, Planas, Sancho, Reyes, Cendon, Casati, 2013, EFM], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM]
+                % E = 31e9; NU = 0.2; % [Galvez, Planas, Sancho, Reyes, Cendon, Casati, 2013, EFM], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM]
             E = 30e9; NU = 0.2; % [Nguyen, Houlsby, 2007, IJNAMG], [Nguyen, 2011, IJSS], [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD]
             % E = 24e9; NU = 0.2; % [Shi, van Dam, van Mier, Sluys, 2000, MBS], [Alfaiate, Wells, Sluys, 2002, EFM], [Nguyen, 2005, PhD thesis], [Nguyen, Houlsby, 2008, IJNAMG], [Nguyen, 2008, IJSS], [Nguyen, Korsunsky, 2008, IJSS], [Stefanou, Georgioudakis, Papadrakakis, 2014, MMUQMS], [Le, Nguyen, Bui, Sheikh, Kotousov, 2018, IJES], [Ribeiro Nogueira, Rastiello, Giry, Gatuingt, Callari, 2023, AJCE], [Liu, Chen, Yuan, 2024, AAM]
             % E = 24e9; NU = 1/3; % [Li, Lu, Huang, Yang, 2022, OE]
@@ -751,16 +751,29 @@ if displaySolution
     %% Display energy-displacement curves
     figure('Name','Energies vs displacement')
     clf
-    plot(t*1e3,Eut,'-b','LineWidth',linewidth)
-    hold on
-    plot(t*1e3,Edt,'-r','LineWidth',linewidth)
-    plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+    switch setup
+        case 1
+            plot(t*1e3,Eut,'-b','LineWidth',linewidth)
+            hold on
+            plot(t*1e3,Edt,'-r','LineWidth',linewidth)
+            plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+        case {2,3}
+            plot(t*1e3,Eut*1e3,'-b','LineWidth',linewidth)
+            hold on
+            plot(t*1e3,Edt*1e3,'-r','LineWidth',linewidth)
+            plot(t*1e3,(Eut+Edt)*1e3,'-k','LineWidth',linewidth)
+    end
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
-    ylabel('Energy [J]','Interpreter',interpreter)
+    switch setup
+        case 1
+            ylabel('Energy [J]','Interpreter',interpreter)
+        case {2,3}
+            ylabel('Energy [mJ]','Interpreter',interpreter)
+    end
     legend('elastic','fracture','total',...
         'Location','NorthWest','Interpreter',interpreter)
     mysaveas(pathname,'energies_displacement',formats);
@@ -867,7 +880,9 @@ if makeMovie
     % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
     
     options = {'plotiter',true,'plottime',false};
-    framerate = 80;
+    duration = 10; % [s]
+    framecount = getnbtimedof(T);
+    framerate = framecount/duration;
     
     evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
     % for i=1:Dim

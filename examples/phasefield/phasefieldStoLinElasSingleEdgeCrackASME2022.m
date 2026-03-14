@@ -764,14 +764,14 @@ if solveProblem
         fprintf(fid,'mean(fmax)   = %g kN/mm\n',fmax_mean*1e-6);
         fprintf(fid,'std(fmax)    = %g kN/mm\n',fmax_std*1e-6);
     elseif Dim==3
-        fprintf(fid,'mean(fmax)   = %g kN\n',fmax_mean*1e-3);
-        fprintf(fid,'std(fmax)    = %g kN\n',fmax_std*1e-3);
+        fprintf(fid,'mean(fmax)   = %g N\n',fmax_mean);
+        fprintf(fid,'std(fmax)    = %g N\n',fmax_std);
     end
     fprintf(fid,'disp(fmax)   = %g\n',fmax_std/fmax_mean);
     if Dim==2
         fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-6,fmax_ci(2)*1e-6);
     elseif Dim==3
-        fprintf(fid,'%d%% ci(fmax) = [%g,%g] kN\n',(probs(2)-probs(1))*100,fmax_ci(1)*1e-3,fmax_ci(2)*1e-3);
+        fprintf(fid,'%d%% ci(fmax) = [%g,%g] N\n',(probs(2)-probs(1))*100,fmax_ci(1),fmax_ci(2));
     end
     
     fprintf(fid,'\n');
@@ -779,14 +779,14 @@ if solveProblem
         fprintf(fid,'mean(fc)   = %g kN/mm\n',fc_mean*1e-6);
         fprintf(fid,'std(fc)    = %g kN/mm\n',fc_std*1e-6);
     elseif Dim==3
-        fprintf(fid,'mean(fc)   = %g kN\n',fc_mean*1e-3);
-        fprintf(fid,'std(fc)    = %g kN\n',fc_std*1e-3);
+        fprintf(fid,'mean(fc)   = %g N\n',fc_mean);
+        fprintf(fid,'std(fc)    = %g N\n',fc_std);
     end
     fprintf(fid,'disp(fc)   = %g\n',fc_std/fc_mean);
     if Dim==2
         fprintf(fid,'%d%% ci(fc) = [%g,%g] kN/mm\n',(probs(2)-probs(1))*100,fc_ci(1)*1e-6,fc_ci(2)*1e-6);
     elseif Dim==3
-        fprintf(fid,'%d%% ci(fc) = [%g,%g] kN\n',(probs(2)-probs(1))*100,fc_ci(1)*1e-3,fc_ci(2)*1e-3);
+        fprintf(fid,'%d%% ci(fc) = [%g,%g] N\n',(probs(2)-probs(1))*100,fc_ci(1),fc_ci(2));
     end
     
     fprintf(fid,'\n');
@@ -861,15 +861,19 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','LineWidth',linewidth)
+    plot(t*1e3,ft_mean*((Dim==2)*1e-6+(Dim==3)*1),'-b','LineWidth',linewidth)
     hold on
-    ciplot(ft_ci(1,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),ft_ci(2,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),t*1e3,'b');
+    ciplot(ft_ci(1,:)*((Dim==2)*1e-6+(Dim==3)*1),ft_ci(2,:)*((Dim==2)*1e-6+(Dim==3)*1),t*1e3,'b');
     alpha(0.2)
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
-    ylabel('Force [kN]','Interpreter',interpreter)
+    if Dim==2
+        ylabel('Force [kN]','Interpreter',interpreter)
+    elseif Dim==3
+        ylabel('Force [N]','Interpreter',interpreter)
+    end
     legend('mean function',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
         'Location','NorthWest','Interpreter',interpreter)
@@ -880,7 +884,7 @@ if displaySolution
     figure('Name','Forces vs displacement')
     clf
     for i=1:N
-        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
         hold on
         % scatter(udc(i)*1e3,fc(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
         % scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','x','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
@@ -891,8 +895,13 @@ if displaySolution
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]'...,'Interpreter',interpreter...
         )
-    ylabel('Force [kN]'...,'Interpreter',interpreter...
-        )
+    if Dim==2
+        ylabel('Force [kN]'...,'Interpreter',interpreter...
+            )
+    elseif Dim==3
+        ylabel('Force [N]'...,'Interpreter',interpreter...
+            )
+    end
     mysaveas(pathname,'forces_displacement',formats);
     mymatlab2tikz(pathname,'forces_displacement.tex');
     
@@ -902,18 +911,23 @@ if displaySolution
     %     end
     %     figure('Name',['Force vs displacement #' num2str(i)])
     %     clf
-    %     plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1e-3),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+    %     plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
     %     hold on
-    %     scatter(udc(i)*1e3,fc(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
-    %     scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','x','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
+    %     scatter(udc(i)*1e3,fc(i)*((Dim==2)*1e-6+(Dim==3)*1),'Marker','+','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
+    %     scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1),'Marker','x','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
     %     hold off
     %     grid on
     %     box on
     %     set(gca,'FontSize',fontsize)
     %     xlabel('Displacement [mm]'...,'Interpreter',interpreter
     %         )
-    %     ylabel('Force [kN]'...,'Interpreter',interpreter
-    %         )
+    %     if Dim==2
+    %         ylabel('Force [kN]'...,'Interpreter',interpreter...
+    %             )
+    %     elseif Dim==3
+    %         ylabel('Force [N]'...,'Interpreter',interpreter...
+    %             )
+    %     end
     %     mysaveas(pathname,['force_displacement_' num2str(sampleindices(i))],'png');
     %     % mymatlab2tikz(pathname,['force_displacement_' num2str(sampleindices(i)) '.tex']);
     % end
@@ -921,16 +935,20 @@ if displaySolution
     %% Display pdf of maximum force
     figure('Name','Probability Density Estimate: Maximum force')
     clf
-    plot(fmax_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f*((Dim==2)*1e6+(Dim==3)*1e3),'-r','LineWidth',linewidth)
+    plot(fmax_xi*((Dim==2)*1e-6+(Dim==3)*1),fmax_f*((Dim==2)*1e6+(Dim==3)*1),'-r','LineWidth',linewidth)
     hold on
     ind_fmax = find(fmax_xi>=fmax_ci(1) & fmax_xi<fmax_ci(2));
-    area(fmax_xi(ind_fmax)*((Dim==2)*1e-6+(Dim==3)*1e-3),fmax_f(ind_fmax)*((Dim==2)*1e6+(Dim==3)*1e3),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
-    scatter(fmax_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r')
+    area(fmax_xi(ind_fmax)*((Dim==2)*1e-6+(Dim==3)*1),fmax_f(ind_fmax)*((Dim==2)*1e6+(Dim==3)*1),'FaceColor','r','EdgeColor','none','FaceAlpha',0.2)
+    scatter(fmax_mean*((Dim==2)*1e-6+(Dim==3)*1),0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r')
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('$f$ [kN]','Interpreter',interpreter)
+    if Dim==2
+        xlabel('$f$ [kN]','Interpreter',interpreter)
+    elseif Dim==3
+        xlabel('$f$ [N]','Interpreter',interpreter)
+    end
     ylabel('$p_{F_m}(f)$','Interpreter',interpreter)
     legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
@@ -942,16 +960,20 @@ if displaySolution
     %% Display pdf of critical force
     figure('Name','Probability Density Estimate: Critical force')
     clf
-    plot(fc_xi*((Dim==2)*1e-6+(Dim==3)*1e-3),fc_f*((Dim==2)*1e6+(Dim==3)*1e3),'-b','LineWidth',linewidth)
+    plot(fc_xi*((Dim==2)*1e-6+(Dim==3)*1),fc_f*((Dim==2)*1e6+(Dim==3)*1),'-b','LineWidth',linewidth)
     hold on
     ind_fc = find(fc_xi>=fc_ci(1) & fc_xi<fc_ci(2));
-    area(fc_xi(ind_fc)*((Dim==2)*1e-6+(Dim==3)*1e-3),fc_f(ind_fc)*((Dim==2)*1e6+(Dim==3)*1e3),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
-    scatter(fc_mean*((Dim==2)*1e-6+(Dim==3)*1e-3),0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','b')
+    area(fc_xi(ind_fc)*((Dim==2)*1e-6+(Dim==3)*1),fc_f(ind_fc)*((Dim==2)*1e6+(Dim==3)*1),'FaceColor','b','EdgeColor','none','FaceAlpha',0.2)
+    scatter(fc_mean*((Dim==2)*1e-6+(Dim==3)*1),0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','b')
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlabel('$f$ [kN]','Interpreter',interpreter)
+    if Dim==2
+        xlabel('$f$ [kN]','Interpreter',interpreter)
+    elseif Dim==3
+        xlabel('$f$ [N]','Interpreter',interpreter)
+    end
     ylabel('$p_{F_c}(f)$','Interpreter',interpreter)
     legend('pdf',...
         ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
@@ -1109,7 +1131,9 @@ if makeMovie
     % ampl = getsize(S)/max(max(max(abs(ut))))/20;
     
     options = {'plotiter',true,'plottime',false};
-    % framerate = 80;
+    % duration = 10; % [s]
+    % framecount = getnbtimedof(T);
+    % framerate = framecount/duration;
     switch lower(loading)
         case 'tension'
             framerate = 400;

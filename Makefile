@@ -26,13 +26,13 @@ Cluster_Name = cluster
 
 #Pb_Name = multiscaleStoLinDiff
 #Pb_Name = multiscaleStoLinElas
-#Pb_Name = multiscaleStoNonlinDiffReac
 #Pb_Name = multiscaleStoLinDiffAlignInclusionsIso
 #Pb_Name = multiscaleStoLinDiffAlignInclusionsAniso
 #Pb_Name = multiscaleStoLinDiffCircInclusionsIso
 #Pb_Name = multiscaleStoLinDiffCircInclusionsAniso
 #Pb_Name = multiscaleStoLinDiffSquareInclusionsIso
 #Pb_Name = multiscaleStoLinDiffSquareInclusionsAniso
+#Pb_Name = multiscaleStoNonlinDiffReac
 #Pb_Name = multiscaleStoNonlinDiffReacAlignInclusionsIso
 #Pb_Name = multiscaleStoNonlinDiffReacAlignInclusionsAniso
 #Pb_Name = multiscaleStoNonlinDiffReacSquareInclusionsIso
@@ -50,10 +50,10 @@ Cluster_Name = cluster
 #Pb_Name = monoscaleStoDynLinElas
 
 #Pb_Name = sparseAnisotropicFunction
+#Pb_Name = sparseGeometricBrownian
 #Pb_Name = sparseIshigamiFunction
 #Pb_Name = sparsePolynomialFunction
 #Pb_Name = sparseSobolFunction
-#Pb_Name = sparseGeometricBrownian
 
 #Pb_Name = plateCircDetLinElas
 #Pb_Name = plateCircDetLinElasCv
@@ -69,7 +69,7 @@ Cluster_Name = cluster
 #Pb_Name = FCBADeskPlateJunctionDetLinElas
 #Pb_Name = FCBADeskPlateJunctionStoLinElas
 #Pb_Name = FCBADesk3DDetLinElas
-#Pb_Name = FCBADesk3DStoLinElas
+#Pb_Name = FCBADesk3DJunctionDetLinElas
 #Pb_Name = FCBAJunctionScrewDowelBeamDetLinElas
 #Pb_Name = FCBAJunctionScrewDowelBeamStoLinElas
 
@@ -93,6 +93,17 @@ Cluster_Name = cluster
 #Pb_Name = phasefieldDetLinElasSingleEdgeCrack
 Pb_Name = phasefieldDetLinElasSingleEdgeCrackAdaptive
 #Pb_Name = phasefieldDetLinElasSingleEdgeCrackSelfHealing
+
+#Pb_Name = phasefieldStoLinElasAsymmetricNotchedPlate
+#Pb_Name = phasefieldStoLinElasAsymmetricNotchedPlateAdaptive
+#Pb_Name = phasefieldStoLinElasDoubleEdgeCrack
+#Pb_Name = phasefieldStoLinElasDoubleEdgeCrackAdaptive
+#Pb_Name = phasefieldStoLinElasLshapedPanel
+#Pb_Name = phasefieldStoLinElasLshapedPanelAdaptive
+#Pb_Name = phasefieldStoLinElasPlateWithHole
+#Pb_Name = phasefieldStoLinElasPlateWithHoleAdaptive
+#Pb_Name = phasefieldStoLinElasSingleEdgeCrack
+#Pb_Name = phasefieldStoLinElasSingleEdgeCrackAdaptive
 
 # Default ---------------------------
 default:
@@ -186,13 +197,12 @@ fcba:
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBATableCircDetLinElas; exit" -logfile results/FCBA/FCBATableCircDetLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBATableCircStoLinElas; exit" -logfile results/FCBA/FCBATableCircStoLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskBeamJunctionDetLinElas; exit" -logfile results/FCBA/FCBADeskBeamJunctionDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskDetLinElas; exit" -logfile results/FCBA/FCBADeskDetLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateDetLinElas; exit" -logfile results/FCBA/FCBADeskPlateDetLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateStoLinElas; exit" -logfile results/FCBA/FCBADeskPlateStoLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionDetLinElas; exit" -logfile results/FCBA/FCBADeskPlateJunctionDetLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADeskPlateJunctionStoLinElas; exit" -logfile results/FCBA/FCBADeskPlateJunctionStoLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADesk3DDetLinElas; exit" -logfile results/FCBA/FCBADesk3DDetLinElas.log
-	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADesk3DStoLinElas; exit" -logfile results/FCBA/FCBADesk3DStoLinElas.log
+#	matlab -nodesktop -nosplash -noFigureWindows -r "FCBADesk3DJunctionDetLinElas; exit" -logfile results/FCBA/FCBADesk3DJunctionDetLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBAJunctionScrewDowelBeamDetLinElas; exit" -logfile results/FCBA/FCBAJunctionScrewDowelBeamDetLinElas.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "FCBAJunctionScrewDowelPlateDetLinElas; exit" -logfile results/FCBA/FCBAJunctionScrewDowelPlateDetLinElas.log
 
@@ -228,6 +238,12 @@ phasefielddet:
 phasefieldsto:
 	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldStoLinElasAsymmetricNotchedPlate; exit" -logfile results/phasefieldSto/phasefieldStoLinElasAsymmetricNotchedPlate.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldStoLinElasAsymmetricNotchedPlateAdaptive; exit" -logfile results/phasefieldSto/phasefieldStoLinElasAsymmetricNotchedPlateAdaptive.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldStoLinElasDoubleEdgeCrack; exit" -logfile results/phasefieldSto/phasefieldStoLinElasDoubleEdgeCrack.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldStoLinElasDoubleEdgeCrackAdaptive; exit" -logfile results/phasefieldSto/phasefieldStoLinElasDoubleEdgeCrackAdaptive.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldStoLinElasLshapedPanel; exit" -logfile results/phasefieldSto/phasefieldStoLinElasLshapedPanel.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldStoLinElasLshapedPanelAdaptive; exit" -logfile results/phasefieldSto/phasefieldStoLinElasLshapedPanelAdaptive.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldStoLinElasPlateWithHole; exit" -logfile results/phasefieldSto/phasefieldStoLinElasPlateWithHole.log
+	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldStoLinElasPlateWithHoleAdaptive; exit" -logfile results/phasefieldSto/phasefieldStoLinElasPlateWithHoleAdaptive.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldStoLinElasSingleEdgeCrack; exit" -logfile results/phasefieldSto/phasefieldStoLinElasSingleEdgeCrack.log
 	matlab -nodesktop -nosplash -noFigureWindows -r "phasefieldStoLinElasSingleEdgeCrackAdaptive; exit" -logfile results/phasefieldSto/phasefieldStoLinElasSingleEdgeCrackAdaptive.log
 

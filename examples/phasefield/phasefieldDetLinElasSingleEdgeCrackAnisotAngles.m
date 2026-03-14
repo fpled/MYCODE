@@ -811,8 +811,8 @@ if solveProblem
         fprintf(fid,'fmax  = %g kN/mm\n',fmax*1e-6);
         fprintf(fid,'fc    = %g kN/mm\n',fc*1e-6);
     elseif Dim==3
-        fprintf(fid,'fmax  = %g kN\n',fmax*1e-3);
-        fprintf(fid,'fc    = %g kN\n',fc*1e-3);
+        fprintf(fid,'fmax  = %g N\n',fmax);
+        fprintf(fid,'fc    = %g N\n',fc);
     end
     fprintf(fid,'udmax = %g mm\n',udmax*1e3);
     fprintf(fid,'udc   = %g mm\n',udc*1e3);
@@ -875,16 +875,28 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','LineWidth',linewidth)
-    % hold on
-    % scatter(udmax*1e3,fmax*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','b','LineWidth',linewidth)
-    % scatter(udc*1e3,fc*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor','r','LineWidth',linewidth)
-    % hold off
+    if Dim==2
+        plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1),'-b','LineWidth',linewidth)
+        % hold on
+        % scatter(udmax*1e3,fmax*((Dim==2)*1e-6+(Dim==3)*1),'Marker','+','MarkerEdgeColor','b','LineWidth',linewidth)
+        % scatter(udc*1e3,fc*((Dim==2)*1e-6+(Dim==3)*1),'Marker','+','MarkerEdgeColor','r','LineWidth',linewidth)
+        % hold off
+    elseif Dim==3
+        plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1),'-b','LineWidth',linewidth)
+        % hold on
+        % scatter(udmax*1e3,fmax*((Dim==2)*1e-6+(Dim==3)*1),'Marker','+','MarkerEdgeColor','b','LineWidth',linewidth)
+        % scatter(udc*1e3,fc*((Dim==2)*1e-6+(Dim==3)*1),'Marker','+','MarkerEdgeColor','r','LineWidth',linewidth)
+        % hold off
+    end
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
-    ylabel('Force [kN]','Interpreter',interpreter)
+    if Dim==2
+        ylabel('Force [kN]','Interpreter',interpreter)
+    elseif Dim==3
+        ylabel('Force [N]','Interpreter',interpreter)
+    end
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
@@ -903,16 +915,27 @@ if displaySolution
     %% Display energy-displacement curves
     figure('Name','Energies vs displacement')
     clf
-    plot(t*1e3,Eut,'-b','LineWidth',linewidth)
-    hold on
-    plot(t*1e3,Edt,'-r','LineWidth',linewidth)
-    plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+    if Dim==2
+        plot(t*1e3,Eut,'-b','LineWidth',linewidth)
+        hold on
+        plot(t*1e3,Edt,'-r','LineWidth',linewidth)
+        plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+    elseif Dim==3
+        plot(t*1e3,Eut*1e3,'-b','LineWidth',linewidth)
+        hold on
+        plot(t*1e3,Edt*1e3,'-r','LineWidth',linewidth)
+        plot(t*1e3,(Eut+Edt)*1e3,'-k','LineWidth',linewidth)
+    end
     hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
     xlabel('Displacement [mm]','Interpreter',interpreter)
-    ylabel('Energy [J]','Interpreter',interpreter)
+    if Dim==2
+        ylabel('Energy [J]','Interpreter',interpreter)
+    elseif Dim==3
+        ylabel('Energy [mJ]','Interpreter',interpreter)
+    end
     legend('elastic','fracture','total',...
         'Location','NorthWest','Interpreter',interpreter)
     mysaveas(pathname,'energies_displacement',formats);
@@ -1033,15 +1056,9 @@ if makeMovie
     % ampl = getsize(S)/max(max(abs(getvalue(ut))))/20;
     
     options = {'plotiter',true,'plottime',false};
-    % framerate = 80;
-    switch lower(loading)
-        case 'tension'
-            framerate = 400;
-        case 'shear'
-            framerate = 200;
-        otherwise
-            error('Wrong loading case');
-    end
+    duration = 10; % [s]
+    framecount = getnbtimedof(T);
+    framerate = framecount/duration;
     
     evolSolution(S_phase,dt,'FrameRate',framerate,'filename','damage','pathname',pathname,options{:});
     % for i=1:Dim
