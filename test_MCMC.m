@@ -1,6 +1,6 @@
 % clc
 clearvars
-% close all
+close all
 rng('default');
 s = rng;
 

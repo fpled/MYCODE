@@ -3,7 +3,7 @@
 
 % clc
 clearvars
-% close all
+close all
 
 %% Input data
 setProblem = true;
