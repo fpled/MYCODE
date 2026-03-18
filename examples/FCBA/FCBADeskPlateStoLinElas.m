@@ -312,6 +312,12 @@ if solveProblem
             E_sample = (9*C1_sample.*C2_sample)./(3*C1_sample+C2_sample); % [Pa]
             NU_sample = (3*C1_sample-2*C2_sample)./(6*C1_sample+2*C2_sample);
             
+            C_sample = [C1_sample(:) C2_sample(:)];
+            save(fullfile(pathname,'samples.mat'),'C1_sample','C2_sample','C_sample',...
+                'E_sample','NU_sample','lambda_sample');
+            save(fullfile(pathname,'data.mat'),'C1_data','C2_data','C_data',...
+                'E_data','NU_data','G_data','lambda_data');
+            
         case 'isottrans'
             % Data
             N_data = length(mean_ET_data);
@@ -428,6 +434,12 @@ if solveProblem
             GL_sample = C5_sample/2; % [Pa]
             ET_sample = 4./(1./kT_sample+1./GT_sample+4*(NUL_sample.^2)./EL_sample); % [Pa]
             NUT_sample = (ET_sample./GT_sample)/2-1;
+            
+            C_sample = [C1_sample(:) C2_sample(:) C3_sample(:) C4_sample(:) C5_sample(:)];
+            save(fullfile(pathname,'samples.mat'),'C1_sample','C2_sample','C3_sample','C4_sample','C5_sample','C_sample',...
+                'ET_sample','GL_sample','EL_sample','NUL_sample','NUT_sample','GT_sample','kT_sample');
+            save(fullfile(pathname,'data.mat'),'C1_data','C2_data','C3_data','C4_data','C5_data','C_data',...
+                'ET_data','GL_data','EL_data','NUL_data','NUT_data','GT_data','kT_data');
             
         otherwise
             error('Wrong material symmetry !')
