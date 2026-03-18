@@ -251,7 +251,7 @@ if solveProblem
     useRedParam = true; % reduced parameterization
     
     % Number of samples
-    N = 2e3;
+    N = 5e3;
     rng(s); % initialize the random number generator using the default settings contained in s
     
     switch lower(materialSym)
