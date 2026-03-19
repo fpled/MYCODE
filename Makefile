@@ -90,8 +90,8 @@ Cluster_Name = cluster
 #Pb_Name = phasefieldDetLinElasPlateWithHoleAdaptive
 #Pb_Name = phasefieldDetLinElasPlateWithHoleSelfHealing
 #Pb_Name = phasefieldDetLinElasPlateWithHoleWoodNoel
-#Pb_Name = phasefieldDetLinElasSingleEdgeCrack
-Pb_Name = phasefieldDetLinElasSingleEdgeCrackAdaptive
+Pb_Name = phasefieldDetLinElasSingleEdgeCrack
+#Pb_Name = phasefieldDetLinElasSingleEdgeCrackAdaptive
 #Pb_Name = phasefieldDetLinElasSingleEdgeCrackSelfHealing
 
 #Pb_Name = phasefieldStoLinElasAsymmetricNotchedPlate
