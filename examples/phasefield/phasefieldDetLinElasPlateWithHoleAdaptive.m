@@ -146,6 +146,9 @@ if setProblem
     % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     clD = 0.24e-3; % characteristic length for domain
     clC = 0.06e-3; % characteristic length for circular hole
+    if Dim==3
+        clD = 0.48e-3;
+    end
     if test
         if Dim==2
             clD = 0.48e-3;

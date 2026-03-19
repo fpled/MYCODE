@@ -160,6 +160,9 @@ if setProblem
             % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
             clD = 0.24e-3; % characteristic length for domain
             clC = 0.06e-3; % characteristic length for circular hole
+            if Dim==3
+                clD = 0.48e-3;
+            end
             if test
                 if Dim==2
                     clD = 0.48e-3;
@@ -173,12 +176,22 @@ if setProblem
             switch lower(PFmodel)
                 case {'bourdin','amor','heamor'}
                     XMin = 0; XMax = L;
-                    YMin = H/2-3/2*r; YMax = H/2+3/2*r;
-                    Thickness = H/2-3/2*r;
+                    if Dim==2
+                        YMin = H/2-3/2*r; YMax = H/2+3/2*r;
+                        Thickness = H/2-3/2*r;
+                    elseif Dim==3
+                        YMin = H/2-r/8; YMax = H/2+r/8;
+                        Thickness = H/2-r/8;
+                    end
                 otherwise
-                    XMin = L/2-3/2*r; XMax = L/2+3/2*r;
                     YMin = 0; YMax = H;
-                    Thickness = L/2-3/2*r;
+                    if Dim==2
+                        XMin = L/2-3/2*r; XMax = L/2+3/2*r;
+                        Thickness = L/2-3/2*r;
+                    elseif Dim==3
+                        XMin = L/2-r/8; XMax = L/2+r/8;
+                        Thickness = L/2-r/8;
+                    end
             end
             % Thickness = 0;
             if Dim==2
