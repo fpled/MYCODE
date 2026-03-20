@@ -505,15 +505,15 @@ if setProblem
             % T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dth',dth);
             
             % du = 1e-4 mm during the first 400 time steps (up to u = 0.04 mm)
-            % du = 1e-5 mm during the last 4000 time steps (up to u = 0.08 mm)
+            % du = 2e-5 mm during the last 4000 time steps (up to u = 0.12 mm)
             dt0 = 1e-7;
             nt0 = 400;
-            dt1 = 1e-8;
+            dt1 = 2e-8;
             nt1 = 4000;
             if test
                 dt0 = 1e-6;
                 nt0 = 40;
-                dt1 = 1e-7;
+                dt1 = 2e-7;
                 nt1 = 400;
             end
             t0 = linspace(dt0,nt0*dt0,nt0);
@@ -828,7 +828,7 @@ if displaySolution
     ampl = 0;
     switch setup
         case 1
-            tSnapshots = [0.0450 0.0475 0.050 0.0525 0.055 0.06]*1e-3;
+            tSnapshots = [0.04 0.0425 0.045 0.05 0.06 0.08]*1e-3;
         case 2
             tSnapshots = [0.055 0.06 0.065 0.07 0.08 0.10 0.12]*1e-3;
         case 3
