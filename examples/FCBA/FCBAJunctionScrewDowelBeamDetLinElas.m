@@ -474,61 +474,63 @@ end
 
 %% Outputs
 filenameResults = fullfile(pathname,'results.txt');
-fid = fopen(filenameResults,'w');
-fprintf(fid,'Junction %s\n',junction_sample);
-fprintf(fid,'\n');
-fprintf(fid,'nb elements = %g\n',getnbelem(S));
-fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
-fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
-fprintf(fid,'error = %.3e for Ux\n',err_Ux);
-fprintf(fid,'      = %.3e for Uy\n',err_Uy);
-fprintf(fid,'      = %.3e for Rz\n',err_Rz);
-for i=1:getnbgroupelem(S)
-    fprintf(fid,'      = %.3e for N in groupelem #%d\n',err_N(i),i);
+if solveProblem
+    fid = fopen(filenameResults,'w');
+    fprintf(fid,'Junction %s\n',junction_sample);
+    fprintf(fid,'\n');
+    fprintf(fid,'nb elements = %g\n',getnbelem(S));
+    fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+    fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+    fprintf(fid,'error = %.3e for Ux\n',err_Ux);
+    fprintf(fid,'      = %.3e for Uy\n',err_Uy);
+    fprintf(fid,'      = %.3e for Rz\n',err_Rz);
+    for i=1:getnbgroupelem(S)
+        fprintf(fid,'      = %.3e for N in groupelem #%d\n',err_N(i),i);
+    end
+    for i=1:getnbgroupelem(S)
+        fprintf(fid,'      = %.3e for Mz in groupelem #%d\n',err_Mz(i),i);
+    end
+    for i=1:getnbgroupelem(S)
+        fprintf(fid,'      = %.3e for Epsx in groupelem #%d\n',err_Epsx(i),i);
+    end
+    for i=1:getnbgroupelem(S)
+        fprintf(fid,'      = %.3e for Gamz in groupelem #%d\n',err_Gamz(i),i);
+    end
+    fprintf(fid,'elapsed time = %f s\n',time);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Displacement u and rotation r at point (%g,%g) m\n',double(P2));
+    fprintf(fid,'ux    = %g m\n',ux);
+    fprintf(fid,'ux_ex = %g m, error = %g\n',ux_ex,err_ux);
+    fprintf(fid,'uy    = %g m\n',uy);
+    fprintf(fid,'uy_ex = %g m, error = %g\n',uy_ex,err_uy);
+    if junction
+        fprintf(fid,'rz(1) = %g rad = %g deg\n',rz(1),rad2deg(rz(1)));
+        fprintf(fid,'rz(2) = %g rad = %g deg\n',rz(2),rad2deg(rz(2)));
+        fprintf(fid,'rz_ex(1) = %g rad = %g deg, error = %g\n',rz_ex(1),rad2deg(rz_ex(1)),err_rz(1));
+        fprintf(fid,'rz_ex(2) = %g rad = %g deg, error = %g\n',rz_ex(2),rad2deg(rz_ex(2)),err_rz(2));
+        fprintf(fid,'|rz(1) - rz(2)|       = %g rad = %g deg\n',abs(rz(1)-rz(2)),rad2deg(abs(rz(1)-rz(2))));
+        fprintf(fid,'|rz_ex(1) - rz_ex(2)| = %g rad = %g deg\n',abs(rz_ex(1)-rz_ex(2)),rad2deg(abs(rz_ex(1)-rz_ex(2))));
+    else
+        fprintf(fid,'rz    = %g rad = %g deg\n',rz,rad2deg(rz));
+        fprintf(fid,'rz_ex = %g rad = %g deg, error = %g\n',rz_ex,rad2deg(rz_ex),err_rz);
+    end
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Force N and moment Mz at point (%g,%g) m\n',double(P2));
+    fprintf(fid,'N     = %g N\n',n);
+    fprintf(fid,'N_ex  = %g N, error = %g\n',n_ex,err_n);
+    fprintf(fid,'Mz    = %g N.m\n',mz);
+    fprintf(fid,'Mz_ex = %g N.m, error = %g\n',mz_ex,err_mz);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Axial strain Epsx and bending strain (curvature) Gamz at point (%g,%g) m\n',double(P2));
+    fprintf(fid,'Epsx    = %g\n',epsx);
+    fprintf(fid,'Epsx_ex = %g, error = %g\n',epsx_ex,err_epsx);
+    fprintf(fid,'Gamz    = %g\n',gamz);
+    fprintf(fid,'Gamz_ex = %g, error = %g\n',gamz_ex,err_gamz);
+    fclose(fid);
 end
-for i=1:getnbgroupelem(S)
-    fprintf(fid,'      = %.3e for Mz in groupelem #%d\n',err_Mz(i),i);
-end
-for i=1:getnbgroupelem(S)
-    fprintf(fid,'      = %.3e for Epsx in groupelem #%d\n',err_Epsx(i),i);
-end
-for i=1:getnbgroupelem(S)
-    fprintf(fid,'      = %.3e for Gamz in groupelem #%d\n',err_Gamz(i),i);
-end
-fprintf(fid,'elapsed time = %f s\n',time);
-
-fprintf(fid,'\n');
-fprintf(fid,'Displacement u and rotation r at point (%g,%g) m\n',double(P2));
-fprintf(fid,'ux    = %g m\n',ux);
-fprintf(fid,'ux_ex = %g m, error = %g\n',ux_ex,err_ux);
-fprintf(fid,'uy    = %g m\n',uy);
-fprintf(fid,'uy_ex = %g m, error = %g\n',uy_ex,err_uy);
-if junction
-    fprintf(fid,'rz(1) = %g rad = %g deg\n',rz(1),rad2deg(rz(1)));
-    fprintf(fid,'rz(2) = %g rad = %g deg\n',rz(2),rad2deg(rz(2)));
-    fprintf(fid,'rz_ex(1) = %g rad = %g deg, error = %g\n',rz_ex(1),rad2deg(rz_ex(1)),err_rz(1));
-    fprintf(fid,'rz_ex(2) = %g rad = %g deg, error = %g\n',rz_ex(2),rad2deg(rz_ex(2)),err_rz(2));
-    fprintf(fid,'|rz(1) - rz(2)|       = %g rad = %g deg\n',abs(rz(1)-rz(2)),rad2deg(abs(rz(1)-rz(2))));
-    fprintf(fid,'|rz_ex(1) - rz_ex(2)| = %g rad = %g deg\n',abs(rz_ex(1)-rz_ex(2)),rad2deg(abs(rz_ex(1)-rz_ex(2))));
-else
-    fprintf(fid,'rz    = %g rad = %g deg\n',rz,rad2deg(rz));
-    fprintf(fid,'rz_ex = %g rad = %g deg, error = %g\n',rz_ex,rad2deg(rz_ex),err_rz);
-end
-
-fprintf(fid,'\n');
-fprintf(fid,'Force N and moment Mz at point (%g,%g) m\n',double(P2));
-fprintf(fid,'N     = %g N\n',n);
-fprintf(fid,'N_ex  = %g N, error = %g\n',n_ex,err_n);
-fprintf(fid,'Mz    = %g N.m\n',mz);
-fprintf(fid,'Mz_ex = %g N.m, error = %g\n',mz_ex,err_mz);
-
-fprintf(fid,'\n');
-fprintf(fid,'Axial strain Epsx and bending strain (curvature) Gamz at point (%g,%g) m\n',double(P2));
-fprintf(fid,'Epsx    = %g\n',epsx);
-fprintf(fid,'Epsx_ex = %g, error = %g\n',epsx_ex,err_epsx);
-fprintf(fid,'Gamz    = %g\n',gamz);
-fprintf(fid,'Gamz_ex = %g, error = %g\n',gamz_ex,err_gamz);
-fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
 fprintf('\n');
 

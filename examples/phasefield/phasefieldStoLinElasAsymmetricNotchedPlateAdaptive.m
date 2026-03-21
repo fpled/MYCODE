@@ -565,8 +565,8 @@ else
 end
 
 %% Outputs
+filenameResults = fullfile(pathname,'results.txt');
 if solveProblem
-    filenameResults = fullfile(pathname,'results.txt');
     fid = fopen(filenameResults,'w');
     fprintf(fid,'Asymmetric notched plate\n');
     fprintf(fid,'\n');
@@ -626,8 +626,8 @@ if solveProblem
     fprintf(fid,'disp(udc)   = %g\n',udc_std/udc_mean);
     fprintf(fid,'%d%% ci(udc) = [%g,%g] mm\n',(probs(2)-probs(1))*100,udc_ci(1)*1e3,udc_ci(2)*1e3);
     fclose(fid);
-    type(filenameResults) % fprintf('%s', fileread(filenameResults))
 end
+type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
 if Dim==2

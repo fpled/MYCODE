@@ -308,42 +308,44 @@ end
 
 %% Outputs
 filenameResults = fullfile(pathname,'results.txt');
-fid = fopen(filenameResults,'w');
-fprintf(fid,'Circular plate\n');
-fprintf(fid,'\n');
-fprintf(fid,'boundary = %s\n',boundary);
-fprintf(fid,'load     = %s\n',loading);
-fprintf(fid,'mesh     = %s elements\n',elemtype);
-fprintf(fid,'nb elements = %g\n',getnbelem(S));
-fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
-fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
-fprintf(fid,'span-to-thickness ratio = %g\n',r/h);
-fprintf(fid,'error = %.3e for Uz\n',err_Uz);
-fprintf(fid,'      = %.3e for Rt\n',err_Rt);
-fprintf(fid,'      = %.3e for Rx\n',err_Rx);
-fprintf(fid,'      = %.3e for Ry\n',err_Ry);
-fprintf(fid,'elapsed time = %f s\n',time);
-
-fprintf(fid,'\n');
-fprintf(fid,'Displacement u at point (%g,%g,%g)\n',double(P));
-fprintf(fid,'ux    = %g\n',ux);
-fprintf(fid,'uy    = %g\n',uy);
-fprintf(fid,'uz    = %g\n',uz);
-fprintf(fid,'uz_ex = %g, error = %.3e\n',uz_ex,err_uz);
-fprintf(fid,'ur    = %g\n',ur);
-fprintf(fid,'ut    = %g\n',ut);
-
-fprintf(fid,'\n');
-fprintf(fid,'Rotation r at point (%g,%g,%g)\n',double(P));
-fprintf(fid,'rx    = %g\n',rx);
-fprintf(fid,'rx_ex = %g, error = %.3e\n',rx_ex,err_rx);
-fprintf(fid,'ry    = %g\n',ry);
-fprintf(fid,'ry_ex = %g, error = %.3e\n',ry_ex,err_ry);
-fprintf(fid,'rz    = %g\n',rz);
-fprintf(fid,'rr    = %g\n',rr);
-fprintf(fid,'rt    = %g\n',rt);
-fprintf(fid,'rt_ex = %g, error = %.3e\n',rt_ex,err_rt);
-fclose(fid);
+if solveProblem
+    fid = fopen(filenameResults,'w');
+    fprintf(fid,'Circular plate\n');
+    fprintf(fid,'\n');
+    fprintf(fid,'boundary = %s\n',boundary);
+    fprintf(fid,'load     = %s\n',loading);
+    fprintf(fid,'mesh     = %s elements\n',elemtype);
+    fprintf(fid,'nb elements = %g\n',getnbelem(S));
+    fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+    fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+    fprintf(fid,'span-to-thickness ratio = %g\n',r/h);
+    fprintf(fid,'error = %.3e for Uz\n',err_Uz);
+    fprintf(fid,'      = %.3e for Rt\n',err_Rt);
+    fprintf(fid,'      = %.3e for Rx\n',err_Rx);
+    fprintf(fid,'      = %.3e for Ry\n',err_Ry);
+    fprintf(fid,'elapsed time = %f s\n',time);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Displacement u at point (%g,%g,%g)\n',double(P));
+    fprintf(fid,'ux    = %g\n',ux);
+    fprintf(fid,'uy    = %g\n',uy);
+    fprintf(fid,'uz    = %g\n',uz);
+    fprintf(fid,'uz_ex = %g, error = %.3e\n',uz_ex,err_uz);
+    fprintf(fid,'ur    = %g\n',ur);
+    fprintf(fid,'ut    = %g\n',ut);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Rotation r at point (%g,%g,%g)\n',double(P));
+    fprintf(fid,'rx    = %g\n',rx);
+    fprintf(fid,'rx_ex = %g, error = %.3e\n',rx_ex,err_rx);
+    fprintf(fid,'ry    = %g\n',ry);
+    fprintf(fid,'ry_ex = %g, error = %.3e\n',ry_ex,err_ry);
+    fprintf(fid,'rz    = %g\n',rz);
+    fprintf(fid,'rr    = %g\n',rr);
+    fprintf(fid,'rt    = %g\n',rt);
+    fprintf(fid,'rt_ex = %g, error = %.3e\n',rt_ex,err_rt);
+    fclose(fid);
+end
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
 fprintf('\n');
 

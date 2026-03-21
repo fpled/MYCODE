@@ -602,8 +602,8 @@ udc_exp_rescale = udc_exp - udc_setup;
 % udc_exp_rescale = interp1(ft_exp([idc_exp-1,idc_exp]),t_exp([idc_exp-1,idc_exp]),fc_exp,'linear'); % [mm] (redim)
 
 %% Outputs
+filenameResults = fullfile(pathname,'results.txt');
 if solveProblem
-    filenameResults = fullfile(pathname,'results.txt');
     fid = fopen(filenameResults,'w');
     fprintf(fid,'Plate with hole\n');
     fprintf(fid,'\n');
@@ -631,8 +631,8 @@ if solveProblem
     fprintf(fid,'udc       = %g mm\n',udc*1e3);
     fprintf(fid,'udc_exp   = %g mm\n',udc_exp_rescale);
     fclose(fid);
-    type(filenameResults) % fprintf('%s', fileread(filenameResults))
 end
+type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
 if Dim==2

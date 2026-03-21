@@ -282,64 +282,66 @@ end
 
 %% Outputs
 filenameResults = fullfile(pathname,'results.txt');
-fid = fopen(filenameResults,'w');
-fprintf(fid,'Junction %s\n',junction_sample);
-fprintf(fid,'\n');
-fprintf(fid,'mesh = %s elements\n',elemtype);
-fprintf(fid,'nb elements = %g\n',getnbelem(S));
-fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
-fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
-fprintf(fid,'elapsed time = %f s\n',time);
+if solveProblem
+    fid = fopen(filenameResults,'w');
+    fprintf(fid,'Junction %s\n',junction_sample);
+    fprintf(fid,'\n');
+    fprintf(fid,'mesh = %s elements\n',elemtype);
+    fprintf(fid,'nb elements = %g\n',getnbelem(S));
+    fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+    fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+    fprintf(fid,'elapsed time = %f s\n',time);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Displacement u and rotation r at point (%g,%g,%g) m\n',double(P3));
+    fprintf(fid,'ux    = %g m\n',ux);
+    fprintf(fid,'uy    = %g m\n',uy);
+    fprintf(fid,'uz    = %g m\n',uz);
+    fprintf(fid,'rx    = %g rad = %g deg\n',rx,rad2deg(rx));
+    if junction
+        fprintf(fid,'ry(1) = %g rad = %g deg\n',ry(1),rad2deg(ry(1)));
+        fprintf(fid,'ry(2) = %g rad = %g deg\n',ry(2),rad2deg(ry(2)));
+        fprintf(fid,'|ry(1) - ry(2)| = %g rad = %g deg\n',abs(ry(1)-ry(2)),rad2deg(abs(ry(1)-ry(2))));
+    else
+        fprintf(fid,'ry    = %g rad = %g deg\n',ry,rad2deg(ry));
+    end
+    fprintf(fid,'rz    = %g rad = %g deg\n',rz,rad2deg(rz));
 
-fprintf(fid,'\n');
-fprintf(fid,'Displacement u and rotation r at point (%g,%g,%g) m\n',double(P3));
-fprintf(fid,'ux    = %g m\n',ux);
-fprintf(fid,'uy    = %g m\n',uy);
-fprintf(fid,'uz    = %g m\n',uz);
-fprintf(fid,'rx    = %g rad = %g deg\n',rx,rad2deg(rx))
-if junction
-    fprintf(fid,'ry(1) = %g rad = %g deg\n',ry(1),rad2deg(ry(1)));
-    fprintf(fid,'ry(2) = %g rad = %g deg\n',ry(2),rad2deg(ry(2)));
-    fprintf(fid,'|ry(1) - ry(2)| = %g rad = %g deg\n',abs(ry(1)-ry(2)),rad2deg(abs(ry(1)-ry(2))));
-else
-    fprintf(fid,'ry    = %g rad = %g deg\n',ry,rad2deg(ry));
+    fprintf(fid,'\n');
+    if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
+        fprintf(fid,'Maximum membrane forces Nxx, Nyy, Nxy, moments Mxx, Myy, Mxy and shear forces Qx, Qy');
+    else
+        fprintf(fid,'Maximum forces Nxx, Nyy, Nxy and moments Mxx, Myy, Mxy');
+    end
+    fprintf(fid,'Nxx = %g N/m\n',nxx);
+    fprintf(fid,'Nyy = %g N/m\n',nyy);
+    fprintf(fid,'Nxy = %g N/m\n',nxy);
+    fprintf(fid,'Mxx = %g N\n',mxx);
+    fprintf(fid,'Myy = %g N\n',myy);
+    fprintf(fid,'Mxy = %g N\n',mxy);
+    if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
+        fprintf(fid,'Qx = %g N/m\n',qx);
+        fprintf(fid,'Qy = %g N/m\n',qy);
+    end
+    
+    fprintf(fid,'\n');
+    if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
+        fprintf(fid,'Maximum membrane strains Exx, Eyy, Exy, bending strains (curvatures) Gxx, Gyy, Gxy and shear strains Gzx, Gzy');
+    else
+        fprintf(fid,'Maximum membrane strains Exx, Eyy, Exy and bending strains (curvatures) Gxx, Gyy, Gxy');
+    end
+    fprintf(fid,'Exx = %g\n',exx);
+    fprintf(fid,'Eyy = %g\n',eyy);
+    fprintf(fid,'Exy = %g\n',exy);
+    fprintf(fid,'Gxx = %g\n',gxx);
+    fprintf(fid,'Gyy = %g\n',gyy);
+    fprintf(fid,'Gxy = %g\n',gxy);
+    if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
+        fprintf(fid,'Gzx = %g\n',gzx);
+        fprintf(fid,'Gzy = %g\n',gzy);
+    end
+    fclose(fid);
 end
-fprintf(fid,'rz    = %g rad = %g deg\n',rz,rad2deg(rz));
-
-fprintf(fid,'\n');
-if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
-    fprintf(fid,'Maximum membrane forces Nxx, Nyy, Nxy, moments Mxx, Myy, Mxy and shear forces Qx, Qy');
-else
-    fprintf(fid,'Maximum forces Nxx, Nyy, Nxy and moments Mxx, Myy, Mxy');
-end
-fprintf(fid,'Nxx = %g N/m\n',nxx);
-fprintf(fid,'Nyy = %g N/m\n',nyy);
-fprintf(fid,'Nxy = %g N/m\n',nxy);
-fprintf(fid,'Mxx = %g N\n',mxx);
-fprintf(fid,'Myy = %g N\n',myy);
-fprintf(fid,'Mxy = %g N\n',mxy);
-if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
-    fprintf(fid,'Qx = %g N/m\n',qx);
-    fprintf(fid,'Qy = %g N/m\n',qy);
-end
-
-fprintf(fid,'\n');
-if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
-    fprintf(fid,'Maximum membrane strains Exx, Eyy, Exy, bending strains (curvatures) Gxx, Gyy, Gxy and shear strains Gzx, Gzy');
-else
-    fprintf(fid,'Maximum membrane strains Exx, Eyy, Exy and bending strains (curvatures) Gxx, Gyy, Gxy');
-end
-fprintf(fid,'Exx = %g\n',exx);
-fprintf(fid,'Eyy = %g\n',eyy);
-fprintf(fid,'Exy = %g\n',exy);
-fprintf(fid,'Gxx = %g\n',gxx);
-fprintf(fid,'Gyy = %g\n',gyy);
-fprintf(fid,'Gxy = %g\n',gxy);
-if strcmp(elemtype,'DST') || strcmp(elemtype,'DSQ') || strcmp(elemtype,'COQ4')
-    fprintf(fid,'Gzx = %g\n',gzx);
-    fprintf(fid,'Gzy = %g\n',gzy);
-end
-fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
 fprintf('\n');
 

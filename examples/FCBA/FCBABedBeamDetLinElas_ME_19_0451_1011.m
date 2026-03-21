@@ -433,75 +433,77 @@ end
 
 %% Outputs
 filenameResults = fullfile(pathname,'results.txt');
-fid = fopen(filenameResults,'w');
-fprintf(fid,'Bed\n');
-fprintf(fid,'\n');
-fprintf(fid,'test = %s\n',test);
-fprintf(fid,'nb elements = %g\n',getnbelem(S));
-fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
-fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
-fprintf(fid,'elapsed time = %f s\n',time);
-
-fprintf(fid,'\n');
-fprintf(fid,'Displacement u and rotation r at point (%g,%g,%g) m\n',double(P));
-fprintf(fid,'ux = %g m\n',ux);
-fprintf(fid,'uy = %g m\n',uy);
-fprintf(fid,'uz = %g m\n',uz);
-fprintf(fid,'rx = %g rad = %g deg\n',rx,rad2deg(rx));
-fprintf(fid,'ry = %g rad = %g deg\n',ry,rad2deg(ry));
-fprintf(fid,'rz = %g rad = %g deg\n',rz,rad2deg(rz));
-
-fprintf(fid,'\n');
-fprintf(fid,'Maximum force N and moments Mx, My, Mz at point (%g,%g,%g) m\n',double(P));
-fprintf(fid,'N  = %g N\n',n);
-fprintf(fid,'Mx = %g N.m\n',mx);
-fprintf(fid,'My = %g N.m\n',my);
-fprintf(fid,'Mz = %g N.m\n',mz);
-
-fprintf(fid,'\n');
-fprintf(fid,'Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point (%g,%g,%g) m\n',double(P));
-fprintf(fid,'Epsx = %g\n',epsx);
-fprintf(fid,'Gamx = %g\n',gamx);
-fprintf(fid,'Gamy = %g\n',gamy);
-fprintf(fid,'Gamz = %g\n',gamz);
-
-fprintf(fid,'\n');
-fprintf(fid,'Maximum displacement u and rotation r\n');
-Puxmax = POINT(getcoord(S.node(numnodeUxmax)));
-Puymax = POINT(getcoord(S.node(numnodeUymax)));
-Puzmax = POINT(getcoord(S.node(numnodeUzmax)));
-Prxmax = POINT(getcoord(S.node(numnodeRxmax)));
-Prymax = POINT(getcoord(S.node(numnodeRymax)));
-Przmax = POINT(getcoord(S.node(numnodeRzmax)));
-fprintf(fid,'ux = %g m at point (%g,%g,%g) m\n',uxmax,double(Puxmax));
-fprintf(fid,'uy = %g m at point (%g,%g,%g) m\n',uymax,double(Puymax));
-fprintf(fid,'uz = %g m at point (%g,%g,%g) m\n',uzmax,double(Puzmax));
-fprintf(fid,'rx = %g rad = %g deg at point (%g,%g,%g) m\n',rxmax,rad2deg(rxmax),double(Prxmax));
-fprintf(fid,'ry = %g rad = %g deg at point (%g,%g,%g) m\n',rymax,rad2deg(rymax),double(Prymax));
-fprintf(fid,'rz = %g rad = %g deg at point (%g,%g,%g) m\n',rzmax,rad2deg(rzmax),double(Przmax));
-
-fprintf(fid,'\n');
-fprintf(fid,'Maximum force N and moments Mx, My, Mz\n');
-PNmax = POINT(getcoord(S.node(numgroupelemnodeNmax(2))));
-PMxmax = POINT(getcoord(S.node(numgroupelemnodeMxmax(2))));
-PMymax = POINT(getcoord(S.node(numgroupelemnodeMymax(2))));
-PMzmax = POINT(getcoord(S.node(numgroupelemnodeMzmax(2))));
-fprintf(fid,'N  = %g N in groupelem #%d at point (%g,%g,%g) m\n',nmax,numgroupelemnodeNmax(1),double(PNmax));
-fprintf(fid,'Mx = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mxmax,numgroupelemnodeMxmax(1),double(PMxmax));
-fprintf(fid,'My = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mymax,numgroupelemnodeMymax(1),double(PMymax));
-fprintf(fid,'Mz = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mzmax,numgroupelemnodeMzmax(1),double(PMzmax));
-
-fprintf(fid,'\n');
-fprintf(fid,'Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz\n');
-PEpsxmax = POINT(getcoord(S.node(numgroupelemnodeEpsxmax(2))));
-PGamxmax = POINT(getcoord(S.node(numgroupelemnodeGamxmax(2))));
-PGamymax = POINT(getcoord(S.node(numgroupelemnodeGamymax(2))));
-PGamzmax = POINT(getcoord(S.node(numgroupelemnodeGamzmax(2))));
-fprintf(fid,'Epsx = %g in groupelem #%d at point (%g,%g,%g) m\n',epsxmax,numgroupelemnodeEpsxmax(1),double(PEpsxmax));
-fprintf(fid,'Gamx = %g in groupelem #%d at point (%g,%g,%g) m\n',gamxmax,numgroupelemnodeGamxmax(1),double(PGamxmax));
-fprintf(fid,'Gamy = %g in groupelem #%d at point (%g,%g,%g) m\n',gamymax,numgroupelemnodeGamymax(1),double(PGamymax));
-fprintf(fid,'Gamz = %g in groupelem #%d at point (%g,%g,%g) m\n',gamzmax,numgroupelemnodeGamzmax(1),double(PGamzmax));
-fclose(fid);
+if solveProblem
+    fid = fopen(filenameResults,'w');
+    fprintf(fid,'Bed\n');
+    fprintf(fid,'\n');
+    fprintf(fid,'test = %s\n',test);
+    fprintf(fid,'nb elements = %g\n',getnbelem(S));
+    fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+    fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+    fprintf(fid,'elapsed time = %f s\n',time);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Displacement u and rotation r at point (%g,%g,%g) m\n',double(P));
+    fprintf(fid,'ux = %g m\n',ux);
+    fprintf(fid,'uy = %g m\n',uy);
+    fprintf(fid,'uz = %g m\n',uz);
+    fprintf(fid,'rx = %g rad = %g deg\n',rx,rad2deg(rx));
+    fprintf(fid,'ry = %g rad = %g deg\n',ry,rad2deg(ry));
+    fprintf(fid,'rz = %g rad = %g deg\n',rz,rad2deg(rz));
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Maximum force N and moments Mx, My, Mz at point (%g,%g,%g) m\n',double(P));
+    fprintf(fid,'N  = %g N\n',n);
+    fprintf(fid,'Mx = %g N.m\n',mx);
+    fprintf(fid,'My = %g N.m\n',my);
+    fprintf(fid,'Mz = %g N.m\n',mz);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point (%g,%g,%g) m\n',double(P));
+    fprintf(fid,'Epsx = %g\n',epsx);
+    fprintf(fid,'Gamx = %g\n',gamx);
+    fprintf(fid,'Gamy = %g\n',gamy);
+    fprintf(fid,'Gamz = %g\n',gamz);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Maximum displacement u and rotation r\n');
+    Puxmax = POINT(getcoord(S.node(numnodeUxmax)));
+    Puymax = POINT(getcoord(S.node(numnodeUymax)));
+    Puzmax = POINT(getcoord(S.node(numnodeUzmax)));
+    Prxmax = POINT(getcoord(S.node(numnodeRxmax)));
+    Prymax = POINT(getcoord(S.node(numnodeRymax)));
+    Przmax = POINT(getcoord(S.node(numnodeRzmax)));
+    fprintf(fid,'ux = %g m at point (%g,%g,%g) m\n',uxmax,double(Puxmax));
+    fprintf(fid,'uy = %g m at point (%g,%g,%g) m\n',uymax,double(Puymax));
+    fprintf(fid,'uz = %g m at point (%g,%g,%g) m\n',uzmax,double(Puzmax));
+    fprintf(fid,'rx = %g rad = %g deg at point (%g,%g,%g) m\n',rxmax,rad2deg(rxmax),double(Prxmax));
+    fprintf(fid,'ry = %g rad = %g deg at point (%g,%g,%g) m\n',rymax,rad2deg(rymax),double(Prymax));
+    fprintf(fid,'rz = %g rad = %g deg at point (%g,%g,%g) m\n',rzmax,rad2deg(rzmax),double(Przmax));
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Maximum force N and moments Mx, My, Mz\n');
+    PNmax = POINT(getcoord(S.node(numgroupelemnodeNmax(2))));
+    PMxmax = POINT(getcoord(S.node(numgroupelemnodeMxmax(2))));
+    PMymax = POINT(getcoord(S.node(numgroupelemnodeMymax(2))));
+    PMzmax = POINT(getcoord(S.node(numgroupelemnodeMzmax(2))));
+    fprintf(fid,'N  = %g N in groupelem #%d at point (%g,%g,%g) m\n',nmax,numgroupelemnodeNmax(1),double(PNmax));
+    fprintf(fid,'Mx = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mxmax,numgroupelemnodeMxmax(1),double(PMxmax));
+    fprintf(fid,'My = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mymax,numgroupelemnodeMymax(1),double(PMymax));
+    fprintf(fid,'Mz = %g N.m in groupelem #%d at point (%g,%g,%g) m\n',mzmax,numgroupelemnodeMzmax(1),double(PMzmax));
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz\n');
+    PEpsxmax = POINT(getcoord(S.node(numgroupelemnodeEpsxmax(2))));
+    PGamxmax = POINT(getcoord(S.node(numgroupelemnodeGamxmax(2))));
+    PGamymax = POINT(getcoord(S.node(numgroupelemnodeGamymax(2))));
+    PGamzmax = POINT(getcoord(S.node(numgroupelemnodeGamzmax(2))));
+    fprintf(fid,'Epsx = %g in groupelem #%d at point (%g,%g,%g) m\n',epsxmax,numgroupelemnodeEpsxmax(1),double(PEpsxmax));
+    fprintf(fid,'Gamx = %g in groupelem #%d at point (%g,%g,%g) m\n',gamxmax,numgroupelemnodeGamxmax(1),double(PGamxmax));
+    fprintf(fid,'Gamy = %g in groupelem #%d at point (%g,%g,%g) m\n',gamymax,numgroupelemnodeGamymax(1),double(PGamymax));
+    fprintf(fid,'Gamz = %g in groupelem #%d at point (%g,%g,%g) m\n',gamzmax,numgroupelemnodeGamzmax(1),double(PGamzmax));
+    fclose(fid);
+end
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
 fprintf('\n');
 

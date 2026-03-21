@@ -192,19 +192,21 @@ end
 
 %% Outputs
 filenameResults = fullfile(pathname,'results.txt');
-fid = fopen(filenameResults,'w');
-fprintf(fid,'Beam\n');
-fprintf(fid,'\n');
-fprintf(fid,'data file = %s\n',filenameCamera);
-fprintf(fid,'spatial mesh = %s elements\n',elemtype);
-fprintf(fid,'nb elements = %g\n',getnbelem(S));
-fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
-fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
-fprintf(fid,'time solver = %s\n',class(N));
-fprintf(fid,'nb time steps = %g\n',getnt(N));
-fprintf(fid,'nb time dofs  = %g\n',getnbtimedof(N));
-fprintf(fid,'elapsed time = %f s\n',time);
-fclose(fid);
+if solveProblem
+    fid = fopen(filenameResults,'w');
+    fprintf(fid,'Beam\n');
+    fprintf(fid,'\n');
+    fprintf(fid,'data file = %s\n',filenameCamera);
+    fprintf(fid,'spatial mesh = %s elements\n',elemtype);
+    fprintf(fid,'nb elements = %g\n',getnbelem(S));
+    fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+    fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+    fprintf(fid,'time solver = %s\n',class(N));
+    fprintf(fid,'nb time steps = %g\n',getnt(N));
+    fprintf(fid,'nb time dofs  = %g\n',getnbtimedof(N));
+    fprintf(fid,'elapsed time = %f s\n',time);
+    fclose(fid);
+end
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
 fprintf('\n');
 

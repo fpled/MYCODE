@@ -528,59 +528,61 @@ end
 
 %% Outputs
 filenameResults = fullfile(pathname,'results.txt');
-fid = fopen(filenameResults,'w');
-fprintf(fid,'Bed\n');
-fprintf(fid,'\n');
-fprintf(fid,'test = %s\n',test);
-fprintf(fid,'mesh = %s elements\n',elemtype);
-fprintf(fid,'nb elements       = %g\n',getnbelem(S));
-fprintf(fid,'nb beam elements  = %g\n',getnbelem(S_beam));
-fprintf(fid,'nb plate elements = %g\n',getnbelem(S_plate));
-fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
-fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
-fprintf(fid,'elapsed time = %f s\n',time);
-
-fprintf(fid,'\n');
-fprintf(fid,'Displacement u and rotation r at point (%g,%g,%g) m\n',double(P));
-fprintf(fid,'ux = %g m\n',ux);
-fprintf(fid,'uy = %g m\n',uy);
-fprintf(fid,'uz = %g m\n',uz);
-fprintf(fid,'rx = %g rad = %g deg\n',rx,rad2deg(rx));
-fprintf(fid,'ry = %g rad = %g deg\n',ry,rad2deg(ry));
-fprintf(fid,'rz = %g rad = %g deg\n',rz,rad2deg(rz));
-
-fprintf(fid,'\n');
-fprintf(fid,'Maximum force N and moments Mx, My, Mz at point (%g,%g,%g) m\n',double(P));
-fprintf(fid,'N  = %g N\n',n);
-fprintf(fid,'Mx = %g N.m\n',mx);
-fprintf(fid,'My = %g N.m\n',my);
-fprintf(fid,'Mz = %g N.m\n',mz);
-
-fprintf(fid,'\n');
-fprintf(fid,'Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point (%g,%g,%g) m\n',double(P));
-fprintf(fid,'Epsx = %g\n',epsx);
-fprintf(fid,'Gamx = %g\n',gamx);
-fprintf(fid,'Gamy = %g\n',gamy);
-fprintf(fid,'Gamz = %g\n',gamz);
-
-fprintf(fid,'\n');
-fprintf(fid,'Maximum forces Nxx, Nyy, Nxy and moments Mxx, Myy, Mxy at point (%g,%g,%g) m\n',double(P));
-fprintf(fid,'Nxx = %g N/m\n',nxx);
-fprintf(fid,'Nyy = %g N/m\n',nyy);
-fprintf(fid,'Nxy = %g N/m\n',nxy);
-fprintf(fid,'Mxx = %g N\n',mxx);
-fprintf(fid,'Myy = %g N\n',myy);
-fprintf(fid,'Mxy = %g N\n',mxy);
-
-fprintf(fid,'\n');
-fprintf(fid,'Maximum membrane strains Exx, Eyy, Exy and bending strains (curvatures) Gxx, Gyy, Gxy at point (%g,%g,%g) m\n',double(P));
-fprintf(fid,'Exx = %g\n',exx);
-fprintf(fid,'Eyy = %g\n',eyy);
-fprintf(fid,'Exy = %g\n',exy);
-fprintf(fid,'Gxx = %g\n',gxx);
-fprintf(fid,'Gyy = %g\n',gyy);
-fprintf(fid,'Gxy = %g\n',gxy);
-fclose(fid);
+if solveProblem
+    fid = fopen(filenameResults,'w');
+    fprintf(fid,'Bed\n');
+    fprintf(fid,'\n');
+    fprintf(fid,'test = %s\n',test);
+    fprintf(fid,'mesh = %s elements\n',elemtype);
+    fprintf(fid,'nb elements       = %g\n',getnbelem(S));
+    fprintf(fid,'nb beam elements  = %g\n',getnbelem(S_beam));
+    fprintf(fid,'nb plate elements = %g\n',getnbelem(S_plate));
+    fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+    fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+    fprintf(fid,'elapsed time = %f s\n',time);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Displacement u and rotation r at point (%g,%g,%g) m\n',double(P));
+    fprintf(fid,'ux = %g m\n',ux);
+    fprintf(fid,'uy = %g m\n',uy);
+    fprintf(fid,'uz = %g m\n',uz);
+    fprintf(fid,'rx = %g rad = %g deg\n',rx,rad2deg(rx));
+    fprintf(fid,'ry = %g rad = %g deg\n',ry,rad2deg(ry));
+    fprintf(fid,'rz = %g rad = %g deg\n',rz,rad2deg(rz));
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Maximum force N and moments Mx, My, Mz at point (%g,%g,%g) m\n',double(P));
+    fprintf(fid,'N  = %g N\n',n);
+    fprintf(fid,'Mx = %g N.m\n',mx);
+    fprintf(fid,'My = %g N.m\n',my);
+    fprintf(fid,'Mz = %g N.m\n',mz);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Maximum axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point (%g,%g,%g) m\n',double(P));
+    fprintf(fid,'Epsx = %g\n',epsx);
+    fprintf(fid,'Gamx = %g\n',gamx);
+    fprintf(fid,'Gamy = %g\n',gamy);
+    fprintf(fid,'Gamz = %g\n',gamz);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Maximum forces Nxx, Nyy, Nxy and moments Mxx, Myy, Mxy at point (%g,%g,%g) m\n',double(P));
+    fprintf(fid,'Nxx = %g N/m\n',nxx);
+    fprintf(fid,'Nyy = %g N/m\n',nyy);
+    fprintf(fid,'Nxy = %g N/m\n',nxy);
+    fprintf(fid,'Mxx = %g N\n',mxx);
+    fprintf(fid,'Myy = %g N\n',myy);
+    fprintf(fid,'Mxy = %g N\n',mxy);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Maximum membrane strains Exx, Eyy, Exy and bending strains (curvatures) Gxx, Gyy, Gxy at point (%g,%g,%g) m\n',double(P));
+    fprintf(fid,'Exx = %g\n',exx);
+    fprintf(fid,'Eyy = %g\n',eyy);
+    fprintf(fid,'Exy = %g\n',exy);
+    fprintf(fid,'Gxx = %g\n',gxx);
+    fprintf(fid,'Gyy = %g\n',gyy);
+    fprintf(fid,'Gxy = %g\n',gxy);
+    fclose(fid);
+end
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
 fprintf('\n');
 

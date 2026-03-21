@@ -121,64 +121,66 @@ dE_sample = sE_sample/mE_sample;
 
 %% Outputs
 filenameResults = fullfile(pathname,'results.txt');
-fid = fopen(filenameResults,'w');
-fprintf(fid,'nb data    = %g\n',N_data);
-fprintf(fid,'nb samples = %g\n',N);
-
-fprintf(fid,'\n');
-fprintf(fid,'Initial parameter values\n');
-fprintf(fid,'alpha = %.4f\n',a0);
-fprintf(fid,'beta  = %.6f\n',b0);
-fprintf(fid,'loglf = %.4f\n',loglfval0);
-
-fprintf(fid,'\n');
-fprintf(fid,'Optimal parameter values\n');
-fprintf(fid,'alpha = %.4f\n',a);
-fprintf(fid,'beta  = %.6f\n',b);
-fprintf(fid,'loglf = %.4f\n',loglfval);
-
-fprintf(fid,'\n');
-fprintf(fid,'mean(E_data)   = %.4f GPa\n',mE_data);
-fprintf(fid,'mean(E)        = %.4f GPa\n',mE);
-fprintf(fid,'mean(E_sample) = %.4f GPa\n',mE_sample);
-fprintf(fid,'var(E_data)    = %.4f (GPa)^2\n',vE_data);
-fprintf(fid,'var(E)         = %.4f (GPa)^2\n',vE);
-fprintf(fid,'var(E_sample)  = %.4f (GPa)^2\n',vE_sample);
-fprintf(fid,'std(E_data)    = %.4f GPa\n',sE_data);
-fprintf(fid,'std(E)         = %.4f GPa\n',sE);
-fprintf(fid,'std(E_sample)  = %.4f GPa\n',sE_sample);
-fprintf(fid,'cv(E_data)     = %.4f\n',dE_data);
-fprintf(fid,'cv(E)          = %.4f\n',dE);
-fprintf(fid,'cv(E_sample)   = %.4f\n',dE_sample);
-
-err_meanE = abs(mE - mE_data)/abs(mE_data);
-err_varE = abs(vE - vE_data)/abs(vE_data);
-err_stdE = abs(sE - sE_data)/abs(sE_data);
-err_cvE = abs(dE - dE_data)/abs(dE_data);
-
-err_meanE_sample = abs(mE_sample - mE_data)/abs(mE_data);
-err_varE_sample = abs(vE_sample - vE_data)/abs(vE_data);
-err_stdE_sample = abs(sE_sample - sE_data)/abs(sE_data);
-err_cvE_sample = abs(dE_sample - dE_data)/abs(dE_data);
-
-alpha = 1/2;
-mse = alpha * (mE - mE_data)^2/(mE_data)^2 + (1-alpha) * (dE - dE_data)^2/(dE_data)^2;
-mse_sample = alpha * (mE_sample - mE_data)^2/(mE_data)^2 + (1-alpha) * (dE_sample - dE_data)^2/(dE_data)^2;
-
-fprintf(fid,'\n');
-fprintf(fid,'relative error on mean(E) = %.4e\n',err_meanE);
-fprintf(fid,'relative error on var(E)  = %.4e\n',err_varE);
-fprintf(fid,'relative error on std(E)  = %.4e\n',err_stdE);
-fprintf(fid,'relative error on cv(E)   = %.4e\n',err_cvE);
-fprintf(fid,'mean-squared error mse(E) = %.4e\n',mse);
-
-fprintf(fid,'\n');
-fprintf(fid,'relative error on mean(E_sample) = %.4e\n',err_meanE_sample);
-fprintf(fid,'relative error on var(E_sample)  = %.4e\n',err_varE_sample);
-fprintf(fid,'relative error on std(E_sample)  = %.4e\n',err_stdE_sample);
-fprintf(fid,'relative error on cv(E_sample)   = %.4e\n',err_cvE_sample);
-fprintf(fid,'mean-squared error mse(E_sample) = %.4e\n',mse_sample);
-fclose(fid);
+if solveProblem
+    fid = fopen(filenameResults,'w');
+    fprintf(fid,'nb data    = %g\n',N_data);
+    fprintf(fid,'nb samples = %g\n',N);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Initial parameter values\n');
+    fprintf(fid,'alpha = %.4f\n',a0);
+    fprintf(fid,'beta  = %.6f\n',b0);
+    fprintf(fid,'loglf = %.4f\n',loglfval0);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Optimal parameter values\n');
+    fprintf(fid,'alpha = %.4f\n',a);
+    fprintf(fid,'beta  = %.6f\n',b);
+    fprintf(fid,'loglf = %.4f\n',loglfval);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'mean(E_data)   = %.4f GPa\n',mE_data);
+    fprintf(fid,'mean(E)        = %.4f GPa\n',mE);
+    fprintf(fid,'mean(E_sample) = %.4f GPa\n',mE_sample);
+    fprintf(fid,'var(E_data)    = %.4f (GPa)^2\n',vE_data);
+    fprintf(fid,'var(E)         = %.4f (GPa)^2\n',vE);
+    fprintf(fid,'var(E_sample)  = %.4f (GPa)^2\n',vE_sample);
+    fprintf(fid,'std(E_data)    = %.4f GPa\n',sE_data);
+    fprintf(fid,'std(E)         = %.4f GPa\n',sE);
+    fprintf(fid,'std(E_sample)  = %.4f GPa\n',sE_sample);
+    fprintf(fid,'cv(E_data)     = %.4f\n',dE_data);
+    fprintf(fid,'cv(E)          = %.4f\n',dE);
+    fprintf(fid,'cv(E_sample)   = %.4f\n',dE_sample);
+    
+    err_meanE = abs(mE - mE_data)/abs(mE_data);
+    err_varE = abs(vE - vE_data)/abs(vE_data);
+    err_stdE = abs(sE - sE_data)/abs(sE_data);
+    err_cvE = abs(dE - dE_data)/abs(dE_data);
+    
+    err_meanE_sample = abs(mE_sample - mE_data)/abs(mE_data);
+    err_varE_sample = abs(vE_sample - vE_data)/abs(vE_data);
+    err_stdE_sample = abs(sE_sample - sE_data)/abs(sE_data);
+    err_cvE_sample = abs(dE_sample - dE_data)/abs(dE_data);
+    
+    alpha = 1/2;
+    mse = alpha * (mE - mE_data)^2/(mE_data)^2 + (1-alpha) * (dE - dE_data)^2/(dE_data)^2;
+    mse_sample = alpha * (mE_sample - mE_data)^2/(mE_data)^2 + (1-alpha) * (dE_sample - dE_data)^2/(dE_data)^2;
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'relative error on mean(E) = %.4e\n',err_meanE);
+    fprintf(fid,'relative error on var(E)  = %.4e\n',err_varE);
+    fprintf(fid,'relative error on std(E)  = %.4e\n',err_stdE);
+    fprintf(fid,'relative error on cv(E)   = %.4e\n',err_cvE);
+    fprintf(fid,'mean-squared error mse(E) = %.4e\n',mse);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'relative error on mean(E_sample) = %.4e\n',err_meanE_sample);
+    fprintf(fid,'relative error on var(E_sample)  = %.4e\n',err_varE_sample);
+    fprintf(fid,'relative error on std(E_sample)  = %.4e\n',err_stdE_sample);
+    fprintf(fid,'relative error on cv(E_sample)   = %.4e\n',err_cvE_sample);
+    fprintf(fid,'mean-squared error mse(E_sample) = %.4e\n',mse_sample);
+    fclose(fid);
+end
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display

@@ -417,38 +417,40 @@ end
 
 %% Outputs
 filenameResults = fullfile(pathname,'results.txt');
-fid = fopen(filenameResults,'w');
-fprintf(fid,'Circular table\n');
-fprintf(fid,'\n');
-fprintf(fid,'test = %s\n',test);
-fprintf(fid,'mesh = %s elements\n',elemtype);
-fprintf(fid,'nb elements = %g\n',getnbelem(S_plate));
-fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
-fprintf(fid,'nb dofs     = %g\n',getnbddl(S_plate));
-fprintf(fid,'span-to-thickness ratio = %g\n',r/h);
-fprintf(fid,'elapsed time = %f s\n',time);
-
-fprintf(fid,'\n');
-fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
-fprintf(fid,'ux     = %g m\n',ux);
-fprintf(fid,'uy     = %g m\n',uy);
-fprintf(fid,'uz     = %g m\n',uz);
-if strcmpi(test,'staticvert')
-    uz_exp = -2.35e-3;
-    err_uz = norm(uz-uz_exp)/norm(uz_exp);
-    fprintf(fid,'uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
+if solveProblem
+    fid = fopen(filenameResults,'w');
+    fprintf(fid,'Circular table\n');
+    fprintf(fid,'\n');
+    fprintf(fid,'test = %s\n',test);
+    fprintf(fid,'mesh = %s elements\n',elemtype);
+    fprintf(fid,'nb elements = %g\n',getnbelem(S_plate));
+    fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+    fprintf(fid,'nb dofs     = %g\n',getnbddl(S_plate));
+    fprintf(fid,'span-to-thickness ratio = %g\n',r/h);
+    fprintf(fid,'elapsed time = %f s\n',time);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
+    fprintf(fid,'ux     = %g m\n',ux);
+    fprintf(fid,'uy     = %g m\n',uy);
+    fprintf(fid,'uz     = %g m\n',uz);
+    if strcmpi(test,'staticvert')
+        uz_exp = -2.35e-3;
+        err_uz = norm(uz-uz_exp)/norm(uz_exp);
+        fprintf(fid,'uz_exp = %g m, error = %.3e\n',uz_exp,err_uz);
+    end
+    fprintf(fid,'ur     = %g m\n',ur);
+    fprintf(fid,'ut     = %g m\n',ut);
+    
+    fprintf(fid,'\n');
+    fprintf(fid,'Rotation r at point (%g,%g,%g) m\n',double(P));
+    fprintf(fid,'rx     = %g rad = %g deg\n',rx,rad2deg(rx));
+    fprintf(fid,'ry     = %g rad = %g deg\n',ry,rad2deg(ry));
+    fprintf(fid,'rz     = %g rad = %g deg\n',rz,rad2deg(rz));
+    fprintf(fid,'rr     = %g rad = %g deg\n',rr,rad2deg(rr));
+    fprintf(fid,'rt     = %g rad = %g deg\n',rt,rad2deg(rt));
+    fclose(fid);
 end
-fprintf(fid,'ur     = %g m\n',ur);
-fprintf(fid,'ut     = %g m\n',ut);
-
-fprintf(fid,'\n');
-fprintf(fid,'Rotation r at point (%g,%g,%g) m\n',double(P));
-fprintf(fid,'rx     = %g rad = %g deg\n',rx,rad2deg(rx));
-fprintf(fid,'ry     = %g rad = %g deg\n',ry,rad2deg(ry));
-fprintf(fid,'rz     = %g rad = %g deg\n',rz,rad2deg(rz));
-fprintf(fid,'rr     = %g rad = %g deg\n',rr,rad2deg(rr));
-fprintf(fid,'rt     = %g rad = %g deg\n',rt,rad2deg(rt));
-fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
 fprintf('\n');
 

@@ -768,8 +768,8 @@ gc_unif_xi = [min(gc_xi),gc_ab_xi(:)',max(gc_xi)];
 gc_unif_f = myunifpdf(gc_unif_xi,aGc,bGc);
 
 %% Outputs
+filenameResults = fullfile(pathname,'results.txt');
 if solveProblem
-    filenameResults = fullfile(pathname,'results.txt');
     fid = fopen(filenameResults,'w');
     fprintf(fid,'Single edge crack\n');
     fprintf(fid,'\n');
@@ -842,8 +842,8 @@ if solveProblem
     fprintf(fid,'%d%% ci(gc) = [%g,%g] N/mm (estimate)\n',(probs(2)-probs(1))*100,gc_ci(1)*1e-3,gc_ci(2)*1e-3);
     fprintf(fid,'           = [%g,%g] N/mm (exact)\n',gc_unif_ci(1)*1e-3,gc_unif_ci(2)*1e-3);
     fclose(fid);
-    type(filenameResults) % fprintf('%s', fileread(filenameResults))
 end
+type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
 if Dim==2

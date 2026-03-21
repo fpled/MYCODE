@@ -243,55 +243,57 @@ end
 
 %% Outputs
 filenameResults = fullfile(pathname,'results.txt');
-fid = fopen(filenameResults,'w');
-fprintf(fid,'Beam\n');
-fprintf(fid,'\n');
-fprintf(fid,'nb elements = %g\n',getnbelem(S));
-fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
-fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
-fprintf(fid,'elapsed time = %f s\n',time);
-
-fprintf(fid,'\n');
-if Dim==2
-    fprintf(fid,'Displacement u and rotation r at point (%g,%g) m\n',double(P));
-elseif Dim==3
-    fprintf(fid,'Displacement u and rotation r at point (%g,%g,%g) m\n',double(P));
+if solveProblem
+    fid = fopen(filenameResults,'w');
+    fprintf(fid,'Beam\n');
+    fprintf(fid,'\n');
+    fprintf(fid,'nb elements = %g\n',getnbelem(S));
+    fprintf(fid,'nb nodes    = %g\n',getnbnode(S));
+    fprintf(fid,'nb dofs     = %g\n',getnbddl(S));
+    fprintf(fid,'elapsed time = %f s\n',time);
+    
+    fprintf(fid,'\n');
+    if Dim==2
+        fprintf(fid,'Displacement u and rotation r at point (%g,%g) m\n',double(P));
+    elseif Dim==3
+        fprintf(fid,'Displacement u and rotation r at point (%g,%g,%g) m\n',double(P));
+    end
+    fprintf(fid,'ux = %g m\n',ux);
+    fprintf(fid,'uy = %g m\n',uy);
+    if Dim==3
+        fprintf(fid,'uz = %g m\n',uz);
+        fprintf(fid,'rx = %g rad = %g deg\n',rx,rad2deg(rx));
+        fprintf(fid,'ry = %g rad = %g deg\n',ry,rad2deg(ry));
+    end
+    fprintf(fid,'rz = %g rad = %g deg\n',rz,rad2deg(rz));
+    
+    fprintf(fid,'\n');
+    if Dim==2
+        fprintf(fid,'Force N and moment Mz at point (%g,%g) m\n',double(P));
+    elseif Dim==3
+        fprintf(fid,'Force N and moments Mx, My, Mz at point (%g,%g,%g) m\n',double(P));
+    end
+    fprintf(fid,'N  = %g N\n',n);
+    if Dim==3
+        fprintf(fid,'Mx = %g N.m\n',mx);
+        fprintf(fid,'My = %g N.m\n',my);
+    end
+    fprintf(fid,'Mz = %g N.m\n',mz);
+    
+    fprintf(fid,'\n');
+    if Dim==2
+        fprintf(fid,'Axial strain Epsx and bending strain (curvature) Gamz at point (%g,%g) m\n',double(P));
+    elseif Dim==3
+        fprintf(fid,'Axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point (%g,%g,%g) m\n',double(P));
+    end
+    fprintf(fid,'Epsx = %g\n',epsx);
+    if Dim==3
+        fprintf(fid,'Gamx = %g\n',gamx);
+        fprintf(fid,'Gamy = %g\n',gamy);
+    end
+    fprintf(fid,'Gamz = %g\n',gamz);
+    fclose(fid);
 end
-fprintf(fid,'ux = %g m\n',ux);
-fprintf(fid,'uy = %g m\n',uy);
-if Dim==3
-    fprintf(fid,'uz = %g m\n',uz);
-    fprintf(fid,'rx = %g rad = %g deg\n',rx,rad2deg(rx));
-    fprintf(fid,'ry = %g rad = %g deg\n',ry,rad2deg(ry));
-end
-fprintf(fid,'rz = %g rad = %g deg\n',rz,rad2deg(rz));
-
-fprintf(fid,'\n');
-if Dim==2
-    fprintf(fid,'Force N and moment Mz at point (%g,%g) m\n',double(P));
-elseif Dim==3
-    fprintf(fid,'Force N and moments Mx, My, Mz at point (%g,%g,%g) m\n',double(P));
-end
-fprintf(fid,'N  = %g N\n',n);
-if Dim==3
-    fprintf(fid,'Mx = %g N.m\n',mx);
-    fprintf(fid,'My = %g N.m\n',my);
-end
-fprintf(fid,'Mz = %g N.m\n',mz);
-
-fprintf(fid,'\n');
-if Dim==2
-    fprintf(fid,'Axial strain Epsx and bending strain (curvature) Gamz at point (%g,%g) m\n',double(P));
-elseif Dim==3
-    fprintf(fid,'Axial strain Epsx, torsion and bending strains (curvatures) Gamx, Gamy, Gamz at point (%g,%g,%g) m\n',double(P));
-end
-fprintf(fid,'Epsx = %g\n',epsx);
-if Dim==3
-    fprintf(fid,'Gamx = %g\n',gamx);
-    fprintf(fid,'Gamy = %g\n',gamy);
-end
-fprintf(fid,'Gamz = %g\n',gamz);
-fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
 fprintf('\n');
 
