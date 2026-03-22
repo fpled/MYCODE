@@ -79,8 +79,8 @@ healing = (heff~=0);
 % dacts = [0.25,0.5,1];
 % ratiohcgcs = [0.5,1];
 
-% for iHeff=1:length(Heffs)
-% Heff = Heffs{iHeff};
+% for iheff=1:length(heffs)
+% heff = heffs{iheff};
 % for idacts=1:length(dacts)
 % dact = dacts{idacts};
 % for iratiohcgcs=1:length(ratiohcgcs)

@@ -58,8 +58,8 @@ healing = (heff~=0);
 % PFsolver = PFsolvers{iPFsolver};
 % for imaxIter=1:length(maxIters)
 % maxIter = maxIters(imaxIter);
-% for iHeff=1:length(Heffs)
-% Heff = Heffs{iHeff};
+% for iheff=1:length(heffs)
+% heff = heffs{iheff};
 % for idacts=1:length(dacts)
 % dact = dacts{idacts};
 % for iratiohcgcs=1:length(ratiohcgcs)
