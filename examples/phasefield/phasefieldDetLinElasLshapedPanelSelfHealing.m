@@ -104,6 +104,17 @@ dact = 0.25; % damage activation threshold
 ratiohcgc = 1; % ratio Hc/Gc
 healing = (heff~=0);
 
+% heffs = [0.5,1];
+% dacts = [0.25,0.5,1];
+% ratiohcgcs = [0.5,1];
+
+% for iHeff=1:length(Heffs)
+% Heff = Heffs{iHeff};
+% for idacts=1:length(dacts)
+% dact = dacts{idacts};
+% for iratiohcgcs=1:length(ratiohcgcs)
+% ratiohcgc = ratiohcgcs{iratiohcgcs};
+
 suffix = '';
 
 foldername = ['LshapedPanel' num2str(loading) '_' num2str(Dim) 'D'];
@@ -1061,3 +1072,7 @@ if saveParaview
 end
 
 % myparallel('stop');
+
+% end
+% end
+% end

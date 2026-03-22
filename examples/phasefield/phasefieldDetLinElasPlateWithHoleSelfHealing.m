@@ -44,6 +44,9 @@ healing = (heff~=0);
 % PFregularizations = {'AT1','AT2'};
 % PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % maxIters = [1,Inf];
+% heffs = [0.5,1];
+% dacts = [0.25,0.5,1];
+% ratiohcgcs = [0.5,1];
 
 % for iPFmodel=1:length(PFmodels)
 % PFmodel = PFmodels{iPFmodel};
@@ -55,6 +58,12 @@ healing = (heff~=0);
 % PFsolver = PFsolvers{iPFsolver};
 % for imaxIter=1:length(maxIters)
 % maxIter = maxIters(imaxIter);
+% for iHeff=1:length(Heffs)
+% Heff = Heffs{iHeff};
+% for idacts=1:length(dacts)
+% dact = dacts{idacts};
+% for iratiohcgcs=1:length(ratiohcgcs)
+% ratiohcgc = ratiohcgcs{iratiohcgcs};
 % close all
 
 suffix = '';
@@ -903,6 +912,9 @@ end
 
 % myparallel('stop');
 
+% end
+% end
+% end
 % end
 % end
 % end
