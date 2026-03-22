@@ -72,8 +72,8 @@ coeff_gc = 1.0;
 % maxIters = [1,Inf];
 % coeffs_gc = [0.6,0.8,1.0,1.2,1.4];
 % heffs = [0.5,1];
-% dacts = [0.25,0.5,1];
-% ratiohcgcs = [0.5,1];
+% dacts = [0.1,0.25,0.5];
+% ratiohcgcs = [0.1,0.5,1];
 
 % for iang=1:length(angs)
 % ang = angs(iang);
@@ -92,11 +92,11 @@ coeff_gc = 1.0;
 % for icoeff_gc=1:length(coeffs_gc)
 % coeff_gc = coeffs_gc(icoeff_gc);
 % for iheff=1:length(heffs)
-% heff = heffs{iheff};
+% heff = heffs(iheff);
 % for idacts=1:length(dacts)
-% dact = dacts{idacts};
+% dact = dacts(idacts);
 % for iratiohcgcs=1:length(ratiohcgcs)
-% ratiohcgc = ratiohcgcs{iratiohcgcs};
+% ratiohcgc = ratiohcgcs(iratiohcgcs);
 % close all
 
 suffix = '';

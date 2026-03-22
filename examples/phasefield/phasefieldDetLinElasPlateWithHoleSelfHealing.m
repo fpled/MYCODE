@@ -45,8 +45,8 @@ healing = (heff~=0);
 % PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % maxIters = [1,Inf];
 % heffs = [0.5,1];
-% dacts = [0.25,0.5,1];
-% ratiohcgcs = [0.5,1];
+% dacts = [0.1,0.25,0.5];
+% ratiohcgcs = [0.1,0.5,1];
 
 % for iPFmodel=1:length(PFmodels)
 % PFmodel = PFmodels{iPFmodel};
@@ -59,11 +59,11 @@ healing = (heff~=0);
 % for imaxIter=1:length(maxIters)
 % maxIter = maxIters(imaxIter);
 % for iheff=1:length(heffs)
-% heff = heffs{iheff};
+% heff = heffs(iheff);
 % for idacts=1:length(dacts)
-% dact = dacts{idacts};
+% dact = dacts(idacts);
 % for iratiohcgcs=1:length(ratiohcgcs)
-% ratiohcgc = ratiohcgcs{iratiohcgcs};
+% ratiohcgc = ratiohcgcs(iratiohcgcs);
 % close all
 
 suffix = '';
