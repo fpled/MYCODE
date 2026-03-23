@@ -157,7 +157,7 @@ if setProblem
         case 1
             % clC = 1e-4; % [Molnar, Gravouil, 2017, FEAD], [Chen, Vasiukov, Gelebart, Park, 2019, CMAME], [Si, Yu, Li, Natarajan, 2023, CMAME]
             % clC = 5e-5; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
-            clD = 5e-4;
+            clD = 1e-5;
             clC = 1e-4;
             if test
                 clD = 2e-3;
@@ -190,11 +190,11 @@ if setProblem
             % clC = 0.6e-3; % [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM]
             % clC = 0.5e-3; % [Li, Lu, Huang, Yang, 2022, OE]
             % clC = 0.1e-3; % [Han, Li, Yu, Li, Zhang, 2022, JMPS]
-            clD = 2e-3;
+            clD = 5e-3;
             clC = 0.5e-3;
             if test
                 if Dim==2
-                    clD = 3e-3;
+                    clD = 5e-3;
                     clC = 0.75e-3;
                 elseif Dim==3
                     clD = 6e-3;

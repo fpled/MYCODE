@@ -169,7 +169,7 @@ if setProblem
                     clD = cl;
                     clC = cl;
                 case 'optim' % optimized mesh
-                    clD = 5e-4;
+                    clD = 1e-5;
                     clC = 1e-4;
                     if test
                         clD = 2e-3;
@@ -230,11 +230,11 @@ if setProblem
                     clD = cl;
                     clC = cl;
                 case 'optim' % optimized mesh
-                    clD = 2e-3;
+                    clD = 5e-3;
                     clC = 0.5e-3;
                     if test
                         if Dim==2
-                            clD = 3e-3;
+                            clD = 5e-3;
                             clC = 0.75e-3;
                         elseif Dim==3
                             clD = 6e-3;
