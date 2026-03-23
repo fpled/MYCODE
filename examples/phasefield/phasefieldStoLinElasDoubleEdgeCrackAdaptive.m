@@ -184,7 +184,7 @@ if setProblem
     
     switch setup
         case 1
-            clD = 1e-5;
+            clD = 1e-3;
             % clC = 1e-4; % [Molnar, Gravouil, 2017, FEAD], [Chen, Vasiukov, Gelebart, Park, 2019, CMAME], [Si, Yu, Li, Natarajan, 2023, CMAME]
             % clC = 5e-5; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
             clC = 1e-4;
