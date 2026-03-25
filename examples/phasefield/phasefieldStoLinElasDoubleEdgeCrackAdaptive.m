@@ -272,8 +272,7 @@ if setProblem
             % gc = 3.4e3; % [Bhowmick, Liu, 2018, EFM]
             gc = 2.7e3; % [Molnar, Gravouil, 2017, FEAD], [Bhowmick, Liu, 2018, EFM], [Chen, Vasiukov, Gelebart, Park, 2019, CMAME], [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Si, Yu, Li, Natarajan, 2023, CMAME]
             % Regularization parameter (width of the smeared crack)
-            % l = 2e-4; % [Molnar, Gravouil, 2017, FEAD], [Chen, Vasiukov, Gelebart, Park, 2019, CMAME], [Si, Yu, Li, Natarajan, 2023, CMAME]
-            l = 2e-4;
+            l = 2e-4; % [Molnar, Gravouil, 2017, FEAD], [Chen, Vasiukov, Gelebart, Park, 2019, CMAME], [Si, Yu, Li, Natarajan, 2023, CMAME]
             % l = 1.35e-4; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
             % l = 1e-4;
             % l = 7.5e-3; % [Bhowmick, Liu, 2018, EFM]
@@ -286,10 +285,10 @@ if setProblem
         case 3
             % Critical energy release rate (or fracture toughness)
             % gc = 63; % [Le, Nguyen, Bui, Sheikh, Kotousov, 2018, IJES], [Tong, Shen, Shao, Chen, 2020, EFM]
-            % gc = 59; % [Nguyen, 2005, PhD thesis], [Nguyen, Houlsby, 2007, IJNAMG], [Nguyen, Houlsby, 2008, IJNAMG], [Nguyen, 2008, IJSS], [Nguyen, Korsunsky, 2008, IJSS], [Nguyen, 2011, IJSS], [Stefanou, Georgioudakis, Papadrakakis, 2014, MMUQMS], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Alfaiate, Wells, Sluys, 2002, EFM]
+            gc = 59; % [Nguyen, 2005, PhD thesis], [Nguyen, Houlsby, 2007, IJNAMG], [Nguyen, Houlsby, 2008, IJNAMG], [Nguyen, 2008, IJSS], [Nguyen, Korsunsky, 2008, IJSS], [Nguyen, 2011, IJSS], [Stefanou, Georgioudakis, Papadrakakis, 2014, MMUQMS], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Alfaiate, Wells, Sluys, 2002, EFM]
             % gc = 50; % [Galvez, Planas, Sancho, Reyes, Cendon, Casati, 2013, EFM]
             % gc = 25; % [Han, Li, Yu, Li, Zhang, 2022, JMPS]
-            gc = 4.5; % [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD]
+            % gc = 4.5; % [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD]
             % Regularization parameter (width of the smeared crack)
             % l = 10e-3; % [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM]
             % l = 5e-3; % [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM]
@@ -434,7 +433,7 @@ if setProblem
             NU = 0.3; % [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
         case 3
             % Option
-            % option = 'DEFO'; % [Ribeiro Nogueira, Rastiello, Giry, Gatuingt, Callari, 2023, AJCE]
+            % option = 'DEFO'; % plane strain [Ribeiro Nogueira, Rastiello, Giry, Gatuingt, Callari, 2023, AJCE]
             option = 'CONT'; % plane stress [Nguyen, 2011, IJSS], [Stefanou, Georgioudakis, Papadrakakis, 2014, MMUQMS], [Tong, Shen, Shao, Chen, 2020, EFM], [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM], [Li, Lu, Huang, Yang, 2022, OE], [Han, Li, Yu, Li, Zhang, 2022, JMPS]
             % Young modulus and Poisson ratio
             % E = 40e9; NU = 1/3; % [Tong, Shen, Shao, Chen, 2020, EFM]
