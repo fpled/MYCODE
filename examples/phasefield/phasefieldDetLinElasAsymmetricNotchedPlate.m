@@ -150,16 +150,17 @@ if setProblem
             clD = cl; % characteristic length for domain
             B = [];
         case 'optim' % optimized mesh
-            clD = 0.1*unit; % characteristic length for domain
+            clD = 0.25*unit; % characteristic length for domain
             % clD = 0.01*unit; % [Khisamitov, Meschke, 2018, CMAME] (setup 4)
             % clD = 2.54e-3; % [mm] [Cervera, Barbat, Chiumenti, 2017, CM]
             if test
                 clD = 0.5*unit;
             end
             VIn = cl; VOut = clD;
-            XMin = -b-0.5*unit; XMax = -lh+1*unit;
+            bmax = 6*unit;
+            XMin = -bmax-0.5*unit; XMax = -lh+1*unit;
             YMin = -h; YMax = h;
-            Thickness = ls-b-0.5*unit;
+            Thickness = ls-bmax-0.5*unit;
             % Thickness = 0;
             if Dim==2
                 B = struct('VIn',VIn,'VOut',VOut,'XMin',XMin,'XMax',XMax,'YMin',YMin,'YMax',YMax,'Thickness',Thickness);

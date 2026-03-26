@@ -145,7 +145,7 @@ if setProblem
     e = 1; % thickness
     % e = 0.5*unit; % [Cervera, Barbat, Chiumenti, 2017, CM], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
     
-    clD = 0.1*unit; % characteristic length for domain
+    clD = 0.25*unit; % characteristic length for domain
     % clD = 0.01*unit; % [Khisamitov, Meschke, 2018, CMAME] (setup 4)
     % clD = 2.54e-3; % [mm] [Cervera, Barbat, Chiumenti, 2017, CM]
     % cl = 1e-3; % [mm] [Cervera, Barbat, Chiumenti, 2017, CM]
