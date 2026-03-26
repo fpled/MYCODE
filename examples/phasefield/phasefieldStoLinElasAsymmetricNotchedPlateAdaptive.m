@@ -110,9 +110,11 @@ formats = {'epsc'};
 renderer = 'OpenGL';
 
 gmshoptions = '-v 0';
-mmgoptions = '-nomove -hausd 0.000005 -hgrad 1.1 -v -1';
+mmgoptions_init = '-no nomove -hausd 0.000005 -hgrad 1.1 -v -1';
+mmgoptions = mmgoptions_init;
 % gmshoptions = '-v 5';
-% mmgoptions = '-nomove -hausd 0.01 -hgrad 1.3 -v 1';
+% mmgoptions_init = '-nomove -hausd 0.01 -hgrad 1.3 -v 1';
+% mmgoptions = mmgoptions_init;
 
 %% Problem
 if setProblem
@@ -248,7 +250,7 @@ if setProblem
         otherwise
             error('Wrong model for initial crack');
     end
-    R0 = 2*unit;
+    R0 = unit;
     BU = CIRCLE(0.0,h,R0);
     BL = CIRCLE(-ls,-h,R0);
     BR = CIRCLE(ls,-h,R0);
@@ -281,7 +283,7 @@ if setProblem
         case 'gmsh'
             S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_asymmetric_notched_plate'),'gmshoptions',gmshoptions);
         case 'mmg'
-            S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_asymmetric_notched_plate'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,'export'); % export to remove NodeData field in .msh file before copying to workers
+            S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_asymmetric_notched_plate'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions_init,'export'); % export to remove NodeData field in .msh file before copying to workers
         otherwise
             error('Wrong mesh adaptation software');
     end

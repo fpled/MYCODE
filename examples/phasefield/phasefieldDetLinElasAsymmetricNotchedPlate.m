@@ -232,7 +232,7 @@ if setProblem
         otherwise
             error('Wrong model for initial crack');
     end
-    R0 = 2*unit;
+    R0 = unit;
     BU = CIRCLE(0.0,h,R0);
     BL = CIRCLE(-ls,-h,R0);
     BR = CIRCLE(ls,-h,R0);

@@ -113,9 +113,11 @@ switch setup
         hausd = 0.01;
 end
 if Dim==2, hgrad = 1.1; elseif Dim==3, hgrad = 1.2; end
-mmgoptions = ['-nomove -hausd ' num2str(hausd) ' -hgrad ' num2str(hgrad) ' -v -1'];
+mmgoptions_init = ['-hausd ' num2str(hausd) ' -hgrad ' num2str(hgrad) ' -v -1'];
+mmgoptions = ['-nomove ' mmgoptions_init];
 % gmshoptions = '-v 5';
-% mmgoptions = '-nomove -hausd 0.01 -hgrad 1.3 -v 1';
+% mmgoptions_init = '-hausd 0.01 -hgrad 1.3 -v 1';
+% mmgoptions = ['-nomove ' mmgoptions_init];
 
 %% Problem
 if setProblem
@@ -339,7 +341,7 @@ if setProblem
         case 'gmsh'
             S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_double_edge_crack'),'gmshoptions',gmshoptions);
         case 'mmg'
-            S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_double_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
+            S_phase = adaptmesh(S_phase,cl,fullfile(pathname,'gmsh_domain_double_edge_crack'),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions_init);
         otherwise
             error('Wrong mesh adaptation software');
     end
