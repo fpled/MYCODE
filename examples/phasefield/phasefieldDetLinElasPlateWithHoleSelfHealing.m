@@ -45,8 +45,8 @@ healing = (heff~=0);
 % PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % maxIters = [1,Inf];
 % heffs = [0.5,1];
-% dacts = [0.1,0.25,0.5];
-% ratiohcgcs = [0.1,0.5,1];
+% dacts = [0.2,0.3,0.4,0.5,0.6,0.7,0.8];
+% ratiohcgcs = [0.1,0.5,1,2,10,100];
 
 % for iPFmodel=1:length(PFmodels)
 % PFmodel = PFmodels{iPFmodel};
@@ -79,8 +79,9 @@ if maxIter>1
     filename = [filename 'Tol' num2str(tolConv) num2str(critConv)];
 end
 filename = [filename 'Mesh' FEmesh];
+filename = [filename 'Heff' num2str(heff)];
 if healing
-    filename = [filename 'Heff' num2str(heff) 'Dact' num2str(dact) 'RatioHcGc' num2str(ratiohcgc)];
+    filename = [filename 'Dact' num2str(dact) 'RatioHcGc' num2str(ratiohcgc)];
 end
 filename = [filename suffix];
 
