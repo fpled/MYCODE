@@ -690,11 +690,14 @@ if setProblem
                     
                     % (2D) [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD]
                     % du = 1e-5 mm during 2000 time steps (up to u = 20e-3 mm)
+                    % du = 1e-5 mm during 3000 time steps (up to u = 30e-3 mm)
                     dt = 1e-8;
-                    nt = 2000;
+                    % nt = 2000;
+                    nt = 3000;
                     if test
                         dt = 5e-8;
-                        nt = 400;
+                        % nt = 400;
+                        nt = 600;
                     end
                     t = linspace(dt,nt*dt,nt);
             end
