@@ -61,6 +61,7 @@ maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 meshAdapt = 'Mmg'; % 'Gmsh', 'Mmg'
+sizeMap = 'Lin'; % 'Lin', 'Quad', 'Cub', 'Quar', 'PowExp_1', 'PowExp_2', 'PowExp_1_2', 'Inv_1', 'Inv_2', 'Inv_1_2'
 switch lower(meshAdapt)
     case 'gmsh'
         initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
@@ -83,7 +84,7 @@ filename = ['linElas' symmetry PFmodel PFsplit PFregularization PFsolver initial
 if maxIter>1
     filename = [filename 'Tol' num2str(tolConv) num2str(critConv)];
 end
-filename = [filename 'MeshAdapt' meshAdapt '_' num2str(N) 'samples'];
+filename = [filename 'MeshAdapt' meshAdapt 'SizeMap' sizeMap '_' num2str(N) 'samples'];
 % if any(randMat.delta)
 %     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 % end
@@ -199,9 +200,44 @@ if setProblem
             error('Wrong model for initial crack');
     end
     
-    sizemap = @(d) (clC-clD)*d+clD; % linear
-    % sizemap = @(d) clD*clC./((clD-clC)*d+clC); % inverse
-    % p = 1/2; sizemap = @(d) clD*(clC/clD).^(d.^p); % power-exponential with shape parameter p
+    switch lower(sizeMap)
+        case 'lin'
+            % Linear map as a function of d
+            sizemap = @(d) clD + (clC - clD)*d;
+        case 'quad'
+            % Quadratic map as a function of d
+            sizemap = @(d) clD + (clC - clD)*d.^2;
+        case 'cub'
+            % Cubic map as a function of d
+            sizemap = @(d) clD + (clC - clD)*d.^3;
+        case 'quar'
+            % Quartic map as a function of d
+            sizemap = @(d) clD + (clC - clD)*d.^4;
+        case {'powexp_1','powexp_2','powexp_1_2'}
+            switch lower(sizeMap)
+                case 'powexp_1'
+                    p = 1;
+                case 'powexp_2'
+                    p = 2;
+                case 'powexp_1_2'
+                    p = 1/2;
+            end
+            % Power-exponential map with exponent p
+            sizemap = @(d) clD*(clC/clD).^(d.^p);
+        case {'inv_1','inv_2','inv_1_2'}
+            switch lower(sizeMap)
+                case 'inv_1'
+                    p = 1;
+                case 'inv_2'
+                    p = 2;
+                case 'inv_1_2'
+                    p = 1/2;
+            end
+            % Inverse-type map with exponent p
+            sizemap = @(d) clD*clC./((clD - clC)*d.^p + clC);
+        otherwise
+            error('Wrong size map');
+    end
     
     %% Phase-field problem
     %% Material
@@ -579,6 +615,7 @@ if solveProblem
     fprintf(fid,'PF split = %s\n',PFsplit);
     fprintf(fid,'PF regularization = %s\n',PFregularization);
     fprintf(fid,'PF solver = %s\n',PFsolver);
+    fprintf(fid,'size map = %s\n',sizeMap);
     fprintf(fid,'nb elements = %g (initial) - %g (final)\n',getnbelem(S),getnbelem(St{end}));
     fprintf(fid,'nb nodes    = %g (initial) - %g (final)\n',getnbnode(S),getnbnode(St{end}));
     fprintf(fid,'nb dofs     = %g (initial) - %g (final)\n',getnbddl(S),getnbddl(St{end}));

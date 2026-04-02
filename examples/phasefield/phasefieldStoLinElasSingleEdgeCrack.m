@@ -169,7 +169,12 @@ if setProblem
         case 'unif' % uniform mesh
             switch lower(symmetry)
                 case 'isot' % isotropic material
-                    cl = 5e-6;
+                    % cl = 5e-6;
+                    if Dim==2
+                        cl = 2.5e-6;
+                    elseif Dim==3
+                        cl = 5e-6;
+                    end
                 case 'anisot' % anisotropic material
                     cl = 4.25e-6;
                 otherwise
