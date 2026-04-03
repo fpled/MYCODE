@@ -594,17 +594,20 @@ if setProblem
                     % t = linspace(dt,nt*dt,nt);
                     
                     % du = 1e-5 mm during the first 400 time steps (up to u = 4e-3 mm)
+                    % du = 1e-6 mm during the last 3000 time steps (up to u = 7e-3 mm)
                     % du = 1e-6 mm during the last 4000 time steps (up to u = 8e-3 mm)
                     dt0 = 1e-8;
                     nt0 = 400;
                     dt1 = 1e-9;
-                    nt1 = 4000;
+                    nt1 = 3000;
+                    % nt1 = 4000;
                     if test
                         dt0 = 1e-7;
                         nt0 = 40;
                         dt1 = 1e-8;
                         if Dim==2
-                            nt1 = 400;
+                            nt1 = 300;
+                            % nt1 = 400;
                         elseif Dim==3
                             nt1 = 600;
                         end
