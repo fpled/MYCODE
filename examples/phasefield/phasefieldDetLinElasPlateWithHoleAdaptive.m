@@ -422,15 +422,25 @@ if setProblem
     % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     % du = 8e-5 mm during the first stage (until the phase-field reaches the threshold value)
     % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 25e-3 mm)
-    dt0 = 8e-8;
-    dt1 = 2e-8;
+    % dt0 = 8e-8;
+    % dt1 = 2e-8;
+    % if test
+    %     dt0 = 16e-8;
+    %     dt1 = 4e-8;
+    % end
+    % tf = 25e-6;
+    % dth = 0.6;
+    % T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dth',dth);
+    
+    % du = 2e-5 mm during 1250 time steps (up to u = 25e-3 mm)
+    dt = 2e-8;
+    nt = 1250;
     if test
-        dt0 = 16e-8;
-        dt1 = 4e-8;
+        dt = 5e-8;
+        nt = 500;
     end
-    tf = 25e-6;
-    dth = 0.6;
-    T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dth',dth);
+    t = linspace(dt,nt*dt,nt);
+    T = TIMEMODEL(t);
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','C','addbc','addbcdamage','addbcdamageadapt','findddlforce','findddlboundary');
@@ -448,21 +458,21 @@ if solveProblem
     
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
+            [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
                 'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
         otherwise
-            [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
+            [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
                 'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
     end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
-    %         [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,C,sizemap,...
+    %         [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleAdaptive(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,C,sizemap,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
     %             'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
     %     otherwise
-    %         [dt,ut,ft,T,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleAdaptiveThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,C,sizemap,...
+    %         [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleAdaptive(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,C,sizemap,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_plate_with_hole','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
     %             'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
     % end
@@ -477,12 +487,12 @@ if solveProblem
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','T','St_phase','St','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         save(fullfile(pathname,'solution.mat'),'Ht','-append');
     end
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','T','St_phase','St','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','St_phase','St','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         load(fullfile(pathname,'solution.mat'),'Ht');
     end

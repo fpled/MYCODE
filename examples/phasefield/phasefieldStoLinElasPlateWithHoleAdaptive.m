@@ -148,6 +148,9 @@ if setProblem
     % clC = 0.024e-3; % characteristic length for circular hole
     
     % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+    % clD = 0.24e-3; % characteristic length for domain
+    % clC = 0.06e-3; % characteristic length for circular hole
+    
     clD = 0.48e-3; % characteristic length for domain
     clC = 0.03e-3; % characteristic length for circular hole
     if test

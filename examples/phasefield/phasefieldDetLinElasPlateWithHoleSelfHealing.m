@@ -451,15 +451,25 @@ if setProblem
     % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
     % du = 8e-5 mm during the first stage (until the phase-field reaches the threshold value)
     % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 25e-3 mm)
-    dt0 = 8e-8;
-    dt1 = 2e-8;
+    % dt0 = 8e-8;
+    % dt1 = 2e-8;
+    % if test
+    %     dt0 = 16e-8;
+    %     dt1 = 4e-8;
+    % end
+    % tf = 25e-6;
+    % dth = 0.6;
+    % T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dth',dth);
+    
+    % du = 2e-5 mm during 1250 time steps (up to u = 25e-3 mm)
+    dt = 2e-8;
+    nt = 1250;
     if test
-        dt0 = 16e-8;
-        dt1 = 4e-8;
+        dt = 5e-8;
+        nt = 500;
     end
-    tf = 25e-6;
-    dth = 0.6;
-    T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dth',dth);
+    t = linspace(dt,nt*dt,nt);
+    T = TIMEMODEL(t);
     
     %% Save variables
     save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','C','addbc','findddlforce','findddlboundary');
@@ -483,12 +493,12 @@ if solveProblem
     if healing
         switch lower(PFsolver)
             case {'historyfieldelem','historyfieldnode'}
-                [dt,ht,ut,ft,Ht,Edt,Eht,Eut,output] = solvePFSHDetLinElasThreshold(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                [dt,ht,ut,ft,Ht,Edt,Eht,Eut,output] = solvePFSHDetLinElas(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
                     'heff',heff,'deff',deff,'dact',dact,'fundact',fundact,...
                     'displayiter',displayIter,'displaysol',displaySol);
             otherwise
-                [dt,ht,ut,ft,~,Edt,Eht,Eut,output] = solvePFSHDetLinElasThreshold(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                [dt,ht,ut,ft,~,Edt,Eht,Eut,output] = solvePFSHDetLinElas(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
                     'heff',heff,'deff',deff,'dact',dact,'fundact',fundact,...
                     'displayiter',displayIter,'displaysol',displaySol);
@@ -496,27 +506,26 @@ if solveProblem
     else
         switch lower(PFsolver)
             case {'historyfieldelem','historyfieldnode'}
-                [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasThreshold(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
                     'displayiter',displayIter,'displaysol',displaySol);
             otherwise
-                [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasThreshold(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+                [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
                     'displayiter',displayIter,'displaysol',displaySol);
         end
         % switch lower(PFsolver)
         %     case {'historyfieldelem','historyfieldnode'}
-        %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,...
+        %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasPlateWithHole(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,...
         %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
         %             'displayiter',displayIter,'displaysol',displaySol);
         %     otherwise
-        %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasPlateWithHoleThreshold(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,...
+        %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasPlateWithHole(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,P1,P2,...
         %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
         %             'displayiter',displayIter,'displaysol',displaySol);
         % end
     end
     
-    T = gettimemodel(dt);
     t = gettevol(T);
     dt_val = getvalue(dt);
     dmaxt = max(dt_val);
@@ -535,7 +544,7 @@ if solveProblem
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','T','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
     if healing
         save(fullfile(pathname,'solution.mat'),'ht','Eht','hmaxt','Dmaxt','-append');
     end
@@ -543,7 +552,7 @@ if solveProblem
         save(fullfile(pathname,'solution.mat'),'Ht','-append');
     end
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','T','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
     if healing
         load(fullfile(pathname,'solution.mat'),'ht','Eht','hmaxt','Dmaxt');
     end
