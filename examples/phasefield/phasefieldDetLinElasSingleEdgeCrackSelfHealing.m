@@ -698,14 +698,14 @@ if setProblem
                     
                     % (2D) [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD]
                     % du = 1e-5 mm during 2000 time steps (up to u = 20e-3 mm)
-                    % du = 1e-5 mm during 3000 time steps (up to u = 30e-3 mm)
+                    % du = 1e-5 mm during 2500 time steps (up to u = 25e-3 mm)
                     dt = 1e-8;
                     % nt = 2000;
-                    nt = 3000;
+                    nt = 2500;
                     if test
-                        dt = 5e-8;
-                        % nt = 400;
-                        nt = 600;
+                        dt = 4e-8;
+                        % nt = 500;
+                        nt = 625;
                     end
                     t = linspace(dt,nt*dt,nt);
             end
@@ -750,18 +750,20 @@ if setProblem
                     
                     % du = 1e-5 mm during the first stage (until the phase-field reaches the threshold value)
                     % du = 1e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 20e-3 mm)
+                    % du = 1e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 25e-3 mm)
                     dt0 = 1e-8;
                     dt1 = 1e-8;
                     if test
                         if Dim==2
-                            dt0 = 5e-8;
-                            dt1 = 5e-8;
+                            dt0 = 4e-8;
+                            dt1 = 4e-8;
                         elseif Dim==3
                             dt0 = 1e-7;
                             dt1 = 1e-7;
                         end
                     end
-                    tf = 20e-6;
+                    % tf = 20e-6;
+                    tf = 25e-6;
                     dth = 0.6;
             end
             T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dth',dth);

@@ -625,8 +625,8 @@ if setProblem
                     dt = 1e-8;
                     nt = 2000;
                     if test
-                        dt = 5e-8;
-                        nt = 400;
+                        dt = 4e-8;
+                        nt = 500;
                     end
                     t = linspace(dt,nt*dt,nt);
             end
@@ -648,8 +648,8 @@ if setProblem
                     dt = 1e-8;
                     nt = 2000;
                     if test
-                        dt = 5e-8;
-                        nt = 400;
+                        dt = 4e-8;
+                        nt = 500;
                     end
                     t = linspace(dt,nt*dt,nt);
             end
