@@ -1152,9 +1152,10 @@ if displaySolution
             % tSnapshots = [0.22 0.30 0.45 1.0]*1e-3; % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Wick, 2017, SIAM JSC], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Jodlbauer, Langer, Wick, 2020, CMAME]
             % tSnapshots = [0.22 0.30 1.0]*1e-3; % [Tian, Tang, Xu, Yang, Li, 2019, IJNME]
             % tSnapshots = [0.27 0.30 0.45 1.0]*1e-3; % [Kakouris, Triantafyllou, 2017, IJNME]
-            tSnapshots = [0.22 0.30 0.45]*1e-3;
+            tSnapshots = [0.28 0.30 -0.20 0.32 0.45]*1e-3;
     end
-    rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
+    rep = arrayfun(@(x) find(abs(t-x)<eps,1),tSnapshots);
+    % rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     rep = [rep,length(T)];
     % tSnapshots = [tSnapshots,gett1(T)];
     % rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
