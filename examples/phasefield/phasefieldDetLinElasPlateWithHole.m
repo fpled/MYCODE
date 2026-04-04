@@ -132,7 +132,7 @@ if setProblem
             
             % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
             % cl = 0.06e-3;
-            cl = 0.03e-3;
+            cl = 0.04e-3;
             if test
                 % cl = 2e-3; % 2D and 3D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
                 cl = 0.24e-3; % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
@@ -162,7 +162,7 @@ if setProblem
             % clC = 0.06e-3; % characteristic length for circular hole
             
             clD = 0.48e-3; % characteristic length for domain
-            clC = 0.03e-3; % characteristic length for circular hole
+            clC = 0.04e-3; % characteristic length for circular hole
             if test
                 if Dim==2
                     clD = 0.48e-3;
