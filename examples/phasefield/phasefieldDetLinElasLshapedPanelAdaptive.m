@@ -507,7 +507,7 @@ if setProblem
             % t = linspace(dt,nt*dt,nt);
             
             % [Nguyen, Thanh, Vogel, Nguyen-Xuan, Abdel-Wahab, 2022, TAFM]
-            % du = 2e-3 mm during 400 time steps (up to u = 1 mm)
+            % du = 2e-3 mm during 500 time steps (up to u = 1 mm)
             % dt = 2e-6;
             % nt = 500;
             % t = linspace(dt,nt*dt,nt);
