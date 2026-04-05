@@ -101,10 +101,10 @@ critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 meshAdapt = 'Mmg'; % 'Gmsh', 'Mmg'
 sizeMap = 'Lin'; % 'Lin', 'Quad', 'Cub', 'Quar', 'PowExp_1', 'PowExp_2', 'PowExp_1_2', 'Inv_1', 'Inv_2', 'Inv_1_2'
 
-% sizeMaps = {'Lin','Quad','Cub','Quar','PowExp_1','PowExp_2','PowExp_1_2','Inv_1','Inv_2','Inv_1_2'};
+sizeMaps = {'Lin','Quad','Cub','Quar','PowExp_1','PowExp_2','PowExp_1_2','Inv_1','Inv_2','Inv_1_2'};
 
-% for isizeMap=1:length(sizeMaps)
-% sizeMap = sizeMaps(isizeMap);
+for isizeMap=1:length(sizeMaps)
+sizeMap = sizeMaps{isizeMap};
 % close all
 
 suffix = '';
@@ -996,6 +996,6 @@ if saveParaview
     make_pvd_file(pathname,'solution',1,length(T));
 end
 
-% end
+end
 
 % myparallel('stop');

@@ -90,7 +90,7 @@ coeff_gc = 1.0;
 % for imaxIter=1:length(maxIters)
 % maxIter = maxIters(imaxIter);
 % for isizeMap=1:length(sizeMaps)
-% sizeMap = sizeMaps(isizeMap);
+% sizeMap = sizeMaps{isizeMap};
 % for icoeff_gc=1:length(coeffs_gc)
 % coeff_gc = coeffs_gc(icoeff_gc);
 % close all

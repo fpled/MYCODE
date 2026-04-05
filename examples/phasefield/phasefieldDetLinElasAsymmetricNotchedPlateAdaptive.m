@@ -67,7 +67,7 @@ end
 % sizeMaps = {'Lin','Quad','Cub','Quar','PowExp_1','PowExp_2','PowExp_1_2','Inv_1','Inv_2','Inv_1_2'};
 
 % for isizeMap=1:length(sizeMaps)
-% sizeMap = sizeMaps(isizeMap);
+% sizeMap = sizeMaps{isizeMap};
 % close all
 
 suffix = '';
