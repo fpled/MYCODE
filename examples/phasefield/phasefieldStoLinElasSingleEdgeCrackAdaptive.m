@@ -61,12 +61,7 @@ tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 meshAdapt = 'Mmg'; % 'Gmsh', 'Mmg'
 sizeMap = 'Lin'; % 'Lin', 'Quad', 'Cub', 'Quar', 'PowExp_1', 'PowExp_2', 'PowExp_1_2', 'Inv_1', 'Inv_2', 'Inv_1_2'
-switch lower(meshAdapt)
-    case 'gmsh'
-        initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
-    case 'mmg'
-        initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
-end
+initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
 % Random model parameters
 % N = 500; % number of samples
@@ -962,9 +957,9 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft_mean*((Dim==2)*1e-6+(Dim==3)*1),'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,ft_mean]*((Dim==2)*1e-6+(Dim==3)*1),'-b','LineWidth',linewidth)
     hold on
-    ciplot(ft_ci(1,:)*((Dim==2)*1e-6+(Dim==3)*1),ft_ci(2,:)*((Dim==2)*1e-6+(Dim==3)*1),t*1e3,'b');
+    ciplot([0,ft_ci(1,:)]*((Dim==2)*1e-6+(Dim==3)*1),[0,ft_ci(2,:)]*((Dim==2)*1e-6+(Dim==3)*1),[0,t]*1e3,'b');
     alpha(0.2)
     grid on
     box on
@@ -985,7 +980,7 @@ if displaySolution
     figure('Name','Forces vs displacement')
     clf
     for i=1:N
-        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+        plot([0,t]*1e3,[0,ft(i,:)]*((Dim==2)*1e-6+(Dim==3)*1),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
         hold on
     end
     hold off
@@ -1007,9 +1002,9 @@ if displaySolution
     %% Display maximum damage-displacement curve
     figure('Name','Maximum damage vs displacement')
     clf
-    plot(t*1e3,dmaxt_mean,'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,dmaxt_mean],'-b','LineWidth',linewidth)
     hold on
-    ciplot(dmaxt_ci(1,:),dmaxt_ci(2,:),t*1e3,'b');
+    ciplot([0,dmaxt_ci(1,:)],[0,dmaxt_ci(2,:)],[0,t]*1e3,'b');
     alpha(0.2)
     grid on
     box on
@@ -1026,7 +1021,7 @@ if displaySolution
     figure('Name','Maximum damages vs displacement')
     clf
     for i=1:N
-        plot(t*1e3,dmaxt(i,:),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+        plot([0,t]*1e3,[0,dmaxt(i,:)],'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
         hold on
     end
     hold off
@@ -1045,21 +1040,21 @@ if displaySolution
     figure('Name','Energies vs displacement')
     clf
     if Dim==2
-        plot(t*1e3,Eut_mean,'-b','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Eut_mean],'-b','LineWidth',linewidth)
         hold on
-        plot(t*1e3,Edt_mean,'-r','LineWidth',linewidth)
-        plot(t*1e3,Eut_mean+Edt_mean,'-k','LineWidth',linewidth)
-        ciplot(Eut_ci(1,:),Eut_ci(2,:),t*1e3,'b');
-        ciplot(Edt_ci(1,:),Edt_ci(2,:),t*1e3,'r');
-        ciplot(Et_ci(1,:),Et_ci(2,:),t*1e3,'k');
+        plot([0,t]*1e3,[0,Edt_mean],'-r','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Eut_mean+Edt_mean],'-k','LineWidth',linewidth)
+        ciplot([0,Eut_ci(1,:)],[0,Eut_ci(2,:)],[0,t]*1e3,'b');
+        ciplot([0,Edt_ci(1,:)],[0,Edt_ci(2,:)],[0,t]*1e3,'r');
+        ciplot([0,Et_ci(1,:)],[0,Et_ci(2,:)],[0,t]*1e3,'k');
     elseif Dim==3
-        plot(t*1e3,Eut_mean*1e3,'-b','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Eut_mean]*1e3,'-b','LineWidth',linewidth)
         hold on
-        plot(t*1e3,Edt_mean*1e3,'-r','LineWidth',linewidth)
-        plot(t*1e3,(Eut_mean+Edt_mean)*1e3,'-k','LineWidth',linewidth)
-        ciplot(Eut_ci(1,:)*1e3,Eut_ci(2,:)*1e3,t*1e3,'b');
-        ciplot(Edt_ci(1,:)*1e3,Edt_ci(2,:)*1e3,t*1e3,'r');
-        ciplot(Et_ci(1,:)*1e3,Et_ci(2,:)*1e3,t*1e3,'k');
+        plot([0,t]*1e3,[0,Edt_mean]*1e3,'-r','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Eut_mean+Edt_mean]*1e3,'-k','LineWidth',linewidth)
+        ciplot([0,Eut_ci(1,:)]*1e3,[0,Eut_ci(2,:)]*1e3,[0,t]*1e3,'b');
+        ciplot([0,Edt_ci(1,:)]*1e3,[0,Edt_ci(2,:)]*1e3,[0,t]*1e3,'r');
+        ciplot([0,Et_ci(1,:)]*1e3,[0,Et_ci(2,:)]*1e3,[0,t]*1e3,'k');
     end
     alpha(0.2)
     grid on
@@ -1085,9 +1080,9 @@ if displaySolution
     clf
     for i=1:N
         if Dim==2
-            plot(t*1e3,Eut(i,:),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Eut(i,:)],'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
         elseif Dim==3
-            plot(t*1e3,Eut(i,:)*1e3,'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Eut(i,:)]*1e3,'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
         end
         hold on
     end
@@ -1112,9 +1107,9 @@ if displaySolution
     clf
     for i=1:N
         if Dim==2
-            plot(t*1e3,Edt(i,:),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Edt(i,:)],'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
         elseif Dim==3
-            plot(t*1e3,Edt(i,:)*1e3,'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Edt(i,:)]*1e3,'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
         end
         hold on
     end
@@ -1139,9 +1134,9 @@ if displaySolution
     clf
     for i=1:N
         if Dim==2
-            plot(t*1e3,Eut(i,:)+Edt(i,:),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Eut(i,:)+Edt(i,:)],'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
         elseif Dim==3
-            plot(t*1e3,(Eut(i,:)+Edt(i,:))*1e3,'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Eut(i,:)+Edt(i,:)]*1e3,'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
         end
         hold on
     end

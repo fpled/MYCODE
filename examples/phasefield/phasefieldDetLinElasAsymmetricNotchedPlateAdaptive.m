@@ -57,12 +57,7 @@ tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 meshAdapt = 'Mmg'; % 'Gmsh', 'Mmg'
 sizeMap = 'Lin'; % 'Lin', 'Quad', 'Cub', 'Quar', 'PowExp_1', 'PowExp_2', 'PowExp_1_2', 'Inv_1', 'Inv_2', 'Inv_1_2'
-switch lower(meshAdapt)
-    case 'gmsh'
-        initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
-    case 'mmg'
-        initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
-end
+initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
 % sizeMaps = {'Lin','Quad','Cub','Quar','PowExp_1','PowExp_2','PowExp_1_2','Inv_1','Inv_2','Inv_1_2'};
 
@@ -610,7 +605,7 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,ft]*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -622,7 +617,7 @@ if displaySolution
     %% Display maximum damage-displacement curve
     figure('Name','Maximum damage vs displacement')
     clf
-    plot(t*1e3,dmaxt,'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,dmaxt],'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -634,10 +629,10 @@ if displaySolution
     %% Display energy-displacement curves
     figure('Name','Energies vs displacement')
     clf
-    plot(t*1e3,Eut,'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,Eut],'-b','LineWidth',linewidth)
     hold on
-    plot(t*1e3,Edt,'-r','LineWidth',linewidth)
-    plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,Edt],'-r','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,Eut+Edt],'-k','LineWidth',linewidth)
     hold off
     grid on
     box on
@@ -693,10 +688,10 @@ if displaySolution
         otherwise
             error('Wrong setup');
     end
-    rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
+    rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     rep = [rep,length(T)];
     % tSnapshots = [tSnapshots,gett1(T)];
-    % rep = arrayfun(@(x) find(t<x+eps,1,'last'),tSnapshots);
+    % rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     
     for j=1:length(rep)
         dj = dt{rep(j)};

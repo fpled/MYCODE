@@ -563,7 +563,7 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,ft]*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -575,7 +575,7 @@ if displaySolution
     %% Display maximum damage-displacement curve
     figure('Name','Maximum damage vs displacement')
     clf
-    plot(t*1e3,dmaxt,'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,dmaxt],'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -587,10 +587,10 @@ if displaySolution
     %% Display energy-displacement curves
     figure('Name','Energies vs displacement')
     clf
-    plot(t*1e3,Eut,'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,Eut],'-b','LineWidth',linewidth)
     hold on
-    plot(t*1e3,Edt,'-r','LineWidth',linewidth)
-    plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,Edt],'-r','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,Eut+Edt],'-k','LineWidth',linewidth)
     hold off
     grid on
     box on

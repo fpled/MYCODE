@@ -142,7 +142,7 @@ numSamples = numel(samples); % number of samples/tests
 numSample = 4; % sample number
 
 %% Statistics of elastic and fracture properties: mean value and biased standard deviation
-filenameStat = fullfile(pathname,'stat_data.txt');
+filenameStat = fullfile(pathnameExp,'stat_data.txt');
 fidStat = fopen(filenameStat,'w');
 fprintf(fidStat,['Samples : all = [' sprintf(' %d ',samples) '], kept = [' sprintf(' %d ',samplesKept) ']\n']);
 fprintf(fidStat,['Group A : all = [' sprintf(' %d ',samplesA) '], kept = [' sprintf(' %d ',samplesKeptA) ']\n']);
@@ -214,7 +214,7 @@ fprintf(fidStat,'Fm_exp = %g kN (redim)\n',fmax_exp_data(numSample+1));
 fprintf(fidStat,'Fc_exp = %g kN (no redim)\n',fc_exp_data(numSample+1));
 fprintf(fidStat,'Fc     = %g kN\n',fc_data(numSample+1));
 fclose(fidStat);
-type(filenameStat) % fprintf('%s', fileread(filenameExp))
+type(filenameStat) % fprintf('%s', fileread(filenameStat))
 
 %% Input data
 setProblem = true;
@@ -779,7 +779,7 @@ if displaySolution
     %% Display numerical and experimental force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft*1e-3,'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,ft]*1e-3,'-b','LineWidth',linewidth)
     hold on
     plot(t_exp,ft_exp,'--k','LineWidth',linewidth)
     scatter(udmax*1e3,fmax*1e-3,'Marker','+','MarkerEdgeColor','b','LineWidth',linewidth)
@@ -804,7 +804,7 @@ if displaySolution
     %% Display maximum damage-displacement curve
     figure('Name','Maximum damage vs displacement')
     clf
-    plot(t*1e3,dmaxt,'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,dmaxt],'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -816,10 +816,10 @@ if displaySolution
     %% Display energy-displacement curves
     figure('Name','Energies vs displacement')
     clf
-    plot(t*1e3,Eut,'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,Eut],'-b','LineWidth',linewidth)
     hold on
-    plot(t*1e3,Edt,'-r','LineWidth',linewidth)
-    plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,Edt],'-r','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,Eut+Edt],'-k','LineWidth',linewidth)
     hold off
     grid on
     box on

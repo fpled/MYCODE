@@ -57,12 +57,7 @@ tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 meshAdapt = 'Mmg'; % 'Gmsh', 'Mmg'
 sizeMap = 'Lin'; % 'Lin', 'Quad', 'Cub', 'Quar', 'PowExp_1', 'PowExp_2', 'PowExp_1_2', 'Inv_1', 'Inv_2', 'Inv_1_2'
-switch lower(meshAdapt)
-    case 'gmsh'
-        initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
-    case 'mmg'
-        initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
-end
+initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 coeff_gc = 1.0;
 
 % angs = [0:10:90];
@@ -577,7 +572,7 @@ if setProblem
                     % t = linspace(dt,nt*dt,nt);
                     
                     % du = 1e-5 mm during the first 400 time steps (up to u = 4e-3 mm)
-                    % du = 1e-6 mm during the last 2300 time steps (up to u = 7e-3 mm)
+                    % du = 1e-6 mm during the last 3000 time steps (up to u = 7e-3 mm)
                     % du = 1e-6 mm during the last 4000 time steps (up to u = 8e-3 mm)
                     dt0 = 1e-8;
                     nt0 = 400;
@@ -942,7 +937,7 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1),'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,ft]*((Dim==2)*1e-6+(Dim==3)*1),'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -958,7 +953,7 @@ if displaySolution
     %% Display maximum damage-displacement curve
     figure('Name','Maximum damage vs displacement')
     clf
-    plot(t*1e3,dmaxt,'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,dmaxt],'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -971,15 +966,15 @@ if displaySolution
     figure('Name','Energies vs displacement')
     clf
     if Dim==2
-        plot(t*1e3,Eut,'-b','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Eut],'-b','LineWidth',linewidth)
         hold on
-        plot(t*1e3,Edt,'-r','LineWidth',linewidth)
-        plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Edt],'-r','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Eut+Edt],'-k','LineWidth',linewidth)
     elseif Dim==3
-        plot(t*1e3,Eut*1e3,'-b','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Eut]*1e3,'-b','LineWidth',linewidth)
         hold on
-        plot(t*1e3,Edt*1e3,'-r','LineWidth',linewidth)
-        plot(t*1e3,(Eut+Edt)*1e3,'-k','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Edt]*1e3,'-r','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Eut+Edt]*1e3,'-k','LineWidth',linewidth)
     end
     hold off
     grid on

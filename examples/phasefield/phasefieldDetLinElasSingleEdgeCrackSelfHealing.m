@@ -994,7 +994,7 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1),'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,ft]*((Dim==2)*1e-6+(Dim==3)*1),'-b','LineWidth',linewidth)
     % hold on
     % scatter(udmax*1e3,fmax*((Dim==2)*1e-6+(Dim==3)*1),'Marker','+','MarkerEdgeColor','b','LineWidth',linewidth)
     % scatter(udc*1e3,fc*((Dim==2)*1e-6+(Dim==3)*1),'Marker','+','MarkerEdgeColor','r','LineWidth',linewidth)
@@ -1014,7 +1014,7 @@ if displaySolution
     %% Display maximum damage-displacement curve
     figure('Name','Maximum damage vs displacement')
     clf
-    plot(t*1e3,dmaxt,'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,dmaxt],'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -1027,7 +1027,7 @@ if displaySolution
         %% Display maximum healing-displacement curve
         figure('Name','Maximum healing vs displacement')
         clf
-        plot(t*1e3,hmaxt,'-b','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,hmaxt],'-b','LineWidth',linewidth)
         grid on
         box on
         set(gca,'FontSize',fontsize)
@@ -1039,7 +1039,7 @@ if displaySolution
          %% Display maximum effective damage-displacement curve
         figure('Name','Maximum effective damage vs displacement')
         clf
-        plot(t*1e3,Dmaxt,'-b','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Dmaxt],'-b','LineWidth',linewidth)
         grid on
         box on
         set(gca,'FontSize',fontsize)
@@ -1048,29 +1048,29 @@ if displaySolution
         mysaveas(pathname,'max_damage_eff_displacement',formats);
         mymatlab2tikz(pathname,'max_damage_eff_displacement.tex');
     end
-
+    
     %% Display energy-displacement curves
     figure('Name','Energies vs displacement')
     clf
     if Dim==2
-        plot(t*1e3,Eut,'-b','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Eut],'-b','LineWidth',linewidth)
         hold on
-        plot(t*1e3,Edt,'-r','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Edt],'-r','LineWidth',linewidth)
         if healing
-            plot(t*1e3,Eht,'-g','LineWidth',linewidth)
-            plot(t*1e3,Eut+Edt+Eht,'-k','LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Eht],'-g','LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Eut+Edt+Eht],'-k','LineWidth',linewidth)
         else
-            plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Eut+Edt],'-k','LineWidth',linewidth)
         end
     elseif Dim==3
-        plot(t*1e3,Eut*1e3,'-b','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Eut]*1e3,'-b','LineWidth',linewidth)
         hold on
-        plot(t*1e3,Edt*1e3,'-r','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Edt]*1e3,'-r','LineWidth',linewidth)
         if healing
-            plot(t*1e3,Eht*1e3,'-g','LineWidth',linewidth)
-            plot(t*1e3,(Eut+Edt+Eht)*1e3,'-k','LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Eht]*1e3,'-g','LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Eut+Edt+Eht]*1e3,'-k','LineWidth',linewidth)
         else
-            plot(t*1e3,(Eut+Ed)*1e3,'-k','LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Eut+Ed]*1e3,'-k','LineWidth',linewidth)
         end
     end
     hold off

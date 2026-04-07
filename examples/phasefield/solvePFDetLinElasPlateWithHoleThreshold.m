@@ -68,10 +68,9 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     
     optimSubproblemAlgo = 'cg'; % 'cg' or 'factorization'
     
-    tolX = 100*eps; % tolerance on the parameter value
-    tolFun = 100*eps; % tolerance on the function value
-    tolOpt = 100*eps; % tolerance on the first-order optimality
-    % tolCon = 100*eps; % tolerance on the constraint violation
+    tolX = eps; % tolerance on the parameter value
+    tolFun = eps; % tolerance on the function value
+    tolOpt = eps; % tolerance on the first-order optimality
     tolCon = 0; % tolerance on the constraint violation
     maxIters = Inf; % maximum number of iterations
     maxFunEvals = Inf; % maximum number of function evaluations
@@ -200,46 +199,6 @@ while ti < tf-eps
                     H = calc_energyint(S,u,'intorder','mass','positive','local');
             end
             
-            % Display solution fields
-            if displaySol
-                % Display damage/phase field
-                figure(fd)
-                clf
-                plot_sol(S_phase,d);
-                colorbar
-                set(gca,'FontSize',fontsize)
-                
-                % Display damage/phase field
-                % plotSolution(S_phase,d);
-                
-                % Display displacement field
-                % for j=1:Dim
-                %     plotSolution(S,u,'displ',j);
-                % end
-                
-                % Display internal energy field
-                % if strcmpi(PFsolver,'historyfieldnode')
-                %     plotSolution(S_phase,H);
-                % else
-                %     figure('Name','Solution H')
-                %     clf
-                %     plot(H,S_phase);
-                %     colorbar
-                %     set(gca,'FontSize',fontsize)
-                % end
-                
-                % figure('Name','Solution H')
-                % clf
-                % subplot(1,2,1)
-                % plot_sol(S,u,'energyint','local');
-                % colorbar
-                % title('Internal energy')
-                % subplot(1,2,2)
-                % plot_sol(S,u,'energyint',{'positive','local'});
-                % colorbar
-                % title('Positive internal energy')
-            end
-            
             % Convergence
             if checkConvSol
                 errConvd = norm(d-d_prev)/norm(d);
@@ -315,6 +274,46 @@ while ti < tf-eps
         iteration(i) = nbIter;
         time(i) = toc(tIter);
         err(i) = errConv;
+    end
+    
+    % Display solution fields
+    if displaySol
+        % Display damage/phase field
+        figure(fd)
+        clf
+        plot_sol(S_phase,d);
+        colorbar
+        set(gca,'FontSize',fontsize)
+        
+        % Display damage/phase field
+        % plotSolution(S_phase,d);
+        
+        % Display displacement field
+        % for j=1:Dim
+        %     plotSolution(S,u,'displ',j);
+        % end
+        
+        % Display internal energy field
+        % if strcmpi(PFsolver,'historyfieldnode')
+        %     plotSolution(S_phase,H);
+        % else
+        %     figure('Name','Solution H')
+        %     clf
+        %     plot(H,S_phase);
+        %     colorbar
+        %     set(gca,'FontSize',fontsize)
+        % end
+        
+        % figure('Name','Solution H')
+        % clf
+        % subplot(1,2,1)
+        % plot_sol(S,u,'energyint','local');
+        % colorbar
+        % title('Internal energy')
+        % subplot(1,2,2)
+        % plot_sol(S,u,'energyint',{'positive','local'});
+        % colorbar
+        % title('Positive internal energy')
     end
     
     if display_

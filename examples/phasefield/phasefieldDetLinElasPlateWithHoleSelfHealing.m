@@ -193,23 +193,21 @@ if setProblem
             VIn = clC; VOut = clD;
             switch lower(PFmodel)
                 case {'bourdin','amor','heamor'}
+                    XMin = 0; XMax = L;
                     if Dim==2
-                        XMin = 0; XMax = L;
                         YMin = H/2-3/2*r; YMax = H/2+3/2*r;
                         Thickness = H/2-3/2*r;
                     elseif Dim==3
-                        XMin = 0; XMax = L;
                         YMin = H/2-r/8; YMax = H/2+r/8;
                         Thickness = H/2-r/8;
                     end
                 otherwise
+                    YMin = 0; YMax = H;
                     if Dim==2
                         XMin = L/2-3/2*r; XMax = L/2+3/2*r;
-                        YMin = 0; YMax = H;
                         Thickness = L/2-3/2*r;
                     elseif Dim==3
                         XMin = L/2-r/8; XMax = L/2+r/8;
-                        YMin = 0; YMax = H;
                         Thickness = L/2-r/8;
                     end
             end
@@ -651,7 +649,7 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,ft]*((Dim==2)*1e-6+(Dim==3)*1e-3),'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -663,7 +661,7 @@ if displaySolution
     %% Display maximum damage-displacement curve
     figure('Name','Maximum damage vs displacement')
     clf
-    plot(t*1e3,dmaxt,'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,dmaxt],'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -676,7 +674,7 @@ if displaySolution
         %% Display maximum healing-displacement curve
         figure('Name','Maximum healing vs displacement')
         clf
-        plot(t*1e3,hmaxt,'-b','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,hmaxt],'-b','LineWidth',linewidth)
         grid on
         box on
         set(gca,'FontSize',fontsize)
@@ -688,7 +686,7 @@ if displaySolution
          %% Display maximum effective damage-displacement curve
         figure('Name','Maximum effective damage vs displacement')
         clf
-        plot(t*1e3,Dmaxt,'-b','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Dmaxt],'-b','LineWidth',linewidth)
         grid on
         box on
         set(gca,'FontSize',fontsize)
@@ -701,14 +699,14 @@ if displaySolution
     %% Display energy-displacement curves
     figure('Name','Energies vs displacement')
     clf
-    plot(t*1e3,Eut,'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,Eut],'-b','LineWidth',linewidth)
     hold on
-    plot(t*1e3,Edt,'-r','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,Edt],'-r','LineWidth',linewidth)
     if healing
-        plot(t*1e3,Eht,'-g','LineWidth',linewidth)
-        plot(t*1e3,Eut+Edt+Eht,'-k','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Eht],'-g','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Eut+Edt+Eht],'-k','LineWidth',linewidth)
     else
-        plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+        plot([0,t]*1e3,[0,Eut+Edt],'-k','LineWidth',linewidth)
     end
     hold off
     grid on

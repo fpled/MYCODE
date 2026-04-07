@@ -165,7 +165,12 @@ if setProblem
         case 'unif' % uniform mesh
             switch lower(symmetry)
                 case 'isot' % isotropic material
-                    cl = 5e-6;
+                    % cl = 5e-6;
+                    if Dim==2
+                        cl = 2.5e-6;
+                    elseif Dim==3
+                        cl = 5e-6;
+                    end
                 case 'anisot' % anisotropic material
                     cl = 4.25e-6;
                 otherwise
@@ -819,9 +824,9 @@ if displayModel
     [t,rep] = gettevol(T);
     
     %% Display domains, boundary conditions and meshes
-    plotDomain({D,C},'legend',false);
-    mysaveas(pathname,'domain',formats,renderer);
-    mymatlab2tikz(pathname,'domain.tex');
+    % plotDomain({D,C},'legend',false);
+    % mysaveas(pathname,'domain',formats,renderer);
+    % mymatlab2tikz(pathname,'domain.tex');
     
     [hD,legD] = plotBoundaryConditions(S,'legend',false);
     ampl = 0.5;
@@ -861,9 +866,9 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft_mean*((Dim==2)*1e-6+(Dim==3)*1),'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,ft_mean]*((Dim==2)*1e-6+(Dim==3)*1),'-b','LineWidth',linewidth)
     hold on
-    ciplot(ft_ci(1,:)*((Dim==2)*1e-6+(Dim==3)*1),ft_ci(2,:)*((Dim==2)*1e-6+(Dim==3)*1),t*1e3,'b');
+    ciplot([0,ft_ci(1,:)]*((Dim==2)*1e-6+(Dim==3)*1),[0,ft_ci(2,:)]*((Dim==2)*1e-6+(Dim==3)*1),[0,t]*1e3,'b');
     alpha(0.2)
     grid on
     box on
@@ -884,7 +889,7 @@ if displaySolution
     figure('Name','Forces vs displacement')
     clf
     for i=1:N
-        plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+        plot([0,t]*1e3,[0,ft(i,:)]*((Dim==2)*1e-6+(Dim==3)*1),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
         hold on
         % scatter(udc(i)*1e3,fc(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','+','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
         % scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1e-3),'Marker','x','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
@@ -911,7 +916,7 @@ if displaySolution
     %     end
     %     figure('Name',['Force vs displacement #' num2str(i)])
     %     clf
-    %     plot(t*1e3,ft(i,:)*((Dim==2)*1e-6+(Dim==3)*1),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
+    %     plot([0,t]*1e3,[0,ft(i,:)]*((Dim==2)*1e-6+(Dim==3)*1),'LineStyle','-','Color',colors(i,:),'LineWidth',linewidth)
     %     hold on
     %     scatter(udc(i)*1e3,fc(i)*((Dim==2)*1e-6+(Dim==3)*1),'Marker','+','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)
     %     scatter(udmax(i)*1e3,fmax(i)*((Dim==2)*1e-6+(Dim==3)*1),'Marker','x','MarkerEdgeColor',colors(i,:),'LineWidth',linewidth)

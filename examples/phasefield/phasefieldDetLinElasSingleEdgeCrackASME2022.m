@@ -162,7 +162,12 @@ if setProblem
         case 'unif' % uniform mesh
             switch lower(symmetry)
                 case 'isot' % isotropic material
-                    cl = 5e-6;
+                    % cl = 5e-6;
+                    if Dim==2
+                        cl = 2.5e-6;
+                    elseif Dim==3
+                        cl = 5e-6;
+                    end
                 case 'anisot' % anisotropic material
                     cl = 4.25e-6;
                 otherwise
@@ -606,8 +611,8 @@ if setProblem
                     dt = 1e-8;
                     nt = 2000;
                     if test
-                        dt = 5e-8;
-                        nt = 400;
+                        dt = 4e-8;
+                        nt = 500;
                     end
                     t = linspace(dt,nt*dt,nt);
             end
@@ -656,8 +661,8 @@ if setProblem
                     dt1 = 1e-8;
                     if test
                         if Dim==2
-                            dt0 = 5e-8;
-                            dt1 = 5e-8;
+                            dt0 = 4e-8;
+                            dt1 = 4e-8;
                         elseif Dim==3
                             dt0 = 1e-7;
                             dt1 = 1e-7;
@@ -826,7 +831,7 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot(t*1e3,ft*((Dim==2)*1e-6+(Dim==3)*1),'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,ft]*((Dim==2)*1e-6+(Dim==3)*1),'-b','LineWidth',linewidth)
     % hold on
     % scatter(udmax*1e3,fmax*((Dim==2)*1e-6+(Dim==3)*1),'Marker','+','MarkerEdgeColor','b','LineWidth',linewidth)
     % scatter(udc*1e3,fc*((Dim==2)*1e-6+(Dim==3)*1),'Marker','+','MarkerEdgeColor','r','LineWidth',linewidth)
@@ -846,7 +851,7 @@ if displaySolution
     %% Display maximum damage-displacement curve
     figure('Name','Maximum damage vs displacement')
     clf
-    plot(t*1e3,dmaxt,'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,dmaxt],'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)

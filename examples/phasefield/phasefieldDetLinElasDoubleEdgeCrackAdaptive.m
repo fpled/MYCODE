@@ -67,15 +67,9 @@ tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 meshAdapt = 'Mmg'; % 'Gmsh', 'Mmg'
 sizeMap = 'Lin'; % 'Lin', 'Quad', 'Cub', 'Quar', 'PowExp_1', 'PowExp_2', 'PowExp_1_2', 'Inv_1', 'Inv_2', 'Inv_1_2'
+initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 if setup==3
-    initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
-else
-    switch lower(meshAdapt)
-        case 'gmsh'
-            initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
-        case 'mmg'
-            initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
-    end
+    initialCrack = 'GeometricNotch';
 end
 
 % sizeMaps = {'Lin','Quad','Cub','Quar','PowExp_1','PowExp_2','PowExp_1_2','Inv_1','Inv_2','Inv_1_2'};
@@ -766,13 +760,13 @@ if displaySolution
     clf
     switch setup
         case {1,3}
-            plot(t*1e3,ft*1e-3,'-b','LineWidth',linewidth)
+            plot([0,t]*1e3,[0,ft]*1e-3,'-b','LineWidth',linewidth)
             % hold on
             % scatter(udmax*1e3,fmax*1e-3,'Marker','+','MarkerEdgeColor','b','LineWidth',linewidth)
             % scatter(udc*1e3,fc*1e-3,'Marker','+','MarkerEdgeColor','r','LineWidth',linewidth)
             % hold off
         case 2
-            plot(t*1e3,ft,'-b','LineWidth',linewidth)
+            plot([0,t]*1e3,[0,ft],'-b','LineWidth',linewidth)
             % hold on
             % scatter(udmax*1e3,fmax,'Marker','+','MarkerEdgeColor','b','LineWidth',linewidth)
             % scatter(udc*1e3,fc,'Marker','+','MarkerEdgeColor','r','LineWidth',linewidth)
@@ -794,7 +788,7 @@ if displaySolution
     %% Display maximum damage-displacement curve
     figure('Name','Maximum damage vs displacement')
     clf
-    plot(t*1e3,dmaxt,'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,dmaxt],'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -808,15 +802,15 @@ if displaySolution
     clf
     switch setup
         case 1
-            plot(t*1e3,Eut,'-b','LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Eut],'-b','LineWidth',linewidth)
             hold on
-            plot(t*1e3,Edt,'-r','LineWidth',linewidth)
-            plot(t*1e3,Eut+Edt,'-k','LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Edt],'-r','LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Eut+Edt],'-k','LineWidth',linewidth)
         case {2,3}
-            plot(t*1e3,Eut*1e3,'-b','LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Eut]*1e3,'-b','LineWidth',linewidth)
             hold on
-            plot(t*1e3,Edt*1e3,'-r','LineWidth',linewidth)
-            plot(t*1e3,(Eut+Edt)*1e3,'-k','LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Edt]*1e3,'-r','LineWidth',linewidth)
+            plot([0,t]*1e3,[0,Eut+Edt]*1e3,'-k','LineWidth',linewidth)
     end
     hold off
     grid on

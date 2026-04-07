@@ -15,7 +15,7 @@ displayMesh = getcharin('displaymesh',varargin,false);
 maxIter = getcharin('maxiter',varargin,100);
 tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
-meshAdapt = getcharin('meshadapt',varargin,'Gmsh');
+meshAdapt = getcharin('meshadapt',varargin,'Mmg');
 dbth = getcharin('dbth',varargin,0.999);
 filename = getcharin('filename',varargin,'gmsh_domain');
 pathname = getcharin('pathname',varargin,'.');
@@ -104,10 +104,9 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     
     optimSubproblemAlgo = 'cg'; % 'cg' or 'factorization'
     
-    tolX = 100*eps; % tolerance on the parameter value
-    tolFun = 100*eps; % tolerance on the function value
-    tolOpt = 100*eps; % tolerance on the first-order optimality
-    % tolCon = 100*eps; % tolerance on the constraint violation
+    tolX = eps; % tolerance on the parameter value
+    tolFun = eps; % tolerance on the function value
+    tolOpt = eps; % tolerance on the first-order optimality
     tolCon = 0; % tolerance on the constraint violation
     maxIters = Inf; % maximum number of iterations
     maxFunEvals = Inf; % maximum number of function evaluations
@@ -244,46 +243,6 @@ for i=1:length(T)
                     H = calc_energyint(S,u,'intorder','mass','positive','local');
             end
             
-            % Display solution fields
-            if displaySol
-                % Display damage/phase field
-                figure(fd)
-                clf
-                plot_sol(S_phase,d);
-                colorbar
-                set(gca,'FontSize',fontsize)
-                
-                % Display damage/phase field
-                % plotSolution(S_phase,d);
-                
-                % Display displacement field
-                % for j=1:Dim
-                %     plotSolution(S,u,'displ',j);
-                % end
-                
-                % Display internal energy field
-                % if strcmpi(PFsolver,'historyfieldnode')
-                %     plotSolution(S_phase,H);
-                % else
-                %     figure('Name','Solution H')
-                %     clf
-                %     plot(H,S_phase);
-                %     colorbar
-                %     set(gca,'FontSize',fontsize)
-                % end
-                
-                % figure('Name','Solution H')
-                % clf
-                % subplot(1,2,1)
-                % plot_sol(S,u,'energyint','local');
-                % colorbar
-                % title('Internal energy')
-                % subplot(1,2,2)
-                % plot_sol(S,u,'energyint',{'positive','local'});
-                % colorbar
-                % title('Positive internal energy')
-            end
-            
             % Convergence
             if checkConvSol
                 errConvd = norm(d-d_prev)/norm(d);
@@ -368,6 +327,46 @@ for i=1:length(T)
         err(i) = errConv;
     end
     
+    % Display solution fields
+    if displaySol
+        % Display damage/phase field
+        figure(fd)
+        clf
+        plot_sol(S_phase,d);
+        colorbar
+        set(gca,'FontSize',fontsize)
+        
+        % Display damage/phase field
+        % plotSolution(S_phase,d);
+        
+        % Display displacement field
+        % for j=1:Dim
+        %     plotSolution(S,u,'displ',j);
+        % end
+        
+        % Display internal energy field
+        % if strcmpi(PFsolver,'historyfieldnode')
+        %     plotSolution(S_phase,H);
+        % else
+        %     figure('Name','Solution H')
+        %     clf
+        %     plot(H,S_phase);
+        %     colorbar
+        %     set(gca,'FontSize',fontsize)
+        % end
+        
+        % figure('Name','Solution H')
+        % clf
+        % subplot(1,2,1)
+        % plot_sol(S,u,'energyint','local');
+        % colorbar
+        % title('Internal energy')
+        % subplot(1,2,2)
+        % plot_sol(S,u,'energyint',{'positive','local'});
+        % colorbar
+        % title('Positive internal energy')
+    end
+    
     if display_
         fprintf('| %4d/%4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %8d | %8d |\n',i,length(T),nbIter,t(i)*1e3,f*1e-3,dmax,Ed,Eu,getnbnode(S),getnbelem(S));
     end
@@ -387,38 +386,38 @@ for i=1:length(T)
                 S_phase = adaptmesh(S_phase_ref,cl,fullfile(pathname,filename),'gmshoptions',gmshoptions,'mmgoptions',mmgoptions);
         end
         S = S_phase;
-
+        
         % Update phase field properties
         S_phase = setphasefieldproperties(S_phase,materials_phase);
         S_phase = final(S_phase);
         S_phase = addbcdamage(S_phase);
-
+        
         % Update material properties
         S = setmaterialproperties(S,materials);
         S = final(S);
         S = addbc(S,t(i));
-
+        
         % Update fields
         P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
         d = P_phase'*d;
-
+        
         % P = calcProjection(S,S_old,[],'free',false,'full',true);
         P = kron(P_phase,eye(Dim));
         u = P'*u;
-
+        
         if strcmpi(PFsolver,'historyfieldnode')
             h = P_phase'*h;
             H = setvalue(H,h);
         else
             H = calc_energyint(S,u,'intorder','mass','positive','local');
         end
-
+        
         if displayMesh
             % Display mesh
             figure(fm)
             clf
             plot(S_phase);
-
+            
             % Display mesh
             % plotModel(S_phase);
         end
