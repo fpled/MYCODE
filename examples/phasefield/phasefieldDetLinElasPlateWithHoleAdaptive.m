@@ -54,7 +54,7 @@ sizeMap = 'Lin'; % 'Lin', 'Quad', 'Cub', 'Quar', 'PowExp_1', 'PowExp_2', 'PowExp
 % for imaxIter=1:length(maxIters)
 % maxIter = maxIters(imaxIter);
 % for isizeMap=1:length(sizeMaps)
-% sizeMap = sizeMaps(isizeMap);
+% sizeMap = sizeMaps{isizeMap};
 % close all
 
 suffix = '';
