@@ -566,8 +566,8 @@ if setProblem
                         nt0 = 40;
                         dt1 = 1e-8;
                         if Dim==2
-                            nt1 = 300;
-                            % nt1 = 400;
+                            % nt1 = 300;
+                            nt1 = 400;
                         elseif Dim==3
                             nt1 = 600;
                         end
