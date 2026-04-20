@@ -489,8 +489,8 @@ if setProblem
             dt = 1e-6;
             nt = 1000;
             if test
-                dt = 1e-5;
-                nt = 100;
+                dt = 5e-6;
+                nt = 200;
             end
             t = linspace(dt,nt*dt,nt);
             
@@ -581,10 +581,10 @@ if setProblem
             nt1 = 500;
             nt2 = 1200;
             if test
-                dt = 1e-5;
-                nt0 = 30;
-                nt1 = 50;
-                nt2 = 120;
+                dt = 5e-6;
+                nt0 = 60;
+                nt1 = 100;
+                nt2 = 240;
             end
             t0 = linspace(dt,nt0*dt,nt0);
             t1 = linspace(t0(end)-dt,t0(end)-nt1*dt,nt1);
