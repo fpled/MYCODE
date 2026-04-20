@@ -86,9 +86,9 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     
     optimSubproblemAlgo = 'cg'; % 'cg' or 'factorization'
     
-    tolX = eps; % tolerance on the parameter value
-    tolFun = eps; % tolerance on the function value
-    tolOpt = eps; % tolerance on the first-order optimality
+    tolX = 100*eps; % tolerance on the parameter value
+    tolFun = 100*eps; % tolerance on the function value
+    tolOpt = 100*eps; % tolerance on the first-order optimality
     tolCon = 0; % tolerance on the constraint violation
     maxIters = Inf; % maximum number of iterations
     maxFunEvals = Inf; % maximum number of function evaluations
@@ -168,6 +168,10 @@ for i=1:length(T)
                     switch optimFun
                         case 'lsqlin'
                             d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                            % [d,resnormd,~,exitflagd,outputd] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                            % resnormd
+                            % exitflagd
+                            % outputd
                         case 'lsqnonlin'
                             fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
                             d = lsqnonlin(fun,d0,lb,ub,options);
@@ -180,7 +184,7 @@ for i=1:length(T)
             % switch lower(PFsolver)
             %     case {'historyfieldelem','historyfieldnode'}
             %         d_new = d_old;
-            %         tolIter = eps;
+            %         tolIter = 100*eps;
             %         maxIters = 1e3;
             %         % Steepdest descent
             %         alpha = 2/eigs(A_phase,1); % maximum stable constant learning rate
@@ -219,9 +223,9 @@ for i=1:length(T)
             % 
             %         optimSubproblemAlgo = 'cg'; % 'cg' or 'factorization'
             % 
-            %         tolX = eps; % tolerance on the parameter value
-            %         tolFun = eps; % tolerance on the function value
-            %         tolOpt = eps; % tolerance on the first-order optimality
+            %         tolX = 100*eps; % tolerance on the parameter value
+            %         tolFun = 100*eps; % tolerance on the function value
+            %         tolOpt = 100*eps; % tolerance on the first-order optimality
             %         tolCon = 0; % tolerance on the constraint violation
             %         maxIters = Inf; % maximum number of iterations
             %         maxFunEvals = Inf; % maximum number of function evaluations

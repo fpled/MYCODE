@@ -76,9 +76,9 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     
     optimSubproblemAlgo = 'cg'; % 'cg' or 'factorization'
     
-    tolX = eps; % tolerance on the parameter value
-    tolFun = eps; % tolerance on the function value
-    tolOpt = eps; % tolerance on the first-order optimality
+    tolX = 100*eps; % tolerance on the parameter value
+    tolFun = 100*eps; % tolerance on the function value
+    tolOpt = 100*eps; % tolerance on the first-order optimality
     tolCon = 0; % tolerance on the constraint violation
     maxIters = Inf; % maximum number of iterations
     maxFunEvals = Inf; % maximum number of function evaluations
