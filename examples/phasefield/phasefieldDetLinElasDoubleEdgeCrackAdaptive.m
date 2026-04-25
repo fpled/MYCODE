@@ -542,16 +542,16 @@ if setProblem
             % T = struct('dt0',dt0,'dt1',dt1,'tf',tf,'dth',dth);
             
             % du = 1e-4 mm during the first 400 time steps (up to u = 0.04 mm)
-            % du = 2e-5 mm during the last 3000 time steps (up to u = 0.10 mm)
+            % du = 2e-5 mm during the last 4000 time steps (up to u = 0.12 mm)
             dt0 = 1e-7;
             nt0 = 400;
             dt1 = 2e-8;
-            nt1 = 3000;
+            nt1 = 4000;
             if test
                 dt0 = 1e-6;
                 nt0 = 40;
                 dt1 = 2e-7;
-                nt1 = 300;
+                nt1 = 400;
             end
             t0 = linspace(dt0,nt0*dt0,nt0);
             t1 = linspace(t0(end)+dt1,t0(end)+nt1*dt1,nt1);

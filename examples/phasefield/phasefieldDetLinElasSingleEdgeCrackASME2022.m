@@ -740,6 +740,14 @@ else
     end
 end
 
+% u = getvalue(ut);
+% d = getvalue(dt);
+% save(fullfile(pathname,'solution.mat'),'u','d','-append');
+% if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+%     H = getvalue(Ht);
+%     save(fullfile(pathname,'solution.mat'),'H','-append');
+% end
+
 %% Outputs
 filenameResults = fullfile(pathname,'results.txt');
 if solveProblem
