@@ -121,10 +121,10 @@ while ti < tf-eps
     i = i+1;
     tIter = tic;
     nbIter = 0;
-    if any(db > dbth)
-        ti = ti + dti;
-        f = 0;
-    else
+    % if any(db > dbth)
+    %     ti = ti + dti;
+    %     f = 0;
+    % else
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
             H_old = H;
         end
@@ -243,9 +243,9 @@ while ti < tf-eps
                     fprintf('\n');
                 end
             end
-            if any(db > dbth)
-                break
-            end
+            % if any(db > dbth)
+            %     break
+            % end
         end
         
         % Force
@@ -259,7 +259,7 @@ while ti < tf-eps
             Ed = 1/2*d'*Ae_phase*d - d'*be_phase;
             Eu = 1/2*u'*A*u;
         end
-    end
+    % end
     
     % Update fields
     dt{i} = d;

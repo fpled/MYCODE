@@ -1220,7 +1220,7 @@ if displaySolution
                 case 'tension'
                     tSnapshots = [5.5 5.75 6 6.15 6.25 6.30 6.45 6.5]*1e-6;
                 case 'shear'
-                    tSnapshots = [1 1.25 1.35 1.5 1.75]*1e-5;
+                    tSnapshots = [0.75 1 1.25 1.35 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end
@@ -1229,7 +1229,7 @@ if displaySolution
                 case 'tension'
                     tSnapshots = [5 6 7 8 9]*1e-6;
                 case 'shear'
-                    tSnapshots = [1 1.25 1.35 1.5 1.75]*1e-5;
+                    tSnapshots = [0.75 1 1.25 1.35 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end

@@ -133,9 +133,9 @@ db = d(numddlb,:);
 for i=1:length(T)
     tIter = tic;
     nbIter = 0;
-    if any(db > dbth)
-        f = 0;
-    else
+    % if any(db > dbth)
+    %     f = 0;
+    % else
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
             H_old = H;
         end
@@ -250,9 +250,9 @@ for i=1:length(T)
                     fprintf('\n');
                 end
             end
-            if any(db > dbth)
-                break
-            end
+            % if any(db > dbth)
+            %     break
+            % end
         end
         
         % Force
@@ -268,7 +268,7 @@ for i=1:length(T)
             Ed = 1/2*d'*Ae_phase*d - d'*be_phase;
             Eu = 1/2*u'*A*u;
         end
-    end
+    % end
     
     % Update fields
     dt{i} = d;

@@ -136,9 +136,9 @@ db = d(numddlb,:);
 for i=1:length(T)
     
     nbIter = 0;
-    if any(db > dbth)
-        f = 0;
-    else
+    % if any(db > dbth)
+    %     f = 0;
+    % else
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
             H_old = H;
         end
@@ -265,9 +265,9 @@ for i=1:length(T)
                     fprintf('\n');
                 end
             end
-            if any(db > dbth)
-                break
-            end
+            % if any(db > dbth)
+            %     break
+            % end
         end
         
         % Force
@@ -284,7 +284,7 @@ for i=1:length(T)
         if ismonotonic
             f = abs(f);
         end
-    end
+    % end
     
     % Update fields
     ft(i) = f;

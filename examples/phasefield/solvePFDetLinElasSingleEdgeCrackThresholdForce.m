@@ -121,10 +121,10 @@ while ti < tf-eps
     i = i+1;
     
     nbIter = 0;
-    if any(db > dbth)
-        ti = ti + dti;
-        f = 0;
-    else
+    % if any(db > dbth)
+    %     ti = ti + dti;
+    %     f = 0;
+    % else
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
             H_old = H;
         end
@@ -243,9 +243,9 @@ while ti < tf-eps
                     fprintf('\n');
                 end
             end
-            if any(db > dbth)
-                break
-            end
+            % if any(db > dbth)
+            %     break
+            % end
         end
         
         % Force
@@ -260,7 +260,7 @@ while ti < tf-eps
         f = A(numddl,:)*u;
         f = sum(f);
         f = abs(f);
-    end
+    % end
     
     % Update fields
     ft(i) = f;
