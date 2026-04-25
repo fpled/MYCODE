@@ -56,7 +56,8 @@ if checkConvEnergy
 end
 
 if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode')
-    optimFun = 'lsqlin'; % optimization function. 'lsqlin', 'lsqnonlin' or 'fmincon'
+    optimFun = 'quadprog'; % optimization function. 'quadprog', 'lsqlin', 'lsqnonlin' or 'fmincon'
+    % optimFun = 'lsqlin';
     % optimFun = 'lsqnonlin';
     % optimFun = 'fmincon';
     
@@ -68,6 +69,7 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     % optimDisplay = 'final';
     % optimDisplay = 'final-detailed';
     
+    % optimAlgo = 'interior-point-convex'; % default for quadprog
     % optimAlgo = 'interior-point'; % default for lsqlin and fmincon
     optimAlgo = 'trust-region-reflective'; % default for lsqnonlin
     % optimAlgo = 'active-set';
@@ -85,8 +87,12 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     maxFunEvals = Inf; % maximum number of function evaluations
     
     switch optimFun
+        case 'quadprog'
+            options = optimoptions(optimFun,'Display',optimDisplay,'Algorithm',optimAlgo,'SubproblemAlgorithm',optimSubproblemAlgo,...
+                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolOpt,'ConstraintTolerance',tolCon,...
+                'MaxIterations',maxIters);
         case 'lsqlin'
-            options = optimoptions(optimFun,'Display',optimDisplay,'Algorithm',optimAlgo,...
+            options = optimoptions(optimFun,'Display',optimDisplay,'Algorithm',optimAlgo,'SubproblemAlgorithm',optimSubproblemAlgo,...
                 'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolOpt,'ConstraintTolerance',tolCon,...
                 'MaxIterations',maxIters);
         case 'lsqnonlin'
@@ -178,9 +184,14 @@ while ti < tf-eps
                 otherwise
                     d0 = freevector(S_phase,d_old);
                     lb = d0;
-                    lb(lb==1) = 1-eps;
                     ub = ones(size(d0));
+                    if (strcmpi(optimFun,'lsqlin') || strcmpi(optimFun,'fmincon')) && strcmpi(options.Algorithm,'trust-region-reflective')
+                        lb(lb==1) = 1-eps;
+                    end
                     switch optimFun
+                        case 'quadprog'
+                            A_phase = (A_phase+A_phase')/2;
+                            d = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
                         case 'lsqlin'
                             d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
                         case 'lsqnonlin'

@@ -63,7 +63,8 @@ if checkConvEnergy
 end
 
 if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode')
-    optimFun = 'lsqlin'; % optimization function. 'lsqlin', 'lsqnonlin' or 'fmincon'
+    optimFun = 'quadprog'; % optimization function. 'quadprog', 'lsqlin', 'lsqnonlin' or 'fmincon'
+    % optimFun = 'lsqlin';
     % optimFun = 'lsqnonlin';
     % optimFun = 'fmincon';
     
@@ -75,6 +76,7 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     % optimDisplay = 'final';
     % optimDisplay = 'final-detailed';
     
+    % optimAlgo = 'interior-point-convex'; % default for quadprog
     % optimAlgo = 'interior-point'; % default for lsqlin and fmincon
     optimAlgo = 'trust-region-reflective'; % default for lsqnonlin
     % optimAlgo = 'active-set';
@@ -92,8 +94,12 @@ if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode'
     maxFunEvals = Inf; % maximum number of function evaluations
     
     switch optimFun
+        case 'quadprog'
+            options = optimoptions(optimFun,'Display',optimDisplay,'Algorithm',optimAlgo,'SubproblemAlgorithm',optimSubproblemAlgo,...
+                'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolOpt,'ConstraintTolerance',tolCon,...
+                'MaxIterations',maxIters);
         case 'lsqlin'
-            options = optimoptions(optimFun,'Display',optimDisplay,'Algorithm',optimAlgo,...
+            options = optimoptions(optimFun,'Display',optimDisplay,'Algorithm',optimAlgo,'SubproblemAlgorithm',optimSubproblemAlgo,...
                 'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolOpt,'ConstraintTolerance',tolCon,...
                 'MaxIterations',maxIters);
         case 'lsqnonlin'
@@ -182,8 +188,17 @@ while ti < tf-eps
                     ub = ones(size(d0))+heff*h0;
                     % lb = d0;
                     % ub = [];
-                    lb(lb==ub) = lb(lb==ub)-eps;
+                    if (strcmpi(optimFun,'lsqlin') || strcmpi(optimFun,'fmincon')) && strcmpi(options.Algorithm,'trust-region-reflective')
+                        lb(lb==ub) = lb(lb==ub)-eps;
+                    end
                     switch optimFun
+                        case 'quadprog'
+                            A_phase = (A_phase+A_phase')/2;
+                            d = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
+                            % [d,fvald,exitflagd,outputd] = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
+                            % fvald
+                            % exitflagd
+                            % outputd
                         case 'lsqlin'
                             d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
                             % [d,resnormd,~,exitflagd,outputd] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
@@ -220,8 +235,17 @@ while ti < tf-eps
                     ub = min([ones(size(h0)),d0/heff],[],2);
                     % lb = h0;
                     % ub = ones(size(h0));
-                    lb(lb==ub) = lb(lb==ub)-eps;
+                    if (strcmpi(optimFun,'lsqlin') || strcmpi(optimFun,'fmincon')) && strcmpi(options.Algorithm,'trust-region-reflective')
+                        lb(lb==ub) = lb(lb==ub)-eps;
+                    end
                     switch optimFun
+                        case 'quadprog'
+                            A_healing = (A_healing+A_healing')/2;
+                            h = quadprog(A_healing,-b_healing,[],[],[],[],lb,ub,h0,options);
+                            % [h,fvalh,exitflagh,outputh] = quadprog(A_healing,-b_healing,[],[],[],[],lb,ub,h0,options);
+                            % fvalh
+                            % exitflagh
+                            % outputh
                         case 'lsqlin'
                             h = lsqlin(A_healing,b_healing,[],[],[],[],lb,ub,h0,options);
                             % [h,resnormh,~,exitflagh,outputh] = lsqlin(A_healing,b_healing,[],[],[],[],lb,ub,h0,options);
