@@ -66,7 +66,7 @@ end
 
 if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode')
     optimFun = 'quadprog'; % optimization function. 'quadprog', 'lsqlin', 'lsqnonlin' or 'fmincon'
-    optimFun = 'lsqlin';
+    % optimFun = 'lsqlin';
     % optimFun = 'lsqnonlin';
     % optimFun = 'fmincon';
     
