@@ -65,11 +65,17 @@ FEmesh = 'Optim'; % 'Unif' or 'Optim'
 % Random model parameters
 % N = 500; % number of samples
 N = numWorkers;
-coeff_gc = 1.0;
 randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
 aGc = 0;
 bGc = 0;
-% gc = 2.7e3;
+switch lower(symmetry)
+    case {'isot','meanisot'} % almost surely or mean isotropic material
+        gc = 2.7e3; % critical energy release rate (or fracture toughness)
+    case 'anisot' % anisotropic material
+        gc = 1e3; % critical energy release rate (or fracture toughness)
+    otherwise
+        error('Wrong material symmetry class');
+end
 % aGc = 0.6*gc;
 % bGc = 1.4*gc;
 % aGc = 0.9*gc;
@@ -254,7 +260,7 @@ if setProblem
     switch lower(symmetry)
         case {'isot','meanisot'} % almost surely or mean isotropic material
             % Critical energy release rate (or fracture toughness)
-            gc = 2.7e3;
+            % gc = 2.7e3;
             % Regularization parameter (width of the smeared crack)
             % l = 3.75e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
             % l = 3.1e-5; % (3D) [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD]
@@ -275,13 +281,12 @@ if setProblem
             % eta = 0.052; w0 = 75.94; l = eta/sqrt(w0)*1e-3; % l = 6e-7; % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
         case 'anisot' % anisotropic material
             % Critical energy release rate (or fracture toughness)
-            gc = 1e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            % gc = 1e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
             % Regularization parameter (width of the smeared crack)
             l = 8.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
         otherwise
             error('Wrong material symmetry class');
     end
-    gc = gc*coeff_gc;
     % Small artificial residual stiffness
     % k = 1e-12;
     k = 0;
@@ -925,6 +930,7 @@ if displaySolution
     hold on
     ciplot([0,ft_ci(1,:)]*((Dim==2)*1e-6+(Dim==3)*1),[0,ft_ci(2,:)]*((Dim==2)*1e-6+(Dim==3)*1),[0,t]*1e3,'b');
     alpha(0.2)
+    hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -970,6 +976,7 @@ if displaySolution
     hold on
     ciplot([0,dmaxt_ci(1,:)],[0,dmaxt_ci(2,:)],[0,t]*1e3,'b');
     alpha(0.2)
+    hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -1021,6 +1028,7 @@ if displaySolution
         ciplot([0,Et_ci(1,:)]*1e3,[0,Et_ci(2,:)]*1e3,[0,t]*1e3,'k');
     end
     alpha(0.2)
+    hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -1218,9 +1226,9 @@ if displaySolution
         case {'isot','meanisot'} % almost surely or mean isotropic material
             switch lower(loading)
                 case 'tension'
-                    tSnapshots = [5.5 5.75 6 6.15 6.25 6.30 6.45 6.5]*1e-6;
+                    tSnapshots = [5.25 5.5 5.75 5.85 5.95 6 6.05 6.1 6.15 6.25]*1e-6;
                 case 'shear'
-                    tSnapshots = [0.75 1 1.25 1.35 1.5 1.75]*1e-5;
+                    tSnapshots = [0.85 1 1.25 1.35 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end
@@ -1229,7 +1237,7 @@ if displaySolution
                 case 'tension'
                     tSnapshots = [5 6 7 8 9]*1e-6;
                 case 'shear'
-                    tSnapshots = [0.75 1 1.25 1.35 1.5 1.75]*1e-5;
+                    tSnapshots = [0.85 1 1.25 1.35 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end

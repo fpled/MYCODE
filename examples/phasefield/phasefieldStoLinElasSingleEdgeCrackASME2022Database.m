@@ -186,7 +186,12 @@ if setProblem
         case 'unif' % uniform mesh
             switch lower(symmetry)
                 case 'isot' % isotropic material
-                    cl = 5e-6;
+                    % cl = 5e-6;
+                    if Dim==2
+                        cl = 2.5e-6;
+                    elseif Dim==3
+                        cl = 5e-6;
+                    end
                 case 'anisot' % anisotropic material
                     cl = 4.25e-6;
                 otherwise
@@ -891,6 +896,7 @@ if displaySolution
     hold on
     ciplot([0,ft_ci(1,:)]*((Dim==2)*1e-6+(Dim==3)*1),[0,ft_ci(2,:)]*((Dim==2)*1e-6+(Dim==3)*1),[0,t]*1e3,'b');
     alpha(0.2)
+    hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)

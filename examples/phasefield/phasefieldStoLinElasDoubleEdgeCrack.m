@@ -874,6 +874,7 @@ if displaySolution
             ciplot([0,ft_ci(1,:)],[0,ft_ci(2,:)],[0,t]*1e3,'b');
     end
     alpha(0.2)
+    hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -926,6 +927,7 @@ if displaySolution
     hold on
     ciplot([0,dmaxt_ci(1,:)],[0,dmaxt_ci(2,:)],[0,t]*1e3,'b');
     alpha(0.2)
+    hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -978,6 +980,7 @@ if displaySolution
             ciplot([0,Et_ci(1,:)]*1e3,[0,Et_ci(2,:)]*1e3,[0,t]*1e3,'k');
     end
     alpha(0.2)
+    hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)

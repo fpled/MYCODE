@@ -870,6 +870,7 @@ if displaySolution
     hold on
     ciplot([0,ft_ci(1,:)]*((Dim==2)*1e-6+(Dim==3)*1),[0,ft_ci(2,:)]*((Dim==2)*1e-6+(Dim==3)*1),[0,t]*1e3,'b');
     alpha(0.2)
+    hold off
     grid on
     box on
     set(gca,'FontSize',fontsize)
@@ -1037,7 +1038,7 @@ if displaySolution
                 case 'tension'
                     tSnapshots = [5.5 5.75 6 6.15 6.25 6.30 6.45 6.5]*1e-6;
                 case 'shear'
-                    tSnapshots = [0.75 1 1.25 1.35 1.5 1.75]*1e-5;
+                    tSnapshots = [0.85 1 1.25 1.35 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end
