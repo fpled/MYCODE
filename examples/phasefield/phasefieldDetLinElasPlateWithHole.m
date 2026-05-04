@@ -647,7 +647,7 @@ if displaySolution
     % 2D [Luo, Chen, Wang, Li, 2022, CM]
     % tSnapshots = [17.56 19.00 22.00 25.00]*1e-6;
     
-    tSnapshots = [18 18.5 19 20 21 22]*1e-6;
+    tSnapshots = [16.5 17 17.5 18 20 22]*1e-6;
     rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     rep = [rep,length(T)];
     % tSnapshots = [tSnapshots,gett1(T)];
