@@ -57,7 +57,6 @@ tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 FEmesh = 'Optim'; % 'Unif' or 'Optim'
-coeff_gc = 1.0;
 
 % angs = [0:10:90];
 % PFmodels = {'Bourdin','Amor','Miehe','HeAmor','HeFreddi','Zhang'};
@@ -66,7 +65,16 @@ coeff_gc = 1.0;
 % PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % initialCracks = {'GeometricCrack','InitialPhaseField'};
 % maxIters = [1,Inf];
-% coeffs_gc = [0.6,0.8,1.0,1.2,1.4];
+switch lower(symmetry)
+    case 'isot' % isotropic material
+        gc = 2.7e3; % critical energy release rate (or fracture toughness)
+        % gcs = [0.5,1.0,1.5,2.0,2.5,2.7,3.0,3.5,4.0]*1e3;
+    case 'anisot' % anisotropic material
+        gc = 1e3; % critical energy release rate (or fracture toughness)
+        % gcs = [0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8]*1e3;
+    otherwise
+        error('Wrong material symmetry class');
+end
 
 % for iang=1:length(angs)
 % ang = angs(iang);
@@ -82,13 +90,13 @@ coeff_gc = 1.0;
 % initialCrack = initialCracks{iinitialCrack};
 % for imaxIter=1:length(maxIters)
 % maxIter = maxIters(imaxIter);
-% for icoeff_gc=1:length(coeffs_gc)
-% coeff_gc = coeffs_gc(icoeff_gc);
+% for igc=1:length(gcs)
+% gc = gcs(igc);
 % close all
 
 suffix = '';
 % suffix = '_6e-5_2e-5';
-% suffix = ['_coeffgc' num2str(coeff_gc,'_%g')];
+% suffix = ['_gc' num2str(gc,'_%g')];
 
 foldername = ['singleEdgeCrack' loading '_' num2str(Dim) 'D'];
 filename = ['linElas' symmetry];
@@ -255,7 +263,7 @@ if setProblem
     switch lower(symmetry)
         case 'isot' % isotropic material
             % Critical energy release rate (or fracture toughness)
-            gc = 2.7e3;
+            % gc = 2.7e3;
             % Regularization parameter (width of the smeared crack)
             % l = 3.75e-5; % [Miehe, Welschinger, Hofacker, 2010, IJNME]
             % l = 3.1e-5; % (3D) [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD]
@@ -276,13 +284,12 @@ if setProblem
             % eta = 0.052; w0 = 75.94; l = eta/sqrt(w0)*1e-3; % l = 6e-7; % [Ulloa, Rodriguez, Samaniego, Samaniego, 2019, US]
         case 'anisot' % anisotropic material
             % Critical energy release rate (or fracture toughness)
-            gc = 1e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
+            % gc = 1e3; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
             % Regularization parameter (width of the smeared crack)
             l = 8.5e-6; % [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME]
         otherwise
             error('Wrong material symmetry class');
     end
-    gc = gc*coeff_gc;
     % Small artificial residual stiffness
     % k = 1e-12;
     k = 0;
@@ -533,9 +540,9 @@ if setProblem
                     % t = linspace(dt,nt*dt,nt);
                     
                     % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-                    % du = 2e-4 mm during 32 time steps (up to u = 6.4e-3 mm)
+                    % du = 2e-4 mm during 50 time steps (up to u = 10e-3 mm)
                     % dt = 2e-7;
-                    % nt = 32;
+                    % nt = 50;
                     % t = linspace(dt,nt*dt,nt);
                     
                     % du = 1e-5 mm during the first 400 time steps (up to u = 4e-3 mm)
@@ -630,9 +637,9 @@ if setProblem
                     % t = linspace(dt,nt*dt,nt);
                     
                     % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-                    % du = 1e-4 mm during 200 time steps (up to u = 20e-3 mm)
+                    % du = 1e-4 mm during 150 time steps (up to u = 15e-3 mm)
                     % dt = 1e-7;
-                    % nt = 200;
+                    % nt = 150;
                     % t = linspace(dt,nt*dt,nt);
                     
                     % [Li, Zhang, Zhou, 2024, CG]
@@ -990,9 +997,9 @@ if displaySolution
         case 'isot' % isotropic material
             switch lower(loading)
                 case 'tension'
-                    tSnapshots = [5.5 5.75 6 6.15 6.25 6.30 6.45 6.5]*1e-6;
+                    tSnapshots = [5.25 5.5 5.75 5.85 5.95 6 6.05 6.1 6.15 6.25]*1e-6;
                 case 'shear'
-                    tSnapshots = [1 1.25 1.35 1.5 1.75]*1e-5;
+                    tSnapshots = [0.85 1 1.25 1.35 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end
@@ -1001,7 +1008,7 @@ if displaySolution
                 case 'tension'
                     tSnapshots = [5 6 7 8 9]*1e-6;
                 case 'shear'
-                    tSnapshots = [1 1.25 1.35 1.5 1.75]*1e-5;
+                    tSnapshots = [0.85 1 1.25 1.35 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end

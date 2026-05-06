@@ -61,7 +61,6 @@ heff = 1; % self-healing efficiency
 dact = 0.25; % damage activation threshold
 ratiohcgc = 1; % ratio Hc/Gc
 healing = (heff~=0);
-coeff_gc = 1.0;
 
 % angs = [0:10:90];
 % PFmodels = {'Bourdin','Amor','Miehe','HeAmor','HeFreddi','Zhang'};
@@ -70,7 +69,6 @@ coeff_gc = 1.0;
 % PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % initialCracks = {'GeometricCrack','InitialPhaseField'};
 % maxIters = [1,Inf];
-% coeffs_gc = [0.6,0.8,1.0,1.2,1.4];
 % heffs = [0.5,1];
 % dacts = [0.2,0.3,0.4,0.5,0.6,0.7,0.8];
 % ratiohcgcs = [0.1,0.5,1,2,10,100];
@@ -89,8 +87,6 @@ coeff_gc = 1.0;
 % initialCrack = initialCracks{iinitialCrack};
 % for imaxIter=1:length(maxIters)
 % maxIter = maxIters(imaxIter);
-% for icoeff_gc=1:length(coeffs_gc)
-% coeff_gc = coeffs_gc(icoeff_gc);
 % for iheff=1:length(heffs)
 % heff = heffs(iheff);
 % for idacts=1:length(dacts)
@@ -101,7 +97,6 @@ coeff_gc = 1.0;
 
 suffix = '';
 % suffix = '_6e-5_2e-5';
-% suffix = ['_coeffgc' num2str(coeff_gc,'_%g')];
 
 foldername = ['singleEdgeCrack' loading '_' num2str(Dim) 'D'];
 filename = ['linElas' symmetry];
@@ -301,7 +296,6 @@ if setProblem
         otherwise
             error('Wrong material symmetry class');
     end
-    gc = gc*coeff_gc;
     if healing
         % Healing toughness
         hc = ratiohcgc*gc;
@@ -588,9 +582,9 @@ if setProblem
                     % t = linspace(dt,nt*dt,nt);
                     
                     % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-                    % du = 2e-4 mm during 32 time steps (up to u = 6.4e-3 mm)
+                    % du = 2e-4 mm during 50 time steps (up to u = 10e-3 mm)
                     % dt = 2e-7;
-                    % nt = 32;
+                    % nt = 50;
                     % t = linspace(dt,nt*dt,nt);
                     
                     % du = 1e-5 mm during the first 400 time steps (up to u = 4e-3 mm)
@@ -685,9 +679,9 @@ if setProblem
                     % t = linspace(dt,nt*dt,nt);
                     
                     % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-                    % du = 1e-4 mm during 200 time steps (up to u = 20e-3 mm)
+                    % du = 1e-4 mm during 150 time steps (up to u = 15e-3 mm)
                     % dt = 1e-7;
-                    % nt = 200;
+                    % nt = 150;
                     % t = linspace(dt,nt*dt,nt);
                     
                     % [Li, Zhang, Zhou, 2024, CG]
@@ -1132,9 +1126,9 @@ if displaySolution
         case 'isot' % isotropic material
             switch lower(loading)
                 case 'tension'
-                    tSnapshots = [5.5 5.75 6 6.15 6.25 6.30 6.45 6.5]*1e-6;
+                    tSnapshots = [5.25 5.5 5.75 5.85 5.95 6 6.05 6.1 6.15 6.25]*1e-6;
                 case 'shear'
-                    tSnapshots = [0.75 1 1.25 1.35 1.5 1.75]*1e-5;
+                    tSnapshots = [0.85 1 1.25 1.35 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end
@@ -1143,7 +1137,7 @@ if displaySolution
                 case 'tension'
                     tSnapshots = [5 6 7 8 9]*1e-6;
                 case 'shear'
-                    tSnapshots = [0.75 1 1.25 1.35 1.5 1.75]*1e-5;
+                    tSnapshots = [0.85 1 1.25 1.35 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end

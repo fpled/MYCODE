@@ -66,8 +66,6 @@ FEmesh = 'Optim'; % 'Unif' or 'Optim'
 % N = 500; % number of samples
 N = numWorkers;
 randMat = struct('delta',0.2,'lcorr',1e-4); % random material parameters model
-aGc = 0;
-bGc = 0;
 switch lower(symmetry)
     case {'isot','meanisot'} % almost surely or mean isotropic material
         gc = 2.7e3; % critical energy release rate (or fracture toughness)
@@ -76,6 +74,8 @@ switch lower(symmetry)
     otherwise
         error('Wrong material symmetry class');
 end
+aGc = 0;
+bGc = 0;
 % aGc = 0.6*gc;
 % bGc = 1.4*gc;
 % aGc = 0.9*gc;
@@ -85,7 +85,7 @@ end
 randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase-field parameters model
 
 suffix = '';
-% suffix = ['_coeffgc' num2str(coeff_gc,'_%g')];
+% suffix = ['_gc' num2str(gc,'_%g')];
 
 foldername = ['singleEdgeCrack' loading '_' num2str(Dim) 'D'];
 filename = ['linElas' symmetry];
@@ -553,9 +553,9 @@ if setProblem
                     % t = linspace(dt,nt*dt,nt);
                     
                     % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-                    % du = 2e-4 mm during 32 time steps (up to u = 6.4e-3 mm)
+                    % du = 2e-4 mm during 50 time steps (up to u = 10e-3 mm)
                     % dt = 2e-7;
-                    % nt = 32;
+                    % nt = 50;
                     % t = linspace(dt,nt*dt,nt);
                     
                     % du = 1e-5 mm during the first 400 time steps (up to u = 4e-3 mm)
@@ -650,9 +650,9 @@ if setProblem
                     % t = linspace(dt,nt*dt,nt);
                     
                     % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-                    % du = 1e-4 mm during 200 time steps (up to u = 20e-3 mm)
+                    % du = 1e-4 mm during 150 time steps (up to u = 15e-3 mm)
                     % dt = 1e-7;
-                    % nt = 200;
+                    % nt = 150;
                     % t = linspace(dt,nt*dt,nt);
                     
                     % [Li, Zhang, Zhou, 2024, CG]

@@ -520,9 +520,9 @@ if setProblem
                     % t = linspace(dt,nt*dt,nt);
                     
                     % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-                    % du = 2e-4 mm during 32 time steps (up to u = 6.4e-3 mm)
+                    % du = 2e-4 mm during 50 time steps (up to u = 10e-3 mm)
                     % dt = 2e-7;
-                    % nt = 32;
+                    % nt = 50;
                     % t = linspace(dt,nt*dt,nt);
                     
                     % du = 1e-5 mm during the first 400 time steps (up to u = 4e-3 mm)
@@ -614,9 +614,9 @@ if setProblem
                     % t = linspace(dt,nt*dt,nt);
                     
                     % [Storvik, Both, Sargado, Nordbotten, Radu, 2021, CMAME]
-                    % du = 1e-4 mm during 200 time steps (up to u = 20e-3 mm)
+                    % du = 1e-4 mm during 150 time steps (up to u = 15e-3 mm)
                     % dt = 1e-7;
-                    % nt = 200;
+                    % nt = 150;
                     % t = linspace(dt,nt*dt,nt);
                     
                     % [Li, Zhang, Zhou, 2024, CG]
