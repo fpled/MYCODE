@@ -169,7 +169,7 @@ for i=1:length(T)
                     d0 = freevector(S_phase,d_old);
                     lb = d0;
                     ub = ones(size(d0));
-                    if (strcmpi(optimFun,'lsqlin') || strcmpi(optimFun,'fmincon')) && strcmpi(options.Algorithm,'trust-region-reflective')
+                    if strcmpi(options.Algorithm,'trust-region-reflective')
                         lb(lb==1) = 1-eps;
                     end
                     switch optimFun

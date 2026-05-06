@@ -188,7 +188,7 @@ while ti < tf-eps
                     ub = ones(size(d0))+heff*h0;
                     % lb = d0;
                     % ub = [];
-                    if (strcmpi(optimFun,'lsqlin') || strcmpi(optimFun,'fmincon')) && strcmpi(options.Algorithm,'trust-region-reflective')
+                    if strcmpi(options.Algorithm,'trust-region-reflective')
                         lb(lb==ub) = lb(lb==ub)-eps;
                     end
                     switch optimFun
@@ -235,7 +235,7 @@ while ti < tf-eps
                     ub = min([ones(size(h0)),d0/heff],[],2);
                     % lb = h0;
                     % ub = ones(size(h0));
-                    if (strcmpi(optimFun,'lsqlin') || strcmpi(optimFun,'fmincon')) && strcmpi(options.Algorithm,'trust-region-reflective')
+                    if strcmpi(options.Algorithm,'trust-region-reflective')
                         lb(lb==ub) = lb(lb==ub)-eps;
                     end
                     switch optimFun
