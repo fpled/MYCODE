@@ -776,7 +776,7 @@ if displaySolution
     mysaveas(pathname,'force_displacement_redim',formats);
     mymatlab2tikz(pathname,'force_displacement_redim.tex');
 
-    %% Display numerical and experimental force-displacement curve
+    %% Display numerical vs experimental force-displacement curve
     figure('Name','Force vs displacement')
     clf
     plot([0,t]*1e3,[0,ft]*1e-3,'-b','LineWidth',linewidth)

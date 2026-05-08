@@ -16,7 +16,7 @@
 % [Bernard, Moes, Chevaugeon, 2012, CMAME] (TLS)
 % [Ghosh, Chaudhuri, 2013, CMS] (XEFGM = Extended Element-Free Galerkin Method)
 % [Zreid, Kaliske, 2014, IJSS] (Microplane GED)
-% [Du, Jin, Ma, 2014, IJIE] (damages plasticity model)
+% [Du, Jin, Ma, 2014, IJIE] (damaged plasticity model)
 % [Mesgarnejad, Bourdin, Khonsari, 2015, CMAME] (isotropic phase-field model with no split of Bourdin et al. compared to experimental data of [Winkler, 2001, PhD thesis])
 % [Gerasimov, De Lorenzis, 2016, CMAME] (anisotropic phase-field model of Miehe et al.)
 % [Ferte, Massin, Moes, 2016, CMAME] (XFEM-CZM)
@@ -38,7 +38,7 @@
 % [Kirkesaether Brun, Wick, Berre, Nordbotten, Radu, 2020, CMAME] (anisotropic phase-field model of Miehe et al.)
 % [Wu, Huang, Nguyen, 2020, CMAME] (PF-CZM, anisotropic phase-field model of Wu et al.)
 % [Yang, He, Liu, Deng, Huang, 2020, IJMS] (PD-CZM)
-% [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM] (isotropic coupled phase-field fracture and plasticity model with no split of Bourdin et al. in elasto-plasticity)
+% [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM] (hybrid isotropic-anisotropic phase-field model of Ambati et al. coupled with plasticity model in elasto-plasticity)
 % [Tong, Shen, Shao, Chen, 2020, EFM] (PD)
 % [Muixi, Rodriguez-Ferran, Fernandez-Mendez, 2020, IJNME] (PF-HDG = Hybridizable Discontinuous Galerkin + hybrid isotropic-anisotropic PFM of Ambati et al.)
 % [Muixi, Marco, Rodriguez-Ferran, Fernandez-Mendez, 2021, CM] (PF-XFEM = XFEM + hybrid isotropic-anisotropic PFM of Ambati et al.)
@@ -58,7 +58,7 @@
 % [Liu, Chen, Yuan, 2024, AAM] (PD-FEM)
 % [Huang, Zheng, Yao, Zeng, Zhang, Natarajan, Xu, 2024, CMAME] (CSFEM + PF-CZM)
 % [Yu, Hou, Zheng, Xiao, Zhao, 2024, CM] (PF-CZM)
-% [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS] (hybrid isotropic-anisotropic phase-field model of Ambati et al.)
+% [Hai, Zhang, Wriggers, Huang, Zhuang, Xu, 2024, IJMS] (hybrid isotropic-anisotropic phase-field model of Ambati et al. coupled with PF-CZM, anisotropic phase-field model of Wu et al.)
 % [Tran, Nguyen-Xuan, Zhuang, 2024, FSCE] (Deep Learning)
 % [Prakash, Behera, Rahaman, Roy, 2025, IJMS] (anisotropic phase-field model of Amor et al. in finite deformations)
 %% Cyclic loading
@@ -85,6 +85,7 @@ displayModel = false;
 displaySolution = false;
 makeMovie = false;
 saveParaview = false;
+loadExp = false;
 
 test = true; % coarse mesh
 % test = false; % fine mesh
@@ -867,6 +868,55 @@ if displaySolution
         )
     mysaveas(pathname,'forces_displacement',formats);
     mymatlab2tikz(pathname,'forces_displacement.tex');
+    
+    %% Display numerical vs experimental force-displacement curve
+    if loadExp && strcmpi(loading,'monotonic')
+        filenameForceDispExp = 'force_displacement_Win04_fig10_Win01_fig5.csv';
+        % filenameCrackPathExp = 'crack_path_Ber12_fig16_xreversed.csv';
+        
+        pathnameExp = fullfile(getfemobjectoptions('path'),'MYCODE',...
+            'examples','phasefield','dataLshapedPanelWinkler');
+        filenameForceDispExp = fullfile(pathnameExp,filenameForceDispExp);
+        % filenameCrackPathExp = fullfile(pathnameExp,filenameCrackPathExp);
+        
+        optsForceDispExp  = detectImportOptions(filenameForceDispExp);
+        % optsCrackPathExp = detectImportOptions(filenameCrackPathExp);
+        
+        optsForceDispExp.SelectedVariableNames  = {'U_mm','F_lb_kN','F_ub_kN'};
+        % optsCrackPathExp.SelectedVariableNames = {'x_mm','y_lb_mm','y_ub_mm'};
+        
+        T_ForceDispExp = readtable(filenameForceDispExp,optsForceDispExp);
+        % T_CrackPathExp = readtable(filenameCrackPathExp,optsCrackPathExp);
+        
+        ut_exp    = T_ForceDispExp.U_mm; % [mm]
+        ft_lb_exp = T_ForceDispExp.F_lb_kN; % [kN]
+        ft_ub_exp = T_ForceDispExp.F_ub_kN; % [kN]
+        ft_ci_exp = [ft_lb_exp(:), ft_ub_exp(:)]'; % [kN]
+        
+        % xt_exp    = T_CrackPathExp.x_mm; % [mm]
+        % yt_lb_exp = T_CrackPathExp.y_lb_mm; % [mm]
+        % yt_ub_exp = T_CrackPathExp.y_ub_mm; % [mm]
+        
+        figure('Name','Force vs displacement')
+        clf
+        plot([0,t]*1e3,[0,ft_mean]*1e-3,'-b','LineWidth',linewidth)
+        hold on
+        ciplot([0,ft_ci(1,:)]*1e-3,[0,ft_ci(2,:)]*1e-3,[0,t]*1e3,'b');
+        ciplot(ft_ci_exp(1,:),ft_ci_exp(2,:),ut_exp,'k');
+        alpha(0.2)
+        hold off
+        grid on
+        box on
+        set(gca,'FontSize',fontsize)
+        xlabel('Displacement [mm]','Interpreter',interpreter)
+        ylabel('Force [kN]','Interpreter',interpreter)
+        legend('mean function',...
+            ['$' num2str((probs(2)-probs(1))*100) '\%$ confidence interval'],...
+            'experimental envelope',...
+            'Location','NorthEast','Interpreter',interpreter)
+        mysaveas(pathname,'force_displacement_exp',formats);
+        mymatlab2tikz(pathname,'force_displacement_exp.tex');
+    end
     
     %% Display maximum damage-displacement curve
     figure('Name','Maximum damage vs displacement')
