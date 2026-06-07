@@ -689,6 +689,7 @@ if solveProblem
     
     displayIter = true;
     displaySol  = false;
+    displayForce = false;
     
     switch lower(symmetry)
         case 'isot' % isotropic material
@@ -702,11 +703,11 @@ if solveProblem
         case {'historyfieldelem','historyfieldnode'}
             [dt,ut,ft,Ht] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
-                'displayiter',displayIter,'displaysol',displaySol);
+                'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
         otherwise
             [dt,ut,ft] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
-                'displayiter',displayIter,'displaysol',displaySol);
+                'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     end
     
     if strcmpi(symmetry,'anisot')

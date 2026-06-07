@@ -25,7 +25,7 @@
 % [Le, Nguyen, Bui, Sheikh, Kotousov, 2018, IJES] (Cohesive-Frictional model)
 % [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD] (anisotropic phase-field model of Miehe et al.)
 % [Tong, Shen, Shao, Chen, 2020, EFM] (PD)
-% [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM] (isotropic coupled phase-field fracture and plasticity model with no split of Bourdin et al. in elasto-plasticity)
+% [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM] (hybrid isotropic-anisotropic phase-field model of Ambati et al. coupled with plasticity model in elasto-plasticity)
 % [De Maio, Cendon, Greco, Leonetti, Blasi, Planas, 2021, TAFM] (ECM vs DIM = Embedded Crack Model vs Diffuse Interface Model)
 % [Li, Lu, Huang, Yang, 2022, OE] (PD)
 % [Han, Li, Yu, Li, Zhang, 2022, JMPS] (PD-CZM)
@@ -632,9 +632,9 @@ if setProblem
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','Ca','Cb','addbc','findddlforce','findddlboundary');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','Ca','Cb','e','addbc','findddlforce','findddlboundary');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','Ca','Cb','addbc','findddlforce','findddlboundary');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','Ca','Cb','e','addbc','findddlforce','findddlboundary');
 end
 
 %% Solution
@@ -646,14 +646,15 @@ if solveProblem
     
     displayIter = false;
     displaySol  = false;
+    displayForce = false;
     
     nbSamples = 1;
     fun = @(S_phase,S) solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
         'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
-        'displayiter',displayIter,'displaysol',displaySol);
+        'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     % fun = @(S_phase,S) solvePFDetLinElasDoubleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,P0,BRight,BLeft,setup,...
     %     'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
-    %     'displayiter',displayIter,'displaysol',displaySol);
+    %     'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     [ft,Edt,Eut,dmaxt,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
     t = gettevol(T);
     idc = arrayfun(@(i) find(dmaxt(i,:)>=min(0.75,max(dmaxt(i,:))),1),1:N)';
@@ -740,7 +741,7 @@ if solveProblem
     if e==0
         fprintf(fid,' (two symmetric edge cracks)\n');
     else
-        fprintf(fid,' (two asymmetric edge cracks)\n');
+        fprintf(fid,' (two asymmetric edge cracks with eccentricity e = %g mm)\n',e);
     end
     fprintf(fid,'\n');
     fprintf(fid,'dim      = %d\n',Dim);

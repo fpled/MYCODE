@@ -25,7 +25,7 @@
 % [Le, Nguyen, Bui, Sheikh, Kotousov, 2018, IJES] (Cohesive-Frictional model)
 % [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD] (anisotropic phase-field model of Miehe et al.)
 % [Tong, Shen, Shao, Chen, 2020, EFM] (PD)
-% [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM] (isotropic coupled phase-field fracture and plasticity model with no split of Bourdin et al. in elasto-plasticity)
+% [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM] (hybrid isotropic-anisotropic phase-field model of Ambati et al. coupled with plasticity model in elasto-plasticity)
 % [De Maio, Cendon, Greco, Leonetti, Blasi, Planas, 2021, TAFM] (ECM vs DIM = Embedded Crack Model vs Diffuse Interface Model)
 % [Li, Lu, Huang, Yang, 2022, OE] (PD)
 % [Han, Li, Yu, Li, Zhang, 2022, JMPS] (PD-CZM)
@@ -603,9 +603,9 @@ if setProblem
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','Ca','Cb','addbc','addbcdamage','addbcdamageadapt','findddlforce','findddlboundary');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','Ca','Cb','e','addbc','addbcdamage','addbcdamageadapt','findddlforce','findddlboundary');
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','Ca','Cb','addbc','addbcdamage','addbcdamageadapt','findddlforce','findddlboundary');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','sizemap','D','Ca','Cb','e','addbc','addbcdamage','addbcdamageadapt','findddlforce','findddlboundary');
 end
 
 %% Solution
@@ -615,26 +615,27 @@ if solveProblem
     displayIter = true;
     displaySol  = false;
     displayMesh = false;
+    displayForce = false;
     
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
             [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_double_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
-                'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
+                'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh,'displayforce',displayForce);
         otherwise
             [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_double_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
-                'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
+                'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh,'displayforce',displayForce);
     end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
     %         [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasDoubleEdgeCrackAdaptive(S_phase,S,T,PFsolver,Ca,Cb,BU,BL,P0,BRight,BLeft,setup,initialCrack,sizemap,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_double_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
-    %             'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
+    %             'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh,'displayforce',displayForce);
     %     otherwise
     %         [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasDoubleEdgeCrackAdaptive(S_phase,S,T,PFsolver,Ca,Cb,BU,BL,P0,BRight,BLeft,setup,initialCrack,sizemap,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_domain_double_edge_crack','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
-    %             'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
+    %             'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh,'displayforce',displayForce);
     % end
     
     t = gettevol(T);
@@ -666,7 +667,7 @@ if solveProblem
     if e==0
         fprintf(fid,' (two symmetric edge cracks)\n');
     else
-        fprintf(fid,' (two asymmetric edge cracks)\n');
+        fprintf(fid,' (two asymmetric edge cracks with eccentricity e = %g mm)\n',e);
     end
     fprintf(fid,'\n');
     fprintf(fid,'dim      = %d\n',Dim);

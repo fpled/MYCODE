@@ -472,26 +472,27 @@ if solveProblem
     displayIter = true;
     displaySol  = false;
     displayMesh = false;
+    displayForce = false;
     
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
             [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_asymmetric_notched_plate','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
-                'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
+                'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh,'displayforce',displayForce);
         otherwise
             [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_asymmetric_notched_plate','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
-                'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
+                'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh,'displayforce',displayForce);
     end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
     %         [dt,ut,ft,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,initialCrack,sizemap,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_asymmetric_notched_plate','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
-    %             'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
+    %             'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh,'displayforce',displayForce);
     %     otherwise
     %         [dt,ut,ft,St_phase,St,~,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,initialCrack,sizemap,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename','gmsh_asymmetric_notched_plate','pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
-    %             'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh);
+    %             'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh,'displayforce',displayForce);
     % end
     
     t = gettevol(T);

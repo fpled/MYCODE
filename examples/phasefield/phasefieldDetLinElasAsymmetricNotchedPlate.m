@@ -414,26 +414,27 @@ if solveProblem
     
     displayIter = true;
     displaySol  = false;
+    displayForce = false;
     
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
             [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
-                'displayiter',displayIter,'displaysol',displaySol);
+                'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
         otherwise
             [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
-                'displayiter',displayIter,'displaysol',displaySol);
+                'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
     %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
-    %             'displayiter',displayIter,'displaysol',displaySol);
+    %             'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     %     otherwise
     %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
-    %             'displayiter',displayIter,'displaysol',displaySol);
+    %             'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     % end
     
     t = gettevol(T);

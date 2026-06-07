@@ -649,14 +649,15 @@ if solveProblem
     
     displayIter = false;
     displaySol  = false;
+    displayForce = false;
     
     nbSamples = 1;
     fun = @(S_phase,S) solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
         'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
-        'displayiter',displayIter,'displaysol',displaySol);
+        'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     % fun = @(S_phase,S) solvePFDetLinElasLshapedPanel(S_phase,S,T,PFsolver,BR,BL,BRight,BLeft,BBack,...
     %     'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
-    %     'displayiter',displayIter,'displaysol',displaySol);
+    %     'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     [ft,Edt,Eut,dmaxt,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
     t = gettevol(T);
     idc = arrayfun(@(i) find(dmaxt(i,:)>=min(0.75,max(dmaxt(i,:))),1),1:N)';
