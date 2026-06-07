@@ -504,8 +504,8 @@ end
 if solveProblem
     tTotal = tic;
     
-    displayIter = true;
-    displaySol  = false;
+    displayIter  = true;
+    displaySol   = false;
     displayForce = false;
     
     switch lower(PFsolver)

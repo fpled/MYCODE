@@ -25,7 +25,7 @@
 % [Le, Nguyen, Bui, Sheikh, Kotousov, 2018, IJES] (Cohesive-Frictional model)
 % [Badnava, Msekh, Etemadi, Rabczuk, 2018, FEAD] (anisotropic phase-field model of Miehe et al.)
 % [Tong, Shen, Shao, Chen, 2020, EFM] (PD)
-% [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM] (isotropic coupled phase-field fracture and plasticity model with no split of Bourdin et al. in elasto-plasticity)
+% [Fang, Wu, Rabczuk, Wu, Sun, Li, 2020, CM] (hybrid isotropic-anisotropic phase-field model of Ambati et al. coupled with plasticity model in elasto-plasticity)
 % [De Maio, Cendon, Greco, Leonetti, Blasi, Planas, 2021, TAFM] (ECM vs DIM = Embedded Crack Model vs Diffuse Interface Model)
 % [Li, Lu, Huang, Yang, 2022, OE] (PD)
 % [Han, Li, Yu, Li, Zhang, 2022, JMPS] (PD-CZM)
@@ -607,12 +607,12 @@ if setProblem
     end
     
     %% Save variables
-    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','Ca','Cb','addbc','findddlforce','findddlboundary');
+    save(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','Ca','Cb','e','addbc','findddlforce','findddlboundary');
     if healing
         save(fullfile(pathname,'problem.mat'),'S_healing','deff','heff','dact','fundact','-append');
     end
 else
-    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','Ca','Cb','addbc','findddlforce','findddlboundary');
+    load(fullfile(pathname,'problem.mat'),'T','S_phase','S','D','Ca','Cb','e','addbc','findddlforce','findddlboundary');
     if healing
         load(fullfile(pathname,'problem.mat'),'S_healing','deff','heff','dact','fundact');
     end
@@ -622,8 +622,9 @@ end
 if solveProblem
     tTotal = tic;
     
-    displayIter = true;
-    displaySol  = false;
+    displayIter  = true;
+    displaySol   = false;
+    displayForce = false;
     
     if healing
         fun = @solvePFSHDetLinElas;
@@ -633,12 +634,12 @@ if solveProblem
                 [dt,ht,ut,ft,Ht,Edt,Eht,Eut,output] = fun(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
                     'heff',heff,'deff',deff,'dact',dact,'fundact',fundact,...
-                    'displayiter',displayIter,'displaysol',displaySol);
+                    'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
             otherwise
                 [dt,ht,ut,ft,~,Edt,Eht,Eut,output] = fun(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
                     'heff',heff,'deff',deff,'dact',dact,'fundact',fundact,...
-                    'displayiter',displayIter,'displaysol',displaySol);
+                    'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
         end
     else
         fun = @solvePFDetLinElas;
@@ -647,11 +648,11 @@ if solveProblem
             case {'historyfieldelem','historyfieldnode'}
                 [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
-                    'displayiter',displayIter,'displaysol',displaySol);
+                    'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
             otherwise
                 [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
                     'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
-                    'displayiter',displayIter,'displaysol',displaySol);
+                    'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
         end
         % fun = @solvePFDetLinElasDoubleEdgeCrack;
         % % fun = @solvePFDetLinElasDoubleEdgeCrackThreshold;
@@ -659,11 +660,11 @@ if solveProblem
         %     case {'historyfieldelem','historyfieldnode'}
         %         [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,P0,BRight,BLeft,setup,...
         %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
-        %             'displayiter',displayIter,'displaysol',displaySol);
+        %             'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
         %     otherwise
         %         [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,P0,BRight,BLeft,setup,...
         %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
-        %             'displayiter',displayIter,'displaysol',displaySol);
+        %             'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
         % end
     end
     
@@ -710,7 +711,7 @@ if solveProblem
     if e==0
         fprintf(fid,' (two symmetric edge cracks)\n');
     else
-        fprintf(fid,' (two asymmetric edge cracks)\n');
+        fprintf(fid,' (two asymmetric edge cracks with eccentricity e = %g mm)\n',e);
     end
     fprintf(fid,'\n');
     fprintf(fid,'dim      = %d\n',Dim);

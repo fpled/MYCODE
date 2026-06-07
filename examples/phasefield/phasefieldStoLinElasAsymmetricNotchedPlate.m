@@ -458,8 +458,8 @@ if solveProblem
     %% Solution
     tTotal = tic;
     
-    displayIter = false;
-    displaySol  = false;
+    displayIter  = false;
+    displaySol   = false;
     displayForce = false;
     
     nbSamples = 1;

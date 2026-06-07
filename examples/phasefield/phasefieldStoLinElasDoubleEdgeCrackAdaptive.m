@@ -689,9 +689,9 @@ if solveProblem
     %% Solution
     tTotal = tic;
     
-    displayIter = false;
-    displaySol  = false;
-    displayMesh = false;
+    displayIter  = false;
+    displaySol   = false;
+    displayMesh  = false;
     displayForce = false;
     
     nbSamples = 1;

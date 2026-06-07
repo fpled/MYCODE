@@ -565,8 +565,8 @@ end
 if solveProblem
     tTotal = tic;
     
-    displayIter = true;
-    displaySol  = false;
+    displayIter  = true;
+    displaySol   = false;
     displayForce = false;
     
     fun = @solvePFDetLinElas;

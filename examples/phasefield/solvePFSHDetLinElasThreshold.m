@@ -8,6 +8,7 @@ findddlboundary = fcnchk(findddlboundary);
 display_ = getcharin('display',varargin,true);
 displayIter = getcharin('displayiter',varargin,false);
 displaySol = getcharin('displaysol',varargin,false);
+displayForce = getcharin('displayforce',varargin,false);
 maxIter = getcharin('maxiter',varargin,100);
 tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
@@ -121,18 +122,32 @@ if display_
     fprintf('\n+------+---------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+\n');
 end
 
+fontsize = 16;
+linewidth = 1;
+fpos = get(groot,'DefaultFigurePosition');
+spos = get(groot,'ScreenSize');
+if displaySol && displayForce
+    posd = [spos(1) fpos(2:4)];
+    posh = fpos;
+    posD = [spos(3)-fpos(3) fpos(2:4)];
+    posf = [fpos(1) fpos(2)-fpos(3) fpos(3:4)];
+elseif displaySol
+    posd = [spos(1) fpos(2:4)];
+    posh = fpos;
+    posD = [spos(3)-fpos(3) fpos(2:4)];
+elseif displayForce
+    posf = fpos;
+end
 if displaySol
-    fontsize = 16;
-    fpos = get(groot,'DefaultFigurePosition');
-    spos = get(groot,'ScreenSize');
-    fd = figure('Name','Damage/Phase field',...
-        'Position',[spos(1) fpos(2:4)]);
+    fd = figure('Name','Damage/Phase field','Position',posd);
     clf
-    fh = figure('Name','Healing field',...
-        'Position',fpos);
+    fh = figure('Name','Healing field','Position',posh);
     clf
-    fD = figure('Name','Effective damage/phase field',...
-        'Position',[spos(3)-fpos(3) fpos(2:4)]);
+    fD = figure('Name','Effective damage/phase field','Position',posD);
+    clf
+end
+if displayForce
+    ff = figure('Name','Force vs displacement','Position',posf);
     clf
 end
 
@@ -447,6 +462,19 @@ while ti < tf-eps
         % title('Positive internal energy')
     end
     
+    % Display force-displacement curve
+    if displayForce
+        figure(ff)
+        clf
+        plot([0,t(1:i)]*1e3,[0,ft(1:i)]*1e-3,'-b','LineWidth',linewidth)
+        grid on
+        box on
+        set(gca,'FontSize',fontsize)
+        xlabel('Displacement [mm]')
+        ylabel('Force [kN]')
+        xlim([0,tf]*1e3);
+    end
+    
     if display_
         fprintf('| %4d | %7d | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e | %9.3e |\n',i,nbIter,t(i)*1e3,f*1e-3,dmax,hmax,Dmax,Ed,Eh,Eu);
     end
@@ -456,6 +484,9 @@ end
 %     close(fd)
 %     close(fh)
 %     close(fD)
+% end
+% if displayForce
+%     close(ff)
 % end
 
 if display_

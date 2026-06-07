@@ -452,9 +452,9 @@ end
 if solveProblem
     tTotal = tic;
     
-    displayIter = true;
-    displaySol  = false;
-    displayMesh = false;
+    displayIter  = true;
+    displaySol   = false;
+    displayMesh  = false;
     displayForce = false;
     
     switch lower(PFsolver)
