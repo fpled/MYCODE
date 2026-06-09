@@ -64,7 +64,7 @@ initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialP
 % PFsplits = {'Strain','Stress'};
 % PFregularizations = {'AT1','AT2'};
 % PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
-% initialCracks = {'GeometricCrack','InitialPhaseField'};
+% initialCracks = {'GeometricCrack','GeometricNotch','InitialPhaseField'};
 % maxIters = [1,Inf];
 % sizeMaps = {'Lin','Quad','Cub','Quar','PowExp_1','PowExp_2','PowExp_1_2','Inv_1','Inv_2','Inv_1_2'};
 switch lower(symmetry)

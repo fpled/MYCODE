@@ -63,7 +63,7 @@ angs = [0:10:90];
 % PFsplits = {'Strain','Stress'};
 PFregularizations = {'AT1','AT2'};
 PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
-% initialCracks = {'GeometricCrack','InitialPhaseField'};
+% initialCracks = {'GeometricCrack','GeometricNotch','InitialPhaseField'};
 % maxIters = [1,Inf];
 switch lower(symmetry)
     case 'isot' % isotropic material

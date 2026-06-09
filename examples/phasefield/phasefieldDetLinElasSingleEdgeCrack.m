@@ -63,7 +63,7 @@ FEmesh = 'Optim'; % 'Unif' or 'Optim'
 % PFsplits = {'Strain','Stress'};
 % PFregularizations = {'AT1','AT2'};
 % PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
-% initialCracks = {'GeometricCrack','InitialPhaseField'};
+% initialCracks = {'GeometricCrack','GeometricNotch','InitialPhaseField'};
 % maxIters = [1,Inf];
 switch lower(symmetry)
     case 'isot' % isotropic material

@@ -63,7 +63,7 @@ coeff_gc = 1.0;
 % PFsplits = {'Strain','Stress'};
 % PFregularizations = {'AT1','AT2'};
 % PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
-% initialCracks = {'GeometricCrack','InitialPhaseField'};
+% initialCracks = {'GeometricCrack','GeometricNotch','InitialPhaseField'};
 % maxIters = [1,Inf];
 % coeffs_gc = [0.6,0.8,1.0,1.2,1.4];
 
