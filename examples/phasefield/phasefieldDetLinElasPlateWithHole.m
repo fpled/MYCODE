@@ -89,22 +89,22 @@ if setProblem
     % 2D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], [Vu, Le Quang, He, 2024, AES]
     % L = 20e-3; % length
     % H = 30e-3; % height
-    % r = 4e-3; % radius of the hole
+    % r = 4e-3; % hole radius
     
     % 2D and 3D [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF], 2D [Vu, Le Quang, He, 2024, AES]
     % L = 100e-3; % length
     % H = 65e-3; % height
     % e = 40e-3; % thickness [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
     % % e = 20e-3; % thickness [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
-    % % r = 1.5e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
-    % % r = 2e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
-    % r = 2.5e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
-    % % r = 3e-3; % radius of the hole [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
+    % % r = 1.5e-3; % hole radius [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
+    % % r = 2e-3; % hole radius [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
+    % r = 2.5e-3; % hole radius [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS], [Nguyen, Yvonnet, Bornert, Chateau, Sab, Romani, Le Roy, 2016, IJF]
+    % % r = 3e-3; % hole radius [Romani, Bornert, Leguillon, Roy, Sab, 2015, EJMS]
     
     % 2D [Nguyen, Yvonnet, Waldmann, He, 2020, IJNME], [Luo, Chen, Wang, Li, 2022, CM]
     L = 15e-3; % length
     H = 2*L; % height
-    r = 3e-3; % radius of the hole
+    r = 3e-3; % hole radius
     
     if Dim==2
         e = 1; % thickness

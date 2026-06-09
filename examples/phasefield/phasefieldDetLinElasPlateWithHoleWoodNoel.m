@@ -291,7 +291,7 @@ if setProblem
     L = 45e-3; % length
     H = 2*L; % height
     e = 20e-3; % thickness
-    r = 5e-3; % radius of the hole
+    r = 5e-3; % hole radius
     l = L/100; % regularization length (width of the smeared crack)
     if Dim==2
         D = DOMAIN(2,[0.0,0.0],[L,H]);
