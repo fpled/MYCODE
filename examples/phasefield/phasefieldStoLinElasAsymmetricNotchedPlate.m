@@ -143,10 +143,10 @@ if setProblem
     end
     L = 10*unit; % half-length
     h = 4*unit; % half-height
-    ls = 9*unit; % location of the support from the centerline
+    ls = 9*unit; % location of the supports from the centerline
     lh = 4*unit; % location of the holes from the centerline
     dh = 2*unit; % distance between the holes
-    ph = 1.25*unit; % location of the top hole from the top
+    ph = 1.25*unit; % location of the top hole from the top edge
     r = 0.25*unit; % radius of the holes
     e = 1; % thickness
     % e = 0.5*unit; % [Cervera, Barbat, Chiumenti, 2017, CM], [Wu, Nguyen, 2018, JMPS], [Mandal, Nguyen, Wu, 2019, EFM], [Wu, Nguyen, Nguyen, Sutula, Bordas, Sinaie, 2020, AAM]
@@ -195,12 +195,13 @@ if setProblem
     clH = cl; % characteristic length for circular holes
     switch lower(initialCrack)
         case 'geometriccrack'
-            S_phase = gmshAsymmetricPlateWithSingleEdgeCrackThreeHoles(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'Box',B);
+            S_phase = gmshAsymmetricPlateWithSingleEdgeCrackThreeHoles(L,h,ls,lh,dh,ph,r,a,b,e,clD,clC,clH,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'Box',B);
         case 'geometricnotch'
             c = 0.05*unit; % crack width
-            S_phase = gmshAsymmetricPlateWithSingleEdgeNotchThreeHoles(a,b,c,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'Box',B);
+            clC = min(clC,c/2);
+            S_phase = gmshAsymmetricPlateWithSingleEdgeNotchThreeHoles(L,h,ls,lh,dh,ph,r,a,b,c,e,clD,clC,clH,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'Box',B);
         case 'initialphasefield'
-            S_phase = gmshAsymmetricPlateWithSingleEdgeCrackThreeHoles(a,b,clD,clC,clH,unit,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'noduplicate','refinecrack','Box',B);
+            S_phase = gmshAsymmetricPlateWithSingleEdgeCrackThreeHoles(L,h,ls,lh,dh,ph,r,a,b,e,clD,clC,clH,fullfile(pathname,'gmsh_asymmetric_notched_plate'),Dim,'noduplicate','refinecrack','Box',B);
         otherwise
             error('Wrong model for initial crack');
     end
