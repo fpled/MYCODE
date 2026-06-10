@@ -164,7 +164,7 @@ if setProblem
                         if Dim==2
                             cl = 1.75e-4;
                         elseif Dim==3
-                            clC = 4e-4;
+                            cl = 4e-4;
                         end
                     end
                     clD = cl;

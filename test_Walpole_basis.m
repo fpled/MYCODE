@@ -3,6 +3,8 @@
 clear all
 
 %% Tensorial basis for isotropic elasticity matrix
+fprintf('Isoptropic elasticity matrix\n')
+
 % syms c1 c2 positive
 syms 'c%d' [2 1] positive
 assumptions_c = assumptions([c1 c2])
@@ -10,12 +12,14 @@ assumptions_c = assumptions([c1 c2])
 E1 = [1/3*ones(3) zeros(3); zeros(3) zeros(3)];
 
 % Voigt-Mandel notation
+fprintf('Voigt notation\n')
 E2 = [eye(3) zeros(3); zeros(3) eye(3)/2] - E1;
 C = 3*c1*E1 + 2*c2*E2
 valC = eig(C)
 detC = det(C)
 
 % Kelvin-Mandel notation
+fprintf('Kelvin-Mandel notation\n')
 E2 = eye(6) - E1;
 C = 3*c1*E1 + 2*c2*E2
 valC = eig(C)
@@ -23,6 +27,8 @@ detC = det(C)
 
 %% Tensorial basis for transversely isotropic elasticity matrix 
 % with rotational symmetry axis n = (0,0,1)
+fprintf('Transversely isoptropic elasticity matrix\n')
+
 % syms c1 c2 c3 c4 c5 positive
 syms 'c%d' [5 1] positive
 assume(c3,"clear")
@@ -34,6 +40,7 @@ P = n*n';
 Q = eye(3) - P;
 
 % Voigt notation
+fprintf('Voigt notation\n')
 I = [eye(3) zeros(3); zeros(3) eye(3)/2];
 % E1 = [P zeros(3); zeros(3) zeros(3)];
 E1 = [[0 0 0; 0 0 0; 0 0 1] zeros(3); zeros(3) zeros(3)];
@@ -48,6 +55,7 @@ detC = simplify(det(C))
 phiC = log(detC)
 
 % Kelvin-Mandel notation
+fprintf('Kelvin-Mandel notation\n')
 I = eye(6);
 E4 = [[1/2 -1/2 0; -1/2 1/2 0; 0 0 0] zeros(3); zeros(3) [0 0 0; 0 0 0; 0 0 1]];
 E5 = I - E1 - E2 - E4;
@@ -64,9 +72,11 @@ valC123 = eig(C123)
 detC123 = simplify(det(C123))
 phiC123 = log(detC123)
 
-%% [Guilleminot, Soize, 2012, IJNME]
+%% [Guilleminot, Soize, 2012, IJNME], [Guilleminot, 2020, Elsevier]
 % transversely isotropic mean elasticity matrix 
 % with rotational symmetry axis n = (0,0,1)
+fprintf('Example from [Guilleminot, Soize, 2012, IJNME], [Guilleminot, 2020, Elsevier] for transversely isotropic elasticity matrix in Kelvin-Mandel notation\n')
+
 % Kelvin-Mandel notation
 mC = [10.0735 0.5497 2.9745 0 0 0;
       0.5497 10.0735 2.9745 0 0 0;
@@ -85,6 +95,7 @@ mC_data = [mC1 mC2 mC3 mC4 mC5]'
 
 %% Relations between coefficients (c1,...,c5) and engineering elastic moduli (EL,ET,GL,NUL,NUT) 
 % for transversely isotropic elasticity matrix with rotational symmetry axis n = (1,0,0)
+fprintf('Relations Walpole form vs engineering form for transversely isotropic elasticity matrix\n')
 
 kT = c2/2;
 NUL = (c3./kT)/(2*sqrt(2));
