@@ -331,7 +331,7 @@ if setProblem
                         Ca = LINE([  a,H/2+e-c/2],[  a,H/2+e+c/2]); % rectangular notch
                         Cb = LINE([w-a,H/2-e-c/2],[w-a,H/2-e+c/2]); % rectangular notch
                 end
-                % Ca = POINT([  a,H/2+e]);   % V notch
+                % Ca = POINT([  a,H/2+e]); % V notch
                 % Cb = POINT([w-a,H/2-e]); % V notch
             elseif Dim==3
                 switch setup
