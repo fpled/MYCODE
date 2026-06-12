@@ -479,7 +479,7 @@ if setProblem
     %% Time scheme
     % [Noel, Pled, Chevalier, Wilquin, EFM, 2025]
     % du = 24e-5 mm during the first stage (until the phase-field reaches the threshold value)
-    % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value)
+    % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to 0.31 mm)
     dt0 = 24e-8; % dt0 = inc0_data(numSample)*1e-3; [m]
     dt1 = 2e-8;  % dt1 = inc1_data(numSample)*1e-3; [m]
     tf = 0.31e-3; % tf = 0.31 mm
@@ -542,15 +542,17 @@ if solveProblem
     
     time = toc(tTotal);
     
-    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','T','time');
+    save(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         save(fullfile(pathname,'solution.mat'),'Ht','-append');
     end
+    save(fullfile(pathname,'solution.mat'),'T','-append');
 else
-    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','T','time');
+    load(fullfile(pathname,'solution.mat'),'dt','ut','ft','Edt','Eut','output','dmaxt','fmax','udmax','fc','udc','time');
     if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
         load(fullfile(pathname,'solution.mat'),'Ht');
     end
+    load(fullfile(pathname,'solution.mat'),'T');
 end
 
 ft_exp_noredim = ft_exp_data_noredim{numSample+1};

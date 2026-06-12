@@ -238,10 +238,9 @@ if setProblem
     BU = CIRCLE(0.0,h,R0);
     BL = CIRCLE(-ls,-h,R0);
     BR = CIRCLE(ls,-h,R0);
-    % LU = LINE([-L,h],[L,h]);
+    LU = LINE([-L,h],[L,h]);
     
-    % findddlboundary = @(S_phase) findddl(S_phase,'T',LU);
-    findddlboundary = @(S_phase) [];
+    findddlboundary = @(S_phase) findddl(S_phase,'T',LU);
     
     if strcmpi(initialCrack,'geometriccrack')
         S_phase = final(S_phase,'duplicate');
@@ -429,11 +428,11 @@ if solveProblem
     end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
-    %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,...
+    %         [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,LU,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
     %             'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     %     otherwise
-    %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,...
+    %         [dt,ut,ft,~,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,LU,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
     %             'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     % end

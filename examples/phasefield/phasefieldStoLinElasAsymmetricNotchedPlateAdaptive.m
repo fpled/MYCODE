@@ -288,12 +288,11 @@ if setProblem
     H1 = CIRCLE(-lh,h-ph-2*dh,r);
     H2 = CIRCLE(-lh,h-ph-dh,r);
     H3 = CIRCLE(-lh,h-ph,r);
-    % LU = LINE([-L,h],[L,h]);
+    LU = LINE([-L,h],[L,h]);
     
     addbcdamage = @(S_phase) addbcdamageAsymmetricNotchedPlate(S_phase,C,BU,BL,BR,initialCrack);
     addbcdamageadapt = @(S_phase) addbcdamageAsymmetricNotchedPlateAdaptive(S_phase,C,H1,H2,H3);
-    % findddlboundary = @(S_phase) findddl(S_phase,'T',LU);
-    findddlboundary = @(S_phase) [];
+    findddlboundary = @(S_phase) findddl(S_phase,'T',LU);
     if strcmpi(initialCrack,'geometriccrack')
         final = @(S_phase) final(S_phase,'duplicate');
     else
@@ -519,7 +518,7 @@ if solveProblem
     fun = @(S_phase,S,filename) solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
         'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
         'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh,'displayforce',displayForce);
-    % fun = @(S_phase,S,filename) solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,initialCrack,sizemap,...
+    % fun = @(S_phase,S,filename) solvePFDetLinElasAsymmetricNotchedPlateAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BR,H1,H2,H3,PU,PL,PR,LU,initialCrack,sizemap,...
     %     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
     %     'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh,'displayforce',displayForce);
     [ft,Edt,Eut,dmaxt,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_asymmetric_notched_plate','pathname',pathname,'nbsamples',nbSamples);

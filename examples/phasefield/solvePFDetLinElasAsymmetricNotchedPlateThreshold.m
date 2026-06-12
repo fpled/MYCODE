@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlateThreshold(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
-% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlateThreshold(S_phase,S,T,PFsolver,PU,PL,PR,varargin)
+function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlateThreshold(S_phase,S,T,PFsolver,PU,PL,PR,LU,varargin)
+% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElasAsymmetricNotchedPlateThreshold(S_phase,S,T,PFsolver,PU,PL,PR,LU,varargin)
 % Solve deterministic phase-field problem.
 
 display_ = getcharin('display',varargin,true);
@@ -9,6 +9,7 @@ displayForce = getcharin('displayforce',varargin,false);
 maxIter = getcharin('maxiter',varargin,100);
 tolConv = getcharin('tol',varargin,1e-2);
 critConv = getcharin('crit',varargin,'Energy');
+dbth = getcharin('dbth',varargin,0.999);
 
 if verLessThan('matlab','9.1') % compatibility (<R2016b)
     contain = @(str,pat) ~isempty(strfind(lower(str),pat));
@@ -126,6 +127,9 @@ if displayForce
     clf
 end
 
+numddlb = findddl(S_phase,'T',LU);
+db = d(numddlb,:);
+
 i = 0;
 ti = 0;
 dti = dt0;
@@ -133,136 +137,145 @@ while ti < tf-eps
     i = i+1;
     tIter = tic;
     nbIter = 0;
-    if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
-        H_old = H;
-    end
-    d_old = d;
-    if checkConvRes
-        [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
-    end
-    errConv = Inf;
-    errConvs = 0; errConvr = 0; errConve = 0;
-    while (errConv > tolConv) && (nbIter < maxIter)
-        nbIter = nbIter+1;
-        if checkConvSol
-            d_prev = d;
-            u_prev = u;
+    % if any(db > dbth)
+    %     ti = ti + dti;
+    %     f = 0;
+    % else
+        if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+            H_old = H;
         end
-        if checkConvEnergy
-            E_prev = E;
-        end
-        
-        % Damage/Phase field
-        if ~checkConvRes
-            [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
-        end
-        
-        switch lower(PFsolver)
-            case {'historyfieldelem','historyfieldnode'}
-                d = A_phase\b_phase;
-            otherwise
-                d0 = freevector(S_phase,d_old);
-                lb = d0;
-                ub = ones(size(d0));
-                if strcmpi(options.Algorithm,'trust-region-reflective')
-                    lb(lb==1) = 1-eps;
-                end
-                switch optimFun
-                    case 'quadprog'
-                        A_phase = (A_phase+A_phase')/2;
-                        d = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
-                    case 'lsqlin'
-                        d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
-                    case 'lsqnonlin'
-                        fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-                        d = lsqnonlin(fun,d0,lb,ub,options);
-                    case 'fmincon'
-                        fun = @(d) funoptimPF(d,A_phase,b_phase);
-                        d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
-                end
-        end
-        if any(d > dth)
-            dti = dt1;
-        end
-        dmax = max(d);
-        d = unfreevector(S_phase,d);
-        
-        % Displacement field
-        mats = MATERIALS(S);
-        for m=1:length(mats)
-            mats{m} = setparam(mats{m},'d',d);
-            mats{m} = setparam(mats{m},'u',u);
-        end
-        S = actualisematerials(S,mats);
-        if nbIter==1
-            S = removebc(S);
-            ti = ti + dti;
-            ud = ti;
-            S = addbcAsymmetricNotchedPlate(S,ud,PU,PL,PR);
-        end
-        
-        [A,b] = calc_rigi(S,'nofree');
-        b = -b;
-        
-        u = freematrix(S,A)\b;
-        u = unfreevector(S,u);
-        
-        % Internal energy field
-        switch lower(PFsolver)
-            case {'historyfieldelem','historyfieldnode'}
-                H = calc_historyfield(S,u,H_old);
-            otherwise
-                H = calc_energyint(S,u,'intorder','mass','positive','local');
-        end
-        
-        % Convergence
-        if checkConvSol
-            errConvd = norm(d-d_prev)/norm(d);
-            errConvu = norm(u-u_prev)/norm(u);
-            errConvs = max(errConvd,errConvu);
-        end
+        d_old = d;
         if checkConvRes
-            % Damage/Phase field residual
             [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
-            r_phase = A_phase*d - b_phase;
-            errConvr = norm(r_phase)/norm(b_phase);
         end
-        if checkConvEnergy
-            % Energy
+        errConv = Inf;
+        errConvs = 0; errConvr = 0; errConve = 0;
+        while (errConv > tolConv) && (nbIter < maxIter)
+            nbIter = nbIter+1;
+            if checkConvSol
+                d_prev = d;
+                u_prev = u;
+            end
+            if checkConvEnergy
+                E_prev = E;
+            end
+            
+            % Damage/Phase field
+            if ~checkConvRes
+                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
+            end
+            
+            switch lower(PFsolver)
+                case {'historyfieldelem','historyfieldnode'}
+                    d = A_phase\b_phase;
+                otherwise
+                    d0 = freevector(S_phase,d_old);
+                    lb = d0;
+                    ub = ones(size(d0));
+                    if strcmpi(options.Algorithm,'trust-region-reflective')
+                        lb(lb==1) = 1-eps;
+                    end
+                    switch optimFun
+                        case 'quadprog'
+                            A_phase = (A_phase+A_phase')/2;
+                            d = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
+                        case 'lsqlin'
+                            d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                        case 'lsqnonlin'
+                            fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
+                            d = lsqnonlin(fun,d0,lb,ub,options);
+                        case 'fmincon'
+                            fun = @(d) funoptimPF(d,A_phase,b_phase);
+                            d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
+                    end
+            end
+            if any(d > dth)
+                dti = dt1;
+            end
+            dmax = max(d);
+            d = unfreevector(S_phase,d);
+            db = d(numddlb,:);
+            
+            % Displacement field
+            mats = MATERIALS(S);
+            for m=1:length(mats)
+                mats{m} = setparam(mats{m},'d',d);
+                mats{m} = setparam(mats{m},'u',u);
+            end
+            S = actualisematerials(S,mats);
+            if nbIter==1
+                S = removebc(S);
+                ti = ti + dti;
+                ud = ti;
+                S = addbcAsymmetricNotchedPlate(S,ud,PU,PL,PR);
+            end
+            
+            [A,b] = calc_rigi(S,'nofree');
+            b = -b;
+            
+            u = freematrix(S,A)\b;
+            u = unfreevector(S,u);
+            
+            % Internal energy field
+            switch lower(PFsolver)
+                case {'historyfieldelem','historyfieldnode'}
+                    H = calc_historyfield(S,u,H_old);
+                otherwise
+                    H = calc_energyint(S,u,'intorder','mass','positive','local');
+            end
+            
+            % Convergence
+            if checkConvSol
+                errConvd = norm(d-d_prev)/norm(d);
+                errConvu = norm(u-u_prev)/norm(u);
+                errConvs = max(errConvd,errConvu);
+            end
+            if checkConvRes
+                % Damage/Phase field residual
+                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
+                r_phase = A_phase*d - b_phase;
+                errConvr = norm(r_phase)/norm(b_phase);
+            end
+            if checkConvEnergy
+                % Energy
+                Ed = 1/2*d'*Ae_phase*d - d'*be_phase;
+                Eu = 1/2*u'*A*u;
+                E = Ed+Eu;
+                errConve = abs(E-E_prev)/abs(E);
+            end
+            if checkConvSol || checkConvRes || checkConvEnergy
+                errConv = max(max(errConvs,errConvr),errConve);
+                if displayIter
+                    fprintf('sub-iter #%2.d : error = %.3e',nbIter,errConv);
+                    if checkConvSol
+                        fprintf(', err_s = %.3e',errConvs);
+                    end
+                    if checkConvRes
+                        fprintf(', err_r = %.3e',errConvr);
+                    end
+                    if checkConvEnergy
+                        fprintf(', err_e = %.3e',errConve);
+                    end
+                    fprintf('\n');
+                end
+            end
+            % if any(db > dbth)
+            %     break
+            % end
+        end
+        
+        % Force
+        numddl = findddl(S,'UY',PU);
+        f = A(numddl,:)*u;
+        f = sum(f);
+        f = abs(f);
+        
+        % Energy
+        if ~checkConvEnergy
             Ed = 1/2*d'*Ae_phase*d - d'*be_phase;
             Eu = 1/2*u'*A*u;
-            E = Ed+Eu;
-            errConve = abs(E-E_prev)/abs(E);
         end
-        if checkConvSol || checkConvRes || checkConvEnergy
-            errConv = max(max(errConvs,errConvr),errConve);
-            if displayIter
-                fprintf('sub-iter #%2.d : error = %.3e',nbIter,errConv);
-                if checkConvSol
-                    fprintf(', err_s = %.3e',errConvs);
-                end
-                if checkConvRes
-                    fprintf(', err_r = %.3e',errConvr);
-                end
-                if checkConvEnergy
-                    fprintf(', err_e = %.3e',errConve);
-                end
-                fprintf('\n');
-            end
-        end
-    end
-    
-    % Force
-    numddl = findddl(S,'UY',PU);
-    f = A(numddl,:)*u;
-    f = sum(f);
-    f = abs(f);
-    
-    % Energy
-    if ~checkConvEnergy
-        Ed = 1/2*d'*Ae_phase*d - d'*be_phase;
-        Eu = 1/2*u'*A*u;
-    end
+    % end
     
     % Update fields
     dt{i} = d;

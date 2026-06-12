@@ -258,10 +258,9 @@ if setProblem
     BU = CIRCLE(0.0,h,R0);
     BL = CIRCLE(-ls,-h,R0);
     BR = CIRCLE(ls,-h,R0);
-    % LU = LINE([-L,h],[L,h]);
+    LU = LINE([-L,h],[L,h]);
     
-    % findddlboundary = @(S_phase) findddl(S_phase,'T',LU);
-    findddlboundary = @(S_phase) [];
+    findddlboundary = @(S_phase) findddl(S_phase,'T',LU);
     
     if strcmpi(initialCrack,'geometriccrack')
         S_phase = final(S_phase,'duplicate');
@@ -467,7 +466,7 @@ if solveProblem
     fun = @(S_phase,S) solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
         'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
         'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
-    % fun = @(S_phase,S) solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,...
+    % fun = @(S_phase,S) solvePFDetLinElasAsymmetricNotchedPlate(S_phase,S,T,PFsolver,PU,PL,PR,LU,...
     %     'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
     %     'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     [ft,Edt,Eut,dmaxt,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
