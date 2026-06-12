@@ -250,7 +250,8 @@ if setProblem
                     S_phase = gmshDomainWithDoubleEdgeNotch(D,Ca,Cb,c,clD,clCtip,fullfile(pathname,'gmsh_domain_double_edge_crack'));
                 case 3
                     c = 2e-3; % notch width
-                    S_phase = gmshDomainWithDoubleEdgeNotch(D,Ca,Cb,c,clD,clC,fullfile(pathname,'gmsh_domain_double_edge_crack'),Dim,'rectangular');
+                    clCtip = min(clC,c/2);
+                    S_phase = gmshDomainWithDoubleEdgeNotch(D,Ca,Cb,c,clD,clCtip,fullfile(pathname,'gmsh_domain_double_edge_crack'),Dim,'rectangular');
             end
         case 'initialphasefield'
             S_phase = gmshDomainWithDoubleEdgeCrack(D,Ca,Cb,clD,clC,fullfile(pathname,'gmsh_domain_double_edge_crack'),Dim,'noduplicate','refinecrack');
