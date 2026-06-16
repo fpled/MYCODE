@@ -6,18 +6,21 @@ function varargout = gmshFCBAdesk3D1(D,Qa,Qb,clD,clQa,clQb,filename,indim,vararg
 % filename : file name (optional)
 % indim : space dimension (optional, getindim(D) by default)
 
-if nargin<5
-    clQa = clD;
+if nargin<8
+    indim = getindim(D);
+end
+if nargin<7
+    filename = 'gmsh_desk_3D_1';
 end
 if nargin<6
     clQb = clD;
 end
-if nargin<8
-    indim = getindim(D);
+if nargin<5
+    clQa = clD;
 end
 
 G = GMSHFILE();
-if nargin>=7 && ischar(filename)
+if ischar(filename) && ~isempty(filename)
     G = setfile(G,filename);
 end
 

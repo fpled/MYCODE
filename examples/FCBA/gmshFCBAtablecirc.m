@@ -8,26 +8,29 @@ function varargout = gmshFCBAtablecirc(C,Q,I,PbC,PiCeQ,PiQeI,PiI,clC,clQ,clI,clP
 % filename : file name (optional)
 % indim : space dimension (optional, getindim(C) by default)
 
-if nargin<9
-    clQ = clC;
+if nargin<16
+    indim = getindim(C);
 end
-if nargin<10
-    clI = clC;
-end
-if nargin<11
-    clPbC = clC;
-end
-if nargin<12
-    clPiCeQ = clC;
-end
-if nargin<13
-    clPiQeI = clQ;
+if nargin<15
+    filename = 'gmsh_table_circ';
 end
 if nargin<14
     clPiI = clI;
 end
-if nargin<15
-    indim = getindim(C);
+if nargin<13
+    clPiQeI = clQ;
+end
+if nargin<12
+    clPiCeQ = clC;
+end
+if nargin<11
+    clPbC = clC;
+end
+if nargin<10
+    clI = clC;
+end
+if nargin<9
+    clQ = clC;
 end
 
 if ~iscell(PbC)
@@ -59,7 +62,7 @@ if isscalar(clPiI)
 end
 
 G = GMSHFILE();
-if nargin>=15 && ischar(filename)
+if ischar(filename) && ~isempty(filename)
     G = setfile(G,filename);
 end
 

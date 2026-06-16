@@ -8,20 +8,23 @@ function varargout = gmshFCBAdesk3D(D1,D2,D3,D5a,D5b,I,LbD3,CiD3eI,CiI,clD1,clD2
 % filename : file name (optional)
 % indim : space dimension (optional, max([getindim(D1),getindim(D2),getindim(D3),getindim(D5a),getindim(D5b),getindim(I)]) by default)
 
-if nargin<15
-    clI = clD3;
+if nargin<20
+    indim = max([getindim(D1),getindim(D2),getindim(D3),getindim(D5a),getindim(D5b),getindim(I)]);
 end
-if nargin<16
-    clLbD3 = clD3;
-end
-if nargin<17
-    clCiD3eI = clD3;
+if nargin<19
+    filename = 'gmsh_desk_3D';
 end
 if nargin<18
     clCiI = clI;
 end
-if nargin<20
-    indim = max([getindim(D1),getindim(D2),getindim(D3),getindim(D5a),getindim(D5b),getindim(I)]);
+if nargin<17
+    clCiD3eI = clD3;
+end
+if nargin<16
+    clLbD3 = clD3;
+end
+if nargin<15
+    clI = clD3;
 end
 
 if ~iscell(LbD3)
@@ -32,7 +35,7 @@ if isscalar(clLbD3)
 end
 
 G = GMSHFILE();
-if nargin>=19 && ischar(filename)
+if ischar(filename) && ~isempty(filename)
     G = setfile(G,filename);
 end
 

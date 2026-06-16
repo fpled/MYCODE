@@ -7,20 +7,23 @@ function varargout = gmshFCBAdeskpointload(Q1,Q2,Q3,Q5a,Q5b,I,PbQ3,PiQ3eI,PiI,cl
 % filename : file name (optional)
 % indim : space dimension (optional, max([getindim(Q1),getindim(Q2),getindim(Q3),getindim(Q5a),getindim(Q5b),getindim(I)]) by default)
 
-if nargin<15
-    clI = clQ3;
+if nargin<20
+    indim = max([getindim(Q1),getindim(Q2),getindim(Q3),getindim(Q5a),getindim(Q5b),getindim(I)]);
 end
-if nargin<16
-    clPbQ3 = clQ3;
-end
-if nargin<17
-    clPiQ3eI = clQ3;
+if nargin<19
+    filename = 'gmsh_desk_pointload';
 end
 if nargin<18
     clPiI = clI;
 end
-if nargin<20
-    indim = max([getindim(Q1),getindim(Q2),getindim(Q3),getindim(Q5a),getindim(Q5b),getindim(I)]);
+if nargin<17
+    clPiQ3eI = clQ3;
+end
+if nargin<16
+    clPbQ3 = clQ3;
+end
+if nargin<15
+    clI = clQ3;
 end
 
 if ~iscell(PbQ3)
@@ -45,7 +48,7 @@ if isscalar(clPiI)
 end
 
 G = GMSHFILE();
-if nargin>=19 && ischar(filename)
+if ischar(filename) && ~isempty(filename)
     G = setfile(G,filename);
 end
 

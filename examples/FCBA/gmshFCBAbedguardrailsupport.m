@@ -6,11 +6,14 @@ function varargout = gmshFCBAbedguardrailsupport(Q,L,clQ,clL,filename,indim,vara
 % filename : file name (optional)
 % indim : space dimension (optional, getindim(Q) by default)
 
-if nargin<4
-    clL = clQ;
-end
 if nargin<6
     indim = getindim(Q);
+end
+if nargin<5
+    filename = 'gmsh_bed_guardrailsupport';
+end
+if nargin<4
+    clL = clQ;
 end
 
 PQ = getvertices(Q);
@@ -26,7 +29,7 @@ end
 
 varargin = delonlycharin('recombine',varargin);
 
-if nargin>=5 && ischar(filename)
+if ischar(filename) && ~isempty(filename)
     G = setfile(G,filename);
 end
 

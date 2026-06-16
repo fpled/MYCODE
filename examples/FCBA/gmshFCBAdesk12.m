@@ -6,18 +6,23 @@ function varargout = gmshFCBAdesk12(Q,La,Lb,clQ,clLa,clLb,filename,indim,varargi
 % filename : file name (optional)
 % indim : space dimension (optional, getindim(Q) by default)
 
-if nargin<5
-    clLa = clQ;
+if nargin<8
+    indim = getindim(Q);
+end
+if nargin<7
+    filename = 'gmsh_desk_12';
 end
 if nargin<6
     clLb = clQ;
 end
-if nargin<8
-    indim = getindim(Q);
+if nargin<5
+    clLa = clQ;
 end
 
+
+
 G = GMSHFILE();
-if nargin>=7 && ischar(filename)
+if ischar(filename) && ~isempty(filename)
     G = setfile(G,filename);
 end
 

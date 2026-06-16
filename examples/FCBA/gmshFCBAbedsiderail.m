@@ -6,11 +6,14 @@ function varargout = gmshFCBAbedsiderail(Q,L,clQ,clL,filename,indim,varargin)
 % filename : file name (optional)
 % indim : space dimension (optional, getindim(Q) by default)
 
-if nargin<4
-    clL = clQ;
-end
 if nargin<6
     indim = getindim(Q);
+end
+if nargin<5
+    filename = 'gmsh_bed_siderail';
+end
+if nargin<4
+    clL = clQ;
 end
 
 if ~iscell(L)
@@ -21,7 +24,7 @@ if isscalar(clL)
 end
 
 G = GMSHFILE();
-if nargin>=5 && ischar(filename)
+if ischar(filename) && ~isempty(filename)
     G = setfile(G,filename);
 end
 
