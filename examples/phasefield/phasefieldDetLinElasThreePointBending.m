@@ -29,7 +29,7 @@ tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 FEmesh = 'Unif'; % 'Unif' or 'Optim'
-structMesh = true; % true or false
+structMesh = false; % true or false
 optionMesh = []; % [] or 'recombine'
 % optionMesh = 'recombine'; % [] or 'recombine'
 w = 5e-3; % flat punch / support width
@@ -145,12 +145,12 @@ if setProblem
         % Unstructured mesh
         switch lower(initialCrack)
             case 'geometriccrack'
-                S_phase = gmshThreePointBendingWithSingleEdgeCrack(L,H,ls,w,a,b,e,cl,fullfile(pathname,'gmsh_three_point_bending_single_edge_crack'),Dim,optionMesh,'Box',B);
+                S_phase = gmshThreePointBendingWithSingleEdgeCrack(L,H,ls,w,a,b,e,clD,clC,clS,fullfile(pathname,'gmsh_three_point_bending_single_edge_crack'),Dim,optionMesh,'Box',B);
             case 'geometricnotch'
                 c = 2*clC; % crack width
-                S_phase = gmshThreePointBendingWithSingleEdgeNotch(L,H,ls,w,a,b,c,e,cl,fullfile(pathname,'gmsh_three_point_bending_single_edge_crack'),Dim,optionMesh,'Box',B,'rectangular');
+                S_phase = gmshThreePointBendingWithSingleEdgeNotch(L,H,ls,w,a,b,c,e,clD,clC,clS,fullfile(pathname,'gmsh_three_point_bending_single_edge_crack'),Dim,optionMesh,'Box',B,'rectangular');
             case 'initialphasefield'
-                S_phase = gmshThreePointBendingWithSingleEdgeCrack(L,H,ls,w,a,b,e,cl,fullfile(pathname,'gmsh_three_point_bending_single_edge_crack'),Dim,'noduplicate','refinecrack',optionMesh,'Box',B);
+                S_phase = gmshThreePointBendingWithSingleEdgeCrack(L,H,ls,w,a,b,e,clD,clC,clS,fullfile(pathname,'gmsh_three_point_bending_single_edge_crack'),Dim,'noduplicate','refinecrack',optionMesh,'Box',B);
             otherwise
                 error('Wrong model for initial crack');
         end
