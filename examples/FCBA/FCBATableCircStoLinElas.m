@@ -550,6 +550,11 @@ else
 end
 
 %% Outputs
+if strcmpi(test,'staticvert')
+    uz_exp = -2.35e-3;
+    err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
+end
+
 filenameResults = fullfile(pathname,'results.txt');
 if solveProblem
     fid = fopen(filenameResults,'w');
@@ -570,8 +575,8 @@ if solveProblem
     fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
     fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
     if strcmpi(test,'staticvert')
-        uz_exp = -2.35e-3;
-        err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
+        % uz_exp = -2.35e-3;
+        % err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
         fprintf(fid,'uz_exp   = %g m, error(mean(uz)) = %.3e\n',uz_exp,err_uz);
     end
     fprintf(fid,'mean(ur) = %g m, std(ur) = %g m, ci(ur) = [%g %g] m\n',mean_ur,std_ur,ci_ur(1),ci_ur(2));

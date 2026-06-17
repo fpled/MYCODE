@@ -828,6 +828,87 @@ else
 end
 
 %% Outputs
+switch lower(test)
+    case 'statichori1'
+        if loading==100
+            ux_exp_start = -6.88*1e-3;
+            ux_exp_end = -[10.5 10.51 10.44 10.8 10.72 10.62 10.67 10.65 10.66 10.87 10.86]*1e-3;
+        elseif loading==200
+            ux_exp_start = -6.16*1e-3;
+            ux_exp_end = -[16.78 16.74 16.72 17.13 17 16.8 16.87 16.78 17.04 16.82 16.71 17.17]*1e-3;
+        end
+        ux_exp = mean(ux_exp_end - ux_exp_start);
+        err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+        env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
+    case 'statichori2'
+        if loading==100
+            ux_exp_start = 2.12*1e-3;
+            ux_exp_end = [6.22 6.17 6.26 6.31 6.33 6.24 6.26 6.4 6.26 6.49 6.48 6.42 6.36 6.56 6.37 6.39]*1e-3;
+        elseif loading==200
+            ux_exp_start = 1.91*1e-3;
+            ux_exp_end = [12.45 12.68 12.66 12.65 12.71 12.64 12.82 12.73 12.89 12.86 12.79 12.86]*1e-3;
+        end
+        ux_exp = mean(ux_exp_end - ux_exp_start);
+        err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+        env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
+    case 'statichori3'
+        uy_exp_start = -3.77*1e-3;
+        uy_exp_end = -[4.71 4.73 4.69 4.56 4.47 4.73]*1e-3;
+        uy_exp = mean(uy_exp_end - uy_exp_start);
+        err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
+        env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
+    case 'statichori4'
+        uy_exp_start = 9.71*1e-3;
+        uy_exp_end = [12.21 12.2 12.2 12.23 12.2 12.19 12.21]*1e-3;
+        uy_exp = mean(uy_exp_end - uy_exp_start);
+        err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
+        env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
+    case 'staticvert'
+        if loading==300
+            uz_exp_start = -0.69*1e-3;
+            uz_exp_end = -[10.10 9.88 9.64 9.88 9.94 9.79 9.92 9.93 9.82 9.95]*1e-3;
+        elseif loading==400
+            uz_exp_start = -0.75*1e-3;
+            uz_exp_end = -[13.45 13.52 13.56 13.64 13.65 13.74 13.75 13.44 13.74 13.53]*1e-3;
+        elseif loading==500
+            uz_exp_start = -0.78*1e-3;
+            uz_exp_end = -[16.66 16.57 16.59 16.78 16.55 16.69 16.75 16.59 16.73 16.76]*1e-3;
+        end
+        uz_exp = mean(uz_exp_end - uz_exp_start);
+        err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
+        env_uz_exp = [min(uz_exp_end - uz_exp_start),max(uz_exp_end - uz_exp_start)];
+    case 'durabilityhori1'
+        ux_exp_start = -4.42*1e-3;
+        ux_exp_end = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;
+        ux_exp = mean(ux_exp_end - ux_exp_start);
+        err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+        env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
+    case 'durabilityhori2'
+        ux_exp_start = 3.48*1e-3;
+        ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;
+        ux_exp = mean(ux_exp_end - ux_exp_start);
+        err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+        env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
+    case 'durabilityhori3'
+        uy_exp_start = 3.35*1e-3;
+        uy_exp_end = [6.16 5.76 5.97 5.81 5.84 5.61 5.86 5.64 5.62 5.68]*1e-3;
+        uy_exp = mean(uy_exp_end - uy_exp_start);
+        err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
+        env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
+    case 'durabilityhori4'
+        uy_exp_start = -3.75*1e-3;
+        uy_exp_end = -[3.89 3.88 3.89 3.88 3.89]*1e-3;
+        uy_exp = mean(uy_exp_end - uy_exp_start);
+        err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
+        env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
+    case 'stabilityvert'
+        uz_exp_start = -1.93*1e-3;
+        uz_exp_end = -[18.46 18.44 18.53 18.58 18.59 18.7 18.77 18.73 18.85 18.76]*1e-3;
+        uz_exp = mean(uz_exp_end - uz_exp_start);
+        err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
+        env_uz_exp = [min(uz_exp_end - uz_exp_start),max(uz_exp_end - uz_exp_start)];
+end
+
 filenameResults = fullfile(pathname,'results.txt');
 if solveProblem
     fid = fopen(filenameResults,'w');
@@ -847,16 +928,16 @@ if solveProblem
     
     switch lower(test)
         case 'statichori1'
-            if loading==100
-                ux_exp_start = -6.88*1e-3;
-                ux_exp_end = -[10.5 10.51 10.44 10.8 10.72 10.62 10.67 10.65 10.66 10.87 10.86]*1e-3;
-            elseif loading==200
-                ux_exp_start = -6.16*1e-3;
-                ux_exp_end = -[16.78 16.74 16.72 17.13 17 16.8 16.87 16.78 17.04 16.82 16.71 17.17]*1e-3;
-            end
-            ux_exp = mean(ux_exp_end - ux_exp_start);
-            err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
-            env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
+            % if loading==100
+            %     ux_exp_start = -6.88*1e-3;
+            %     ux_exp_end = -[10.5 10.51 10.44 10.8 10.72 10.62 10.67 10.65 10.66 10.87 10.86]*1e-3;
+            % elseif loading==200
+            %     ux_exp_start = -6.16*1e-3;
+            %     ux_exp_end = -[16.78 16.74 16.72 17.13 17 16.8 16.87 16.78 17.04 16.82 16.71 17.17]*1e-3;
+            % end
+            % ux_exp = mean(ux_exp_end - ux_exp_start);
+            % err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+            % env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
             
             fprintf(fid,'\n');
             fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
@@ -865,16 +946,16 @@ if solveProblem
             fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
             fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         case 'statichori2'
-            if loading==100
-                ux_exp_start = 2.12*1e-3;
-                ux_exp_end = [6.22 6.17 6.26 6.31 6.33 6.24 6.26 6.4 6.26 6.49 6.48 6.42 6.36 6.56 6.37 6.39]*1e-3;
-            elseif loading==200
-                ux_exp_start = 1.91*1e-3;
-                ux_exp_end = [12.45 12.68 12.66 12.65 12.71 12.64 12.82 12.73 12.89 12.86 12.79 12.86]*1e-3;
-            end
-            ux_exp = mean(ux_exp_end - ux_exp_start);
-            err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
-            env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
+            % if loading==100
+            %     ux_exp_start = 2.12*1e-3;
+            %     ux_exp_end = [6.22 6.17 6.26 6.31 6.33 6.24 6.26 6.4 6.26 6.49 6.48 6.42 6.36 6.56 6.37 6.39]*1e-3;
+            % elseif loading==200
+            %     ux_exp_start = 1.91*1e-3;
+            %     ux_exp_end = [12.45 12.68 12.66 12.65 12.71 12.64 12.82 12.73 12.89 12.86 12.79 12.86]*1e-3;
+            % end
+            % ux_exp = mean(ux_exp_end - ux_exp_start);
+            % err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+            % env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
             
             fprintf(fid,'\n');
             fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
@@ -883,11 +964,11 @@ if solveProblem
             fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
             fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         case 'statichori3'
-            uy_exp_start = -3.77*1e-3;
-            uy_exp_end = -[4.71 4.73 4.69 4.56 4.47 4.73]*1e-3;
-            uy_exp = mean(uy_exp_end - uy_exp_start);
-            err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
-            env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
+            % uy_exp_start = -3.77*1e-3;
+            % uy_exp_end = -[4.71 4.73 4.69 4.56 4.47 4.73]*1e-3;
+            % uy_exp = mean(uy_exp_end - uy_exp_start);
+            % err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
+            % env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
             
             fprintf(fid,'\n');
             fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
@@ -896,11 +977,11 @@ if solveProblem
             fprintf(fid,'uy_exp   = %g m, error(mean(uy)) = %.3e, env(uy_exp) = [%g %g] m\n',uy_exp,err_uy,env_uy_exp);
             fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         case 'statichori4'
-            uy_exp_start = 9.71*1e-3;
-            uy_exp_end = [12.21 12.2 12.2 12.23 12.2 12.19 12.21]*1e-3;
-            uy_exp = mean(uy_exp_end - uy_exp_start);
-            err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
-            env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
+            % uy_exp_start = 9.71*1e-3;
+            % uy_exp_end = [12.21 12.2 12.2 12.23 12.2 12.19 12.21]*1e-3;
+            % uy_exp = mean(uy_exp_end - uy_exp_start);
+            % err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
+            % env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
             
             fprintf(fid,'\n');
             fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
@@ -909,19 +990,19 @@ if solveProblem
             fprintf(fid,'uy_exp   = %g m, error(mean(uy)) = %.3e, env(uy_exp) = [%g %g] m\n',uy_exp,err_uy,env_uy_exp);
             fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         case 'staticvert'
-            if loading==300
-                uz_exp_start = -0.69*1e-3;
-                uz_exp_end = -[10.10 9.88 9.64 9.88 9.94 9.79 9.92 9.93 9.82 9.95]*1e-3;
-            elseif loading==400
-                uz_exp_start = -0.75*1e-3;
-                uz_exp_end = -[13.45 13.52 13.56 13.64 13.65 13.74 13.75 13.44 13.74 13.53]*1e-3;
-            elseif loading==500
-                uz_exp_start = -0.78*1e-3;
-                uz_exp_end = -[16.66 16.57 16.59 16.78 16.55 16.69 16.75 16.59 16.73 16.76]*1e-3;
-            end
-            uz_exp = mean(uz_exp_end - uz_exp_start);
-            err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
-            env_uz_exp = [min(uz_exp_end - uz_exp_start),max(uz_exp_end - uz_exp_start)];
+            % if loading==300
+            %     uz_exp_start = -0.69*1e-3;
+            %     uz_exp_end = -[10.10 9.88 9.64 9.88 9.94 9.79 9.92 9.93 9.82 9.95]*1e-3;
+            % elseif loading==400
+            %     uz_exp_start = -0.75*1e-3;
+            %     uz_exp_end = -[13.45 13.52 13.56 13.64 13.65 13.74 13.75 13.44 13.74 13.53]*1e-3;
+            % elseif loading==500
+            %     uz_exp_start = -0.78*1e-3;
+            %     uz_exp_end = -[16.66 16.57 16.59 16.78 16.55 16.69 16.75 16.59 16.73 16.76]*1e-3;
+            % end
+            % uz_exp = mean(uz_exp_end - uz_exp_start);
+            % err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
+            % env_uz_exp = [min(uz_exp_end - uz_exp_start),max(uz_exp_end - uz_exp_start)];
             
             fprintf(fid,'\n');
             fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
@@ -930,11 +1011,11 @@ if solveProblem
             fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
             fprintf(fid,'uz_exp   = %g m, error(mean(uz)) = %.3e, env(uz_exp) = [%g %g] m\n',uz_exp,err_uz,env_uz_exp);
         case 'durabilityhori1'
-            ux_exp_start = -4.42*1e-3;
-            ux_exp_end = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;
-            ux_exp = mean(ux_exp_end - ux_exp_start);
-            err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
-            env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
+            % ux_exp_start = -4.42*1e-3;
+            % ux_exp_end = -[8.4 8.3 8.37 8.41 8.54 8.39 8.56 8.48 8.46 8.49 8.49 8.43 8.55 8.52]*1e-3;
+            % ux_exp = mean(ux_exp_end - ux_exp_start);
+            % err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+            % env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
             
             fprintf(fid,'\n');
             fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
@@ -943,11 +1024,11 @@ if solveProblem
             fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
             fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         case 'durabilityhori2'
-            ux_exp_start = 3.48*1e-3;
-            ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;
-            ux_exp = mean(ux_exp_end - ux_exp_start);
-            err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
-            env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
+            % ux_exp_start = 3.48*1e-3;
+            % ux_exp_end = [7.89 7.85 8.1 8.4 8.36 8.55 8.27 8.27 8.47 8.49 8.64 8.35 8.5 8.63 8.73]*1e-3;
+            % ux_exp = mean(ux_exp_end - ux_exp_start);
+            % err_ux = norm(mean_ux-ux_exp)/norm(ux_exp);
+            % env_ux_exp = [min(ux_exp_end - ux_exp_start),max(ux_exp_end - ux_exp_start)];
             
             fprintf(fid,'\n');
             fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
@@ -956,11 +1037,11 @@ if solveProblem
             fprintf(fid,'mean(uy) = %g m, std(uy) = %g m, ci(uy) = [%g %g] m\n',mean_uy,std_uy,ci_uy(1),ci_uy(2));
             fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         case 'durabilityhori3'
-            uy_exp_start = 3.35*1e-3;
-            uy_exp_end = [6.16 5.76 5.97 5.81 5.84 5.61 5.86 5.64 5.62 5.68]*1e-3;
-            uy_exp = mean(uy_exp_end - uy_exp_start);
-            err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
-            env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
+            % uy_exp_start = 3.35*1e-3;
+            % uy_exp_end = [6.16 5.76 5.97 5.81 5.84 5.61 5.86 5.64 5.62 5.68]*1e-3;
+            % uy_exp = mean(uy_exp_end - uy_exp_start);
+            % err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
+            % env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
             
             fprintf(fid,'\n');
             fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
@@ -969,11 +1050,11 @@ if solveProblem
             fprintf(fid,'uy_exp   = %g m, error(mean(uy)) = %.3e, env(uy_exp) = [%g %g] m\n',uy_exp,err_uy,env_uy_exp);
             fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         case 'durabilityhori4'
-            uy_exp_start = -3.75*1e-3;
-            uy_exp_end = -[3.89 3.88 3.89 3.88 3.89]*1e-3;
-            uy_exp = mean(uy_exp_end - uy_exp_start);
-            err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
-            env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
+            % uy_exp_start = -3.75*1e-3;
+            % uy_exp_end = -[3.89 3.88 3.89 3.88 3.89]*1e-3;
+            % uy_exp = mean(uy_exp_end - uy_exp_start);
+            % err_uy = norm(mean_uy-uy_exp)/norm(uy_exp);
+            % env_uy_exp = [min(uy_exp_end - uy_exp_start),max(uy_exp_end - uy_exp_start)];
             
             fprintf(fid,'\n');
             fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
@@ -982,11 +1063,11 @@ if solveProblem
             fprintf(fid,'uy_exp   = %g m, error(mean(uy)) = %.3e, env(uy_exp) = [%g %g] m\n',uy_exp,err_uy,env_uy_exp);
             fprintf(fid,'mean(uz) = %g m, std(uz) = %g m, ci(uz) = [%g %g] m\n',mean_uz,std_uz,ci_uz(1),ci_uz(2));
         case 'stabilityvert'
-            uz_exp_start = -1.93*1e-3;
-            uz_exp_end = -[18.46 18.44 18.53 18.58 18.59 18.7 18.77 18.73 18.85 18.76]*1e-3;
-            uz_exp = mean(uz_exp_end - uz_exp_start);
-            err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
-            env_uz_exp = [min(uz_exp_end - uz_exp_start),max(uz_exp_end - uz_exp_start)];
+            % uz_exp_start = -1.93*1e-3;
+            % uz_exp_end = -[18.46 18.44 18.53 18.58 18.59 18.7 18.77 18.73 18.85 18.76]*1e-3;
+            % uz_exp = mean(uz_exp_end - uz_exp_start);
+            % err_uz = norm(mean_uz-uz_exp)/norm(uz_exp);
+            % env_uz_exp = [min(uz_exp_end - uz_exp_start),max(uz_exp_end - uz_exp_start)];
             
             fprintf(fid,'\n');
             fprintf(fid,'Displacement u at point (%g,%g,%g) m\n',double(P));
