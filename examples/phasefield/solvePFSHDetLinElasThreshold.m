@@ -163,10 +163,10 @@ while ti < tf-eps
     i = i+1;
     tIter = tic;
     nbIter = 0;
-    if any(Db > dbth)
-        ti = ti + dti;
-        f = 0;
-    else
+    % if any(Db > dbth)
+    %     ti = ti + dti;
+    %     f = 0;
+    % else
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
             H_old = H;
         end
@@ -319,7 +319,7 @@ while ti < tf-eps
                 errConvd = norm(d-d_prev)/norm(d);
                 errConvh = norm(h-h_prev)/norm(h);
                 errConvu = norm(u-u_prev)/norm(u);
-                errConvs = max(errConvd,errConvu);
+                errConvs = max(max(errConvd,errConvh),errConvu);
             end
             if checkConvRes
                 % Damage/Phase field residual
@@ -356,9 +356,9 @@ while ti < tf-eps
                     fprintf('\n');
                 end
             end
-            if any(Db > dbth)
-                break
-            end
+            % if any(Db > dbth)
+            %     break
+            % end
         end
         
         % Force
@@ -373,7 +373,7 @@ while ti < tf-eps
             Eh = 1/2*h'*Ae_healing*h - h'*be_healing;
             Eu = 1/2*u'*A*u;
         end
-    end
+    % end
     
     % Update fields
     dt{i} = d;

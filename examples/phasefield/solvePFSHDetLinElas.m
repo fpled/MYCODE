@@ -179,9 +179,9 @@ Db = deff(db,hb);
 for i=1:length(T)
     tIter = tic;
     nbIter = 0;
-    if any(Db > dbth)
-        f = 0;
-    else
+    % if any(Db > dbth)
+    %     f = 0;
+    % else
         if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
             H_old = H;
         end
@@ -330,7 +330,7 @@ for i=1:length(T)
                 errConvd = norm(d-d_prev)/norm(d);
                 errConvh = norm(h-h_prev)/norm(h);
                 errConvu = norm(u-u_prev)/norm(u);
-                errConvs = max(errConvd,errConvh,errConvu);
+                errConvs = max(max(errConvd,errConvh),errConvu);
             end
             if checkConvRes
                 % Damage/Phase field residual
@@ -367,9 +367,9 @@ for i=1:length(T)
                     fprintf('\n');
                 end
             end
-            if any(Db > dbth)
-                break
-            end
+            % if any(Db > dbth)
+            %     break
+            % end
         end
         
         % Force
@@ -386,7 +386,7 @@ for i=1:length(T)
             Eh = 1/2*h'*Ae_healing*h - h'*be_healing;
             Eu = 1/2*u'*A*u;
         end
-    end
+    % end
     
     % Update fields
     dt{i} = d;
