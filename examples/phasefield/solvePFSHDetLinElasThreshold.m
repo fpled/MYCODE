@@ -182,6 +182,7 @@ while ti < tf-eps
             nbIter = nbIter+1;
             if checkConvSol
                 d_prev = d;
+                h_prev = h;
                 u_prev = u;
             end
             if checkConvEnergy
