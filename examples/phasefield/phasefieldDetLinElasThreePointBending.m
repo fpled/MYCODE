@@ -4,7 +4,7 @@
 
 % clc
 clearvars
-% close all
+close all
 % myparallel('start');
 
 %% Input data
@@ -28,7 +28,7 @@ maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
-FEmesh = 'Unif'; % 'Unif' or 'Optim'
+FEmesh = 'Optim'; % 'Unif' or 'Optim'
 structMesh = false; % true or false
 optionMesh = []; % [] or 'recombine'
 % optionMesh = 'recombine'; % [] or 'recombine'
@@ -98,18 +98,18 @@ if setProblem
     %     C = QUADRANGLE([b,0.0,0.0],[b,a,0.0],[b,a,e],[b,0.0,e]);
     % end
     
-    cl = 0.25e-3;
+    cl = 0.5e-3;
     if test
-        cl = 0.5e-3;
+        cl = 1e-3;
     end
     switch lower(FEmesh)
         case 'unif' % uniform mesh
             clD = cl;
             B = [];
         case 'optim' % optimized mesh
-            clD = 1e-3;
+            clD = 2e-3;
             if test
-                clD = 2e-3;
+                clD = 4e-3;
             end
             VIn = cl; VOut = clD;
             XMin = b-10e-3; XMax = b+10e-3;
@@ -462,6 +462,7 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
+    xlim tight
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Force [kN]','Interpreter',interpreter)
     mysaveas(pathname,'force_displacement',formats);
@@ -474,6 +475,7 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
+    xlim tight
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Maximum damage','Interpreter',interpreter)
     mysaveas(pathname,'max_damage_displacement',formats);
@@ -490,6 +492,7 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
+    xlim tight
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Energy [J]','Interpreter',interpreter)
     legend('elastic','fracture','total',...
@@ -504,6 +507,7 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
+    xlim tight
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Number of iterations','Interpreter',interpreter)
     mysaveas(pathname,'nb_iterations_displacement',formats);
@@ -515,6 +519,7 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
+    xlim tight
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Computing time [s]','Interpreter',interpreter)
     mysaveas(pathname,'cpu_time_displacement',formats);
@@ -526,6 +531,7 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
+    xlim tight
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Error','Interpreter',interpreter)
     mysaveas(pathname,'error_displacement',formats);
@@ -533,7 +539,7 @@ if displaySolution
     
     %% Display solutions at different instants
     ampl = 0;
-    tSnapshots = [14 14.5 15 15.5 16 17.5 20 22.5]*1e-6;
+    tSnapshots = [12 13 13.5 14 14.5 15 16 18 20 22.5]*1e-6;
     rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     rep = [rep,length(T)];
     % tSnapshots = [tSnapshots,gett1(T)];
