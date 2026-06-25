@@ -107,10 +107,11 @@ if setProblem
             clD = cl;
             B = [];
         case 'optim' % optimized mesh
-            clD = 2e-3;
-            if test
-                clD = 4e-3;
-            end
+            % clD = 2e-3;
+            % if test
+            %     clD = 4e-3;
+            % end
+            clD = 4*cl;
             VIn = cl; VOut = clD;
             XMin = b-10e-3; XMax = b+10e-3;
             YMin = 0; YMax = H;
@@ -290,6 +291,8 @@ if setProblem
     % du = 1e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 0.025 mm)
     dt0 = 5e-8;
     dt1 = 1e-8;
+    % dt0 = 1e-7;
+    % dt1 = 2e-8;
     if test
         dt0 = 5e-7;
         dt1 = 1e-7;
@@ -539,7 +542,11 @@ if displaySolution
     
     %% Display solutions at different instants
     ampl = 0;
-    tSnapshots = [12 13 13.5 14 14.5 15 16 18 20 22.5]*1e-6;
+    if abs(w-5e-3)<eps
+        tSnapshots = [12 13 13.5 14 14.5 15 16 18 20 22.5]*1e-6;
+    elseif abs(w-10e-3)<eps
+        tSnapshots = [11 12 12.5 13 13.5 14 16 18 20 22.5]*1e-6;
+    end
     rep = arrayfun(@(x) find(t>x-eps,1),tSnapshots);
     rep = [rep,length(T)];
     % tSnapshots = [tSnapshots,gett1(T)];
