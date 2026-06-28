@@ -69,14 +69,16 @@ d = calc_init_dirichlet(S_phase);
 u = calc_init_dirichlet(S);
 if strcmpi(PFsolver,'historyfieldnode')
     H = FENODEFIELD(calc_energyint(S,u,'node','positive','local'));
+    r = FENODEFIELD(calc_parammat(S_phase,'r','node'));
     qn = FENODEFIELD(calc_parammat(S_phase,'qn','node'));
 else
     H = calc_energyint(S,u,'intorder','mass','positive','local');
+    r = calc_parammat(S_phase,'r');
     qn = calc_parammat(S_phase,'qn');
 end
+Ae_phase = calc_rigi(S_phase,'nofree');
+be_phase = bodyload(S_phase,[],'QN',qn,'nofree');
 if checkConvEnergy
-    Ae_phase = calc_rigi(S_phase,'nofree');
-    be_phase = bodyload(S_phase,[],'QN',qn,'nofree');
     Ed = 1/2*d'*Ae_phase*d - d'*be_phase;
     A = calc_rigi(S,'nofree');
     Eu = 1/2*u'*A*u;
@@ -173,6 +175,10 @@ if displaySol
 end
 if displayMesh
     fm = figure('Name','Mesh','Position',posm);
+    clf
+    plot(S_phase);
+    
+    % plotModel(S_phase);
 end
 if displayForce
     ff = figure('Name','Force vs displacement','Position',posf);
@@ -193,15 +199,6 @@ for i=1:length(T)
             H_old = H;
         end
         d_old = d;
-        if strcmpi(PFsolver,'historyfieldnode')
-            r = FENODEFIELD(calc_parammat(S_phase,'r','node'));
-            qn = FENODEFIELD(calc_parammat(S_phase,'qn','node'));
-        else
-            r = calc_parammat(S_phase,'r');
-            qn = calc_parammat(S_phase,'qn');
-        end
-        Ae_phase = calc_rigi(S_phase,'nofree');
-        be_phase = bodyload(S_phase,[],'QN',qn,'nofree');
         if checkConvRes
             [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
         end
@@ -248,7 +245,6 @@ for i=1:length(T)
             end
             dmax = max(d);
             d = unfreevector(S_phase,d);
-            numddlb = findddlboundary(S_phase);
             db = d(numddlb,:);
             
             % Displacement field
@@ -458,6 +454,18 @@ for i=1:length(T)
         else
             H = calc_energyint(S,u,'intorder','mass','positive','local');
         end
+        
+        if strcmpi(PFsolver,'historyfieldnode')
+            r = FENODEFIELD(calc_parammat(S_phase,'r','node'));
+            qn = FENODEFIELD(calc_parammat(S_phase,'qn','node'));
+        else
+            r = calc_parammat(S_phase,'r');
+            qn = calc_parammat(S_phase,'qn');
+        end
+        Ae_phase = calc_rigi(S_phase,'nofree');
+        be_phase = bodyload(S_phase,[],'QN',qn,'nofree');
+        
+        numddlb = findddlboundary(S_phase);
         
         if displayMesh
             % Display mesh
