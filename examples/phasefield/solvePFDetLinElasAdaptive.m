@@ -8,28 +8,29 @@ addbcdamageadapt = fcnchk(addbcdamageadapt);
 findddlforce = fcnchk(findddlforce);
 findddlboundary = fcnchk(findddlboundary);
 final = fcnchk(final);
-display_ = getcharin('display',varargin,true);
-displayIter = getcharin('displayiter',varargin,false);
-displaySol = getcharin('displaysol',varargin,false);
-displayMesh = getcharin('displaymesh',varargin,false);
+
+display_     = getcharin('display',varargin,true);
+displayIter  = getcharin('displayiter',varargin,false);
+displaySol   = getcharin('displaysol',varargin,false);
+displayMesh  = getcharin('displaymesh',varargin,false);
 displayForce = getcharin('displayforce',varargin,false);
-maxIter = getcharin('maxiter',varargin,100);
-tolConv = getcharin('tol',varargin,1e-2);
-critConv = getcharin('crit',varargin,'Energy');
-meshAdapt = getcharin('meshadapt',varargin,'Mmg');
-dbth = getcharin('dbth',varargin,0.999);
-filename = getcharin('filename',varargin,'gmsh_domain');
-pathname = getcharin('pathname',varargin,'.');
-gmshoptions = getcharin('gmshoptions',varargin,'-v 0');
-mmgoptions = getcharin('mmgoptions',varargin,'-nomove -v -1');
+maxIter      = getcharin('maxiter',varargin,100);
+tolConv      = getcharin('tol',varargin,1e-2);
+critConv     = getcharin('crit',varargin,'Energy');
+meshAdapt    = getcharin('meshadapt',varargin,'Mmg');
+dbth         = getcharin('dbth',varargin,0.999);
+filename     = getcharin('filename',varargin,'gmsh_domain');
+pathname     = getcharin('pathname',varargin,'.');
+gmshoptions  = getcharin('gmshoptions',varargin,'-v 0');
+mmgoptions   = getcharin('mmgoptions',varargin,'-nomove -v -1');
 
 if verLessThan('matlab','9.1') % compatibility (<R2016b)
     contain = @(str,pat) ~isempty(strfind(lower(str),pat));
 else
     contain = @(str,pat) contains(str,pat,'IgnoreCase',true);
 end
-checkConvSol = contain(critConv,'solution');
-checkConvRes = contain(critConv,'residual');
+checkConvSol    = contain(critConv,'solution');
+checkConvRes    = contain(critConv,'residual');
 checkConvEnergy = contain(critConv,'energy');
 
 Dim = getdim(S);
@@ -158,7 +159,7 @@ elseif displaySol && displayMesh
     posm = [fpos(1)+fpos(3)/2 fpos(2:4)];
 elseif displaySol && displayForce
     posd = [fpos(1)-fpos(3)/2 fpos(2:4)];
-    posm = [fpos(1)+fpos(3)/2 fpos(2:4)];
+    posf = [fpos(1)+fpos(3)/2 fpos(2:4)];
 elseif displayMesh && displayForce
     posm = [fpos(1)-fpos(3)/2 fpos(2:4)];
     posf = [fpos(1)+fpos(3)/2 fpos(2:4)];

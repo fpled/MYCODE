@@ -5,27 +5,28 @@ function [dt,ht,ut,ft,Ht,Edt,Eht,Eut,output] = solvePFSHDetLinElas(S_phase,S_hea
 addbc = fcnchk(addbc);
 findddlforce = fcnchk(findddlforce);
 findddlboundary = fcnchk(findddlboundary);
-display_ = getcharin('display',varargin,true);
-displayIter = getcharin('displayiter',varargin,false);
-displaySol = getcharin('displaysol',varargin,false);
+
+display_     = getcharin('display',varargin,true);
+displayIter  = getcharin('displayiter',varargin,false);
+displaySol   = getcharin('displaysol',varargin,false);
 displayForce = getcharin('displayforce',varargin,false);
-maxIter = getcharin('maxiter',varargin,100);
-tolConv = getcharin('tol',varargin,1e-2);
-critConv = getcharin('crit',varargin,'Energy');
-heff = getcharin('heff',varargin,0.5);
-deff = getcharin('deff',varargin,@(d,h) d-heff*h);
-dact = getcharin('dact',varargin,0.5);
-fundact = getcharin('fundact',varargin,@(d,h) deff(d,h)>dact);
-PFregularization = getcharin('PFregularization',varargin,'AT2');
-dbth = getcharin('dbth',varargin,0.999);
+maxIter      = getcharin('maxiter',varargin,100);
+tolConv      = getcharin('tol',varargin,1e-2);
+critConv     = getcharin('crit',varargin,'Energy');
+heff         = getcharin('heff',varargin,0.5);
+deff         = getcharin('deff',varargin,@(d,h) d-heff*h);
+dact         = getcharin('dact',varargin,0.5);
+fundact      = getcharin('fundact',varargin,@(d,h) deff(d,h)>dact);
+PFregul      = getcharin('PFregularization',varargin,'AT2');
+dbth         = getcharin('dbth',varargin,0.999);
 
 if verLessThan('matlab','9.1') % compatibility (<R2016b)
     contain = @(str,pat) ~isempty(strfind(lower(str),pat));
 else
     contain = @(str,pat) contains(str,pat,'IgnoreCase',true);
 end
-checkConvSol = contain(critConv,'solution');
-checkConvRes = contain(critConv,'residual');
+checkConvSol    = contain(critConv,'solution');
+checkConvRes    = contain(critConv,'residual');
 checkConvEnergy = contain(critConv,'energy');
 
 Dim = getdim(S);
@@ -189,7 +190,7 @@ for i=1:length(T)
         h_old = h;
         if checkConvRes
             [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,h,heff,d,fundact);
-            [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,rh,qnh,H,d,h,heff,fundact,PFregularization);
+            [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,rh,qnh,H,d,h,heff,fundact,PFregul);
         end
         errConv = Inf;
         errConvs = 0; errConvr = 0; errConve = 0;
@@ -250,7 +251,7 @@ for i=1:length(T)
             
             % Healing field
             if ~checkConvRes
-                [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,rh,qnh,H,d,h_old,heff,fundact,PFregularization);
+                [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,rh,qnh,H,d,h_old,heff,fundact,PFregul);
             end
             
             switch lower(PFsolver)
@@ -338,7 +339,7 @@ for i=1:length(T)
                 r_phase = A_phase*d - b_phase;
                 errConvrd = norm(r_phase)/norm(b_phase);
                 % Healing residual
-                [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,rh,qnh,H,d,h_old,heff,fundact,PFregularization);
+                [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,rh,qnh,H,d,h_old,heff,fundact,PFregul);
                 r_healing = A_healing*h - b_healing;
                 errConvrh = norm(r_healing)/norm(b_healing);
                 errConvr = max(errConvrd,errConvrh);

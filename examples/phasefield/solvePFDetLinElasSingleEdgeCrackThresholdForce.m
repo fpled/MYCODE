@@ -2,29 +2,29 @@ function [ft,dmaxt,T] = solvePFDetLinElasSingleEdgeCrackThresholdForce(S_phase,S
 % function [ft,dmaxt,T] = solvePFDetLinElasSingleEdgeCrackThresholdForce(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
 % Solve deterministic phase-field problem.
 
-display_ = getcharin('display',varargin,true);
-displayIter = getcharin('displayiter',varargin,false);
-displaySol = getcharin('displaysol',varargin,false);
+display_     = getcharin('display',varargin,true);
+displayIter  = getcharin('displayiter',varargin,false);
+displaySol   = getcharin('displaysol',varargin,false);
 displayForce = getcharin('displayforce',varargin,false);
-maxIter = getcharin('maxiter',varargin,100);
-tolConv = getcharin('tol',varargin,1e-2);
-critConv = getcharin('crit',varargin,'Energy');
-dbth = getcharin('dbth',varargin,0.999);
+maxIter      = getcharin('maxiter',varargin,100);
+tolConv      = getcharin('tol',varargin,1e-2);
+critConv     = getcharin('crit',varargin,'Energy');
+dbth         = getcharin('dbth',varargin,0.999);
 
 if verLessThan('matlab','9.1') % compatibility (<R2016b)
     contain = @(str,pat) ~isempty(strfind(lower(str),pat));
 else
     contain = @(str,pat) contains(str,pat,'IgnoreCase',true);
 end
-checkConvSol = contain(critConv,'solution');
-checkConvRes = contain(critConv,'residual');
+checkConvSol    = contain(critConv,'solution');
+checkConvRes    = contain(critConv,'residual');
 checkConvEnergy = contain(critConv,'energy');
 
 Dim = getdim(S);
 
 dt0 = T.dt0;
 dt1 = T.dt1;
-tf = T.tf;
+tf  = T.tf;
 dth = T.dth;
 
 d = calc_init_dirichlet(S_phase);
