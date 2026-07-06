@@ -32,6 +32,7 @@ FEmesh = 'Optim'; % 'Unif' or 'Optim'
 structMesh = false; % true or false
 optionMesh = []; % [] or 'recombine'
 % optionMesh = 'recombine'; % [] or 'recombine'
+
 w = 5e-3; % flat punch / support width
 % w = 10e-3; % flat punch / support width
 

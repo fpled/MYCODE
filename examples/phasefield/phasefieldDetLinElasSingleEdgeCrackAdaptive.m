@@ -56,7 +56,7 @@ maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 meshAdapt = 'Mmg'; % 'Gmsh', 'Mmg'
-sizeMap = 'Lin'; % 'Lin', 'Quad', 'Cub', 'Quar', 'PowExp_1', 'PowExp_2', 'PowExp_1_2', 'Inv_1', 'Inv_2', 'Inv_1_2'
+sizeMap = 'LocBand_AT2'; % 'Lin', 'Quad', 'Cub', 'Quar', 'LocBand_AT1', 'LocBand_AT2'
 initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
 % angs = [0:10:90];
@@ -66,7 +66,7 @@ initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialP
 % PFsolvers = {'HistoryFieldElem','BoundConstrainedOptim'};
 % initialCracks = {'GeometricCrack','GeometricNotch','InitialPhaseField'};
 % maxIters = [1,Inf];
-% sizeMaps = {'Lin','Quad','Cub','Quar','PowExp_1','PowExp_2','PowExp_1_2','Inv_1','Inv_2','Inv_1_2'};
+% sizeMaps = {'Lin','Quad','Cub','Quar','LocBand_AT1','LocBand_AT2'};
 switch lower(symmetry)
     case 'isot' % isotropic material
         gc = 2.7e3; % critical energy release rate (or fracture toughness)
@@ -213,45 +213,6 @@ if setProblem
             error('Wrong model for initial crack');
     end
     
-    switch lower(sizeMap)
-        case 'lin'
-            % Linear map as a function of d
-            sizemap = @(d) clD + (clC - clD)*d;
-        case 'quad'
-            % Quadratic map as a function of d
-            sizemap = @(d) clD + (clC - clD)*d.^2;
-        case 'cub'
-            % Cubic map as a function of d
-            sizemap = @(d) clD + (clC - clD)*d.^3;
-        case 'quar'
-            % Quartic map as a function of d
-            sizemap = @(d) clD + (clC - clD)*d.^4;
-        case {'powexp_1','powexp_2','powexp_1_2'}
-            switch lower(sizeMap)
-                case 'powexp_1'
-                    p = 1;
-                case 'powexp_2'
-                    p = 2;
-                case 'powexp_1_2'
-                    p = 1/2;
-            end
-            % Power-exponential map with exponent p
-            sizemap = @(d) clD*(clC/clD).^(d.^p);
-        case {'inv_1','inv_2','inv_1_2'}
-            switch lower(sizeMap)
-                case 'inv_1'
-                    p = 1;
-                case 'inv_2'
-                    p = 2;
-                case 'inv_1_2'
-                    p = 1/2;
-            end
-            % Inverse-type map with exponent p
-            sizemap = @(d) clD*clC./((clD - clC)*d.^p + clC);
-        otherwise
-            error('Wrong size map');
-    end
-
     %% Phase-field problem
     %% Material
     switch lower(symmetry)
@@ -293,6 +254,43 @@ if setProblem
     mat_phase = FOUR_ISOT('k',K,'r',R,'qn',Qn,'DIM3',e,'PFregularization',PFregularization);
     mat_phase = setnumber(mat_phase,1);
     S_phase = setmaterial(S_phase,mat_phase);
+    
+    % Size map
+    switch lower(sizeMap)
+        case {'lin','quad','cub','quar'}
+            switch lower(sizeMap)
+                case 'lin' % linear
+                    p = 1;
+                case 'quad' % quadratic
+                    p = 2;
+                case 'cub' % cubic
+                    p = 3;
+                case 'quar' % quartic
+                    p = 4;
+            end
+            % Convex polynomial map as a function of d
+            sizemap = @(d) clC + (clD - clC)*(1 - d).^p;
+        case {'locband_at1','locband_at2'}
+            % Convex size map designed to refine the central AT1 or AT2 localization band
+            % of approximate width wBand = 2*l.
+            % For an AT2-like exponential 1D profile d(r) = exp(-|r|/l),
+            % the band |r| <= l has width 2*l and corresponds to d >= exp(-l/l) = exp(-1) ≃ 0.368.
+            % For an AT1-like quadratic 1D profile d(r) = (1 - |r|/(2*l))^2 for |r| <= 2*l,
+            % the band |r| <= l has width 2*l and corresponds to d >= (1 - l/(2*l))^2 = 1/4 = 0.25.
+            p = 2;
+            wBand = 2*l; % target refined band width
+            switch lower(sizeMap)
+                case 'locband_at1'
+                    d1 = (1 - wBand/(4*l))^2; % AT1 profile
+                case 'locband_at2'
+                    d1 = exp(-wBand/(2*l)); % AT2 profile
+            end
+            clip01 = @(x) min(max(x,0),1);
+            sloc = @(d) clip01(d/d1);
+            sizemap = @(d) clC + (clD - clC)*(1 - sloc(d)).^p;
+        otherwise
+            error('Wrong size map');
+    end
     
     %% Dirichlet boundary conditions
     switch lower(initialCrack)
@@ -1032,6 +1030,24 @@ if displaySolution
     ylabel('Error','Interpreter',interpreter)
     mysaveas(pathname,'error_displacement',formats);
     mymatlab2tikz(pathname,'error_displacement.tex');
+    
+    figure('Name','Number of elements vs displacement')
+    clf
+    nbelem = zeros(length(T),1);
+    for i=1:length(T)
+        nbelem(i) = getnbelem(St_phase{i});
+    end
+    plot(t*1e3,nbelem,'-b','LineWidth',linewidth)
+    grid on
+    box on
+    ax = gca;
+    set(ax,'FontSize',fontsize)
+    yl = get(ax,'YLim');
+    set(ax,'YLim',[0,yl(2)])
+    xlabel('Displacement [mm]','Interpreter',interpreter)
+    ylabel('Number of elements','Interpreter',interpreter)
+    mysaveas(pathname,'nb_elements_displacement',formats);
+    mymatlab2tikz(pathname,'nb_elements_displacement.tex');
     
     %% Display solutions at different instants
     ampl = 0;
