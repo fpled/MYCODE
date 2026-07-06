@@ -292,6 +292,8 @@ if setProblem
     % du = 1e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 0.025 mm)
     dt0 = 5e-8;
     dt1 = 1e-8;
+    % du = 1e-4 mm during the first stage (until the phase-field reaches the threshold value)
+    % du = 2e-5 mm during the last stage (as soon as the phase-field exceeds the threshold value, up to u = 0.025 mm)
     % dt0 = 1e-7;
     % dt1 = 2e-8;
     if test
