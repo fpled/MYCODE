@@ -303,11 +303,11 @@ if setProblem
         case 'geometricnotch'
             if Dim==2
                 C = CIRCLE(a-c/2,b,c/2); % circular notch
-                % C = LINE([a,b-c/2],[a,L/2+c/2]); % rectangular notch
+                % C = LINE([a,b-c/2],[a,b+c/2]); % rectangular notch
                 % C = POINT([a,b]); % V notch
             elseif Dim==3
                 C = CYLINDER(a-c/2,b,0.0,c/2,e); % circular notch
-                % C = QUADRANGLE([a,b-c/2,0.0],[a,b+c/2,0.0],[a,L/2+c/2,e],[a,L/2-c/2,e]); % rectangular notch
+                % C = QUADRANGLE([a,b-c/2,0.0],[a,b+c/2,0.0],[a,b+c/2,e],[a,b-c/2,e]); % rectangular notch
                 % C = LINE([a,b,0.0],[a,b,e]); % V notch
             end
     end
