@@ -296,19 +296,19 @@ if setProblem
     switch lower(initialCrack)
         case 'geometriccrack'
             if Dim==2
-                C = POINT([a,L/2]); % crack tip
+                C = POINT([a,b]); % crack tip
             elseif Dim==3
-                C = LINE([a,L/2,0.0],[a,L/2,e]); % crack tip
+                C = LINE([a,b,0.0],[a,b,e]); % crack tip
             end
         case 'geometricnotch'
             if Dim==2
-                C = CIRCLE(a-c/2,L/2,c/2); % circular notch
-                % C = LINE([a,L/2-c/2],[a,L/2+c/2]); % rectangular notch
-                % C = POINT([a,L/2]); % V notch
+                C = CIRCLE(a-c/2,b,c/2); % circular notch
+                % C = LINE([a,b-c/2],[a,L/2+c/2]); % rectangular notch
+                % C = POINT([a,b]); % V notch
             elseif Dim==3
-                C = CYLINDER(a-c/2,L/2,0.0,c/2,e); % circular notch
-                % C = QUADRANGLE([a,L/2-c/2,0.0],[a,L/2+c/2,0.0],[a,L/2+c/2,e],[a,L/2-c/2,e]); % rectangular notch
-                % C = LINE([a,L/2,0.0],[a,L/2,e]); % V notch
+                C = CYLINDER(a-c/2,b,0.0,c/2,e); % circular notch
+                % C = QUADRANGLE([a,b-c/2,0.0],[a,b+c/2,0.0],[a,L/2+c/2,e],[a,L/2-c/2,e]); % rectangular notch
+                % C = LINE([a,b,0.0],[a,b,e]); % V notch
             end
     end
     if Dim==2

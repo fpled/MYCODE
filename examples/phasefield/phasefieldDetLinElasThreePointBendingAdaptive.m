@@ -31,6 +31,7 @@ meshAdapt = 'Mmg'; % 'Gmsh', 'Mmg'
 sizeMap = 'LocBand_AT2'; % 'Lin', 'Quad', 'Cub', 'Quar', 'LocBand_AT1', 'LocBand_AT2'
 initialCrack = 'GeometricNotch'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
 
+% w = 2e-3; % flat punch / support width
 w = 5e-3; % flat punch / support width
 % w = 10e-3; % flat punch / support width
 
@@ -500,13 +501,12 @@ if displaySolution
     %% Display force-displacement curve
     figure('Name','Force vs displacement')
     clf
-    plot([0,t]*1e3,[0,ft]*1e-3,'-b','LineWidth',linewidth)
+    plot([0,t]*1e3,[0,ft],'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlim tight
     xlabel('Displacement [mm]','Interpreter',interpreter)
-    ylabel('Force [kN]','Interpreter',interpreter)
+    ylabel('Force [N]','Interpreter',interpreter)
     mysaveas(pathname,'force_displacement',formats);
     mymatlab2tikz(pathname,'force_displacement.tex');
     
@@ -517,7 +517,6 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlim tight
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Maximum damage','Interpreter',interpreter)
     mysaveas(pathname,'max_damage_displacement',formats);
@@ -534,7 +533,6 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlim tight
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Energy [J]','Interpreter',interpreter)
     legend('elastic','fracture','total',...
@@ -549,7 +547,6 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlim tight
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Number of iterations','Interpreter',interpreter)
     mysaveas(pathname,'nb_iterations_displacement',formats);
@@ -561,7 +558,6 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlim tight
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Computing time [s]','Interpreter',interpreter)
     mysaveas(pathname,'cpu_time_displacement',formats);
@@ -573,7 +569,6 @@ if displaySolution
     grid on
     box on
     set(gca,'FontSize',fontsize)
-    xlim tight
     xlabel('Displacement [mm]','Interpreter',interpreter)
     ylabel('Error','Interpreter',interpreter)
     mysaveas(pathname,'error_displacement',formats);
@@ -599,7 +594,9 @@ if displaySolution
     
     %% Display solutions at different instants
     ampl = 0;
-    if abs(w-5e-3)<eps
+    if abs(w-2e-3)<eps
+        tSnapshots = [13 14 14.5 15 15.5 16 17 18 20 22.5]*1e-6;
+    elseif abs(w-5e-3)<eps
         tSnapshots = [12 13 13.5 14 14.5 15 16 18 20 22.5]*1e-6;
     elseif abs(w-10e-3)<eps
         tSnapshots = [11 12 12.5 13 13.5 14 16 18 20 22.5]*1e-6;
