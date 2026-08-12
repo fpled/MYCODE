@@ -10,8 +10,8 @@ s = rng;
 
 %% Input data
 displaySolution = true;
-displayConvergenceInit = true;
-displayConvergenceOpt = true;
+displayConvergenceInit = false;
+displayConvergenceOpt = false;
 
 filenameParam = 'param_lambda.mat';
 
@@ -909,113 +909,111 @@ fC_sample = [mC_sample nuC_sample];
 
 %% Outputs
 filenameResults = fullfile(pathname,'results.txt');
-if solveProblem
-    fid = fopen(filenameResults,'w');
-    fprintf(fid,'nb data    = %g\n',size(C_data,1));
-    fprintf(fid,'nb samples = %g\n',N);
-    fprintf(fid,'MCMC algo  = %s\n',MCMCalgo);
-    if useRedParam
-        fprintf(fid,'parameterization = reduced\n');
-    else
-        fprintf(fid,'parameterization = full\n');
-    end
-    fprintf(fid,'elapsed time = %f s for parameter estimation\n',time);
-    
-    fprintf(fid,'\n');
-    fprintf(fid,'Initial parameter values\n');
-    fprintf(fid,'lambda_1 = %.4f\n',la01);
-    fprintf(fid,'lambda_2 = %.4f\n',la02);
-    fprintf(fid,'lambda_3 = %.4f\n',la03);
-    fprintf(fid,'lambda_4 = %.4f\n',la04);
-    fprintf(fid,'lambda_5 = %.4f\n',la05);
-    fprintf(fid,'lambda   = %.4f\n',la0);
-    fprintf(fid,'alpha_4  = alpha_5 = %.4f\n',a0);
-    fprintf(fid,'beta_4   = %.6f\n',b04);
-    fprintf(fid,'beta_5   = %.6f\n',b05);
-    fprintf(fid,'fval     = %.4e\n',fval0);
-    switch lower(MCMCalgo)
-        case {'imh','rwmh'}
-            fprintf(fid,'acceptance rate = %.2f%%\n',accept0*100);
-            fprintf(fid,'rejection rate  = %.2f%%\n',(1-accept0)*100);
-        case 'ss'
-            fprintf(fid,'nb function evaluations per sample = %d\n',neval0);
-    end
-    
-    fprintf(fid,'\n');
-    fprintf(fid,'Optimal parameter values\n');
-    fprintf(fid,'lambda_1 = %.4f\n',la1);
-    fprintf(fid,'lambda_2 = %.4f\n',la2);
-    fprintf(fid,'lambda_3 = %.4f\n',la3);
-    fprintf(fid,'lambda_4 = %.4f\n',la4);
-    fprintf(fid,'lambda_5 = %.4f\n',la5);
-    fprintf(fid,'lambda   = %.4f\n',la);
-    fprintf(fid,'alpha_4  = alpha_5 = %.4f\n',a);
-    fprintf(fid,'beta_4   = %.6f\n',b4);
-    fprintf(fid,'beta_5   = %.6f\n',b5);
-    fprintf(fid,'fval     = %.4e\n',fval);
-    switch lower(MCMCalgo)
-        case {'imh','rwmh'}
-            fprintf(fid,'acceptance rate = %.2f%%\n',accept*100);
-            fprintf(fid,'rejection rate  = %.2f%%\n',(1-accept)*100);
-        case 'ss'
-            fprintf(fid,'nb function evaluations per sample = %d\n',neval);
-    end
-    
-    for i=1:5
-        fprintf(fid,'\n');
-        fprintf(fid,'mean(C%u_data)   = %.4f GPa\n',i,mC_data(i));
-        fprintf(fid,'mean(C%u)        = %.4f GPa\n',i,mC(i));
-        fprintf(fid,'mean(C%u_sample) = %.4f GPa\n',i,mC_sample(i));
-        fprintf(fid,'var(C%u_data)    = %.4f (GPa)^2\n',i,vC_data(i));
-        fprintf(fid,'var(C%u)         = %.4f (GPa)^2\n',i,vC(i));
-        fprintf(fid,'var(C%u_sample)  = %.4f (GPa)^2\n',i,vC_sample(i));
-        fprintf(fid,'std(C%u_data)    = %.4f GPa\n',i,stdC_data(i));
-        fprintf(fid,'std(C%u)         = %.4f GPa\n',i,stdC(i));
-        fprintf(fid,'std(C%u_sample)  = %.4f GPa\n',i,stdC_sample(i));
-        fprintf(fid,'cv(C%u_data)     = %.4f\n',i,cvC_data(i));
-        fprintf(fid,'cv(C%u)          = %.4f\n',i,cvC(i));
-        fprintf(fid,'cv(C%u_sample)   = %.4f\n',i,cvC_sample(i));
-    end
-    fprintf(fid,'\n');
-    fprintf(fid,'norm(mC_data)   = %.4f GPa\n',mCnorm_data);
-    fprintf(fid,'norm(mC)        = %.4f GPa\n',mCnorm);
-    fprintf(fid,'norm(mC_sample) = %.4f GPa\n',mCnorm_sample);
-    fprintf(fid,'\n');
-    fprintf(fid,'nu(C_data)   = mean(log(det([C_data]))   = %.4f\n',nuC_data);
-    fprintf(fid,'nu(C)        = mean(log(det([C]))        = %.4f\n',nuC);
-    fprintf(fid,'nu(C_sample) = mean(log(det([C_sample])) = %.4f\n',nuC_sample);
-    
-    err_meanCi = abs(mC - mC_data)./abs(mC_data);
-    err_meanC  = norm(mC - mC_data)/norm(mC_data);
-    err_nuC    = abs(nuC - nuC_data)/abs(nuC_data);
-    resnorm    = norm(fC - fC_data)^2;
-    fval       = norm(mC - mC_data)^2/norm(mC_data)^2 + abs(nuC - nuC_data)^2/abs(nuC_data)^2;
-    
-    err_meanCi_sample = abs(mC_sample - mC_data)./abs(mC_data);
-    err_meanC_sample  = norm(mC_sample - mC_data)/norm(mC_data);
-    err_nuC_sample    = abs(nuC_sample - nuC_data)/abs(nuC_data);
-    resnorm_sample    = norm(fC_sample - fC_data)^2;
-    fval_sample       = norm(mC_sample - mC_data)^2/norm(mC_data)^2 + abs(nuC_sample - nuC_data)^2/abs(nuC_data)^2;
-    
-    fprintf(fid,'\n');
-    for i=1:5
-        fprintf(fid,'relative error on mean(C%u)             = %.4e\n',i,err_meanCi(i));
-    end
-    fprintf(fid,'relative error on mean(C) in norm      = %.4e\n',err_meanC);
-    fprintf(fid,'relative error on mean(log(det([C]))   = %.4e\n',err_nuC);
-    fprintf(fid,'resnorm = squared norm of residual on C       = %.4e\n',resnorm);
-    fprintf(fid,'fval = relative squared norm of residual on C = %.4e\n',fval);
-    
-    fprintf(fid,'\n');
-    for i=1:5
-        fprintf(fid,'relative error on mean(C%u_sample)             = %.4e\n',i,err_meanCi_sample(i));
-    end
-    fprintf(fid,'relative error on mean(C_sample) in norm      = %.4e\n',err_meanC_sample);
-    fprintf(fid,'relative error on mean(log(det([C_sample]))   = %.4e\n',err_nuC_sample);
-    fprintf(fid,'resnorm_sample = squared norm of residual on C_sample       = %.4e\n',resnorm_sample);
-    fprintf(fid,'fval_sample = relative squared norm of residual on C_sample = %.4e\n',fval_sample);
-    fclose(fid);
+fid = fopen(filenameResults,'w');
+fprintf(fid,'nb data    = %g\n',size(C_data,1));
+fprintf(fid,'nb samples = %g\n',N);
+fprintf(fid,'MCMC algo  = %s\n',MCMCalgo);
+if useRedParam
+    fprintf(fid,'parameterization = reduced\n');
+else
+    fprintf(fid,'parameterization = full\n');
 end
+fprintf(fid,'elapsed time = %f s for parameter estimation\n',time);
+
+fprintf(fid,'\n');
+fprintf(fid,'Initial parameter values\n');
+fprintf(fid,'lambda_1 = %.4f\n',la01);
+fprintf(fid,'lambda_2 = %.4f\n',la02);
+fprintf(fid,'lambda_3 = %.4f\n',la03);
+fprintf(fid,'lambda_4 = %.4f\n',la04);
+fprintf(fid,'lambda_5 = %.4f\n',la05);
+fprintf(fid,'lambda   = %.4f\n',la0);
+fprintf(fid,'alpha_4  = alpha_5 = %.4f\n',a0);
+fprintf(fid,'beta_4   = %.6f\n',b04);
+fprintf(fid,'beta_5   = %.6f\n',b05);
+fprintf(fid,'fval     = %.4e\n',fval0);
+switch lower(MCMCalgo)
+    case {'imh','rwmh'}
+        fprintf(fid,'acceptance rate = %.2f%%\n',accept0*100);
+        fprintf(fid,'rejection rate  = %.2f%%\n',(1-accept0)*100);
+    case 'ss'
+        fprintf(fid,'nb function evaluations per sample = %d\n',neval0);
+end
+
+fprintf(fid,'\n');
+fprintf(fid,'Optimal parameter values\n');
+fprintf(fid,'lambda_1 = %.4f\n',la1);
+fprintf(fid,'lambda_2 = %.4f\n',la2);
+fprintf(fid,'lambda_3 = %.4f\n',la3);
+fprintf(fid,'lambda_4 = %.4f\n',la4);
+fprintf(fid,'lambda_5 = %.4f\n',la5);
+fprintf(fid,'lambda   = %.4f\n',la);
+fprintf(fid,'alpha_4  = alpha_5 = %.4f\n',a);
+fprintf(fid,'beta_4   = %.6f\n',b4);
+fprintf(fid,'beta_5   = %.6f\n',b5);
+fprintf(fid,'fval     = %.4e\n',fval);
+switch lower(MCMCalgo)
+    case {'imh','rwmh'}
+        fprintf(fid,'acceptance rate = %.2f%%\n',accept*100);
+        fprintf(fid,'rejection rate  = %.2f%%\n',(1-accept)*100);
+    case 'ss'
+        fprintf(fid,'nb function evaluations per sample = %d\n',neval);
+end
+
+for i=1:5
+    fprintf(fid,'\n');
+    fprintf(fid,'mean(C%u_data)   = %.4f GPa\n',i,mC_data(i));
+    fprintf(fid,'mean(C%u)        = %.4f GPa\n',i,mC(i));
+    fprintf(fid,'mean(C%u_sample) = %.4f GPa\n',i,mC_sample(i));
+    fprintf(fid,'var(C%u_data)    = %.4f (GPa)^2\n',i,vC_data(i));
+    fprintf(fid,'var(C%u)         = %.4f (GPa)^2\n',i,vC(i));
+    fprintf(fid,'var(C%u_sample)  = %.4f (GPa)^2\n',i,vC_sample(i));
+    fprintf(fid,'std(C%u_data)    = %.4f GPa\n',i,stdC_data(i));
+    fprintf(fid,'std(C%u)         = %.4f GPa\n',i,stdC(i));
+    fprintf(fid,'std(C%u_sample)  = %.4f GPa\n',i,stdC_sample(i));
+    fprintf(fid,'cv(C%u_data)     = %.4f\n',i,cvC_data(i));
+    fprintf(fid,'cv(C%u)          = %.4f\n',i,cvC(i));
+    fprintf(fid,'cv(C%u_sample)   = %.4f\n',i,cvC_sample(i));
+end
+fprintf(fid,'\n');
+fprintf(fid,'norm(mC_data)   = %.4f GPa\n',mCnorm_data);
+fprintf(fid,'norm(mC)        = %.4f GPa\n',mCnorm);
+fprintf(fid,'norm(mC_sample) = %.4f GPa\n',mCnorm_sample);
+fprintf(fid,'\n');
+fprintf(fid,'nu(C_data)   = mean(log(det([C_data]))   = %.4f\n',nuC_data);
+fprintf(fid,'nu(C)        = mean(log(det([C]))        = %.4f\n',nuC);
+fprintf(fid,'nu(C_sample) = mean(log(det([C_sample])) = %.4f\n',nuC_sample);
+
+err_meanCi = abs(mC - mC_data)./abs(mC_data);
+err_meanC  = norm(mC - mC_data)/norm(mC_data);
+err_nuC    = abs(nuC - nuC_data)/abs(nuC_data);
+resnorm    = norm(fC - fC_data)^2;
+fval       = norm(mC - mC_data)^2/norm(mC_data)^2 + abs(nuC - nuC_data)^2/abs(nuC_data)^2;
+
+err_meanCi_sample = abs(mC_sample - mC_data)./abs(mC_data);
+err_meanC_sample  = norm(mC_sample - mC_data)/norm(mC_data);
+err_nuC_sample    = abs(nuC_sample - nuC_data)/abs(nuC_data);
+resnorm_sample    = norm(fC_sample - fC_data)^2;
+fval_sample       = norm(mC_sample - mC_data)^2/norm(mC_data)^2 + abs(nuC_sample - nuC_data)^2/abs(nuC_data)^2;
+
+fprintf(fid,'\n');
+for i=1:5
+    fprintf(fid,'relative error on mean(C%u)             = %.4e\n',i,err_meanCi(i));
+end
+fprintf(fid,'relative error on mean(C) in norm      = %.4e\n',err_meanC);
+fprintf(fid,'relative error on mean(log(det([C]))   = %.4e\n',err_nuC);
+fprintf(fid,'resnorm = squared norm of residual on C       = %.4e\n',resnorm);
+fprintf(fid,'fval = relative squared norm of residual on C = %.4e\n',fval);
+
+fprintf(fid,'\n');
+for i=1:5
+    fprintf(fid,'relative error on mean(C%u_sample)             = %.4e\n',i,err_meanCi_sample(i));
+end
+fprintf(fid,'relative error on mean(C_sample) in norm      = %.4e\n',err_meanC_sample);
+fprintf(fid,'relative error on mean(log(det([C_sample]))   = %.4e\n',err_nuC_sample);
+fprintf(fid,'resnorm_sample = squared norm of residual on C_sample       = %.4e\n',resnorm_sample);
+fprintf(fid,'fval_sample = relative squared norm of residual on C_sample = %.4e\n',fval_sample);
+fclose(fid);
 type(filenameResults) % fprintf('%s', fileread(filenameResults))
 
 %% Display
@@ -1054,7 +1052,7 @@ if displaySolution
     ylabel('Longitudinal shear modulus $G_L$ [MPa]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
     %ylabel('Module de cisaillement longitudinal $G_L$ [MPa]','Interpreter',interpreter);
-    mysaveas(pathname,'data_G','fig');
+    mysaveas(pathname,'data_G',formats);
     mymatlab2tikz(pathname,'data_G.tex');
     
     figure('Name','Data for NUL')
@@ -1089,7 +1087,7 @@ if displaySolution
     xlabel('Sample number','Interpreter',interpreter);
     ylabel('Coefficient $C_1$ [GPa]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    mysaveas(pathname,'data_C1','fig');
+    mysaveas(pathname,'data_C1',formats);
     mymatlab2tikz(pathname,'data_C1.tex');
     
     figure('Name','Data for C2')
@@ -1100,7 +1098,7 @@ if displaySolution
     xlabel('Sample number','Interpreter',interpreter);
     ylabel('Coefficient $C_2$ [GPa]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    mysaveas(pathname,'data_C2','fig');
+    mysaveas(pathname,'data_C2',formats);
     mymatlab2tikz(pathname,'data_C2.tex');
     
     figure('Name','Data for C3')
@@ -1111,7 +1109,7 @@ if displaySolution
     xlabel('Sample number','Interpreter',interpreter);
     ylabel('Coefficient $C_3$ [GPa]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    mysaveas(pathname,'data_C3','fig');
+    mysaveas(pathname,'data_C3',formats);
     mymatlab2tikz(pathname,'data_C3.tex');
     
     figure('Name','Data for C4')
@@ -1122,7 +1120,7 @@ if displaySolution
     xlabel('Sample number','Interpreter',interpreter);
     ylabel('Coefficient $C_4$ [GPa]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    mysaveas(pathname,'data_C4','fig');
+    mysaveas(pathname,'data_C4',formats);
     mymatlab2tikz(pathname,'data_C4.tex');
     
     figure('Name','Data for C5')
@@ -1133,7 +1131,7 @@ if displaySolution
     xlabel('Sample number','Interpreter',interpreter);
     ylabel('Coefficient $C_5$ [GPa]','Interpreter',interpreter);
     %xlabel('Num\''ero d''\''echantillon','Interpreter',interpreter);
-    mysaveas(pathname,'data_C5','fig');
+    mysaveas(pathname,'data_C5',formats);
     mymatlab2tikz(pathname,'data_C5.tex');
     
     %% Plot pdfs and cdfs
@@ -1304,6 +1302,25 @@ if displaySolution
     
     [C1,C2] = meshgrid(c1,c2);
     C3 = sqrt(C1.*C2);
+    
+    figure('name','Limit surface of quadric cone for (C_1,C_2,C_3)')
+    clf
+    hold on
+    % surf(C1,C2,C3,'FaceAlpha',0.5)
+    % surf(C1,C2,-C3,'FaceAlpha',0.5)
+    mesh(C1,C2,C3)
+    mesh(C1,C2,-C3)
+    hold off
+    view(-37.5,30) % default view
+    % view(-30,20)
+    grid on
+    box on
+    set(gca,'Xdir','reverse','Ydir','reverse','FontSize',fontsize)
+    xlabel('$c_1$ [GPa]','Interpreter',interpreter);
+    ylabel('$c_2$ [GPa]','Interpreter',interpreter);
+    zlabel('$c_3$ [GPa]','Interpreter',interpreter);
+    mysaveas(pathname,'limit_surface_quadric_cone_C1_C2_C3',formats);
+    % mymatlab2tikz(pathname,'limit_surface_quadric_cone_C1_C2_C3.tex');
     
     figure('name','Samples of (C_1,C_2,C_3)')
     clf

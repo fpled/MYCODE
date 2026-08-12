@@ -1213,6 +1213,8 @@ if displayCv
     grid on
     box on
     set(gca,'FontSize',fontsize)
+    set(gca,'XScale','log')
+    set(gca,'XLim',[1,N])
     xlabel('Number of samples','Interpreter',interpreter)
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
     switch lower(test)
@@ -1241,10 +1243,11 @@ if displayCv
     
     figure('Name','Convergence mean')
     clf
-    plot(1:N,means_u*1e3,'-b','LineWidth',linewidth)
+    semilogx(1:N,means_u*1e3,'-b','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
+    set(gca,'XLim',[1,N])
     xlabel('Number of samples','Interpreter',interpreter)
     ylabel('Mean value [mm]','Interpreter',interpreter)
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
@@ -1254,10 +1257,11 @@ if displayCv
     
     figure('Name','Convergence standard deviation')
     clf
-    plot(1:N,stds_u*1e3,'-r','LineWidth',linewidth)
+    semilogx(1:N,stds_u*1e3,'-r','LineWidth',linewidth)
     grid on
     box on
     set(gca,'FontSize',fontsize)
+    set(gca,'XLim',[1,N])
     xlabel('Number of samples','Interpreter',interpreter)
     ylabel('Standard deviation [mm]','Interpreter',interpreter)
     %xlabel('Nombre de r\''ealisations','Interpreter',interpreter)
