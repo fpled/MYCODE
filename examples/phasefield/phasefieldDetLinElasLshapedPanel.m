@@ -507,7 +507,7 @@ if setProblem
             % nt = 50;
             % t = linspace(dt,nt*dt,nt);
         case 'cyclic'
-            % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Areias, Msekh, Rabczuk, 2016, EFM], [Wick, 2017, SIAM JSC], [Kakouris, Triantafyllou, 2017, IJNME], [t, Mishra, Singh, 2018, CMAME] (AMsPFM), [Egger et al., 2019, AS], [Tian, Tang, Xu, Yang, Li, 2019, IJNME], [Mang, Wick, Wollner, 2020, CM], [Jodlbauer, Langer, Wick, 2020, CMAME]
+            % [Ambati, Gerasimov, De Lorenzis, 2015, CM], [Areias, Msekh, Rabczuk, 2016, EFM], [Wick, 2017, SIAM JSC], [Kakouris, Triantafyllou, 2017, IJNME], [Patil, Mishra, Singh, 2018, CMAME] (AMsPFM), [Egger et al., 2019, AS], [Tian, Tang, Xu, Yang, Li, 2019, IJNME], [Mang, Wick, Wollner, 2020, CM], [Jodlbauer, Langer, Wick, 2020, CMAME]
             % du = 1e-3 mm during the first 300 time steps (up to u = 0.3 mm)
             % du = -1e-3 mm during the next 500 time steps (down to u = -0.2 mm)
             % du = 1e-3 mm during the last 1200 time steps (up to u = 1 mm)
