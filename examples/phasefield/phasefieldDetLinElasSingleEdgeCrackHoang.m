@@ -246,7 +246,8 @@ if setProblem
     end
     switch lower(initialCrack)
         case 'geometriccrack'
-            S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
+            % S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
+            S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_domain_single_edge_crack_Hoang_shear_optim.msh'),2);
         case 'geometricnotch'
             c = 1e-5; % crack width
             clC = min(clC,c/2);
