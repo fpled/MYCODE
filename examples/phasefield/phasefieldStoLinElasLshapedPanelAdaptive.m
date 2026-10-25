@@ -116,7 +116,7 @@ randPF = struct('aGc',0,'bGc',0,'lcorr',Inf); % random phase-field parameters mo
 
 suffix = '';
 
-foldername = ['LshapedPanel' num2str(loading) '_' num2str(Dim) 'D'];
+foldername = ['LshapedPanel' loading '_' num2str(Dim) 'D'];
 filename = ['linElas' symmetry PFmodel PFsplit PFregularization PFsolver...
     'MaxIter' num2str(maxIter)];
 if maxIter>1

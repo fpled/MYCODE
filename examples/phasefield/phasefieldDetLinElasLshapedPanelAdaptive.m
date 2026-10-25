@@ -110,7 +110,7 @@ sizeMap = 'LocBand_AT2'; % 'Lin', 'Quad', 'Cub', 'Quar', 'LocBand_AT1', 'LocBand
 
 suffix = '';
 
-foldername = ['LshapedPanel' num2str(loading) '_' num2str(Dim) 'D'];
+foldername = ['LshapedPanel' loading '_' num2str(Dim) 'D'];
 filename = ['linElas' PFmodel PFsplit PFregularization PFsolver...
     'MaxIter' num2str(maxIter)];
 if maxIter>1
