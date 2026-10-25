@@ -94,7 +94,7 @@ end
 % gc = gcs(igc);
 % close all
 
-suffix = '';
+suffix = '_Hoang';
 % suffix = '_6e-5_2e-5';
 % suffix = ['_gc' num2str(gc,'_%g')];
 
