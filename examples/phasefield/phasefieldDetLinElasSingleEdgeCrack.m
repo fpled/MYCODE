@@ -743,11 +743,11 @@ if solveProblem
     end
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+            [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,PFregularization,addbc,findddlforce,findddlboundary,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
                 'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
         otherwise
-            [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+            [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,PFregularization,addbc,findddlforce,findddlboundary,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
                 'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     end
@@ -761,11 +761,11 @@ if solveProblem
     % end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
-    %         [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,...
+    %         [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,PFregularization,BU,BL,BRight,BLeft,BFront,BBack,loading,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
     %             'displayiter',displayIter,'displaysol',displaySol);
     %     otherwise
-    %         [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,...
+    %         [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,PFregularization,BU,BL,BRight,BLeft,BFront,BBack,loading,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
     %             'displayiter',displayIter,'displaysol',displaySol);
     % end
@@ -1000,7 +1000,7 @@ if displaySolution
                 case 'tension'
                     tSnapshots = [5.25 5.5 5.75 5.85 5.95 6 6.05 6.1 6.15 6.25]*1e-6;
                 case 'shear'
-                    tSnapshots = [0.85 1 1.25 1.35 1.5 1.75]*1e-5;
+                    tSnapshots = [0.85 1 1.25 1.35 1.4 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end
@@ -1009,7 +1009,7 @@ if displaySolution
                 case 'tension'
                     tSnapshots = [5 6 7 8 9]*1e-6;
                 case 'shear'
-                    tSnapshots = [0.85 1 1.25 1.35 1.5 1.75]*1e-5;
+                    tSnapshots = [0.85 1 1.25 1.35 1.4 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end

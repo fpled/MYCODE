@@ -1,5 +1,5 @@
-function [ft,dmaxt] = solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
-% function [ft,dmaxt] = solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+function [ft,dmaxt] = solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,PFregul,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
+% function [ft,dmaxt] = solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,PFregul,BU,BL,BRight,BLeft,BFront,BBack,loading,varargin)
 % Solve deterministic phase-field problem.
 
 display_     = getcharin('display',varargin,true);
@@ -47,7 +47,7 @@ if checkConvEnergy
     E = Ed+Eu;
 end
 
-if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode')
+if ~contain(PFsolver,'historyfield')
     optimFun = 'quadprog'; % optimization function. 'quadprog', 'lsqlin', 'lsqnonlin' or 'fmincon'
     % optimFun = 'lsqlin';
     % optimFun = 'lsqnonlin';
@@ -137,12 +137,12 @@ for i=1:length(T)
     % if any(db > dbth)
     %     f = 0;
     % else
-        if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+        if contain(PFsolver,'historyfield')
             H_old = H;
         end
         d_old = d;
         if checkConvRes
-            [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
+            [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,PFsolver,PFregul);
         end
         errConv = Inf;
         errConvs = 0; errConvr = 0; errConve = 0;
@@ -158,32 +158,35 @@ for i=1:length(T)
             
             % Damage/Phase field
             if ~checkConvRes
-                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
+                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,PFsolver,PFregul);
             end
             
-            switch lower(PFsolver)
-                case {'historyfieldelem','historyfieldnode'}
-                    d = A_phase\b_phase;
-                otherwise
-                    d0 = freevector(S_phase,d_old);
-                    lb = d0;
-                    ub = ones(size(d0));
-                    if strcmpi(options.Algorithm,'trust-region-reflective')
-                        lb(lb==1) = 1-eps;
-                    end
-                    switch optimFun
-                        case 'quadprog'
-                            A_phase = (A_phase+A_phase')/2;
-                            d = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
-                        case 'lsqlin'
-                            d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
-                        case 'lsqnonlin'
-                            fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-                            d = lsqnonlin(fun,d0,lb,ub,options);
-                        case 'fmincon'
-                            fun = @(d) funoptimPF(d,A_phase,b_phase);
-                            d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
-                    end
+            if contain(PFsolver,'historyfield')
+                d = A_phase\b_phase;
+            else
+                d0 = freevector(S_phase,d_old);
+                lb = d0;
+                ub = ones(size(d0));
+                if strcmpi(options.Algorithm,'trust-region-reflective')
+                    lb(lb==1) = 1-eps;
+                end
+                switch optimFun
+                    case 'quadprog'
+                        A_phase = (A_phase+A_phase')/2;
+                        d = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
+                    case 'lsqlin'
+                        % d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                        A_phase = (A_phase+A_phase')/2;
+                        R_phase = chol(A_phase);
+                        c_phase = R_phase'\b_phase;
+                        d = lsqlin(R_phase,c_phase,[],[],[],[],lb,ub,d0,options);
+                    case 'lsqnonlin'
+                        fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
+                        d = lsqnonlin(fun,d0,lb,ub,options);
+                    case 'fmincon'
+                        fun = @(d) funoptimPF(d,A_phase,b_phase);
+                        d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
+                end
             end
             dmax = max(d);
             d = unfreevector(S_phase,d);
@@ -209,11 +212,10 @@ for i=1:length(T)
             u = unfreevector(S,u);
             
             % Internal energy field
-            switch lower(PFsolver)
-                case {'historyfieldelem','historyfieldnode'}
-                    H = calc_historyfield(S,u,H_old);
-                otherwise
-                    H = calc_energyint(S,u,'intorder','mass','positive','local');
+            if contain(PFsolver,'historyfield')
+                H = calc_historyfield(S,u,H_old);
+            else
+                H = calc_energyint(S,u,'intorder','mass','positive','local');
             end
             
             % Convergence
@@ -224,7 +226,7 @@ for i=1:length(T)
             end
             if checkConvRes
                 % Damage/Phase field residual
-                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
+                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,PFsolver,PFregul);
                 r_phase = A_phase*d - b_phase;
                 errConvr = norm(r_phase)/norm(b_phase);
             end

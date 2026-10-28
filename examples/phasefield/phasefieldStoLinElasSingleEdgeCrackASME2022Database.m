@@ -701,7 +701,7 @@ if solveProblem
     displaySol   = false;
     displayForce = false;
     
-    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrackForce(S_phase,S,T,PFsolver,PFregularization,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
         'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     [ft,dmaxt,gc_sample] = solvePFStoLinElasForceGc(S_phase,S,T,fun,N,'numsamples',numsamples,'sampleindices',sampleindices);
     t = gettevol(T);

@@ -1,5 +1,11 @@
-function [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,r,qn,H,d,h,heff,fundact,PFregularization)
-% function [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,r,qn,H,d,h,heff,fundact,PFregularization)
+function [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,r,qn,H,PFsolver,PFregularization,d,h,heff,fundact)
+% function [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,r,qn,H,PFsolver,PFregularization,d,h,heff,fundact)
+
+if verLessThan('matlab','9.1') % compatibility (<R2016b)
+    contain = @(str,pat) ~isempty(strfind(lower(str),pat));
+else
+    contain = @(str,pat) contains(str,pat,'IgnoreCase',true);
+end
 
 mats_healing = MATERIALS(S_healing);
 
@@ -101,16 +107,20 @@ else
     end
     % Q = FEELEMFIELD(Q,'storage','gauss','type','scalar','ddl',DDL('Q'));
 end
-if isa(Q,'FENODEFIELD')
-    q = double(Q);
-    q = max(q,0);
-else
-    q = getvalue(Q);
-    for p=1:length(q)
-        qe = double(q{p});
-        qe = max(qe,0);
-        q{p} = MYDOUBLEND(qe);
+
+if contain(PFsolver,'historyfield') && strcmpi(PFregularization,'at1')
+    if isa(Q,'FENODEFIELD')
+        q = double(Q);
+        q = max(q,0);
+    else
+        q = getvalue(Q);
+        for p=1:length(q)
+            qe = double(q{p});
+            qe = max(qe,0);
+            q{p} = MYDOUBLEND(qe);
+        end
     end
+    Q = setvalue(Q,q);
 end
-Q = setvalue(Q,q);
+
 b_healing = -b_healing + bodyload(S_healing,[],'QN',Q);

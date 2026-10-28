@@ -751,10 +751,10 @@ if solveProblem
     displayForce = false;
     
     nbSamples = 1;
-    fun = @(S_phase,S,filename) solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
+    fun = @(S_phase,S,filename) solvePFDetLinElasAdaptive(S_phase,S,T,PFsolver,PFregularization,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,...
         'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
         'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh,'displayforce',displayForce);
-    % fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,...
+    % fun = @(S_phase,S,filename) solvePFDetLinElasSingleEdgeCrackAdaptive(S_phase,S,T,PFsolver,PFregularization,C,BU,BL,BRight,BLeft,BFront,BBack,loading,initialCrack,sizemap,...
     %     'maxiter',maxIter,'tol',tolConv,'crit',critConv,'meshadapt',meshAdapt,'filename',filename,'pathname',pathname,'gmshoptions',gmshoptions,'mmgoptions',mmgoptions,...
     %     'displayiter',displayIter,'displaysol',displaySol,'displaymesh',displayMesh,'displayforce',displayForce);
     [ft,Edt,Eut,dmaxt,dt,ut,St_phase,St] = solvePFStoLinElasAdaptive(S_phase,S,T,fun,N,'filename','gmsh_domain_single_edge_crack','pathname',pathname,'nbsamples',nbSamples);
@@ -1266,7 +1266,7 @@ if displaySolution
                 case 'tension'
                     tSnapshots = [5.25 5.5 5.75 5.85 5.95 6 6.05 6.1 6.15 6.25]*1e-6;
                 case 'shear'
-                    tSnapshots = [0.85 1 1.25 1.35 1.5 1.75]*1e-5;
+                    tSnapshots = [0.85 1 1.25 1.35 1.4 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end
@@ -1275,7 +1275,7 @@ if displaySolution
                 case 'tension'
                     tSnapshots = [5 6 7 8 9]*1e-6;
                 case 'shear'
-                    tSnapshots = [0.85 1 1.25 1.35 1.5 1.75]*1e-5;
+                    tSnapshots = [0.85 1 1.25 1.35 1.4 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end

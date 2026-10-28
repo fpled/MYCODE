@@ -682,7 +682,7 @@ if solveProblem
     displayForce = false;
     
     nbSamples = 1;
-    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
+    fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,PFregularization,BU,BL,BRight,BLeft,BFront,BBack,loading,'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
         'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     [ft,dmaxt,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
     t = gettevol(T);

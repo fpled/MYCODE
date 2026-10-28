@@ -1,5 +1,5 @@
-function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,varargin)
-% function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,varargin)
+function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,PFregul,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,varargin)
+% function [dt,ut,ft,T,St_phase,St,Ht,Edt,Eut,output] = solvePFDetLinElasAdaptiveThreshold(S_phase,S,T,PFsolver,PFregul,addbc,addbcdamage,addbcdamageadapt,findddlforce,findddlboundary,final,sizemap,varargin)
 % Solve deterministic phase-field problem with mesh adaptation.
 
 addbc = fcnchk(addbc);
@@ -42,6 +42,8 @@ dth = T.dth;
 
 materials_phase = MATERIALS(S_phase);
 materials = MATERIALS(S);
+option = getfieldgroupelem(S,'option');
+% option = getelementfield(S,'option'); option = option{1};
 S_phase = setphasefieldproperties(S_phase,materials_phase);
 S = setmaterialproperties(S,materials);
 
@@ -65,7 +67,7 @@ if checkConvEnergy
     E = Ed+Eu;
 end
 
-if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode')
+if ~contain(PFsolver,'historyfield')
     optimFun = 'quadprog'; % optimization function. 'quadprog', 'lsqlin', 'lsqnonlin' or 'fmincon'
     % optimFun = 'lsqlin';
     % optimFun = 'lsqnonlin';
@@ -131,19 +133,23 @@ fpos = get(groot,'DefaultFigurePosition');
 spos = get(groot,'ScreenSize');
 if displaySol && displayMesh && displayForce
     posd = [spos(1) fpos(2:4)];
+    % posH = [spos(1) fpos(2)-fpos(4) fpos(3:4)];
     posm = fpos;
     posf = [spos(3)-fpos(3) fpos(2:4)];
 elseif displaySol && displayMesh
     posd = [fpos(1)-fpos(3)/2 fpos(2:4)];
+    % posH = [fpos(1)-fpos(3)/2 fpos(2)-fpos(4) fpos(3:4)];
     posm = [fpos(1)+fpos(3)/2 fpos(2:4)];
 elseif displaySol && displayForce
     posd = [fpos(1)-fpos(3)/2 fpos(2:4)];
+    % posH = [fpos(1)-fpos(3)/2 fpos(2)-fpos(4) fpos(3:4)];
     posf = [fpos(1)+fpos(3)/2 fpos(2:4)];
 elseif displayMesh && displayForce
     posm = [fpos(1)-fpos(3)/2 fpos(2:4)];
     posf = [fpos(1)+fpos(3)/2 fpos(2:4)];
 elseif displaySol
     posd = fpos;
+    % posH = [fpos(1) fpos(2)-fpos(4) fpos(3:4)];
 elseif displayMesh
     posm = fpos;
 elseif displayForce
@@ -152,6 +158,8 @@ end
 if displaySol
     fd = figure('Name','Damage/Phase field','Position',posd);
     clf
+    % fH = figure('Name','Internal energy field','Position',posH);
+    % clf
 end
 if displayMesh
     fm = figure('Name','Mesh','Position',posm);
@@ -179,12 +187,12 @@ while ti < tf-eps
     %     ti = ti + dti;
     %     f = 0;
     % else
-        if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+        if contain(PFsolver,'historyfield')
             H_old = H;
         end
         d_old = d;
         if checkConvRes
-            [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
+            [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,PFsolver,PFregul);
         end
         errConv = Inf;
         errConvs = 0; errConvr = 0; errConve = 0;
@@ -200,32 +208,35 @@ while ti < tf-eps
             
             % Damage/Phase field
             if ~checkConvRes
-                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
+                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,PFsolver,PFregul);
             end
             
-            switch lower(PFsolver)
-                case {'historyfieldelem','historyfieldnode'}
-                    d = A_phase\b_phase;
-                otherwise
-                    d0 = freevector(S_phase,d_old);
-                    lb = d0;
-                    ub = ones(size(d0));
-                    if strcmpi(options.Algorithm,'trust-region-reflective')
-                        lb(lb==1) = 1-eps;
-                    end
-                    switch optimFun
-                        case 'quadprog'
-                            A_phase = (A_phase+A_phase')/2;
-                            d = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
-                        case 'lsqlin'
-                            d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
-                        case 'lsqnonlin'
-                            fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-                            d = lsqnonlin(fun,d0,lb,ub,options);
-                        case 'fmincon'
-                            fun = @(d) funoptimPF(d,A_phase,b_phase);
-                            d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
-                    end
+            if contain(PFsolver,'historyfield')
+                d = A_phase\b_phase;
+            else
+                d0 = freevector(S_phase,d_old);
+                lb = d0;
+                ub = ones(size(d0));
+                if strcmpi(options.Algorithm,'trust-region-reflective')
+                    lb(lb==1) = 1-eps;
+                end
+                switch optimFun
+                    case 'quadprog'
+                        A_phase = (A_phase+A_phase')/2;
+                        d = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
+                    case 'lsqlin'
+                        % d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                        A_phase = (A_phase+A_phase')/2;
+                        R_phase = chol(A_phase);
+                        c_phase = R_phase'\b_phase;
+                        d = lsqlin(R_phase,c_phase,[],[],[],[],lb,ub,d0,options);
+                    case 'lsqnonlin'
+                        fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
+                        d = lsqnonlin(fun,d0,lb,ub,options);
+                    case 'fmincon'
+                        fun = @(d) funoptimPF(d,A_phase,b_phase);
+                        d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
+                end
             end
             if any(d > dth)
                 dti = dt1;
@@ -254,11 +265,10 @@ while ti < tf-eps
             u = unfreevector(S,u);
             
             % Internal energy field
-            switch lower(PFsolver)
-                case {'historyfieldelem','historyfieldnode'}
-                    H = calc_historyfield(S,u,H_old);
-                otherwise
-                    H = calc_energyint(S,u,'intorder','mass','positive','local');
+            if contain(PFsolver,'historyfield')
+                H = calc_historyfield(S,u,H_old);
+            else
+                H = calc_energyint(S,u,'intorder','mass','positive','local');
             end
             
             % Convergence
@@ -269,7 +279,7 @@ while ti < tf-eps
             end
             if checkConvRes
                 % Damage/Phase field residual
-                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
+                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,PFsolver,PFregul);
                 r_phase = A_phase*d - b_phase;
                 errConvr = norm(r_phase)/norm(b_phase);
             end
@@ -353,6 +363,17 @@ while ti < tf-eps
         colorbar
         set(gca,'FontSize',fontsize)
         
+        % Display internal energy field
+        % figure(fH)
+        % clf
+        % if strcmpi(PFsolver,'historyfieldnode')
+        %     plot_sol(S_phase,H);
+        % else
+        %     plot(H,S_phase);
+        % end
+        % colorbar
+        % set(gca,'FontSize',fontsize)
+        
         % Display damage/phase field
         % plotSolution(S_phase,d);
         
@@ -423,18 +444,36 @@ while ti < tf-eps
         S_phase = addbcdamage(S_phase);
         
         % Update material properties
+        S = setoption(S,option);
         S = setmaterialproperties(S,materials);
         S = final(S);
         S = addbc(S,t(i));
         
-        % Update fields
+        % Project damage/phase field
         P_phase = calcProjection(S_phase,S_phase_old,[],'free',false,'full',true);
         d = P_phase'*d;
         
+        % Project displacement field
         % P = calcProjection(S,S_old,[],'free',false,'full',true);
         P = kron(P_phase,eye(Dim));
         u = P'*u;
         
+        % Re-equilibrate displacement field on the new mesh with fixed projected damage/phase field 
+        % before recomputing the (damage/crack driving) internal energy field H.
+        mats = MATERIALS(S);
+        for m = 1:length(mats)
+            mats{m} = setparam(mats{m},'d',d);
+            mats{m} = setparam(mats{m},'u',u);
+        end
+        S = actualisematerials(S,mats);
+        
+        [A,b] = calc_rigi(S,'nofree');
+        b = -b;
+        
+        u = freematrix(S,A)\b;
+        u = unfreevector(S,u);
+        
+        % Recompute the (damage/crack driving) internal energy field from an equilibrated displacement field
         if strcmpi(PFsolver,'historyfieldnode')
             h = P_phase'*h;
             H = setvalue(H,h);
@@ -454,6 +493,57 @@ while ti < tf-eps
         
         numddlb = findddlboundary(S_phase);
         
+        % Display solution fields
+        if displaySol
+            % Display damage/phase field
+            figure(fd)
+            clf
+            plot_sol(S_phase,d);
+            colorbar
+            set(gca,'FontSize',fontsize)
+            
+            % Display internal energy field
+            % figure(fH)
+            % clf
+            % if strcmpi(PFsolver,'historyfieldnode')
+            %     plot_sol(S_phase,H);
+            % else
+            %     plot(H,S_phase);
+            % end
+            % colorbar
+            % set(gca,'FontSize',fontsize)
+
+            % Display damage/phase field
+            % plotSolution(S_phase,d);
+            
+            % Display displacement field
+            % for j=1:Dim
+            %     plotSolution(S,u,'displ',j);
+            % end
+            
+            % Display internal energy field
+            % if strcmpi(PFsolver,'historyfieldnode')
+            %     plotSolution(S_phase,H);
+            % else
+            %     figure('Name','Solution H')
+            %     clf
+            %     plot(H,S_phase);
+            %     colorbar
+            %     set(gca,'FontSize',fontsize)
+            % end
+            
+            % figure('Name','Solution H')
+            % clf
+            % subplot(1,2,1)
+            % plot_sol(S,u,'energyint','local');
+            % colorbar
+            % title('Internal energy')
+            % subplot(1,2,2)
+            % plot_sol(S,u,'energyint',{'positive','local'});
+            % colorbar
+            % title('Positive internal energy')
+        end
+        
         if displayMesh
             % Display mesh
             figure(fm)
@@ -468,6 +558,7 @@ end
 
 % if displaySol
 %     close(fd)
+%     % close(fH)
 % end
 % if displayMesh
 %     close(fm)

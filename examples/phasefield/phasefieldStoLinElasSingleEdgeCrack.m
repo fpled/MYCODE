@@ -74,6 +74,7 @@ switch lower(symmetry)
     otherwise
         error('Wrong material symmetry class');
 end
+distGc = 'Uniform';
 aGc = 0;
 bGc = 0;
 % aGc = 0.6*gc;
@@ -82,7 +83,7 @@ bGc = 0;
 % bGc = 1.1*gc;
 % aGc = [0.7,1.2]*gc;
 % bGc = [0.8,1.3]*gc;
-randPF = struct('aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase-field parameters model
+randPF = struct('distGc',distGc,'aGc',aGc,'bGc',bGc,'lcorr',Inf); % random phase-field parameters model
 
 suffix = '';
 % suffix = ['_gc' num2str(gc,'_%g')];
@@ -101,9 +102,9 @@ filename = [filename 'Mesh' FEmesh '_' num2str(N) 'samples'];
 if any(randMat.delta)
     filename = [filename '_RandMat_Delta' num2str(randMat.delta,'_%g') '_Lcorr' num2str(randMat.lcorr,'_%g')];
 end
-if any(randPF.aGc) && any(randPF.bGc)
+if ~isempty(distGc) && any(randPF.aGc) && any(randPF.bGc)
     gcbounds = [randPF.aGc(:),randPF.bGc(:)]';
-    filename = [filename '_RandPF_Gc' num2str(gcbounds(:)','_%g') '_Lcorr' num2str(randPF.lcorr,'_%g')];
+    filename = [filename '_RandPF_Gc_' randPF.distGc num2str(gcbounds(:)','_%g') '_Lcorr' num2str(randPF.lcorr,'_%g')];
 end
 filename = [filename suffix];
 
@@ -718,10 +719,10 @@ if solveProblem
     displayForce = false;
     
     nbSamples = 1;
-    fun = @(S_phase,S) solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+    fun = @(S_phase,S) solvePFDetLinElas(S_phase,S,T,PFsolver,PFregularization,addbc,findddlforce,findddlboundary,...
         'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
         'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
-    % fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,...
+    % fun = @(S_phase,S) solvePFDetLinElasSingleEdgeCrack(S_phase,S,T,PFsolver,PFregularization,BU,BL,BRight,BLeft,BFront,BBack,loading,...
     %     'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
     %     'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     [ft,Edt,Eut,dmaxt,dt_mean,ut_mean,dt_var,ut_var,dt_sample,ut_sample] = solvePFStoLinElas(S_phase,S,T,fun,N,'nbsamples',nbSamples);
@@ -1229,7 +1230,7 @@ if displaySolution
                 case 'tension'
                     tSnapshots = [5.25 5.5 5.75 5.85 5.95 6 6.05 6.1 6.15 6.25]*1e-6;
                 case 'shear'
-                    tSnapshots = [0.85 1 1.25 1.35 1.5 1.75]*1e-5;
+                    tSnapshots = [0.85 1 1.25 1.35 1.4 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end
@@ -1238,7 +1239,7 @@ if displaySolution
                 case 'tension'
                     tSnapshots = [5 6 7 8 9]*1e-6;
                 case 'shear'
-                    tSnapshots = [0.85 1 1.25 1.35 1.5 1.75]*1e-5;
+                    tSnapshots = [0.85 1 1.25 1.35 1.4 1.5 1.75]*1e-5;
                 otherwise
                     error('Wrong loading case');
             end

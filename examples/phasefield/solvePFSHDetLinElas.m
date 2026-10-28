@@ -1,5 +1,5 @@
-function [dt,ht,ut,ft,Ht,Edt,Eht,Eut,output] = solvePFSHDetLinElas(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,varargin)
-% function [dt,ht,ut,ft,Ht,Edt,Eht,Eut,output] = solvePFSHDetLinElas(S_phase,S_healing,S,T,PFsolver,addbc,findddlforce,findddlboundary,varargin)
+function [dt,ht,ut,ft,Ht,Edt,Eht,Eut,output] = solvePFSHDetLinElas(S_phase,S_healing,S,T,PFsolver,PFregul,addbc,findddlforce,findddlboundary,varargin)
+% function [dt,ht,ut,ft,Ht,Edt,Eht,Eut,output] = solvePFSHDetLinElas(S_phase,S_healing,S,T,PFsolver,PFregul,addbc,findddlforce,findddlboundary,varargin)
 % Solve deterministic phase-field problem.
 
 addbc = fcnchk(addbc);
@@ -17,7 +17,6 @@ heff         = getcharin('heff',varargin,0.5);
 deff         = getcharin('deff',varargin,@(d,h) d-heff*h);
 dact         = getcharin('dact',varargin,0.5);
 fundact      = getcharin('fundact',varargin,@(d,h) deff(d,h)>dact);
-PFregul      = getcharin('PFregularization',varargin,'AT2');
 dbth         = getcharin('dbth',varargin,0.999);
 
 if verLessThan('matlab','9.1') % compatibility (<R2016b)
@@ -83,7 +82,7 @@ if checkConvEnergy
     E = Ed+Eh+Eu;
 end
 
-if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode')
+if ~contain(PFsolver,'historyfield')
     optimFun = 'quadprog'; % optimization function. 'quadprog', 'lsqlin', 'lsqnonlin' or 'fmincon'
     % optimFun = 'lsqlin';
     % optimFun = 'lsqnonlin';
@@ -183,14 +182,14 @@ for i=1:length(T)
     % if any(Db > dbth)
     %     f = 0;
     % else
-        if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+        if contain(PFsolver,'historyfield')
             H_old = H;
         end
         d_old = d;
         h_old = h;
         if checkConvRes
-            [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,h,heff,d,fundact);
-            [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,rh,qnh,H,d,h,heff,fundact,PFregul);
+            [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,PFsolver,PFregul,h,heff,d,fundact);
+            [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,rh,qnh,H,PFsolver,PFregul,d,h,heff,fundact);
         end
         errConv = Inf;
         errConvs = 0; errConvr = 0; errConve = 0;
@@ -207,43 +206,46 @@ for i=1:length(T)
             
             % Damage/Phase field
             if ~checkConvRes
-                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,h,heff,d_old,fundact);
+                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,PFsolver,PFregul,h,heff,d_old,fundact);
             end
             
-            switch lower(PFsolver)
-                case {'historyfieldelem','historyfieldnode'}
-                    d = A_phase\b_phase;
-                otherwise
-                    d0 = freevector(S_phase,d_old);
-                    h0 = freevector(S_phase,h);
-                    lb = max([d0,heff*h0],[],2);
-                    ub = ones(size(d0))+heff*h0;
-                    % lb = d0;
-                    % ub = [];
-                    if strcmpi(options.Algorithm,'trust-region-reflective')
-                        lb(lb==ub) = lb(lb==ub)-eps;
-                    end
-                    switch optimFun
-                        case 'quadprog'
-                            A_phase = (A_phase+A_phase')/2;
-                            d = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
-                            % [d,fvald,exitflagd,outputd] = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
-                            % fvald
-                            % exitflagd
-                            % outputd
-                        case 'lsqlin'
-                            d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
-                            % [d,resnormd,~,exitflagd,outputd] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
-                            % resnormd
-                            % exitflagd
-                            % outputd
-                        case 'lsqnonlin'
-                            fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-                            d = lsqnonlin(fun,d0,lb,ub,options);
-                        case 'fmincon'
-                            fun = @(d) funoptimPF(d,A_phase,b_phase);
-                            d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
-                    end
+            if contain(PFsolver,'historyfield')
+                d = A_phase\b_phase;
+            else
+                d0 = freevector(S_phase,d_old);
+                h0 = freevector(S_phase,h);
+                lb = max([d0,heff*h0],[],2);
+                ub = ones(size(d0))+heff*h0;
+                % lb = d0;
+                % ub = [];
+                if strcmpi(options.Algorithm,'trust-region-reflective')
+                    lb(lb==ub) = lb(lb==ub)-eps;
+                end
+                switch optimFun
+                    case 'quadprog'
+                        A_phase = (A_phase+A_phase')/2;
+                        d = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
+                        % [d,fvald,exitflagd,outputd] = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
+                        % fvald
+                        % exitflagd
+                        % outputd
+                    case 'lsqlin'
+                        % d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
+                        A_phase = (A_phase+A_phase')/2;
+                        R_phase = chol(A_phase);
+                        c_phase = R_phase'\b_phase;
+                        d = lsqlin(R_phase,c_phase,[],[],[],[],lb,ub,d0,options);
+                        % [d,resnormd,~,exitflagd,outputd] = lsqlin(R_phase,c_phase,[],[],[],[],lb,ub,d0,options);
+                        % resnormd
+                        % exitflagd
+                        % outputd
+                    case 'lsqnonlin'
+                        fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
+                        d = lsqnonlin(fun,d0,lb,ub,options);
+                    case 'fmincon'
+                        fun = @(d) funoptimPF(d,A_phase,b_phase);
+                        d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
+                end
             end
             dmax = max(d);
             d = unfreevector(S_phase,d);
@@ -251,43 +253,50 @@ for i=1:length(T)
             
             % Healing field
             if ~checkConvRes
-                [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,rh,qnh,H,d,h_old,heff,fundact,PFregul);
+                [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,rh,qnh,H,PFsolver,PFregul,d,h_old,heff,fundact);
             end
             
-            switch lower(PFsolver)
-                case {'historyfieldelem','historyfieldnode'}
-                    h = A_healing\b_healing;
-                otherwise
-                    h0 = freevector(S_healing,h_old);
-                    d0 = freevector(S_healing,d);
-                    lb = max([h0,(d0-1)/heff],[],2);
-                    ub = min([ones(size(h0)),d0/heff],[],2);
-                    % lb = h0;
-                    % ub = ones(size(h0));
-                    if strcmpi(options.Algorithm,'trust-region-reflective')
-                        lb(lb==ub) = lb(lb==ub)-eps;
-                    end
-                    switch optimFun
-                        case 'quadprog'
+            if contain(PFsolver,'historyfield')
+                h = A_healing\b_healing;
+            else
+                h0 = freevector(S_healing,h_old);
+                d0 = freevector(S_healing,d);
+                lb = max([h0,(d0-1)/heff],[],2);
+                ub = min([ones(size(h0)),d0/heff],[],2);
+                % lb = h0;
+                % ub = ones(size(h0));
+                if strcmpi(options.Algorithm,'trust-region-reflective')
+                    lb(lb==ub) = lb(lb==ub)-eps;
+                end
+                switch optimFun
+                    case 'quadprog'
+                        if any(b_healing)
                             A_healing = (A_healing+A_healing')/2;
                             h = quadprog(A_healing,-b_healing,[],[],[],[],lb,ub,h0,options);
                             % [h,fvalh,exitflagh,outputh] = quadprog(A_healing,-b_healing,[],[],[],[],lb,ub,h0,options);
                             % fvalh
                             % exitflagh
                             % outputh
-                        case 'lsqlin'
-                            h = lsqlin(A_healing,b_healing,[],[],[],[],lb,ub,h0,options);
-                            % [h,resnormh,~,exitflagh,outputh] = lsqlin(A_healing,b_healing,[],[],[],[],lb,ub,h0,options);
-                            % resnormh
-                            % exitflagh
-                            % outputh
-                        case 'lsqnonlin'
-                            fun = @(h) funlsqnonlinPF(h,A_healing,b_healing);
-                            h = lsqnonlin(fun,h0,lb,ub,options);
-                        case 'fmincon'
-                            fun = @(h) funoptimPF(h,A_healing,b_healing);
-                            h = fmincon(fun,h0+eps,[],[],[],[],lb,ub,[],options);
-                    end
+                        else
+                            h = lb;
+                        end
+                    case 'lsqlin'
+                        % h = lsqlin(A_healing,b_healing,[],[],[],[],lb,ub,h0,options);
+                        A_healing = (A_healing+A_healing')/2;
+                        R_healing = chol(A_healing);
+                        c_healing = R_healing'\b_healing;
+                        h = lsqlin(R_healing,c_healing,[],[],[],[],lb,ub,h0,options);
+                        % [h,resnormh,~,exitflagh,outputh] = lsqlin(R_healing,c_healing,[],[],[],[],lb,ub,h0,options);
+                        % resnormh
+                        % exitflagh
+                        % outputh
+                    case 'lsqnonlin'
+                        fun = @(h) funlsqnonlinPF(h,A_healing,b_healing);
+                        h = lsqnonlin(fun,h0,lb,ub,options);
+                    case 'fmincon'
+                        fun = @(h) funoptimPF(h,A_healing,b_healing);
+                        h = fmincon(fun,h0+eps,[],[],[],[],lb,ub,[],options);
+                end
             end
             hmax = max(h);
             h = unfreevector(S_healing,h);
@@ -319,11 +328,10 @@ for i=1:length(T)
             u = unfreevector(S,u);
             
             % Internal energy field
-            switch lower(PFsolver)
-                case {'historyfieldelem','historyfieldnode'}
-                    H = calc_historyfield(S,u,H_old);
-                otherwise
-                    H = calc_energyint(S,u,'intorder','mass','positive','local');
+            if contain(PFsolver,'historyfield')
+                H = calc_historyfield(S,u,H_old);
+            else
+                H = calc_energyint(S,u,'intorder','mass','positive','local');
             end
             
             % Convergence
@@ -335,11 +343,11 @@ for i=1:length(T)
             end
             if checkConvRes
                 % Damage/Phase field residual
-                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,h,heff,d_old,fundact);
+                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,PFsolver,PFregul,h,heff,d_old,fundact);
                 r_phase = A_phase*d - b_phase;
                 errConvrd = norm(r_phase)/norm(b_phase);
                 % Healing residual
-                [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,rh,qnh,H,d,h_old,heff,fundact,PFregul);
+                [S_healing,A_healing,b_healing] = calchealingfieldoperator(S_healing,rh,qnh,H,PFsolver,PFregul,d,h_old,heff,fundact);
                 r_healing = A_healing*h - b_healing;
                 errConvrh = norm(r_healing)/norm(b_healing);
                 errConvr = max(errConvrd,errConvrh);

@@ -56,7 +56,7 @@ maxIter = 1; % maximum number of iterations at each loading increment
 tolConv = 1e-2; % prescribed tolerance for convergence at each loading increment
 critConv = 'Energy'; % 'Solution', 'Residual', 'Energy'
 initialCrack = 'GeometricCrack'; % 'GeometricCrack', 'GeometricNotch', 'InitialPhaseField'
-FEmesh = 'Optim'; % 'Unif' or 'Optim'
+FEmesh = 'Unif'; % 'Unif' or 'Optim'
 
 % angs = [0:10:90];
 % PFmodels = {'Bourdin','Amor','Miehe','HeAmor','HeFreddi','Zhang'};
@@ -247,7 +247,17 @@ if setProblem
     switch lower(initialCrack)
         case 'geometriccrack'
             % S_phase = gmshDomainWithSingleEdgeCrack(D,C,clD,clC,fullfile(pathname,'gmsh_domain_single_edge_crack'),Dim,'Box',B);
-            S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_domain_single_edge_crack_Hoang_shear_optim.msh'),2);
+            switch lower(FEmesh)
+                case 'unif' % uniform mesh
+                    S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_domain_single_edge_crack_Hoang_unif.msh'),2);
+                case 'optim' % optimized mesh
+                    switch lower(loading)
+                        case 'tension'
+                            S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_domain_single_edge_crack_Hoang_tension_optim.msh'),2);
+                        case 'shear'
+                            S_phase = gmsh2femobject(2,fullfile(getfemobjectoptions('path'),'MYCODE','examples','phasefield','gmsh_domain_single_edge_crack_Hoang_shear_optim.msh'),2);
+                    end
+            end
         case 'geometricnotch'
             c = 1e-5; % crack width
             clC = min(clC,c/2);
@@ -744,11 +754,11 @@ if solveProblem
     end
     switch lower(PFsolver)
         case {'historyfieldelem','historyfieldnode'}
-            [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+            [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,PFregularization,addbc,findddlforce,findddlboundary,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
                 'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
         otherwise
-            [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,...
+            [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,PFregularization,addbc,findddlforce,findddlboundary,...
                 'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
                 'displayiter',displayIter,'displaysol',displaySol,'displayforce',displayForce);
     end
@@ -762,11 +772,11 @@ if solveProblem
     % end
     % switch lower(PFsolver)
     %     case {'historyfieldelem','historyfieldnode'}
-    %         [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,...
+    %         [dt,ut,ft,Ht,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,PFregularization,BU,BL,BRight,BLeft,BFront,BBack,loading,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
     %             'displayiter',displayIter,'displaysol',displaySol);
     %     otherwise
-    %         [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,BU,BL,BRight,BLeft,BFront,BBack,loading,...
+    %         [dt,ut,ft,~,Edt,Eut,output] = fun(S_phase,S,T,PFsolver,PFregularization,BU,BL,BRight,BLeft,BFront,BBack,loading,...
     %             'maxiter',maxIter,'tol',tolConv,'crit',critConv,...
     %             'displayiter',displayIter,'displaysol',displaySol);
     % end

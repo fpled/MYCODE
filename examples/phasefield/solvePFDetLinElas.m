@@ -1,5 +1,5 @@
-function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,varargin)
-% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,addbc,findddlforce,findddlboundary,varargin)
+function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,PFregul,addbc,findddlforce,findddlboundary,varargin)
+% function [dt,ut,ft,Ht,Edt,Eut,output] = solvePFDetLinElas(S_phase,S,T,PFsolver,PFregul,addbc,findddlforce,findddlboundary,varargin)
 % Solve deterministic phase-field problem.
 
 addbc = fcnchk(addbc);
@@ -66,7 +66,7 @@ if checkConvEnergy
     E = Ed+Eu;
 end
 
-if ~strcmpi(PFsolver,'historyfieldelem') && ~strcmpi(PFsolver,'historyfieldnode')
+if ~contain(PFsolver,'historyfield')
     optimFun = 'quadprog'; % optimization function. 'quadprog', 'lsqlin', 'lsqnonlin' or 'fmincon'
     % optimFun = 'lsqlin';
     % optimFun = 'lsqnonlin';
@@ -131,15 +131,19 @@ fpos = get(groot,'DefaultFigurePosition');
 % spos = get(groot,'ScreenSize');
 if displaySol && displayForce
     posd = [fpos(1)-fpos(3)/2 fpos(2:4)];
+    % posH = [fpos(1)-fpos(3)/2 fpos(2)-fpos(4) fpos(3:4)];
     posf = [fpos(1)+fpos(3)/2 fpos(2:4)];
 elseif displaySol
     posd = fpos;
+    % posH = [fpos(1) fpos(2)-fpos(4) fpos(3:4)];
 elseif displayForce
     posf = fpos;
 end
 if displaySol
     fd = figure('Name','Damage/Phase field','Position',posd);
     clf
+    % fH = figure('Name','Internal energy field','Position',posH);
+    % clf
 end
 if displayForce
     ff = figure('Name','Force vs displacement','Position',posf);
@@ -156,12 +160,12 @@ for i=1:length(T)
     % if any(db > dbth)
     %     f = 0;
     % else
-        if strcmpi(PFsolver,'historyfieldelem') || strcmpi(PFsolver,'historyfieldnode')
+        if contain(PFsolver,'historyfield')
             H_old = H;
         end
         d_old = d;
         if checkConvRes
-            [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
+            [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,PFsolver,PFregul);
         end
         errConv = Inf;
         errConvs = 0; errConvr = 0; errConve = 0;
@@ -177,98 +181,100 @@ for i=1:length(T)
             
             % Damage/Phase field
             if ~checkConvRes
-                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
+                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,PFsolver,PFregul);
             end
             
-            switch lower(PFsolver)
-                case {'historyfieldelem','historyfieldnode'}
-                    d = A_phase\b_phase;
-                otherwise
-                    d0 = freevector(S_phase,d_old);
-                    lb = d0;
-                    ub = ones(size(d0));
-                    if strcmpi(options.Algorithm,'trust-region-reflective')
-                        lb(lb==1) = 1-eps;
-                    end
-                    switch optimFun
-                        case 'quadprog'
-                            A_phase = (A_phase+A_phase')/2;
-                            d = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
-                            % [d,fvald,exitflagd,outputd] = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
-                            % fvald
-                            % exitflagd
-                            % outputd
-                        case 'lsqlin'
-                            d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
-                            % [d,resnormd,~,exitflagd,outputd] = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options);
-                            % resnormd
-                            % exitflagd
-                            % outputd
-                        case 'lsqnonlin'
-                            fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-                            d = lsqnonlin(fun,d0,lb,ub,options);
-                        case 'fmincon'
-                            fun = @(d) funoptimPF(d,A_phase,b_phase);
-                            d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
-                    end
+            if contain(PFsolver,'historyfield')
+                d = A_phase\b_phase;
+            else
+                d0 = freevector(S_phase,d_old);
+                lb = d0;
+                ub = ones(size(d0));
+                if strcmpi(options.Algorithm,'trust-region-reflective')
+                    lb(lb==1) = 1-eps;
+                end
+                switch optimFun
+                    case 'quadprog'
+                        A_phase = (A_phase+A_phase')/2;
+                        d = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
+                        % [d,fvald,exitflagd,outputd] = quadprog(A_phase,-b_phase,[],[],[],[],lb,ub,d0,options);
+                        % fvald
+                        % exitflagd
+                        % outputd
+                    case 'lsqlin'
+                        % d = lsqlin(A_phase,b_phase,[],[],[],[],lb,ub,d0,options); % least-squares minimization of squared norm of residual
+                        A_phase = (A_phase+A_phase')/2;
+                        R_phase = chol(A_phase);
+                        c_phase = R_phase'\b_phase;
+                        d = lsqlin(R_phase,c_phase,[],[],[],[],lb,ub,d0,options);
+                        % [d,resnormd,~,exitflagd,outputd] = lsqlin(R_phase,c_phase,[],[],[],[],lb,ub,d0,options);
+                        % resnormd
+                        % exitflagd
+                        % outputd
+                    case 'lsqnonlin'
+                        fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
+                        d = lsqnonlin(fun,d0,lb,ub,options);
+                    case 'fmincon'
+                        fun = @(d) funoptimPF(d,A_phase,b_phase);
+                        d = fmincon(fun,d0+eps,[],[],[],[],lb,ub,[],options);
+                end
             end
             %%
-            % switch lower(PFsolver)
-            %     case {'historyfieldelem','historyfieldnode'}
-            %         d_new = d_old;
-            %         tolIter = 100*eps;
-            %         maxIters = 1e3;
-            %         % Steepdest descent
-            %         alpha = 2/eigs(A_phase,1); % maximum stable constant learning rate
-            %                                    % that is inversely proportional to the
-            %                                    % maximum curvature of the quadratic function
+            % if contain(PFsolver,'historyfield')
+            %     d_new = d_old;
+            %     tolIter = 100*eps;
+            %     maxIters = 1e3;
+            %     % Steepdest descent
+            %     alpha = 2/eigs(A_phase,1); % maximum stable constant learning rate
+            %     % that is inversely proportional to the
+            %     % maximum curvature of the quadratic function
             % 
-            %         relres = 1;
-            %         iter = 0;
-            %         while (relres > tolIter) && (iter < maxIters)
-            %             iter = iter+1;
-            %             g = A_phase*d_new-b_phase;
-            %             p = -g;
-            %             % d_new = d_new + alpha*p; % constant learning rate
-            %             % alpha = -g'*p/(p'*A_phase*p); % steepest descent
-            %             d_new = d_new + alpha*p;
-            %             relres = norm(A_phase*d_new-b_phase)/norm(b_phase);
-            %             errIter = norm(d-d_new)/norm(d)
-            %         end
-            %         relres, iter
-            %         % Conjugate gradient
-            %         L = ichol(A_phase);
-            %         [d_new,flag,relres,iter,resvec] = cgs(A_phase,b_phase,tolIter,maxIters,L);
-            %         relres, iter
-            %     otherwise
-            %         optimFun = 'lsqnonlin';
+            %     relres = 1;
+            %     iter = 0;
+            %     while (relres > tolIter) && (iter < maxIters)
+            %         iter = iter+1;
+            %         g = A_phase*d_new-b_phase;
+            %         p = -g;
+            %         % d_new = d_new + alpha*p; % constant learning rate
+            %         % alpha = -g'*p/(p'*A_phase*p); % steepest descent
+            %         d_new = d_new + alpha*p;
+            %         relres = norm(A_phase*d_new-b_phase)/norm(b_phase);
+            %         errIter = norm(d-d_new)/norm(d)
+            %     end
+            %     relres, iter
+            %     % Conjugate gradient
+            %     L = ichol(A_phase);
+            %     [d_new,flag,relres,iter,resvec] = cgs(A_phase,b_phase,tolIter,maxIters,L);
+            %     relres, iter
+            % else
+            %     optimFun = 'lsqnonlin';
             % 
-            %         % optimDisplay = 'off';
-            %         % optimDisplay = 'iter';
-            %         optimDisplay = 'iter-detailed';
-            %         % optimDisplay = 'final';
-            %         % optimDisplay = 'final-detailed';
+            %     % optimDisplay = 'off';
+            %     % optimDisplay = 'iter';
+            %     optimDisplay = 'iter-detailed';
+            %     % optimDisplay = 'final';
+            %     % optimDisplay = 'final-detailed';
             % 
-            %         % optimAlgo = 'interior-point';
-            %         optimAlgo = 'trust-region-reflective'; % default for lsqnonlin
-            %         % optimAlgo = 'levenberg-marquardt';
+            %     % optimAlgo = 'interior-point';
+            %     optimAlgo = 'trust-region-reflective'; % default for lsqnonlin
+            %     % optimAlgo = 'levenberg-marquardt';
             % 
-            %         optimSubproblemAlgo = 'cg'; % 'cg' or 'factorization'
+            %     optimSubproblemAlgo = 'cg'; % 'cg' or 'factorization'
             % 
-            %         tolX = 100*eps; % tolerance on the parameter value
-            %         tolFun = 100*eps; % tolerance on the function value
-            %         tolOpt = 100*eps; % tolerance on the first-order optimality
-            %         tolCon = 0; % tolerance on the constraint violation
-            %         maxIters = Inf; % maximum number of iterations
-            %         maxFunEvals = Inf; % maximum number of function evaluations
+            %     tolX = 100*eps; % tolerance on the parameter value
+            %     tolFun = 100*eps; % tolerance on the function value
+            %     tolOpt = 100*eps; % tolerance on the first-order optimality
+            %     tolCon = 0; % tolerance on the constraint violation
+            %     maxIters = Inf; % maximum number of iterations
+            %     maxFunEvals = Inf; % maximum number of function evaluations
             % 
-            %         options = optimoptions(optimFun,'Display',optimDisplay,'Algorithm',optimAlgo,'SubproblemAlgorithm',optimSubproblemAlgo,...
-            %             'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolOpt,'ConstraintTolerance',tolCon,...
-            %             'MaxIterations',maxIters,'MaxFunctionEvaluations',maxFunEvals,...
-            %             'SpecifyObjectiveGradient',true);
-            %         fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
-            %         [d_new,resnorm,residual,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
-            %         resnorm
+            %     options = optimoptions(optimFun,'Display',optimDisplay,'Algorithm',optimAlgo,'SubproblemAlgorithm',optimSubproblemAlgo,...
+            %         'StepTolerance',tolX,'FunctionTolerance',tolFun,'OptimalityTolerance',tolOpt,'ConstraintTolerance',tolCon,...
+            %         'MaxIterations',maxIters,'MaxFunctionEvaluations',maxFunEvals,...
+            %         'SpecifyObjectiveGradient',true);
+            %     fun = @(d) funlsqnonlinPF(d,A_phase,b_phase);
+            %     [d_new,resnorm,residual,exitflag,output] = lsqnonlin(fun,d0,lb,ub,options);
+            %     resnorm
             % end
             %%
             dmax = max(d);
@@ -294,11 +300,10 @@ for i=1:length(T)
             u = unfreevector(S,u);
             
             % Internal energy field
-            switch lower(PFsolver)
-                case {'historyfieldelem','historyfieldnode'}
-                    H = calc_historyfield(S,u,H_old);
-                otherwise
-                    H = calc_energyint(S,u,'intorder','mass','positive','local');
+            if contain(PFsolver,'historyfield')
+                H = calc_historyfield(S,u,H_old);
+            else
+                H = calc_energyint(S,u,'intorder','mass','positive','local');
             end
             
             % Convergence
@@ -309,7 +314,7 @@ for i=1:length(T)
             end
             if checkConvRes
                 % Damage/Phase field residual
-                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H);
+                [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,PFsolver,PFregul);
                 r_phase = A_phase*d - b_phase;
                 errConvr = norm(r_phase)/norm(b_phase);
             end
@@ -388,6 +393,17 @@ for i=1:length(T)
         colorbar
         set(gca,'FontSize',fontsize)
         
+        % Display internal energy field
+        % figure(fH)
+        % clf
+        % if strcmpi(PFsolver,'historyfieldnode')
+        %     plot_sol(S_phase,H);
+        % else
+        %     plot(H,S_phase);
+        % end
+        % colorbar
+        % set(gca,'FontSize',fontsize)
+        
         % Display damage/phase field
         % plotSolution(S_phase,d);
         
@@ -439,6 +455,7 @@ end
 
 % if displaySol
 %     close(fd)
+%     % close(fH)
 % end
 % if displayForce
 %     close(ff)

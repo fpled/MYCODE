@@ -1,6 +1,12 @@
-function [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,varargin)
-% function [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H)
-% function [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,h,heff,d,fundact)
+function [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,PFsolver,PFregularization,varargin)
+% function [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,PFsolver,PFregularization)
+% function [S_phase,A_phase,b_phase] = calcphasefieldoperator(S_phase,r,qn,H,PFsolver,PFregularization,h,heff,d,fundact)
+
+if verLessThan('matlab','9.1') % compatibility (<R2016b)
+    contain = @(str,pat) ~isempty(strfind(lower(str),pat));
+else
+    contain = @(str,pat) contains(str,pat,'IgnoreCase',true);
+end
 
 mats_phase = MATERIALS(S_phase);
 
@@ -41,7 +47,7 @@ S_phase = actualisematerials(S_phase,mats_phase);
 [A_phase,b_phase] = calc_rigi(S_phase);
 
 Q = qn + 2*H;
-if nargin>=5
+if nargin>=7
     h = varargin{1};
     heff = varargin{2};
     d = varargin{3};
@@ -70,16 +76,20 @@ if nargin>=5
         % Q = FEELEMFIELD(Q,'storage','gauss','type','scalar','ddl',DDL('Q'));
     end
 end
-if isa(Q,'FENODEFIELD')
-    q = double(Q);
-    q = max(q,0);
-else
-    q = getvalue(Q);
-    for p=1:length(q)
-        qe = double(q{p});
-        qe = max(qe,0);
-        q{p} = MYDOUBLEND(qe);
+
+if contain(PFsolver,'historyfield') && strcmpi(PFregularization,'at1')
+    if isa(Q,'FENODEFIELD')
+        q = double(Q);
+        q = max(q,0);
+    else
+        q = getvalue(Q);
+        for p=1:length(q)
+            qe = double(q{p});
+            qe = max(qe,0);
+            q{p} = MYDOUBLEND(qe);
+        end
     end
+    Q = setvalue(Q,q);
 end
-Q = setvalue(Q,q);
+
 b_phase = -b_phase + bodyload(S_phase,[],'QN',Q);
